@@ -93,6 +93,56 @@ def test_make_bot_ui_is_not_invocable() -> None:
     assert "make-bot-ui" not in plugin
 
 
+def test_benny_is_source_and_has_grok_remap() -> None:
+    plugin = json.loads((ROOT / "plugin.json").read_text(encoding="utf-8"))
+    assert "hooks" not in plugin
+    assert "automations/benny" not in json.dumps(plugin)
+    assert not (ROOT / "skills/setup-benny").exists()
+    assert not (ROOT / "skills/triage-issue-reports").exists()
+    assert not (ROOT / "skills/reproduce-and-fix-issues").exists()
+    pack = ROOT / "automations/benny"
+    assert (pack / "FOR_AGENTS.md").is_file()
+    triage = (pack / "skills/triage-issue-reports/SKILL.md").read_text(
+        encoding="utf-8"
+    )
+    assert "[benny:bug]" in triage
+    grok = pack / "grok"
+    readme = (grok / "README.md").read_text(encoding="utf-8")
+    assert "automations/benny/grok" in readme or ".grok/hooks" in readme
+    assert "/automate" not in readme
+    assert ".cursor/automations" not in readme
+    assert "scheduler_create" in readme
+    hooks = json.loads((grok / "hooks/hooks.json").read_text(encoding="utf-8"))
+    assert "PreToolUse" in hooks["hooks"]
+    assert (grok / "workflows/benny-triage.rhai").is_file()
+    assert (grok / "workflows/benny-repro.rhai").is_file()
+    harness = (ROOT / "HARNESS.md").read_text(encoding="utf-8")
+    assert "automations/benny/grok" in harness
+    openspec = ROOT / "openspec/changes/pstack-benny-atomic-blocks/proposal.md"
+    assert openspec.is_file()
+    script = grok / "bin/fail-closed.sh"
+    deny = subprocess.run(
+        ["sh", str(script)],
+        input=json.dumps(
+            {"toolInput": {"command": "gh pr merge 1 --merge"}}
+        ),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert deny.returncode == 2
+    assert json.loads(deny.stdout)["decision"] == "deny"
+    allow = subprocess.run(
+        ["sh", str(script)],
+        input=json.dumps({"toolInput": {"command": "gh pr view 1"}}),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert allow.returncode == 0
+    assert json.loads(allow.stdout)["decision"] == "allow"
+
+
 def test_guide_teaches_sync_then_adapt() -> None:
     guide = (ROOT / "docs/guide/09-make-it-yours.md").read_text(encoding="utf-8")
     setup = (ROOT / "docs/guide/01-setup.md").read_text(encoding="utf-8")
@@ -557,6 +607,7 @@ if __name__ == "__main__":
     test_poteto_mode_copies_tui_spawn_names()
     test_visual_parity_and_bug_fix_drive_real_surface()
     test_make_bot_ui_is_not_invocable()
+    test_benny_is_source_and_has_grok_remap()
     test_guide_teaches_sync_then_adapt()
     test_grok_spawn_types_are_plugin_qualified()
     test_readme_locale_split()

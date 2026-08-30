@@ -4,6 +4,8 @@ benny gives you two cursor automations for slack issue reports. one triages each
 
 the files in this directory are dormant setup and automation sources. they do not appear as slash skills.
 
+the grok remap is [`grok/`](./grok/). copy those hooks and workflows into a target `.grok/` tree. they are not pstack plugin hooks.
+
 ## set it up
 
 1. point cursor at [`FOR_AGENTS.md`](./FOR_AGENTS.md) and name the target repository.
