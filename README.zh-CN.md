@@ -261,7 +261,7 @@ automate-me:       /automate-me
 Cursor 版 pstack 的 `poteto-mode` 还引用过这些，这里没有打包：
 
 - `/deslop`、`control-cli`、`control-ui` 在 `cursor-team-kit` 里。这里用 `/unslop`、`/no-comments`，应用自己去点、去跑。
-- 独立核验是 `spawn_subagent` + `independent-verifier`。toml 里是已探测到的 slug 时另传 `model`，否则省略 `model`。不是 Cursor Cloud Agent。见 [HARNESS.md](./HARNESS.md)。
+- 独立核验是 `spawn_subagent`，`subagent_type` 为 `pstack:independent-verifier`。toml 里是已探测到的 slug 时另传 `model`，否则省略 `model`。不是 Cursor Cloud Agent。见 [HARNESS.md](./HARNESS.md)。
 - Graphite `gt` 可选。没有就用 `gh` 和 git。
 - Benny 源码仍在 `automations/benny/`。Grok Build 的自动化是插件 hooks/workflows，不是这一包。
 

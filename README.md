@@ -261,7 +261,7 @@ Twenty-one short skills, one principle each. `poteto-mode` indexes them inline a
 A few things `poteto-mode` referenced in Cursor pstack and does not bundle here:
 
 - `/deslop`, `control-cli`, and `control-ui` lived in `cursor-team-kit`. Use `/unslop`, `/no-comments`, and drive the real app yourself.
-- Independent verify is `spawn_subagent` + `independent-verifier`. Send a different `model` when the toml names a detected slug; otherwise omit `model`. Not a Cursor Cloud Agent. See [HARNESS.md](./HARNESS.md).
+- Independent verify is `spawn_subagent` with `subagent_type` `pstack:independent-verifier`. Send a different `model` when the toml names a detected slug; otherwise omit `model`. Not a Cursor Cloud Agent. See [HARNESS.md](./HARNESS.md).
 - Graphite `gt` is optional. If it is missing, use `gh` and git.
 - Benny remains under `automations/benny/` as source. Grok Build automations are plugin hooks/workflows, not this pack.
 
