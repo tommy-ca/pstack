@@ -46,7 +46,7 @@ reasoning_effort = "medium"
 
 | Block | Official | Grok port |
 |---|---|---|
-| Router `/poteto-mode` | sticky `mode: true` | `disable-model-invocation: true`; leftover `mode: true` in YAML (not a grok skill field). Operator docs: type `/poteto-mode`, do not auto-enter. README still mentions sticky mode as leftover Cursor prose. |
+| Router `/poteto-mode` | official YAML `mode: true` (Cursor sticky) | grok: `disable-model-invocation: true`, no `mode` field. Operator docs: type `/poteto-mode`; it does not auto-enter. |
 | 22 playbooks + opening-a-pr | 23 files | same 23 files |
 | 21 principles | `principle-*` | same 21 |
 | Skill dirs (total) | 45 including `make-bot-ui` | 44; skip `make-bot-ui` |

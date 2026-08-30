@@ -52,6 +52,6 @@ Pick something real but small, and describe it the way you'd describe it to a co
 
 Watch the todo list. The first item is always read the Principles section and [`HARNESS.md`](../../HARNESS.md) (the Grok mapping file). The rest are the matched playbook's steps copied in, the Feature playbook for this prompt. If `/poteto-mode` skips a step, the step stays in the list with `skip: <reason>`, so you can see what it chose not to do.
 
-From here you can type normal follow-ups. `/poteto-mode` is sticky. It stays on for the conversation until you opt out by saying so.
+From here you can type normal follow-ups. Type `/poteto-mode` again when a playbook matches or the task needs rigor. It does not auto-enter. Opt out by saying so.
 
 Next: [Route work through `/poteto-mode`](./02-poteto-mode.md).

@@ -124,7 +124,7 @@ morning.
 
 完整规则和玩法在 [`skills/poteto-mode/SKILL.md`](./skills/poteto-mode/SKILL.md)。
 
-[`/poteto-mode`](./skills/poteto-mode/SKILL.md) 也是粘滞模式。进去之后跨轮次仍有效。匹配到玩法、或任务需要严谨时它会接手，否则让开。随时说一声就可以退出。
+匹配到玩法、或任务需要严谨时再输入 [`/poteto-mode`](./skills/poteto-mode/SKILL.md)。它不会自动进。同一会话的后续轮次保持这套风格，直到你说退出。
 
 [`/poteto-mode`](./skills/poteto-mode/SKILL.md) 能跟 grok-build `/loop` 一起用（展开为 `scheduler_create`）。可以把可检查的谓词挂几个小时，不必丢掉严谨性。
 

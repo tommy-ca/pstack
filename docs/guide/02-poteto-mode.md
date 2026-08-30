@@ -51,7 +51,7 @@ continue
 keep going until done
 ```
 
-Short works because the mode is sticky and the playbook holds the structure. Your words carry the intent, and the skill carries the rigor.
+Short works because you invoke `/poteto-mode` and the playbook holds the structure. Your words carry the intent, and the skill carries the rigor.
 
 ## Switch tasks with "new task"
 

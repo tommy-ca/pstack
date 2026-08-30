@@ -271,6 +271,15 @@ def test_first_session_names_sandbox_reload_and_slash() -> None:
         assert "[plugins].enabled" in text
         assert "new session" in text or "新会话" in text
         assert "grok plugin install pstack --trust" not in text
+        assert "sticky mode" not in text.lower()
+        assert "粘滞模式" not in text
+    poteto = (ROOT / "skills/poteto-mode/SKILL.md").read_text(encoding="utf-8")
+    fm = poteto.split("---", 2)[1]
+    assert "mode: true" not in fm
+    guide = (ROOT / "docs/guide/02-poteto-mode.md").read_text(encoding="utf-8")
+    assert "sticky" not in guide.lower()
+    setup = (ROOT / "docs/guide/01-setup.md").read_text(encoding="utf-8")
+    assert "sticky" not in setup.lower()
 
 
 # grok 1.0.13 pager builtins from 04-slash-commands.md. Skills with these
