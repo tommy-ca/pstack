@@ -44,7 +44,7 @@ The right decomposition depends on the question. Use your judgment. Narrow quest
 
 Spawn all explorers in one parent turn with `spawn_subagent` (`background: true`). Join with `get_command_or_subagent_output`. Fields: `HARNESS.md`.
 
-- `subagent_type`: `how-explorer` (bare name; [`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md))
+- `subagent_type`: `pstack:how-explorer` ([`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md))
 - `model`: toml key `how-explorer` per `../setup-pstack/references/resolve-model.md`. Per that file: no toml sends `grok-4.6` (omit if rejected); inherit-parent/auto/missing key omits. Do not send `reasoning_effort`.
 
 Each explorer gets the same base prompt from `references/explorer-prompt.md` plus a specific exploration angle naming its slice. Each explorer should:
@@ -62,7 +62,7 @@ Then proceed to Step 3.
 
 Spawn a single `spawn_subagent` child that explores and explains in one pass:
 
-- `subagent_type`: `how-explainer` (bare name; [`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md))
+- `subagent_type`: `pstack:how-explainer` ([`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md))
 - `model`: toml key `how-explainer` per `../setup-pstack/references/resolve-model.md`. Per that file: no toml sends `grok-4.6` (omit if rejected); inherit-parent/auto/missing key omits. Do not send `reasoning_effort`.
 
 The agent does its own exploration (Glob, Grep, Read) and writes the explanation directly. Read `references/explainer-prompt.md` for the communication style and output format. Same structure, just no explorer findings as input.
@@ -73,7 +73,7 @@ Proceed to Step 4.
 
 Once all explorers return, spawn a single `spawn_subagent` child to synthesize their findings into one coherent explanation:
 
-- `subagent_type`: `how-explainer` (bare name; [`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md))
+- `subagent_type`: `pstack:how-explainer` ([`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md))
 - `model`: toml key `how-explainer` per `../setup-pstack/references/resolve-model.md`. Per that file: no toml sends `grok-4.6` (omit if rejected); inherit-parent/auto/missing key omits. Do not send `reasoning_effort`.
 
 The explainer gets all explorers' findings and writes the human-facing explanation (output format below). Read `references/explainer-prompt.md` for the full prompt template. The explainer reconciles overlapping findings, resolves contradictions, and weaves the slices into a unified picture.
@@ -109,7 +109,7 @@ Run the full explain flow above (Steps 1-4). You must understand the architectur
 After the explanation is complete, spawn critics from toml array `how-critics` per `../setup-pstack/references/resolve-model.md`, all in a single message. If the file or key is absent, spawn **one** critic and send `grok-4.6` (omit if rejected). Do not invent a multi-model panel.
 
 For each critic, parent-spawn `spawn_subagent`:
-- `subagent_type`: `how-critics` (bare name; [`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md))
+- `subagent_type`: `pstack:how-critics` ([`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md))
 - `model`: that array entry when it is a detected slug; omit when the entry is `inherit-parent`/`auto`. File or key absent: `grok-4.6` (omit if rejected). Do not send `reasoning_effort`.
 
 Read `references/critic-prompt.md` for the prompt template. Each critic gets:

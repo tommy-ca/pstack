@@ -23,13 +23,14 @@ import re
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
-SKIP_DIRS = {".git", "automations"}
+SKIP_DIRS = {".git", "automations", ".superpowers"}
 SKIP_FILES = {
     "HARNESS.md",
     "UPSTREAM",
     "adapt-harness.py",
     "TEST-PLAN.md",
     "README.md",
+    "README.zh-CN.md",
     "verify-harness.py",
 }
 TEXT_SUFFIXES = {".md", ".toml", ".json", ".ts", ".sh", ".mjs"}

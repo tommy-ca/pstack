@@ -10,7 +10,7 @@
 # if it differs. Do not offer max unless that live list named it.
 # inherit-parent or auto: omit task.model. Missing key in an existing toml:
 # same as inherit-parent for models.
-# [effort] inherit-parent or auto: do not write ~/.grok/roles/<key>.toml.
+# [effort] inherit-parent or auto: do not write ~/.grok/roles/pstack:<key>.toml.
 # Plugin agents still ship frontmatter effort (the out-of-box default).
 # Skills never send reasoning_effort on task. Spawn subagent_type = the role key.
 

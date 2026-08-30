@@ -11,6 +11,6 @@ Every pstack skill that spawns `task` uses this rule. Read it once, then apply i
 7. Architect without an override file may still spawn **two** children (two sketches) with `grok-4.6` or omitted model. That is two prompts, not a four-model panel.
 8. If `task` rejects a slug, omit `model` or retry only with a slug the error text named that is already in this session's detected set. Do not pick a "closest family equivalent."
 
-Effort is a separate overlay. Never send `reasoning_effort` on `task`. Spawn `subagent_type` equal to the role key and follow [`resolve-effort.md`](resolve-effort.md).
+Effort is a separate overlay. Never send `reasoning_effort` on `task`. Spawn `subagent_type` `pstack:<role-key>` and follow [`resolve-effort.md`](resolve-effort.md).
 
 This plugin is the Grok Build port. `/setup-pstack` writes `~/.grok/pstack-models.toml` as an override. It does not ship other products' panel slugs.

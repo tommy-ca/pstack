@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -124,6 +125,72 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert ".cursor/skills" not in setup
 
 
+def test_grok_spawn_types_are_plugin_qualified() -> None:
+    """grok 1.0.13 registers plugin agents as plugin:name, not the bare stem."""
+    effort = (
+        ROOT / "skills/setup-pstack/references/resolve-effort.md"
+    ).read_text(encoding="utf-8")
+    harness = (ROOT / "HARNESS.md").read_text(encoding="utf-8")
+    how = (ROOT / "skills/how/SKILL.md").read_text(encoding="utf-8")
+    why = (ROOT / "skills/why/SKILL.md").read_text(encoding="utf-8")
+    arena = (ROOT / "skills/arena/SKILL.md").read_text(encoding="utf-8")
+    swarm = (ROOT / "skills/swarm/SKILL.md").read_text(encoding="utf-8")
+    interrogate = (ROOT / "skills/interrogate/SKILL.md").read_text(
+        encoding="utf-8"
+    )
+    architect = (ROOT / "skills/architect/SKILL.md").read_text(encoding="utf-8")
+    no_comments = (ROOT / "skills/no-comments/SKILL.md").read_text(
+        encoding="utf-8"
+    )
+    poteto = (ROOT / "skills/poteto-mode/SKILL.md").read_text(encoding="utf-8")
+    feature = (
+        ROOT / "skills/poteto-mode/playbooks/feature.md"
+    ).read_text(encoding="utf-8")
+    assert "pstack:how-explorer" in how
+    assert "pstack:how-explainer" in how
+    assert "pstack:how-critics" in how
+    assert "pstack:why-investigators" in why
+    assert "pstack:why-synthesizer" in why
+    assert "pstack:arena-runners" in arena
+    assert "pstack:arena-cross-judge-pool" in arena
+    assert "pstack:swarm-workers" in swarm
+    assert "pstack:interrogate-reviewers" in interrogate
+    assert "pstack:architect-runners" in architect
+    assert "pstack:comment-sicko" in no_comments
+    assert "pstack:feature" in feature
+    assert "pstack:independent-verifier" in feature
+    assert "pstack:<key>" in effort or "pstack:<role-key>" in effort
+    assert "Send the **bare** name so it matches" not in effort
+    assert "pstack:<key>" in harness or "pstack:<role" in harness
+    assert "Send the **bare** role key so" not in harness
+    assert "pstack:poteto-agent" in poteto
+
+
+SWITCHER = "[English](README.md) · [简体中文](README.zh-CN.md)"
+CJK = re.compile(r"[\u4e00-\u9fff]")
+
+
+def test_readme_locale_split() -> None:
+    en = (ROOT / "README.md").read_text(encoding="utf-8")
+    zh_path = ROOT / "README.zh-CN.md"
+    assert zh_path.is_file(), zh_path
+    zh = zh_path.read_text(encoding="utf-8")
+    assert SWITCHER in en
+    assert SWITCHER in zh
+    en_body = en.replace(SWITCHER, "")
+    assert CJK.search(en_body) is None, "English README has CJK outside the switcher"
+    assert CJK.search(zh) is not None
+    for text in (en, zh):
+        assert "tommy-ca/pstack --trust" in text
+        assert "grok plugin install pstack --trust" not in text
+        assert "spawn_subagent" in text
+        assert "xAI Official" in text
+        assert "cursor/plugins" in text
+        assert "aa2246740/pstack-grokbuild --trust" not in text
+        assert "pstack:poteto-agent" in text
+        assert "pstack:comment-sicko" in text
+
+
 if __name__ == "__main__":
     test_verify_harness_script_exists()
     test_verify_harness_passes_on_this_tree()
@@ -134,4 +201,6 @@ if __name__ == "__main__":
     test_visual_parity_and_bug_fix_drive_real_surface()
     test_make_bot_ui_is_not_invocable()
     test_guide_teaches_sync_then_adapt()
+    test_grok_spawn_types_are_plugin_qualified()
+    test_readme_locale_split()
     print("PASS tests/test_verify_harness.py")

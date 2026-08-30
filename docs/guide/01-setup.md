@@ -8,7 +8,7 @@ In this page you install the plugin, optionally pick models and reasoning effort
 grok plugin install tommy-ca/pstack --trust
 ```
 
-Enable it if it stays off (`grok plugin enable pstack`, or Space in the Plugins tab). `grok inspect` should list pstack skills. This tree is `tommy-ca/pstack`. xAI Official also lists a plugin named `pstack` that points at `cursor/plugins`. Do not use bare `grok plugin install pstack` as the default. Do not install `aa2246740/pstack-grokbuild` as the default.
+Enable it if it stays off (`grok plugin enable pstack` from a **host shell**, or Space in the Plugins tab). `inspect` "enabled" is trust, not `[plugins].enabled`. After enable, `grok inspect --json` `.agents[].name` is `pstack:how-explorer`, not `how-explorer`. Spawn that qualified name. `grok inspect` should list pstack skills. This tree is `tommy-ca/pstack`. xAI Official also lists a plugin named `pstack` that points at `cursor/plugins`. Do not use bare `grok plugin install pstack` as the default. Do not install `aa2246740/pstack-grokbuild` as the default.
 
 ## Pick your models and effort (optional)
 
@@ -20,7 +20,7 @@ To override, run:
 /setup-pstack
 ```
 
-[`/setup-pstack`](../../skills/setup-pstack/SKILL.md) detects slugs `spawn_subagent` accepts, asks with `ask_user_question`, and writes `~/.grok/pstack-models.toml` plus `~/.grok/roles/<role>.toml`. It never writes a Cursor rules file. Spawn, join, and overnight field names are in [`HARNESS.md`](../../HARNESS.md).
+[`/setup-pstack`](../../skills/setup-pstack/SKILL.md) detects slugs `spawn_subagent` accepts, asks with `ask_user_question`, and writes `~/.grok/pstack-models.toml` plus `~/.grok/roles/pstack:<role>.toml`. It never writes a Cursor rules file. Spawn, join, and overnight field names are in [`HARNESS.md`](../../HARNESS.md).
 
 This repo is the Grok Build port. Official Cursor `/setup-pstack` still writes `~/.cursor/rules`. Do not run that copy here.
 

@@ -56,7 +56,7 @@ Check these against `scripts/effort_ladder.py --check`.
 
 Plugin agent frontmatter and [`defaults.toml`](defaults.toml) `[effort]` use the grok 1.0.5 usable set `low` `medium` `high` `xhigh`, so out of the box (no setup) the split is judgment `xhigh`, instruction `high`, mechanical `medium`.
 
-That snapshot is what this plugin can bake. It is not `Effort::VALID_VALUES`. `/setup-pstack` re-detects from `use one of:` and writes `~/.grok/roles/<key>.toml` for the live split. `max` is offered only if that live list named it.
+That snapshot is what this plugin can bake. It is not `Effort::VALID_VALUES`. `/setup-pstack` re-detects from `use one of:` and writes `~/.grok/roles/pstack:<key>.toml` for the live split. `max` is offered only if that live list named it.
 
 ## Apply
 

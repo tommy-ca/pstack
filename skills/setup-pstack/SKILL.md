@@ -7,7 +7,7 @@ description: Configure which models and reasoning effort pstack uses per role. D
 
 Write `~/.grok/pstack-models.toml` (model slugs and `[effort]`) and pstack-managed files under `~/.grok/roles/`. This is an **override layer**. A fresh install with no setup already uses the shipped default: `grok-4.6` plus per-role `effort` on the plugin agents (ship-time three-tier split in [`references/effort-ladder.md`](references/effort-ladder.md)). See [`references/defaults.toml`](references/defaults.toml), [`references/resolve-model.md`](references/resolve-model.md), and [`references/resolve-effort.md`](references/resolve-effort.md).
 
-Skills read the toml for `task.model`. Grok Build applies effort from `~/.grok/roles/<role>.toml` when that overlay exists (`SubagentRole.reasoning_effort`), else from the plugin agent's frontmatter `effort`. Missing override file uses the shipped default. Missing key or `inherit-parent` or `auto` in an existing toml: omit `task.model`; delete the role overlay so frontmatter remains.
+Skills read the toml for `task.model`. Grok Build applies effort from `~/.grok/roles/pstack:<role>.toml` when that overlay exists (`SubagentRole.reasoning_effort`), else from the plugin agent's frontmatter `effort`. Missing override file uses the shipped default. Missing key or `inherit-parent` or `auto` in an existing toml: omit `task.model`; delete the role overlay so frontmatter remains.
 
 The models file is not a grok-build `[subagents.models]` table. That table maps agent types (`explore`, `plan`), not pstack roles. Never send `reasoning_effort` on `task`.
 
@@ -96,9 +96,9 @@ Every `[effort]` value must be `inherit-parent`, `auto`, or a token from this se
 
 Overwrite `~/.grok/pstack-models.toml` so re-runs stay idempotent.
 
-Pstack-managed role files live at `~/.grok/roles/<role-key>.toml` for the keys in the example. Create `~/.grok/roles/` if needed.
+Pstack-managed role files live at `~/.grok/roles/pstack:<role-key>.toml` so they match grok 1.0.13 spawn types (`pstack:feature`). Do not write a bare `~/.grok/roles/<role-key>.toml` stem. Create `~/.grok/roles/` if needed.
 
-- If `[effort].<key>` is `inherit-parent` or `auto` or missing, **delete** that pstack-managed role file if it exists so a stale overlay cannot pin a different level than the plugin agent.
+- If `[effort].<key>` is `inherit-parent` or `auto` or missing, **delete** those pstack-managed role files if they exist so a stale overlay cannot pin a different level than the plugin agent.
 - If `[effort].<key>` is a detected AgentDefinition level, write only:
 
 ```toml
@@ -118,9 +118,9 @@ EXAMPLE (ship-time snapshot). Same `[effort]` bytes as `references/defaults.toml
 # Missing key in an existing file: same as inherit-parent for models.
 # Array keys: one task spawn per entry. Without a toml, skills send grok-4.6 (omit if rejected).
 #
-# [effort]: inherit-parent or auto or missing key: do not write ~/.grok/roles/<key>.toml.
-# A detected AgentDefinition level: write ~/.grok/roles/<key>.toml with that reasoning_effort.
-# Skills never send reasoning_effort on task. Spawn subagent_type = the role key.
+# [effort]: inherit-parent or auto or missing key: do not write ~/.grok/roles/pstack:<key>.toml.
+# A detected AgentDefinition level: write ~/.grok/roles/pstack:<key>.toml with that reasoning_effort.
+# Skills never send reasoning_effort on task. Spawn subagent_type = pstack:<role-key>.
 # Plugin agents also ship frontmatter effort so a fresh install needs no setup.
 # [effort] below is the ship-time three-tier split. Live detection may replace it.
 
