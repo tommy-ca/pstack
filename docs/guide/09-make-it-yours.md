@@ -70,10 +70,11 @@ Playbooks and principles come from [official Cursor `pstack/`](https://github.co
 
 When Cursor moves:
 
-1. `git log` / `git diff` `cursor/main` `-- pstack` since the recorded tree.
-2. Copy intent (`skills/`, `agents/`, `docs/`). Skip `make-bot-ui`.
-3. Run `python3 scripts/adapt-harness.py`.
-4. Hand-map depth-1 spawn and persist-then-wake overnight. Do not leave Cursor `Task`, same-run `/loop`, `~/.cursor/rules/*.mdc`, or `control-cli` as live Grok calls.
-5. Run `python3 scripts/verify-harness.py` and `python3 tests/test_verify_harness.py`. Update the pin.
+```bash
+python3 scripts/sync-from-upstream.py --log
+python3 scripts/sync-from-upstream.py --recipe
+```
+
+Then copy intent (`skills/`, `agents/`). Skip `make-bot-ui`. Do not overwrite `HARNESS.md`, `plugin.json`, README files, `tests/`, or `scripts/`. Run `python3 scripts/adapt-harness.py`. Hand-map depth-1 spawn (`pstack:<role>`) and persist-then-wake overnight (`/loop` → `scheduler_create`). Do not leave Cursor `Task`, same-run `/loop`, `~/.cursor/rules/*.mdc`, or `control-cli` as live Grok calls. Run `python3 scripts/verify-harness.py` and `python3 tests/test_verify_harness.py`. Update the `tree` line in [`UPSTREAM`](../../UPSTREAM).
 
 Next: [Recipes and pitfalls](./10-recipes-and-pitfalls.md).
