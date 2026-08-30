@@ -56,7 +56,7 @@ Live user/bundled means the name is in `grok inspect --json` `.skills[].name`. B
 | Debug a failure | `playbooks/bug-fix.md` | `/systematic-debugging` | none |
 | Disk prune | `playbooks/worktree-cleanup.md` | none | none |
 | Worktree isolation | none | `/using-git-worktrees` | `isolation: "worktree"` |
-| Design a playbook | `playbooks/figure-it-out.md` | none | none |
+| Design a playbook | `/figure-it-out` (`skills/figure-it-out/SKILL.md`) | none | none |
 | Spec then plan | none | `/brainstorming`, `/writing-plans` | `/plan`, builtin `plan` |
 | Execute a written plan | `playbooks/feature.md` spawn | `/executing-plans`, `/subagent-driven-development` | `/implement`, `/execute-plan` |
 | Overnight heartbeat | none | none | `/loop` → `scheduler_create` |

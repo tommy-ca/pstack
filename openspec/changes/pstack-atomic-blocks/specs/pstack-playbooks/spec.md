@@ -11,4 +11,5 @@ The plugin MUST ship the official playbook set under `skills/poteto-mode/playboo
 - **GIVEN** official pstack at UPSTREAM `tree` pin
 - **WHEN** playbook filenames are listed
 - **THEN** this port has the same 23 markdown files
-- **AND** it does not ship `make-bot-ui`
+
+`make-bot-ui` is a **skill**, not a playbook. This port MUST NOT ship `skills/make-bot-ui`. No-match / large work routes to `/figure-it-out` (`skills/figure-it-out/SKILL.md`), not a playbook file.
