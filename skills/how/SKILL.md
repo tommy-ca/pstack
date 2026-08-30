@@ -44,7 +44,7 @@ The right decomposition depends on the question. Use your judgment. Narrow quest
 
 Spawn all explorers in one parent turn with `spawn_subagent` (`background: true`). Join with `get_command_or_subagent_output`. Fields: `HARNESS.md`.
 
-- `subagent_type`: `pstack:how-explorer` ([`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md))
+- `subagent_type`: builtin `explore` when no pstack role overlay must apply (HARNESS Native first); else `pstack:how-explorer` ([`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md))
 - `model`: toml key `how-explorer` per `../setup-pstack/references/resolve-model.md`. Per that file: no toml sends `grok-4.6` (omit if rejected); inherit-parent/auto/missing key omits. Do not send `reasoning_effort`.
 
 Each explorer gets the same base prompt from `references/explorer-prompt.md` plus a specific exploration angle naming its slice. Each explorer should:
