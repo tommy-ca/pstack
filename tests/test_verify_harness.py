@@ -135,6 +135,27 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert "verify-harness.py" in recipe.stdout
     assert "make-bot-ui" in recipe.stdout
     assert "pstack:<role>" in recipe.stdout
+    default = subprocess.run(
+        [sys.executable, str(ROOT / "scripts/sync-from-upstream.py")],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert default.returncode == 0, default.stderr
+    assert default.stdout == recipe.stdout
+    logged = subprocess.run(
+        [sys.executable, str(ROOT / "scripts/sync-from-upstream.py"), "--log"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert logged.returncode == 0, logged.stderr
+    assert f"pin {sha}" in logged.stdout
+    assert "up to date" in logged.stdout or re.search(
+        r"^[0-9a-f]{7} ", logged.stdout, re.M
+    )
     assert ".cursor/skills" not in guide
     assert "Cursor's built-in `create-skill`" not in guide
     readme = (ROOT / "README.md").read_text(encoding="utf-8")

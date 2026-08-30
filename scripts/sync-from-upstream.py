@@ -76,7 +76,13 @@ def ensure_remote() -> Path:
 def show_log() -> int:
     sha = pin()
     repo = ensure_remote()
-    proc = subprocess.run(
+    tip = subprocess.run(
+        ["git", "-C", str(repo), "rev-parse", "--short", "origin/main"],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    log = subprocess.run(
         [
             "git",
             "-C",
@@ -88,8 +94,21 @@ def show_log() -> int:
             "pstack",
         ],
         check=False,
+        capture_output=True,
+        text=True,
     )
-    return proc.returncode
+    if log.returncode != 0:
+        sys.stderr.write(log.stderr)
+        return log.returncode
+    lines = [ln for ln in log.stdout.splitlines() if ln.strip()]
+    print(f"pin {sha}")
+    print(f"tip origin/main {tip}")
+    print(f"pstack commits after pin: {len(lines)}")
+    if not lines:
+        print("up to date (no pstack commits after pin).")
+        return 0
+    print(log.stdout, end="" if log.stdout.endswith("\n") else "\n")
+    return 0
 
 
 def main() -> None:
