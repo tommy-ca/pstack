@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Three-tier pstack effort split from the live CLI usable set.
 
-Ship-time snapshot is grok 1.0.5 CLI rejection (verbatim):
+Ship-time snapshot is grok 1.0.13 CLI rejection (verbatim, same as 1.0.5):
 
   unknown effort level 'not-a-real-effort'; use one of: xhigh, high, medium, low
 
@@ -18,7 +18,7 @@ import argparse
 import re
 import sys
 
-# Weak → strong after orienting the grok 1.0.5 `use one of:` list.
+# Weak → strong after orienting the grok 1.0.13 `use one of:` list.
 # Not Effort::VALID_VALUES. `max` is omitted until a live CLI names it.
 SHIP_TIME_ENUM: tuple[str, ...] = ("low", "medium", "high", "xhigh")
 

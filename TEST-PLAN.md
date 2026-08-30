@@ -409,7 +409,7 @@ python3 "$LADDER" --enum-file "$EVIDENCE/gate4-detected-efforts.txt" \
 
 Gate 1 writes `PLUGIN_PATH.txt`. If this block runs before that file exists, use the checkout `scripts/effort_ladder.py`.
 
-On grok 1.0.5 the live line is `use one of: xhigh, high, medium, low`. After orient, expected tiers are judgment `xhigh`, instruction `high`, mechanical `medium`.
+On grok 1.0.13 the live line is `use one of: xhigh, high, medium, low`. After orient, expected tiers are judgment `xhigh`, instruction `high`, mechanical `medium`.
 
 **PASS.** `gate4-detected-efforts.txt` is non-empty, has no `none`/`minimal`/`deep`, and does not contain a token this session invented (`ultra` / `max` only if `use one of:` named them). `gate4-expected-tiers.txt` has `judgment:`, `instruction:`, `mechanical:` matching [`effort-ladder.md`](./skills/setup-pstack/references/effort-ladder.md).
 
@@ -565,7 +565,7 @@ fi
 
 Inspect `rawInput.model` on the feature spawn (null / missing vs a string).
 
-**PASS.** At least one `task` spawn ran, `subagent_type` is `pstack:feature`, `model` is `grok-4.6` or omitted (omit only if `task` rejected `grok-4.6`), `rawInput` has no `reasoning_effort` key, and the installed plugin's `agents/feature.md` frontmatter contains `effort: medium` (ship-time mechanical tier from `effort_ladder.py` with the grok 1.0.5 usable set).
+**PASS.** At least one `task` spawn ran, `subagent_type` is `pstack:feature`, `model` is `grok-4.6` or omitted (omit only if `task` rejected `grok-4.6`), `rawInput` has no `reasoning_effort` key, and the installed plugin's `agents/feature.md` frontmatter contains `effort: medium` (ship-time mechanical tier from `effort_ladder.py` with the grok 1.0.13 usable set).
 
 **FAIL.** Live `task.model` is `grok-4.6-fast-xhigh`, `gpt-5.6-sol-max`, `claude-fable-5-thinking-max`, `claude-opus-5-thinking-xhigh`, or any other slug not in the detected set. Or the spawn sent `reasoning_effort` on `task`. Or installed `agents/feature.md` lacks `effort: medium`. Or frontmatter is `max`.
 
