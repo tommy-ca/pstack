@@ -26,7 +26,21 @@ grok plugin install /path/to/pstack --trust
 grok plugin enable pstack
 ```
 
-You can also enable it with Space in the Plugins tab. `inspect` "enabled" is trust. Skills and `pstack:<role>` agents load only when `pstack` is in `[plugins].enabled`. If enable hits EROFS on `config.toml`, run it from a host shell (`grok --sandbox off plugin enable pstack`). Tool mapping is in [HARNESS.md](./HARNESS.md). Spawn `pstack:how-explorer`, not `how-explorer`.
+## First session
+
+1. Enable from a **host shell** if `grok plugin enable pstack` hits EROFS on `config.toml`:
+
+   `grok --sandbox off plugin enable pstack`
+
+   Or press Space in the Plugins tab. `inspect` "enabled" is trust. Skills and `pstack:<role>` agents load only when `pstack` is in `[plugins].enabled`.
+
+2. Reload: Plugins tab `r`, or start a **new session**. This session will not grow `pstack:how-explorer` after enable.
+
+3. Spawn `pstack:how-explorer`, not `how-explorer`. Type `/poteto-mode …`. It does not auto-enter. `/setup-pstack` is optional.
+
+4. Do not run `grok plugin marketplace add` from a sandboxed agent. That also rewrites `config.toml` and hits EROFS. Owner/repo install still works in-session.
+
+Tool mapping is in [HARNESS.md](./HARNESS.md).
 
 ## Get started
 
