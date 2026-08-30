@@ -263,7 +263,7 @@ A few things `poteto-mode` referenced in Cursor pstack and does not bundle here:
 - `/deslop`, `control-cli`, and `control-ui` lived in `cursor-team-kit`. Use `/unslop`, `/no-comments`, and drive the real app yourself.
 - Independent verify is `spawn_subagent` with `subagent_type` `pstack:independent-verifier`. Send a different `model` when the toml names a detected slug; otherwise omit `model`. Not a Cursor Cloud Agent. See [HARNESS.md](./HARNESS.md).
 - Graphite `gt` is optional. If it is missing, use `gh` and git.
-- Benny remains under `automations/benny/` as source. Grok Build automations are plugin hooks/workflows, not this pack.
+- Benny remains under `automations/benny/` as Cursor source. Opt-in grok copies are [`automations/benny/grok/`](./automations/benny/grok/). They are not pstack plugin hooks.
 
 ## Why are there no planning skills?
 
@@ -279,7 +279,7 @@ The Grok Build default is `grok-4.6` plus per-role effort. Type [`/setup-pstack`
 
 ## Automations
 
-This repo also ships a dormant [benny automation pack](./automations/benny/). It is Cursor automation source, not a Grok Build hook pack. Its files are not registered as slash skills. The Grok equivalent is plugin `hooks/` plus workflows. Not wired in this port.
+This repo also ships a dormant [benny automation pack](./automations/benny/). It is Cursor automation source. Its files are not registered as slash skills. The grok remap is [`automations/benny/grok/`](./automations/benny/grok/). Copy those hooks and workflows into a target repo. Do not add them to this plugin's `plugin.json`.
 
 Fork it. Improve it. PRs are welcome.
 
