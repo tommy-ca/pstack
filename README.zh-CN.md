@@ -26,7 +26,21 @@ grok plugin install /path/to/pstack --trust
 grok plugin enable pstack
 ```
 
-Plugins 页里按空格也能启用。`inspect` 的 enabled 是 trust。技能和 `pstack:<role>` agent 只有写进 `[plugins].enabled` 才会加载。enable 若对 `config.toml` 报 EROFS，到宿主 shell 跑 `grok --sandbox off plugin enable pstack`。工具对照见 [HARNESS.md](./HARNESS.md)。Spawn 用 `pstack:how-explorer`，不要用 `how-explorer`。
+## 第一次会话
+
+1. `grok plugin enable pstack` 若对 `config.toml` 报 EROFS，到**宿主 shell** 跑：
+
+   `grok --sandbox off plugin enable pstack`
+
+   或在 Plugins 页按空格。`inspect` 的 enabled 是 trust。技能和 `pstack:<role>` agent 只有写进 `[plugins].enabled` 才会加载。
+
+2. 重载：Plugins 页按 `r`，或开**新会话**。当前会话在 enable 之后不会长出 `pstack:how-explorer`。
+
+3. Spawn 用 `pstack:how-explorer`，不要用 `how-explorer`。输入 `/poteto-mode …`。它不会自动进。`/setup-pstack` 可选。
+
+4. 不要在沙箱 agent 里跑 `grok plugin marketplace add`。那也会写 `config.toml`，同样 EROFS。会话里 owner/repo 安装仍然可用。
+
+工具对照见 [HARNESS.md](./HARNESS.md)。
 
 ## 开始用
 

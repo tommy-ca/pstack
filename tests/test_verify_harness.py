@@ -191,6 +191,22 @@ def test_readme_locale_split() -> None:
         assert "pstack:comment-sicko" in text
 
 
+def test_first_session_names_sandbox_reload_and_slash() -> None:
+    """Operator first page: enable EROFS, reload, slash-only poteto-mode."""
+    en = (ROOT / "README.md").read_text(encoding="utf-8")
+    zh = (ROOT / "README.zh-CN.md").read_text(encoding="utf-8")
+    setup = (ROOT / "docs/guide/01-setup.md").read_text(encoding="utf-8")
+    assert not (ROOT / "commands").exists()
+    for text in (en, zh, setup):
+        assert "## First session" in text or "## 第一次会话" in text
+        assert "grok --sandbox off plugin enable pstack" in text
+        assert "pstack:how-explorer" in text
+        assert "/poteto-mode" in text
+        assert "[plugins].enabled" in text
+        assert "new session" in text or "新会话" in text
+        assert "grok plugin install pstack --trust" not in text
+
+
 if __name__ == "__main__":
     test_verify_harness_script_exists()
     test_verify_harness_passes_on_this_tree()
@@ -203,4 +219,5 @@ if __name__ == "__main__":
     test_guide_teaches_sync_then_adapt()
     test_grok_spawn_types_are_plugin_qualified()
     test_readme_locale_split()
+    test_first_session_names_sandbox_reload_and_slash()
     print("PASS tests/test_verify_harness.py")

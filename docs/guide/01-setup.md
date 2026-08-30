@@ -6,9 +6,17 @@ In this page you install the plugin, optionally pick models and reasoning effort
 
 ```bash
 grok plugin install tommy-ca/pstack --trust
+grok plugin enable pstack
 ```
 
-Enable it if it stays off (`grok plugin enable pstack` from a **host shell**, or Space in the Plugins tab). `inspect` "enabled" is trust, not `[plugins].enabled`. After enable, `grok inspect --json` `.agents[].name` is `pstack:how-explorer`, not `how-explorer`. Spawn that qualified name. `grok inspect` should list pstack skills. This tree is `tommy-ca/pstack`. xAI Official also lists a plugin named `pstack` that points at `cursor/plugins`. Do not use bare `grok plugin install pstack` as the default. Do not install `aa2246740/pstack-grokbuild` as the default.
+## First session
+
+1. If enable hits EROFS on `config.toml`, run it from a **host shell**: `grok --sandbox off plugin enable pstack`. Or press Space in the Plugins tab. `inspect` "enabled" is trust, not `[plugins].enabled`.
+2. Reload: Plugins tab `r`, or start a **new session**. Spawn types are a session-start snapshot.
+3. After enable, `grok inspect --json` `.agents[].name` is `pstack:how-explorer`, not `how-explorer`. Type `/poteto-mode`. It does not auto-enter. `/setup-pstack` is optional.
+4. Do not run `grok plugin marketplace add` from a sandboxed agent (same EROFS). Owner/repo install still works in-session.
+
+This tree is `tommy-ca/pstack`. xAI Official also lists a plugin named `pstack` that points at `cursor/plugins`. Do not use bare `grok plugin install pstack` as the default. Do not install `aa2246740/pstack-grokbuild` as the default.
 
 ## Pick your models and effort (optional)
 
