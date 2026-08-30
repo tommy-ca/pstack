@@ -46,7 +46,7 @@ Grok has no Slack channel auto-start. The operator passes `args.thread_url` into
 | Setup | point Cursor at `FOR_AGENTS.md`, `/automate` | copy grok files. Enable pstack with `grok plugin enable pstack` |
 | User config | `.cursor/benny/` | `.grok/benny/` |
 | Slack auto-start | Cursor automations | host gap. Pass `args.thread_url` |
-| Triage / repro intent | `skills/*/SKILL.md` | same files. Workflows tell the agent to read them |
+| Triage / repro intent | `skills/*/SKILL.md` **upstream reference** | live grok `grok/triage.md` and `grok/repro.md` |
 | Fail-closed merge | prompt only | copied `PreToolUse` hook denies `gh pr merge` and `git push --force` |
 | control-cli | Cursor team kit | skip. Drive the real app. Fail closed if the adapter is missing |
 | Plugin hooks | n/a | **not** in pstack `plugin.json`. Opt-in target copy only |

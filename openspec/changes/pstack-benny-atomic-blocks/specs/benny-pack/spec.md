@@ -4,7 +4,7 @@
 
 Feature: benny-pack
 
-The pack MUST live under `automations/benny/`. Its `SKILL.md` files MUST NOT appear in `plugin.json` `skills` and MUST NOT exist under plugin `skills/`. Setup MUST copy the pack without registering it. User-owned configuration, feature maps, routing maps, and secrets MUST live outside the pack so a refresh cannot overwrite them.
+The pack MUST live under `automations/benny/`. Cursor `SKILL.md` files there are the **upstream reference** (intent and atomic blocks). They MUST NOT appear in `plugin.json` `skills` and MUST NOT exist under plugin `skills/`. They MUST NOT be the live grok coordinator. User-owned configuration, feature maps, routing maps, and secrets MUST live outside the pack so a refresh cannot overwrite them.
 
 #### Scenario: plugin manifest ignores the pack
 

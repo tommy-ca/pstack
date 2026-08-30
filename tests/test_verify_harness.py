@@ -162,6 +162,24 @@ def test_benny_is_source_and_has_grok_remap() -> None:
         / "openspec/changes/pstack-benny-atomic-blocks/specs/benny-grok-remap/spec.md"
     ).read_text(encoding="utf-8")
     assert "prompt-enforced" in remap
+    assert "upstream reference" in remap
+    triage_wf = (grok / "workflows/benny-triage.rhai").read_text(encoding="utf-8")
+    repro_wf = (grok / "workflows/benny-repro.rhai").read_text(encoding="utf-8")
+    live_triage = (grok / "triage.md").read_text(encoding="utf-8")
+    live_repro = (grok / "repro.md").read_text(encoding="utf-8")
+    live = "\n".join([readme, triage_wf, repro_wf, live_triage, live_repro])
+    assert "/automate" not in live
+    assert "trigger.thread_ts" not in live
+    assert "trigger.ts" not in live
+    assert ".cursor/automations" not in live
+    assert "skills/triage-issue-reports/SKILL.md" not in triage_wf
+    assert "skills/reproduce-and-fix-issues/SKILL.md" not in repro_wf
+    assert "spawn_subagent" in live_triage
+    assert "pstack:" in live_triage
+    assert "scheduler_create" in live
+    assert "args.thread_url" in triage_wf
+    assert "spawn_subagent" in live_repro
+    assert "pstack:" in live_repro
 
 
 def test_openspec_intent_driven_schema_resolves() -> None:

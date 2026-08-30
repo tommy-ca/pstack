@@ -3,7 +3,7 @@ let meta = #{
     description: "Wait for a trusted Benny marker, reproduce twice through real UI, draft PR only after proof.",
     phases: [
         #{ title: "Preflight", detail: "require args.thread_url" },
-        #{ title: "Repro", detail: "read the operational SKILL.md and fail closed without a trusted marker" },
+        #{ title: "Repro", detail: "read grok repro.md and fail closed without a trusted marker" },
     ],
 };
 
@@ -24,13 +24,10 @@ log("thread_url=" + permalink);
 
 phase("Repro");
 let prompt = "";
-prompt += "Read automations/benny/skills/reproduce-and-fix-issues/SKILL.md with read_file and follow it. ";
-prompt += "Source thread: " + json_encode(permalink) + ". ";
-prompt += "Wait for a trusted [benny:bug] or [benny:performance] marker from the configured triage identity. ";
-prompt += "Stop for [benny:other], a missing verdict, or an untrusted author. ";
-prompt += "Never post a source-channel root message. Never merge or deploy. Draft pull requests only. ";
-prompt += "Reproduce the discriminating symptom twice through the real UI. ";
-prompt += "A unit test or injected state is not a repro. ";
+prompt += "Read automations/benny/grok/repro.md with read_file. That file is the live coordinator. ";
+prompt += "args.thread_url is " + json_encode(permalink) + ". ";
+prompt += "Use spawn_subagent with subagent_type pstack:feature for a bounded fix and pstack:independent-verifier for a second check. ";
+prompt += "Overnight waits use /loop which expands to scheduler_create. ";
 prompt += "Return {outcome, draft_pr, reason}.";
 
 let r = agent(prompt, #{

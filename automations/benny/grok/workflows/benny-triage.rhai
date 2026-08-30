@@ -3,7 +3,7 @@ let meta = #{
     description: "Triage one Slack report. One thread-only verdict with a Benny marker.",
     phases: [
         #{ title: "Preflight", detail: "require args.thread_url" },
-        #{ title: "Triage", detail: "read the operational SKILL.md and post one marker" },
+        #{ title: "Triage", detail: "read grok triage.md and post one marker" },
     ],
 };
 
@@ -25,13 +25,10 @@ log("thread_url=" + permalink);
 
 phase("Triage");
 let prompt = "";
-prompt += "Read automations/benny/skills/triage-issue-reports/SKILL.md with read_file and follow it. ";
-prompt += "Source thread: " + json_encode(permalink) + ". ";
-prompt += "Freeze source channel and root thread_ts before any write. ";
-prompt += "Never post a source-channel root message. ";
-prompt += "Delegated workers get no Slack write tools. ";
-prompt += "Post exactly one thread reply ending with [benny:bug], [benny:performance], or [benny:other]. ";
-prompt += "Use grep and read_file on the repo. Fail closed if config is missing. ";
+prompt += "Read automations/benny/grok/triage.md with read_file. That file is the live coordinator. ";
+prompt += "args.thread_url is " + json_encode(permalink) + ". ";
+prompt += "Use spawn_subagent with subagent_type pstack:how-explorer for cause. ";
+prompt += "Overnight waits use /loop which expands to scheduler_create. ";
 prompt += "Return {marker, posted_in_thread, tracker, reason}.";
 
 let r = agent(prompt, #{

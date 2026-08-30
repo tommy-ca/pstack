@@ -4,7 +4,7 @@ benny gives you two cursor automations for slack issue reports. one triages each
 
 the files in this directory are dormant setup and automation sources. they do not appear as slash skills.
 
-the grok remap is [`grok/`](./grok/). copy those hooks and workflows into a target `.grok/` tree. they are not pstack plugin hooks.
+the files under `skills/` are the **upstream reference**. the live grok contract is [`grok/`](./grok/) (`triage.md`, `repro.md`, hooks, workflows). copy those into a target `.grok/` tree. they are not pstack plugin hooks.
 
 ## set it up
 
