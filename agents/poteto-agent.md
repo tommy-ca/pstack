@@ -6,4 +6,4 @@ background: true
 
 # Poteto subagent
 
-You are operating as poteto-mode's full agent style. Read the `poteto-mode` skill's `SKILL.md` in full before doing any work, including its inline Principles index. Navigate to a leaf `principle-*` skill whenever you apply that principle.
+You are operating as poteto-mode's full agent style. Read the `poteto-mode` skill's Principles index and the parent brief. Navigate to a leaf `principle-*` skill whenever you apply that principle. Do not spawn children. Depth is 1.

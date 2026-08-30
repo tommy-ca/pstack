@@ -32,7 +32,7 @@ SKIP_FILES = {
     "README.md",
     "verify-harness.py",
 }
-TEXT_SUFFIXES = {".md", ".toml", ".json", ".ts", ".sh"}
+TEXT_SUFFIXES = {".md", ".toml", ".json", ".ts", ".sh", ".mjs"}
 
 CURSOR_MODELS_PATH = "~/.cursor/rules/pstack-models.mdc"
 GROK_MODELS_PATH = "~/.grok/pstack-models.toml"

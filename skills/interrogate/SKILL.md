@@ -33,7 +33,7 @@ Write one clear paragraph. Reviewers challenge whether the work achieves the int
 
 ## Step 3, Spawn Reviewers
 
-Launch all reviewers in a single message using the `task` tool. Use toml array `interrogate-reviewers` per `../setup-pstack/references/resolve-model.md`, one reviewer per entry. If the file or key is absent, spawn **one** reviewer and send `grok-4.6` (omit if rejected).
+Launch all reviewers in a single message using `spawn_subagent`. Use toml array `interrogate-reviewers` per `../setup-pstack/references/resolve-model.md`, one reviewer per entry. If the file or key is absent, spawn **one** reviewer and send `grok-4.6` (omit if rejected).
 
 For each reviewer:
 - `subagent_type`: `interrogate-reviewers` (bare name; [`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md))

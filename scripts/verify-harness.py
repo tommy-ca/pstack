@@ -156,11 +156,14 @@ def main() -> None:
     harness = (ROOT / "HARNESS.md").read_text(encoding="utf-8")
     for token in (
         "TASK_TOOL_NAME",
+        "spawn_subagent",
         "run_in_background",
+        "background",
         "MAX_SUBAGENT_DEPTH",
         "ask_user_question",
         "scheduler_create",
         "get_task_output",
+        "get_command_or_subagent_output",
         "isolation",
         "independent-verifier",
         "select_role",
@@ -175,9 +178,10 @@ def main() -> None:
 
     hits: list[str] = []
     for path in ROOT.rglob("*"):
-        if not path.is_file() or path.suffix not in {".md", ".toml", ".json"}:
+        if not path.is_file() or path.suffix not in {".md", ".toml", ".json", ".mjs"}:
             continue
-        if SKIP_DIRS & set(path.parts) or path.name in SKIP_FILES:
+        rel = path.relative_to(ROOT)
+        if rel.parts[0] in SKIP_DIRS or path.name in SKIP_FILES:
             continue
         text = path.read_text(encoding="utf-8")
         for pat in FORBIDDEN:
@@ -192,7 +196,7 @@ def main() -> None:
     slug_hits: list[str] = []
     skills_root = ROOT / "skills"
     for path in skills_root.rglob("*"):
-        if not path.is_file() or path.suffix != ".md":
+        if not path.is_file() or path.suffix not in {".md", ".mjs"}:
             continue
         text = path.read_text(encoding="utf-8")
         for slug in CURSOR_MODEL_SLUGS:

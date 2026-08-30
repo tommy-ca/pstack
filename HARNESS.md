@@ -2,7 +2,7 @@
 
 pstack's 22 playbooks and 21 principles stay. Only harness call sites change.
 
-Sources: official pstack (`cursor/plugins` `pstack/`) and official grok-build (`xai-org/grok-build`). Tool names and fields below are from grok-build source, not from Cursor's `Task` schema and not from third-party ports.
+Sources: official pstack (`cursor/plugins` `pstack/`), this TUI (`~/.grok/docs/user-guide/`), and grok-build crates. **Playbooks copy the TUI column.** Rust ids are aliases, not a second live schema.
 
 ## Verdict
 
@@ -16,10 +16,10 @@ Install this repo as a Grok Build plugin. Do not keep `.cursor-plugin`, `~/.curs
 |---|---|---|
 | Slash skill / playbook router | Plugin `skills/` `SKILL.md`. Invoked as `/name`. Frontmatter: `name`, `description`, `disable-model-invocation`, `user-invocable`. | `crates/codegen/xai-grok-pager/docs/user-guide/08-skills.md` |
 | Plugin install | `plugin.json` at repo root (also `.grok-plugin/plugin.json`). `grok plugin install <owner>/<repo> --trust`. Components: `skills/`, `agents/`, `commands/`, `hooks/hooks.json`, `.mcp.json`. | `crates/codegen/xai-grok-agent/src/plugins/manifest.rs`; `09-plugins.md` |
-| Spawn a child | Model-facing tool **`task`**. Wire aliases `Task` and `spawn_subagent` resolve to the same tool. Canonical id is `task`. | `xai-grok-tools/.../task/mod.rs` `TASK_TOOL_NAME`; `xai-tool-types/src/task.rs` `TaskToolInput` |
-| Background child | `task.run_in_background` (`bool`, **default `true`**). Returns `subagent_id`. Retrieve with `get_task_output`. | `TaskToolInput` |
-| Wait for child | `get_task_output` with `task_ids: [id, ...]` and `timeout_ms` > 0 to block, omit/`0` to poll. Cap 20 ids. | `TaskOutputToolInput` |
-| Cancel child | `kill_task` with `task_id`. | `kill_task` in `xai-tool-types/src/task.rs` |
+| Spawn a child | TUI tool **`spawn_subagent`**. Rust/wire alias `task` / `Task`. Playbooks send `spawn_subagent`. | `16-subagents.md`; rust `TASK_TOOL_NAME` |
+| Background child | TUI field **`background`** (default **false**). Rust alias `run_in_background` (crate default true). Returns `subagent_id`. | `16-subagents.md`; `TaskToolInput` |
+| Wait for child | TUI **`get_command_or_subagent_output`** with `task_ids` and `timeout_ms` > 0 to block, omit/`0` to poll. Rust alias `get_task_output`. | `16-subagents.md` |
+| Cancel child | `kill_command_or_subagent` / rust `kill_task` with `task_id`. | `16-subagents.md`; `task.rs` |
 | Child role | `task.subagent_type`. Built-ins: `general-purpose` (default), `explore`, `plan`. Plugin agents: pstack role keys (`feature`, `how-explainer`, …), plus `poteto-agent`, `comment-sicko`, `independent-verifier`. Send the **bare** role key so `~/.grok/roles/<key>.toml` matches. Qualified `pstack:<key>` is fallback if the bare name is unknown; it does not match the role file stem. | `TaskToolInput`; `16-subagents.md`; `xai-grok-agent/src/discovery.rs`; `select_role` |
 | Per-spawn model | `task.model` (optional slug). Omit to inherit parent. Do not pass with `resume_from`. Invalid slugs fail via `TaskModelValidator`. | `TaskToolInput.model` |
 | Per-spawn reasoning effort | **Not on the model-facing `task` schema.** `TaskToolInput` has no `reasoning_effort` field. Spawn from `task` sets `SubagentRuntimeOverrides.reasoning_effort` to `None`. Out of the box, plugin role agents set `AgentDefinition.effort` in frontmatter from the ship-time three-tier split in [`skills/setup-pstack/references/effort-ladder.md`](./skills/setup-pstack/references/effort-ladder.md) (`xhigh` / `high` / `medium` from the grok 1.0.5 CLI `use one of: xhigh, high, medium, low` list). Do not use `Effort::VALID_VALUES` (reserved `max` is not usable on this CLI). `/setup-pstack` re-detects from live `use one of:` and may overlay `SubagentRole.reasoning_effort` in `~/.grok/roles/<pstack-role>.toml`, which wins. `select_role(subagent_type)` then `apply_definition_runtime_defaults` in `resolve_runtime_config`. Skills spawn `subagent_type` equal to that role key (bare name). Spawn skills cannot send `task.reasoning_effort` (no field). Do not offer `max` unless the live CLI listed it. Do not invent `ultra`. | `xai-tool-types/src/task.rs` `TaskToolInput`; `task/mod.rs` spawn (`reasoning_effort: None`); `xai-grok-subagent-resolution/src/definition.rs` `select_role` / `resolve_runtime_config` / `apply_definition_runtime_defaults`; live CLI `--reasoning-effort` `use one of:`; `SubagentRole.reasoning_effort`; `handle_request.rs` sampling apply; `~/.grok/roles` in `SubagentsConfig::resolve_base_with_sources` |
@@ -48,7 +48,7 @@ Grok Build's user guide `16-subagents.md` still names `spawn_subagent`, a `backg
 - Join with `get_task_output` (`task_ids`, optional `timeout_ms`). `wait_tasks` exists as compatibility; prefer `get_task_output`.
 - `scheduler_create.recurring` is `#[schemars(skip)]`. Sending `recurring: false` is rejected; one-shot delay is background `sleep && cmd`.
 
-Copy fields from `TaskToolInput` / `SchedulerCreateInput`, not from that user-guide table.
+Playbooks on **this TUI** copy `16-subagents.md`: `spawn_subagent`, `background`, `get_command_or_subagent_output`. The rust field names below stay as aliases.
 
 ## `task` fields the model may send
 
@@ -70,18 +70,18 @@ Do not send `readonly`, `environment`, `capability_mode`, or `reasoning_effort` 
 Parent session only:
 
 ```text
-task
+spawn_subagent
   prompt: <full brief, file pointers not inlined dumps>
   description: <3-5 words>
   subagent_type: <pstack role key, e.g. feature | how-explainer | independent-verifier> | poteto-agent | comment-sicko
-  run_in_background: true
+  background: true   # when the parent must keep working; this TUI defaults false
   model: <slug from ~/.grok/pstack-models.toml when that key is a detected slug; grok-4.6 when the toml is absent; omit if inherit-parent/auto or if grok-4.6 is rejected>
   isolation: none | worktree
 ```
 
-Do not send `reasoning_effort` on that call. Effort is the matching `~/.grok/roles/<subagent_type>.toml` when setup wrote a level, else the plugin agent's frontmatter `effort`.
+Do not send `reasoning_effort` or `capability_mode` on that call. Effort is the matching `~/.grok/roles/<subagent_type>.toml` when setup wrote a level, else the plugin agent's frontmatter `effort`.
 
-Then `get_task_output` with `task_ids` and a positive `timeout_ms` when the parent must join.
+Then `get_command_or_subagent_output` with `task_ids` and a positive `timeout_ms` when the parent must join.
 
 Code-writing delegates: the playbook role key (`feature`, `bug-fix`, …). Ad-hoc helpers with no role key: `poteto-agent`.
 Read-only codebase walks: `how-explorer` / `how-explainer` / `how-critics` (not the built-in `explore`, so role effort can apply).

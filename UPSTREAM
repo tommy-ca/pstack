@@ -1,8 +1,10 @@
 Official pstack (discipline source)
 https://github.com/cursor/plugins/tree/main/pstack
-tree 46125561306434d8a1d7745d540d8932ab0cd2a2
+tree 6fecddba65801f9b9c08b8b328d998ee5b09d290
+(repo main tip at overlay: 68836ddaf5697224520f1847d90cdb90ca8babaa; last pstack/ commit is 6fecddba)
 Cursor plugin version at grokbuild import: see TEST-PLAN.md
-Cursor plugin.json on cursor/plugins main at last audit: 0.14.5
+Cursor plugin.json on cursor/plugins main at overlay: 0.14.5
+Overlay after 4612556: multi-phase-plan checklist + check-plan.mjs; skipped make-bot-ui
 
 Grok adapter ancestor
 https://github.com/aa2246740/pstack-grokbuild
@@ -15,7 +17,7 @@ https://github.com/ericlitman/open-pstack
 
 This port
 https://github.com/tommy-ca/pstack
-version 0.14.5-grokbuild.1
+version 0.14.5-grokbuild.2
 
 One shared skills/ tree. Host maps:
 - Grok Build: HARNESS.md

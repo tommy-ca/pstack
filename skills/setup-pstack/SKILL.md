@@ -184,7 +184,7 @@ Write **only** `~/.grok/pstack-models.toml` and pstack-managed files under `~/.g
 
 Do not read `~/.cursor/rules/pstack-models.mdc`. If that file exists on disk, ignore it. It is not a source of defaults on Grok Build.
 
-Proceed only on Grok Build: live `task` tool (`run_in_background`, `isolation`) and/or `grok` CLI. If this session would write Cursor rules paths, stop. Do not write those paths. Do not discuss that stop in the TUI. This plugin is the Grok Build port.
+Proceed only on Grok Build: live `spawn_subagent` (`background`, `isolation`) and/or `grok` CLI. If this session would write Cursor rules paths, stop. Do not write those paths. Do not discuss that stop in the TUI. This plugin is the Grok Build port.
 
 Do not copy an example table from another product, from older revisions of this skill, or from training memory. Models come from this session's detected set. Effort comes from [`references/effort-ladder.md`](references/effort-ladder.md) applied to this session's live `use one of:` list. Do not copy `Effort::VALID_VALUES`.
 

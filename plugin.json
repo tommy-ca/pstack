@@ -1,7 +1,7 @@
 {
   "name": "pstack",
   "displayName": "pstack",
-  "version": "0.14.5-grokbuild.1",
+  "version": "0.14.5-grokbuild.2",
   "description": "pstack atomic playbooks and principles recomposed for Grok Build, Codex, and Claude Code. Intent from Lauren Tan / Cursor pstack; Grok adapter from pstack-grokbuild.",
   "author": {
     "name": "tommy-ca"

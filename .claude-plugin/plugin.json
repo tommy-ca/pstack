@@ -1,7 +1,7 @@
 {
   "name": "pstack",
   "displayName": "pstack",
-  "version": "0.14.5-grokbuild.1",
+  "version": "0.14.5-grokbuild.2",
   "description": "pstack for Claude Code: shared skills with Grok Build and Codex; Agent spawn via host mapping.",
   "author": {
     "name": "Lauren Tan (original); tommy-ca (three-host port)"
