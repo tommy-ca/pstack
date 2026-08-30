@@ -88,6 +88,35 @@ def test_make_bot_ui_is_not_invocable() -> None:
     assert "make-bot-ui" not in plugin
 
 
+def test_guide_teaches_sync_then_adapt() -> None:
+    guide = (ROOT / "docs/guide/09-make-it-yours.md").read_text(encoding="utf-8")
+    setup = (ROOT / "docs/guide/01-setup.md").read_text(encoding="utf-8")
+    upstream = (ROOT / "UPSTREAM").read_text(encoding="utf-8")
+    assert "atomic building blocks" in guide
+    assert "adapt-harness.py" in guide
+    assert "verify-harness.py" in guide
+    assert "spawn_subagent" in guide
+    assert "scheduler_create" in guide
+    assert "make-bot-ui" in guide
+    assert "control-cli" in guide
+    assert "tommy-ca/pstack" in setup
+    assert "aa2246740/pstack-grokbuild --trust" not in setup
+    assert "spawn_subagent" in setup
+    assert "adapt-harness.py" in upstream
+    assert ".cursor/skills" not in guide
+    assert "Cursor's built-in `create-skill`" not in guide
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    verify = (ROOT / "docs/guide/06-verify-and-ship.md").read_text(
+        encoding="utf-8"
+    )
+    assert "tommy-ca/pstack --trust" in readme
+    assert "aa2246740/pstack-grokbuild --trust" not in readme
+    assert "spawn_subagent" in readme
+    assert ".cursor/skills" not in verify
+    assert ".grok/skills/verify-" in verify
+    assert ".cursor/skills" not in setup
+
+
 if __name__ == "__main__":
     test_verify_harness_script_exists()
     test_verify_harness_passes_on_this_tree()
@@ -97,4 +126,5 @@ if __name__ == "__main__":
     test_poteto_mode_copies_tui_spawn_names()
     test_visual_parity_and_bug_fix_drive_real_surface()
     test_make_bot_ui_is_not_invocable()
+    test_guide_teaches_sync_then_adapt()
     print("PASS tests/test_verify_harness.py")

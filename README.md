@@ -6,9 +6,9 @@
 
 ## 来源 / Credits
 
-22 个玩法（playbooks）和 21 条原则（principles）是 [poteto](https://x.com/poteto) 写的，出自 [official pstack](https://github.com/cursor/plugins/tree/main/pstack)。本仓库是 Grok Build 移植（[aa2246740/pstack-grokbuild](https://github.com/aa2246740/pstack-grokbuild)）。调用层用 [HARNESS.md](./HARNESS.md) 里的 grok-build 工具名。玩法和原则不是本仓库写的。
+22 个玩法（playbooks）和 21 条原则（principles）是 [poteto](https://x.com/poteto) 写的，出自 [official pstack](https://github.com/cursor/plugins/tree/main/pstack)。本仓库是 **`tommy-ca/pstack`**，适配自 [aa2246740/pstack-grokbuild](https://github.com/aa2246740/pstack-grokbuild)。调用层用 [HARNESS.md](./HARNESS.md) 里的 Grok Build 工具名。玩法和原则不是本仓库写的。
 
-The 22 playbooks and 21 principles are [poteto](https://x.com/poteto)'s, from [official pstack](https://github.com/cursor/plugins/tree/main/pstack). This repository is the Grok Build port ([aa2246740/pstack-grokbuild](https://github.com/aa2246740/pstack-grokbuild)). Harness calls use grok-build tools named in [HARNESS.md](./HARNESS.md). This port did not author those playbooks or principles.
+The 22 playbooks and 21 principles are [poteto](https://x.com/poteto)'s, from [official pstack](https://github.com/cursor/plugins/tree/main/pstack). This repository is **`tommy-ca/pstack`**, adapted from [aa2246740/pstack-grokbuild](https://github.com/aa2246740/pstack-grokbuild). Harness calls use Grok Build tools named in [HARNESS.md](./HARNESS.md). This port did not author those playbooks or principles.
 
 poteto 的判断是：少写 slop；想快就先做深；当你能信一个 agent 写出可核验的代码，才谈得上放心并行。那是 poteto 的想法，下面按来源引用，不当成本仓库作者的自述。
 
@@ -17,7 +17,7 @@ poteto's idea is less slop, go deep first, and parallelize only after one agent 
 ## 安装 / Install
 
 ```bash
-grok plugin install aa2246740/pstack-grokbuild --trust
+grok plugin install tommy-ca/pstack --trust
 grok plugin enable pstack
 ```
 
@@ -26,7 +26,7 @@ grok plugin enable pstack
 A local checkout also works:
 
 ```bash
-grok plugin install /path/to/pstack-grokbuild --trust
+grok plugin install /path/to/pstack --trust
 grok plugin enable pstack
 ```
 
@@ -62,15 +62,15 @@ A fresh install is usable without `/setup-pstack`.
 
 **模型 / Model.** 每个角色默认 `grok-4.6`。`task` 若拒收这个 slug，就省略 `task.model`。不要编造 Cursor 面板 slug（`grok-4.6-fast-xhigh`、`gpt-5.6-sol-max`、`claude-fable-5-thinking-max`、`claude-opus-5-thinking-xhigh`）。
 
-Every role defaults to `grok-4.6`. If `task` rejects that slug, omit `task.model`. Do not invent Cursor panel slugs (`grok-4.6-fast-xhigh`, `gpt-5.6-sol-max`, `claude-fable-5-thinking-max`, `claude-opus-5-thinking-xhigh`).
+Every role defaults to `grok-4.6`. If `spawn_subagent` rejects that slug, omit `model`. Do not invent Cursor panel slugs (`grok-4.6-fast-xhigh`, `gpt-5.6-sol-max`, `claude-fable-5-thinking-max`, `claude-opus-5-thinking-xhigh`). Spawn and join names are in [HARNESS.md](./HARNESS.md).
 
 **effort.** 以 grok 1.0.5 现场 CLI 为准。`use one of: xhigh, high, medium, low`。本仓库出厂分层是判断 / 解释 / 核对 / 评审组 `xhigh`，跟指令（bug-fix、perf-issue、hillclimb、reflect-tooling）`high`，机械活（feature、refactoring、how-explorer、why-investigators、swarm-workers）`medium`。不默认 `max`。这个 CLI 不认 `max`。skill 从不在 `task` 上发送 `reasoning_effort`。
 
-Effort follows the live grok 1.0.5 CLI. `use one of: xhigh, high, medium, low`. Shipped split is judgment / explainer / verifier / panels `xhigh`, instruction-following `high`, mechanical `medium`. Do not ship `max`. This CLI rejects `max`. Skills never send `reasoning_effort` on `task`.
+Effort follows the live grok 1.0.5 CLI. `use one of: xhigh, high, medium, low`. Shipped split is judgment / explainer / verifier / panels `xhigh`, instruction-following `high`, mechanical `medium`. Do not ship `max`. This CLI rejects `max`. Skills never send `reasoning_effort` on `spawn_subagent`.
 
 没有覆盖文件就用上述出厂值。toml 里缺键、`inherit-parent` 或 `auto` 时，省略 `task.model`。`/setup-pstack` 会按当前 CLI 的 `use one of:` 再探测一遍；若分层变了就重写。二进制以后多出新档位，要再跑一次 setup。子 skill 看不到新 enum。
 
-A missing override file uses the shipped default. A missing key, `inherit-parent`, or `auto` omits `task.model`. [`/setup-pstack`](./skills/setup-pstack/SKILL.md) re-detects from live `use one of:` and rewrites the split if it changed. Spawn skills cannot see a later enum. Run setup again if the binary grew a new level.
+A missing override file uses the shipped default. A missing key, `inherit-parent`, or `auto` omits `model`. [`/setup-pstack`](./skills/setup-pstack/SKILL.md) re-detects from live `use one of:` and rewrites the split if it changed. Spawn skills cannot see a later enum. Run setup again if the binary grew a new level.
 
 ## 这不是 Cursor 插件 / Not the Cursor plugin
 
@@ -308,7 +308,7 @@ A few things `poteto-mode` referenced in Cursor pstack and does not bundle here:
 - Benny 源码仍在 `automations/benny/`。Grok Build 的自动化是插件 hooks/workflows，不是这一包。
 
 - `/deslop`, `control-cli`, and `control-ui` lived in `cursor-team-kit`. Use `/unslop`, `/no-comments`, and drive the real app yourself.
-- Independent verify is `task` + `independent-verifier`. Send a different `model` when the toml names a detected slug; otherwise omit `model`. Not a Cursor Cloud Agent. See [HARNESS.md](./HARNESS.md).
+- Independent verify is `spawn_subagent` + `independent-verifier`. Send a different `model` when the toml names a detected slug; otherwise omit `model`. Not a Cursor Cloud Agent. See [HARNESS.md](./HARNESS.md).
 - Graphite `gt` is optional. If it is missing, use `gh` and git.
 - Benny remains under `automations/benny/` as source. Grok Build automations are plugin hooks/workflows, not this pack.
 
@@ -346,6 +346,6 @@ Fork it. Improve it. PRs are welcome.
 
 MIT.
 
-上游是 official pstack / poteto（Lauren Tan）。本仓库是 Grok Build 移植，作者是 [aa2246740/pstack-grokbuild](https://github.com/aa2246740/pstack-grokbuild)。
+上游是 official pstack / poteto（Lauren Tan）。本仓库是 **`tommy-ca/pstack`**，适配自 [aa2246740/pstack-grokbuild](https://github.com/aa2246740/pstack-grokbuild)。
 
-Upstream is official pstack / poteto (Lauren Tan). This repository is the Grok Build port by [aa2246740/pstack-grokbuild](https://github.com/aa2246740/pstack-grokbuild).
+Upstream is official pstack / poteto (Lauren Tan). This repository is **`tommy-ca/pstack`**, adapted from [aa2246740/pstack-grokbuild](https://github.com/aa2246740/pstack-grokbuild).

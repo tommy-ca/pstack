@@ -139,7 +139,7 @@ Record that omit-`--trust` exits 1 (source contract):
 
 ```bash
 set +e
-grok plugin install aa2246740/pstack-grokbuild \
+grok plugin install tommy-ca/pstack \
   >"$EVIDENCE/gate1-install-no-trust.out" \
   2>"$EVIDENCE/gate1-install-no-trust.err"
 echo $? | tee "$EVIDENCE/gate1-install-no-trust.exit"
@@ -152,11 +152,11 @@ Install with trust (GitHub shorthand). Pin a commit if this box has `GROK_MARKET
 
 ```bash
 # Preferred. Public repo.
-grok plugin install aa2246740/pstack-grokbuild --trust \
+grok plugin install tommy-ca/pstack --trust \
   2>&1 | tee "$EVIDENCE/gate1-install-trust.txt"
 
 # Fallback if git/GitHub is blocked. Clone or copy the plugin tree first.
-# grok plugin install /absolute/path/to/pstack-grokbuild --trust
+# grok plugin install /absolute/path/to/pstack --trust
 ```
 
 Enable (separate from trust):
