@@ -15,7 +15,7 @@ Do not send `reasoning_effort` on `task`. Plugin role agents **do** ship frontma
 
 ## Spawn type
 
-Set `subagent_type` to **`pstack:<role-key>`** on this TUI (`pstack:feature`, `pstack:how-explainer`, `pstack:independent-verifier`, …). grok 1.0.13 registers plugin agents as `plugin:name`. Bare `how-explorer` is rejected (`Unknown subagent type`) even when the plugin is enabled. Toml model keys stay the bare role key (`feature`). Overlay files are `~/.grok/roles/pstack:<key>.toml` so `select_role(subagent_type)` matches the spawn string. `/setup-pstack` writes that stem (and may also write the bare stem).
+Set `subagent_type` to **`pstack:<role-key>`** on this TUI (`pstack:feature`, `pstack:how-explainer`, `pstack:independent-verifier`, …). grok 1.0.13 registers plugin agents as `plugin:name`. Bare `how-explorer` is rejected (`Unknown subagent type`) even when the plugin is enabled. Toml model keys stay the bare role key (`feature`). Overlay files are `~/.grok/roles/pstack:<key>.toml` so `select_role(subagent_type)` matches the spawn string. `/setup-pstack` writes that stem only.
 
 This plugin ships an agent file per role key under `agents/`. Ad-hoc helpers with no role key: `pstack:poteto-agent`. `/no-comments` uses `pstack:comment-sicko`. Those two have no shipped `effort:` so they inherit the parent session.
 

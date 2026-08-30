@@ -61,7 +61,7 @@ Never write a slug you have not confirmed this session. `inherit-parent` and `au
 
 Follow [`references/effort-ladder.md`](references/effort-ladder.md). Do not send `reasoning_effort` on `task`.
 
-- Prefer `grok --reasoning-effort not-a-real-effort` and the live `use one of:` list (`unknown effort level …; use one of: xhigh, high, medium, low` on grok 1.0.5). That list is strongest-first; reverse to weak → strong before stepping down.
+- Prefer `grok --reasoning-effort not-a-real-effort` and the live `use one of:` list (`unknown effort level …; use one of: xhigh, high, medium, low` on grok 1.0.13). That list is strongest-first; reverse to weak → strong before stepping down.
 - Do not use FromStr or `Effort::VALID_VALUES`. Those include reserved `max` that this CLI rejects.
 - Else, only if `use one of:` never printed, parse `grok --help` for `--reasoning-effort` / `--effort`, canonical list only (before `also` / menu ids). Drop any help token the runtime list omitted.
 - Drop `none`, `minimal`, and per-model menu ids such as `deep`.

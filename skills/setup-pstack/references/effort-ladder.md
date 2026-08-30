@@ -1,6 +1,6 @@
 # Effort ladder
 
-Do not handwrite a frozen table. Do not use Rust `Effort::VALID_VALUES` or `ReasoningEffort::from_str` as the live ladder. Those lists include reserved `max`. Grok 1.0.5 CLI rejects `max`.
+Do not handwrite a frozen table. Do not use Rust `Effort::VALID_VALUES` or `ReasoningEffort::from_str` as the live ladder. Those lists include reserved `max`. grok 1.0.13 CLI rejects `max` (same `use one of:` as 1.0.5).
 
 Detect usable levels from the **live CLI runtime validator**. Compute three tiers, weakest → strongest.
 
@@ -12,7 +12,7 @@ Detect usable levels from the **live CLI runtime validator**. Compute three tier
 
 Try, in this order, until you have a list:
 
-1. Rejected invalid `--reasoning-effort` / `--effort`. Prefer the live message `unknown effort level …; use one of: …`. On grok 1.0.5 that line is `use one of: xhigh, high, medium, low`. That is the usable set. Probe with `not-a-real-effort` (or another string that cannot be a level).
+1. Rejected invalid `--reasoning-effort` / `--effort`. Prefer the live message `unknown effort level …; use one of: …`. On grok 1.0.13 that line is `use one of: xhigh, high, medium, low` (probed this host). That is the usable set. Probe with `not-a-real-effort` (or another string that cannot be a level).
 2. Only if that rejection never printed `use one of:`, parse `grok --help` for `--reasoning-effort` / `--effort`, canonical list **before** any `also` / per-model menu-id clause. Help text can name reserved values the CLI does not accept. Do not keep a help token the runtime `use one of:` list omitted.
 
 Do **not** use `expected one of:` from `ReasoningEffort::from_str`. Do **not** use `Effort::VALID_VALUES`. Both include reserved `max`.
@@ -47,14 +47,14 @@ Check these against `scripts/effort_ladder.py --check`.
 
 | Detected usable set | Judgment | Instruction | Mechanical |
 |---|---|---|---|
-| grok 1.0.5 `use one of: xhigh, high, medium, low` | `xhigh` | `high` | `medium` |
+| grok 1.0.13 `use one of: xhigh, high, medium, low` | `xhigh` | `high` | `medium` |
 | same plus `max` first (only if the live CLI listed it) | `max` | `xhigh` | `high` |
 | `low` `medium` `high` only | `high` | `medium` | `medium` (not `low`) |
 | `low` `high` only | `high` | `low` | `low` |
 
 ## Ship-time snapshot
 
-Plugin agent frontmatter and [`defaults.toml`](defaults.toml) `[effort]` use the grok 1.0.5 usable set `low` `medium` `high` `xhigh`, so out of the box (no setup) the split is judgment `xhigh`, instruction `high`, mechanical `medium`.
+Plugin agent frontmatter and [`defaults.toml`](defaults.toml) `[effort]` use the grok 1.0.13 usable set `low` `medium` `high` `xhigh` (unchanged from 1.0.5), so out of the box (no setup) the split is judgment `xhigh`, instruction `high`, mechanical `medium`.
 
 That snapshot is what this plugin can bake. It is not `Effort::VALID_VALUES`. `/setup-pstack` re-detects from `use one of:` and writes `~/.grok/roles/pstack:<key>.toml` for the live split. `max` is offered only if that live list named it.
 

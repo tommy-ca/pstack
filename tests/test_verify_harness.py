@@ -284,6 +284,55 @@ def test_pstack_slash_names_do_not_collide_with_grok_builtins() -> None:
     assert "general-purpose" not in agents
 
 
+def test_effort_frontmatter_matches_ladder() -> None:
+    proc = subprocess.run(
+        [sys.executable, str(ROOT / "scripts/effort_ladder.py"), "--check"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert proc.returncode == 0, proc.stderr + proc.stdout
+    ladder = (ROOT / "skills/setup-pstack/references/effort-ladder.md").read_text(
+        encoding="utf-8"
+    )
+    defaults = (
+        ROOT / "skills/setup-pstack/references/defaults.toml"
+    ).read_text(encoding="utf-8")
+    resolve = (
+        ROOT / "skills/setup-pstack/references/resolve-effort.md"
+    ).read_text(encoding="utf-8")
+    harness = (ROOT / "HARNESS.md").read_text(encoding="utf-8")
+    assert "use one of: xhigh, high, medium, low" in ladder
+    assert "grok 1.0.13" in ladder
+    assert "pstack:<role-key>" in defaults or "pstack:<key>" in defaults
+    assert "Spawn subagent_type = the role key" not in defaults
+    assert "may also write the bare stem" not in resolve
+    iv = (ROOT / "agents/independent-verifier.md").read_text(encoding="utf-8")
+    assert "effort: xhigh" in iv
+    assert "capabilityMode: execute" in iv
+    assert "grok 1.0.13" in harness
+    parsed: dict[str, str] = {}
+    in_effort = False
+    for line in defaults.splitlines():
+        if line.strip() == "[effort]":
+            in_effort = True
+            continue
+        if in_effort:
+            if line.startswith("["):
+                break
+            m = re.match(r'^([A-Za-z0-9_-]+)\s*=\s*"([^"]+)"', line)
+            if m:
+                parsed[m.group(1)] = m.group(2)
+    for path in (ROOT / "agents").glob("*.md"):
+        fm = path.read_text(encoding="utf-8").split("---", 2)[1]
+        m = re.search(r"^effort:\s*(\S+)", fm, re.M)
+        if not m:
+            assert path.stem in {"comment-sicko", "poteto-agent"}, path.name
+            continue
+        assert parsed[path.stem] == m.group(1), path.name
+
+
 def test_plugin_manifest_matches_grok_parsed_fields() -> None:
     import json
 
@@ -377,6 +426,7 @@ if __name__ == "__main__":
     test_readme_locale_split()
     test_first_session_names_sandbox_reload_and_slash()
     test_pstack_slash_names_do_not_collide_with_grok_builtins()
+    test_effort_frontmatter_matches_ladder()
     test_plugin_manifest_matches_grok_parsed_fields()
     test_harness_skill_order_is_pstack_then_user_then_native()
     print("PASS tests/test_verify_harness.py")

@@ -248,7 +248,7 @@ def main() -> None:
     if f'independent-verifier = "{role_effort["independent-verifier"]}"' not in defaults:
         fail("defaults.toml [effort] independent-verifier must match the ship-time ladder")
     if '= "max"' in defaults:
-        fail("defaults.toml ships reserved max; live grok 1.0.5 CLI does not list max")
+        fail("defaults.toml ships reserved max; live grok 1.0.13 CLI does not list max")
     if "max" in SHIP_TIME_ENUM:
         fail("SHIP_TIME_ENUM includes reserved max")
     skill_setup = (ROOT / "skills" / "setup-pstack" / "SKILL.md").read_text(encoding="utf-8")
