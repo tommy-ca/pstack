@@ -15,7 +15,7 @@ Install this repo as a Grok Build plugin. Do not keep `.cursor-plugin`, `~/.curs
 | pstack need | grok-build primitive | Source |
 |---|---|---|
 | Slash skill / playbook router | Plugin `skills/` `SKILL.md`. Invoked as `/name`. Frontmatter: `name`, `description`, `disable-model-invocation`, `user-invocable`. | `crates/codegen/xai-grok-pager/docs/user-guide/08-skills.md` |
-| Plugin install | `plugin.json` at repo root (also `.grok-plugin/plugin.json`). `grok plugin install <owner>/<repo> --trust`. Components: `skills/`, `agents/`, `commands/`, `hooks/hooks.json`, `.mcp.json`. Writes `~/.grok/installed-plugins/` (writable in the agent sandbox). | `crates/codegen/xai-grok-agent/src/plugins/manifest.rs`; `09-plugins.md` |
+| Plugin install | `plugin.json` at repo root. grok 1.0.13 `PluginManifest` has **14** parsed fields (extras ignored). This plugin sets `name`, `version`, `description`, `author`, `homepage`, `repository` (string), `license`, `keywords`, `skills`, `agents`. No `commands/`, `hooks/`, `.mcp.json`, `.lsp.json`. `displayName` is not deserialized. Writes `~/.grok/installed-plugins/` (writable in the agent sandbox). | `crates/codegen/xai-grok-agent/src/plugins/manifest.rs`; `09-plugins.md` |
 | Marketplace add / plugin enable | Nested `grok plugin marketplace add` and `grok plugin enable` rewrite `~/.grok/config.toml`. Under Linux bubblewrap (`__GROK_INSIDE_BWRAP=1`, `[sandbox] profile = homelab` extends `workspace`) that file is bind-mounted **read-only** with `managed_config.toml`, `sandbox.toml`, `hooks/`. The syscall is `open(config.toml, O_WRONLY\|O_TRUNC) = EROFS` (os error 30). The disk is not remounted ro. `touch` of new files under `~/.grok/` still works. Run add/enable from a **host shell** outside the TUI, or append `[[marketplace.sources]]` by hand. `18-sandbox.md` documents hook write-deny; this TUI also pins config files. | `18-sandbox.md`; `~/.grok/sandbox.toml` `[profiles.homelab]` |
 | Spawn a child | TUI tool **`spawn_subagent`**. Rust/wire alias `task` / `Task`. Playbooks send `spawn_subagent`. | `16-subagents.md`; rust `TASK_TOOL_NAME` |
 | Background child | TUI field **`background`** (default **false**). Rust alias `run_in_background` (crate default true). Returns `subagent_id`. | `16-subagents.md`; `TaskToolInput` |
@@ -64,6 +64,16 @@ Live user/bundled means the name is in `grok inspect --json` `.skills[].name`. B
 | Unslop / comments | `/unslop`, `/no-comments` | none | none |
 
 Do not route babysit to `/pr-babysit`. That skill restacks. pstack `babysit.md` forbids topology mutation. User TDD is not a substitute when `/tdd` skipped the cheap-path gate.
+
+## Plugin schema
+
+grok 1.0.13 parses `PluginManifest` (14 fields). Extra JSON keys are ignored. Live serde: `name` (required kebab), `version`, `description`, `author` `{name?, email?, url?}`, `homepage`, `repository` **string only**, `license`, `keywords`, `skills`/`commands`/`agents` as path or path list, `hooks`/`mcpServers`/`lspServers` as path or inline. Convention dirs without those keys: `skills/`, `commands/`, `agents/`, `hooks/hooks.json`, `.mcp.json`, `.lsp.json`.
+
+`AgentDefinition` has 27 fields. Plugin agents must not declare `mcpServers` or `hooks`, and must not set `permissionMode: bypassPermissions`. Valid `permissionMode`: `default`, `acceptEdits`, `dontAsk`, `bypassPermissions`. Do not ship `permissionMode: plan`. Spawn background is `spawn_subagent` `background`, not agent YAML `background:`.
+
+Skill YAML (docs `08-skills.md`): `name`, `description`, `when-to-use`, `allowed-tools`, `argument-hint`, `user-invocable`, `disable-model-invocation`, `model`, `effort`, `license`, `compatibility`, `metadata`. Do not add plugin `commands/` clones of slash skills.
+
+Workflows are `.grok/workflows/*.rhai`, not a plugin component. `plugin-index.json` is catalog display-only unless `GROK_MARKETPLACE_REQUIRE_SHA`.
 
 ## Docs vs source
 

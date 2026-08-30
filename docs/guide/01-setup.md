@@ -16,7 +16,7 @@ grok plugin enable pstack
 3. After enable, `grok inspect --json` `.agents[].name` is `pstack:how-explorer`, not `how-explorer`. Type `/poteto-mode`. It does not auto-enter. `/setup-pstack` is optional.
 4. Do not run `grok plugin marketplace add` from a sandboxed agent (same EROFS). Owner/repo install still works in-session.
 
-This tree is `tommy-ca/pstack`. xAI Official also lists a plugin named `pstack` that points at `cursor/plugins`. Do not use bare `grok plugin install pstack` as the default. Do not install `aa2246740/pstack-grokbuild` as the default.
+This tree is `tommy-ca/pstack`. The plugin ships `skills/` and `agents/` only. There is no `commands/` directory. Skills already are `/name`. xAI Official also lists a plugin named `pstack` that points at `cursor/plugins`. Do not use bare `grok plugin install pstack` as the default. Do not install `aa2246740/pstack-grokbuild` as the default. Parsed `plugin.json` fields and agent YAML rules are in [`HARNESS.md`](../../HARNESS.md) **Plugin schema**.
 
 ## Pick your models and effort (optional)
 

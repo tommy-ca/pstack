@@ -1,9 +1,7 @@
 ---
 name: arena-cross-judge-pool
-description: pstack arena cross-judge. Same posture as the pstack role of this name. Shipped effort is frontmatter `effort`. Setup may overlay via ~/.grok/roles/arena-cross-judge-pool.toml.
-background: true
+description: pstack arena cross-judge. Same posture as the pstack role of this name. Shipped effort is frontmatter `effort`. Setup may overlay via ~/.grok/roles/pstack:arena-cross-judge-pool.toml.
 effort: xhigh
-permissionMode: plan
 capabilityMode: execute
 inheritSkills: false
 ---

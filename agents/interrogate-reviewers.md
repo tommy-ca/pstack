@@ -1,9 +1,7 @@
 ---
 name: interrogate-reviewers
-description: pstack interrogate reviewer. Same posture as the pstack role of this name. Shipped effort is frontmatter `effort`. Setup may overlay via ~/.grok/roles/interrogate-reviewers.toml.
-background: true
+description: pstack interrogate reviewer. Same posture as the pstack role of this name. Shipped effort is frontmatter `effort`. Setup may overlay via ~/.grok/roles/pstack:interrogate-reviewers.toml.
 effort: xhigh
-permissionMode: plan
 capabilityMode: execute
 inheritSkills: false
 ---
