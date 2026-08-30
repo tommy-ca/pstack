@@ -284,6 +284,36 @@ def test_pstack_slash_names_do_not_collide_with_grok_builtins() -> None:
     assert "general-purpose" not in agents
 
 
+def test_harness_prefers_grok_native_skills() -> None:
+    harness = (ROOT / "HARNESS.md").read_text(encoding="utf-8")
+    poteto = (ROOT / "skills/poteto-mode/SKILL.md").read_text(encoding="utf-8")
+    tdd = (ROOT / "skills/tdd/SKILL.md").read_text(encoding="utf-8")
+    interrogate = (ROOT / "skills/interrogate/SKILL.md").read_text(
+        encoding="utf-8"
+    )
+    babysit = (
+        ROOT / "skills/poteto-mode/playbooks/babysit.md"
+    ).read_text(encoding="utf-8")
+    assert "## Native first" in harness
+    for needle in (
+        "/test-driven-development",
+        "/create-skill",
+        "/review",
+        "/pr-babysit",
+        "/verification-before-completion",
+        "/systematic-debugging",
+        "/using-git-worktrees",
+        "/brainstorming",
+        "/loop",
+        "explore",
+    ):
+        assert needle in harness, needle
+    assert "Native first" in poteto or "native first" in poteto
+    assert "/test-driven-development" in tdd
+    assert "/review" in interrogate
+    assert "/pr-babysit" in babysit
+
+
 if __name__ == "__main__":
     test_verify_harness_script_exists()
     test_verify_harness_passes_on_this_tree()
@@ -298,4 +328,5 @@ if __name__ == "__main__":
     test_readme_locale_split()
     test_first_session_names_sandbox_reload_and_slash()
     test_pstack_slash_names_do_not_collide_with_grok_builtins()
+    test_harness_prefers_grok_native_skills()
     print("PASS tests/test_verify_harness.py")

@@ -40,6 +40,32 @@ Install this repo as a Grok Build plugin. Do not keep `.cursor-plugin`, `~/.curs
 | `cursor-team-kit` (`deslop`, `control-ui`, `control-cli`) | Not in this plugin. `/unslop` and `/no-comments` remain. Drive the real app yourself (browser, CLI, tests). | pstack README "not shipped here" |
 | Benny automations | Cursor automation pack. Grok equivalent is plugin `hooks/` + workflows. Not registered as slash skills. Left under `automations/benny/` as source, not a Grok automation runtime. | pstack `automations/benny/`; grok `hooks/hooks.json` |
 
+## Native first
+
+Playbooks use a Grok Build builtin, bundled skill, or user skill **when it is live** (`grok inspect --json` `.skills[].name`, or a pager slash / builtin agent). pstack is the fallback. Do not add plugin `commands/` clones.
+
+Live means the name is in inspect skills, or it is a pager slash / builtin agent from `04-slash-commands.md` / `16-subagents.md`. Missing native: keep the pstack column.
+
+| Need | Native first | pstack fallback |
+|---|---|---|
+| TDD | `/test-driven-development` | `/tdd` |
+| Author a SKILL.md | `/create-skill` | `playbooks/authoring-a-skill.md` (already calls `/create-skill`) |
+| Review a diff or GitHub PR | `/review` | `/interrogate` (multi-model adversarial) |
+| GitHub PR babysit | `/pr-babysit` | `playbooks/babysit.md` |
+| Graphite stack babysit | none | `playbooks/babysit.md` |
+| Prove work is done | `/verification-before-completion` | **prove-it-works** |
+| Debug a failure | `/systematic-debugging` | `playbooks/bug-fix.md` |
+| Git worktrees | `/using-git-worktrees` | none |
+| Spec then plan | `/brainstorming`, `/writing-plans` | `playbooks/figure-it-out.md` |
+| Execute a written plan | `/executing-plans`, `/subagent-driven-development` | `playbooks/feature.md` spawn |
+| Overnight heartbeat | `/loop` → `scheduler_create` | same (already mapped) |
+| Read-only spawn | builtin `explore` | `pstack:how-explorer` when a role overlay must apply |
+| Plan-mode spawn | builtin `plan` | none (pstack does not ship a plan skill) |
+| Workflows | `/create-workflow`, `/workflow` | none (not a plugin component) |
+| Unslop / comments | none | `/unslop`, `/no-comments` |
+
+Do not route pstack babysit requests to a generic grok babysit command whose description only matches the word. `/pr-babysit` is the GitHub native. Graphite stacks stay `playbooks/babysit.md`.
+
 ## Docs vs source
 
 Grok Build's user guide `16-subagents.md` still names `spawn_subagent`, a `background` field defaulting to `false`, and `get_command_or_subagent_output`. The Rust types this port follows are different:
