@@ -1012,7 +1012,7 @@ Evidence dir:
 [ ] Gate 4b PASS missing toml; feature spawn sends grok-4.6 (or omits if rejected); no task.reasoning_effort; agents/feature.md effort: medium (ship-time mechanical)
 [ ] Gate 4c PASS independent-verifier set to a live slug (grok-4.5 when present); task accepts it
 [ ] Gate 4d PASS ~/.cursor/rules/pstack-models.mdc does not exist after setup
-[ ] Gate 4e PASS live effort ladder wrote ~/.grok/roles feature=mechanical bug-fix=instruction how-explainer=judgment independent-verifier=judgment; no task.reasoning_effort
+[ ] Gate 4e PASS live effort ladder wrote ~/.grok/roles/pstack:feature.toml mechanical, pstack:bug-fix.toml instruction, pstack:how-explainer.toml judgment, pstack:independent-verifier.toml judgment; no task.reasoning_effort
 [ ] Gate 5 PASS  /poteto-mode matched Investigation; Principles first; steps copied to todos
 [ ] Gate 6 PASS  Feature on /tmp/pstack-edith-lab; both python commands + exact stdout in-session
 [ ] Gate 7 PASS  parent task independent-verifier + different model + child command evidence
