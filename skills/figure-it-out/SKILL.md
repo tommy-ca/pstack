@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Figure it out
 
-If `/brainstorming` and `/writing-plans` are live, use those for spec-then-plan. This skill stays the pstack fallback for an auditable playbook when no narrower one fits.
+This is the pstack playbook designer. Use it first when no narrower playbook fits. `/brainstorming` and `/writing-plans` are later user fallbacks.
 
 When the task matches no playbook, design one. The deliverable before any code is the workflow itself: a sequence of phases that scales rigor to the task, runs the scientific method, and leaves a decision trail a human can audit after stepping away. Bias toward more rigor. The cost of building the wrong thing dwarfs the cost of being careful.
 

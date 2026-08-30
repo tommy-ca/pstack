@@ -40,31 +40,28 @@ Install this repo as a Grok Build plugin. Do not keep `.cursor-plugin`, `~/.curs
 | `cursor-team-kit` (`deslop`, `control-ui`, `control-cli`) | Not in this plugin. `/unslop` and `/no-comments` remain. Drive the real app yourself (browser, CLI, tests). | pstack README "not shipped here" |
 | Benny automations | Cursor automation pack. Grok equivalent is plugin `hooks/` + workflows. Not registered as slash skills. Left under `automations/benny/` as source, not a Grok automation runtime. | pstack `automations/benny/`; grok `hooks/hooks.json` |
 
-## Native first
+## Skill order
 
-Playbooks use a Grok Build builtin, bundled skill, or user skill **when it is live** (`grok inspect --json` `.skills[].name`, or a pager slash / builtin agent). pstack is the fallback. Do not add plugin `commands/` clones.
+Playbooks pick **pstack, then user, then bundled and builtin**. Do not add plugin `commands/` clones.
 
-Live means the name is in inspect skills, or it is a pager slash / builtin agent from `04-slash-commands.md` / `16-subagents.md`. Missing native: keep the pstack column.
+Live user/bundled means the name is in `grok inspect --json` `.skills[].name`. Builtin slash/agent names come from `04-slash-commands.md` / `16-subagents.md`. Skip a column when that layer has no similar skill.
 
-| Need | Native first | pstack fallback |
-|---|---|---|
-| TDD | `/test-driven-development` | `/tdd` |
-| Author a SKILL.md | `/create-skill` | `playbooks/authoring-a-skill.md` (already calls `/create-skill`) |
-| Review a diff or GitHub PR | `/review` | `/interrogate` (multi-model adversarial) |
-| GitHub PR babysit | `/pr-babysit` | `playbooks/babysit.md` |
-| Graphite stack babysit | none | `playbooks/babysit.md` |
-| Prove work is done | `/verification-before-completion` | **prove-it-works** |
-| Debug a failure | `/systematic-debugging` | `playbooks/bug-fix.md` |
-| Git worktrees | `/using-git-worktrees` | none |
-| Spec then plan | `/brainstorming`, `/writing-plans` | `playbooks/figure-it-out.md` |
-| Execute a written plan | `/executing-plans`, `/subagent-driven-development` | `playbooks/feature.md` spawn |
-| Overnight heartbeat | `/loop` → `scheduler_create` | same (already mapped) |
-| Read-only spawn | builtin `explore` | `pstack:how-explorer` when a role overlay must apply |
-| Plan-mode spawn | builtin `plan` | none (pstack does not ship a plan skill) |
-| Workflows | `/create-workflow`, `/workflow` | none (not a plugin component) |
-| Unslop / comments | none | `/unslop`, `/no-comments` |
+| Need | 1. pstack | 2. User | 3. Bundled / builtin |
+|---|---|---|---|
+| TDD | `/tdd` | `/test-driven-development` | none |
+| Author a SKILL.md | `playbooks/authoring-a-skill.md` | `/writing-skills` | `/create-skill` |
+| Review a diff or PR | `/interrogate` | `/requesting-code-review` | `/review` |
+| Babysit | `playbooks/babysit.md` | none | `/pr-babysit` (GitHub only; does not replace Graphite babysit) |
+| Prove work is done | **prove-it-works**, `pstack:independent-verifier` | `/verification-before-completion` | none |
+| Debug a failure | `playbooks/bug-fix.md` | `/systematic-debugging` | none |
+| Git worktrees | `playbooks/worktree-cleanup.md` (prune) | `/using-git-worktrees` | `isolation: "worktree"` |
+| Spec then plan | `playbooks/figure-it-out.md` | `/brainstorming`, `/writing-plans` | `/plan`, builtin `plan` |
+| Execute a written plan | `playbooks/feature.md` spawn | `/executing-plans`, `/subagent-driven-development` | `/implement`, `/execute-plan` |
+| Overnight heartbeat | none | none | `/loop` → `scheduler_create` |
+| Read-only spawn | `pstack:how-explorer` | none | builtin `explore` |
+| Unslop / comments | `/unslop`, `/no-comments` | none | none |
 
-Do not route pstack babysit requests to a generic grok babysit command whose description only matches the word. `/pr-babysit` is the GitHub native. Graphite stacks stay `playbooks/babysit.md`.
+Do not route a Graphite stack babysit to `/pr-babysit`. That skill restacks. pstack `babysit.md` forbids topology mutation.
 
 ## Docs vs source
 
