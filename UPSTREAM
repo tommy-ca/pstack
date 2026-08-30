@@ -24,4 +24,5 @@ One shared skills/ tree. Host maps:
 - Codex: skills/poteto-mode/references/codex-tools.md and provider-dispatch.md
 - Claude Code: .claude-plugin/plugin.json (Agent tool)
 
-Sync: git log/diff cursor/main -- pstack from the recorded tree, copy intent files, run scripts/adapt-harness.py, hand-fix depth-1 and overnight, then scripts/verify-harness.py.
+Sync: python3 scripts/sync-from-upstream.py --log && python3 scripts/sync-from-upstream.py --recipe
+Then copy intent files, run scripts/adapt-harness.py, hand-fix depth-1 and overnight, then scripts/verify-harness.py.

@@ -100,6 +100,7 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert "atomic building blocks" in guide
     assert "adapt-harness.py" in guide
     assert "verify-harness.py" in guide
+    assert "sync-from-upstream.py" in guide
     assert "spawn_subagent" in guide
     assert "scheduler_create" in guide
     assert "make-bot-ui" in guide
@@ -110,6 +111,30 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert "cursor/plugins" in setup
     assert "spawn_subagent" in setup
     assert "adapt-harness.py" in upstream
+    assert "sync-from-upstream.py" in upstream
+    pin = subprocess.run(
+        [sys.executable, str(ROOT / "scripts/sync-from-upstream.py"), "--pin"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert pin.returncode == 0, pin.stderr
+    sha = pin.stdout.strip()
+    assert re.fullmatch(r"[0-9a-f]{40}", sha), sha
+    recipe = subprocess.run(
+        [sys.executable, str(ROOT / "scripts/sync-from-upstream.py"), "--recipe"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert recipe.returncode == 0, recipe.stderr
+    assert sha in recipe.stdout
+    assert "adapt-harness.py" in recipe.stdout
+    assert "verify-harness.py" in recipe.stdout
+    assert "make-bot-ui" in recipe.stdout
+    assert "pstack:<role>" in recipe.stdout
     assert ".cursor/skills" not in guide
     assert "Cursor's built-in `create-skill`" not in guide
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
