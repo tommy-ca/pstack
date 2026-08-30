@@ -155,7 +155,7 @@ morning.
 | [`/swarm`](./skills/swarm/SKILL.md) | you want N parallel workers across different slices or races, then one aggregated report. |
 | [`/interrogate`](./skills/interrogate/SKILL.md) | you have a diff and want several different models to try to break it, including a strict code-quality lens. |
 | [`/automate-me`](./skills/automate-me/SKILL.md) | you want your own `-mode` skill, drafted from how you've actually worked. |
-| [`/setup-pstack`](./skills/setup-pstack/SKILL.md) | override the shipped `grok-4.6` + per-role effort default. detects your models and writes `~/.grok/pstack-models.toml` plus `~/.grok/roles/*.toml`. |
+| [`/setup-pstack`](./skills/setup-pstack/SKILL.md) | override the shipped `grok-4.6` + per-role effort default. detects your models and writes `~/.grok/pstack-models.toml` plus `~/.grok/roles/pstack:<role>.toml`. |
 | [`/reflect`](./skills/reflect/SKILL.md) | a long task landed and you want the recipe captured as a skill edit. |
 | [`/teach`](./skills/teach/SKILL.md) | you want to actually understand a change or subsystem, not just have it summarized. runs how + why and weaves one plain explanation, built up diagram by diagram. |
 | [`/tdd`](./skills/tdd/SKILL.md) | you're fixing a bug and there's a cheap local test path. write the failing test first, then the fix. |
@@ -275,7 +275,7 @@ grok-build 自带 `plan` agent 类型。pstack 仍然默认不规划。最好的
 
 输入 [`/automate-me`](./skills/automate-me/SKILL.md)。它从你最近的 transcript 里挖习惯，起草一个 `<your-name>-mode` skill，底层仍走 pstack。pstack 当底座，旁边多一个你自己的路由 skill。
 
-Grok Build 默认仍是 `grok-4.6` 加按角色的 effort。只有要改的时候才跑 [`/setup-pstack`](./skills/setup-pstack/SKILL.md)。它探测 `spawn_subagent` 能收的 slug，按角色问 reasoning effort，写入 `~/.grok/pstack-models.toml` 和由本插件管理的 `~/.grok/roles/*.toml`。它不会写 `~/.cursor/rules`。这不是 Cursor 插件。
+Grok Build 默认仍是 `grok-4.6` 加按角色的 effort。只有要改的时候才跑 [`/setup-pstack`](./skills/setup-pstack/SKILL.md)。它探测 `spawn_subagent` 能收的 slug，按角色问 reasoning effort，写入 `~/.grok/pstack-models.toml` 和由本插件管理的 `~/.grok/roles/pstack:<role>.toml`。它不会写 `~/.cursor/rules`。这不是 Cursor 插件。
 
 ## 自动化
 
