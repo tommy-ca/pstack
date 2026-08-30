@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -124,6 +125,29 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert ".cursor/skills" not in setup
 
 
+SWITCHER = "[English](README.md) · [简体中文](README.zh-CN.md)"
+CJK = re.compile(r"[\u4e00-\u9fff]")
+
+
+def test_readme_locale_split() -> None:
+    en = (ROOT / "README.md").read_text(encoding="utf-8")
+    zh_path = ROOT / "README.zh-CN.md"
+    assert zh_path.is_file(), zh_path
+    zh = zh_path.read_text(encoding="utf-8")
+    assert SWITCHER in en
+    assert SWITCHER in zh
+    en_body = en.replace(SWITCHER, "")
+    assert CJK.search(en_body) is None, "English README has CJK outside the switcher"
+    assert CJK.search(zh) is not None
+    for text in (en, zh):
+        assert "tommy-ca/pstack --trust" in text
+        assert "grok plugin install pstack --trust" not in text
+        assert "spawn_subagent" in text
+        assert "xAI Official" in text
+        assert "cursor/plugins" in text
+        assert "aa2246740/pstack-grokbuild --trust" not in text
+
+
 if __name__ == "__main__":
     test_verify_harness_script_exists()
     test_verify_harness_passes_on_this_tree()
@@ -134,4 +158,5 @@ if __name__ == "__main__":
     test_visual_parity_and_bug_fix_drive_real_surface()
     test_make_bot_ui_is_not_invocable()
     test_guide_teaches_sync_then_adapt()
+    test_readme_locale_split()
     print("PASS tests/test_verify_harness.py")
