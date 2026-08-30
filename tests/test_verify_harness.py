@@ -67,6 +67,9 @@ def test_poteto_mode_copies_tui_spawn_names() -> None:
     assert "spawn_subagent" in harness
     assert "get_command_or_subagent_output" in harness
     assert "scheduler_create" in harness
+    assert "EROFS" in harness
+    assert "config.toml" in harness
+    assert "marketplace add" in harness
 
 
 def test_visual_parity_and_bug_fix_drive_real_surface() -> None:
