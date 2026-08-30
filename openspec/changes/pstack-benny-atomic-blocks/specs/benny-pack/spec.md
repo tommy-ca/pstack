@@ -10,9 +10,9 @@ The pack MUST live under `automations/benny/`. Cursor `SKILL.md` files there are
 
 - **GIVEN** `plugin.json` on this port
 - **WHEN** skills and hooks keys are read
-- **THEN** `skills` is `./skills/`
+- **THEN** `skills` includes `./skills/` and `./automations/benny-grok/skills/`
 - **AND** `hooks` is absent
-- **AND** `automations/benny` is not a skill path
+- **AND** the Cursor pack directory is not itself a skill path
 - **AND** `skills/setup-benny`, `skills/triage-issue-reports`, and `skills/reproduce-and-fix-issues` do not exist
 
 #### Scenario: user config is outside the pack

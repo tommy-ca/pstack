@@ -17,7 +17,7 @@ Slack top-level report (Cursor trigger) or args.thread_url (grok)
   -> optional draft PR after before-and-after proof
 ```
 
-Grok has no Slack channel auto-start. The operator passes `args.thread_url` into `/workflow benny-triage` or `/workflow benny-repro`. Overnight waits use `/loop` → `scheduler_create`. Watch predicates use `monitor`.
+Grok has no Slack channel auto-start. The operator types `/benny-triage` or `/benny-repro` after enable, with the Slack permalink. Overnight waits use `/loop` → `scheduler_create`. Watch predicates use `monitor`.
 
 ## Schemas
 
@@ -42,12 +42,12 @@ Grok has no Slack channel auto-start. The operator passes `args.thread_url` into
 | Block | Official Cursor | Grok port |
 |---|---|---|
 | Pack layout | `.cursor/automations/benny/` in the target | Cursor reference `automations/benny/`. Live grok sibling `automations/benny-grok/` |
-| Slash skills | not registered | not registered. `plugin.json` `skills` stays `./skills/` |
-| Setup | point Cursor at `FOR_AGENTS.md`, `/automate` | copy grok files. Enable pstack with `grok plugin enable pstack` |
+| Slash skills | not registered | `/benny-triage` and `/benny-repro` via `plugin.json` `skills` list |
+| Setup | point Cursor at `FOR_AGENTS.md`, `/automate` | Enable pstack with `grok plugin enable pstack`. No copy. |
 | User config | `.cursor/benny/` | `.grok/benny/` |
 | Slack auto-start | Cursor automations | host gap. Pass `args.thread_url` |
 | Triage / repro intent | `skills/*/SKILL.md` **upstream reference** | `/benny-triage` and `/benny-repro` in `automations/benny-grok/skills/` |
-| Fail-closed merge | prompt only | copied `PreToolUse` hook denies `gh pr merge` and `git push --force` |
+| Fail-closed merge | prompt only | optional local `fail-closed.sh`. Not a plugin hook. |
 | control-cli | Cursor team kit | skip. Drive the real app. Fail closed if the adapter is missing |
 | Plugin hooks | n/a | **not** in pstack `plugin.json`. Opt-in target copy only |
 
@@ -55,8 +55,8 @@ Grok has no Slack channel auto-start. The operator passes `args.thread_url` into
 
 **Keep.** Operational SKILL.md files, marker contract, immutable coordinates, draft-only PRs, worker Slack ban.
 
-**Remap.** Cursor `/automate` → grok `/workflow` plus `/loop` → `scheduler_create`. Cursor Slack actions → configured MCP. `.cursor/settings.json` pstack enable → `[plugins].enabled`.
+**Remap.** Cursor automations → grok `/benny-triage` plus `/loop` → `scheduler_create`. Cursor Slack actions → configured MCP. Enable is `[plugins].enabled`.
 
-**Skip.** Plugin-global `hooks/`. Slack auto-start. `control-cli`. Registering Benny as slash skills.
+**Skip.** Plugin-global `hooks/`. Slack auto-start. `control-cli`. Registering Cursor pack skill names as slash skills.
 
 **Gaps (host limits).** Grok workflows cannot subscribe to a Slack channel. Depth 1 means the parent fans out workers. Hooks fail open on crash, so deny must be explicit JSON.

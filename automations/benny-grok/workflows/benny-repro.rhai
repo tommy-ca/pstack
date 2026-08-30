@@ -3,7 +3,7 @@ let meta = #{
     description: "Wait for a trusted Benny marker, reproduce twice through real UI, draft PR only after proof.",
     phases: [
         #{ title: "Preflight", detail: "require args.thread_url" },
-        #{ title: "Repro", detail: "read grok repro.md and fail closed without a trusted marker" },
+        #{ title: "Repro", detail: "read benny-repro SKILL.md and fail closed without a trusted marker" },
     ],
 };
 
