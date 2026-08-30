@@ -21,6 +21,8 @@ grok plugin install tommy-ca/pstack --trust
 grok plugin enable pstack
 ```
 
+xAI Official also lists a plugin named `pstack` that points at `cursor/plugins`. Use owner/repo. Do not treat bare `grok plugin install pstack` as this port.
+
 本地目录也可以：
 
 A local checkout also works:

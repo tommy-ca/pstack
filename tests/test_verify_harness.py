@@ -114,6 +114,8 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert "tommy-ca/pstack --trust" in readme
     assert "aa2246740/pstack-grokbuild --trust" not in readme
     assert "spawn_subagent" in readme
+    assert "xAI Official also lists" in readme
+    assert "grok plugin install pstack --trust" not in readme
     assert ".cursor/skills" not in verify
     assert ".grok/skills/verify-" in verify
     assert ".cursor/skills" not in setup
