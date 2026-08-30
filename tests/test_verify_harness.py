@@ -284,6 +284,33 @@ def test_pstack_slash_names_do_not_collide_with_grok_builtins() -> None:
     assert "general-purpose" not in agents
 
 
+def test_plugin_manifest_matches_grok_parsed_fields() -> None:
+    import json
+
+    manifest = json.loads((ROOT / "plugin.json").read_text(encoding="utf-8"))
+    assert "displayName" not in manifest
+    assert manifest["name"] == "pstack"
+    assert isinstance(manifest.get("repository"), str)
+    assert isinstance(manifest.get("author"), dict)
+    assert "commands" not in manifest
+    assert not (ROOT / "commands").exists()
+    assert not (ROOT / "hooks").exists()
+    assert not (ROOT / ".mcp.json").exists()
+    assert not (ROOT / ".lsp.json").exists()
+    harness = (ROOT / "HARNESS.md").read_text(encoding="utf-8")
+    assert "## Plugin schema" in harness
+    assert "PluginManifest" in harness
+    assert "Do not ship `permissionMode: plan`" in harness
+    for path in (ROOT / "agents").glob("*.md"):
+        text = path.read_text(encoding="utf-8")
+        assert "permissionMode: plan" not in text, path.name
+        assert "permissionMode: bypassPermissions" not in text, path.name
+        assert "mcpServers:" not in text.split("---", 2)[1], path.name
+        assert "background: true" not in text.split("---", 2)[1], path.name
+        if "Setup may overlay via" in text:
+            assert "~/.grok/roles/pstack:" in text, path.name
+
+
 def test_harness_skill_order_is_pstack_then_user_then_native() -> None:
     harness = (ROOT / "HARNESS.md").read_text(encoding="utf-8")
     poteto = (ROOT / "skills/poteto-mode/SKILL.md").read_text(encoding="utf-8")
@@ -350,5 +377,6 @@ if __name__ == "__main__":
     test_readme_locale_split()
     test_first_session_names_sandbox_reload_and_slash()
     test_pstack_slash_names_do_not_collide_with_grok_builtins()
+    test_plugin_manifest_matches_grok_parsed_fields()
     test_harness_skill_order_is_pstack_then_user_then_native()
     print("PASS tests/test_verify_harness.py")

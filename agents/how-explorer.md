@@ -1,9 +1,7 @@
 ---
 name: how-explorer
-description: pstack how explorer. Same posture as the pstack role of this name. Shipped effort is frontmatter `effort`. Setup may overlay via ~/.grok/roles/how-explorer.toml.
-background: true
+description: pstack how explorer. Same posture as the pstack role of this name. Shipped effort is frontmatter `effort`. Setup may overlay via ~/.grok/roles/pstack:how-explorer.toml.
 effort: medium
-permissionMode: plan
 capabilityMode: execute
 inheritSkills: false
 ---

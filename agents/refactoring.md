@@ -1,7 +1,6 @@
 ---
 name: refactoring
-description: pstack refactoring writer. Same posture as the pstack role of this name. Shipped effort is frontmatter `effort`. Setup may overlay via ~/.grok/roles/refactoring.toml.
-background: true
+description: pstack refactoring writer. Same posture as the pstack role of this name. Shipped effort is frontmatter `effort`. Setup may overlay via ~/.grok/roles/pstack:refactoring.toml.
 effort: medium
 ---
 

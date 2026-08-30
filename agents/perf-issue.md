@@ -1,7 +1,6 @@
 ---
 name: perf-issue
-description: pstack perf-issue writer. Same posture as the pstack role of this name. Shipped effort is frontmatter `effort`. Setup may overlay via ~/.grok/roles/perf-issue.toml.
-background: true
+description: pstack perf-issue writer. Same posture as the pstack role of this name. Shipped effort is frontmatter `effort`. Setup may overlay via ~/.grok/roles/pstack:perf-issue.toml.
 effort: high
 ---
 

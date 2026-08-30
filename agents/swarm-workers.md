@@ -1,7 +1,6 @@
 ---
 name: swarm-workers
-description: pstack swarm worker. Same posture as the pstack role of this name. Shipped effort is frontmatter `effort`. Setup may overlay via ~/.grok/roles/swarm-workers.toml.
-background: true
+description: pstack swarm worker. Same posture as the pstack role of this name. Shipped effort is frontmatter `effort`. Setup may overlay via ~/.grok/roles/pstack:swarm-workers.toml.
 effort: medium
 ---
 

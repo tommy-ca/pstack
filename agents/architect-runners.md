@@ -1,7 +1,6 @@
 ---
 name: architect-runners
-description: pstack architect sketch writer. Same posture as the pstack role of this name. Shipped effort is frontmatter `effort`. Setup may overlay via ~/.grok/roles/architect-runners.toml.
-background: true
+description: pstack architect sketch writer. Same posture as the pstack role of this name. Shipped effort is frontmatter `effort`. Setup may overlay via ~/.grok/roles/pstack:architect-runners.toml.
 effort: xhigh
 ---
 
