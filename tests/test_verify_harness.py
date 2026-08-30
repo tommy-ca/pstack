@@ -122,6 +122,9 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert pin.returncode == 0, pin.stderr
     sha = pin.stdout.strip()
     assert re.fullmatch(r"[0-9a-f]{40}", sha), sha
+    plan = (ROOT / "TEST-PLAN.md").read_text(encoding="utf-8")
+    assert f"tree `{sha}`" in plan, sha
+    assert "46125561306434d8a1d7745d540d8932ab0cd2a2" not in plan
     recipe = subprocess.run(
         [sys.executable, str(ROOT / "scripts/sync-from-upstream.py"), "--recipe"],
         cwd=ROOT,
