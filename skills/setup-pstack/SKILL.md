@@ -1,6 +1,6 @@
 ---
 name: setup-pstack
-description: Configure which models and reasoning effort pstack uses per role. Detects your available models and the live grok-build effort enum, then writes ~/.grok/pstack-models.toml plus ~/.grok/roles/*.toml. Use for /setup-pstack, "configure pstack models", or changing pstack's model or effort choices.
+description: Configure which models and reasoning effort pstack uses per role. Detects your available models and the live grok-build effort enum, then writes ~/.grok/pstack-models.toml plus ~/.grok/roles/pstack:<role>.toml. Use for /setup-pstack, "configure pstack models", or changing pstack's model or effort choices.
 ---
 
 # Setup pstack

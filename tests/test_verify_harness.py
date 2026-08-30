@@ -306,6 +306,12 @@ def test_overlay_stems_and_adapter_are_plugin_qualified() -> None:
     harness = (ROOT / "HARNESS.md").read_text(encoding="utf-8")
     assert "~/.grok/roles/<pstack-role>.toml" not in harness
     assert "~/.grok/roles/pstack:<key>.toml" in harness
+    setup = (ROOT / "skills/setup-pstack/SKILL.md").read_text(encoding="utf-8")
+    en = (ROOT / "README.md").read_text(encoding="utf-8")
+    zh = (ROOT / "README.zh-CN.md").read_text(encoding="utf-8")
+    for text in (en, zh, setup):
+        assert "~/.grok/roles/*.toml" not in text
+        assert "~/.grok/roles/pstack:" in text or "pstack:<" in text
     checklist = [ln for ln in plan.splitlines() if "Gate 4a PASS" in ln and "feature.toml" in ln]
     assert checklist, "missing Gate 4a checklist line"
     assert "pstack:feature.toml" in checklist[0]
