@@ -35,3 +35,8 @@
 - [x] 6.1 Move live grok Benny to `automations/benny-grok/`.
 - [x] 6.2 `plugin.json` `skills` includes `./automations/benny-grok/skills/`. No `hooks` key.
 - [x] 6.3 ADR `adr/0003-benny-grok-is-plugin-installed.md` supersedes 0001 copy recipe.
+
+## 7. Audit fix
+
+- [x] 7.1 Design.md matches plugin skills live path. No deleted `grok/triage.md`.
+- [x] 7.2 ADR `adr/0004-benny-live-path-is-plugin-skills.md` supersedes 0002 live path.

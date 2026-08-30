@@ -1,6 +1,6 @@
 ## Why
 
-Benny is a Cursor automation pack for Slack issue reports. Two pipelines. One triages. One reproduces confirmed bugs and may open a draft pull request. Official pstack ships it as dormant source under `automations/benny/`. The grok port left it unwired. Grok has no Cursor `/automate` runtime and no Slack channel auto-trigger. We need an intent-driven spec of Benny's atomic blocks so a grok remap uses hooks and workflows without registering the pack as slash skills or installing plugin-global hooks.
+Benny is a Cursor automation pack for Slack issue reports. Two pipelines. One triages. One reproduces confirmed bugs and may open a draft pull request. Official pstack ships it as dormant source under `automations/benny/`. The grok port left it unwired. Grok has no Cursor `/automate` runtime and no Slack channel auto-trigger. We need an intent-driven spec of Benny's atomic blocks so grok live coordinators load as `/benny-triage` and `/benny-repro` after enable, without installing plugin-global hooks.
 
 ## What Changes
 

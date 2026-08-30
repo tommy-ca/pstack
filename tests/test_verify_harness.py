@@ -186,6 +186,23 @@ def test_benny_is_source_and_has_grok_remap() -> None:
     assert "pstack:" in live_repro
     assert "name: benny-triage" in live_triage
     assert "name: benny-repro" in live_repro
+    design = (
+        ROOT
+        / "openspec/changes/pstack-benny-atomic-blocks/design.md"
+    ).read_text(encoding="utf-8")
+    assert "automations/benny-grok/skills" in design
+    assert "Installing Benny SKILL.md files under plugin `skills/`." not in design
+    assert "grok/triage.md" not in design
+    assert "grok/repro.md" not in design
+    adr4 = ROOT / "adr/0004-benny-live-path-is-plugin-skills.md"
+    assert adr4.is_file()
+    assert "Supersedes: ADR-0002" in adr4.read_text(encoding="utf-8")
+    pack_spec = (
+        ROOT
+        / "openspec/changes/pstack-benny-atomic-blocks/specs/benny-pack/spec.md"
+    ).read_text(encoding="utf-8")
+    assert "./automations/benny-grok/skills/" in pack_spec
+    assert "THEN `skills` is `./skills/`" not in pack_spec
 
 
 def test_openspec_intent_driven_schema_resolves() -> None:

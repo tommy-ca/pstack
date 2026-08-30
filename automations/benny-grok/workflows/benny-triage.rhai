@@ -3,7 +3,7 @@ let meta = #{
     description: "Triage one Slack report. One thread-only verdict with a Benny marker.",
     phases: [
         #{ title: "Preflight", detail: "require args.thread_url" },
-        #{ title: "Triage", detail: "read grok triage.md and post one marker" },
+        #{ title: "Triage", detail: "read benny-triage SKILL.md and post one marker" },
     ],
 };
 
