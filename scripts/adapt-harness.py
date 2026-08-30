@@ -30,6 +30,7 @@ SKIP_FILES = {
     "adapt-harness.py",
     "TEST-PLAN.md",
     "README.md",
+    "README.zh-CN.md",
     "verify-harness.py",
 }
 TEXT_SUFFIXES = {".md", ".toml", ".json", ".ts", ".sh", ".mjs"}

@@ -87,6 +87,7 @@ SKIP_FILES = {
     "UPSTREAM",
     "TEST-PLAN.md",
     "README.md",
+    "README.zh-CN.md",
     "codex-tools.md",
     "provider-dispatch.md",
 }
