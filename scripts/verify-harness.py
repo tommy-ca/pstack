@@ -68,6 +68,8 @@ FORBIDDEN = [
     r"the Task tool",
     r"using the Task ",
     r"via Task ",
+    r"/loop` in dynamic mode",
+    r"under `/loop` in dynamic mode",
 ]
 
 # Official Cursor panel slugs. Must not appear as skill fallbacks.

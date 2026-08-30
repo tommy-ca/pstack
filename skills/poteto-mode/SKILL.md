@@ -12,7 +12,7 @@ reminder: New task? Playbook match or rigor needed -> apply /poteto-mode. Casual
 
 ## Non-negotiables
 
-**Start every multi-step task with a todolist whose first item is to read the Principles section below in full.** The principles ground every trigger here. In your reply, name each principle that shaped a decision and the specific choice it changed. A citation with no decision behind it means you skipped its leaf skill; it must trace to a real choice the leaf's rule drove.
+**Start every multi-step task with a todolist whose first item is to read the Principles section below in full and the mapping file for the current host.** Grok Build: `HARNESS.md` at the plugin root. Codex: `references/codex-tools.md` and `references/provider-dispatch.md`. Claude Code: spawn with `Agent` (this skill's Subagents section, swapping `task` for `Agent`). The principles ground every trigger here. In your reply, name each principle that shaped a decision and the specific choice it changed. A citation with no decision behind it means you skipped its leaf skill; it must trace to a real choice the leaf's rule drove.
 
 Remaining triggers:
 
@@ -86,7 +86,7 @@ Read the leaf skill in full for any principle you apply. Each entry names when i
 
 ## Subagents
 
-Spawn with the grok-build `task` tool. Fields and defaults are in `HARNESS.md`. Canonical id is `task`. Do not invent Cursor `Task` fields (`readonly`, `environment`, `capability_mode`, `reasoning_effort`).
+Spawn with the **current host** primitive. Grok Build: grok-build `task` (TUI alias `spawn_subagent`); fields and defaults are in `HARNESS.md`; canonical id is `task`. Codex: `spawn_agent` / `wait_agent` per `references/codex-tools.md`. Claude Code: `Agent`. Do not invent Cursor `Task` fields (`readonly`, `environment`, `capability_mode`, `reasoning_effort`).
 
 **Depth.** Grok Build sets `MAX_SUBAGENT_DEPTH` to 1. Only this parent session may call `task`. A child that calls `task` fails. Fan-out (`how`, `swarm`, `arena`, `interrogate`, independent verify) stays in the parent. A code-writing role child owns the diff directly. It does not spawn nested workers.
 
