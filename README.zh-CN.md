@@ -263,7 +263,7 @@ Cursor 版 pstack 的 `poteto-mode` 还引用过这些，这里没有打包：
 - `/deslop`、`control-cli`、`control-ui` 在 `cursor-team-kit` 里。这里用 `/unslop`、`/no-comments`，应用自己去点、去跑。
 - 独立核验是 `spawn_subagent`，`subagent_type` 为 `pstack:independent-verifier`。toml 里是已探测到的 slug 时另传 `model`，否则省略 `model`。不是 Cursor Cloud Agent。见 [HARNESS.md](./HARNESS.md)。
 - Graphite `gt` 可选。没有就用 `gh` 和 git。
-- Benny 的 Cursor 包在 `automations/benny/skills/`，是 **upstream reference**。现场 grok 合同在 [`automations/benny/grok/`](./automations/benny/grok/)。不是本插件的 plugin hooks。
+- Benny 的 Cursor 包在 `automations/benny/skills/`，是 **upstream reference**。现场 grok 合同在 [`automations/benny-grok/`](./automations/benny-grok/)（enable 后 `/benny-triage`）。不是本插件的 plugin hooks。
 
 ## 为什么没有规划技能
 
@@ -279,7 +279,7 @@ Grok Build 默认仍是 `grok-4.6` 加按角色的 effort。只有要改的时�
 
 ## 自动化
 
-仓库里还有一份休眠的 [benny automation pack](./automations/benny/)。那是 Cursor automation 源码。文件没有注册成 slash skill。Grok 副本在 [`automations/benny/grok/`](./automations/benny/grok/)。拷到目标仓库的 `.grok/`。不要写进本插件的 `plugin.json`。
+仓库里还有一份休眠的 [benny automation pack](./automations/benny/)。Cursor `skills/` 是 **upstream reference**。现场 grok 合同在 [`automations/benny-grok/`](./automations/benny-grok/)。enable pstack 后用 `/benny-triage`。不要给 `plugin.json` 加 `hooks`。
 
 可以 fork，可以改，欢迎 PR。
 

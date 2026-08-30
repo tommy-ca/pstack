@@ -19,7 +19,7 @@ Feature: benny-safety
 
 - **GIVEN** any Benny run
 - **WHEN** it writes to Slack
-- **THEN** grok `triage.md` / `repro.md` require freeze from `args.thread_url`
+- **THEN** grok `benny-triage` / `benny-repro` skills require freeze from the permalink
 - **AND** a missing `thread_ts` MUST produce no post
 - **AND** that rule is prompt-enforced
-- **AND** `automations/benny/grok/bin/fail-closed.sh` does not deny Slack MCP posts
+- **AND** `automations/benny-grok/bin/fail-closed.sh` does not deny Slack MCP posts

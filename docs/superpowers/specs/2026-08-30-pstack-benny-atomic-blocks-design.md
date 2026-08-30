@@ -35,18 +35,18 @@ Grok has no Slack channel auto-start. The operator passes `args.thread_url` into
 
 **Coordinates.** `SOURCE_CHANNEL_ID`, `SOURCE_THREAD_TS`. Optional `OPERATIONS_CHANNEL_ID` / `OPERATIONS_THREAD_TS` never replace source.
 
-**Grok copies.** `automations/benny/grok/hooks/hooks.json` → target `.grok/hooks/`. `automations/benny/grok/workflows/*.rhai` → target `.grok/workflows/`.
+**Grok live tree.** `automations/benny-grok/` loaded via `plugin.json` `skills`. Enable pstack. No copy.
 
 ## Building blocks vs this port
 
 | Block | Official Cursor | Grok port |
 |---|---|---|
-| Pack layout | `.cursor/automations/benny/` in the target | `automations/benny/` in pstack. Copy grok extras from `automations/benny/grok/` |
+| Pack layout | `.cursor/automations/benny/` in the target | Cursor reference `automations/benny/`. Live grok sibling `automations/benny-grok/` |
 | Slash skills | not registered | not registered. `plugin.json` `skills` stays `./skills/` |
 | Setup | point Cursor at `FOR_AGENTS.md`, `/automate` | copy grok files. Enable pstack with `grok plugin enable pstack` |
 | User config | `.cursor/benny/` | `.grok/benny/` |
 | Slack auto-start | Cursor automations | host gap. Pass `args.thread_url` |
-| Triage / repro intent | `skills/*/SKILL.md` **upstream reference** | live grok `grok/triage.md` and `grok/repro.md` |
+| Triage / repro intent | `skills/*/SKILL.md` **upstream reference** | `/benny-triage` and `/benny-repro` in `automations/benny-grok/skills/` |
 | Fail-closed merge | prompt only | copied `PreToolUse` hook denies `gh pr merge` and `git push --force` |
 | control-cli | Cursor team kit | skip. Drive the real app. Fail closed if the adapter is missing |
 | Plugin hooks | n/a | **not** in pstack `plugin.json`. Opt-in target copy only |

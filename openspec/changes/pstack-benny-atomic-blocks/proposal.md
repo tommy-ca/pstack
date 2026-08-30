@@ -6,7 +6,7 @@ Benny is a Cursor automation pack for Slack issue reports. Two pipelines. One tr
 
 - OpenSpec capabilities for pack layout, triage, repro, fail-closed safety, and the grok remap.
 - Design doc: Cursor vs grok mapping, data flow, schemas.
-- Opt-in grok copies under `automations/benny/grok/` (live `triage.md` / `repro.md`, hooks, workflows). Cursor `skills/` is the **upstream reference**, not the live coordinator. pstack `plugin.json` still has no `hooks` key.
+- Live grok Benny at `automations/benny-grok/`, loaded via `plugin.json` `skills`. Cursor `skills/` is the **upstream reference**. Enable pstack. No copy. No `hooks` key.
 
 ## Capabilities
 
@@ -16,7 +16,7 @@ Benny is a Cursor automation pack for Slack issue reports. Two pipelines. One tr
 - `benny-triage`: one thread-only verdict with `[benny:bug]`, `[benny:performance]`, or `[benny:other]`.
 - `benny-repro`: wait for a trusted marker, reproduce twice through real UI, draft PR only after proof.
 - `benny-safety`: immutable source coordinates, no source-channel root posts, no worker Slack writes, draft-only PRs.
-- `benny-grok-remap`: copy `automations/benny/grok/` into target `.grok/hooks/` and `.grok/workflows/`. Invoke with `/workflow` or `/loop` → `scheduler_create`. No Slack auto-start.
+- `benny-grok-remap`: live tree `automations/benny-grok/`, loaded with plugin enable. No copy. No Slack auto-start.
 
 ### Modified Capabilities
 
@@ -24,4 +24,4 @@ None.
 
 ## Impact
 
-`openspec/changes/pstack-benny-atomic-blocks/`, `docs/superpowers/specs/2026-08-30-pstack-benny-atomic-blocks-design.md`, `automations/benny/grok/`. No plugin-wide hooks. Skip Cursor `/automate` and `control-cli`.
+`openspec/changes/pstack-benny-atomic-blocks/`, `automations/benny-grok/`. No plugin-wide hooks. Skip Cursor `/automate` and `control-cli`.

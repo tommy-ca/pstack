@@ -25,7 +25,7 @@ log("thread_url=" + permalink);
 
 phase("Triage");
 let prompt = "";
-prompt += "Read automations/benny/grok/triage.md with read_file. That file is the live coordinator. ";
+prompt += "Read automations/benny-grok/skills/benny-triage/SKILL.md with read_file. That file is the live coordinator. ";
 prompt += "args.thread_url is " + json_encode(permalink) + ". ";
 prompt += "Use spawn_subagent with subagent_type pstack:how-explorer for cause. ";
 prompt += "Overnight waits use /loop which expands to scheduler_create. ";
