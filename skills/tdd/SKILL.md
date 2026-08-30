@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # TDD Bug Fix
 
-This is `/tdd`. Use it first. If this skill does not apply (no cheap local test path) and `/test-driven-development` is a live user skill, use that next.
+This is `/tdd`. Use it first when the bug has a cheap local test path. If `/tdd` is not loaded and `/test-driven-development` is live, use that. Skip both when the test path is expensive, integration-heavy, or unclear.
 
 When fixing a bug with a clear, cheap test path, make the broken behavior executable before changing production code. The goal is a focused regression test that fails before the fix and passes after it.
 

@@ -98,7 +98,7 @@ def transform(text: str) -> str:
     # Cursor Task `readonly` is not a grok-build task field.
     text = re.sub(
         r"^- `readonly`: `true`.*\n",
-        "- read-only: use `subagent_type: \"explore\"`. Do not send `readonly` or `capability_mode` on `task`; grok-build ignores `capability_mode` on the wire.\n",
+        "- read-only: use `subagent_type: \"pstack:how-explorer\"`. Do not send `readonly` or `capability_mode` on `task`; grok-build ignores `capability_mode` on the wire. Builtin `explore` only if that plugin agent is unknown.\n",
         text,
         flags=re.M,
     )

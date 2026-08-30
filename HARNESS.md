@@ -24,7 +24,7 @@ Install this repo as a Grok Build plugin. Do not keep `.cursor-plugin`, `~/.curs
 | Child role | `task.subagent_type`. Built-ins: `general-purpose` (default), `explore`, `plan`. Plugin agents on grok 1.0.13: **`pstack:<role-key>`** (`pstack:feature`, `pstack:how-explainer`, `pstack:poteto-agent`, `pstack:comment-sicko`, `pstack:independent-verifier`, …). Bare keys are unknown. Overlay stem is `~/.grok/roles/pstack:<key>.toml`. Plugin must be in `[plugins].enabled` (`grok plugin enable pstack` from a host shell). `inspect` `plugins[].enabled` is trust, not that list. | `TaskToolInput`; `16-subagents.md`; `xai-grok-agent/src/discovery.rs`; `select_role` |
 | Per-spawn model | `task.model` (optional slug). Omit to inherit parent. Do not pass with `resume_from`. Invalid slugs fail via `TaskModelValidator`. | `TaskToolInput.model` |
 | Per-spawn reasoning effort | **Not on the model-facing `task` schema.** `TaskToolInput` has no `reasoning_effort` field. Spawn from `task` sets `SubagentRuntimeOverrides.reasoning_effort` to `None`. Out of the box, plugin role agents set `AgentDefinition.effort` in frontmatter from the ship-time three-tier split in [`skills/setup-pstack/references/effort-ladder.md`](./skills/setup-pstack/references/effort-ladder.md) (`xhigh` / `high` / `medium` from the grok 1.0.5 CLI `use one of: xhigh, high, medium, low` list). Do not use `Effort::VALID_VALUES` (reserved `max` is not usable on this CLI). `/setup-pstack` re-detects from live `use one of:` and may overlay `SubagentRole.reasoning_effort` in `~/.grok/roles/<pstack-role>.toml`, which wins. `select_role(subagent_type)` then `apply_definition_runtime_defaults` in `resolve_runtime_config`. Skills spawn `subagent_type` `pstack:<role-key>`. Spawn skills cannot send `task.reasoning_effort` (no field). Do not offer `max` unless the live CLI listed it. Do not invent `ultra`. | `xai-tool-types/src/task.rs` `TaskToolInput`; `task/mod.rs` spawn (`reasoning_effort: None`); `xai-grok-subagent-resolution/src/definition.rs` `select_role` / `resolve_runtime_config` / `apply_definition_runtime_defaults`; live CLI `--reasoning-effort` `use one of:`; `SubagentRole.reasoning_effort`; `handle_request.rs` sampling apply; `~/.grok/roles` in `SubagentsConfig::resolve_base_with_sources` |
-| Read-only child | **Not `task.capability_mode`.** That field is `#[schemars(skip)]` and JSON that sends it is **ignored**. Use built-in `explore` (or `plan`) whose definition already filters tools. | `TaskToolInput.capability_mode`; `apply_child_tool_policy` |
+| Read-only child | **Not `task.capability_mode`.** That field is `#[schemars(skip)]` and JSON that sends it is **ignored**. Spawn `pstack:how-explorer` (no file-edit tools). Builtin `explore` only if that plugin agent is unknown. | `TaskToolInput.capability_mode`; `apply_child_tool_policy` |
 | Worktree isolation | `task.isolation`: `"none"` (default, shared cwd) or `"worktree"`. Mutually exclusive with `task.cwd`. | `SubagentIsolationMode`; `TaskToolInput.isolation` |
 | Resume a finished child | `task.resume_from` = prior `subagent_id`. Same `subagent_type`. | `TaskToolInput.resume_from` |
 | Nested spawn | **Forbidden by default.** `MAX_SUBAGENT_DEPTH` is `1`. A child that calls `task` fails. The parent session owns every spawn. Playbook "delegate then how/swarm from the child" is rewritten: parent fans out. | `task/mod.rs` `MAX_SUBAGENT_DEPTH` |
@@ -48,20 +48,22 @@ Live user/bundled means the name is in `grok inspect --json` `.skills[].name`. B
 
 | Need | 1. pstack | 2. User | 3. Bundled / builtin |
 |---|---|---|---|
-| TDD | `/tdd` | `/test-driven-development` | none |
+| TDD | `/tdd` | `/test-driven-development` only if `/tdd` is not loaded | none |
 | Author a SKILL.md | `playbooks/authoring-a-skill.md` | `/writing-skills` | `/create-skill` |
 | Review a diff or PR | `/interrogate` | `/requesting-code-review` | `/review` |
-| Babysit | `playbooks/babysit.md` | none | `/pr-babysit` (GitHub only; does not replace Graphite babysit) |
+| Babysit | `playbooks/babysit.md` | none | none |
 | Prove work is done | **prove-it-works**, `pstack:independent-verifier` | `/verification-before-completion` | none |
 | Debug a failure | `playbooks/bug-fix.md` | `/systematic-debugging` | none |
-| Git worktrees | `playbooks/worktree-cleanup.md` (prune) | `/using-git-worktrees` | `isolation: "worktree"` |
-| Spec then plan | `playbooks/figure-it-out.md` | `/brainstorming`, `/writing-plans` | `/plan`, builtin `plan` |
+| Disk prune | `playbooks/worktree-cleanup.md` | none | none |
+| Worktree isolation | none | `/using-git-worktrees` | `isolation: "worktree"` |
+| Design a playbook | `playbooks/figure-it-out.md` | none | none |
+| Spec then plan | none | `/brainstorming`, `/writing-plans` | `/plan`, builtin `plan` |
 | Execute a written plan | `playbooks/feature.md` spawn | `/executing-plans`, `/subagent-driven-development` | `/implement`, `/execute-plan` |
 | Overnight heartbeat | none | none | `/loop` → `scheduler_create` |
-| Read-only spawn | `pstack:how-explorer` | none | builtin `explore` |
+| Read-only spawn | `pstack:how-explorer` | none | builtin `explore` if plugin agent unknown |
 | Unslop / comments | `/unslop`, `/no-comments` | none | none |
 
-Do not route a Graphite stack babysit to `/pr-babysit`. That skill restacks. pstack `babysit.md` forbids topology mutation.
+Do not route babysit to `/pr-babysit`. That skill restacks. pstack `babysit.md` forbids topology mutation. User TDD is not a substitute when `/tdd` skipped the cheap-path gate.
 
 ## Docs vs source
 
