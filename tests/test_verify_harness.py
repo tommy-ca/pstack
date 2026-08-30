@@ -135,6 +135,7 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert "verify-harness.py" in recipe.stdout
     assert "make-bot-ui" in recipe.stdout
     assert "pstack:<role>" in recipe.stdout
+    assert "upstream-cursor-plugins/pstack" in recipe.stdout
     default = subprocess.run(
         [sys.executable, str(ROOT / "scripts/sync-from-upstream.py")],
         cwd=ROOT,
@@ -156,6 +157,21 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert "up to date" in logged.stdout or re.search(
         r"^[0-9a-f]{7} ", logged.stdout, re.M
     )
+    cache = ROOT / ".worktrees" / "upstream-cursor-plugins"
+    if (cache / ".git").is_dir():
+        head = subprocess.run(
+            ["git", "-C", str(cache), "rev-parse", "HEAD"],
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.strip()
+        tip = subprocess.run(
+            ["git", "-C", str(cache), "rev-parse", "origin/main"],
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.strip()
+        assert head == tip, (head, tip)
     assert ".cursor/skills" not in guide
     assert "Cursor's built-in `create-skill`" not in guide
     readme = (ROOT / "README.md").read_text(encoding="utf-8")

@@ -38,7 +38,7 @@ def recipe() -> str:
     return f"""Refresh from official Cursor pstack (pin {sha}).
 
 1. python3 scripts/sync-from-upstream.py --log
-2. Copy intent from that tree's pstack/ into this repo (`skills/`, `agents/`). Skip make-bot-ui. Do not overwrite HARNESS.md, plugin.json, README.md, README.zh-CN.md, tests/, or scripts/.
+2. Copy intent from .worktrees/upstream-cursor-plugins/pstack/ (`skills/`, `agents/`). That tree is origin/main after --log. Skip make-bot-ui. Do not overwrite HARNESS.md, plugin.json, README.md, README.zh-CN.md, tests/, or scripts/.
 3. python3 scripts/adapt-harness.py
 4. Hand-map depth-1 spawn (`pstack:<role>`) and persist-then-wake overnight (`/loop` → scheduler_create). Do not leave Cursor Task, same-run /loop, ~/.cursor/rules/*.mdc, or control-cli as live Grok calls.
 5. python3 scripts/verify-harness.py && python3 tests/test_verify_harness.py
@@ -53,21 +53,25 @@ def ensure_remote() -> Path:
             ["git", "-C", str(REMOTE_CACHE), "fetch", "--quiet", "origin", "main"],
             check=True,
         )
-        return REMOTE_CACHE
+    else:
+        subprocess.run(
+            [
+                "git",
+                "clone",
+                "--filter=blob:none",
+                "--sparse",
+                "--quiet",
+                CURSOR_PLUGINS,
+                str(REMOTE_CACHE),
+            ],
+            check=True,
+        )
+        subprocess.run(
+            ["git", "-C", str(REMOTE_CACHE), "sparse-checkout", "set", "pstack"],
+            check=True,
+        )
     subprocess.run(
-        [
-            "git",
-            "clone",
-            "--filter=blob:none",
-            "--sparse",
-            "--quiet",
-            CURSOR_PLUGINS,
-            str(REMOTE_CACHE),
-        ],
-        check=True,
-    )
-    subprocess.run(
-        ["git", "-C", str(REMOTE_CACHE), "sparse-checkout", "set", "pstack"],
+        ["git", "-C", str(REMOTE_CACHE), "merge", "--ff-only", "--quiet", "origin/main"],
         check=True,
     )
     return REMOTE_CACHE

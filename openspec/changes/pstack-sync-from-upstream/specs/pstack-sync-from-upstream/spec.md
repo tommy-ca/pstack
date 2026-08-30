@@ -25,3 +25,4 @@ Feature: pstack-sync-from-upstream
 - **THEN** stdout contains `pin ` and the 40-hex SHA
 - **AND** stdout contains either `up to date` or at least one oneline commit
 - **AND** the script does not copy files into `skills/`
+- **AND** `.worktrees/upstream-cursor-plugins` `HEAD` matches `origin/main` after `--log`
