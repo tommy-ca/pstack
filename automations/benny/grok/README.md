@@ -28,6 +28,8 @@ Enable pstack from a host shell. `grok plugin enable pstack`. Spawn `pstack:how-
 /workflow benny-repro {"thread_url":"https://slack.com/archives/..."}
 ```
 
-The workflow agent must read `automations/benny/skills/triage-issue-reports/SKILL.md` or `reproduce-and-fix-issues/SKILL.md` in this repo (or the copy you placed beside the target checkout). Reply only in the frozen thread. Never post a source-channel root message. Draft pull requests only.
+Keep `automations/benny/skills/` with the workflows. The Rhai files tell the agent to read those SKILL.md files. Copying only `grok/` is not enough.
+
+The workflow agent must follow those operational files. Reply only in the frozen thread. Never post a source-channel root message. That `thread_ts` rule is prompt-enforced. The copied hook only denies merge and force-push. Draft pull requests only. It does not see Slack MCP or `gh pr create`.
 
 `/loop` with a checkable predicate expands to `scheduler_create` (min 60s, new turn).

@@ -2,7 +2,7 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "run_terminal_command|Bash",
+        "matcher": "run_terminal_command|run_terminal_cmd|Bash",
         "hooks": [
           {
             "type": "command",

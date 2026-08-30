@@ -20,3 +20,11 @@ The grok port MUST keep Cursor `/automate` and `.cursor/automations/` as source 
 - **GIVEN** the copied `automations/benny/grok/hooks/hooks.json` in a trusted target
 - **WHEN** the agent is about to run `gh pr merge` or `git push --force`
 - **THEN** the `PreToolUse` hook returns deny
+
+#### Scenario: Slack thread_ts stays prompt-enforced
+
+- **GIVEN** `automations/benny/grok/bin/fail-closed.sh`
+- **WHEN** the tool command is not merge or force-push
+- **THEN** the script returns allow
+- **AND** source-channel `thread_ts` remains prompt-enforced in `SKILL.md` and the workflow prompt
+- **AND** grok has no Slack channel auto-start
