@@ -1,6 +1,6 @@
 ## Why
 
-Refreshing this port from official Cursor pstack is a five-step recipe in UPSTREAM and docs/guide/09-make-it-yours.md. Operators re-type git log/diff against a 40-hex pin. A small stdlib script should print the pin, the recipe, and the log since that tree.
+Refreshing this port from official Cursor pstack is a six-step recipe in UPSTREAM and docs/guide/09-make-it-yours.md. Operators re-type git log/diff against a 40-hex pin. A small stdlib script should print the pin, the recipe, and the log since that tree. After `--log`, the sparse clone is fast-forwarded to `origin/main` so a copy from that tree is the tip.
 
 ## What Changes
 
