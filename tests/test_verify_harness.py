@@ -59,10 +59,42 @@ def test_codex_map_matches_grok_call_sites() -> None:
     assert "ask_user_question" in mapping
 
 
+def test_poteto_mode_copies_tui_spawn_names() -> None:
+    skill = (ROOT / "skills/poteto-mode/SKILL.md").read_text(encoding="utf-8")
+    harness = (ROOT / "HARNESS.md").read_text(encoding="utf-8")
+    assert "spawn_subagent" in skill
+    assert "get_command_or_subagent_output" in skill
+    assert "spawn_subagent" in harness
+    assert "get_command_or_subagent_output" in harness
+    assert "scheduler_create" in harness
+
+
+def test_visual_parity_and_bug_fix_drive_real_surface() -> None:
+    visual = (
+        ROOT / "skills/poteto-mode/playbooks/visual-parity.md"
+    ).read_text(encoding="utf-8")
+    bug = (ROOT / "skills/poteto-mode/playbooks/bug-fix.md").read_text(
+        encoding="utf-8"
+    )
+    assert "control skill" not in visual
+    assert "control-cli" not in visual
+    assert "scheduler_create" in visual
+    assert "control skill" not in bug
+
+
+def test_make_bot_ui_is_not_invocable() -> None:
+    assert not (ROOT / "skills/make-bot-ui").exists()
+    plugin = (ROOT / "plugin.json").read_text(encoding="utf-8")
+    assert "make-bot-ui" not in plugin
+
+
 if __name__ == "__main__":
     test_verify_harness_script_exists()
     test_verify_harness_passes_on_this_tree()
     test_babysit_and_shipping_do_not_use_cursor_dynamic_loop()
     test_poteto_mode_first_todo_requires_host_map()
     test_codex_map_matches_grok_call_sites()
+    test_poteto_mode_copies_tui_spawn_names()
+    test_visual_parity_and_bug_fix_drive_real_surface()
+    test_make_bot_ui_is_not_invocable()
     print("PASS tests/test_verify_harness.py")
