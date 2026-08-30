@@ -306,6 +306,19 @@ def test_overlay_stems_and_adapter_are_plugin_qualified() -> None:
     harness = (ROOT / "HARNESS.md").read_text(encoding="utf-8")
     assert "~/.grok/roles/<pstack-role>.toml" not in harness
     assert "~/.grok/roles/pstack:<key>.toml" in harness
+    checklist = [ln for ln in plan.splitlines() if "Gate 4a PASS" in ln and "feature.toml" in ln]
+    assert checklist, "missing Gate 4a checklist line"
+    assert "pstack:feature.toml" in checklist[0]
+    assert "bare or `pstack:`" not in plan
+    root_ver = root_manifest["version"]
+    claude_mkt = json.loads(
+        (ROOT / ".claude-plugin/marketplace.json").read_text(encoding="utf-8")
+    )
+    assert claude_mkt["plugins"][0]["version"] == root_ver
+    upstream = (ROOT / "UPSTREAM").read_text(encoding="utf-8")
+    this_port = [ln.strip() for ln in upstream.splitlines() if ln.startswith("version ")]
+    assert this_port, "UPSTREAM missing this-port version line"
+    assert this_port[-1] == f"version {root_ver}", this_port
 
 
 def test_effort_frontmatter_matches_ladder() -> None:

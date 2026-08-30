@@ -247,19 +247,19 @@ Required **skill** names (hyphen-normalized, case-insensitive), source tied to p
 - `how`
 - `unslop`
 
-Required **agent** names (bare or `pstack:` qualified):
+Required **agent** names (`pstack:` qualified; bare stems are unknown on grok 1.0.13):
 
-- `poteto-agent`
-- `independent-verifier`
-- `comment-sicko`
-- `feature`
-- `how-explainer`
+- `pstack:poteto-agent`
+- `pstack:independent-verifier`
+- `pstack:comment-sicko`
+- `pstack:feature`
+- `pstack:how-explainer`
 
 Inspect may list the other role-key agents too (`how-explorer`, `swarm-workers`, …). Count should be 22.
 
 `init.skills` (or `slash_commands`) contains `poteto-mode` / `setup-pstack` unless inspect says they are not user-invocable. `poteto-mode` may be absent from auto-invoke and still present as a slash command.
 
-**PASS.** Inspect lists those four skills and the required agents from plugin `pstack` (22 agents total), and the live `init` line advertises `poteto-mode` as invocable (bare or qualified).
+**PASS.** Inspect lists those four skills and the required agents from plugin `pstack` (22 agents total, names `pstack:<role>`), and the live `init` line advertises `poteto-mode` as invocable.
 
 **FAIL.** Any required name is missing from inspect after enable, or the live session does not advertise `poteto-mode`.
 
@@ -1008,7 +1008,7 @@ Evidence dir:
 [ ] Gate 2 PASS  poteto-mode, setup-pstack, how, unslop visible; 22 agents visible
 [ ] Gate 3 PASS  no live AskQuestion / TodoWrite / generalPurpose / environment cloud; installed skills have no Cursor panel slugs
 [ ] Gate 4 PASS  detected slugs from live task.model rejection; effort from live `use one of:` (no reserved max unless listed)
-[ ] Gate 4a PASS accept-defaults / step 5; grok-4.6 + computed [effort] from live enum; feature.toml matches mechanical tier; TUI has no Cursor words
+[ ] Gate 4a PASS accept-defaults / step 5; grok-4.6 + computed [effort] from live enum; ~/.grok/roles/pstack:feature.toml matches mechanical tier; TUI has no Cursor words
 [ ] Gate 4b PASS missing toml; feature spawn sends grok-4.6 (or omits if rejected); no task.reasoning_effort; agents/feature.md effort: medium (ship-time mechanical)
 [ ] Gate 4c PASS independent-verifier set to a live slug (grok-4.5 when present); task accepts it
 [ ] Gate 4d PASS ~/.cursor/rules/pstack-models.mdc does not exist after setup
