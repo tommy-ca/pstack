@@ -11,3 +11,17 @@ Feature: pstack-sync-from-upstream
 - **GIVEN** `UPSTREAM` contains `tree <40-hex>`
 - **WHEN** `python3 scripts/sync-from-upstream.py --pin` runs
 - **THEN** stdout is that SHA
+
+#### Scenario: default argv prints the recipe
+
+- **GIVEN** the shipped script
+- **WHEN** `python3 scripts/sync-from-upstream.py` runs with no flags
+- **THEN** stdout is the same as `--recipe`
+
+#### Scenario: log names pin and empty-or-commits
+
+- **GIVEN** a fetch of cursor/plugins is possible
+- **WHEN** `python3 scripts/sync-from-upstream.py --log` runs
+- **THEN** stdout contains `pin ` and the 40-hex SHA
+- **AND** stdout contains either `up to date` or at least one oneline commit
+- **AND** the script does not copy files into `skills/`
