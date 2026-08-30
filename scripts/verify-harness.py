@@ -81,12 +81,13 @@ CURSOR_MODEL_SLUGS = (
     "claude-opus-5-thinking-xhigh",
 )
 
-SKIP_DIRS = {".git", "automations", "scripts"}
+SKIP_DIRS = {".git", "automations", "scripts", ".superpowers"}
 SKIP_FILES = {
     "HARNESS.md",
     "UPSTREAM",
     "TEST-PLAN.md",
     "README.md",
+    "README.zh-CN.md",
     "codex-tools.md",
     "provider-dispatch.md",
 }

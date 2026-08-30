@@ -197,7 +197,7 @@ export PLUGIN_PATH="$(cat "$EVIDENCE/PLUGIN_PATH.txt")"
 - Trust run. Stdout names the installed plugin (`Installed … pstack` or equivalent). Exit 0.
 - `gate1-enable.txt` contains `Enabled plugin: pstack`.
 - `plugin list --json` has an `installed` entry whose `name` is `pstack`.
-- `inspect --json` `plugins[]` has `name: "pstack"`, `provides.skills` ≥ 40 (this tree ships 44 `skills/*/SKILL.md`), `provides.agents` = 22 (3 original plus one plugin agent per pstack role key).
+- `inspect --json` `plugins[]` has `name: "pstack"`, `provides.skills` ≥ 40 (this tree ships 44 `skills/*/SKILL.md`). `provides.agents` is a **directory count** (1 on grok 1.0.13). The live catalog is `inspect --json` `.agents[]` with `source.plugin_name == "pstack"`: 22 names, all `pstack:<role-key>` (`pstack:how-explorer`, not `how-explorer`). Plugin must be in `[plugins].enabled`; inspect `plugins[].enabled` is trust.
 - `PLUGIN_PATH` is a real directory containing `plugin.json` and `skills/poteto-mode/SKILL.md`.
 
 **PASS.** Plugin `pstack` is installed with `--trust`, enabled, and `grok inspect --json` reports it with a non-zero skill count and 22 agents.
