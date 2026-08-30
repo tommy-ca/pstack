@@ -255,7 +255,7 @@ Required **agent** names (`pstack:` qualified; bare stems are unknown on grok 1.
 - `pstack:feature`
 - `pstack:how-explainer`
 
-Inspect may list the other role-key agents too (`how-explorer`, `swarm-workers`, …). Count should be 22.
+Inspect may list the other role-key agents too (`pstack:how-explorer`, `pstack:swarm-workers`, …). Count should be 22.
 
 `init.skills` (or `slash_commands`) contains `poteto-mode` / `setup-pstack` unless inspect says they are not user-invocable. `poteto-mode` may be absent from auto-invoke and still present as a slash command.
 

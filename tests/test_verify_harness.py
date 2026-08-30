@@ -310,6 +310,8 @@ def test_overlay_stems_and_adapter_are_plugin_qualified() -> None:
     assert checklist, "missing Gate 4a checklist line"
     assert "pstack:feature.toml" in checklist[0]
     assert "bare or `pstack:`" not in plan
+    assert "(`how-explorer`, `swarm-workers`" not in plan
+    assert "`pstack:how-explorer`" in plan
     root_ver = root_manifest["version"]
     claude_mkt = json.loads(
         (ROOT / ".claude-plugin/marketplace.json").read_text(encoding="utf-8")
