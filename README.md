@@ -124,7 +124,7 @@ When invoked it:
 
 The full rules and playbooks live in [`skills/poteto-mode/SKILL.md`](./skills/poteto-mode/SKILL.md).
 
-[`/poteto-mode`](./skills/poteto-mode/SKILL.md) is also a sticky mode. Once entered it stays on across turns, applying itself when a playbook matches or the task needs rigor, and staying out of the way otherwise. Opt out any time by saying so.
+Type [`/poteto-mode`](./skills/poteto-mode/SKILL.md) when a playbook matches or the task needs rigor. It does not auto-enter. Follow-ups in the same chat stay in this style until you opt out.
 
 [`/poteto-mode`](./skills/poteto-mode/SKILL.md) works with grok-build `/loop`, which expands to `scheduler_create`. You can leave a checkable predicate running for hours without sacrificing rigor.
 
