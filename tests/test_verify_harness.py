@@ -207,6 +207,83 @@ def test_first_session_names_sandbox_reload_and_slash() -> None:
         assert "grok plugin install pstack --trust" not in text
 
 
+# grok 1.0.13 pager builtins from 04-slash-commands.md. Skills with these
+# names lose /name to the builtin (qualified as pstack:name).
+GROK_BUILTIN_SLASH = {
+    "new",
+    "resume",
+    "dashboard",
+    "compact",
+    "context",
+    "session-info",
+    "fork",
+    "rewind",
+    "copy",
+    "export",
+    "quit",
+    "home",
+    "delete",
+    "rename",
+    "model",
+    "effort",
+    "always-approve",
+    "auto",
+    "multiline",
+    "history",
+    "compact-mode",
+    "vim-mode",
+    "edit-prompt",
+    "minimal",
+    "fullscreen",
+    "plan",
+    "view-plan",
+    "memory",
+    "flush",
+    "dream",
+    "remember",
+    "hooks",
+    "plugins",
+    "marketplace",
+    "skills",
+    "imagine",
+    "imagine-video",
+    "loop",
+    "goal",
+    "deep-research",
+    "workflow",
+    "workflows",
+    "theme",
+    "feedback",
+    "btw",
+    "mcps",
+    "doctor",
+    "release-notes",
+    "docs",
+    "tutorial",
+    "import-claude",
+    "config-agents",
+    "personas",
+    "login",
+    "logout",
+    "usage",
+    "privacy",
+    "settings",
+    "timestamps",
+    "howto",
+}
+
+
+def test_pstack_slash_names_do_not_collide_with_grok_builtins() -> None:
+    names = {p.parent.name for p in (ROOT / "skills").glob("*/SKILL.md")}
+    hit = sorted(names & GROK_BUILTIN_SLASH)
+    assert hit == [], hit
+    assert not (ROOT / "commands").exists()
+    agents = {p.stem for p in (ROOT / "agents").glob("*.md")}
+    assert "explore" not in agents
+    assert "plan" not in agents
+    assert "general-purpose" not in agents
+
+
 if __name__ == "__main__":
     test_verify_harness_script_exists()
     test_verify_harness_passes_on_this_tree()
@@ -220,4 +297,5 @@ if __name__ == "__main__":
     test_grok_spawn_types_are_plugin_qualified()
     test_readme_locale_split()
     test_first_session_names_sandbox_reload_and_slash()
+    test_pstack_slash_names_do_not_collide_with_grok_builtins()
     print("PASS tests/test_verify_harness.py")
