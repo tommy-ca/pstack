@@ -295,22 +295,45 @@ def test_harness_skill_order_is_pstack_then_user_then_native() -> None:
         ROOT / "skills/poteto-mode/playbooks/babysit.md"
     ).read_text(encoding="utf-8")
     how = (ROOT / "skills/how/SKILL.md").read_text(encoding="utf-8")
+    bug_fix = (
+        ROOT / "skills/poteto-mode/playbooks/bug-fix.md"
+    ).read_text(encoding="utf-8")
+    figure = (ROOT / "skills/figure-it-out/SKILL.md").read_text(
+        encoding="utf-8"
+    )
+    authoring = (
+        ROOT / "skills/poteto-mode/playbooks/authoring-a-skill.md"
+    ).read_text(encoding="utf-8")
+    adapt = (ROOT / "scripts/adapt-harness.py").read_text(encoding="utf-8")
     assert "## Skill order" in harness
     assert "## Native first" not in harness
     assert "pstack, then user, then bundled and builtin" in harness
-    assert "/tdd" in harness
+    assert "Use built-in `explore`" not in harness
     assert "pstack:how-explorer" in harness
+    table_babysit = [ln for ln in harness.splitlines() if ln.startswith("| Babysit |")]
+    assert table_babysit, "missing Babysit row"
+    assert "/pr-babysit" not in table_babysit[0]
     assert "Skill order" in poteto or "pstack first" in poteto
+    assert "before `/pr-babysit`" not in poteto
+    assert "Use it first" in tdd
+    assert "Skip both" in tdd or "skip both" in tdd
+    assert "does not apply" not in tdd
     assert tdd.find("/tdd") < tdd.find("/test-driven-development")
-    assert "fallback" in interrogate.lower() or "then `/review`" in interrogate or "then /review" in interrogate
-    assert babysit.find("playbooks/babysit") >= 0 or "this playbook" in babysit.lower()
-    assert "/pr-babysit" in babysit
+    assert "Use it first" in interrogate
+    assert "/review" in interrogate
+    assert "use `/review`" not in interrogate.lower()
+    assert "Do not route to `/pr-babysit`" in babysit
     assert "pstack:how-explorer" in how
     idx_p = how.find("pstack:how-explorer")
     idx_e = how.find("builtin `explore`")
     assert idx_p != -1
     if idx_e != -1:
         assert idx_p < idx_e
+    assert "/tdd" in bug_fix
+    assert "Skip both" in bug_fix or "skip both" in bug_fix
+    assert "Use it first" in figure
+    assert "Apply this playbook" in authoring or "this playbook" in authoring[:400]
+    assert "pstack:how-explorer" in adapt
 
 
 if __name__ == "__main__":

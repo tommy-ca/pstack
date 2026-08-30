@@ -344,6 +344,7 @@ grok -p 'Call the task tool exactly once with these fields and then stop:
 prompt: Reply pong and stop. Do not edit files.
 description: slug probe
 subagent_type: explore
+# probe uses any known-valid builtin; not Skill order. Gate 1 already required the plugin.
 run_in_background: true
 model: __pstack_probe_not_a_real_model__
 Do not retry with a guessed slug. After the tool error, quote the error text verbatim and stop.' \

@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Interrogate
 
-This is the pstack multi-model adversarial review. Use it first. `/review` is the bundled single-reviewer fallback.
+This is the pstack multi-model adversarial review. Use it first. Do not start with `/review`. `/review` is the bundled single-reviewer fallback after this skill.
 
 Spawn one reviewer per configured model to adversarially review code changes. Each model gets the same prompt and rubric. The adversarial signal comes from model diversity, not assigned personas. Models differ in blind spots, priors, and reasoning patterns. Agreement across models is high-confidence signal; lone-model findings are worth reading but lower confidence.
 
