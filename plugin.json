@@ -19,6 +19,6 @@
     "codex",
     "claude-code"
   ],
-  "skills": "./skills/",
+  "skills": ["./skills/", "./automations/benny-grok/skills/"],
   "agents": "./agents/"
 }

@@ -134,8 +134,17 @@ def main() -> None:
     name = plugin.get("name", "")
     if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", name) or len(name) > 64:
         fail(f"plugin.json name {name!r} is not grok-build kebab-case")
-    if plugin.get("skills") != "./skills/":
-        fail("plugin.json skills path must be ./skills/")
+    skills_field = plugin.get("skills")
+    if isinstance(skills_field, str):
+        skill_paths = [skills_field]
+    elif isinstance(skills_field, list):
+        skill_paths = [str(p) for p in skills_field]
+    else:
+        fail("plugin.json skills must be a path or path list")
+    if "./skills/" not in skill_paths:
+        fail("plugin.json skills must include ./skills/")
+    if "hooks" in plugin:
+        fail("plugin.json must not register hooks")
     if plugin.get("agents") != "./agents/":
         fail("plugin.json agents path must be ./agents/")
 
@@ -195,14 +204,17 @@ def main() -> None:
         fail("leftover Cursor harness call sites:\n  " + "\n  ".join(hits))
 
     slug_hits: list[str] = []
-    skills_root = ROOT / "skills"
-    for path in skills_root.rglob("*"):
-        if not path.is_file() or path.suffix not in {".md", ".mjs"}:
-            continue
-        text = path.read_text(encoding="utf-8")
-        for slug in CURSOR_MODEL_SLUGS:
-            if slug in text:
-                slug_hits.append(f"{path.relative_to(ROOT)}: {slug}")
+    for sp in skill_paths:
+        skills_root = ROOT / sp
+        if not skills_root.is_dir():
+            fail(f"plugin.json skills path missing: {sp}")
+        for path in skills_root.rglob("*"):
+            if not path.is_file() or path.suffix not in {".md", ".mjs"}:
+                continue
+            text = path.read_text(encoding="utf-8")
+            for slug in CURSOR_MODEL_SLUGS:
+                if slug in text:
+                    slug_hits.append(f"{path.relative_to(ROOT)}: {slug}")
     if slug_hits:
         fail(
             "Cursor panel slugs in skills/ (omit task.model instead):\n  "

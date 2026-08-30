@@ -263,7 +263,7 @@ A few things `poteto-mode` referenced in Cursor pstack and does not bundle here:
 - `/deslop`, `control-cli`, and `control-ui` lived in `cursor-team-kit`. Use `/unslop`, `/no-comments`, and drive the real app yourself.
 - Independent verify is `spawn_subagent` with `subagent_type` `pstack:independent-verifier`. Send a different `model` when the toml names a detected slug; otherwise omit `model`. Not a Cursor Cloud Agent. See [HARNESS.md](./HARNESS.md).
 - Graphite `gt` is optional. If it is missing, use `gh` and git.
-- Benny Cursor pack under `automations/benny/skills/` is the **upstream reference**. Live grok contract is [`automations/benny/grok/`](./automations/benny/grok/). Not pstack plugin hooks.
+- Benny Cursor pack under `automations/benny/skills/` is the **upstream reference**. Live grok contract is [`automations/benny-grok/`](./automations/benny-grok/) (`/benny-triage`, `/benny-repro` after enable). Not pstack plugin hooks.
 
 ## Why are there no planning skills?
 
@@ -279,7 +279,7 @@ The Grok Build default is `grok-4.6` plus per-role effort. Type [`/setup-pstack`
 
 ## Automations
 
-This repo also ships a dormant [benny automation pack](./automations/benny/). Cursor `skills/` is the **upstream reference**. The live grok contract is [`automations/benny/grok/`](./automations/benny/grok/) (`triage.md`, `repro.md`, hooks, workflows). Copy those into a target repo. Do not add them to this plugin's `plugin.json`.
+This repo also ships a dormant [benny automation pack](./automations/benny/). Cursor `skills/` is the **upstream reference**. The live grok contract is [`automations/benny-grok/`](./automations/benny-grok/). Enable pstack and type `/benny-triage`. Do not add a `hooks` key to `plugin.json`.
 
 Fork it. Improve it. PRs are welcome.
 

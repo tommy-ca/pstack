@@ -96,7 +96,13 @@ def test_make_bot_ui_is_not_invocable() -> None:
 def test_benny_is_source_and_has_grok_remap() -> None:
     plugin = json.loads((ROOT / "plugin.json").read_text(encoding="utf-8"))
     assert "hooks" not in plugin
-    assert "automations/benny" not in json.dumps(plugin)
+    assert "fail-closed" not in json.dumps(plugin)
+    skills_field = plugin.get("skills")
+    skill_paths = (
+        [skills_field] if isinstance(skills_field, str) else list(skills_field)
+    )
+    assert "./automations/benny-grok/skills/" in skill_paths
+    assert "./skills/" in skill_paths
     assert not (ROOT / "skills/setup-benny").exists()
     assert not (ROOT / "skills/triage-issue-reports").exists()
     assert not (ROOT / "skills/reproduce-and-fix-issues").exists()
@@ -106,21 +112,16 @@ def test_benny_is_source_and_has_grok_remap() -> None:
         encoding="utf-8"
     )
     assert "[benny:bug]" in triage
-    grok = pack / "grok"
-    readme = (grok / "README.md").read_text(encoding="utf-8")
-    assert "automations/benny/grok" in readme or ".grok/hooks" in readme
+    assert not (pack / "grok").exists()
+    live_root = ROOT / "automations/benny-grok"
+    assert live_root.is_dir()
+    readme = (live_root / "README.md").read_text(encoding="utf-8")
+    assert "grok plugin enable pstack" in readme
+    assert "mkdir -p .grok/hooks" not in readme
     assert "/automate" not in readme
     assert ".cursor/automations" not in readme
     assert "scheduler_create" in readme
-    hooks = json.loads((grok / "hooks/hooks.json").read_text(encoding="utf-8"))
-    assert "PreToolUse" in hooks["hooks"]
-    assert (grok / "workflows/benny-triage.rhai").is_file()
-    assert (grok / "workflows/benny-repro.rhai").is_file()
-    harness = (ROOT / "HARNESS.md").read_text(encoding="utf-8")
-    assert "automations/benny/grok" in harness
-    openspec = ROOT / "openspec/changes/pstack-benny-atomic-blocks/proposal.md"
-    assert openspec.is_file()
-    script = grok / "bin/fail-closed.sh"
+    script = live_root / "bin/fail-closed.sh"
     deny = subprocess.run(
         ["sh", str(script)],
         input=json.dumps(
@@ -163,23 +164,28 @@ def test_benny_is_source_and_has_grok_remap() -> None:
     ).read_text(encoding="utf-8")
     assert "prompt-enforced" in remap
     assert "upstream reference" in remap
-    triage_wf = (grok / "workflows/benny-triage.rhai").read_text(encoding="utf-8")
-    repro_wf = (grok / "workflows/benny-repro.rhai").read_text(encoding="utf-8")
-    live_triage = (grok / "triage.md").read_text(encoding="utf-8")
-    live_repro = (grok / "repro.md").read_text(encoding="utf-8")
-    live = "\n".join([readme, triage_wf, repro_wf, live_triage, live_repro])
+    assert "plugin enable" in remap
+    live_triage = (
+        live_root / "skills/benny-triage/SKILL.md"
+    ).read_text(encoding="utf-8")
+    live_repro = (
+        live_root / "skills/benny-repro/SKILL.md"
+    ).read_text(encoding="utf-8")
+    harness = (ROOT / "HARNESS.md").read_text(encoding="utf-8")
+    assert "automations/benny-grok" in harness
+    assert "automations/benny/grok" not in harness
+    live = "\n".join([readme, live_triage, live_repro])
     assert "/automate" not in live
     assert "trigger.thread_ts" not in live
     assert "trigger.ts" not in live
     assert ".cursor/automations" not in live
-    assert "skills/triage-issue-reports/SKILL.md" not in triage_wf
-    assert "skills/reproduce-and-fix-issues/SKILL.md" not in repro_wf
     assert "spawn_subagent" in live_triage
     assert "pstack:" in live_triage
     assert "scheduler_create" in live
-    assert "args.thread_url" in triage_wf
     assert "spawn_subagent" in live_repro
     assert "pstack:" in live_repro
+    assert "name: benny-triage" in live_triage
+    assert "name: benny-repro" in live_repro
 
 
 def test_openspec_intent_driven_schema_resolves() -> None:

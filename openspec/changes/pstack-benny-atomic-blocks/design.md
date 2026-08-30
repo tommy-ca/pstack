@@ -20,7 +20,7 @@ No files exist under `adr/` yet. Nothing in force constrains this design.
 
 ## Decisions
 
-1. **Opt-in copies, not plugin hooks.** Put grok files under `automations/benny/grok/`. The operator copies them into a target `.grok/hooks/` and `.grok/workflows/`. Alternative was `plugin.json` `hooks`. Rejected because trusted plugin hooks run in every pstack session.
+1. **Plugin skills, not plugin hooks.** Live grok Benny is `automations/benny-grok/` and `plugin.json` `skills` includes that tree. Enable pstack loads `/benny-triage`. Alternative was `plugin.json` `hooks`. Rejected because trusted plugin hooks run in every pstack session.
 
 2. **Hook only merge and force-push.** `fail-closed.sh` denies `gh pr merge`, `git push --force` / `-f`, and `gt merge`. Slack freeze and worker isolation stay prompt-enforced in grok `triage.md` / `repro.md`. Alternative was a PreToolUse matcher on Slack MCP names. Rejected. We do not know the live `server__tool` id, and fail-open on crash would still post.
 
@@ -28,7 +28,7 @@ No files exist under `adr/` yet. Nothing in force constrains this design.
 
 4. **Ship the intent-driven schema in-tree.** Copy `openspec/schemas/intent-driven/` from the same definition the OpenSpec skills describe. Alternative was flipping `config.yaml` to `spec-driven`. Rejected. Every pstack change already declares `schema: intent-driven`.
 
-5. **Cursor SKILL.md is upstream reference.** Live grok contract is `automations/benny/grok/triage.md` and `repro.md`. Workflows must not instruct following `automations/benny/skills/*/SKILL.md` as the coordinator. Marker names and atomic intent stay shared with the reference pack.
+5. **Cursor SKILL.md is upstream reference.** Live grok contract is `automations/benny-grok/skills/benny-triage/SKILL.md` and `benny-repro/SKILL.md`. Marker names and atomic intent stay shared with the reference pack.
 
 ## Risks / Trade-offs
 
@@ -39,7 +39,7 @@ No files exist under `adr/` yet. Nothing in force constrains this design.
 
 ## Migration Plan
 
-Operators copy `automations/benny/grok/` as in that README. Trust the target folder. Enable pstack from a host shell. No plugin reinstall is required for the schema. Rollback is delete the copied target files. pstack `plugin.json` never gained `hooks`.
+Enable pstack. Type `/benny-triage`. No copy. Rollback is disable pstack or remove the skills path. `plugin.json` never gained `hooks`.
 
 ## Open Questions
 

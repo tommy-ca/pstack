@@ -24,7 +24,7 @@ log("thread_url=" + permalink);
 
 phase("Repro");
 let prompt = "";
-prompt += "Read automations/benny/grok/repro.md with read_file. That file is the live coordinator. ";
+prompt += "Read automations/benny-grok/skills/benny-repro/SKILL.md with read_file. That file is the live coordinator. ";
 prompt += "args.thread_url is " + json_encode(permalink) + ". ";
 prompt += "Use spawn_subagent with subagent_type pstack:feature for a bounded fix and pstack:independent-verifier for a second check. ";
 prompt += "Overnight waits use /loop which expands to scheduler_create. ";

@@ -29,3 +29,9 @@
 - [x] 5.1 Specs name Cursor `skills/` as **upstream reference**. Live grok files are `grok/triage.md` and `grok/repro.md`.
 - [x] 5.2 Workflows read those grok files. They do not instruct following Cursor SKILL.md as the coordinator.
 - [x] 5.3 ADR `adr/0002-benny-cursor-pack-is-upstream-reference.md`.
+
+## 6. Plugin-installed sibling tree
+
+- [x] 6.1 Move live grok Benny to `automations/benny-grok/`.
+- [x] 6.2 `plugin.json` `skills` includes `./automations/benny-grok/skills/`. No `hooks` key.
+- [x] 6.3 ADR `adr/0003-benny-grok-is-plugin-installed.md` supersedes 0001 copy recipe.
