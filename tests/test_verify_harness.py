@@ -101,6 +101,8 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert "control-cli" in guide
     assert "tommy-ca/pstack" in setup
     assert "aa2246740/pstack-grokbuild --trust" not in setup
+    assert "grok plugin install pstack --trust" not in setup
+    assert "cursor/plugins" in setup
     assert "spawn_subagent" in setup
     assert "adapt-harness.py" in upstream
     assert ".cursor/skills" not in guide
