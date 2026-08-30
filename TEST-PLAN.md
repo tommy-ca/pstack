@@ -507,9 +507,9 @@ done < "$EVIDENCE/gate4a-written-slugs.txt" \
   | tee "$EVIDENCE/gate4a-undetected.txt"
 ```
 
-**PASS.** `~/.grok/pstack-models.toml` exists. `gate4a-cursor-slugs.txt` is empty. `gate4a-undetected.txt` is empty. Every real slug is in the detected set. If `grok-4.6` was detected, model keys are `grok-4.6` (panel keys are one-entry arrays). `[effort].feature` equals `mechanical:` from `gate4-expected-tiers.txt`. `[effort].bug-fix` equals `instruction:`. `[effort].how-explainer` equals `judgment:`. `~/.grok/roles/feature.toml` contains that same mechanical token as `reasoning_effort`. `gate4a-tui-leak.txt` is empty (no Cursor / mixed-panel / mdc path in the question the human saw).
+**PASS.** `~/.grok/pstack-models.toml` exists. `gate4a-cursor-slugs.txt` is empty. `gate4a-undetected.txt` is empty. Every real slug is in the detected set. If `grok-4.6` was detected, model keys are `grok-4.6` (panel keys are one-entry arrays). `[effort].feature` equals `mechanical:` from `gate4-expected-tiers.txt`. `[effort].bug-fix` equals `instruction:`. `[effort].how-explainer` equals `judgment:`. `~/.grok/roles/pstack:feature.toml` contains that same mechanical token as `reasoning_effort`. `gate4a-tui-leak.txt` is empty (no Cursor / mixed-panel / mdc path in the question the human saw).
 
-**FAIL.** The file is missing, or it contains any of the four Cursor panel slugs, or any other unconfirmed slug, or `ask_user_question` offered a mixed/port option or named `~/.cursor/rules`, or shipped `[effort]` / `~/.grok/roles/feature.toml` is missing after accept-defaults.
+**FAIL.** The file is missing, or it contains any of the four Cursor panel slugs, or any other unconfirmed slug, or `ask_user_question` offered a mixed/port option or named `~/.cursor/rules`, or shipped `[effort]` / `~/.grok/roles/pstack:feature.toml` is missing after accept-defaults.
 
 **CANNOT-PROVE (not PASS).** Headless hung on `ask_user_question` (exit 124) and TUI was not available. Retry in TUI.
 
@@ -692,7 +692,7 @@ cat "$EVIDENCE/gate4e-pstack-models.toml"
 ls -la "$HOME/.grok/roles" | tee "$EVIDENCE/gate4e-roles.ls"
 for key in feature bug-fix how-explainer independent-verifier; do
   echo "===== $key ====="
-  cat "$HOME/.grok/roles/${key}.toml" 2>&1 || true
+  cat "$HOME/.grok/roles/pstack:${key}.toml" 2>&1 || true
 done | tee "$EVIDENCE/gate4e-role-files.txt"
 
 jq -c 'select(.type=="tool_call" and (.toolName=="task" or .toolName=="Task" or .toolName=="spawn_subagent"))
@@ -703,7 +703,7 @@ jq -c 'select(.type=="tool_call" and (.toolName=="task" or .toolName=="Task" or 
 
 Compare overlays to `gate4-expected-tiers.txt` (`mechanical:`, `instruction:`, `judgment:`).
 
-**PASS.** `~/.grok/roles/feature.toml` `reasoning_effort` equals `mechanical:`. `~/.grok/roles/bug-fix.toml` equals `instruction:`. `~/.grok/roles/how-explainer.toml` and `~/.grok/roles/independent-verifier.toml` equal `judgment:`. No `task` call in this gate sent a `reasoning_effort` key. `gate4e-tui-leak` is not required if setup skipped `ask_user_question`; if it asked, the payload has no Cursor words (same grep as Gate 4a) and did not invent `ultra`.
+**PASS.** `~/.grok/roles/pstack:feature.toml` `reasoning_effort` equals `mechanical:`. `~/.grok/roles/pstack:bug-fix.toml` equals `instruction:`. `~/.grok/roles/pstack:how-explainer.toml` and `~/.grok/roles/pstack:independent-verifier.toml` equal `judgment:`. No `task` call in this gate sent a `reasoning_effort` key. `gate4e-tui-leak` is not required if setup skipped `ask_user_question`; if it asked, the payload has no Cursor words (same grep as Gate 4a) and did not invent `ultra`.
 
 **FAIL.** Role files missing, wrong levels vs the computed ladder, a live `task` payload includes `reasoning_effort`, setup wrote `max` when `use one of:` did not name it, or setup copied `Effort::VALID_VALUES` instead of the live CLI list.
 

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import re
 import subprocess
 import sys
@@ -284,6 +285,29 @@ def test_pstack_slash_names_do_not_collide_with_grok_builtins() -> None:
     assert "general-purpose" not in agents
 
 
+def test_overlay_stems_and_adapter_are_plugin_qualified() -> None:
+    plan = (ROOT / "TEST-PLAN.md").read_text(encoding="utf-8")
+    assert "~/.grok/roles/feature.toml" not in plan
+    assert "~/.grok/roles/pstack:feature.toml" in plan
+    assert "~/.grok/roles/pstack:bug-fix.toml" in plan
+    assert "~/.grok/roles/pstack:how-explainer.toml" in plan
+    assert "~/.grok/roles/pstack:independent-verifier.toml" in plan
+    assert 'roles/${key}.toml' not in plan
+    assert 'roles/pstack:${key}.toml' in plan
+    adapt = (ROOT / "scripts/adapt-harness.py").read_text(encoding="utf-8")
+    assert 'subagent_type: "pstack:comment-sicko"' in adapt
+    assert "', 'subagent_type: \"comment-sicko\"')" not in adapt
+    overlay = json.loads(
+        (ROOT / ".grok-plugin/plugin.json").read_text(encoding="utf-8")
+    )
+    root_manifest = json.loads((ROOT / "plugin.json").read_text(encoding="utf-8"))
+    assert "displayName" not in overlay
+    assert overlay["version"] == root_manifest["version"]
+    harness = (ROOT / "HARNESS.md").read_text(encoding="utf-8")
+    assert "~/.grok/roles/<pstack-role>.toml" not in harness
+    assert "~/.grok/roles/pstack:<key>.toml" in harness
+
+
 def test_effort_frontmatter_matches_ladder() -> None:
     proc = subprocess.run(
         [sys.executable, str(ROOT / "scripts/effort_ladder.py"), "--check"],
@@ -426,6 +450,7 @@ if __name__ == "__main__":
     test_readme_locale_split()
     test_first_session_names_sandbox_reload_and_slash()
     test_pstack_slash_names_do_not_collide_with_grok_builtins()
+    test_overlay_stems_and_adapter_are_plugin_qualified()
     test_effort_frontmatter_matches_ladder()
     test_plugin_manifest_matches_grok_parsed_fields()
     test_harness_skill_order_is_pstack_then_user_then_native()
