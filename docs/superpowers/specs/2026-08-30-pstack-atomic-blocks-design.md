@@ -23,10 +23,9 @@ Overnight: persist predicate, `/loop` → `scheduler_create` (min 60s, new turn)
 
 **UPSTREAM pin.** One line `tree <40-hex>` = last official `pstack/` commit.
 
-**Models overlay** `~/.grok/pstack-models.toml`:
+**Models overlay** `~/.grok/pstack-models.toml` (top-level keys, not `[models]`):
 
 ```toml
-[models]
 feature = "grok-4.6"          # or inherit-parent | auto
 independent-verifier = "grok-4.6"
 
@@ -47,10 +46,11 @@ reasoning_effort = "medium"
 
 | Block | Official | Grok port |
 |---|---|---|
-| Router `/poteto-mode` | sticky `mode: true` | slash-only, `disable-model-invocation` |
+| Router `/poteto-mode` | sticky `mode: true` | `disable-model-invocation: true`; leftover `mode: true` in YAML (not a grok skill field). Operator docs: type `/poteto-mode`, do not auto-enter. README still mentions sticky mode as leftover Cursor prose. |
 | 22 playbooks + opening-a-pr | 23 files | same 23 files |
 | 21 principles | `principle-*` | same 21 |
-| Situational skills | 45 skill dirs including `make-bot-ui` | 44; skip `make-bot-ui` |
+| Skill dirs (total) | 45 including `make-bot-ui` | 44; skip `make-bot-ui` |
+| Remaining after router+principles+setup | 22 including `make-bot-ui` | 21 |
 | Plugin agents | `poteto-agent`, `comment-sicko` | those two plus 20 role agents `pstack:<key>` |
 | Setup | `~/.cursor/rules/*.mdc` | `pstack-models.toml` + `roles/pstack:<key>.toml` |
 | Spawn | Cursor `Task` | `spawn_subagent` `pstack:<role>` |

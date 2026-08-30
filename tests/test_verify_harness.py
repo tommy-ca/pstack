@@ -443,6 +443,16 @@ def test_effort_frontmatter_matches_ladder() -> None:
             assert path.stem in {"comment-sicko", "poteto-agent"}, path.name
             continue
         assert parsed[path.stem] == m.group(1), path.name
+    assert not re.search(r"^\[models\]", defaults, re.M)
+    assert (ROOT / "skills/figure-it-out/SKILL.md").is_file()
+    assert not (ROOT / "skills/poteto-mode/playbooks/figure-it-out.md").exists()
+    assert "playbooks/figure-it-out.md" not in harness
+    setup_spec = (
+        ROOT
+        / "openspec/changes/pstack-atomic-blocks/specs/pstack-setup-overlays/spec.md"
+    ).read_text(encoding="utf-8")
+    assert "top-level" in setup_spec
+    assert "`[models]` table" in setup_spec or "MUST NOT use a `[models]` table" in setup_spec
 
 
 def test_plugin_manifest_matches_grok_parsed_fields() -> None:
