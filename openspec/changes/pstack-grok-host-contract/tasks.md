@@ -22,4 +22,4 @@
 
 ## 5. Catalog follow-up
 
-- [ ] 5.1 After this lands on pstack `main`, pin `grok-build-plugins` sha and document enable there.
+- [x] 5.1 After this lands on pstack `main`, pin `grok-build-plugins` sha and document enable there. Catalog pin tracks origin/main (8ea3830 at close of that follow-up; later pins follow later landings). Enable is documented in grok-build-plugins README.
