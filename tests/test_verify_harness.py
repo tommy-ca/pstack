@@ -312,6 +312,8 @@ def test_overlay_stems_and_adapter_are_plugin_qualified() -> None:
     for text in (en, zh, setup):
         assert "~/.grok/roles/*.toml" not in text
         assert "~/.grok/roles/pstack:" in text or "pstack:<" in text
+    assert "files under `~/.grok/roles/`" not in setup
+    assert "matching files under `~/.grok/roles/`" not in setup
     checklist = [ln for ln in plan.splitlines() if "Gate 4a PASS" in ln and "feature.toml" in ln]
     assert checklist, "missing Gate 4a checklist line"
     assert "pstack:feature.toml" in checklist[0]

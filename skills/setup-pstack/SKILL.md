@@ -5,7 +5,7 @@ description: Configure which models and reasoning effort pstack uses per role. D
 
 # Setup pstack
 
-Write `~/.grok/pstack-models.toml` (model slugs and `[effort]`) and pstack-managed files under `~/.grok/roles/`. This is an **override layer**. A fresh install with no setup already uses the shipped default: `grok-4.6` plus per-role `effort` on the plugin agents (ship-time three-tier split in [`references/effort-ladder.md`](references/effort-ladder.md)). See [`references/defaults.toml`](references/defaults.toml), [`references/resolve-model.md`](references/resolve-model.md), and [`references/resolve-effort.md`](references/resolve-effort.md).
+Write `~/.grok/pstack-models.toml` (model slugs and `[effort]`) and pstack-managed overlay files `~/.grok/roles/pstack:<key>.toml`. This is an **override layer**. A fresh install with no setup already uses the shipped default: `grok-4.6` plus per-role `effort` on the plugin agents (ship-time three-tier split in [`references/effort-ladder.md`](references/effort-ladder.md)). See [`references/defaults.toml`](references/defaults.toml), [`references/resolve-model.md`](references/resolve-model.md), and [`references/resolve-effort.md`](references/resolve-effort.md).
 
 Skills read the toml for `task.model`. Grok Build applies effort from `~/.grok/roles/pstack:<role>.toml` when that overlay exists (`SubagentRole.reasoning_effort`), else from the plugin agent's frontmatter `effort`. Missing override file uses the shipped default. Missing key or `inherit-parent` or `auto` in an existing toml: omit `task.model`; delete the role overlay so frontmatter remains.
 
@@ -170,7 +170,7 @@ independent-verifier = "xhigh"
 
 ### 6. Confirm
 
-Tell the user `~/.grok/pstack-models.toml` was written and that matching files under `~/.grok/roles/` were added or removed. Name the detected effort enum and the three-tier map you wrote. If live detection failed and you used the ship-time snapshot, say that. New sessions pick them up. Re-running this skill updates them. Name those grok paths. Do not name other paths.
+Tell the user `~/.grok/pstack-models.toml` was written and that matching `~/.grok/roles/pstack:<key>.toml` files were added or removed. Name the detected effort enum and the three-tier map you wrote. If live detection failed and you used the ship-time snapshot, say that. New sessions pick them up. Re-running this skill updates them. Name those grok paths. Do not name other paths.
 
 ### 7. Offer a verification skill (optional)
 
@@ -180,7 +180,7 @@ Look for a `verify-*` skill under `.grok/skills/` or an existing harness. If nei
 
 Do not put any sentence from this section into `ask_user_question`, option labels, option descriptions, or the step 6 confirmation.
 
-Write **only** `~/.grok/pstack-models.toml` and pstack-managed files under `~/.grok/roles/`. Do not create `~/.cursor/rules/pstack-models.mdc` or any file under a Cursor rules directory.
+Write **only** `~/.grok/pstack-models.toml` and pstack-managed `~/.grok/roles/pstack:<key>.toml` files. Do not create `~/.cursor/rules/pstack-models.mdc` or any file under a Cursor rules directory.
 
 Do not read `~/.cursor/rules/pstack-models.mdc`. If that file exists on disk, ignore it. It is not a source of defaults on Grok Build.
 
