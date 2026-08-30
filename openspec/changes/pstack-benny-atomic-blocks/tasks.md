@@ -15,3 +15,11 @@
 ## 3. Review
 
 - [x] 3.1 Independent verifier: tests PASS, plugin.json has no hooks, workflows exist.
+
+## 4. Intent-driven schema and spec honesty
+
+- [x] 4.1 Ship `openspec/schemas/intent-driven/` so `openspec status` resolves.
+- [x] 4.2 Specs name prompt-enforced Slack `thread_ts` vs hook-enforced merge/force-push.
+- [x] 4.3 Change `design.md` and `adr.md`. Repo ADR `adr/0001-benny-opt-in-copies-not-plugin-hooks.md`.
+- [x] 4.4 `openspec validate pstack-benny-atomic-blocks --type change --strict`.
+- [x] 4.5 Tests lock schema resolve, `design.md`/`adr.md`, and `fail-closed.sh` allow of non-merge commands.

@@ -141,6 +141,56 @@ def test_benny_is_source_and_has_grok_remap() -> None:
     )
     assert allow.returncode == 0
     assert json.loads(allow.stdout)["decision"] == "allow"
+    slackish = subprocess.run(
+        ["sh", str(script)],
+        input=json.dumps(
+            {"toolInput": {"command": "use_tool slack__post_message"}}
+        ),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert slackish.returncode == 0
+    assert json.loads(slackish.stdout)["decision"] == "allow"
+    safety = (
+        ROOT
+        / "openspec/changes/pstack-benny-atomic-blocks/specs/benny-safety/spec.md"
+    ).read_text(encoding="utf-8")
+    assert "prompt-enforced" in safety
+    remap = (
+        ROOT
+        / "openspec/changes/pstack-benny-atomic-blocks/specs/benny-grok-remap/spec.md"
+    ).read_text(encoding="utf-8")
+    assert "prompt-enforced" in remap
+
+
+def test_openspec_intent_driven_schema_resolves() -> None:
+    schema = ROOT / "openspec/schemas/intent-driven/schema.yaml"
+    assert schema.is_file()
+    text = schema.read_text(encoding="utf-8")
+    assert "name: intent-driven" in text
+    assert "id: adr" in text
+    cfg = (ROOT / "openspec/config.yaml").read_text(encoding="utf-8")
+    assert "schema: intent-driven" in cfg
+    change = ROOT / "openspec/changes/pstack-benny-atomic-blocks"
+    assert (change / "design.md").is_file()
+    assert (change / "adr.md").is_file()
+    proc = subprocess.run(
+        [
+            "openspec",
+            "status",
+            "--change",
+            "pstack-benny-atomic-blocks",
+            "--json",
+        ],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert proc.returncode == 0, proc.stderr or proc.stdout
+    combined = (proc.stderr or "") + (proc.stdout or "")
+    assert "not found" not in combined.lower()
 
 
 def test_guide_teaches_sync_then_adapt() -> None:
@@ -608,6 +658,7 @@ if __name__ == "__main__":
     test_visual_parity_and_bug_fix_drive_real_surface()
     test_make_bot_ui_is_not_invocable()
     test_benny_is_source_and_has_grok_remap()
+    test_openspec_intent_driven_schema_resolves()
     test_guide_teaches_sync_then_adapt()
     test_grok_spawn_types_are_plugin_qualified()
     test_readme_locale_split()
