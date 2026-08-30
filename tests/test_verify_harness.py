@@ -284,7 +284,7 @@ def test_pstack_slash_names_do_not_collide_with_grok_builtins() -> None:
     assert "general-purpose" not in agents
 
 
-def test_harness_prefers_grok_native_skills() -> None:
+def test_harness_skill_order_is_pstack_then_user_then_native() -> None:
     harness = (ROOT / "HARNESS.md").read_text(encoding="utf-8")
     poteto = (ROOT / "skills/poteto-mode/SKILL.md").read_text(encoding="utf-8")
     tdd = (ROOT / "skills/tdd/SKILL.md").read_text(encoding="utf-8")
@@ -294,24 +294,23 @@ def test_harness_prefers_grok_native_skills() -> None:
     babysit = (
         ROOT / "skills/poteto-mode/playbooks/babysit.md"
     ).read_text(encoding="utf-8")
-    assert "## Native first" in harness
-    for needle in (
-        "/test-driven-development",
-        "/create-skill",
-        "/review",
-        "/pr-babysit",
-        "/verification-before-completion",
-        "/systematic-debugging",
-        "/using-git-worktrees",
-        "/brainstorming",
-        "/loop",
-        "explore",
-    ):
-        assert needle in harness, needle
-    assert "Native first" in poteto or "native first" in poteto
-    assert "/test-driven-development" in tdd
-    assert "/review" in interrogate
+    how = (ROOT / "skills/how/SKILL.md").read_text(encoding="utf-8")
+    assert "## Skill order" in harness
+    assert "## Native first" not in harness
+    assert "pstack, then user, then bundled and builtin" in harness
+    assert "/tdd" in harness
+    assert "pstack:how-explorer" in harness
+    assert "Skill order" in poteto or "pstack first" in poteto
+    assert tdd.find("/tdd") < tdd.find("/test-driven-development")
+    assert "fallback" in interrogate.lower() or "then `/review`" in interrogate or "then /review" in interrogate
+    assert babysit.find("playbooks/babysit") >= 0 or "this playbook" in babysit.lower()
     assert "/pr-babysit" in babysit
+    assert "pstack:how-explorer" in how
+    idx_p = how.find("pstack:how-explorer")
+    idx_e = how.find("builtin `explore`")
+    assert idx_p != -1
+    if idx_e != -1:
+        assert idx_p < idx_e
 
 
 if __name__ == "__main__":
@@ -328,5 +327,5 @@ if __name__ == "__main__":
     test_readme_locale_split()
     test_first_session_names_sandbox_reload_and_slash()
     test_pstack_slash_names_do_not_collide_with_grok_builtins()
-    test_harness_prefers_grok_native_skills()
+    test_harness_skill_order_is_pstack_then_user_then_native()
     print("PASS tests/test_verify_harness.py")

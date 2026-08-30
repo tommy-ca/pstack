@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # TDD Bug Fix
 
-If `grok inspect` lists skill `test-driven-development`, use `/test-driven-development` instead of this skill. This file is the pstack fallback.
+This is `/tdd`. Use it first. If this skill does not apply (no cheap local test path) and `/test-driven-development` is a live user skill, use that next.
 
 When fixing a bug with a clear, cheap test path, make the broken behavior executable before changing production code. The goal is a focused regression test that fails before the fix and passes after it.
 
