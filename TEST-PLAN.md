@@ -1,0 +1,1039 @@
+# TEST-PLAN.md
+
+Operator plan for **EDITH** on a real Linux Grok Build CLI.
+
+This file is the test. A Python script is not. A Cloud Agent transcript is not.
+
+## Spec, not folklore
+
+First principles only. Do not treat community pstack ports as the spec.
+
+| Source | Pin | Role |
+|---|---|---|
+| Official pstack | [cursor/plugins `pstack/`](https://github.com/cursor/plugins/tree/main/pstack) tree `46125561306434d8a1d7745d540d8932ab0cd2a2` | 22 named playbooks, `opening-a-pr.md`, 21 `principle-*` skills, `/poteto-mode` router |
+| Official grok-build | [xai-org/grok-build](https://github.com/xai-org/grok-build) commit `c2ad97f87aea4303b6000a2c22128bc91ee76c9b` | Plugin install, inspect JSON, headless flags, live tool ids |
+| This port | [HARNESS.md](./HARNESS.md) | Call-site mapping onto those grok-build tools |
+
+User-guide `16-subagents.md` still names `spawn_subagent`, a `background` field defaulting to `false`, and `get_command_or_subagent_output`. **Follow the Rust types, not that table.** Canonical spawn tool is `task` (`TASK_TOOL_NAME`). Wire aliases `Task` and `spawn_subagent` resolve to the same tool. Background field is `run_in_background`, default **true**. Join with `get_task_output` (`task_ids`, optional `timeout_ms`). See `crates/common/xai-tool-types/src/task.rs` `TaskToolInput`.
+
+Plugin name in `plugin.json` is `pstack` (kebab-case, required by `PluginManifest::validate`).
+
+## What this Cloud Agent VM cannot prove
+
+The machine that wrote this plan (`cursor.com/agents/bc-01a0363c-5279-7a80-8c72-07f646d3adf3`) had **no live `grok` CLI and no live `task` tool**. It cannot prove:
+
+- `grok plugin install` / `enable` / `inspect`
+- skills appearing in a real session (`init.skills`, slash menu)
+- `/setup-pstack` writing only slugs that `task.model` accepts
+- accept-defaults (Gate 4a), missing-toml spawn (Gate 4b), live slug accept (Gate 4c), no Cursor mdc (Gate 4d), live effort ladder (Gate 4e)
+- `/poteto-mode` copying playbook steps into `todo_write` / `plan`
+- a parent `task` spawn of `independent-verifier` on a different `model`
+- `/loop` → `scheduler_create`
+- `--always-approve` and `--reasoning-effort xhigh` on a real binary
+
+`scripts/verify-harness.py` is a static repo check. **It is not a pass gate.** Do not attach its output as proof. Cola will not accept it. EDITH will not accept it.
+
+## Verdict vocabulary
+
+Every gate is exactly one of:
+
+- **PASS.** The PASS sentence below is true, and the listed evidence files exist.
+- **FAIL.** The FAIL sentence below is true, or a required artifact is missing.
+- **SKIP.** The gate is out of budget or the primitive is absent. **SKIP is not PASS.**
+- **CANNOT-PROVE.** The box lacks a required capability (example: only one `task.model` slug). **CANNOT-PROVE is not PASS.**
+
+Stop on Gate 0 FAIL. Later gates are meaningless without a working CLI.
+
+## Box EDITH is on
+
+Assume:
+
+- Linux
+- `grok` on PATH, model `grok-4.6`
+- `--always-approve` exists (alias of `--yolo`, same as `--permission-mode bypassPermissions`; grok-build `cli.rs` and `14-headless-mode.md`)
+- `--reasoning-effort xhigh` exists (`14-headless-mode.md` canonical levels include `xhigh`)
+
+If a flag is missing, Gate 0 is FAIL. Record `grok --help` and stop.
+
+## Evidence directory
+
+```bash
+export EVIDENCE="${HOME}/pstack-edith-evidence/$(date -u +%Y%m%dT%H%M%SZ)"
+mkdir -p "$EVIDENCE"
+echo "$EVIDENCE"
+date -u --iso-8601=seconds | tee "$EVIDENCE/started.txt"
+grok --version 2>&1 | tee "$EVIDENCE/grok-version.txt"
+command -v grok | tee "$EVIDENCE/grok-which.txt"
+```
+
+Keep every file this plan names under `$EVIDENCE`. Do not discard streams because they are large. Compress after the run if needed (`gzip -k`).
+
+Shared headless flags (every `grok -p` unless a gate says otherwise). Use bash. Arrays do not export; paste this in the same shell.
+
+```bash
+export GROK_MODEL=grok-4.6
+GROK_BASE=(-m "$GROK_MODEL" --always-approve --reasoning-effort xhigh)
+# streaming-json: NDJSON, one type-tagged object per line (14-headless-mode.md).
+# tool_call.toolName is the live tool id. plan.entries is the todo-shaped plan.
+GROK_STREAM=(--output-format streaming-json)
+GROK_INIT=(--output-format streaming-messages-json)
+```
+
+`--max-turns` is per gate. Too small is a false FAIL. Do not reuse a session across gates unless a gate says `-c` / `--resume`.
+
+Slash skills in headless. Put the slash name in the `-p` string (example `/poteto-mode …`). `poteto-mode` has `disable-model-invocation: true`. The model will not auto-enter it. You must invoke it.
+
+`ask_user_question` is interactive. Prefer the TUI for Gate 4. If a headless run blocks on it, kill it, mark that attempt CANNOT-PROVE, and redo Gate 4 in the TUI.
+
+## Trust vs enable (read before Gate 1)
+
+From grok-build `plugin_cmd.rs` at pin `c2ad97f`:
+
+- `grok plugin install <source>` **without** `--trust` prints a trust prompt to stderr and **`exit(1)`**. It does **not** wait for a TUI y/n. The prompt says to re-run with `--trust`.
+- `grok plugin install <source> --trust` installs. No confirmation step in this source.
+- Plugins stay off until enabled (`09-plugins.md`). Run `grok plugin enable pstack`. `cmd_enable` is non-interactive. It writes `[plugins].enabled` and prints `Enabled plugin: pstack`.
+- `grok inspect --json` field `plugins[].enabled` is **`p.trusted`**, not the enabled list. User plugins under `~/.grok/plugins/` are auto-trusted. Skills loading is the enable check, not that boolean.
+
+If EDITH's binary waits on a TUI confirm even with `--trust`, record the exact prompt and keypress. That is a CLI delta vs `c2ad97f`, not a plugin bug.
+
+---
+
+## Gate 0. Preflight
+
+**Commands**
+
+```bash
+grok --version 2>&1 | tee "$EVIDENCE/gate0-version.txt"
+grok --help 2>&1 | tee "$EVIDENCE/gate0-help.txt"
+grep -E 'always-approve|reasoning-effort|output-format' "$EVIDENCE/gate0-help.txt" \
+  | tee "$EVIDENCE/gate0-help-flags.txt"
+
+grok -p "Reply with exactly the word pong and stop. Do not call tools." \
+  -m "$GROK_MODEL" \
+  --always-approve \
+  --reasoning-effort xhigh \
+  --max-turns 1 \
+  --output-format json \
+  2>"$EVIDENCE/gate0-ping.err" | tee "$EVIDENCE/gate0-ping.json"
+```
+
+**Inspect**
+
+- `$EVIDENCE/gate0-version.txt` is non-empty.
+- `$EVIDENCE/gate0-help-flags.txt` contains `always-approve` and `reasoning-effort`.
+- `$EVIDENCE/gate0-ping.json` is a JSON object with `text` and `sessionId` (`14-headless-mode.md` `json` format). `stopReason` may be `end_turn` or `max_turns` / `max_turn_requests`. The text contains `pong` (case-insensitive). Exit code 0.
+
+**PASS.** `grok` runs as `grok-4.6` with `--always-approve` and `--reasoning-effort xhigh`, and the ping JSON contains `pong`.
+
+**FAIL.** The binary is missing, a flag is rejected, or the ping does not return JSON containing `pong`.
+
+**Evidence to keep.** The three `gate0-*` files plus stderr.
+
+---
+
+## Gate 1. Install (`grok plugin install`) then enable
+
+**Commands**
+
+Record that omit-`--trust` exits 1 (source contract):
+
+```bash
+set +e
+grok plugin install aa2246740/pstack-grokbuild \
+  >"$EVIDENCE/gate1-install-no-trust.out" \
+  2>"$EVIDENCE/gate1-install-no-trust.err"
+echo $? | tee "$EVIDENCE/gate1-install-no-trust.exit"
+set -e
+# Source at c2ad97f prints: To proceed, re-run with --trust:
+grep -i trust "$EVIDENCE/gate1-install-no-trust.err" | tee "$EVIDENCE/gate1-install-no-trust-grep.txt"
+```
+
+Install with trust (GitHub shorthand). Pin a commit if this box has `GROK_MARKETPLACE_REQUIRE_SHA=1`:
+
+```bash
+# Preferred. Public repo.
+grok plugin install aa2246740/pstack-grokbuild --trust \
+  2>&1 | tee "$EVIDENCE/gate1-install-trust.txt"
+
+# Fallback if git/GitHub is blocked. Clone or copy the plugin tree first.
+# grok plugin install /absolute/path/to/pstack-grokbuild --trust
+```
+
+Enable (separate from trust):
+
+```bash
+grok plugin enable pstack 2>&1 | tee "$EVIDENCE/gate1-enable.txt"
+# Expected line: Enabled plugin: pstack
+```
+
+Inventory:
+
+```bash
+grok plugin list --json 2>&1 | tee "$EVIDENCE/gate1-plugin-list.json"
+grok plugin details pstack 2>&1 | tee "$EVIDENCE/gate1-plugin-details.txt"
+grok inspect --json 2>&1 | tee "$EVIDENCE/gate1-inspect.json"
+```
+
+Extract the installed path and counts:
+
+```bash
+jq '.[] | select(.name=="pstack" or .name=="pstack-grokbuild")' \
+  "$EVIDENCE/gate1-plugin-list.json" \
+  | tee "$EVIDENCE/gate1-plugin-list-pstack.json"
+
+jq '.plugins[] | select(.name=="pstack")' \
+  "$EVIDENCE/gate1-inspect.json" \
+  | tee "$EVIDENCE/gate1-inspect-plugin.json"
+
+jq -r '.plugins[] | select(.name=="pstack") | .path' \
+  "$EVIDENCE/gate1-inspect.json" \
+  | tee "$EVIDENCE/PLUGIN_PATH.txt"
+export PLUGIN_PATH="$(cat "$EVIDENCE/PLUGIN_PATH.txt")"
+```
+
+**Inspect**
+
+- No-trust run. Exit code 1. Stderr contains `re-run with --trust`. Process did not wait for a keypress (unless EDITH's CLI differs; then record it).
+- Trust run. Stdout names the installed plugin (`Installed … pstack` or equivalent). Exit 0.
+- `gate1-enable.txt` contains `Enabled plugin: pstack`.
+- `plugin list --json` has an `installed` entry whose `name` is `pstack`.
+- `inspect --json` `plugins[]` has `name: "pstack"`, `provides.skills` ≥ 40 (this tree ships 44 `skills/*/SKILL.md`), `provides.agents` = 22 (3 original plus one plugin agent per pstack role key).
+- `PLUGIN_PATH` is a real directory containing `plugin.json` and `skills/poteto-mode/SKILL.md`.
+
+**PASS.** Plugin `pstack` is installed with `--trust`, enabled, and `grok inspect --json` reports it with a non-zero skill count and 22 agents.
+
+**FAIL.** Install fails, enable fails, inspect has no `pstack` row, or `provides.skills` is 0.
+
+**Evidence to keep.** All `gate1-*` files, `PLUGIN_PATH.txt`, and the no-trust exit code.
+
+**Do not implement port code** if install fails because GitHub is unreachable. Use the local-path fallback. Only add a repo file if a gate is blocked by a missing file in the plugin tree (this plan does not need one).
+
+---
+
+## Gate 2. Skills and agents visible in a live session
+
+`poteto-mode` is `disable-model-invocation: true` (`08-skills.md`). It is slash-only. It should still be **user-invocable**. Headless `streaming-messages-json` `system/init.skills` lists user-invocable skill names. `inspect --json` `skills[]` is the catalog (`name`, `userInvocable`, `disabled`, `invocableAs` on collision).
+
+**Commands**
+
+```bash
+jq '[.skills[] | {name, source, userInvocable, disabled, collidesWith, invocableAs}]' \
+  "$EVIDENCE/gate1-inspect.json" \
+  | tee "$EVIDENCE/gate2-inspect-skills.json"
+
+jq '[.agents[] | {name, source, description}]' \
+  "$EVIDENCE/gate1-inspect.json" \
+  | tee "$EVIDENCE/gate2-inspect-agents.json"
+
+# Live session advertisement. init.skills is on streaming-messages-json, not streaming-json.
+grok -p "Reply with exactly the word pong and stop. Do not call tools." \
+  "${GROK_BASE[@]}" "${GROK_INIT[@]}" \
+  --max-turns 1 \
+  2>"$EVIDENCE/gate2-init.err" | tee "$EVIDENCE/gate2-init.ndjson"
+
+jq -c 'select(.type=="system" and .subtype=="init") | {model, tools, slash_commands, skills, permissionMode}' \
+  "$EVIDENCE/gate2-init.ndjson" \
+  | tee "$EVIDENCE/gate2-init.json"
+```
+
+If a name collides with a built-in, inspect sets `invocableAs` to the qualified form (`pstack:poteto-mode`). Use that form in later gates.
+
+**Inspect**
+
+Required **skill** names (hyphen-normalized, case-insensitive), source tied to plugin `pstack`:
+
+- `poteto-mode` (frontmatter `name: Poteto Mode`; grok normalizes spaces to hyphens)
+- `setup-pstack`
+- `how`
+- `unslop`
+
+Required **agent** names (bare or `pstack:` qualified):
+
+- `poteto-agent`
+- `independent-verifier`
+- `comment-sicko`
+- `feature`
+- `how-explainer`
+
+Inspect may list the other role-key agents too (`how-explorer`, `swarm-workers`, …). Count should be 22.
+
+`init.skills` (or `slash_commands`) contains `poteto-mode` / `setup-pstack` unless inspect says they are not user-invocable. `poteto-mode` may be absent from auto-invoke and still present as a slash command.
+
+**PASS.** Inspect lists those four skills and the required agents from plugin `pstack` (22 agents total), and the live `init` line advertises `poteto-mode` as invocable (bare or qualified).
+
+**FAIL.** Any required name is missing from inspect after enable, or the live session does not advertise `poteto-mode`.
+
+**Evidence to keep.** `gate2-inspect-skills.json`, `gate2-inspect-agents.json`, `gate2-init.ndjson`, `gate2-init.json`.
+
+---
+
+## Gate 3. No live Cursor tool names
+
+Static grep of the **installed** plugin path (not this Cloud Agent workspace) plus a live stream.
+
+**Commands**
+
+```bash
+export PLUGIN_PATH="$(cat "$EVIDENCE/PLUGIN_PATH.txt")"
+
+# Disk. HARNESS.md may mention Cursor names as negatives. Exclude it.
+# TEST-PLAN.md may name Cursor panel slugs as FAIL tokens. skills/ may not.
+rg -n --hidden \
+  -g '!HARNESS.md' -g '!UPSTREAM' -g '!TEST-PLAN.md' -g '!scripts/**' -g '!automations/**' \
+  -e 'AskQuestion' -e 'TodoWrite' -e 'generalPurpose' -e 'allow_multiple' \
+  -e 'environment:\s*"cloud"' -e "environment:\s*'cloud'" \
+  -e 'grok-4.6-fast-xhigh' -e 'gpt-5.6-sol-max' \
+  -e 'claude-fable-5-thinking-max' -e 'claude-opus-5-thinking-xhigh' \
+  "$PLUGIN_PATH" \
+  | tee "$EVIDENCE/gate3-rg-installed.txt"
+
+# Live stream from a later gate also counts. Run a cheap session now:
+grok -p "/poteto-mode Reply with one sentence about what a SKILL.md file is. Stay read-only. Do not edit files." \
+  "${GROK_BASE[@]}" "${GROK_STREAM[@]}" \
+  --max-turns 12 \
+  2>"$EVIDENCE/gate3-live.err" | tee "$EVIDENCE/gate3-live.ndjson"
+
+jq -r 'select(.type=="tool_call") | .toolName' "$EVIDENCE/gate3-live.ndjson" \
+  | sort | uniq -c | tee "$EVIDENCE/gate3-toolNames.txt"
+
+jq -c 'select(.type=="tool_call") | {toolName, rawInput}' "$EVIDENCE/gate3-live.ndjson" \
+  | tee "$EVIDENCE/gate3-tool-calls.jsonl"
+```
+
+Forbidden **live** `toolName` values: `AskQuestion`, `TodoWrite`.
+
+Forbidden **live** `task` / `Task` / `spawn_subagent` `rawInput` keys/values:
+
+- `environment` = `"cloud"` (or any cloud agent environment field)
+- `capability_mode` (schemars-skipped on `TaskToolInput`; JSON that sends it is ignored, and sending it means the model is still on the Cursor schema)
+- `reasoning_effort` on the spawn tool
+- `subagent_type` = `generalPurpose` (Cursor). Grok's built-in is `general-purpose`.
+
+Allowed live ids include `task`, `Task`, `spawn_subagent` (aliases), `todo_write`, `ask_user_question`, `get_task_output`, `run_terminal_cmd`, `read_file`, `grep`, `scheduler_create`. Canonical spawn id is `task`.
+
+**PASS.** Installed plugin tree (excluding HARNESS.md / scripts / benny / TEST-PLAN.md) has no forbidden Cursor call-site identifiers, no Cursor panel slugs in skill fallbacks, and the live `toolName` list contains none of `AskQuestion` / `TodoWrite`.
+
+**FAIL.** A live call uses a Cursor tool id, a live `task` payload includes `environment: "cloud"`, `capability_mode`, `reasoning_effort`, or `generalPurpose`, or `gate3-rg-installed.txt` is non-empty (Cursor call-site ids or Cursor panel slugs in the installed tree).
+
+**Evidence to keep.** `gate3-rg-installed.txt` (empty is success), `gate3-toolNames.txt`, `gate3-tool-calls.jsonl`, `gate3-live.ndjson`.
+
+Re-run the live `toolName` extract on Gate 5, Gate 6, and Gate 7 streams. One Cursor id in any of them fails Gate 3.
+
+---
+
+## Gate 4. Detect live `task.model` slugs
+
+`setup-pstack/SKILL.md` step 1. Enumerate slugs the `task` tool accepts in `model` this session. Prefer a rejected `task.model` error that names valid slugs. Use `grok models` if the CLI exposes it. Use `grok inspect --json` only if that JSON actually lists models. Never write a slug you have not confirmed. `inherit-parent` and `auto` are always valid and are not slugs. Omit `model` on `task` so the child inherits.
+
+`InspectReport` (`inspect/mod.rs`) has **no models catalog**. Do not pretend inspect listed slugs if the JSON has no such field.
+
+Writing `inherit-parent` for every role is **not** the shipped default. Gates 4a–4e are required. A session that only writes inherit-parent dodges the default table and does not prove accept-defaults, a missing-toml spawn, or the effort overlay.
+
+**Commands. Detect first, before setup.**
+
+```bash
+# Inspect has no model list. Prove that.
+jq 'keys' "$EVIDENCE/gate1-inspect.json" | tee "$EVIDENCE/gate4-inspect-keys.json"
+jq 'has("models")' "$EVIDENCE/gate1-inspect.json" | tee "$EVIDENCE/gate4-inspect-has-models.txt"
+
+# Parent model is available (Gate 0 already used -m grok-4.6). Record it.
+echo "$GROK_MODEL" | tee "$EVIDENCE/gate4-detected-slugs.txt"
+
+# Rejected slug. Capture the validator's list of valid slugs if the error names them.
+grok -p 'Call the task tool exactly once with these fields and then stop:
+prompt: Reply pong and stop. Do not edit files.
+description: slug probe
+subagent_type: explore
+run_in_background: true
+model: __pstack_probe_not_a_real_model__
+Do not retry with a guessed slug. After the tool error, quote the error text verbatim and stop.' \
+  "${GROK_BASE[@]}" "${GROK_STREAM[@]}" \
+  --max-turns 8 \
+  2>"$EVIDENCE/gate4-probe.err" | tee "$EVIDENCE/gate4-probe.ndjson"
+
+jq -c 'select(.type=="tool_call" or .type=="tool_call_update" or .type=="text" or .type=="error")' \
+  "$EVIDENCE/gate4-probe.ndjson" \
+  | tee "$EVIDENCE/gate4-probe-extract.jsonl"
+```
+
+Build the detected set. Union of:
+
+1. Every slug named in the `task.model` rejection text.
+2. `$GROK_MODEL` (`grok-4.6`) because Gate 0 used it successfully.
+3. Any slug that inspect actually listed (unexpected; keep it if present).
+
+Write the set one slug per line to `$EVIDENCE/gate4-detected-slugs.txt`. If the rejection text does **not** name other slugs, the detected set is **only** `grok-4.6`. Do not add `grok-4.6-fast-xhigh`, `claude-fable-5-thinking-max`, `gpt-5.6-sol-max`, or `claude-opus-5-thinking-xhigh`. Those are Cursor panel slugs. They are not live on this box. They must not appear in skill fallbacks or in the written toml.
+
+On EDITH's Linux Grok Build the live set has been `grok-4.5` and `grok-4.6`. Record whatever this binary actually accepts.
+
+**PASS.** `gate4-detected-slugs.txt` is non-empty and contains only slugs this session confirmed.
+
+**FAIL.** The probe was skipped, or the detected set includes a Cursor panel slug that the probe never named.
+
+**Evidence to keep.** Inspect keys, probe NDJSON, detected-slugs file.
+
+### Gate 4 also. Detect the live effort enum
+
+`setup-pstack` step 1b / [`effort-ladder.md`](./skills/setup-pstack/references/effort-ladder.md). Probe an invalid `--reasoning-effort`. Parse **`use one of:`** from the runtime validator. Do **not** use `Effort::VALID_VALUES` or FromStr `expected one of:` (those include reserved `max`). Do **not** send `reasoning_effort` on `task`.
+
+```bash
+# Invalid effort probe. Capture the live `use one of:` list.
+# Do not send reasoning_effort on task.
+grok --reasoning-effort not-a-real-effort -p 'Reply pong and stop.' \
+  -m "$GROK_MODEL" --always-approve \
+  --output-format json \
+  --max-turns 1 \
+  >"$EVIDENCE/gate4-effort-probe.json" 2>"$EVIDENCE/gate4-effort-probe.err" || true
+head -c 8000 "$EVIDENCE/gate4-effort-probe.err" | tee "$EVIDENCE/gate4-effort-probe.err.head"
+
+LADDER="$(cat "$EVIDENCE/PLUGIN_PATH.txt" 2>/dev/null)/scripts/effort_ladder.py"
+if [ ! -f "$LADDER" ]; then
+  LADDER="./scripts/effort_ladder.py"
+fi
+
+python3 "$LADDER" --from-rejection "$EVIDENCE/gate4-effort-probe.err" --print-enum \
+  >"$EVIDENCE/gate4-detected-efforts.txt" || true
+cat "$EVIDENCE/gate4-detected-efforts.txt"
+
+if [ ! -s "$EVIDENCE/gate4-detected-efforts.txt" ]; then
+  printf '%s\n' low medium high xhigh | tee "$EVIDENCE/gate4-detected-efforts.txt"
+  echo SNAPSHOT >"$EVIDENCE/gate4-effort-source.txt"
+else
+  echo LIVE >"$EVIDENCE/gate4-effort-source.txt"
+fi
+
+python3 "$LADDER" --enum-file "$EVIDENCE/gate4-detected-efforts.txt" \
+  | tee "$EVIDENCE/gate4-expected-tiers.txt"
+```
+
+Gate 1 writes `PLUGIN_PATH.txt`. If this block runs before that file exists, use the checkout `scripts/effort_ladder.py`.
+
+On grok 1.0.5 the live line is `use one of: xhigh, high, medium, low`. After orient, expected tiers are judgment `xhigh`, instruction `high`, mechanical `medium`.
+
+**PASS.** `gate4-detected-efforts.txt` is non-empty, has no `none`/`minimal`/`deep`, and does not contain a token this session invented (`ultra` / `max` only if `use one of:` named them). `gate4-expected-tiers.txt` has `judgment:`, `instruction:`, `mechanical:` matching [`effort-ladder.md`](./skills/setup-pstack/references/effort-ladder.md).
+
+**FAIL.** The file lists `max` or `ultra` with no `use one of:` evidence, includes `none`/`minimal`/`deep` as a pstack ladder token, or was built from `Effort::VALID_VALUES` / `expected one of:` instead of the live CLI.
+
+Cursor panel slugs (FAIL tokens for 4a/4b and for any written toml). EDITH greps for these. Do not put them in the grok `-p` strings for 4a–4c:
+
+```text
+grok-4.6-fast-xhigh
+gpt-5.6-sol-max
+claude-fable-5-thinking-max
+claude-opus-5-thinking-xhigh
+```
+
+---
+
+## Gate 4a. Accept-defaults (follow step 5)
+
+Instruct the session to follow `setup-pstack` **step 5** and accept the shipped defaults: `grok-4.6` for models, and the **computed** three-tier `[effort]` table from this session's live `use one of:` list ([`effort-ladder.md`](./skills/setup-pstack/references/effort-ladder.md), values in `gate4-expected-tiers.txt`). Do **not** tell it to write inherit-parent for every role as a shortcut. Do **not** tell it to copy `Effort::VALID_VALUES` or to write `max` unless the live CLI listed it.
+
+**Commands**
+
+```bash
+if [ -f "$HOME/.grok/pstack-models.toml" ]; then
+  cp -a "$HOME/.grok/pstack-models.toml" "$EVIDENCE/gate4a-pstack-models.toml.pre"
+fi
+
+# Preferred: TUI. ask_user_question can hang headless.
+#   /setup-pstack
+# Follow step 5. Accept the shipped defaults. Substitute inherit-parent for
+# grok-4.6 only if grok-4.6 is not in gate4-detected-slugs.txt.
+# Decline the verify-* skill offer.
+
+timeout 180s grok -p '/setup-pstack
+Follow step 5 in the skill. Accept the shipped defaults for models and for [effort].
+Write grok-4.6 in every model key if it is in the DETECTED list. Otherwise inherit-parent for models.
+Detect the live effort enum from `use one of:` (grok --reasoning-effort not-a-real-effort). Apply effort-ladder.md. Do not use VALID_VALUES. Do not write max unless the live CLI listed it. Do not invent ultra.
+Write the computed [effort] table. Write ~/.grok/roles/<key>.toml for every real effort level.
+Do not copy a model table from another product or from memory.
+DETECTED:
+'"$(cat "$EVIDENCE/gate4-detected-slugs.txt")"'
+EFFORT_ENUM:
+'"$(cat "$EVIDENCE/gate4-detected-efforts.txt")"'
+If you would call ask_user_question, skip it and write the files from step 5 now.
+Decline creating .grok/skills/verify-*. Stop after ~/.grok/pstack-models.toml is written and print that path plus any ~/.grok/roles files you added or removed.
+Write no other models file.' \
+  "${GROK_BASE[@]}" "${GROK_STREAM[@]}" \
+  --max-turns 20 \
+  2>"$EVIDENCE/gate4a-setup.err" | tee "$EVIDENCE/gate4a-setup.ndjson"
+echo $? | tee "$EVIDENCE/gate4a-setup.exit"
+
+cp -a "$HOME/.grok/pstack-models.toml" "$EVIDENCE/gate4a-pstack-models.toml"
+cat "$EVIDENCE/gate4a-pstack-models.toml"
+ls -la "$HOME/.grok/roles" >"$EVIDENCE/gate4a-roles.ls" 2>&1 || true
+```
+
+If the TUI was used, copy the transcript or a screenshot plus the resulting file.
+
+```bash
+jq -c 'select(.type=="tool_call" and .toolName=="ask_user_question") | .rawInput' \
+  "$EVIDENCE/gate4a-setup.ndjson" \
+  | tee "$EVIDENCE/gate4a-ask.jsonl"
+
+# Human-facing ask payload only. The skill file still names Cursor in
+# Agent only; that must not appear in ask_user_question rawInput.
+: > "$EVIDENCE/gate4a-tui-leak.txt"
+if [ -s "$EVIDENCE/gate4a-ask.jsonl" ]; then
+  grep -iE 'cursor|mixed panel|port existing|pstack-models.mdc' \
+    "$EVIDENCE/gate4a-ask.jsonl" \
+    | tee "$EVIDENCE/gate4a-tui-leak.txt" || true
+fi
+```
+
+TUI / `ask_user_question` **FAIL** if `gate4a-tui-leak.txt` is non-empty, or if any option is a mixed/port mapping. Model options must be shipped-default `grok-4.6` everywhere (when detected), inherit-parent everywhere, one other detected slug everywhere, and/or customize per role. Effort options must be shipped default (the computed three-tier split), inherit-parent everywhere, highest-detected everywhere, and/or customize per role (levels = this session's detected effort enum plus inherit-parent/auto). No Cursor words in the question the human saw. Do not invent `ultra` in the TUI.
+
+```bash
+grep -oE '"[^"]+"' "$EVIDENCE/gate4a-pstack-models.toml" \
+  | tr -d '"' \
+  | grep -vE '^(inherit-parent|auto)$' \
+  | grep -vxF -f "$EVIDENCE/gate4-detected-efforts.txt" \
+  | sort -u \
+  | tee "$EVIDENCE/gate4a-written-slugs.txt"
+
+: > "$EVIDENCE/gate4a-cursor-slugs.txt"
+for slug in grok-4.6-fast-xhigh gpt-5.6-sol-max claude-fable-5-thinking-max claude-opus-5-thinking-xhigh; do
+  grep -F "$slug" "$EVIDENCE/gate4a-pstack-models.toml" \
+    && echo "$slug" >> "$EVIDENCE/gate4a-cursor-slugs.txt"
+done
+
+: > "$EVIDENCE/gate4a-undetected.txt"
+while read -r slug; do
+  grep -Fxq "$slug" "$EVIDENCE/gate4-detected-slugs.txt" \
+    || echo "UNDETECTED: $slug"
+done < "$EVIDENCE/gate4a-written-slugs.txt" \
+  | tee "$EVIDENCE/gate4a-undetected.txt"
+```
+
+**PASS.** `~/.grok/pstack-models.toml` exists. `gate4a-cursor-slugs.txt` is empty. `gate4a-undetected.txt` is empty. Every real slug is in the detected set. If `grok-4.6` was detected, model keys are `grok-4.6` (panel keys are one-entry arrays). `[effort].feature` equals `mechanical:` from `gate4-expected-tiers.txt`. `[effort].bug-fix` equals `instruction:`. `[effort].how-explainer` equals `judgment:`. `~/.grok/roles/feature.toml` contains that same mechanical token as `reasoning_effort`. `gate4a-tui-leak.txt` is empty (no Cursor / mixed-panel / mdc path in the question the human saw).
+
+**FAIL.** The file is missing, or it contains any of the four Cursor panel slugs, or any other unconfirmed slug, or `ask_user_question` offered a mixed/port option or named `~/.cursor/rules`, or shipped `[effort]` / `~/.grok/roles/feature.toml` is missing after accept-defaults.
+
+**CANNOT-PROVE (not PASS).** Headless hung on `ask_user_question` (exit 124) and TUI was not available. Retry in TUI.
+
+**Evidence to keep.** Setup NDJSON or TUI notes, `gate4a-ask.jsonl`, tui-leak (empty), toml, roles ls, cursor-slugs (empty), undetected (empty).
+
+---
+
+## Gate 4b. Missing toml (feature default spawn)
+
+Hide `~/.grok/pstack-models.toml` and `~/.grok/roles`. Run a parent spawn that would use the **feature** role default. Restore afterward. This is the out-of-box path: no setup.
+
+**Commands**
+
+```bash
+mkdir -p "$HOME/.grok"
+if [ -f "$HOME/.grok/pstack-models.toml" ]; then
+  mv "$HOME/.grok/pstack-models.toml" "$EVIDENCE/gate4b-hidden.toml"
+fi
+if [ -d "$HOME/.grok/roles" ]; then
+  mv "$HOME/.grok/roles" "$EVIDENCE/gate4b-roles.hidden"
+fi
+test ! -f "$HOME/.grok/pstack-models.toml"
+
+timeout 180s grok -p 'From this parent session, call the task tool exactly once.
+subagent_type: feature
+description: feature default probe
+run_in_background: true
+prompt: Reply with exactly the word pong and stop. Do not edit files.
+Resolve model the way the Feature playbook does for the feature role.
+Do not send reasoning_effort on task.
+Then stop. Do not retry a rejected slug.' \
+  "${GROK_BASE[@]}" "${GROK_STREAM[@]}" \
+  --max-turns 12 \
+  2>"$EVIDENCE/gate4b.err" | tee "$EVIDENCE/gate4b.ndjson"
+echo $? | tee "$EVIDENCE/gate4b.exit"
+
+jq -c 'select(.type=="tool_call" and (.toolName=="task" or .toolName=="Task" or .toolName=="spawn_subagent"))
+       | {toolName, model: .rawInput.model, subagent_type: .rawInput.subagent_type, has_effort: (.rawInput|has("reasoning_effort")), rawInput}' \
+  "$EVIDENCE/gate4b.ndjson" \
+  | tee "$EVIDENCE/gate4b-task-spawns.jsonl"
+
+export PLUGIN_PATH="$(cat "$EVIDENCE/PLUGIN_PATH.txt")"
+rg -n '^effort:' "$PLUGIN_PATH/agents/feature.md" | tee "$EVIDENCE/gate4b-feature-effort.txt"
+
+# Restore before later gates.
+if [ -f "$EVIDENCE/gate4b-hidden.toml" ]; then
+  mv "$EVIDENCE/gate4b-hidden.toml" "$HOME/.grok/pstack-models.toml"
+fi
+if [ -d "$EVIDENCE/gate4b-roles.hidden" ]; then
+  mv "$EVIDENCE/gate4b-roles.hidden" "$HOME/.grok/roles"
+fi
+```
+
+Inspect `rawInput.model` on the feature spawn (null / missing vs a string).
+
+**PASS.** At least one `task` spawn ran, `subagent_type` is `feature` (or `pstack:feature` only if bare `feature` was unknown), `model` is `grok-4.6` or omitted (omit only if `task` rejected `grok-4.6`), `rawInput` has no `reasoning_effort` key, and the installed plugin's `agents/feature.md` frontmatter contains `effort: medium` (ship-time mechanical tier from `effort_ladder.py` with the grok 1.0.5 usable set).
+
+**FAIL.** Live `task.model` is `grok-4.6-fast-xhigh`, `gpt-5.6-sol-max`, `claude-fable-5-thinking-max`, `claude-opus-5-thinking-xhigh`, or any other slug not in the detected set. Or the spawn sent `reasoning_effort` on `task`. Or installed `agents/feature.md` lacks `effort: medium`. Or frontmatter is `max`.
+
+**Evidence to keep.** NDJSON, task-spawns JSONL, feature-effort grep, note that the toml was restored.
+
+---
+
+## Gate 4c. Real detected slug is accepted
+
+Set `independent-verifier` to a confirmed live slug and prove `task` accepts it. Prefer a slug **≠** `$GROK_MODEL`. On EDITH's box that is `grok-4.5` when the probe named it. If the detected set is only `$GROK_MODEL`, use that slug.
+
+**Commands**
+
+```bash
+OTHER="$(grep -vx "$GROK_MODEL" "$EVIDENCE/gate4-detected-slugs.txt" | head -n1)"
+if [ -z "$OTHER" ]; then
+  OTHER="$GROK_MODEL"
+fi
+echo "OTHER=$OTHER" | tee "$EVIDENCE/gate4c-slug.txt"
+
+mkdir -p "$HOME/.grok"
+if [ -f "$HOME/.grok/pstack-models.toml" ]; then
+  cp -a "$HOME/.grok/pstack-models.toml" "$EVIDENCE/gate4c-pstack-models.toml.pre"
+  grep -v '^independent-verifier' "$HOME/.grok/pstack-models.toml" \
+    > /tmp/pstack-toml-rest.txt || true
+else
+  : > /tmp/pstack-toml-rest.txt
+fi
+{
+  cat /tmp/pstack-toml-rest.txt
+  printf 'independent-verifier = "%s"\n' "$OTHER"
+} > "$HOME/.grok/pstack-models.toml"
+cp -a "$HOME/.grok/pstack-models.toml" "$EVIDENCE/gate4c-pstack-models.toml"
+
+timeout 180s grok -p 'Call the task tool exactly once, then stop.
+subagent_type: independent-verifier
+description: live slug probe
+run_in_background: true
+model: '"$OTHER"'
+prompt: Reply with exactly the word pong and stop. Do not edit files.
+Do not change model if the call is accepted. If it is rejected, quote the error verbatim and stop.' \
+  "${GROK_BASE[@]}" "${GROK_STREAM[@]}" \
+  --max-turns 8 \
+  2>"$EVIDENCE/gate4c.err" | tee "$EVIDENCE/gate4c.ndjson"
+echo $? | tee "$EVIDENCE/gate4c.exit"
+
+jq -c 'select(.type=="tool_call" and (.toolName=="task" or .toolName=="Task" or .toolName=="spawn_subagent"))
+       | {toolName, model: .rawInput.model, rawInput}' \
+  "$EVIDENCE/gate4c.ndjson" \
+  | tee "$EVIDENCE/gate4c-task-spawns.jsonl"
+
+jq -c 'select(.type=="tool_call_update" or .type=="error" or .type=="text")' \
+  "$EVIDENCE/gate4c.ndjson" \
+  | tee "$EVIDENCE/gate4c-updates.jsonl"
+```
+
+**PASS.** The spawn's `rawInput.model` equals `$OTHER` from `gate4c-slug.txt`, and the tool is accepted (child starts or returns; no model-validation rejection).
+
+**FAIL.** `task` rejects the slug, or the session sent a Cursor panel slug instead of `$OTHER`.
+
+**Evidence to keep.** toml, slug file, NDJSON, spawns, updates.
+
+Leave `independent-verifier = "$OTHER"` in the live toml so Gate 7 can use it.
+
+---
+
+## Gate 4d. No Cursor rule file after setup
+
+After Gates 4a–4c, this plugin must not have created a Cursor rules file.
+
+**Commands**
+
+```bash
+ls -la "$HOME/.cursor/rules/pstack-models.mdc" \
+  >"$EVIDENCE/gate4d-cursor-mdc.ls" 2>&1 || true
+# test ! -e returns 0 when the Cursor file is absent (required PASS).
+test ! -e "$HOME/.cursor/rules/pstack-models.mdc"
+echo $? | tee "$EVIDENCE/gate4d-mdc-absent.exit"
+test -f "$HOME/.grok/pstack-models.toml"
+echo $? | tee "$EVIDENCE/gate4d-toml-exists.exit"
+```
+
+**PASS.** `gate4d-mdc-absent.exit` is `0` (`~/.cursor/rules/pstack-models.mdc` does not exist) and `gate4d-toml-exists.exit` is `0` (`~/.grok/pstack-models.toml` exists).
+
+**FAIL.** The Cursor mdc file exists, or the Grok toml is missing after setup.
+
+**Evidence to keep.** The two ls/exit files.
+
+---
+
+## Gate 4e. Live effort ladder writes grok-build role files
+
+`task` has no `reasoning_effort` field. Prove setup detected the live enum, applied [`effort-ladder.md`](./skills/setup-pstack/references/effort-ladder.md), and wrote `SubagentRole.reasoning_effort` in `~/.grok/roles/<key>.toml`.
+
+**Commands**
+
+```bash
+if [ -f "$HOME/.grok/pstack-models.toml" ]; then
+  cp -a "$HOME/.grok/pstack-models.toml" "$EVIDENCE/gate4e-pstack-models.toml.pre"
+fi
+if [ -d "$HOME/.grok/roles" ]; then
+  cp -a "$HOME/.grok/roles" "$EVIDENCE/gate4e-roles.pre"
+fi
+
+timeout 180s grok -p '/setup-pstack
+Keep every model key inherit-parent.
+Detect the live effort enum from `use one of:` (not VALID_VALUES). Apply skills/setup-pstack/references/effort-ladder.md.
+Do not write max unless the live CLI listed it. Do not invent ultra.
+Write the computed three-tier [effort] split:
+highest for judgment/explainer/verifier/panels;
+highest-1 for bug-fix, perf-issue, hillclimb, reflect-tooling;
+highest-2 for feature, refactoring, how-explorer, why-investigators, swarm-workers
+(clamped off the weakest when the enum has three or more levels).
+If you would call ask_user_question, skip it and write that split now.
+Decline creating .grok/skills/verify-*. Stop after the toml and ~/.grok/roles files are written.
+Do not send reasoning_effort on any task call.' \
+  "${GROK_BASE[@]}" "${GROK_STREAM[@]}" \
+  --max-turns 20 \
+  2>"$EVIDENCE/gate4e-setup.err" | tee "$EVIDENCE/gate4e-setup.ndjson"
+echo $? | tee "$EVIDENCE/gate4e-setup.exit"
+
+cp -a "$HOME/.grok/pstack-models.toml" "$EVIDENCE/gate4e-pstack-models.toml"
+cat "$EVIDENCE/gate4e-pstack-models.toml"
+ls -la "$HOME/.grok/roles" | tee "$EVIDENCE/gate4e-roles.ls"
+for key in feature bug-fix how-explainer independent-verifier; do
+  echo "===== $key ====="
+  cat "$HOME/.grok/roles/${key}.toml" 2>&1 || true
+done | tee "$EVIDENCE/gate4e-role-files.txt"
+
+jq -c 'select(.type=="tool_call" and (.toolName=="task" or .toolName=="Task" or .toolName=="spawn_subagent"))
+       | {toolName, rawInput}' \
+  "$EVIDENCE/gate4e-setup.ndjson" \
+  | tee "$EVIDENCE/gate4e-task-spawns.jsonl"
+```
+
+Compare overlays to `gate4-expected-tiers.txt` (`mechanical:`, `instruction:`, `judgment:`).
+
+**PASS.** `~/.grok/roles/feature.toml` `reasoning_effort` equals `mechanical:`. `~/.grok/roles/bug-fix.toml` equals `instruction:`. `~/.grok/roles/how-explainer.toml` and `~/.grok/roles/independent-verifier.toml` equal `judgment:`. No `task` call in this gate sent a `reasoning_effort` key. `gate4e-tui-leak` is not required if setup skipped `ask_user_question`; if it asked, the payload has no Cursor words (same grep as Gate 4a) and did not invent `ultra`.
+
+**FAIL.** Role files missing, wrong levels vs the computed ladder, a live `task` payload includes `reasoning_effort`, setup wrote `max` when `use one of:` did not name it, or setup copied `Effort::VALID_VALUES` instead of the live CLI list.
+
+**CANNOT-PROVE (not PASS).** Headless hung on `ask_user_question` and TUI was not available.
+
+**Evidence to keep.** Setup NDJSON, toml, role files, task-spawns JSONL.
+
+---
+
+## Gate 5. `/poteto-mode` matches Investigation and copies steps into todos
+
+Lab folder (tiny, local, not DeepSeek Harness):
+
+```bash
+export LAB=/tmp/pstack-edith-lab
+rm -rf "$LAB"
+mkdir -p "$LAB"
+cat > "$LAB/hello.py" << 'PY'
+#!/usr/bin/env python3
+print("hello")
+PY
+chmod +x "$LAB/hello.py"
+python3 "$LAB/hello.py" | tee "$EVIDENCE/gate5-hello-before.txt"
+# Must be exactly: hello
+```
+
+**Commands**
+
+```bash
+grok -p '/poteto-mode How does hello.py work?
+Read-only. Do not edit files. Do not open a PR.' \
+  "${GROK_BASE[@]}" "${GROK_STREAM[@]}" \
+  --cwd "$LAB" \
+  --max-turns 40 \
+  2>"$EVIDENCE/gate5.err" | tee "$EVIDENCE/gate5.ndjson"
+```
+
+**Inspect**
+
+Dump todos from both channels grok actually emits:
+
+```bash
+jq -c 'select(.type=="plan")' "$EVIDENCE/gate5.ndjson" \
+  | tee "$EVIDENCE/gate5-plan.jsonl"
+
+jq -c 'select(.type=="tool_call" and (.toolName=="todo_write" or .toolName=="TodoWrite")) | .rawInput' \
+  "$EVIDENCE/gate5.ndjson" \
+  | tee "$EVIDENCE/gate5-todo_write.jsonl"
+
+jq -r 'select(.type=="tool_call") | .toolName' "$EVIDENCE/gate5.ndjson" \
+  | sort | uniq -c | tee "$EVIDENCE/gate5-toolNames.txt"
+```
+
+Playbook file (installed copy): `$PLUGIN_PATH/skills/poteto-mode/playbooks/investigation.md`.
+
+Required todo contents, in order after the principles item. Copied verbatim or with `skip: <reason>` still present. Silent drop is FAIL.
+
+From `skills/poteto-mode/SKILL.md` (non-negotiables):
+
+1. First todo. Read the Principles section of poteto-mode in full.
+
+From `playbooks/investigation.md`:
+
+2. Route through the **how** skill (Explain mode for this narrow question).
+3. `throughput checkpoint: n/a, read-only investigation`
+4. Produce the `how`-shaped output (Overview / Key Concepts / How It Works / Where Things Live / Gotchas).
+5. Apply the **unslop** skill to the reply.
+
+No PR. Investigation says no Opening a PR.
+
+**PASS.** The first todo is the Principles read, and the Investigation steps appear as todos (skipped ones still listed with `skip:`). The reply has the how-shaped sections. `hello.py` is unchanged.
+
+**FAIL.** The agent writes a bespoke plan that drops named Investigation steps, or it edits `hello.py`, or it never calls `todo_write` / never emits a `plan` with those steps.
+
+**Evidence to keep.** `gate5.ndjson`, plan + todo extracts, `hello.py` copy (`cp "$LAB/hello.py" "$EVIDENCE/gate5-hello.py"`), toolNames.
+
+---
+
+## Gate 6. One real local Feature task with command plus output
+
+Same `$LAB`. Still not DeepSeek Harness. Still not a GitHub PR.
+
+Seed git so Feature step 6 can commit locally:
+
+```bash
+git -C "$LAB" init
+git -C "$LAB" add hello.py
+git -C "$LAB" -c user.email=edith@local -c user.name=EDITH commit -m 'chore(lab): seed hello.py'
+```
+
+**Commands**
+
+```bash
+grok -p '/poteto-mode Add a --json flag to hello.py.
+Default stdout must stay exactly the bytes: hello\n
+python3 hello.py --json must print exactly: {"msg":"hello"}\n
+Verify by running both commands yourself this session. Keep the command output in your work.
+Do not open a PR. Skip opening-a-pr with reason: edith local lab.
+Independent verify is still mandatory (Feature step 4). Spawn it from this parent with task.' \
+  "${GROK_BASE[@]}" "${GROK_STREAM[@]}" \
+  --cwd "$LAB" \
+  --max-turns 80 \
+  2>"$EVIDENCE/gate6.err" | tee "$EVIDENCE/gate6.ndjson"
+```
+
+`--max-turns 80` is the floor. Parent plus `poteto-agent` plus `independent-verifier` plus shell. Raise it rather than false-FAIL.
+
+**Inspect**
+
+Todos must be the Feature playbook (`$PLUGIN_PATH/skills/poteto-mode/playbooks/feature.md`), copied in, first item still Principles:
+
+1. `how` over the affected subsystem.
+2. `architect` or `architect skipped: <reason>`.
+3. Four throughput-checkpoint todos (Blocking first steps / Independent workstreams / Shared mutable state / Smallest safe decomposition). Unused dimensions stay with `n/a: <reason>`.
+4. Parent `task` `subagent_type: "poteto-agent"` (or `pstack:poteto-agent`) **and** parent `task` `subagent_type: "independent-verifier"` (bare name so `~/.grok/roles/independent-verifier.toml` matches). Independent verify has **no skip-with-reason escape**.
+5. Verify on the matching surface (the two python commands).
+6. Commits (local is enough).
+7. `interrogate` or `skip: <reason>` (not contested is a valid skip).
+8. Opening a PR stays in the list as `skip: edith local lab` (or equivalent). Silent drop is FAIL.
+
+Extract shell evidence:
+
+```bash
+jq -c 'select(.type=="tool_call") | {toolName, rawInput}' "$EVIDENCE/gate6.ndjson" \
+  | tee "$EVIDENCE/gate6-tool-calls.jsonl"
+
+jq -c 'select(.type=="tool_call_update") | {toolCallId, status, rawOutput}' "$EVIDENCE/gate6.ndjson" \
+  | tee "$EVIDENCE/gate6-tool-updates.jsonl"
+
+# After the session, EDITH also runs the binary herself:
+python3 "$LAB/hello.py" | tee "$EVIDENCE/gate6-edith-default.txt"
+python3 "$LAB/hello.py" --json | tee "$EVIDENCE/gate6-edith-json.txt"
+printf 'hello\n' > "$EVIDENCE/gate6-expected-default.txt"
+printf '{"msg":"hello"}\n' > "$EVIDENCE/gate6-expected-json.txt"
+cmp -s "$EVIDENCE/gate6-edith-default.txt" "$EVIDENCE/gate6-expected-default.txt"
+cmp -s "$EVIDENCE/gate6-edith-json.txt" "$EVIDENCE/gate6-expected-json.txt"
+cp "$LAB/hello.py" "$EVIDENCE/gate6-hello.py"
+```
+
+The **session** stream must contain the same two commands and their stdout, not only EDITH's after-the-fact rerun. Search `rawInput` / `rawOutput` / `content` for `hello.py` and the JSON object.
+
+**PASS.** Feature todos are present (with explicit skips), both python invocations appear **in the session** with the exact stdout above, and EDITH's rerun matches.
+
+**FAIL.** Outputs differ, the agent only *claims* it ran the commands, Feature steps were replaced by a bespoke plan, or Opening a PR ran against GitHub despite the skip instruction.
+
+**Evidence to keep.** `gate6.ndjson`, tool extracts, both expected/actual stdout files, `gate6-hello.py`, git log if commits happened (`git -C "$LAB" log --oneline | tee "$EVIDENCE/gate6-git-log.txt"`).
+
+Independent-verifier spawn is scored in Gate 7 using this same stream when present.
+
+---
+
+## Gate 7. Independent verifier via parent `task` and a different model
+
+Feature step 4. Parent session only (`MAX_SUBAGENT_DEPTH` is 1; a child that calls `task` fails).
+
+Required spawn shape (`HARNESS.md` / `TaskToolInput`):
+
+```text
+task
+  prompt: <you did not write hello.py. Do not edit. Run python3 hello.py and python3 hello.py --json. Return PASS, PASS+NOTES, or FAIL with commands and output.>
+  description: independent verify lab
+  subagent_type: independent-verifier   # or pstack:independent-verifier
+  run_in_background: true
+  model: <a detected slug DIFFERENT from the writer>
+  isolation: worktree                   # when the writer still holds the tree; none is acceptable if the child does not write
+```
+
+Then parent joins:
+
+```text
+get_task_output
+  task_ids: [<id>]
+  timeout_ms: <positive, e.g. 120000>
+```
+
+**Commands if Gate 6 already spawned it**
+
+Reuse `$EVIDENCE/gate6.ndjson`. If it did not spawn the verifier, run a follow-up **in the same lab**, still as the parent (new headless session is a parent):
+
+```bash
+# Only if Gate 6 missed the spawn, or spawned independent-verifier with
+# model omitted / equal to GROK_MODEL (correct when toml is inherit-parent).
+# OTHER must be a detected slug. Prefer gate4c-slug.txt.
+OTHER="$(cat "$EVIDENCE/gate4c-slug.txt" 2>/dev/null | sed -n 's/^OTHER=//p')"
+if [ -z "$OTHER" ]; then
+  OTHER="$(grep -vx "$GROK_MODEL" "$EVIDENCE/gate4-detected-slugs.txt" | head -n1)"
+fi
+echo "OTHER=$OTHER" | tee "$EVIDENCE/gate7-other-slug.txt"
+
+if [ -z "$OTHER" ] || [ "$OTHER" = "$GROK_MODEL" ]; then
+  echo "CANNOT-PROVE: no detected slug different from $GROK_MODEL" \
+    | tee "$EVIDENCE/gate7-cannot-prove.txt"
+else
+  grok -p '/poteto-mode Do not edit hello.py.
+From this parent session, call task with subagent_type independent-verifier (or pstack:independent-verifier), run_in_background true, model '"$OTHER"', prompt instructing a read-only rerun of python3 hello.py and python3 hello.py --json in '"$LAB"'.
+Join with get_task_output. Quote the child verdict. Do not spawn from a child.' \
+    "${GROK_BASE[@]}" "${GROK_STREAM[@]}" \
+    --cwd "$LAB" \
+    --max-turns 40 \
+    2>"$EVIDENCE/gate7.err" | tee "$EVIDENCE/gate7.ndjson"
+fi
+```
+
+**Inspect**
+
+```bash
+# Prefer gate6 stream; fall back to gate7.
+SRC="$EVIDENCE/gate6.ndjson"
+[ -f "$EVIDENCE/gate7.ndjson" ] && SRC="$EVIDENCE/gate7.ndjson"
+
+jq -c 'select(.type=="tool_call" and (.toolName=="task" or .toolName=="Task" or .toolName=="spawn_subagent"))
+       | .rawInput' "$SRC" \
+  | tee "$EVIDENCE/gate7-task-spawns.jsonl"
+
+jq -c 'select(.type=="tool_call" and (.toolName=="get_task_output" or .toolName=="wait_tasks"))
+       | .rawInput' "$SRC" \
+  | tee "$EVIDENCE/gate7-joins.jsonl"
+```
+
+Checks:
+
+1. At least one spawn has `subagent_type` `independent-verifier` (bare name so the role overlay matches). `pstack:independent-verifier` is accepted by discovery but does **not** load `~/.grok/roles/independent-verifier.toml`.
+2. That spawn's `model` is set and **≠** the writer slug (`$GROK_MODEL` or the `poteto-agent` child's `model`).
+3. Parent called `get_task_output` (or waited until the child finished in-stream).
+4. Child verdict is `PASS`, `PASS+NOTES`, or `FAIL`, with commands it ran. A child that only restates the parent's claim without running python is FAIL.
+5. Child did not write. `git -C "$LAB" diff` after the verifier matches the post-Gate-6 tree, or the verifier stream has no write tools completing.
+
+**PASS.** Parent `task` spawned `independent-verifier` with a **different** `model`, joined it, and the child returned a verdict with its own command output.
+
+**FAIL.** No such spawn, spawn used the same model as the writer, the child wrote files, or the child skipped running the two python commands.
+
+**CANNOT-PROVE (not PASS).** Detected set has a single slug (`grok-4.6` only). `inherit-parent` vs `grok-4.6` is the same model. Do not mark PASS. Write `gate7-cannot-prove.txt`.
+
+**Evidence to keep.** Task spawn JSON, join JSON, child output (from `tool_call_update` / `get_task_output` rawOutput), `gate7-other-slug.txt` or `gate7-cannot-prove.txt`.
+
+---
+
+## Gate 8. Overnight / loop, only if cheap and deterministic
+
+Full overnight (`/poteto-mode i'm going to bed` + Autonomous run + `/loop until done`) **cannot be proven in under 10 minutes**. **SKIP** that playbook. SKIP is not PASS.
+
+Cheap loop probe (budget **<10 minutes**, aim **<3**). grok-build `/loop` expands to `scheduler_create` with `fire_immediately: true` (`xai-grok-tools-api` `slash_commands.rs`). `interval` minimum is **60s**. Schema default for `fire_immediately` is false. `/loop` instruction sets it true. `recurring` is schemars-skipped; do not send `recurring: false`.
+
+**Commands**
+
+```bash
+# Skip immediately if the live tool list has no scheduler_create.
+jq -r 'select(.type=="available_commands") | .tools[]?' "$EVIDENCE/gate2-init.ndjson" \
+  2>/dev/null | tee "$EVIDENCE/gate8-tools-from-init.txt" || true
+
+PROBE=/tmp/pstack-loop-probe.txt
+rm -f "$PROBE"
+
+timeout 180s grok -p '/loop 60s
+On each fire, write the single line "loop-ok" to /tmp/pstack-loop-probe.txt using the shell, then call scheduler_delete on the scheduler you just created. Stop after delete. Do not start a second scheduler.' \
+  "${GROK_BASE[@]}" "${GROK_STREAM[@]}" \
+  --max-turns 20 \
+  --cwd "$LAB" \
+  2>"$EVIDENCE/gate8.err" | tee "$EVIDENCE/gate8.ndjson"
+echo $? | tee "$EVIDENCE/gate8.exit"
+
+jq -c 'select(.type=="tool_call") | {toolName, rawInput}' "$EVIDENCE/gate8.ndjson" \
+  | tee "$EVIDENCE/gate8-tool-calls.jsonl"
+
+test -f "$PROBE" && cat "$PROBE" | tee "$EVIDENCE/gate8-probe.txt" || true
+```
+
+**PASS.** Stream shows `scheduler_create` with `interval` of at least `60s` and `fire_immediately: true` (or `/loop` clearly issued and the create call matches), the probe file contains `loop-ok`, and `scheduler_delete` ran. Whole gate finished in under 10 minutes.
+
+**FAIL.** Scheduler fired in a destructive way, never deleted, or wrote the wrong path.
+
+**SKIP (not PASS).** `scheduler_create` is not a live tool, `/loop` is missing, `fire_immediately` never happens and waiting a full interval would exceed 10 minutes, or the run hits `--max-turns` before create. Write the skip reason in `$EVIDENCE/gate8-skip.txt`.
+
+Do not treat SKIP as evidence the overnight playbook works.
+
+---
+
+## Optional hygiene (not a pass gate)
+
+```bash
+# Static tree check only. Not proof. Do not submit as Gate evidence.
+# python3 "$PLUGIN_PATH/scripts/verify-harness.py"
+```
+
+If you run it, keep the output under `$EVIDENCE/optional-verify-harness.txt` and label it **not a gate**.
+
+---
+
+## One-page checklist (tick in `$EVIDENCE/CHECKLIST.md`)
+
+Copy this block into `$EVIDENCE/CHECKLIST.md` and tick as you go.
+
+```text
+pstack-grokbuild EDITH checklist
+Evidence dir:
+
+[ ] Did not use scripts/verify-harness.py (or any Python harness) as proof
+[ ] Did not use a Cloud Agent VM transcript as proof
+[ ] Gate 0 PASS  grok-4.6 + --always-approve + --reasoning-effort xhigh ping
+[ ] Gate 1 PASS  grok plugin install --trust, then grok plugin enable pstack
+[ ] Gate 1 note  without --trust: exit 1, no TUI wait (or recorded CLI delta)
+[ ] Gate 2 PASS  poteto-mode, setup-pstack, how, unslop visible; 22 agents visible
+[ ] Gate 3 PASS  no live AskQuestion / TodoWrite / generalPurpose / environment cloud; installed skills have no Cursor panel slugs
+[ ] Gate 4 PASS  detected slugs from live task.model rejection; effort from live `use one of:` (no reserved max unless listed)
+[ ] Gate 4a PASS accept-defaults / step 5; grok-4.6 + computed [effort] from live enum; feature.toml matches mechanical tier; TUI has no Cursor words
+[ ] Gate 4b PASS missing toml; feature spawn sends grok-4.6 (or omits if rejected); no task.reasoning_effort; agents/feature.md effort: medium (ship-time mechanical)
+[ ] Gate 4c PASS independent-verifier set to a live slug (grok-4.5 when present); task accepts it
+[ ] Gate 4d PASS ~/.cursor/rules/pstack-models.mdc does not exist after setup
+[ ] Gate 4e PASS live effort ladder wrote ~/.grok/roles feature=mechanical bug-fix=instruction how-explainer=judgment independent-verifier=judgment; no task.reasoning_effort
+[ ] Gate 5 PASS  /poteto-mode matched Investigation; Principles first; steps copied to todos
+[ ] Gate 6 PASS  Feature on /tmp/pstack-edith-lab; both python commands + exact stdout in-session
+[ ] Gate 7 PASS  parent task independent-verifier + different model + child command evidence
+     or [ ] Gate 7 CANNOT-PROVE (only one detected slug). Not ticked as PASS.
+[ ] Gate 8 PASS cheap /loop 60s + scheduler_delete in <10 min
+     or [ ] Gate 8 SKIP (missing scheduler, or cannot prove in <10 min). Not ticked as PASS.
+[ ] Overnight Autonomous run SKIP (cannot prove in <10 min)
+[ ] Evidence directory saved (ndjson, toml, hello.py, stdout files)
+
+Final: every required gate is PASS, and Gate 7/8 are PASS or an allowed CANNOT-PROVE/SKIP.
+Required: 0, 1, 2, 3, 4, 4a, 4b, 4c, 4d, 4e, 5, 6. Gate 7 required unless CANNOT-PROVE. Gate 8 optional with SKIP.
+```
+
+---
+
+## After the run
+
+Pack evidence:
+
+```bash
+tar -C "$(dirname "$EVIDENCE")" -czf "${EVIDENCE}.tar.gz" "$(basename "$EVIDENCE")"
+ls -lh "${EVIDENCE}.tar.gz"
+```
+
+Hand Cola the tarball plus the ticked checklist. A narrative without the NDJSON is not a result.

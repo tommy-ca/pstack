@@ -1,0 +1,20 @@
+{
+  "name": "pstack",
+  "displayName": "pstack",
+  "version": "0.14.5-grokbuild.1",
+  "description": "pstack for Claude Code: shared skills with Grok Build and Codex; Agent spawn via host mapping.",
+  "author": {
+    "name": "Lauren Tan (original); tommy-ca (three-host port)"
+  },
+  "homepage": "https://github.com/tommy-ca/pstack",
+  "repository": "https://github.com/tommy-ca/pstack",
+  "license": "MIT",
+  "keywords": [
+    "pstack",
+    "poteto-mode",
+    "workflow",
+    "principles"
+  ],
+  "skills": "./skills/",
+  "agents": "./agents/"
+}

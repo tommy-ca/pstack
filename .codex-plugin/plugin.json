@@ -1,0 +1,26 @@
+{
+  "name": "pstack",
+  "version": "0.14.5-grokbuild.1",
+  "description": "pstack for Codex: shared skills; tool names resolve via skills/poteto-mode/references/codex-tools.md.",
+  "author": {
+    "name": "Lauren Tan (original); tommy-ca (three-host port)"
+  },
+  "homepage": "https://github.com/tommy-ca/pstack",
+  "repository": "https://github.com/tommy-ca/pstack",
+  "license": "MIT",
+  "keywords": [
+    "pstack",
+    "poteto-mode",
+    "codex"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "pstack",
+    "shortDescription": "Rigorous agent workflows: go deep first.",
+    "longDescription": "Shared pstack blocks (principles, primitives, composition, playbooks) recomposed on Codex via codex-tools.md.",
+    "developerName": "Lauren Tan (original), tommy-ca",
+    "category": "Developer Tools",
+    "capabilities": ["Interactive", "Read", "Write"],
+    "websiteURL": "https://github.com/tommy-ca/pstack"
+  }
+}

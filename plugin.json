@@ -1,0 +1,25 @@
+{
+  "name": "pstack",
+  "displayName": "pstack",
+  "version": "0.14.5-grokbuild.1",
+  "description": "pstack atomic playbooks and principles recomposed for Grok Build, Codex, and Claude Code. Intent from Lauren Tan / Cursor pstack; Grok adapter from pstack-grokbuild.",
+  "author": {
+    "name": "tommy-ca"
+  },
+  "homepage": "https://github.com/tommy-ca/pstack",
+  "repository": "https://github.com/tommy-ca/pstack",
+  "license": "MIT",
+  "keywords": [
+    "pstack",
+    "poteto-mode",
+    "workflow",
+    "principles",
+    "subagents",
+    "unslop",
+    "grok-build",
+    "codex",
+    "claude-code"
+  ],
+  "skills": "./skills/",
+  "agents": "./agents/"
+}

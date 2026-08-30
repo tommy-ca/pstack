@@ -1,0 +1,20 @@
+{
+  "name": "pstack",
+  "owner": {
+    "name": "tommy-ca"
+  },
+  "description": "pstack shared skill tree for Claude Code, Codex, and Grok Build.",
+  "plugins": [
+    {
+      "name": "pstack",
+      "source": "./",
+      "description": "If you want to go fast, go deep first. Shared atomic pstack blocks.",
+      "version": "0.14.5-grokbuild.1",
+      "author": {
+        "name": "Lauren Tan (original)"
+      },
+      "homepage": "https://github.com/tommy-ca/pstack",
+      "license": "MIT"
+    }
+  ]
+}
