@@ -2,7 +2,7 @@
 
 This guide is for the Grok Build port of official pstack. Playbooks and principles are poteto's.
 
-pstack works best when you stop micromanaging the agent. You describe what you want and how you'll know it's done. `/poteto-mode` picks the playbook, runs the other skills as the steps need them, and shows you the evidence. This guide teaches that habit with realistic prompts.
+pstack works best when you stop micromanaging the agent. You describe what you want and how you'll know it's done. Type `/poteto-mode`. It does not auto-enter. It picks the playbook, runs the other skills as the steps need them, and shows you the evidence. This guide teaches that habit with realistic prompts.
 
 Here's what you'll learn:
 

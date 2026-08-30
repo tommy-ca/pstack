@@ -101,6 +101,8 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert "adapt-harness.py" in guide
     assert "verify-harness.py" in guide
     assert "sync-from-upstream.py" in guide
+    index = (ROOT / "docs/guide/README.md").read_text(encoding="utf-8")
+    assert "does not auto-enter" in index
     assert "spawn_subagent" in guide
     assert "scheduler_create" in guide
     assert "make-bot-ui" in guide
@@ -255,6 +257,7 @@ def test_readme_locale_split() -> None:
         assert "aa2246740/pstack-grokbuild --trust" not in text
         assert "pstack:poteto-agent" in text
         assert "pstack:comment-sicko" in text
+        assert "pstack:independent-verifier" in text
 
 
 def test_first_session_names_sandbox_reload_and_slash() -> None:
@@ -278,6 +281,8 @@ def test_first_session_names_sandbox_reload_and_slash() -> None:
     assert "mode: true" not in fm
     guide = (ROOT / "docs/guide/02-poteto-mode.md").read_text(encoding="utf-8")
     assert "sticky" not in guide.lower()
+    assert "does not auto-enter" in guide
+    assert "a mode mid-Feature" not in guide
     setup = (ROOT / "docs/guide/01-setup.md").read_text(encoding="utf-8")
     assert "sticky" not in setup.lower()
 

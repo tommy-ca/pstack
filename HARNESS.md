@@ -115,7 +115,7 @@ spawn_subagent
   isolation: none | worktree
 ```
 
-Do not send `reasoning_effort` or `capability_mode` on that call. Effort is the matching `~/.grok/roles/<subagent_type>.toml` when setup wrote a level, else the plugin agent's frontmatter `effort`.
+Do not send `reasoning_effort` or `capability_mode` on that call. Effort is the matching `~/.grok/roles/pstack:<key>.toml` when setup wrote a level, else the plugin agent's frontmatter `effort`.
 
 Then `get_command_or_subagent_output` with `task_ids` and a positive `timeout_ms` when the parent must join.
 
