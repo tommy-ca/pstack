@@ -1,8 +1,8 @@
 # Benny on Grok Build
 
-Cursor Benny stays under `../`. These files are the grok remap. They are not slash skills. They are not pstack plugin hooks.
+`automations/benny/skills/` is the **upstream reference** for marker names and atomic intent. These grok files are the live contract. They are not slash skills. They are not pstack plugin hooks.
 
-Grok has no Slack channel auto-start. You pass the thread into a workflow. Overnight waits use `/loop`, which expands to `scheduler_create`.
+Grok has no Slack channel auto-start. You pass `args.thread_url` into a workflow. Overnight waits use `/loop`, which expands to `scheduler_create`. Fan-out uses `spawn_subagent` with `pstack:<role>`.
 
 ## Copy into a target repository
 
@@ -12,12 +12,13 @@ cp automations/benny/grok/hooks/hooks.json .grok/hooks/benny.json
 cp automations/benny/grok/bin/fail-closed.sh .grok/hooks/bin/fail-closed.sh
 chmod +x .grok/hooks/bin/fail-closed.sh
 cp automations/benny/grok/workflows/*.rhai .grok/workflows/
+cp automations/benny/grok/triage.md automations/benny/grok/repro.md .grok/benny/
 cp automations/benny/templates/configuration.example.yaml .grok/benny/configuration.yaml
 ```
 
 Fix the hook `command` path so it is relative to `.grok/hooks/benny.json` (use `bin/fail-closed.sh` next to that JSON, or copy `bin/` beside it). Trust the folder (`/hooks-trust` or `--trust`) or project hooks stay skipped.
 
-Keep secrets out of YAML. User config stays in `.grok/benny/`, not inside `automations/benny/`.
+Keep secrets out of YAML. User config stays in `.grok/benny/`.
 
 Enable pstack from a host shell. `grok plugin enable pstack`. Spawn `pstack:how-explorer`, not `how-explorer`.
 
@@ -28,8 +29,6 @@ Enable pstack from a host shell. `grok plugin enable pstack`. Spawn `pstack:how-
 /workflow benny-repro {"thread_url":"https://slack.com/archives/..."}
 ```
 
-Keep `automations/benny/skills/` with the workflows. The Rhai files tell the agent to read those SKILL.md files. Copying only `grok/` is not enough.
-
-The workflow agent must follow those operational files. Reply only in the frozen thread. Never post a source-channel root message. That `thread_ts` rule is prompt-enforced. The copied hook only denies merge and force-push. Draft pull requests only. It does not see Slack MCP or `gh pr create`.
+Workflows read `automations/benny/grok/triage.md` and `repro.md`. Copy those files with the workflows. The parent posts one frozen-thread reply. Never a source-channel root message. That freeze is prompt-enforced. The copied hook only denies merge and force-push.
 
 `/loop` with a checkable predicate expands to `scheduler_create` (min 60s, new turn).

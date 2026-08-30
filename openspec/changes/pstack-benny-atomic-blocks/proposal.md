@@ -6,13 +6,13 @@ Benny is a Cursor automation pack for Slack issue reports. Two pipelines. One tr
 
 - OpenSpec capabilities for pack layout, triage, repro, fail-closed safety, and the grok remap.
 - Design doc: Cursor vs grok mapping, data flow, schemas.
-- Opt-in grok copies under `automations/benny/grok/` (hooks + workflows). Operators copy them into a target repo. pstack `plugin.json` still has no `hooks` key.
+- Opt-in grok copies under `automations/benny/grok/` (live `triage.md` / `repro.md`, hooks, workflows). Cursor `skills/` is the **upstream reference**, not the live coordinator. pstack `plugin.json` still has no `hooks` key.
 
 ## Capabilities
 
 ### New Capabilities
 
-- `benny-pack`: dormant source. Not slash skills. User config lives outside the pack.
+- `benny-pack`: dormant **upstream reference**. Not slash skills. Not the live grok coordinator. User config lives outside the pack.
 - `benny-triage`: one thread-only verdict with `[benny:bug]`, `[benny:performance]`, or `[benny:other]`.
 - `benny-repro`: wait for a trusted marker, reproduce twice through real UI, draft PR only after proof.
 - `benny-safety`: immutable source coordinates, no source-channel root posts, no worker Slack writes, draft-only PRs.

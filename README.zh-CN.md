@@ -263,7 +263,7 @@ Cursor 版 pstack 的 `poteto-mode` 还引用过这些，这里没有打包：
 - `/deslop`、`control-cli`、`control-ui` 在 `cursor-team-kit` 里。这里用 `/unslop`、`/no-comments`，应用自己去点、去跑。
 - 独立核验是 `spawn_subagent`，`subagent_type` 为 `pstack:independent-verifier`。toml 里是已探测到的 slug 时另传 `model`，否则省略 `model`。不是 Cursor Cloud Agent。见 [HARNESS.md](./HARNESS.md)。
 - Graphite `gt` 可选。没有就用 `gh` 和 git。
-- Benny 源码仍在 `automations/benny/`。Grok 副本在 [`automations/benny/grok/`](./automations/benny/grok/)。不是本插件的 plugin hooks。
+- Benny 的 Cursor 包在 `automations/benny/skills/`，是 **upstream reference**。现场 grok 合同在 [`automations/benny/grok/`](./automations/benny/grok/)。不是本插件的 plugin hooks。
 
 ## 为什么没有规划技能
 

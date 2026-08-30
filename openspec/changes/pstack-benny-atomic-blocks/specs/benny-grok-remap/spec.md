@@ -4,7 +4,7 @@
 
 Feature: benny-grok-remap
 
-The grok port MUST keep Cursor `/automate` and `.cursor/automations/` as source documentation only. Live grok copies MUST live under `automations/benny/grok/`. Operators MUST copy hooks into a target `.grok/hooks/` and workflows into `.grok/workflows/`. pstack `plugin.json` MUST NOT grow a `hooks` key, because plugin hooks would run for every pstack user. Slack channel auto-start MUST be documented as a host gap. Attended runs use `/workflow benny-triage` or `/workflow benny-repro` with `args.thread_url`. Overnight waits use `/loop` → `scheduler_create`. Fail-closed merge and force-push MUST be a `PreToolUse` command hook in the copied pack.
+Official and Cursor Benny under `automations/benny/skills/` is the **upstream reference** for intent and atomic blocks only. It is not the live grok operational contract. Live grok instructions MUST live under `automations/benny/grok/` (`triage.md`, `repro.md`, workflows, opt-in hooks). They MUST name grok-build natives: `spawn_subagent` with `pstack:<role>`, `args.thread_url`, `/loop` → `scheduler_create`, copied `PreToolUse` hooks. They MUST NOT tell a run to follow Cursor `/automate`, `trigger.thread_ts`/`trigger.ts`, or `.cursor/automations/` as the live path. Operators MUST copy hooks into a target `.grok/hooks/` and workflows into `.grok/workflows/`. pstack `plugin.json` MUST NOT grow a `hooks` key. Slack channel auto-start MUST stay a host gap.
 
 #### Scenario: opt-in layout
 
@@ -26,5 +26,13 @@ The grok port MUST keep Cursor `/automate` and `.cursor/automations/` as source 
 - **GIVEN** `automations/benny/grok/bin/fail-closed.sh`
 - **WHEN** the tool command is not merge or force-push
 - **THEN** the script returns allow
-- **AND** source-channel `thread_ts` remains prompt-enforced in `SKILL.md` and the workflow prompt
+- **AND** source-channel freeze is prompt-enforced in grok `triage.md` / `repro.md` from `args.thread_url`
 - **AND** grok has no Slack channel auto-start
+
+#### Scenario: live grok path does not follow Cursor SKILL.md
+
+- **GIVEN** `automations/benny/grok/workflows/benny-triage.rhai` and `benny-repro.rhai`
+- **WHEN** a run starts
+- **THEN** the workflow reads grok `triage.md` or `repro.md`
+- **AND** it does not instruct following `automations/benny/skills/*/SKILL.md` as the live coordinator
+- **AND** those grok files name `spawn_subagent` and `pstack:<role>`

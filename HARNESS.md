@@ -38,7 +38,7 @@ Install this repo as a Grok Build plugin. Do not keep `.cursor-plugin`, `~/.curs
 | Cursor Cloud `environment: "cloud"` | Dropped. Use `isolation: "worktree"` plus `run_in_background: true`. | `TaskToolInput.isolation` |
 | Graphite `gt` / `graphite-base` | Optional if `gt` is on PATH. Otherwise `gh` + git. Playbook steps stay; the CLI is not assumed. | playbooks, rewritten call sites |
 | `cursor-team-kit` (`deslop`, `control-ui`, `control-cli`) | Not in this plugin. `/unslop` and `/no-comments` remain. Drive the real app yourself (browser, CLI, tests). | pstack README "not shipped here" |
-| Benny automations | Cursor automation pack. Not slash skills. Not pstack plugin hooks (`plugin.json` has no `hooks` key). Opt-in grok copies live under `automations/benny/grok/` (target `.grok/hooks/` + `.grok/workflows/`). Slack auto-start is a host gap. Attended runs pass `args.thread_url` into `/workflow`. Overnight uses `/loop` → `scheduler_create`. | pstack `automations/benny/`; `automations/benny/grok/` |
+| Benny automations | Cursor pack under `automations/benny/skills/` is the **upstream reference**. Live grok contract is `automations/benny/grok/` (`triage.md`, `repro.md`, opt-in hooks, workflows). Not slash skills. Not plugin hooks. `spawn_subagent` `pstack:<role>`. `args.thread_url`. `/loop` → `scheduler_create`. Slack auto-start is a host gap. | `automations/benny/grok/` |
 
 ## Skill order
 

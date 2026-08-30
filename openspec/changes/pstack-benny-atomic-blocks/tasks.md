@@ -23,3 +23,9 @@
 - [x] 4.3 Change `design.md` and `adr.md`. Repo ADR `adr/0001-benny-opt-in-copies-not-plugin-hooks.md`.
 - [x] 4.4 `openspec validate pstack-benny-atomic-blocks --type change --strict`.
 - [x] 4.5 Tests lock schema resolve, `design.md`/`adr.md`, and `fail-closed.sh` allow of non-merge commands.
+
+## 5. Upstream reference vs live grok path
+
+- [x] 5.1 Specs name Cursor `skills/` as **upstream reference**. Live grok files are `grok/triage.md` and `grok/repro.md`.
+- [x] 5.2 Workflows read those grok files. They do not instruct following Cursor SKILL.md as the coordinator.
+- [x] 5.3 ADR `adr/0002-benny-cursor-pack-is-upstream-reference.md`.
