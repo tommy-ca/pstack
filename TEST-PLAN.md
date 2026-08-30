@@ -446,7 +446,7 @@ timeout 180s grok -p '/setup-pstack
 Follow step 5 in the skill. Accept the shipped defaults for models and for [effort].
 Write grok-4.6 in every model key if it is in the DETECTED list. Otherwise inherit-parent for models.
 Detect the live effort enum from `use one of:` (grok --reasoning-effort not-a-real-effort). Apply effort-ladder.md. Do not use VALID_VALUES. Do not write max unless the live CLI listed it. Do not invent ultra.
-Write the computed [effort] table. Write ~/.grok/roles/<key>.toml for every real effort level.
+Write the computed [effort] table. Write ~/.grok/roles/pstack:<key>.toml for every real effort level.
 Do not copy a model table from another product or from memory.
 DETECTED:
 '"$(cat "$EVIDENCE/gate4-detected-slugs.txt")"'
@@ -533,7 +533,7 @@ fi
 test ! -f "$HOME/.grok/pstack-models.toml"
 
 timeout 180s grok -p 'From this parent session, call the task tool exactly once.
-subagent_type: feature
+subagent_type: pstack:feature
 description: feature default probe
 run_in_background: true
 prompt: Reply with exactly the word pong and stop. Do not edit files.
@@ -564,7 +564,7 @@ fi
 
 Inspect `rawInput.model` on the feature spawn (null / missing vs a string).
 
-**PASS.** At least one `task` spawn ran, `subagent_type` is `feature` (or `pstack:feature` only if bare `feature` was unknown), `model` is `grok-4.6` or omitted (omit only if `task` rejected `grok-4.6`), `rawInput` has no `reasoning_effort` key, and the installed plugin's `agents/feature.md` frontmatter contains `effort: medium` (ship-time mechanical tier from `effort_ladder.py` with the grok 1.0.5 usable set).
+**PASS.** At least one `task` spawn ran, `subagent_type` is `pstack:feature`, `model` is `grok-4.6` or omitted (omit only if `task` rejected `grok-4.6`), `rawInput` has no `reasoning_effort` key, and the installed plugin's `agents/feature.md` frontmatter contains `effort: medium` (ship-time mechanical tier from `effort_ladder.py` with the grok 1.0.5 usable set).
 
 **FAIL.** Live `task.model` is `grok-4.6-fast-xhigh`, `gpt-5.6-sol-max`, `claude-fable-5-thinking-max`, `claude-opus-5-thinking-xhigh`, or any other slug not in the detected set. Or the spawn sent `reasoning_effort` on `task`. Or installed `agents/feature.md` lacks `effort: medium`. Or frontmatter is `max`.
 
@@ -600,7 +600,7 @@ fi
 cp -a "$HOME/.grok/pstack-models.toml" "$EVIDENCE/gate4c-pstack-models.toml"
 
 timeout 180s grok -p 'Call the task tool exactly once, then stop.
-subagent_type: independent-verifier
+subagent_type: pstack:independent-verifier
 description: live slug probe
 run_in_background: true
 model: '"$OTHER"'
@@ -657,7 +657,7 @@ echo $? | tee "$EVIDENCE/gate4d-toml-exists.exit"
 
 ## Gate 4e. Live effort ladder writes grok-build role files
 
-`task` has no `reasoning_effort` field. Prove setup detected the live enum, applied [`effort-ladder.md`](./skills/setup-pstack/references/effort-ladder.md), and wrote `SubagentRole.reasoning_effort` in `~/.grok/roles/<key>.toml`.
+`task` has no `reasoning_effort` field. Prove setup detected the live enum, applied [`effort-ladder.md`](./skills/setup-pstack/references/effort-ladder.md), and wrote `SubagentRole.reasoning_effort` in `~/.grok/roles/pstack:<key>.toml`.
 
 **Commands**
 
@@ -817,7 +817,7 @@ Todos must be the Feature playbook (`$PLUGIN_PATH/skills/poteto-mode/playbooks/f
 1. `how` over the affected subsystem.
 2. `architect` or `architect skipped: <reason>`.
 3. Four throughput-checkpoint todos (Blocking first steps / Independent workstreams / Shared mutable state / Smallest safe decomposition). Unused dimensions stay with `n/a: <reason>`.
-4. Parent `task` `subagent_type: "poteto-agent"` (or `pstack:poteto-agent`) **and** parent `task` `subagent_type: "independent-verifier"` (bare name so `~/.grok/roles/independent-verifier.toml` matches). Independent verify has **no skip-with-reason escape**.
+4. Parent `task` `subagent_type: "pstack:poteto-agent"` **and** parent `task` `subagent_type: "pstack:independent-verifier"` so `~/.grok/roles/pstack:independent-verifier.toml` matches. Independent verify has **no skip-with-reason escape**.
 5. Verify on the matching surface (the two python commands).
 6. Commits (local is enough).
 7. `interrogate` or `skip: <reason>` (not contested is a valid skip).
@@ -864,7 +864,7 @@ Required spawn shape (`HARNESS.md` / `TaskToolInput`):
 task
   prompt: <you did not write hello.py. Do not edit. Run python3 hello.py and python3 hello.py --json. Return PASS, PASS+NOTES, or FAIL with commands and output.>
   description: independent verify lab
-  subagent_type: independent-verifier   # or pstack:independent-verifier
+  subagent_type: pstack:independent-verifier
   run_in_background: true
   model: <a detected slug DIFFERENT from the writer>
   isolation: worktree                   # when the writer still holds the tree; none is acceptable if the child does not write
@@ -897,7 +897,7 @@ if [ -z "$OTHER" ] || [ "$OTHER" = "$GROK_MODEL" ]; then
     | tee "$EVIDENCE/gate7-cannot-prove.txt"
 else
   grok -p '/poteto-mode Do not edit hello.py.
-From this parent session, call task with subagent_type independent-verifier (or pstack:independent-verifier), run_in_background true, model '"$OTHER"', prompt instructing a read-only rerun of python3 hello.py and python3 hello.py --json in '"$LAB"'.
+From this parent session, call task with subagent_type pstack:independent-verifier, run_in_background true, model '"$OTHER"', prompt instructing a read-only rerun of python3 hello.py and python3 hello.py --json in '"$LAB"'.
 Join with get_task_output. Quote the child verdict. Do not spawn from a child.' \
     "${GROK_BASE[@]}" "${GROK_STREAM[@]}" \
     --cwd "$LAB" \
@@ -924,7 +924,7 @@ jq -c 'select(.type=="tool_call" and (.toolName=="get_task_output" or .toolName=
 
 Checks:
 
-1. At least one spawn has `subagent_type` `independent-verifier` (bare name so the role overlay matches). `pstack:independent-verifier` is accepted by discovery but does **not** load `~/.grok/roles/independent-verifier.toml`.
+1. At least one spawn has `subagent_type` `pstack:independent-verifier` so the overlay `~/.grok/roles/pstack:independent-verifier.toml` matches.
 2. That spawn's `model` is set and **≠** the writer slug (`$GROK_MODEL` or the `poteto-agent` child's `model`).
 3. Parent called `get_task_output` (or waited until the child finished in-stream).
 4. Child verdict is `PASS`, `PASS+NOTES`, or `FAIL`, with commands it ran. A child that only restates the parent's claim without running python is FAIL.

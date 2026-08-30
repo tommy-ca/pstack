@@ -11,7 +11,7 @@ The runtime that actually sets child sampling effort is `resolve_runtime_config`
 3. Then `AgentDefinition.effort` frontmatter, only if still unset.
 4. Then inherit the parent session. `handle_request.rs` writes `effective_sampling_config.reasoning_effort` only when that resolved string parses as `ReasoningEffort`.
 
-Do not send `reasoning_effort` on `task`. Plugin role agents **do** ship frontmatter `effort` so a fresh install with no setup still gets the ship-time split. A user overlay in `~/.grok/roles/<key>.toml` wins over that frontmatter.
+Do not send `reasoning_effort` on `task`. Plugin role agents **do** ship frontmatter `effort` so a fresh install with no setup still gets the ship-time split. A user overlay in `~/.grok/roles/pstack:<key>.toml` wins over that frontmatter.
 
 ## Spawn type
 
@@ -28,7 +28,7 @@ Spawn skills have **no API** to read the live grok-build effort enum. Do not pro
 1. Read `~/.grok/pstack-models.toml` if it exists. Look up `[effort].<role-key>`. Array model keys still have **one** scalar effort.
 2. If that override file is **absent**, spawn the role key and stop. The plugin agent's frontmatter `effort` is the ship-time snapshot from [`effort-ladder.md`](effort-ladder.md). Do not expect a `~/.grok/roles` file. A later enum (for example `ultra`) is **not** applied until `/setup-pstack` re-detects and writes overlays.
 3. If the override file exists and the key is missing, or the value is `inherit-parent` or `auto`, do **not** expect a role overlay (`/setup-pstack` deletes it). The child then uses plugin frontmatter `effort` (still the ship-time snapshot). Grok-build cannot inherit parent-session effort while `AgentDefinition.effort` is set, because spawn passes `None` and `apply_definition_runtime_defaults` fills from frontmatter.
-4. If the value is a real effort token, `/setup-pstack` has written `~/.grok/roles/<role-key>.toml` with `reasoning_effort` set to that string. That overlay wins. Spawn the matching `subagent_type`. Do not copy the string onto `task`.
+4. If the value is a real effort token, `/setup-pstack` has written `~/.grok/roles/pstack:<role-key>.toml` with `reasoning_effort` set to that string. That overlay wins. Spawn `pstack:<role-key>`. Do not copy the string onto `task`.
 5. Never invent a level. Never send `none`, `minimal`, or per-model menu ids such as `deep` from this plugin. Never send `max` unless `/setup-pstack` detected it on the live CLI `use one of:` list. Never send a token `/setup-pstack` did not detect this session.
 
 `/setup-pstack` is the skill that re-resolves when the live enum differs from the ship-time snapshot. See [`effort-ladder.md`](effort-ladder.md).
