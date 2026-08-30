@@ -65,8 +65,9 @@ REPLACEMENTS: list[tuple[str, str]] = [
     ("one Cursor cloud agent per PR", "one worktree `task` child per PR"),
     ("One Cursor cloud agent per PR", "One worktree `task` child per PR"),
     ("each a Cursor cloud agent", "each a worktree `task` child"),
-    ('subagent_type: "Comment Sicko"', 'subagent_type: "comment-sicko"'),
-    ("`Comment Sicko`", "`comment-sicko`"),
+    ('subagent_type: "Comment Sicko"', 'subagent_type: "pstack:comment-sicko"'),
+    ('subagent_type: "comment-sicko"', 'subagent_type: "pstack:comment-sicko"'),
+    ("`Comment Sicko`", "`pstack:comment-sicko`"),
 ]
 
 

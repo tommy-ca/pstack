@@ -20,7 +20,7 @@ Do not send Cursor marketplace panel slugs as live spawn models unless `/setup-p
 | Mechanical / fast | `grok-4.5` | detected Codex slug | detected Claude slug |
 | Panel seats | unique detected slugs only; never four copies of one slug | same | same |
 
-Effort on Grok Build is role overlay (`~/.grok/roles/<type>.toml`) or agent frontmatter. Do not send `reasoning_effort` on Grok `task`. Codex may pass `reasoning_effort` on `spawn_agent` when that host supports it.
+Effort on Grok Build is role overlay (`~/.grok/roles/pstack:<key>.toml`) or agent frontmatter. Do not send `reasoning_effort` on Grok `task`. Codex may pass `reasoning_effort` on `spawn_agent` when that host supports it.
 
 ## Parent spawn
 
