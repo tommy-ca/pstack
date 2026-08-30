@@ -30,7 +30,7 @@ The N candidates will receive the same prompt, so the prompt is the contract. Ge
 
 ## Phase B: Fan out
 
-Spawn all N subagents in one message with `spawn_subagent`, `background: true`, `subagent_type: "arena-runners"` (bare name; [`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md)), each with the brief, the path to the shared grounding, its own output path, and instructions to produce both the artifact and a short rationale. Do not send `reasoning_effort`. Architect passes `architect-runners` as both the toml array and `subagent_type` instead.
+Spawn all N subagents in one message with `spawn_subagent`, `background: true`, `subagent_type: "pstack:arena-runners"` ([`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md)), each with the brief, the path to the shared grounding, its own output path, and instructions to produce both the artifact and a short rationale. Do not send `reasoning_effort`. Architect passes toml array `architect-runners` and `subagent_type` `pstack:architect-runners` instead.
 
 The rationale is mandatory. Without it, the parent cannot tell whether a candidate's structure is principled or accidental, which makes Phase E grafting unreliable. Each rationale names the alternatives the candidate considered and what it rejected.
 
@@ -38,7 +38,7 @@ If a candidate fails to produce output, proceed with N-1 and note the dropout in
 
 ## Phase C: Cross-judge
 
-After all Phase B candidates complete, choose one model from toml array `arena-cross-judge-pool` per `../setup-pstack/references/resolve-model.md`. If the file or key is absent, spawn **one** judge and send `grok-4.6` (omit if rejected). Prefer a pool entry whose family differs from the parent when the toml names more than one detected slug. Spawn one `spawn_subagent` judge with `subagent_type: "arena-cross-judge-pool"` (bare name; [`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md)). Do not send `reasoning_effort`. It sees the rubric and the candidates by path label, scores each criterion, and recommends a base with rationale. It runs in parallel with the parent's reading in Phase D, not with the candidates themselves. Spawning while candidates are still writing means the judge sees partial or empty outputs and reports them as dropouts.
+After all Phase B candidates complete, choose one model from toml array `arena-cross-judge-pool` per `../setup-pstack/references/resolve-model.md`. If the file or key is absent, spawn **one** judge and send `grok-4.6` (omit if rejected). Prefer a pool entry whose family differs from the parent when the toml names more than one detected slug. Spawn one `spawn_subagent` judge with `subagent_type: "pstack:arena-cross-judge-pool"` ([`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md)). Do not send `reasoning_effort`. It sees the rubric and the candidates by path label, scores each criterion, and recommends a base with rationale. It runs in parallel with the parent's reading in Phase D, not with the candidates themselves. Spawning while candidates are still writing means the judge sees partial or empty outputs and reports them as dropouts.
 
 ## Phase D: Pick a base
 

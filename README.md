@@ -251,17 +251,17 @@ automate-me:       /automate-me
 
 ## `poteto-agent` 与 Comment Sicko
 
-本插件还带一个把这套风格跑到底的子 agent。没有角色键时，父会话用 `task` 的 `subagent_type: "poteto-agent"` 生成它。玩法角色（`feature`、`how-explainer` 等）生成对应的插件 agent，这样出厂 frontmatter `effort` 会生效，`/setup-pstack` 写在 `~/.grok/roles/` 里的覆盖也能生效。换成 `general-purpose` 会跳过 poteto-mode 的阅读，容易漂。子进程不能再 `task` 出更深的子进程（`MAX_SUBAGENT_DEPTH` 是 1）。不要在 `task` 上发送 `reasoning_effort`。
+本插件还带一个把这套风格跑到底的子 agent。没有角色键时，父会话用 `task` 的 `subagent_type: "pstack:poteto-agent"` 生成它。玩法角色（`feature`、`how-explainer` 等）生成对应的插件 agent，这样出厂 frontmatter `effort` 会生效，`/setup-pstack` 写在 `~/.grok/roles/` 里的覆盖也能生效。换成 `general-purpose` 会跳过 poteto-mode 的阅读，容易漂。子进程不能再 `task` 出更深的子进程（`MAX_SUBAGENT_DEPTH` 是 1）。不要在 `task` 上发送 `reasoning_effort`。
 
-This plugin also ships a subagent that runs the style end to end. Spawn it from the parent via the `task` tool with `subagent_type: "poteto-agent"` when there is no role key. Playbook roles (`feature`, `how-explainer`, …) spawn the matching plugin agent so shipped frontmatter `effort` applies, and so `/setup-pstack` overlays in `~/.grok/roles/` can override it. Substituting `general-purpose` skips the poteto-mode read and drifts. The child cannot spawn further `task` children (`MAX_SUBAGENT_DEPTH` is 1). Do not send `reasoning_effort` on `task`.
+This plugin also ships a subagent that runs the style end to end. Spawn it from the parent via the `task` tool with `subagent_type: "pstack:poteto-agent"` when there is no role key. Playbook roles (`feature`, `how-explainer`, …) spawn the matching plugin agent so shipped frontmatter `effort` applies, and so `/setup-pstack` overlays in `~/.grok/roles/` can override it. Substituting `general-purpose` skips the poteto-mode read and drifts. The child cannot spawn further `task` children (`MAX_SUBAGENT_DEPTH` is 1). Do not send `reasoning_effort` on `task`.
 
-[`/poteto-mode`](./skills/poteto-mode/SKILL.md) 和 [`subagent_type: "poteto-agent"`](./agents/poteto-agent.md) 走同一层包装。
+[`/poteto-mode`](./skills/poteto-mode/SKILL.md) 和 [`subagent_type: "pstack:poteto-agent"`](./agents/poteto-agent.md) 走同一层包装。
 
-[`/poteto-mode`](./skills/poteto-mode/SKILL.md) and [`subagent_type: "poteto-agent"`](./agents/poteto-agent.md) route through the same wrapper.
+[`/poteto-mode`](./skills/poteto-mode/SKILL.md) and [`subagent_type: "pstack:poteto-agent"`](./agents/poteto-agent.md) route through the same wrapper.
 
-另外还有 [Comment Sicko](./agents/comment-sicko.md)，只读评论审查，`subagent_type: "comment-sicko"`。一般通过 [`/no-comments`](./skills/no-comments/SKILL.md) 调用，不要直接开。
+另外还有 [Comment Sicko](./agents/comment-sicko.md)，只读评论审查，`subagent_type: "pstack:comment-sicko"`。一般通过 [`/no-comments`](./skills/no-comments/SKILL.md) 调用，不要直接开。
 
-This plugin also ships [Comment Sicko](./agents/comment-sicko.md), a read-only comment reviewer available as `subagent_type: "comment-sicko"`. Usually invoke it through [`/no-comments`](./skills/no-comments/SKILL.md), not directly.
+This plugin also ships [Comment Sicko](./agents/comment-sicko.md), a read-only comment reviewer available as `subagent_type: "pstack:comment-sicko"`. Usually invoke it through [`/no-comments`](./skills/no-comments/SKILL.md), not directly.
 
 ## 原则 / Principles
 

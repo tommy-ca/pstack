@@ -124,6 +124,47 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert ".cursor/skills" not in setup
 
 
+def test_grok_spawn_types_are_plugin_qualified() -> None:
+    """grok 1.0.13 registers plugin agents as plugin:name, not the bare stem."""
+    effort = (
+        ROOT / "skills/setup-pstack/references/resolve-effort.md"
+    ).read_text(encoding="utf-8")
+    harness = (ROOT / "HARNESS.md").read_text(encoding="utf-8")
+    how = (ROOT / "skills/how/SKILL.md").read_text(encoding="utf-8")
+    why = (ROOT / "skills/why/SKILL.md").read_text(encoding="utf-8")
+    arena = (ROOT / "skills/arena/SKILL.md").read_text(encoding="utf-8")
+    swarm = (ROOT / "skills/swarm/SKILL.md").read_text(encoding="utf-8")
+    interrogate = (ROOT / "skills/interrogate/SKILL.md").read_text(
+        encoding="utf-8"
+    )
+    architect = (ROOT / "skills/architect/SKILL.md").read_text(encoding="utf-8")
+    no_comments = (ROOT / "skills/no-comments/SKILL.md").read_text(
+        encoding="utf-8"
+    )
+    poteto = (ROOT / "skills/poteto-mode/SKILL.md").read_text(encoding="utf-8")
+    feature = (
+        ROOT / "skills/poteto-mode/playbooks/feature.md"
+    ).read_text(encoding="utf-8")
+    assert "pstack:how-explorer" in how
+    assert "pstack:how-explainer" in how
+    assert "pstack:how-critics" in how
+    assert "pstack:why-investigators" in why
+    assert "pstack:why-synthesizer" in why
+    assert "pstack:arena-runners" in arena
+    assert "pstack:arena-cross-judge-pool" in arena
+    assert "pstack:swarm-workers" in swarm
+    assert "pstack:interrogate-reviewers" in interrogate
+    assert "pstack:architect-runners" in architect
+    assert "pstack:comment-sicko" in no_comments
+    assert "pstack:feature" in feature
+    assert "pstack:independent-verifier" in feature
+    assert "pstack:<key>" in effort or "pstack:<role-key>" in effort
+    assert "Send the **bare** name so it matches" not in effort
+    assert "pstack:<key>" in harness or "pstack:<role" in harness
+    assert "Send the **bare** role key so" not in harness
+    assert "pstack:poteto-agent" in poteto
+
+
 if __name__ == "__main__":
     test_verify_harness_script_exists()
     test_verify_harness_passes_on_this_tree()
@@ -134,4 +175,5 @@ if __name__ == "__main__":
     test_visual_parity_and_bug_fix_drive_real_surface()
     test_make_bot_ui_is_not_invocable()
     test_guide_teaches_sync_then_adapt()
+    test_grok_spawn_types_are_plugin_qualified()
     print("PASS tests/test_verify_harness.py")

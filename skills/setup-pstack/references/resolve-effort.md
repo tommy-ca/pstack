@@ -15,11 +15,11 @@ Do not send `reasoning_effort` on `task`. Plugin role agents **do** ship frontma
 
 ## Spawn type
 
-Set `subagent_type` to the **pstack role key** for that spawn (`feature`, `how-explainer`, `independent-verifier`, …). Send the **bare** name so it matches `~/.grok/roles/<key>.toml` and the plugin agent `name`. Do not send `pstack:<key>` unless the bare name is rejected as unknown; a qualified name does not match the role file stem.
+Set `subagent_type` to **`pstack:<role-key>`** on this TUI (`pstack:feature`, `pstack:how-explainer`, `pstack:independent-verifier`, …). grok 1.0.13 registers plugin agents as `plugin:name`. Bare `how-explorer` is rejected (`Unknown subagent type`) even when the plugin is enabled. Toml model keys stay the bare role key (`feature`). Overlay files are `~/.grok/roles/pstack:<key>.toml` so `select_role(subagent_type)` matches the spawn string. `/setup-pstack` writes that stem (and may also write the bare stem).
 
-This plugin ships an agent file per role key under `agents/`. `poteto-agent` remains for ad-hoc helpers that have no role key. `/no-comments` stays `comment-sicko`. Those two have no shipped `effort:` so they inherit the parent session.
+This plugin ships an agent file per role key under `agents/`. Ad-hoc helpers with no role key: `pstack:poteto-agent`. `/no-comments` uses `pstack:comment-sicko`. Those two have no shipped `effort:` so they inherit the parent session.
 
-If the role agent is unknown this session, fall back to `poteto-agent` (writers), `explore` (read-only), or `general-purpose` (MCP / swarm). That fallback **drops** per-role effort. Prefer the role key.
+If `pstack:<key>` is unknown this session, the plugin is not enabled (`grok plugin enable pstack` from a host shell; `inspect` "enabled" is trust, not `[plugins].enabled`). Fall back to `explore` (read-only) or `general-purpose` (writers / MCP / swarm) only after enable failed. That fallback **drops** per-role effort.
 
 ## Effort values at spawn
 

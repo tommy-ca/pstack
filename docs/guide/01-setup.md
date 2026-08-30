@@ -8,7 +8,7 @@ In this page you install the plugin, optionally pick models and reasoning effort
 grok plugin install tommy-ca/pstack --trust
 ```
 
-Enable it if it stays off (`grok plugin enable pstack`, or Space in the Plugins tab). `grok inspect` should list pstack skills. This tree is `tommy-ca/pstack`. xAI Official also lists a plugin named `pstack` that points at `cursor/plugins`. Do not use bare `grok plugin install pstack` as the default. Do not install `aa2246740/pstack-grokbuild` as the default.
+Enable it if it stays off (`grok plugin enable pstack` from a **host shell**, or Space in the Plugins tab). `inspect` "enabled" is trust, not `[plugins].enabled`. After enable, `grok inspect --json` `.agents[].name` is `pstack:how-explorer`, not `how-explorer`. Spawn that qualified name. `grok inspect` should list pstack skills. This tree is `tommy-ca/pstack`. xAI Official also lists a plugin named `pstack` that points at `cursor/plugins`. Do not use bare `grok plugin install pstack` as the default. Do not install `aa2246740/pstack-grokbuild` as the default.
 
 ## Pick your models and effort (optional)
 
