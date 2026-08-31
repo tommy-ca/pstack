@@ -22,7 +22,7 @@ Spawn, join, cancel, roles `pstack:<key>`, isolation, resume, depth 1, todos, `a
 | `grok mcp add` | **Skip.** User MCP config, not plugin `.mcp.json`. |
 | `grok inspect --json` | **Keep.** First-session proof of enable. |
 | `grok plugin validate` | **Keep.** Harness tests run it. |
-| `grok plugin tag` | **Keep.** Version is SemVer `MAJOR.MINOR.PATCH-grokbuild.N`, not CalVer. `scripts/release.sh` validates then `grok --sandbox off plugin tag --push`. If the local tag exists and origin does not, it `git push origin` that ref. Then `gh release view` or `gh release create --verify-tag`. Actions on `v*` does the same Release step. A successful tag-push run is the dispatcher proof. First writer wins Release notes. Ship day is on the GitHub Release, not in the version. |
+| `grok plugin tag` | **Keep.** Version is SemVer `MAJOR.MINOR.PATCH-grokbuild.N`, not CalVer and not catalog `MAJOR.MINOR.PATCH-<plugin-name>.N` (including `-pstack.N`). pstack is one plugin; grokbuild is adapter lineage. `scripts/release.sh` validates then `grok --sandbox off plugin tag --push`. If the local tag exists and origin does not, it `git push origin` that ref. Then `gh release view` or `gh release create --verify-tag`. Actions on `v*` does the same Release step. A successful tag-push run is the dispatcher proof. First writer wins Release notes. Ship day is on the GitHub Release, not in the version. |
 
 ## Slash and tools (04-slash-commands, 19-plan-mode)
 

@@ -36,6 +36,7 @@ def test_plugin_version_is_semver_grokbuild() -> None:
     ]
     assert re.fullmatch(r"\d+\.\d+\.\d+-grokbuild\.\d+", version), version
     assert re.fullmatch(r"\d{4}\.\d{1,2}\.\d{1,2}", version) is None
+    assert re.search(r"-pstack\.\d+$", version) is None, version
 
 
 def test_natives_page_names_plugin_tag() -> None:
