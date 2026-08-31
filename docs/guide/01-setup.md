@@ -45,7 +45,7 @@ Or keep `[sandbox] profile = "homelab"` if you need those extra write paths. Ena
 
 This port is official pstack playbooks and 21 principles on Grok Build 1.0.13. It is not the Cursor plugin runtime.
 
-**Router.** `/poteto-mode` matches a playbook and copies its steps into todos. It does not auto-enter. Skill order is pstack first, then user, then bundled and builtin. Example: `/tdd` before `/test-driven-development`. User plugins such as `/ponytail` load after pstack.
+**Router.** `/poteto-mode` matches a playbook and copies its steps into todos. It does not auto-enter. Skill order is pstack first, then user, then bundled and builtin. Example: `/tdd` before `/test-driven-development`.
 
 **Spawn.** Children are `spawn_subagent` with `subagent_type` `pstack:<role>`. Example: `pstack:how-explorer`, `pstack:feature`, `pstack:independent-verifier`. Bare `how-explorer` is unknown. `MAX_SUBAGENT_DEPTH` is 1. This parent fans out. A child that spawns fails. After a writer joins, this parent runs `pstack:comment-sicko`. Do not send `reasoning_effort` on spawn. Effort is agent frontmatter or `~/.grok/roles/pstack:<key>.toml`.
 
@@ -57,12 +57,11 @@ This port is official pstack playbooks and 21 principles on Grok Build 1.0.13. I
 
 ## Essential entries
 
-Type `/poteto-mode` for rigor. Do not start from `/workflow` or `/goal`. Playbooks are not slash commands. The router matches them. `/ponytail` is a user plugin after the router, not a start command.
+Type `/poteto-mode` for rigor. Do not start from `/workflow` or `/goal`. Playbooks are not slash commands. The router matches them.
 
 | Kind | Name | When |
 |---|---|---|
 | Router | `/poteto-mode` | Any checkable goal. Does not auto-enter. |
-| Lazy | `/ponytail` | User plugin for coding-only YAGNI; skip if `inspect` does not list it. |
 | Setup | `/setup-pstack` | Optional. Models and effort. |
 | Build | `/tdd` `/unslop` `/no-comments` | After `/poteto-mode` picks Feature or Bug fix. Parent runs `/no-comments`. |
 | How | `/how` `/why` | Read-only. Spawn `pstack:how-explorer`. |

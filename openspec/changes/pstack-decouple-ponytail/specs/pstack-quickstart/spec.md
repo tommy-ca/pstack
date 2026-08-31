@@ -8,7 +8,7 @@ None.
 
 Feature: pstack-quickstart
 
-`docs/guide/01-setup.md` MUST explain grok-native pstack after install: Skill order (pstack then user then bundled), `pstack:<role>` spawn names, `MAX_SUBAGENT_DEPTH` 1, parent fans out, `pstack:independent-verifier`, `/loop` → `scheduler_create`. It MUST NOT tell operators to spawn bare `how-explorer`. Live pstack operator docs (`docs/guide/01-setup.md`, `HARNESS.md`) MUST NOT name `/ponytail`. Ponytail is a foreign plugin. pstack does not ship it.
+`docs/guide/01-setup.md` MUST explain grok-native pstack after install: Skill order (pstack then user then bundled), `pstack:<role>` spawn names, `MAX_SUBAGENT_DEPTH` 1, parent fans out, `pstack:independent-verifier`, `/loop` → `scheduler_create`. It MUST NOT tell operators to spawn bare `how-explorer`. Live pstack operator docs MUST NOT name `/ponytail`. That means `docs/guide/01-setup.md` and `HARNESS.md`. Ponytail is a foreign plugin. pstack does not ship it.
 
 #### Scenario: setup names depth and skill order
 
