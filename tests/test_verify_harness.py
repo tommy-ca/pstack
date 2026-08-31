@@ -205,6 +205,25 @@ def test_benny_is_source_and_has_grok_remap() -> None:
     assert "THEN `skills` is `./skills/`" not in pack_spec
 
 
+def test_playbooks_are_not_plugin_rhai_workflows() -> None:
+    plugin = json.loads((ROOT / "plugin.json").read_text(encoding="utf-8"))
+    assert "workflows" not in plugin
+    assert not (ROOT / ".grok/workflows").exists()
+    rhai = list((ROOT / "skills/poteto-mode/playbooks").glob("*.rhai"))
+    assert rhai == []
+    harness = (ROOT / "HARNESS.md").read_text(encoding="utf-8")
+    assert "not a plugin component" in harness
+    spec = (
+        ROOT
+        / "openspec/changes/pstack-playbooks-not-rhai/specs/pstack-playbooks-not-rhai/spec.md"
+    )
+    assert spec.is_file()
+    assert "MUST NOT" in spec.read_text(encoding="utf-8")
+    adr = ROOT / "adr/0005-playbooks-are-not-rhai-workflows.md"
+    assert adr.is_file()
+    assert "/poteto-mode" in adr.read_text(encoding="utf-8")
+
+
 def test_openspec_intent_driven_schema_resolves() -> None:
     schema = ROOT / "openspec/schemas/intent-driven/schema.yaml"
     assert schema.is_file()
@@ -704,6 +723,7 @@ if __name__ == "__main__":
     test_visual_parity_and_bug_fix_drive_real_surface()
     test_make_bot_ui_is_not_invocable()
     test_benny_is_source_and_has_grok_remap()
+    test_playbooks_are_not_plugin_rhai_workflows()
     test_openspec_intent_driven_schema_resolves()
     test_guide_teaches_sync_then_adapt()
     test_grok_spawn_types_are_plugin_qualified()
