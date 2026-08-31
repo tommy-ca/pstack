@@ -1,12 +1,12 @@
 ## 1. File contracts (TDD)
 
-- [ ] 1.1 Fail then pass `tests/test_release.py` for dual-writer: both `scripts/release.sh` and `.github/workflows/release.yml` contain `gh release view` and `gh release create` with `--verify-tag`, neither contains `--force` or `workflow_dispatch`, the workflow does not contain `grok plugin tag`, the script contains `__GROK_INSIDE_BWRAP`, natives name `grok plugin tag` and `grok --sandbox off` and do not contain `wait-for-release`.
+- [x] 1.1 Fail then pass `tests/test_release.py` for dual-writer: both `scripts/release.sh` and `.github/workflows/release.yml` contain `gh release view` and `gh release create` with `--verify-tag`, neither contains `--force` or `workflow_dispatch`, the workflow does not contain `grok plugin tag`, the script contains `__GROK_INSIDE_BWRAP`, natives name `grok plugin tag` and `grok --sandbox off` and do not contain `wait-for-release`.
 
 ## 2. Writers
 
-- [ ] 2.1 Update `scripts/release.sh`: refuse nested bwrap, validate, `grok plugin tag --push`, then `gh release view` or `gh release create --verify-tag --generate-notes`.
-- [ ] 2.2 Update `.github/workflows/release.yml` to `gh release view || gh release create --verify-tag --generate-notes`. Keep `on.push.tags: v*` and `contents: write`. Do not add grok or `workflow_dispatch`.
-- [ ] 2.3 Update `docs/guide/13-grok-natives.md` and the HARNESS sandbox row so tagging names host-shell `grok --sandbox off`.
+- [x] 2.1 Update `scripts/release.sh`: refuse nested bwrap, validate, `grok plugin tag --push`, then `gh release view` or `gh release create --verify-tag --generate-notes`.
+- [x] 2.2 Update `.github/workflows/release.yml` to `gh release view || gh release create --verify-tag --generate-notes`. Keep `on.push.tags: v*` and `contents: write`. Do not add grok or `workflow_dispatch`.
+- [x] 2.3 Update `docs/guide/13-grok-natives.md` and the HARNESS sandbox row so tagging names host-shell `grok --sandbox off`.
 
 ## 3. Prove on origin
 
