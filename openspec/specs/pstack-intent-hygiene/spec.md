@@ -2,13 +2,19 @@
 
 ## Purpose
 
-Prevent task-complete active changes from reaching archive without design and ADR artifacts.
+Prevent task-complete active changes from reaching archive without design and
+ADR artifacts.
 
 ## Requirements
 
 ### Requirement: Task-complete changes have a complete intent chain before archive
 
-The repository verification gate MUST inspect active OpenSpec changes before archive. For an active change whose `tasks.md` has at least one task and every task checkbox is checked, the gate MUST require both `design.md` and `adr.md`. Incomplete changes MAY remain in planning without this gate. Archived historical directories are outside this pre-archive check and MUST NOT be rewritten by it.
+The repository verification gate MUST inspect active OpenSpec changes before
+archive. For an active change whose `tasks.md` has at least one task and every
+task checkbox is checked, the gate MUST require both `design.md` and `adr.md`.
+Incomplete changes MAY remain in planning without this gate. Archived
+historical directories are outside this pre-archive check and MUST NOT be
+rewritten by it.
 
 #### Scenario: Complete change missing design or ADR fails the gate
 
