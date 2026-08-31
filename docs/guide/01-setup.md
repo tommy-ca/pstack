@@ -62,6 +62,7 @@ Type `/poteto-mode` for rigor. Do not start from `/workflow` or `/goal`. Playboo
 | Kind | Name | When |
 |---|---|---|
 | Router | `/poteto-mode` | Any checkable goal. Does not auto-enter. |
+| Lazy | `/ponytail` | User plugin for coding-only YAGNI; skip if `inspect` does not list it. |
 | Setup | `/setup-pstack` | Optional. Models and effort. |
 | Build | `/tdd` `/unslop` `/no-comments` | After `/poteto-mode` picks Feature or Bug fix. Parent runs `/no-comments`. |
 | How | `/how` `/why` | Read-only. Spawn `pstack:how-explorer`. |

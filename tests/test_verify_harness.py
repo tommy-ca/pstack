@@ -64,6 +64,20 @@ def test_orchestrate_uses_canonical_host_state() -> None:
     assert "Beads" in orchestrate
 
 
+def test_essential_entries_include_user_ponytail() -> None:
+    setup = (ROOT / "docs/guide/01-setup.md").read_text(encoding="utf-8")
+    harness = (ROOT / "HARNESS.md").read_text(encoding="utf-8")
+    spec = (ROOT / "openspec/specs/pstack-quickstart/spec.md").read_text(
+        encoding="utf-8"
+    )
+    plugin = json.loads((ROOT / "plugin.json").read_text(encoding="utf-8"))
+    assert "| Lazy | `/ponytail` |" in setup
+    assert "YAGNI" in harness
+    assert "/ponytail" in harness
+    assert "/ponytail" in spec
+    assert "ponytail" not in json.dumps(plugin).lower()
+
+
 def test_benny_guard_denies_compound_merge_and_plain_push() -> None:
     script = ROOT / "automations/benny-grok/bin/fail-closed.sh"
     for command in (

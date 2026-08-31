@@ -51,6 +51,7 @@ Live user/bundled means the name is in `grok inspect --json` `.skills[].name`. B
 | Need | 1. pstack | 2. User | 3. Bundled / builtin |
 |---|---|---|---|
 | TDD | `/tdd` | `/test-driven-development` only if `/tdd` is not loaded | none |
+| YAGNI / smallest coding change | none | `/ponytail` if `inspect` lists it | none |
 | Author a SKILL.md | `playbooks/authoring-a-skill.md` | `/writing-skills` | `/create-skill` |
 | Review a diff or PR | `/interrogate` | `/requesting-code-review` | `/review` |
 | Babysit | `playbooks/babysit.md` | none | none |
