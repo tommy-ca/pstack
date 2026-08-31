@@ -26,7 +26,7 @@ Spawn, join, cancel, roles `pstack:<key>`, isolation, resume, depth 1, todos, `a
 | Native | Plan |
 |---|---|
 | `/plan` `enter_plan_mode` | **Skip.** Skill order already lists builtin `/plan` as column 3 after pstack architect. Do not clone a `/plan` command. |
-| `/goal` | **Skip.** `/figure-it-out` owns rigor playbooks. Goal mode is a different driver. |
+| `/goal` | **Skip.** `/figure-it-out` owns rigor playbooks. Autopilot playbooks must not arm `/goal`. Goal mode is a different driver. |
 | `/workflow` `/deep-research` | **Skip as plugin.** Target-repo Rhai only. ADR 0005. `agent_type: pstack:<role>` is the join. |
 | `/memory` `/flush` `/dream` `/remember` | **Skip.** Off by default. pstack overnight uses `show-me-your-work`. |
 | `/fork` `/rewind` `/compact` | **Skip.** Session UX, not playbook steps. |
