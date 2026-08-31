@@ -10,6 +10,6 @@
 
 ## 3. Prove and archive
 
-- [ ] 3.1 `python3 tests/test_release.py` and `python3 tests/test_verify_harness.py`. Idempotent `./scripts/release.sh` on the current version exits 0 or documents the remaining host failure.
-- [ ] 3.2 `openspec validate pstack-release-tag-host-push --type change --strict` then archive after implementation is on `main`.
+- [x] 3.1 `python3 tests/test_release.py` and `python3 tests/test_verify_harness.py`. Idempotent `./scripts/release.sh` on the current version exits 0 or documents the remaining host failure.
+- [x] 3.2 `openspec validate pstack-release-tag-host-push --type change --strict` then archive after implementation is on `main`.
 - [ ] 3.3 Pin `grok-build-plugins` marketplace pstack sha to the new `origin/main` if that SHA moved.
