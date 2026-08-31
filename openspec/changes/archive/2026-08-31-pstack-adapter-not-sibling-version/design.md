@@ -1,6 +1,6 @@
 ## Context
 
-How: `grok plugin tag` names the tag `v` plus `plugin.json` version. pstack is one plugin, one repo, one tag namespace. Cursor overlay base is `0.14.5`. The grokbuild token is adapter lineage (ADR 0009). Catalog siblings share one tag namespace, so they put the plugin name in the prerelease (ADR 0003). Unifying those grammars is wrong in both directions.
+How: `grok plugin tag` names the tag `v` plus `plugin.json` version. pstack is one plugin, one repo, one tag namespace. Cursor overlay base is `0.14.5`. The grokbuild token is adapter lineage (ADR 0009). Catalog siblings share one tag namespace, so they put the plugin name in the prerelease (grok-build-plugins ADR 0003). Unifying those grammars is wrong in both directions.
 
 Investigation: no ADR yet says "must not copy the other repo." Specs lock each grammar in isolation. `536fcd6` already treated sibling collision as a catalog non-goal.
 
