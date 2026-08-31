@@ -925,6 +925,31 @@ def test_harness_skill_order_is_pstack_then_user_then_native() -> None:
     assert "pstack:how-explorer" in adapt
 
 
+def test_github_pr_fallback_when_gt_missing() -> None:
+    harness = (ROOT / "HARNESS.md").read_text(encoding="utf-8")
+    ref = ROOT / "skills/poteto-mode/references/github-pr-fallback.md"
+    assert ref.is_file()
+    text = ref.read_text(encoding="utf-8")
+    assert "github-pr-fallback.md" in harness
+    assert "gh pr" in harness
+    assert "command -v gt" in text
+    assert "gh pr create" in text
+    assert "gh pr view" in text
+    assert "gh pr checks" in text
+    assert "gh pr merge" in text
+    assert "--auto" in text
+    assert "protected trunk" in text
+    assert "--base" in text
+    opening = (ROOT / "skills/poteto-mode/playbooks/opening-a-pr.md").read_text(
+        encoding="utf-8"
+    )
+    shipping = (ROOT / "skills/poteto-mode/playbooks/shipping.md").read_text(
+        encoding="utf-8"
+    )
+    assert "Graphite" in opening
+    assert "gt submit" in shipping
+
+
 if __name__ == "__main__":
     test_verify_harness_script_exists()
     test_verify_harness_passes_on_this_tree()
@@ -947,4 +972,5 @@ if __name__ == "__main__":
     test_effort_frontmatter_matches_ladder()
     test_plugin_manifest_matches_grok_parsed_fields()
     test_harness_skill_order_is_pstack_then_user_then_native()
+    test_github_pr_fallback_when_gt_missing()
     print("PASS tests/test_verify_harness.py")
