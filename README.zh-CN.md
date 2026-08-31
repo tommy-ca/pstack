@@ -17,7 +17,7 @@ grok plugin install tommy-ca/pstack --trust
 grok plugin enable pstack
 ```
 
-xAI Official 也登记了一个名为 `pstack` 的插件，指向 `cursor/plugins`。用 owner/repo。不要把裸的 `grok plugin install pstack` 当成这份移植。
+xAI Official 也登记了一个名为 `pstack` 的插件，指向 `cursor/plugins`。用 owner/repo。不要把裸的 `grok plugin install pstack` 当成这份移植。本仓库是单插件树。不要嵌成 `plugins/pstack`。可选目录：[tommy-ca/grok-build-plugins](https://github.com/tommy-ca/grok-build-plugins)。
 
 本地目录也可以：
 

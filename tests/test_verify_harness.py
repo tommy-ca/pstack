@@ -253,6 +253,9 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert "grok plugin install pstack --trust" not in setup
     assert "cursor/plugins" in setup
     assert "spawn_subagent" in setup
+    assert "automations/benny-grok" in setup
+    assert "skills/` and `agents/` only" not in setup
+    assert "grok-build-plugins" in guide
     assert "adapt-harness.py" in upstream
     assert "sync-from-upstream.py" in upstream
     pin = subprocess.run(
@@ -399,6 +402,8 @@ def test_readme_locale_split() -> None:
         assert "pstack:poteto-agent" in text
         assert "pstack:comment-sicko" in text
         assert "pstack:independent-verifier" in text
+        assert "plugins/pstack" in text
+        assert "grok-build-plugins" in text
 
 
 def test_first_session_names_sandbox_reload_and_slash() -> None:
