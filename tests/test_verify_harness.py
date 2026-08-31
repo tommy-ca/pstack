@@ -1,5 +1,3 @@
-"""Drive the shipped static harness scanner (not a reimplementation)."""
-
 from __future__ import annotations
 
 import importlib.util
@@ -594,7 +592,6 @@ def test_guide_teaches_sync_then_adapt() -> None:
 
 
 def test_grok_spawn_types_are_plugin_qualified() -> None:
-    """grok 1.0.13 registers plugin agents as plugin:name, not the bare stem."""
     effort = (
         ROOT / "skills/setup-pstack/references/resolve-effort.md"
     ).read_text(encoding="utf-8")
@@ -663,7 +660,6 @@ def test_readme_locale_split() -> None:
 
 
 def test_first_session_names_sandbox_reload_and_slash() -> None:
-    """Operator first page: enable EROFS, reload, slash-only poteto-mode."""
     en = (ROOT / "README.md").read_text(encoding="utf-8")
     zh = (ROOT / "README.zh-CN.md").read_text(encoding="utf-8")
     setup = (ROOT / "docs/guide/01-setup.md").read_text(encoding="utf-8")
@@ -982,6 +978,7 @@ if __name__ == "__main__":
     test_verify_harness_script_exists()
     test_verify_harness_passes_on_this_tree()
     test_babysit_and_shipping_do_not_use_cursor_dynamic_loop()
+    test_verify_guide_names_monitor_boundary()
     test_autopilot_is_parent_fanout_and_skips_goal()
     test_poteto_mode_first_todo_requires_host_map()
     test_codex_map_matches_grok_call_sites()
