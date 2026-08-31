@@ -25,7 +25,7 @@ Official and Cursor Benny under `automations/benny/skills/` is the **upstream re
 #### Scenario: fail-closed hook is not plugin-global
 
 - **GIVEN** `automations/benny-grok/bin/fail-closed.sh`
-- **WHEN** the agent is about to run `gh pr merge` or `git push --force` **and** the operator has installed that script as a project hook
+- **WHEN** the agent is about to run `gh pr merge`, `git push --force`, or a compound `git merge` followed by a plain `git push` **and** the operator has installed that script as a project hook
 - **THEN** the script returns deny
 - **AND** `plugin.json` does not register that hook
 
