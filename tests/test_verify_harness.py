@@ -50,6 +50,25 @@ def test_babysit_and_shipping_do_not_use_cursor_dynamic_loop() -> None:
     assert "scheduler_create" in shipping
 
 
+def test_autopilot_is_parent_fanout_and_skips_goal() -> None:
+    full = (ROOT / "skills/poteto-mode/playbooks/autopilot-full.md").read_text(
+        encoding="utf-8"
+    )
+    stack = (ROOT / "skills/poteto-mode/playbooks/autopilot-stack.md").read_text(
+        encoding="utf-8"
+    )
+    for text in (full, stack):
+        assert "arm a `/goal`" not in text
+        assert "MAX_SUBAGENT_DEPTH" in text
+        assert "pstack:comment-sicko" in text
+    spec = (
+        ROOT
+        / "openspec/changes/pstack-depth-1-overnight/specs/pstack-depth-1-overnight/spec.md"
+    )
+    assert spec.is_file()
+    assert "MAX_SUBAGENT_DEPTH" in spec.read_text(encoding="utf-8")
+
+
 def test_poteto_mode_first_todo_requires_host_map() -> None:
     skill = (ROOT / "skills/poteto-mode/SKILL.md").read_text(encoding="utf-8")
     assert "HARNESS.md" in skill
@@ -774,6 +793,7 @@ if __name__ == "__main__":
     test_verify_harness_script_exists()
     test_verify_harness_passes_on_this_tree()
     test_babysit_and_shipping_do_not_use_cursor_dynamic_loop()
+    test_autopilot_is_parent_fanout_and_skips_goal()
     test_poteto_mode_first_todo_requires_host_map()
     test_codex_map_matches_grok_call_sites()
     test_poteto_mode_copies_tui_spawn_names()
