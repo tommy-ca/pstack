@@ -66,6 +66,26 @@ def test_orchestrate_uses_canonical_host_state() -> None:
     assert "Beads" in orchestrate
 
 
+def test_host_manifests_keep_grok_parity_and_adapter_asymmetry() -> None:
+    root = json.loads((ROOT / "plugin.json").read_text(encoding="utf-8"))
+    grok = json.loads((ROOT / ".grok-plugin/plugin.json").read_text(encoding="utf-8"))
+    codex = json.loads((ROOT / ".codex-plugin/plugin.json").read_text(encoding="utf-8"))
+    claude = json.loads((ROOT / ".claude-plugin/plugin.json").read_text(encoding="utf-8"))
+
+    assert root["version"] == grok["version"]
+    assert root["skills"] == grok["skills"]
+    assert root["agents"] == grok["agents"]
+    for manifest in (root, grok, codex, claude):
+        assert "hooks" not in manifest
+
+    assert "./skills/" in root["skills"]
+    assert "./automations/benny-grok/skills/" in root["skills"]
+    assert codex["skills"] == "./skills/"
+    assert claude["skills"] == "./skills/"
+    assert "./automations/benny-grok/skills/" not in json.dumps(codex)
+    assert "./automations/benny-grok/skills/" not in json.dumps(claude)
+
+
 def test_archivable_intent_chain_guard_distinguishes_changes() -> None:
     loader = importlib.util.spec_from_file_location("verify_harness", SCANNER)
     assert loader is not None
@@ -172,6 +192,8 @@ def test_codex_map_matches_grok_call_sites() -> None:
     assert "`task`" in mapping or "task" in mapping
     assert "spawn_agent" in mapping
     assert "ask_user_question" in mapping
+    assert "Codex compatibility utilities" in mapping
+    assert "not a Grok durable orchestration surface" in mapping
 
 
 def test_poteto_mode_copies_tui_spawn_names() -> None:
