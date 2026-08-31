@@ -66,19 +66,20 @@ def test_orchestrate_uses_canonical_host_state() -> None:
     assert "Beads" in orchestrate
 
 
-def test_essential_entries_include_user_ponytail() -> None:
+def test_live_pstack_docs_do_not_name_ponytail() -> None:
     setup = (ROOT / "docs/guide/01-setup.md").read_text(encoding="utf-8")
     harness = (ROOT / "HARNESS.md").read_text(encoding="utf-8")
     spec = (ROOT / "openspec/specs/pstack-quickstart/spec.md").read_text(
         encoding="utf-8"
     )
     plugin = json.loads((ROOT / "plugin.json").read_text(encoding="utf-8"))
-    assert "| Lazy | `/ponytail` |" in setup
-    assert "after the router" in setup
-    assert "not a start command" in setup
-    assert "YAGNI" in harness
-    assert "/ponytail" in harness
-    assert "/ponytail" in spec
+    assert "/ponytail" not in setup
+    assert "| Lazy |" not in setup
+    assert "/ponytail" not in harness
+    assert "MUST NOT name `/ponytail`" in spec
+    assert "docs/guide/01-setup.md" in spec
+    assert "HARNESS.md" in spec
+    assert "does not name `/ponytail`" in spec
     assert "ponytail" not in json.dumps(plugin).lower()
 
 
@@ -954,4 +955,5 @@ if __name__ == "__main__":
     test_effort_frontmatter_matches_ladder()
     test_plugin_manifest_matches_grok_parsed_fields()
     test_harness_skill_order_is_pstack_then_user_then_native()
+    test_live_pstack_docs_do_not_name_ponytail()
     print("PASS tests/test_verify_harness.py")
