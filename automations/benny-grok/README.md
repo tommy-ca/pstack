@@ -4,7 +4,7 @@
 
 After `grok plugin install tommy-ca/pstack --trust` and `grok plugin enable pstack`, type `/benny-triage` or `/benny-repro`. No copy into `.grok/hooks` or `.grok/workflows` is required.
 
-Grok has no Slack channel auto-start. Pass the Slack permalink as the skill argument. Overnight waits use `/loop` → `scheduler_create`. Fan-out uses `spawn_subagent` with `pstack:<role>`.
+Grok has no Slack channel auto-start. Pass the Slack permalink as the skill argument. Optional inbound from a webhook: `grok -p '/benny-triage <permalink>'`. Overnight waits use `/loop` → `scheduler_create`. Fan-out uses `spawn_subagent` with `pstack:<role>`.
 
 Enable from a host shell if the agent sandbox is EROFS. Spawn `pstack:how-explorer`, not `how-explorer`.
 

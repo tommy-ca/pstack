@@ -35,12 +35,12 @@ Spawn, join, cancel, roles `pstack:<key>`, isolation, resume, depth 1, todos, `a
 | `/mcps` plugin `.mcp.json` | **Skip.** Do not bundle Slack MCP in the plugin. |
 | LSP `.lsp.json` | **Skip.** |
 
-## Possible later adopt (not this landing)
+## Applied from this inventory
 
-1. TEST-PLAN step: `grok plugin validate` on the tree after `verify-harness.py`.
-2. One sentence in babysit/overnight: operators may start a **new** `grok --worktree` session instead of spawn isolation.
-3. Benny README: optional `grok -p` webhook example (host gap, not auto-start).
-4. `grok plugin tag` when cutting a version.
+1. `tests/test_verify_harness.py` runs `grok plugin validate` on the tree.
+2. Overnight guide names `grok --worktree` as a session start. Spawn isolation stays `isolation: worktree`.
+3. Benny README: optional `grok -p '/benny-triage <permalink>'` webhook. Not Slack auto-start.
+4. `grok plugin tag` still wait-for-release.
 
 Do not add `commands/`. Do not add plugin `hooks`. Do not wrap `/goal` or `/plan` as pstack slash clones.
 
