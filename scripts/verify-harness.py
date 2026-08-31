@@ -120,6 +120,20 @@ def archivable_changes_missing_artifacts(changes_root: pathlib.Path) -> list[str
                 missing.append(f"{change.name}/{artifact}")
     return missing
 
+def archived_changes_missing_artifacts(archive_root: pathlib.Path) -> list[str]:
+    """Return required artifacts missing from archived intent-driven changes."""
+    required = ("proposal.md", "design.md", "adr.md", "tasks.md", ".openspec.yaml")
+    missing: list[str] = []
+    for change in sorted(archive_root.iterdir()):
+        if not change.is_dir():
+            continue
+        for artifact in required:
+            if not (change / artifact).is_file():
+                missing.append(f"{change.name}/{artifact}")
+        if not any((change / "specs").rglob("*.md")):
+            missing.append(f"{change.name}/specs/**/*.md")
+    return missing
+
 
 
 
@@ -137,6 +151,14 @@ def main() -> None:
         fail(
             "task-complete OpenSpec changes missing design/ADR artifacts:\n  "
             + "\n  ".join(intent_missing)
+        )
+    archived_missing = archived_changes_missing_artifacts(
+        ROOT / "openspec" / "changes" / "archive"
+    )
+    if archived_missing:
+        fail(
+            "archived OpenSpec changes missing intent artifacts:\n  "
+            + "\n  ".join(archived_missing)
         )
     missing = [n for n in NAMED_22 if n not in files]
     extra = sorted(files - set(NAMED_22) - {"opening-a-pr"})

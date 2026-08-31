@@ -105,6 +105,15 @@ def test_archivable_intent_chain_guard_distinguishes_changes() -> None:
             "complete/adr.md",
         ]
 
+def test_archived_intent_chains_are_complete() -> None:
+    loader = importlib.util.spec_from_file_location("verify_harness", SCANNER)
+    assert loader is not None
+    scanner = importlib.util.module_from_spec(loader)
+    assert loader.loader is not None
+    loader.loader.exec_module(scanner)
+    missing = scanner.archived_changes_missing_artifacts(ROOT / "openspec/changes/archive")
+    assert not missing, missing
+
 
 
 def test_durable_specs_have_non_placeholder_purposes() -> None:
