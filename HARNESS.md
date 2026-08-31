@@ -75,7 +75,7 @@ grok 1.0.13 parses `PluginManifest` (14 fields). Extra JSON keys are ignored. Li
 
 Skill YAML (docs `08-skills.md`): `name`, `description`, `when-to-use`, `allowed-tools`, `argument-hint`, `user-invocable`, `disable-model-invocation`, `model`, `effort`, `license`, `compatibility`, `metadata`. Do not add plugin `commands/` clones of slash skills.
 
-Workflows are `.grok/workflows/*.rhai`, not a plugin component. grok-build `PluginManifest` has no `workflows` field. `WorkflowRegistry::scan` loads bundled, builtin, `<git-root>/.grok/workflows/`, then `~/.grok/workflows/` (first name wins). Rhai `agent(..., #{ agent_type: "pstack:how-explorer" })` maps to `SubagentRequest.subagent_type` after enable. Do not port playbooks to Rhai (ADR 0005). How-to: `docs/guide/11-grok-workflows.md`. `plugin-index.json` is catalog display-only unless `GROK_MARKETPLACE_REQUIRE_SHA`.
+Workflows are `.grok/workflows/*.rhai`, not a plugin component. grok-build `PluginManifest` has no `workflows` field. `WorkflowRegistry::scan` loads bundled, builtin, `<git-root>/.grok/workflows/`, then `~/.grok/workflows/` (first name wins). Rhai `agent(..., #{ agent_type: "pstack:how-explorer" })` maps to `SubagentRequest.subagent_type` after enable. Do not port playbooks to Rhai (ADR 0005). How-to: `docs/guide/11-grok-workflows.md`. Unused grok natives and adopt/skip/gap: `docs/guide/13-grok-natives.md`. `plugin-index.json` is catalog display-only unless `GROK_MARKETPLACE_REQUIRE_SHA`.
 
 ## Docs vs source
 

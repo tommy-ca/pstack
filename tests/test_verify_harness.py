@@ -276,6 +276,18 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert "sync-from-upstream.py" in guide
     index = (ROOT / "docs/guide/README.md").read_text(encoding="utf-8")
     assert "does not auto-enter" in index
+    natives = (ROOT / "docs/guide/13-grok-natives.md").read_text(encoding="utf-8")
+    assert "grok --worktree" in natives
+    assert "grok -p" in natives
+    assert "enter_plan_mode" in natives
+    assert "skip" in natives.lower()
+    assert "13-grok-natives.md" in index
+    spec_n = (
+        ROOT
+        / "openspec/changes/pstack-grok-native-inventory/specs/pstack-grok-natives/spec.md"
+    )
+    assert spec_n.is_file()
+    assert "adopt" in spec_n.read_text(encoding="utf-8").lower()
     assert "spawn_subagent" in guide
     assert "scheduler_create" in guide
     assert "make-bot-ui" in guide
