@@ -18,6 +18,7 @@ Here's what you'll learn:
 10. [Recipes and pitfalls](./10-recipes-and-pitfalls.md). Prompts to copy and mistakes to skip.
 11. [Grok Build workflows](./11-grok-workflows.md). Host Rhai in a target repo. `/poteto-mode` stays the pstack router.
 12. [Port pstack](./12-porting.md). Core principles and playbooks as a reference for other hosts and domains.
+13. [Grok natives vs pstack](./13-grok-natives.md). grok 1.0.13 CLI and slash inventory. Adopt, skip, or gap.
 
 Read the pages in order the first time. After that, each page stands alone.
 
