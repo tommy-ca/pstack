@@ -31,12 +31,15 @@ def test_github_release_workflow_on_version_tags() -> None:
 
 
 def test_plugin_version_is_semver_grokbuild() -> None:
+    assert (ROOT / "plugin.json").is_file()
     version = json.loads((ROOT / "plugin.json").read_text(encoding="utf-8"))[
         "version"
     ]
     assert re.fullmatch(r"\d+\.\d+\.\d+-grokbuild\.\d+", version), version
     assert re.fullmatch(r"\d{4}\.\d{1,2}\.\d{1,2}", version) is None
     assert re.search(r"-pstack\.\d+$", version) is None, version
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    assert "Do not move it into grok-build-plugins as `pstack/`." in readme
 
 
 def test_natives_page_names_plugin_tag() -> None:
