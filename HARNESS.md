@@ -1,5 +1,7 @@
 # Grok Build harness
 
+This file is the host mapping `/poteto-mode` reads. It is not a PluginManifest field. grok does not load it as a skill. The plugin ships it because git install copies the repo, and playbooks need the call-site names.
+
 pstack's 22 playbooks and 21 principles stay. Only harness call sites change.
 
 Sources: official pstack (`cursor/plugins` `pstack/`), this TUI (`~/.grok/docs/user-guide/`), and grok-build crates. **Playbooks copy the TUI column.** Rust ids are aliases, not a second live schema.
