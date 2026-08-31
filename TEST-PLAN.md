@@ -33,6 +33,8 @@ The machine that wrote this plan (`cursor.com/agents/bc-01a0363c-5279-7a80-8c72-
 
 `scripts/verify-harness.py` is a static repo check. **It is not a pass gate.** Do not attach its output as proof. Cola will not accept it. EDITH will not accept it.
 
+Also run `grok plugin validate` on the plugin tree. The harness test does this when `grok` is on PATH.
+
 ## Verdict vocabulary
 
 Every gate is exactly one of:

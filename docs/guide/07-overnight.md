@@ -19,7 +19,7 @@ Walk through what each line buys you:
 
 - "im going to bed" is a session override. The agent stops asking and keeps going.
 - "done means..." turns the goal into checks every iteration can run.
-- "fresh worktree off `<base>`" keeps the run from colliding with anything else you have open.
+- "fresh worktree off `<base>`" keeps the run from colliding with anything else you have open. You can also start the session with `grok --worktree`. Spawn isolation is still `isolation: worktree` on the child.
 - "don't ask me before committing" pre-answers the permission the agent would otherwise block on.
 - `/loop` is Grok Build's slash command, not a pstack skill. It expands to `scheduler_create` with `fire_immediately: true`. The [Autonomous run playbook](../../skills/poteto-mode/playbooks/autonomous-run.md) uses `monitor` for event wakes and `/loop` for a recurring heartbeat.
 - The escape hatch lets it stop at a genuine dead end and write up why, which beats eight hours of creative goal reinterpretation.

@@ -25,6 +25,14 @@ def test_verify_harness_passes_on_this_tree() -> None:
         check=False,
     )
     assert proc.returncode == 0, proc.stderr + proc.stdout
+    val = subprocess.run(
+        ["grok", "plugin", "validate", str(ROOT)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert val.returncode == 0, val.stderr + val.stdout
+    assert "Plugin manifest is valid" in val.stdout
 
 
 def test_babysit_and_shipping_do_not_use_cursor_dynamic_loop() -> None:
@@ -117,6 +125,7 @@ def test_benny_is_source_and_has_grok_remap() -> None:
     assert live_root.is_dir()
     readme = (live_root / "README.md").read_text(encoding="utf-8")
     assert "grok plugin enable pstack" in readme
+    assert "grok -p" in readme
     assert "mkdir -p .grok/hooks" not in readme
     assert "/automate" not in readme
     assert ".cursor/automations" not in readme
