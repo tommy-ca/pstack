@@ -22,7 +22,7 @@ Spawn, join, cancel, roles `pstack:<key>`, isolation, resume, depth 1, todos, `a
 | `grok mcp add` | **Skip.** User MCP config, not plugin `.mcp.json`. |
 | `grok inspect --json` | **Keep.** First-session proof of enable. |
 | `grok plugin validate` | **Keep.** Harness tests run it. |
-| `grok plugin tag` | **Keep.** Local `scripts/release.sh` from a host shell (`grok --sandbox off`) validates then `grok plugin tag --push`, then `gh release view` or `gh release create --verify-tag`. Actions on `v*` does the same Release step. |
+| `grok plugin tag` | **Keep.** `scripts/release.sh` validates then `grok --sandbox off plugin tag --push`. If the local tag exists and origin does not, it `git push origin` that ref. Then `gh release view` or `gh release create --verify-tag`. Actions on `v*` does the same Release step. A successful tag-push run is the dispatcher proof. First writer wins Release notes. |
 
 ## Slash and tools (04-slash-commands, 19-plan-mode)
 
@@ -43,7 +43,7 @@ Spawn, join, cancel, roles `pstack:<key>`, isolation, resume, depth 1, todos, `a
 1. `tests/test_verify_harness.py` runs `grok plugin validate` on the tree.
 2. Overnight guide names `grok --worktree` as a session start. Spawn isolation stays `isolation: worktree`.
 3. Benny README: optional `grok -p '/benny-triage <permalink>'` webhook. Not Slack auto-start.
-4. `scripts/release.sh` from a host shell (`grok --sandbox off`) runs `grok plugin tag --push` then `gh release view` or `gh release create --verify-tag`. Actions on `v*` does the same Release step.
+4. `scripts/release.sh` runs `grok --sandbox off plugin tag --push`. If the local tag exists and origin does not, it `git push origin` that ref. Then `gh release view` or `gh release create --verify-tag`. Actions on `v*` does the same Release step. A successful tag-push run is the dispatcher proof.
 
 Do not add `commands/`. Do not add plugin `hooks`. Do not wrap `/goal` or `/plan` as pstack slash clones.
 

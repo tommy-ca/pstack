@@ -8,7 +8,8 @@ ROOT = Path(__file__).resolve().parents[1]
 def test_release_script_tags_without_force() -> None:
     script = (ROOT / "scripts/release.sh").read_text(encoding="utf-8")
     assert "grok plugin validate" in script
-    assert "grok plugin tag --push" in script
+    assert "grok --sandbox off plugin tag --push" in script
+    assert "git push origin" in script
     assert "gh release view" in script
     assert "gh release create" in script
     assert "--verify-tag" in script
@@ -38,7 +39,7 @@ def test_natives_page_names_plugin_tag() -> None:
         if "`grok plugin tag`" in line and "**Keep.**" in line
     ]
     assert tag_rows, "natives must keep a grok plugin tag row"
-    assert "sandbox off" in tag_rows[0]
+    assert "grok --sandbox off plugin tag" in tag_rows[0]
 
 
 if __name__ == "__main__":

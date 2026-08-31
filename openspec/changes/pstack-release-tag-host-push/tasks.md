@@ -1,12 +1,12 @@
 ## 1. File contracts (TDD)
 
-- [ ] 1.1 Fail then pass `tests/test_release.py`: script contains `grok --sandbox off plugin tag --push` and `git push origin`, still no `--force`, still `__GROK_INSIDE_BWRAP`, still `gh release view` and `--verify-tag`. Natives tag row names `grok --sandbox off plugin tag`. Workflow still has no `grok plugin tag`.
+- [x] 1.1 Fail then pass `tests/test_release.py`: script contains `grok --sandbox off plugin tag --push` and `git push origin`, still no `--force`, still `__GROK_INSIDE_BWRAP`, still `gh release view` and `--verify-tag`. Natives tag row names `grok --sandbox off plugin tag`. Workflow still has no `grok plugin tag`.
 
 ## 2. Script and docs
 
-- [ ] 2.1 Update `scripts/release.sh` to call `grok --sandbox off plugin tag --push` and `git push origin` a local-only tag.
-- [ ] 2.2 Update `docs/guide/13-grok-natives.md` and the HARNESS sandbox row so the grok tag argv includes `--sandbox off`.
-- [ ] 2.3 Sync `openspec/specs/pstack-release-tag/spec.md` from this delta.
+- [x] 2.1 Update `scripts/release.sh` to call `grok --sandbox off plugin tag --push` and `git push origin` a local-only tag.
+- [x] 2.2 Update `docs/guide/13-grok-natives.md` and the HARNESS sandbox row so the grok tag argv includes `--sandbox off`.
+- [x] 2.3 Sync `openspec/specs/pstack-release-tag/spec.md` from this delta.
 
 ## 3. Prove and archive
 
