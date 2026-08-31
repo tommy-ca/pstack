@@ -21,7 +21,8 @@ Spawn, join, cancel, roles `pstack:<key>`, isolation, resume, depth 1, todos, `a
 | `grok clone` | **Skip.** Grove/FUSE. Not a pstack primitive. |
 | `grok mcp add` | **Skip.** User MCP config, not plugin `.mcp.json`. |
 | `grok inspect --json` | **Keep.** First-session proof of enable. |
-| `grok plugin validate` | **Keep.** Harness tests run it. `grok plugin tag` still waits for a release. |
+| `grok plugin validate` | **Keep.** Harness tests run it. |
+| `grok plugin tag` | **Keep.** Local `scripts/release.sh` runs validate then `grok plugin tag --push`. GitHub Release is Actions on `v*`. |
 
 ## Slash and tools (04-slash-commands, 19-plan-mode)
 
@@ -42,7 +43,7 @@ Spawn, join, cancel, roles `pstack:<key>`, isolation, resume, depth 1, todos, `a
 1. `tests/test_verify_harness.py` runs `grok plugin validate` on the tree.
 2. Overnight guide names `grok --worktree` as a session start. Spawn isolation stays `isolation: worktree`.
 3. Benny README: optional `grok -p '/benny-triage <permalink>'` webhook. Not Slack auto-start.
-4. `grok plugin tag` still wait-for-release.
+4. `scripts/release.sh` runs `grok plugin tag --push`. Actions creates the GitHub Release.
 
 Do not add `commands/`. Do not add plugin `hooks`. Do not wrap `/goal` or `/plan` as pstack slash clones.
 
