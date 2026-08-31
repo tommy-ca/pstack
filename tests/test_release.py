@@ -1,5 +1,7 @@
 """Release tagging is grok plugin tag locally and gh release on v* tags."""
 
+import json
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -28,6 +30,14 @@ def test_github_release_workflow_on_version_tags() -> None:
     assert "contents: write" in wf
 
 
+def test_plugin_version_is_semver_grokbuild() -> None:
+    version = json.loads((ROOT / "plugin.json").read_text(encoding="utf-8"))[
+        "version"
+    ]
+    assert re.fullmatch(r"\d+\.\d+\.\d+-grokbuild\.\d+", version), version
+    assert re.fullmatch(r"\d{4}\.\d{1,2}\.\d{1,2}", version) is None
+
+
 def test_natives_page_names_plugin_tag() -> None:
     natives = (ROOT / "docs/guide/13-grok-natives.md").read_text(encoding="utf-8")
     assert "grok plugin tag" in natives
@@ -45,5 +55,6 @@ def test_natives_page_names_plugin_tag() -> None:
 if __name__ == "__main__":
     test_release_script_tags_without_force()
     test_github_release_workflow_on_version_tags()
+    test_plugin_version_is_semver_grokbuild()
     test_natives_page_names_plugin_tag()
     print("PASS tests/test_release.py")
