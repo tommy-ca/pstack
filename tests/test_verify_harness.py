@@ -48,6 +48,49 @@ def test_babysit_and_shipping_do_not_use_cursor_dynamic_loop() -> None:
     assert "scheduler_create" in babysit
     assert "monitor" in shipping
     assert "scheduler_create" in shipping
+    assert "scripts/watch-pr/watch-pr" not in babysit
+    assert "timeout_ms" in babysit
+
+
+def test_orchestrate_uses_canonical_host_state() -> None:
+    orchestrate = (
+        ROOT / "skills/poteto-mode/playbooks/orchestrate.md"
+    ).read_text(encoding="utf-8")
+    assert "scripts/orch/orch.ts" not in orchestrate
+    assert "orch init" not in orchestrate
+    assert "orchestrate/<project-slug>/" not in orchestrate
+    assert "canonical host" in orchestrate
+    assert "Gas City" in orchestrate
+    assert "Beads" in orchestrate
+
+
+def test_benny_guard_denies_compound_merge_and_plain_push() -> None:
+    script = ROOT / "automations/benny-grok/bin/fail-closed.sh"
+    for command in (
+        "git merge feature && git push origin main",
+        "git push origin main && git merge feature",
+    ):
+        deny = subprocess.run(
+            ["sh", str(script)],
+            input=json.dumps({"toolInput": {"command": command}}),
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert deny.returncode == 2, command
+        assert json.loads(deny.stdout)["decision"] == "deny", command
+
+    force_lease = subprocess.run(
+        ["sh", str(script)],
+        input=json.dumps(
+            {"toolInput": {"command": "git push --force-with-lease origin main"}}
+        ),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert force_lease.returncode == 2
+    assert json.loads(force_lease.stdout)["decision"] == "deny"
 
 
 def test_autopilot_is_parent_fanout_and_skips_goal() -> None:
@@ -161,6 +204,31 @@ def test_benny_is_source_and_has_grok_remap() -> None:
     )
     assert deny.returncode == 2
     assert json.loads(deny.stdout)["decision"] == "deny"
+    for command in (
+        "git merge feature && git push origin main",
+        "git push origin main && git merge feature",
+    ):
+        compound_deny = subprocess.run(
+            ["sh", str(script)],
+            input=json.dumps({"toolInput": {"command": command}}),
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert compound_deny.returncode == 2, command
+        assert json.loads(compound_deny.stdout)["decision"] == "deny", command
+    force_lease = subprocess.run(
+        ["sh", str(script)],
+        input=json.dumps(
+            {"toolInput": {"command": "git push --force-with-lease origin main"}}
+        ),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert force_lease.returncode == 2
+    assert json.loads(force_lease.stdout)["decision"] == "deny"
+
     allow = subprocess.run(
         ["sh", str(script)],
         input=json.dumps({"toolInput": {"command": "gh pr view 1"}}),
@@ -645,6 +713,9 @@ def test_overlay_stems_and_adapter_are_plugin_qualified() -> None:
     root_manifest = json.loads((ROOT / "plugin.json").read_text(encoding="utf-8"))
     assert "displayName" not in overlay
     assert overlay["version"] == root_manifest["version"]
+    assert overlay["skills"] == root_manifest["skills"]
+    assert overlay["agents"] == root_manifest["agents"]
+    assert "hooks" not in overlay
     harness = (ROOT / "HARNESS.md").read_text(encoding="utf-8")
     assert "~/.grok/roles/<pstack-role>.toml" not in harness
     assert "~/.grok/roles/pstack:<key>.toml" in harness
