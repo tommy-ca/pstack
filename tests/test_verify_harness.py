@@ -299,6 +299,11 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert "21 principles" in port
     assert "host map" in port
     assert "Laziness Protocol" in port
+    assert "Capability checklist" in port
+    assert "Spawn a child" in port
+    assert "Join / wait" in port
+    assert "Overnight loop" in port
+    assert "Write `gap`" in port or "write `gap`" in port.lower()
     assert "not loc" in port.lower() or "less code" in port.lower()
     assert "12-porting.md" in index
     spec_port = (
