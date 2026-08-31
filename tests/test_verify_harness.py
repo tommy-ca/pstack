@@ -54,6 +54,12 @@ def test_babysit_and_shipping_do_not_use_cursor_dynamic_loop() -> None:
     assert "timeout_ms" in babysit
 
 
+def test_verify_guide_names_monitor_boundary() -> None:
+    guide = (ROOT / "docs/guide/06-verify-and-ship.md").read_text(encoding="utf-8")
+    assert "bundled watcher" not in guide
+    assert "`monitor`" in guide
+
+
 def test_orchestrate_uses_canonical_host_state() -> None:
     orchestrate = (
         ROOT / "skills/poteto-mode/playbooks/orchestrate.md"
