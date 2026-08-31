@@ -17,7 +17,7 @@ grok plugin install tommy-ca/pstack --trust
 grok plugin enable pstack
 ```
 
-xAI Official also lists a plugin named `pstack` that points at `cursor/plugins`. Use owner/repo. Do not treat bare `grok plugin install pstack` as this port. This repo is a single-plugin tree. Do not nest it as `plugins/pstack`. Optional catalog: [tommy-ca/grok-build-plugins](https://github.com/tommy-ca/grok-build-plugins).
+xAI Official also lists a plugin named `pstack` that points at `cursor/plugins`. Use owner/repo. Do not treat bare `grok plugin install pstack` as this port. This repo is a single-plugin tree. Do not nest it as `plugins/pstack`. Do not move it into grok-build-plugins as `pstack/`. Optional catalog: [tommy-ca/grok-build-plugins](https://github.com/tommy-ca/grok-build-plugins).
 
 A local checkout also works:
 
