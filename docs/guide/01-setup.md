@@ -18,6 +18,20 @@ grok plugin enable pstack
 
 This tree is `tommy-ca/pstack`, a single-plugin repo. `plugin.json` `skills` lists `./skills/` and `./automations/benny-grok/skills/`. After enable, `/benny-triage` loads. There is no `commands/` directory and no `hooks` key. Do not nest this repo as `plugins/pstack`. The optional catalog is [tommy-ca/grok-build-plugins](https://github.com/tommy-ca/grok-build-plugins). Skills already are `/name`. xAI Official also lists a plugin named `pstack` that points at `cursor/plugins`. Do not use bare `grok plugin install pstack` as the default. Do not install `aa2246740/pstack-grokbuild` as the default. Parsed `plugin.json` fields and agent YAML rules are in [`HARNESS.md`](../../HARNESS.md) **Plugin schema**. That file is the host mapping `/poteto-mode` reads at the plugin root. It is not a plugin.json field. grok does not load it as a skill.
 
+## How grok-native pstack works
+
+This port is official pstack playbooks and 21 principles on Grok Build 1.0.13. It is not the Cursor plugin runtime.
+
+**Router.** `/poteto-mode` matches a playbook and copies its steps into todos. It does not auto-enter. Skill order is pstack first, then user, then bundled and builtin. Example: `/tdd` before `/test-driven-development`.
+
+**Spawn.** Children are `spawn_subagent` with `subagent_type` `pstack:<role>`. Example: `pstack:how-explorer`, `pstack:feature`, `pstack:independent-verifier`. Bare `how-explorer` is unknown. `MAX_SUBAGENT_DEPTH` is 1. This parent fans out. A child that spawns fails. After a writer joins, this parent runs `pstack:comment-sicko`. Do not send `reasoning_effort` on spawn. Effort is agent frontmatter or `~/.grok/roles/pstack:<key>.toml`.
+
+**Join and overnight.** Join with `get_command_or_subagent_output`. `/loop` expands to `scheduler_create` (new turn, min 60s). Event wakes use `monitor`. Autopilot queues stay parent-fanout. They do not arm `/goal`.
+
+**Benny.** `/benny-triage` loads after enable. Optional inbound: `grok -p '/benny-triage <permalink>'`. No Slack auto-start. No plugin `hooks`.
+
+**Prove it.** `grok inspect --json` lists skills and `pstack:` agents only after enable. `grok plugin validate .` checks the manifest. Full mapping: [`HARNESS.md`](../../HARNESS.md). Natives we skip: [`13-grok-natives.md`](./13-grok-natives.md).
+
 ## Pick your models and effort (optional)
 
 The Grok Build default is `grok-4.6` for every role and a three-tier effort split on the plugin agents (ship-time `xhigh` / `high` / `medium`, from the grok 1.0.13 CLI usable set). You can start working without `/setup-pstack`. `/setup-pstack` re-detects from live `use one of:` and rewrites that split if it changed. It does not offer `max` unless that list named it.
