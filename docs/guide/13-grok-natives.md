@@ -21,7 +21,7 @@ Spawn, join, cancel, roles `pstack:<key>`, isolation, resume, depth 1, todos, `a
 | `grok clone` | **Skip.** Grove/FUSE. Not a pstack primitive. |
 | `grok mcp add` | **Skip.** User MCP config, not plugin `.mcp.json`. |
 | `grok inspect --json` | **Keep.** First-session proof of enable. |
-| `grok plugin validate` / `tag` | **Adopt in TEST-PLAN later.** Optional CI. Not playbook. |
+| `grok plugin validate` | **Keep.** Harness tests run it. `grok plugin tag` still waits for a release. |
 
 ## Slash and tools (04-slash-commands, 19-plan-mode)
 
