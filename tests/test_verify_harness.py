@@ -155,12 +155,12 @@ def test_benny_is_source_and_has_grok_remap() -> None:
     assert json.loads(slackish.stdout)["decision"] == "allow"
     safety = (
         ROOT
-        / "openspec/changes/pstack-benny-atomic-blocks/specs/benny-safety/spec.md"
+        / "openspec/specs/benny-safety/spec.md"
     ).read_text(encoding="utf-8")
     assert "prompt-enforced" in safety
     remap = (
         ROOT
-        / "openspec/changes/pstack-benny-atomic-blocks/specs/benny-grok-remap/spec.md"
+        / "openspec/specs/benny-grok-remap/spec.md"
     ).read_text(encoding="utf-8")
     assert "prompt-enforced" in remap
     assert "upstream reference" in remap
@@ -188,7 +188,7 @@ def test_benny_is_source_and_has_grok_remap() -> None:
     assert "name: benny-repro" in live_repro
     design = (
         ROOT
-        / "openspec/changes/pstack-benny-atomic-blocks/design.md"
+        / "openspec/changes/archive/2026-08-31-pstack-benny-atomic-blocks/design.md"
     ).read_text(encoding="utf-8")
     assert "automations/benny-grok/skills" in design
     assert "Installing Benny SKILL.md files under plugin `skills/`." not in design
@@ -199,7 +199,7 @@ def test_benny_is_source_and_has_grok_remap() -> None:
     assert "Supersedes: ADR-0002" in adr4.read_text(encoding="utf-8")
     pack_spec = (
         ROOT
-        / "openspec/changes/pstack-benny-atomic-blocks/specs/benny-pack/spec.md"
+        / "openspec/specs/benny-pack/spec.md"
     ).read_text(encoding="utf-8")
     assert "./automations/benny-grok/skills/" in pack_spec
     assert "THEN `skills` is `./skills/`" not in pack_spec
@@ -215,7 +215,7 @@ def test_playbooks_are_not_plugin_rhai_workflows() -> None:
     assert "not a plugin component" in harness
     spec = (
         ROOT
-        / "openspec/changes/pstack-playbooks-not-rhai/specs/pstack-playbooks-not-rhai/spec.md"
+        / "openspec/specs/pstack-playbooks-not-rhai/spec.md"
     )
     assert spec.is_file()
     assert "MUST NOT" in spec.read_text(encoding="utf-8")
@@ -233,7 +233,7 @@ def test_playbooks_are_not_plugin_rhai_workflows() -> None:
     assert "11-grok-workflows.md" in index
     spec = (
         ROOT
-        / "openspec/changes/pstack-grok-workflows-howto/specs/pstack-grok-workflows/spec.md"
+        / "openspec/specs/pstack-grok-workflows/spec.md"
     )
     assert spec.is_file()
     assert "agent_type" in spec.read_text(encoding="utf-8")
@@ -247,17 +247,14 @@ def test_openspec_intent_driven_schema_resolves() -> None:
     assert "id: adr" in text
     cfg = (ROOT / "openspec/config.yaml").read_text(encoding="utf-8")
     assert "schema: intent-driven" in cfg
-    change = ROOT / "openspec/changes/pstack-benny-atomic-blocks"
+    change = (
+        ROOT
+        / "openspec/changes/archive/2026-08-31-pstack-benny-atomic-blocks"
+    )
     assert (change / "design.md").is_file()
     assert (change / "adr.md").is_file()
     proc = subprocess.run(
-        [
-            "openspec",
-            "status",
-            "--change",
-            "pstack-benny-atomic-blocks",
-            "--json",
-        ],
+        ["openspec", "schema", "which", "intent-driven"],
         cwd=ROOT,
         capture_output=True,
         text=True,
@@ -265,6 +262,7 @@ def test_openspec_intent_driven_schema_resolves() -> None:
     )
     assert proc.returncode == 0, proc.stderr or proc.stdout
     combined = (proc.stderr or "") + (proc.stdout or "")
+    assert "intent-driven" in combined.lower()
     assert "not found" not in combined.lower()
 
 
@@ -643,7 +641,7 @@ def test_effort_frontmatter_matches_ladder() -> None:
     assert "playbooks/figure-it-out.md" not in harness
     setup_spec = (
         ROOT
-        / "openspec/changes/pstack-atomic-blocks/specs/pstack-setup-overlays/spec.md"
+        / "openspec/specs/pstack-setup-overlays/spec.md"
     ).read_text(encoding="utf-8")
     assert "top-level" in setup_spec
     assert "`[models]` table" in setup_spec or "MUST NOT use a `[models]` table" in setup_spec
