@@ -32,6 +32,24 @@ This port is official pstack playbooks and 21 principles on Grok Build 1.0.13. I
 
 **Prove it.** `grok inspect --json` lists skills and `pstack:` agents only after enable. `grok plugin validate .` checks the manifest. Full mapping: [`HARNESS.md`](../../HARNESS.md). Natives we skip: [`13-grok-natives.md`](./13-grok-natives.md).
 
+## Essential entries
+
+Type `/poteto-mode` for rigor. Do not start from `/workflow` or `/goal`. Playbooks are not slash commands. The router matches them.
+
+| Kind | Name | When |
+|---|---|---|
+| Router | `/poteto-mode` | Any checkable goal. Does not auto-enter. |
+| Setup | `/setup-pstack` | Optional. Models and effort. |
+| Build | `/tdd` `/unslop` `/no-comments` | After `/poteto-mode` picks Feature or Bug fix. Parent runs `/no-comments`. |
+| How | `/how` `/why` | Read-only. Spawn `pstack:how-explorer`. |
+| Benny | `/benny-triage` `/benny-repro` | Slack permalink after enable. |
+| Spawn | `pstack:feature` `pstack:how-explorer` `pstack:independent-verifier` `pstack:comment-sicko` | Parent only. Depth 1. |
+| Overnight | `/loop` | `scheduler_create`, new turn, min 60s. |
+| Workflow | `/workflow` | Target repo `.grok/workflows/` only. Optional `agent_type: pstack:how-explorer`. Not a playbook clone. |
+| Host | `grok inspect --json` `grok plugin validate` | Prove enable and the manifest. |
+
+Twenty-two playbooks live under `skills/poteto-mode/playbooks/`. Common matches: Investigation, Feature, Bug fix, Autonomous run. Autopilot queues are parent-fanout. They do not arm `/goal`.
+
 ## Pick your models and effort (optional)
 
 The Grok Build default is `grok-4.6` for every role and a three-tier effort split on the plugin agents (ship-time `xhigh` / `high` / `medium`, from the grok 1.0.13 CLI usable set). You can start working without `/setup-pstack`. `/setup-pstack` re-detects from live `use one of:` and rewrites that split if it changed. It does not offer `max` unless that list named it.
