@@ -288,6 +288,13 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert "automations/benny-grok" in setup
     assert "skills/` and `agents/` only" not in setup
     assert "grok-build-plugins" in guide
+    assert "host mapping" in setup
+    assert "not a plugin.json field" in setup
+    spec = ROOT / "openspec/changes/pstack-harness-md-role/specs/pstack-harness-md/spec.md"
+    assert spec.is_file()
+    assert "not a PluginManifest field" in spec.read_text(encoding="utf-8")
+    plugin = json.loads((ROOT / "plugin.json").read_text(encoding="utf-8"))
+    assert "HARNESS" not in json.dumps(plugin)
     assert "adapt-harness.py" in upstream
     assert "sync-from-upstream.py" in upstream
     pin = subprocess.run(
