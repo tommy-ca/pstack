@@ -72,6 +72,8 @@ def test_essential_entries_include_user_ponytail() -> None:
     )
     plugin = json.loads((ROOT / "plugin.json").read_text(encoding="utf-8"))
     assert "| Lazy | `/ponytail` |" in setup
+    assert "after the router" in setup
+    assert "not a start command" in setup
     assert "YAGNI" in harness
     assert "/ponytail" in harness
     assert "/ponytail" in spec
