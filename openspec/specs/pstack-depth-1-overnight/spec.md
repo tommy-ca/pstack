@@ -1,7 +1,7 @@
 # pstack-depth-1-overnight Specification
 
 ## Purpose
-TBD - created by archiving change pstack-depth-1-overnight. Update Purpose after archive.
+Grok Build `MAX_SUBAGENT_DEPTH` is 1. Autopilot queue playbooks must parent-fanout, spawn `pstack:comment-sicko` after writers join, and must not arm `/goal`.
 
 ## Requirements
 
