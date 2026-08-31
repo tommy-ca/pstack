@@ -334,6 +334,10 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert "Skill order" in setup
     assert "pstack:independent-verifier" in setup
     assert "scheduler_create" in setup
+    assert "Essential entries" in setup
+    assert "/tdd" in setup
+    assert "/how" in setup
+    assert "/workflow" in setup
     spec_q = (
         ROOT
         / "openspec/changes/pstack-quickstart-grok-native/specs/pstack-quickstart/spec.md"

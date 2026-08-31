@@ -11,3 +11,10 @@ Feature: pstack-quickstart
 - **GIVEN** `docs/guide/01-setup.md`
 - **WHEN** an operator finishes install
 - **THEN** the page names `MAX_SUBAGENT_DEPTH`, Skill order, `pstack:independent-verifier`, and `scheduler_create`
+
+#### Scenario: essential entries table
+
+- **GIVEN** `docs/guide/01-setup.md`
+- **WHEN** an operator looks for slash names and spawn types
+- **THEN** the page has Essential entries
+- **AND** it names `/tdd`, `/how`, and `/workflow`
