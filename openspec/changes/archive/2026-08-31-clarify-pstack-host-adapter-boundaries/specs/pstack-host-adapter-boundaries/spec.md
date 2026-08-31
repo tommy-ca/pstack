@@ -25,6 +25,13 @@ utilities MUST NOT be used as the Grok durable orchestration surface.
 - **THEN** it identifies those utilities as Codex-only or non-Grok compatibility surfaces
 - **AND** Grok durable units, claims, retries, and fanout/fanin remain on canonical host task/agent state and Gas City/Beads
 
+#### Scenario: Verification guidance names the host monitor
+
+- **GIVEN** an operator reads `docs/guide/06-verify-and-ship.md`
+- **WHEN** the Babysit boundary is described
+- **THEN** the guide names the host `monitor` primitive
+- **AND** it does not describe a bundled local watcher
+
 ## MODIFIED Requirements
 
 ### Requirement: Durable orchestration state remains host-owned

@@ -8,6 +8,7 @@
 - [x] 2.1 Add the superseding ADR-0008 without editing accepted ADR-0006.
 - [x] 2.2 Update the durable `pstack-grok-host-boundary` spec wording and scenario names to scope host-owned state and parity to Grok while documenting adapter asymmetry.
 - [x] 2.3 Update the live host mapping text to match the new ADR and spec without changing Grok playbook behavior.
+- [x] 2.4 Align `docs/guide/06-verify-and-ship.md` with the host `monitor` boundary and add a focused harness assertion.
 
 ## 3. Verify and hand off
 

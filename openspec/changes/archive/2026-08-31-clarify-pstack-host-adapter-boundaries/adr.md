@@ -8,7 +8,9 @@
 ADR review completed for the host-adapter boundary clarification. Accepted ADRs
 0003–0006 and the archive-chain gate were reviewed. The accepted host-owned
 state decision is superseded without rewriting history; adapter-specific
-manifest asymmetry is recorded in the new durable ADR.
+manifest asymmetry and the operator-facing `monitor` wording are recorded in
+the new durable ADR. The verification-guide wording change is documentation
+and regression-test scope only; it does not change runtime behavior.
 
 ## In-Force ADRs Reviewed
 

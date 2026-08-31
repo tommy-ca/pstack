@@ -16,6 +16,7 @@ future reviewers from treating intentional host separation as drift.
   `.codex-plugin` and `.claude-plugin` may omit Grok-only Benny skills.
 - Add regression assertions for the intentional manifest asymmetry and ADR
   wording.
+- Align the user-facing verification guide with the host-owned `monitor` boundary and cover the wording with a regression assertion.
 - Do not delete retained host-specific utilities or change live Grok behavior.
 
 ## Capabilities
@@ -33,6 +34,6 @@ future reviewers from treating intentional host separation as drift.
 ## Impact
 
 Affected files are `adr/0006-host-owned-durable-orchestration-state.md`, the
-PStack Grok host-boundary durable spec, host-adapter documentation, and
-`tests/test_verify_harness.py`. No runtime dependency, plugin hook, provider,
-workflow, or publication surface changes.
+PStack Grok host-boundary durable spec, host-adapter documentation, the
+verification guide, and `tests/test_verify_harness.py`. No runtime dependency,
+plugin hook, provider, workflow, or publication surface changes.
