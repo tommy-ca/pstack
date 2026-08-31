@@ -338,6 +338,14 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert "/tdd" in setup
     assert "/how" in setup
     assert "/workflow" in setup
+    assert "workspace" in setup
+    assert "Daily driver" in setup
+    spec_sb = (
+        ROOT
+        / "openspec/changes/pstack-sandbox-daily-driver/specs/pstack-sandbox-daily/spec.md"
+    )
+    assert spec_sb.is_file()
+    assert "workspace" in spec_sb.read_text(encoding="utf-8")
     spec_q = (
         ROOT
         / "openspec/changes/pstack-quickstart-grok-native/specs/pstack-quickstart/spec.md"

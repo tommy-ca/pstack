@@ -15,7 +15,9 @@ Spawn, join, cancel, roles `pstack:<key>`, isolation, resume, depth 1, todos, `a
 | `--json-schema` | **Skip.** Workflow `output_schema` already covers structured child output. |
 | `--no-subagents` `--no-plan` | **Skip.** Operator session flags. Playbooks assume spawn works. |
 | `--permission-mode plan` | **Skip.** pstack uses `/architect` and `/interrogate`, not agent `permissionMode: plan` (forbidden in plugin agents). |
-| `--sandbox` | **Keep documenting.** Enable stays host-shell because of EROFS. |
+| `--sandbox workspace` | **Daily driver for pstack.** Writes CWD + `~/.grok/` except pinned `config.toml` / `hooks/` under bwrap. |
+| `--sandbox homelab` | **Custom.** Extends workspace. Extra `~/.npm` and cache writes. Same config.toml EROFS. |
+| `--sandbox off` | **Host-shell only** for `plugin enable` / `config.toml`. Not the all-day TUI. |
 | `grok clone` | **Skip.** Grove/FUSE. Not a pstack primitive. |
 | `grok mcp add` | **Skip.** User MCP config, not plugin `.mcp.json`. |
 | `grok inspect --json` | **Keep.** First-session proof of enable. |

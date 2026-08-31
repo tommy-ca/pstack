@@ -18,6 +18,29 @@ grok plugin enable pstack
 
 This tree is `tommy-ca/pstack`, a single-plugin repo. `plugin.json` `skills` lists `./skills/` and `./automations/benny-grok/skills/`. After enable, `/benny-triage` loads. There is no `commands/` directory and no `hooks` key. Do not nest this repo as `plugins/pstack`. The optional catalog is [tommy-ca/grok-build-plugins](https://github.com/tommy-ca/grok-build-plugins). Skills already are `/name`. xAI Official also lists a plugin named `pstack` that points at `cursor/plugins`. Do not use bare `grok plugin install pstack` as the default. Do not install `aa2246740/pstack-grokbuild` as the default. Parsed `plugin.json` fields and agent YAML rules are in [`HARNESS.md`](../../HARNESS.md) **Plugin schema**. That file is the host mapping `/poteto-mode` reads at the plugin root. It is not a plugin.json field. grok does not load it as a skill.
 
+## Daily driver (sandbox)
+
+Grok's everyday profile is **`workspace`**. It can write the current repo, `~/.grok/` (sessions, `installed-plugins/`, roles), and temp dirs. `18-sandbox.md`.
+
+**homelab** is a custom profile (`~/.grok/sandbox.toml`) that extends `workspace` with extra writes (`~/.npm`, cache, `~/.local`). It does not add a full `~/.grok` deny. Under Linux bubblewrap the TUI still bind-mounts `config.toml`, `sandbox.toml`, and `hooks/` **read-only** (EROFS on `plugin enable`). That is the grok-build pin, not a pstack bug.
+
+| Need | Driver |
+|---|---|
+| Edit this plugin's source | `workspace` or `homelab`. CWD is writable. Commit, then `grok plugin install /path/to/pstack --trust`. |
+| Enable / marketplace / rewrite `config.toml` | Host shell: `grok --sandbox off plugin enable pstack`. |
+| Tweak `~/.grok/roles/` or installed-plugins copies | Usually writable under `workspace`/`homelab`. Hooks dir stays write-denied. |
+| Untrusted tree | `strict` or `read-only`. |
+
+Do not set the daily driver to `off` just to enable a plugin. Use `off` only for that one host command. Do not weaken `workspace-secrets` denials of `.env`, keys, or `auth.json`.
+
+Start pstack days with:
+
+```bash
+grok --sandbox workspace
+```
+
+Or keep `[sandbox] profile = "homelab"` if you need those extra write paths. Enable still uses `--sandbox off` once.
+
 ## How grok-native pstack works
 
 This port is official pstack playbooks and 21 principles on Grok Build 1.0.13. It is not the Cursor plugin runtime.
