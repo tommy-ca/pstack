@@ -16,6 +16,7 @@ Here's what you'll learn:
 8. [Steer with principle names](./08-principles.md). The 21 names that redirect an agent mid-task.
 9. [Make it yours](./09-make-it-yours.md). Your own mode, plus how to test a skill change.
 10. [Recipes and pitfalls](./10-recipes-and-pitfalls.md). Prompts to copy and mistakes to skip.
+11. [Grok Build workflows](./11-grok-workflows.md). Host Rhai in a target repo. `/poteto-mode` stays the pstack router.
 
 Read the pages in order the first time. After that, each page stands alone.
 

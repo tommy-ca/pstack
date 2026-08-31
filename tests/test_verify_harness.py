@@ -222,6 +222,21 @@ def test_playbooks_are_not_plugin_rhai_workflows() -> None:
     adr = ROOT / "adr/0005-playbooks-are-not-rhai-workflows.md"
     assert adr.is_file()
     assert "/poteto-mode" in adr.read_text(encoding="utf-8")
+    guide = (ROOT / "docs/guide/11-grok-workflows.md").read_text(encoding="utf-8")
+    assert "agent_type" in guide
+    assert "pstack:how-explorer" in guide
+    assert ".grok/workflows" in guide
+    assert "PluginManifest" in guide
+    assert "/workflow" in guide
+    assert "not a plugin" in guide.lower() or "not a plugin.json" in guide
+    index = (ROOT / "docs/guide/README.md").read_text(encoding="utf-8")
+    assert "11-grok-workflows.md" in index
+    spec = (
+        ROOT
+        / "openspec/changes/pstack-grok-workflows-howto/specs/pstack-grok-workflows/spec.md"
+    )
+    assert spec.is_file()
+    assert "agent_type" in spec.read_text(encoding="utf-8")
 
 
 def test_openspec_intent_driven_schema_resolves() -> None:
