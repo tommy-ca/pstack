@@ -211,6 +211,9 @@ def test_poteto_mode_copies_tui_spawn_names() -> None:
     assert "EROFS" in harness
     assert "config.toml" in harness
     assert "marketplace add" in harness
+    assert "herdr integration install grok" in harness
+    assert "herdr-install" in harness or "devbox" in harness
+    assert "HERDR_SOCKET_PATH" in harness
 
 
 def test_visual_parity_and_bug_fix_drive_real_surface() -> None:
