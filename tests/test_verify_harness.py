@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import re
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -78,6 +80,38 @@ def test_essential_entries_include_user_ponytail() -> None:
     assert "/ponytail" in harness
     assert "/ponytail" in spec
     assert "ponytail" not in json.dumps(plugin).lower()
+
+
+def test_archivable_intent_chain_guard_distinguishes_changes() -> None:
+    loader = importlib.util.spec_from_file_location("verify_harness", SCANNER)
+    assert loader is not None
+    scanner = importlib.util.module_from_spec(loader)
+    assert loader.loader is not None
+    loader.loader.exec_module(scanner)
+    with tempfile.TemporaryDirectory() as tmp:
+        changes = Path(tmp)
+        complete = changes / "complete"
+        complete.mkdir()
+        (complete / "tasks.md").write_text("- [x] 1.1 done\n", encoding="utf-8")
+        incomplete = changes / "incomplete"
+        incomplete.mkdir()
+        (incomplete / "tasks.md").write_text("- [ ] 1.1 later\n", encoding="utf-8")
+        archived = changes / "archive" / "historical"
+        archived.mkdir(parents=True)
+        (archived / "tasks.md").write_text("- [x] 1.1 done\n", encoding="utf-8")
+        assert scanner.archivable_changes_missing_artifacts(changes) == [
+            "complete/design.md",
+            "complete/adr.md",
+        ]
+
+
+
+def test_durable_specs_have_non_placeholder_purposes() -> None:
+    for spec in sorted((ROOT / "openspec/specs").glob("*/spec.md")):
+        text = spec.read_text(encoding="utf-8")
+        assert "## Purpose\n" in text
+        purpose = text.split("## Purpose\n", 1)[1].split("\n\n", 1)[0].strip()
+        assert purpose and not purpose.startswith("TBD -"), spec
 
 
 def test_benny_guard_denies_compound_merge_and_plain_push() -> None:
@@ -286,7 +320,7 @@ def test_benny_is_source_and_has_grok_remap() -> None:
     harness = (ROOT / "HARNESS.md").read_text(encoding="utf-8")
     assert "automations/benny-grok" in harness
     assert "automations/benny/grok" not in harness
-    live = "\n".join([readme, live_triage, live_repro])
+    live = f"{readme}\n{live_triage}\n{live_repro}"
     assert "/automate" not in live
     assert "trigger.thread_ts" not in live
     assert "trigger.ts" not in live
@@ -505,7 +539,7 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert logged.returncode == 0, logged.stderr
     assert f"pin {sha}" in logged.stdout
     assert "up to date" in logged.stdout or re.search(
-        r"^[0-9a-f]{7} ", logged.stdout, re.M
+        r"^[0-9a-f]{7} ", logged.stdout, re.MULTILINE
     )
     cache = ROOT / ".worktrees" / "upstream-cursor-plugins"
     if (cache / ".git").is_dir():
@@ -802,12 +836,12 @@ def test_effort_frontmatter_matches_ladder() -> None:
                 parsed[m.group(1)] = m.group(2)
     for path in (ROOT / "agents").glob("*.md"):
         fm = path.read_text(encoding="utf-8").split("---", 2)[1]
-        m = re.search(r"^effort:\s*(\S+)", fm, re.M)
+        m = re.search(r"^effort:\s*(\S+)", fm, re.MULTILINE)
         if not m:
             assert path.stem in {"comment-sicko", "poteto-agent"}, path.name
             continue
         assert parsed[path.stem] == m.group(1), path.name
-    assert not re.search(r"^\[models\]", defaults, re.M)
+    assert not re.search(r"^\[models\]", defaults, re.MULTILINE)
     assert (ROOT / "skills/figure-it-out/SKILL.md").is_file()
     assert not (ROOT / "skills/poteto-mode/playbooks/figure-it-out.md").exists()
     assert "playbooks/figure-it-out.md" not in harness

@@ -1,7 +1,7 @@
 # pstack-harness-map Specification
 
 ## Purpose
-TBD - created by archiving change pstack-atomic-blocks. Update Purpose after archive.
+Map upstream Cursor harness call sites to Grok-native spawn, question, monitoring, and scheduling contracts while preserving playbook intent.
 
 ## Requirements
 

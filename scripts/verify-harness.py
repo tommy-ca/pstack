@@ -17,9 +17,9 @@ SKILL = ROOT / "skills" / "poteto-mode" / "SKILL.md"
 SCRIPTS = pathlib.Path(__file__).resolve().parent
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
-from effort_ladder import (  # noqa: E402
-    JUDGMENT,
+from effort_ladder import (
     INSTRUCTION,
+    JUDGMENT,
     MECHANICAL,
     SHIP_TIME_ENUM,
     role_effort_map,
@@ -100,9 +100,27 @@ def allows_cursor_rules_mention(path: pathlib.Path) -> bool:
     parts = rel.parts
     if parts and parts[0] == "docs":
         return True
-    if parts[:2] == ("skills", "setup-pstack"):
-        return True
-    return False
+    return parts[:2] == ("skills", "setup-pstack")
+
+
+def archivable_changes_missing_artifacts(changes_root: pathlib.Path) -> list[str]:
+    """Return design/ADR files missing from task-complete active changes."""
+    missing: list[str] = []
+    for change in sorted(changes_root.iterdir()):
+        if not change.is_dir() or change.name == "archive":
+            continue
+        tasks = change / "tasks.md"
+        if not tasks.is_file():
+            continue
+        checkboxes = re.findall(r"(?m)^- \[([ xX])\]\s+", tasks.read_text(encoding="utf-8"))
+        if not checkboxes or any(mark.lower() != "x" for mark in checkboxes):
+            continue
+        for artifact in ("design.md", "adr.md"):
+            if not (change / artifact).is_file():
+                missing.append(f"{change.name}/{artifact}")
+    return missing
+
+
 
 
 def fail(msg: str) -> None:
@@ -112,6 +130,14 @@ def fail(msg: str) -> None:
 
 def main() -> None:
     files = {p.stem for p in PLAYBOOKS.glob("*.md")}
+    intent_missing = archivable_changes_missing_artifacts(
+        ROOT / "openspec" / "changes"
+    )
+    if intent_missing:
+        fail(
+            "task-complete OpenSpec changes missing design/ADR artifacts:\n  "
+            + "\n  ".join(intent_missing)
+        )
     missing = [n for n in NAMED_22 if n not in files]
     extra = sorted(files - set(NAMED_22) - {"opening-a-pr"})
     if missing:

@@ -1,7 +1,7 @@
 # pstack-grok-workflows Specification
 
 ## Purpose
-TBD - created by archiving change pstack-grok-workflows-howto. Update Purpose after archive.
+Define how Grok workflows are discovered and why pstack playbooks remain markdown instead of plugin Rhai workflows.
 
 ## Requirements
 

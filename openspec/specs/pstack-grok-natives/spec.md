@@ -1,7 +1,7 @@
 # pstack-grok-natives Specification
 
 ## Purpose
-TBD - created by archiving change pstack-grok-native-inventory. Update Purpose after archive.
+Record the Grok-native CLI and slash-tool capabilities that pstack adopts, skips, or leaves as explicit gaps.
 
 ## Requirements
 

@@ -1,7 +1,7 @@
 # pstack-sync-from-upstream Specification
 
 ## Purpose
-TBD - created by archiving change pstack-sync-from-upstream. Update Purpose after archive.
+Define the read-only upstream synchronization interface that reports the pinned tree and adaptation recipe without copying files.
 
 ## Requirements
 

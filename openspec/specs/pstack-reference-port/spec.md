@@ -1,7 +1,7 @@
 # pstack-reference-port Specification
 
 ## Purpose
-TBD - created by archiving change pstack-reference-port. Update Purpose after archive.
+Define the portable pstack core and host-map method for adapting principles and playbook intent across agent hosts.
 
 ## Requirements
 

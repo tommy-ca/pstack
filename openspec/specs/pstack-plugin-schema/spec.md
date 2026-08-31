@@ -1,7 +1,7 @@
 # pstack-plugin-schema Specification
 
 ## Purpose
-TBD - created by archiving change pstack-plugin-schema. Update Purpose after archive.
+Constrain pstack plugin manifests and agent frontmatter to fields Grok actually deserializes, excluding unsupported components and overlay shapes.
 
 ## Requirements
 

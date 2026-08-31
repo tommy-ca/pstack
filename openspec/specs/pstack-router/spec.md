@@ -1,7 +1,7 @@
 # pstack-router Specification
 
 ## Purpose
-TBD - created by archiving change pstack-atomic-blocks. Update Purpose after archive.
+Define `/poteto-mode` as pstack's explicit, todo-copying default router for matching requests to bundled playbooks.
 
 ## Requirements
 

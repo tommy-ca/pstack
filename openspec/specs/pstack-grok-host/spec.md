@@ -1,7 +1,7 @@
 # pstack-grok-host Specification
 
 ## Purpose
-TBD - created by archiving change pstack-grok-host-contract. Update Purpose after archive.
+Define the Grok host integration contract for pstack's English docs, plugin-qualified spawn types, enable gate, and inspect-based agent inventory.
 
 ## Requirements
 

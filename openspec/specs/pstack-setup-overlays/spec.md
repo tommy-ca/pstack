@@ -1,7 +1,7 @@
 # pstack-setup-overlays Specification
 
 ## Purpose
-TBD - created by archiving change pstack-atomic-blocks. Update Purpose after archive.
+Specify optional `/setup-pstack` model and effort overlays, their plugin-qualified role paths, and default behavior.
 
 ## Requirements
 

@@ -1,7 +1,7 @@
 # pstack-harness-md Specification
 
 ## Purpose
-TBD - created by archiving change pstack-harness-md-role. Update Purpose after archive.
+Specify HARNESS.md as the root-level host mapping consumed by pstack routing and verification but not plugin discovery.
 
 ## Requirements
 

@@ -1,7 +1,7 @@
 # pstack-playbooks Specification
 
 ## Purpose
-TBD - created by archiving change pstack-atomic-blocks. Update Purpose after archive.
+Define the complete pstack playbook inventory, opening-a-pr handoff, and intentional exclusions from the Grok plugin.
 
 ## Requirements
 
