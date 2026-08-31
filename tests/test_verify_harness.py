@@ -330,6 +330,16 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert "grok-build-plugins" in guide
     assert "host mapping" in setup
     assert "not a plugin.json field" in setup
+    assert "MAX_SUBAGENT_DEPTH" in setup
+    assert "Skill order" in setup
+    assert "pstack:independent-verifier" in setup
+    assert "scheduler_create" in setup
+    spec_q = (
+        ROOT
+        / "openspec/changes/pstack-quickstart-grok-native/specs/pstack-quickstart/spec.md"
+    )
+    assert spec_q.is_file()
+    assert "MAX_SUBAGENT_DEPTH" in spec_q.read_text(encoding="utf-8")
     spec = ROOT / "openspec/specs/pstack-harness-md/spec.md"
     assert spec.is_file()
     assert "not a PluginManifest field" in spec.read_text(encoding="utf-8")
