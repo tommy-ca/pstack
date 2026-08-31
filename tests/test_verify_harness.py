@@ -63,7 +63,7 @@ def test_autopilot_is_parent_fanout_and_skips_goal() -> None:
         assert "pstack:comment-sicko" in text
     spec = (
         ROOT
-        / "openspec/changes/pstack-depth-1-overnight/specs/pstack-depth-1-overnight/spec.md"
+        / "openspec/specs/pstack-depth-1-overnight/spec.md"
     )
     assert spec.is_file()
     assert "MAX_SUBAGENT_DEPTH" in spec.read_text(encoding="utf-8")
