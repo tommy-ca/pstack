@@ -295,6 +295,17 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert "not a PluginManifest field" in spec.read_text(encoding="utf-8")
     plugin = json.loads((ROOT / "plugin.json").read_text(encoding="utf-8"))
     assert "HARNESS" not in json.dumps(plugin)
+    port = (ROOT / "docs/guide/12-porting.md").read_text(encoding="utf-8")
+    assert "21 principles" in port
+    assert "host map" in port
+    assert "Laziness Protocol" in port
+    assert "not loc" in port.lower() or "less code" in port.lower()
+    assert "12-porting.md" in index
+    spec_port = (
+        ROOT / "openspec/changes/pstack-reference-port/specs/pstack-reference-port/spec.md"
+    )
+    assert spec_port.is_file()
+    assert "host map" in spec_port.read_text(encoding="utf-8")
     assert "adapt-harness.py" in upstream
     assert "sync-from-upstream.py" in upstream
     pin = subprocess.run(
