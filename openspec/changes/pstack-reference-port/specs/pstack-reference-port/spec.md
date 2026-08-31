@@ -11,4 +11,11 @@ Operator docs MUST extract official pstack philosophy: less code over loc, go de
 - **GIVEN** `docs/guide/12-porting.md`
 - **WHEN** an operator wants pstack on another host
 - **THEN** the page names 21 principles, host map, and Laziness Protocol
-- **AND** it tells them not to copy Cursor `Task` fields as the core
+- **AND** it tells them not to copy the previous host's spawn fields as the core
+
+#### Scenario: capability checklist is fill-in
+
+- **GIVEN** `docs/guide/12-porting.md`
+- **WHEN** the new agent has its own harness
+- **THEN** the page has a Capability checklist with Spawn a child, Join / wait, and Overnight loop
+- **AND** it tells the porter to write `gap` when the host has no equivalent

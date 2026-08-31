@@ -11,8 +11,9 @@ Official README (pin `6fecddba`): pstack is how poteto ships high quality code. 
 ## Decisions
 
 1. **Core is philosophy + 21 + 22 intents + router.** Domain packs stay optional.
-2. **Host map is the port.** Grok's reference is this repo's `HARNESS.md` plus `adapt-harness.py`.
-3. **Do not treat Cursor automations or Rhai as core.**
+2. **Host map is the port.** Fill the capability checklist from the new agent's docs or source. Grok's filled table is `HARNESS.md`.
+3. **Write `gap` instead of inventing ignored fields.** Nested spawn depth 1 means the parent fans out.
+4. **Do not treat automations or host workflows as core.**
 
 ## Risks / Trade-offs
 
