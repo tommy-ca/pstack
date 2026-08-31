@@ -293,7 +293,7 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert "13-grok-natives.md" in index
     spec_n = (
         ROOT
-        / "openspec/changes/pstack-grok-native-inventory/specs/pstack-grok-natives/spec.md"
+        / "openspec/specs/pstack-grok-natives/spec.md"
     )
     assert spec_n.is_file()
     assert "adopt" in spec_n.read_text(encoding="utf-8").lower()
@@ -328,7 +328,7 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert "not loc" in port.lower() or "less code" in port.lower()
     assert "12-porting.md" in index
     spec_port = (
-        ROOT / "openspec/changes/pstack-reference-port/specs/pstack-reference-port/spec.md"
+        ROOT / "openspec/specs/pstack-reference-port/spec.md"
     )
     assert spec_port.is_file()
     assert "host map" in spec_port.read_text(encoding="utf-8")
