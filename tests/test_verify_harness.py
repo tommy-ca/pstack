@@ -210,10 +210,38 @@ def test_poteto_mode_copies_tui_spawn_names() -> None:
     assert "scheduler_create" in harness
     assert "EROFS" in harness
     assert "config.toml" in harness
-    assert "marketplace add" in harness
     assert "herdr integration install grok" in harness
-    assert "herdr-install" in harness or "devbox" in harness
+    assert "HERDR_AGENT=grok" in harness
+    assert "herdr:grok" in harness
+    assert "agent_status" in harness
+    assert "workspace" in harness
+    assert "read-only" in harness
+    assert "strict" in harness
+    assert "herdr-install" not in harness
     assert "HERDR_SOCKET_PATH" in harness
+
+
+def test_herdr_workspace_gate_is_documented() -> None:
+    plan = (ROOT / "TEST-PLAN.md").read_text(encoding="utf-8")
+    assert "Gate 0a. Herdr callback from the built-in workspace sandbox" in plan
+    assert "HERDR_AGENT=grok" in plan
+    assert "herdr:grok" in plan
+    assert "agent_status == \"unknown\"" in plan
+    assert "herdr agent list" in plan
+    assert "herdr workspace close" in plan
+    assert "[ ] Gate 0a PASS" in plan
+    assert "Required: 0, 0a" in plan
+    assert "TUI `spawn_subagent`" in plan
+    assert 'remaining="$(jq --arg hinted' in plan
+    assert 'workspace-list-before-close.json' in plan
+    assert 'workspace-list-after-close.json' in plan
+    assert 'test "$remaining" = 0' in plan
+    assert 'HINTED_WORKSPACE="$(jq -r' in plan
+    assert '"$HERDR_EVIDENCE/hinted-create.json")"' in plan
+    assert 'NOHINT_WORKSPACE="$(jq -r' in plan
+    assert '"$HERDR_EVIDENCE/nohint-create.json")"' in plan
+    assert 'test -n "$HINTED_WORKSPACE"' in plan
+    assert 'test -n "$NOHINT_WORKSPACE"' in plan
 
 
 def test_visual_parity_and_bug_fix_drive_real_surface() -> None:
@@ -437,6 +465,7 @@ def test_openspec_intent_driven_schema_resolves() -> None:
 def test_guide_teaches_sync_then_adapt() -> None:
     guide = (ROOT / "docs/guide/09-make-it-yours.md").read_text(encoding="utf-8")
     setup = (ROOT / "docs/guide/01-setup.md").read_text(encoding="utf-8")
+    harness = (ROOT / "HARNESS.md").read_text(encoding="utf-8")
     upstream = (ROOT / "UPSTREAM").read_text(encoding="utf-8")
     assert "atomic building blocks" in guide
     assert "adapt-harness.py" in guide
@@ -470,7 +499,7 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert "grok-build-plugins" in guide
     assert "host mapping" in setup
     assert "not a plugin.json field" in setup
-    assert "MAX_SUBAGENT_DEPTH" in setup
+    assert "MAX_SUBAGENT_DEPTH" in harness
     assert "Skill order" in setup
     assert "pstack:independent-verifier" in setup
     assert "scheduler_create" in setup

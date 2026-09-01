@@ -20,26 +20,22 @@ This tree is `tommy-ca/pstack`, a single-plugin repo. `plugin.json` `skills` lis
 
 ## Daily driver (sandbox)
 
-Grok's everyday profile is **`workspace`**. It can write the current repo, `~/.grok/` (sessions, `installed-plugins/`, roles), and temp dirs. `18-sandbox.md`.
+Use built-in `workspace` for the daily pstack TUI. It keeps the current repo,
+Grok sessions, installed plugins, roles, and temporary files writable while
+retaining the `workspace-secrets` denials.
 
-**homelab** is a custom profile (`~/.grok/sandbox.toml`) that extends `workspace` with extra writes (`~/.npm`, cache, `~/.local`). It does not add a full `~/.grok` deny. Under Linux bubblewrap the TUI still bind-mounts `config.toml`, `sandbox.toml`, and `hooks/` **read-only** (EROFS on `plugin enable`). That is the grok-build pin, not a pstack bug.
+The host-installed Herdr hook also reports from `workspace`; hook files remain
+read-only while the callback writes temporary state and reports through
+`$HERDR_SOCKET_PATH`. Launch with
+`env HERDR_AGENT=grok grok --sandbox workspace --no-alt-screen` when the
+`bwrap` wrapper must be classified as Grok. The hint changes process detection,
+not sandbox permissions or callback delivery. Without it, a native
+`herdr:grok` session may persist while Herdr reports `unknown`.
 
-| Need | Driver |
-|---|---|
-| Edit this plugin's source | `workspace` or `homelab`. CWD is writable. Commit, then `grok plugin install /path/to/pstack --trust`. |
-| Enable / marketplace / rewrite `config.toml` | Host shell: `grok --sandbox off plugin enable pstack`. |
-| Tweak `~/.grok/roles/` or installed-plugins copies | Usually writable under `workspace`/`homelab`. Hooks dir stays write-denied. |
-| Untrusted tree | `strict` or `read-only`. |
-
-Do not set the daily driver to `off` just to enable a plugin. Use `off` only for that one host command. Do not weaken `workspace-secrets` denials of `.env`, keys, or `auth.json`.
-
-Start pstack days with:
-
-```bash
-grok --sandbox workspace
-```
-
-Or keep `[sandbox] profile = "homelab"` if you need those extra write paths. Enable still uses `--sandbox off` once.
+`homelab` is a dev-env custom extension of `workspace` for extra cache writes.
+Do not add hook or Herdr-socket write grants. Keep plugin enable on
+`grok --sandbox off plugin enable pstack`, and use [`HARNESS.md`](../../HARNESS.md)
+as the call-site and profile mapping source of truth.
 
 ## How grok-native pstack works
 
@@ -47,9 +43,9 @@ This port is official pstack playbooks and 21 principles on Grok Build 1.0.13. I
 
 **Router.** `/poteto-mode` matches a playbook and copies its steps into todos. It does not auto-enter. Skill order is pstack first, then user, then bundled and builtin. Example: `/tdd` before `/test-driven-development`.
 
-**Spawn.** Children are `spawn_subagent` with `subagent_type` `pstack:<role>`. Example: `pstack:how-explorer`, `pstack:feature`, `pstack:independent-verifier`. Bare `how-explorer` is unknown. `MAX_SUBAGENT_DEPTH` is 1. This parent fans out. A child that spawns fails. After a writer joins, this parent runs `pstack:comment-sicko`. Do not send `reasoning_effort` on spawn. Effort is agent frontmatter or `~/.grok/roles/pstack:<key>.toml`.
-
-**Join and overnight.** Join with `get_command_or_subagent_output`. `/loop` expands to `scheduler_create` (new turn, min 60s). Event wakes use `monitor`. Autopilot queues stay parent-fanout. They do not arm `/goal`.
+**Call sites.** The parent uses `spawn_subagent` and joins with
+`get_command_or_subagent_output`; `/loop` uses `scheduler_create` and `monitor`.
+See [`HARNESS.md`](../../HARNESS.md) for the complete host mapping and aliases.
 
 **Benny.** `/benny-triage` loads after enable. Optional inbound: `grok -p '/benny-triage <permalink>'`. No Slack auto-start. No plugin `hooks`.
 

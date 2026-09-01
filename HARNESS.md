@@ -18,8 +18,8 @@ Install this repo as a Grok Build plugin. Do not keep `.cursor-plugin`, `~/.curs
 |---|---|---|
 | Slash skill / playbook router | Plugin `skills/` `SKILL.md`. Invoked as `/name`. Frontmatter: `name`, `description`, `disable-model-invocation`, `user-invocable`. | `crates/codegen/xai-grok-pager/docs/user-guide/08-skills.md` |
 | Plugin install | `plugin.json` at repo root. grok 1.0.13 `PluginManifest` has **14** parsed fields (extras ignored). This plugin sets `name`, `version`, `description`, `author`, `homepage`, `repository` (string), `license`, `keywords`, `skills` (path list including `./automations/benny-grok/skills/`), `agents`. No `commands/`, `hooks/`, `.mcp.json`, `.lsp.json`. `displayName` is not deserialized. Writes `~/.grok/installed-plugins/` (writable in the agent sandbox). | `crates/codegen/xai-grok-agent/src/plugins/manifest.rs`; `09-plugins.md` |
-| Marketplace add / plugin enable | Nested `grok plugin marketplace add` and `grok plugin enable` rewrite `~/.grok/config.toml`. Under Linux bubblewrap (`__GROK_INSIDE_BWRAP=1`, `[sandbox] profile = homelab` extends `workspace`) that file is bind-mounted **read-only** with `managed_config.toml`, `sandbox.toml`, `hooks/`. The syscall is `open(config.toml, O_WRONLY\|O_TRUNC) = EROFS` (os error 30). The disk is not remounted ro. `touch` of new files under `~/.grok/` still works. Nested grok also cannot lock `.git/refs/tags`. `grok plugin tag --push` re-sandboxes git SSH even when `__GROK_INSIDE_BWRAP` is unset. `scripts/release.sh` calls `grok --sandbox off plugin tag --push` and `git push origin` a local-only tag. Run add, enable, or `scripts/release.sh` from a **host shell** with `grok --sandbox off`, or append `[[marketplace.sources]]` by hand. `18-sandbox.md` documents hook write-deny; this TUI also pins config files. | `18-sandbox.md`; `~/.grok/sandbox.toml` `[profiles.homelab]` |
-| Herdr grok SessionStart | `herdr integration install grok` writes `~/.grok/hooks/herdr.json` and `herdr-agent-state.sh`. Install/update from a **host shell** or `grok --sandbox off`. SessionStart tracking writes `$TMPDIR` and `$HERDR_SOCKET_PATH`, not the hooks dir, so daily `homelab`/`workspace` can report with hooks bind-mounted read-only. Do not `read_write` whitelist `~/.grok/hooks` on those profiles. Built-in `devbox` skips the pin but fail-opens if Landlock cannot apply. Custom `herdr-install` extends `devbox` and **fail-closes** on that host. Do not use `devbox` as the all-day TUI. | `18-sandbox.md`; herdr `HERDR_INTEGRATION_ID=grok` |
+| Marketplace add / plugin enable | `grok plugin enable pstack` rewrites `~/.grok/config.toml`; if the sandbox returns `EROFS`, run that one host-shell command with `grok --sandbox off`. Keep release/tag mechanics in `docs/guide/13-grok-natives.md`. | `09-plugins.md`; `14-headless-mode.md` |
+| Herdr grok SessionStart | Install/update with `herdr integration install grok` from a host shell or `grok --sandbox off`. Built-in `workspace` (and dev-env `homelab`) permits callback delivery with hook files read-only; the callback writes temporary state and reports through `$HERDR_SOCKET_PATH`. For host status recognition through `bwrap`, launch `env HERDR_AGENT=grok grok --sandbox workspace --no-alt-screen`; the hint is detection-only. With it, Herdr reports `agent_status: idle`; without it, native `herdr:grok` may persist while `agent_status: unknown`. Supported profiles are `workspace`, `devbox`, `read-only`, `strict`, plus dev-env `homelab`; no custom Herdr install profile is supported. Do not add hook or Herdr-socket write grants. | `~/.grok/docs/user-guide/18-sandbox.md`; Herdr `HERDR_INTEGRATION_ID=grok` |
 | Spawn a child | TUI tool **`spawn_subagent`**. Rust/wire alias `task` / `Task`. Playbooks send `spawn_subagent`. | `16-subagents.md`; rust `TASK_TOOL_NAME` |
 | Background child | TUI field **`background`** (default **false**). Rust alias `run_in_background` (crate default true). Returns `subagent_id`. | `16-subagents.md`; `TaskToolInput` |
 | Wait for child | TUI **`get_command_or_subagent_output`** with `task_ids` and `timeout_ms` > 0 to block, omit/`0` to poll. Rust alias `get_task_output`. | `16-subagents.md` |
@@ -80,14 +80,18 @@ Workflows are `.grok/workflows/*.rhai`, not a plugin component. grok-build `Plug
 
 ## Docs vs source
 
-Grok Build's user guide `16-subagents.md` still names `spawn_subagent`, a `background` field defaulting to `false`, and `get_command_or_subagent_output`. The Rust types this port follows are different:
+Grok Build's user guide `16-subagents.md` is the playbook contract: it names
+`spawn_subagent`, a `background` field defaulting to `false`, and
+`get_command_or_subagent_output`. The Rust types this port follows expose wire
+aliases:
 
-- Canonical tool id is `task` (`TASK_TOOL_NAME`). Wire aliases `Task` and `spawn_subagent` resolve to the same tool.
-- Background field is `run_in_background`, default **true**.
-- Join with `get_task_output` (`task_ids`, optional `timeout_ms`). `wait_tasks` exists as compatibility; prefer `get_task_output`.
+- TUI spawn id is `spawn_subagent`; Rust `task` (`TASK_TOOL_NAME`) and `Task` are aliases.
+- TUI background field is `background`, default **false**; Rust alias is `run_in_background`.
+- TUI join tool is `get_command_or_subagent_output`; Rust alias is `get_task_output` (`task_ids`, optional `timeout_ms`). `wait_tasks` exists as compatibility; prefer the TUI join tool.
 - `scheduler_create.recurring` is `#[schemars(skip)]`. Sending `recurring: false` is rejected; one-shot delay is background `sleep && cmd`.
 
-Playbooks on **this TUI** copy `16-subagents.md`: `spawn_subagent`, `background`, `get_command_or_subagent_output`. The rust field names below stay as aliases.
+Playbooks on **this TUI** copy `16-subagents.md`; the Rust field names stay
+aliases in this map.
 
 ## `task` fields the model may send
 

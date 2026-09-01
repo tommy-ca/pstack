@@ -14,20 +14,20 @@ First principles only. Do not treat community pstack ports as the spec.
 | Official grok-build | [xai-org/grok-build](https://github.com/xai-org/grok-build) commit `c2ad97f87aea4303b6000a2c22128bc91ee76c9b` | Plugin install, inspect JSON, headless flags, live tool ids |
 | This port | [HARNESS.md](./HARNESS.md) | Call-site mapping onto those grok-build tools |
 
-User-guide `16-subagents.md` still names `spawn_subagent`, a `background` field defaulting to `false`, and `get_command_or_subagent_output`. **Follow the Rust types, not that table.** Canonical spawn tool is `task` (`TASK_TOOL_NAME`). Wire aliases `Task` and `spawn_subagent` resolve to the same tool. Background field is `run_in_background`, default **true**. Join with `get_task_output` (`task_ids`, optional `timeout_ms`). See `crates/common/xai-tool-types/src/task.rs` `TaskToolInput`.
+User-guide `16-subagents.md` is the **Grok playbook contract**: playbooks use `spawn_subagent`, `background`, and `get_command_or_subagent_output`. The Rust types below are the implementation wire aliases (`task`, `run_in_background`, and `get_task_output`); they are not a second playbook vocabulary. See `crates/common/xai-tool-types/src/task.rs` `TaskToolInput`.
 
 Plugin name in `plugin.json` is `pstack` (kebab-case, required by `PluginManifest::validate`).
 
 ## What this Cloud Agent VM cannot prove
 
-The machine that wrote this plan (`cursor.com/agents/bc-01a0363c-5279-7a80-8c72-07f646d3adf3`) had **no live `grok` CLI and no live `task` tool**. It cannot prove:
+The machine that wrote this plan (`cursor.com/agents/bc-01a0363c-5279-7a80-8c72-07f646d3adf3`) had **no live `grok` CLI or TUI spawn surface**. It cannot prove:
 
 - `grok plugin install` / `enable` / `inspect`
 - skills appearing in a real session (`init.skills`, slash menu)
-- `/setup-pstack` writing only slugs that `task.model` accepts
+- `/setup-pstack` writing only slugs that `spawn_subagent.model` accepts
 - accept-defaults (Gate 4a), missing-toml spawn (Gate 4b), live slug accept (Gate 4c), no Cursor mdc (Gate 4d), live effort ladder (Gate 4e)
 - `/poteto-mode` copying playbook steps into `todo_write` / `plan`
-- a parent `task` spawn of `independent-verifier` on a different `model`
+- a parent `spawn_subagent` call for `independent-verifier` on a different `model`
 - `/loop` → `scheduler_create`
 - `--always-approve` and `--reasoning-effort xhigh` on a real binary
 
@@ -131,7 +131,93 @@ grok -p "Reply with exactly the word pong and stop. Do not call tools." \
 
 **Evidence to keep.** The three `gate0-*` files plus stderr.
 
+## Gate 0a. Herdr callback from the built-in workspace sandbox
+
+This is a host-integration gate, separate from plugin trust/enable. It requires the Herdr integration to have been installed from a host shell and a Herdr-managed pane (`HERDR_ENV=1`). It does not install or mutate hooks, sandbox profiles, or plugin state.
+
+**Commands**
+
+```bash
+export HERDR_EVIDENCE="$EVIDENCE/herdr-workspace"
+mkdir -p "$HERDR_EVIDENCE"
+test "${HERDR_ENV:-}" = 1
+
+cleanup() {
+  test -z "${HINTED_WORKSPACE:-}" || herdr workspace close "$HINTED_WORKSPACE" || true
+  test -z "${NOHINT_WORKSPACE:-}" || herdr workspace close "$NOHINT_WORKSPACE" || true
+}
+trap cleanup EXIT
+
+hinted="$(herdr workspace create --cwd "$PWD" \
+  --label pstack-herdr-workspace-hinted --no-focus)"
+printf '%s\n' "$hinted" | tee "$HERDR_EVIDENCE/hinted-create.json"
+HINTED_WORKSPACE="$(printf '%s\n' "$hinted" | jq -r '.result.workspace.workspace_id')"
+HINTED_PANE="$(printf '%s\n' "$hinted" | jq -r '.result.root_pane.pane_id')"
+herdr pane run "$HINTED_PANE" env HERDR_AGENT=grok grok --sandbox workspace --no-alt-screen
+sleep 4
+herdr pane send-text "$HINTED_PANE" /doctor
+sleep 4
+herdr pane read "$HINTED_PANE" --source recent-unwrapped --lines 80 \
+  | tee "$HERDR_EVIDENCE/hinted-output.txt"
+herdr pane get "$HINTED_PANE" | tee "$HERDR_EVIDENCE/hinted-pane.json"
+herdr agent list | jq --arg workspace "$HINTED_WORKSPACE" \
+  '.result.agents[] | select(.workspace_id == $workspace)' \
+  | tee "$HERDR_EVIDENCE/hinted-agent.json"
+
+nohint="$(herdr workspace create --cwd "$PWD" \
+  --label pstack-herdr-workspace-no-hint --no-focus)"
+printf '%s\n' "$nohint" | tee "$HERDR_EVIDENCE/nohint-create.json"
+NOHINT_WORKSPACE="$(printf '%s\n' "$nohint" | jq -r '.result.workspace.workspace_id')"
+NOHINT_PANE="$(printf '%s\n' "$nohint" | jq -r '.result.root_pane.pane_id')"
+herdr pane run "$NOHINT_PANE" grok --sandbox workspace --no-alt-screen
+sleep 4
+herdr pane send-text "$NOHINT_PANE" /doctor
+sleep 4
+herdr pane read "$NOHINT_PANE" --source recent-unwrapped --lines 80 \
+  | tee "$HERDR_EVIDENCE/nohint-output.txt"
+herdr pane get "$NOHINT_PANE" | tee "$HERDR_EVIDENCE/nohint-pane.json"
+```
+
+**Inspect**
+
+```bash
+jq -e '.result.pane.agent_session.source == "herdr:grok"
+        and .result.pane.agent_status == "idle"' \
+  "$HERDR_EVIDENCE/hinted-pane.json"
+jq -e '.agent == "grok" and .agent_session.source == "herdr:grok"
+        and .agent_status == "idle"' \
+  "$HERDR_EVIDENCE/hinted-agent.json"
+jq -e '.result.pane.agent_session.source == "herdr:grok"
+        and .result.pane.agent_status == "unknown"' \
+  "$HERDR_EVIDENCE/nohint-pane.json"
+HINTED_WORKSPACE="$(jq -r '.result.workspace.workspace_id' \
+  "$HERDR_EVIDENCE/hinted-create.json")"
+NOHINT_WORKSPACE="$(jq -r '.result.workspace.workspace_id' \
+  "$HERDR_EVIDENCE/nohint-create.json")"
+test -n "$HINTED_WORKSPACE" && test "$HINTED_WORKSPACE" != null
+test -n "$NOHINT_WORKSPACE" && test "$NOHINT_WORKSPACE" != null
+cleanup() {
+  test -z "${HINTED_WORKSPACE:-}" || herdr workspace close "$HINTED_WORKSPACE" || true
+  test -z "${NOHINT_WORKSPACE:-}" || herdr workspace close "$NOHINT_WORKSPACE" || true
+}
+trap cleanup EXIT
+herdr workspace list | tee "$HERDR_EVIDENCE/workspace-list-before-close.json"
+herdr workspace close "$HINTED_WORKSPACE"
+herdr workspace close "$NOHINT_WORKSPACE"
+herdr workspace list | tee "$HERDR_EVIDENCE/workspace-list-after-close.json"
+remaining="$(jq --arg hinted "$HINTED_WORKSPACE" --arg nohint "$NOHINT_WORKSPACE" '[.result.workspaces[] | select(.workspace_id == $hinted or .workspace_id == $nohint)] | length' "$HERDR_EVIDENCE/workspace-list-after-close.json")"
+test "$remaining" = 0
+trap - EXIT
+```
+
+**PASS.** The built-in `workspace` profile delivers SessionStart to Herdr. With `HERDR_AGENT=grok`, the pane is registered as Grok and reports `idle`; without the hint, the native session may still be retained while wrapper detection reports `unknown`. The latter is not hook denial.
+
+**FAIL.** The hinted callback has no `herdr:grok` session, the hinted pane is not `idle`, or Herdr cannot register the hinted pane.
+
+**Evidence to keep.** All files under `$HERDR_EVIDENCE`, including create, pane, agent, and before/after workspace-list JSON plus unwrapped output. Close both disposable workspaces before accepting the gate.
+
 ---
+
 
 ## Gate 1. Install (`grok plugin install`) then enable
 
@@ -304,18 +390,18 @@ jq -c 'select(.type=="tool_call") | {toolName, rawInput}' "$EVIDENCE/gate3-live.
 
 Forbidden **live** `toolName` values: `AskQuestion`, `TodoWrite`.
 
-Forbidden **live** `task` / `Task` / `spawn_subagent` `rawInput` keys/values:
+Forbidden **live Cursor fields** on `spawn_subagent` (wire aliases `task` / `Task`) `rawInput`:
 
 - `environment` = `"cloud"` (or any cloud agent environment field)
 - `capability_mode` (schemars-skipped on `TaskToolInput`; JSON that sends it is ignored, and sending it means the model is still on the Cursor schema)
 - `reasoning_effort` on the spawn tool
 - `subagent_type` = `generalPurpose` (Cursor). Grok's built-in is `general-purpose`.
 
-Allowed live ids include `task`, `Task`, `spawn_subagent` (aliases), `todo_write`, `ask_user_question`, `get_task_output`, `run_terminal_cmd`, `read_file`, `grep`, `scheduler_create`. Canonical spawn id is `task`.
+Allowed live ids include `spawn_subagent` (with wire aliases `task` / `Task`), `todo_write`, `ask_user_question`, `get_command_or_subagent_output` (wire alias `get_task_output`), `run_terminal_cmd`, `read_file`, `grep`, and `scheduler_create`. Playbooks MUST use the TUI names; aliases are accepted only when inspecting the raw wire stream.
 
 **PASS.** Installed plugin tree (excluding HARNESS.md / scripts / benny / TEST-PLAN.md) has no forbidden Cursor call-site identifiers, no Cursor panel slugs in skill fallbacks, and the live `toolName` list contains none of `AskQuestion` / `TodoWrite`.
 
-**FAIL.** A live call uses a Cursor tool id, a live `task` payload includes `environment: "cloud"`, `capability_mode`, `reasoning_effort`, or `generalPurpose`, or `gate3-rg-installed.txt` is non-empty (Cursor call-site ids or Cursor panel slugs in the installed tree).
+**FAIL.** A live call uses a Cursor tool id, a live spawn payload includes `environment: "cloud"`, `capability_mode`, `reasoning_effort`, or `generalPurpose`, or `gate3-rg-installed.txt` is non-empty (Cursor call-site ids or Cursor panel slugs in the installed tree).
 
 **Evidence to keep.** `gate3-rg-installed.txt` (empty is success), `gate3-toolNames.txt`, `gate3-tool-calls.jsonl`, `gate3-live.ndjson`.
 
@@ -323,9 +409,9 @@ Re-run the live `toolName` extract on Gate 5, Gate 6, and Gate 7 streams. One Cu
 
 ---
 
-## Gate 4. Detect live `task.model` slugs
+## Gate 4. Detect live `spawn_subagent.model` slugs
 
-`setup-pstack/SKILL.md` step 1. Enumerate slugs the `task` tool accepts in `model` this session. Prefer a rejected `task.model` error that names valid slugs. Use `grok models` if the CLI exposes it. Use `grok inspect --json` only if that JSON actually lists models. Never write a slug you have not confirmed. `inherit-parent` and `auto` are always valid and are not slugs. Omit `model` on `task` so the child inherits.
+`setup-pstack/SKILL.md` step 1. Enumerate slugs accepted by the TUI `spawn_subagent` `model` field (wire aliases `task` / `Task`) in this session. Prefer a rejected spawn-model error that names valid slugs. Use `grok models` if the CLI exposes it. Use `grok inspect --json` only if that JSON actually lists models. Never write a slug you have not confirmed. `inherit-parent` and `auto` are always valid and are not slugs. Omit `model` on `spawn_subagent` so the child inherits.
 
 `InspectReport` (`inspect/mod.rs`) has **no models catalog**. Do not pretend inspect listed slugs if the JSON has no such field.
 
@@ -342,12 +428,12 @@ jq 'has("models")' "$EVIDENCE/gate1-inspect.json" | tee "$EVIDENCE/gate4-inspect
 echo "$GROK_MODEL" | tee "$EVIDENCE/gate4-detected-slugs.txt"
 
 # Rejected slug. Capture the validator's list of valid slugs if the error names them.
-grok -p 'Call the task tool exactly once with these fields and then stop:
+grok -p 'Call the spawn_subagent tool exactly once with these fields and then stop:
 prompt: Reply pong and stop. Do not edit files.
 description: slug probe
 subagent_type: explore
 # probe uses any known-valid builtin; not Skill order. Gate 1 already required the plugin.
-run_in_background: true
+background: true
 model: __pstack_probe_not_a_real_model__
 Do not retry with a guessed slug. After the tool error, quote the error text verbatim and stop.' \
   "${GROK_BASE[@]}" "${GROK_STREAM[@]}" \
@@ -377,11 +463,11 @@ On EDITH's Linux Grok Build the live set has been `grok-4.5` and `grok-4.6`. Rec
 
 ### Gate 4 also. Detect the live effort enum
 
-`setup-pstack` step 1b / [`effort-ladder.md`](./skills/setup-pstack/references/effort-ladder.md). Probe an invalid `--reasoning-effort`. Parse **`use one of:`** from the runtime validator. Do **not** use `Effort::VALID_VALUES` or FromStr `expected one of:` (those include reserved `max`). Do **not** send `reasoning_effort` on `task`.
+`setup-pstack` step 1b / [`effort-ladder.md`](./skills/setup-pstack/references/effort-ladder.md). Probe an invalid `--reasoning-effort`. Parse **`use one of:`** from the runtime validator. Do **not** use `Effort::VALID_VALUES` or FromStr `expected one of:` (those include reserved `max`). Do **not** send `reasoning_effort` on the spawn call.
 
 ```bash
 # Invalid effort probe. Capture the live `use one of:` list.
-# Do not send reasoning_effort on task.
+# Do not send reasoning_effort on the spawn call.
 grok --reasoning-effort not-a-real-effort -p 'Reply pong and stop.' \
   -m "$GROK_MODEL" --always-approve \
   --output-format json \
@@ -535,13 +621,13 @@ if [ -d "$HOME/.grok/roles" ]; then
 fi
 test ! -f "$HOME/.grok/pstack-models.toml"
 
-timeout 180s grok -p 'From this parent session, call the task tool exactly once.
+timeout 180s grok -p 'From this parent session, call the spawn_subagent tool exactly once.
 subagent_type: pstack:feature
 description: feature default probe
-run_in_background: true
+background: true
 prompt: Reply with exactly the word pong and stop. Do not edit files.
 Resolve model the way the Feature playbook does for the feature role.
-Do not send reasoning_effort on task.
+Do not send reasoning_effort on the spawn call.
 Then stop. Do not retry a rejected slug.' \
   "${GROK_BASE[@]}" "${GROK_STREAM[@]}" \
   --max-turns 12 \
@@ -567,9 +653,9 @@ fi
 
 Inspect `rawInput.model` on the feature spawn (null / missing vs a string).
 
-**PASS.** At least one `task` spawn ran, `subagent_type` is `pstack:feature`, `model` is `grok-4.6` or omitted (omit only if `task` rejected `grok-4.6`), `rawInput` has no `reasoning_effort` key, and the installed plugin's `agents/feature.md` frontmatter contains `effort: medium` (ship-time mechanical tier from `effort_ladder.py` with the grok 1.0.13 usable set).
+**PASS.** At least one `spawn_subagent` spawn ran, `subagent_type` is `pstack:feature`, `model` is `grok-4.6` or omitted (omit only if the TUI rejected `grok-4.6`), `rawInput` has no `reasoning_effort` key, and the installed plugin's `agents/feature.md` frontmatter contains `effort: medium` (ship-time mechanical tier from `effort_ladder.py` with the grok 1.0.13 usable set).
 
-**FAIL.** Live `task.model` is `grok-4.6-fast-xhigh`, `gpt-5.6-sol-max`, `claude-fable-5-thinking-max`, `claude-opus-5-thinking-xhigh`, or any other slug not in the detected set. Or the spawn sent `reasoning_effort` on `task`. Or installed `agents/feature.md` lacks `effort: medium`. Or frontmatter is `max`.
+**FAIL.** Live `spawn_subagent.model` is `grok-4.6-fast-xhigh`, `gpt-5.6-sol-max`, `claude-fable-5-thinking-max`, `claude-opus-5-thinking-xhigh`, or any other slug not in the detected set. Or the spawn sent `reasoning_effort`. Or installed `agents/feature.md` lacks `effort: medium`. Or frontmatter is `max`.
 
 **Evidence to keep.** NDJSON, task-spawns JSONL, feature-effort grep, note that the toml was restored.
 
@@ -577,7 +663,7 @@ Inspect `rawInput.model` on the feature spawn (null / missing vs a string).
 
 ## Gate 4c. Real detected slug is accepted
 
-Set `independent-verifier` to a confirmed live slug and prove `task` accepts it. Prefer a slug **≠** `$GROK_MODEL`. On EDITH's box that is `grok-4.5` when the probe named it. If the detected set is only `$GROK_MODEL`, use that slug.
+Set `independent-verifier` to a confirmed live slug and prove `spawn_subagent` accepts it. Prefer a slug **≠** `$GROK_MODEL`. On EDITH's box that is `grok-4.5` when the probe named it. If the detected set is only `$GROK_MODEL`, use that slug.
 
 **Commands**
 
@@ -602,10 +688,10 @@ fi
 } > "$HOME/.grok/pstack-models.toml"
 cp -a "$HOME/.grok/pstack-models.toml" "$EVIDENCE/gate4c-pstack-models.toml"
 
-timeout 180s grok -p 'Call the task tool exactly once, then stop.
+timeout 180s grok -p 'Call the spawn_subagent tool exactly once, then stop.
 subagent_type: pstack:independent-verifier
 description: live slug probe
-run_in_background: true
+background: true
 model: '"$OTHER"'
 prompt: Reply with exactly the word pong and stop. Do not edit files.
 Do not change model if the call is accepted. If it is rejected, quote the error verbatim and stop.' \
@@ -626,7 +712,7 @@ jq -c 'select(.type=="tool_call_update" or .type=="error" or .type=="text")' \
 
 **PASS.** The spawn's `rawInput.model` equals `$OTHER` from `gate4c-slug.txt`, and the tool is accepted (child starts or returns; no model-validation rejection).
 
-**FAIL.** `task` rejects the slug, or the session sent a Cursor panel slug instead of `$OTHER`.
+**FAIL.** `spawn_subagent` rejects the slug, or the session sent a Cursor panel slug instead of `$OTHER`.
 
 **Evidence to keep.** toml, slug file, NDJSON, spawns, updates.
 
@@ -660,7 +746,7 @@ echo $? | tee "$EVIDENCE/gate4d-toml-exists.exit"
 
 ## Gate 4e. Live effort ladder writes grok-build role files
 
-`task` has no `reasoning_effort` field. Prove setup detected the live enum, applied [`effort-ladder.md`](./skills/setup-pstack/references/effort-ladder.md), and wrote `SubagentRole.reasoning_effort` in `~/.grok/roles/pstack:<key>.toml`.
+`spawn_subagent` has no `reasoning_effort` field. Prove setup detected the live enum, applied [`effort-ladder.md`](./skills/setup-pstack/references/effort-ladder.md), and wrote `SubagentRole.reasoning_effort` in `~/.grok/roles/pstack:<key>.toml`.
 
 **Commands**
 
@@ -705,9 +791,9 @@ jq -c 'select(.type=="tool_call" and (.toolName=="task" or .toolName=="Task" or 
 
 Compare overlays to `gate4-expected-tiers.txt` (`mechanical:`, `instruction:`, `judgment:`).
 
-**PASS.** `~/.grok/roles/pstack:feature.toml` `reasoning_effort` equals `mechanical:`. `~/.grok/roles/pstack:bug-fix.toml` equals `instruction:`. `~/.grok/roles/pstack:how-explainer.toml` and `~/.grok/roles/pstack:independent-verifier.toml` equal `judgment:`. No `task` call in this gate sent a `reasoning_effort` key. `gate4e-tui-leak` is not required if setup skipped `ask_user_question`; if it asked, the payload has no Cursor words (same grep as Gate 4a) and did not invent `ultra`.
+**PASS.** `~/.grok/roles/pstack:feature.toml` `reasoning_effort` equals `mechanical:`. `~/.grok/roles/pstack:bug-fix.toml` equals `instruction:`. `~/.grok/roles/pstack:how-explainer.toml` and `~/.grok/roles/pstack:independent-verifier.toml` equal `judgment:`. No `spawn_subagent` call in this gate sent a `reasoning_effort` key. `gate4e-tui-leak` is not required if setup skipped `ask_user_question`; if it asked, the payload has no Cursor words (same grep as Gate 4a) and did not invent `ultra`.
 
-**FAIL.** Role files missing, wrong levels vs the computed ladder, a live `task` payload includes `reasoning_effort`, setup wrote `max` when `use one of:` did not name it, or setup copied `Effort::VALID_VALUES` instead of the live CLI list.
+**FAIL.** Role files missing, wrong levels vs the computed ladder, a live `spawn_subagent` payload includes `reasoning_effort`, setup wrote `max` when `use one of:` did not name it, or setup copied `Effort::VALID_VALUES` instead of the live CLI list.
 
 **CANNOT-PROVE (not PASS).** Headless hung on `ask_user_question` and TUI was not available.
 
@@ -820,7 +906,7 @@ Todos must be the Feature playbook (`$PLUGIN_PATH/skills/poteto-mode/playbooks/f
 1. `how` over the affected subsystem.
 2. `architect` or `architect skipped: <reason>`.
 3. Four throughput-checkpoint todos (Blocking first steps / Independent workstreams / Shared mutable state / Smallest safe decomposition). Unused dimensions stay with `n/a: <reason>`.
-4. Parent `task` `subagent_type: "pstack:poteto-agent"` **and** parent `task` `subagent_type: "pstack:independent-verifier"` so `~/.grok/roles/pstack:independent-verifier.toml` matches. Independent verify has **no skip-with-reason escape**.
+4. Parent `spawn_subagent` with `subagent_type: "pstack:poteto-agent"` **and** parent `spawn_subagent` with `subagent_type: "pstack:independent-verifier"` so `~/.grok/roles/pstack:independent-verifier.toml` matches. Independent verify has **no skip-with-reason escape**.
 5. Verify on the matching surface (the two python commands).
 6. Commits (local is enough).
 7. `interrogate` or `skip: <reason>` (not contested is a valid skip).
@@ -857,18 +943,18 @@ Independent-verifier spawn is scored in Gate 7 using this same stream when prese
 
 ---
 
-## Gate 7. Independent verifier via parent `task` and a different model
+## Gate 7. Independent verifier via parent `spawn_subagent` and a different model
 
-Feature step 4. Parent session only (`MAX_SUBAGENT_DEPTH` is 1; a child that calls `task` fails).
+Feature step 4. Parent session only (`MAX_SUBAGENT_DEPTH` is 1; a child that calls `spawn_subagent` fails).
 
-Required spawn shape (`HARNESS.md` / `TaskToolInput`):
+Required spawn shape (`HARNESS.md` TUI contract; Rust `TaskToolInput` names are wire aliases):
 
 ```text
-task
+spawn_subagent
   prompt: <you did not write hello.py. Do not edit. Run python3 hello.py and python3 hello.py --json. Return PASS, PASS+NOTES, or FAIL with commands and output.>
   description: independent verify lab
   subagent_type: pstack:independent-verifier
-  run_in_background: true
+  background: true
   model: <a detected slug DIFFERENT from the writer>
   isolation: worktree                   # when the writer still holds the tree; none is acceptable if the child does not write
 ```
@@ -876,7 +962,7 @@ task
 Then parent joins:
 
 ```text
-get_task_output
+get_command_or_subagent_output
   task_ids: [<id>]
   timeout_ms: <positive, e.g. 120000>
 ```
@@ -900,8 +986,8 @@ if [ -z "$OTHER" ] || [ "$OTHER" = "$GROK_MODEL" ]; then
     | tee "$EVIDENCE/gate7-cannot-prove.txt"
 else
   grok -p '/poteto-mode Do not edit hello.py.
-From this parent session, call task with subagent_type pstack:independent-verifier, run_in_background true, model '"$OTHER"', prompt instructing a read-only rerun of python3 hello.py and python3 hello.py --json in '"$LAB"'.
-Join with get_task_output. Quote the child verdict. Do not spawn from a child.' \
+From this parent session, call spawn_subagent with subagent_type pstack:independent-verifier, background true, model '"$OTHER"', and a prompt instructing a read-only rerun of python3 hello.py and python3 hello.py --json in '"$LAB"'.
+Join with get_command_or_subagent_output. Quote the child verdict. Do not spawn from a child.' \
     "${GROK_BASE[@]}" "${GROK_STREAM[@]}" \
     --cwd "$LAB" \
     --max-turns 40 \
@@ -920,7 +1006,7 @@ jq -c 'select(.type=="tool_call" and (.toolName=="task" or .toolName=="Task" or 
        | .rawInput' "$SRC" \
   | tee "$EVIDENCE/gate7-task-spawns.jsonl"
 
-jq -c 'select(.type=="tool_call" and (.toolName=="get_task_output" or .toolName=="wait_tasks"))
+jq -c 'select(.type=="tool_call" and (.toolName=="get_command_or_subagent_output" or .toolName=="get_task_output" or .toolName=="wait_tasks"))
        | .rawInput' "$SRC" \
   | tee "$EVIDENCE/gate7-joins.jsonl"
 ```
@@ -929,11 +1015,11 @@ Checks:
 
 1. At least one spawn has `subagent_type` `pstack:independent-verifier` so the overlay `~/.grok/roles/pstack:independent-verifier.toml` matches.
 2. That spawn's `model` is set and **≠** the writer slug (`$GROK_MODEL` or the `poteto-agent` child's `model`).
-3. Parent called `get_task_output` (or waited until the child finished in-stream).
+3. Parent called `get_command_or_subagent_output` (wire alias `get_task_output`) or waited until the child finished in-stream.
 4. Child verdict is `PASS`, `PASS+NOTES`, or `FAIL`, with commands it ran. A child that only restates the parent's claim without running python is FAIL.
 5. Child did not write. `git -C "$LAB" diff` after the verifier matches the post-Gate-6 tree, or the verifier stream has no write tools completing.
 
-**PASS.** Parent `task` spawned `independent-verifier` with a **different** `model`, joined it, and the child returned a verdict with its own command output.
+**PASS.** Parent `spawn_subagent` spawned `independent-verifier` with a **different** `model`, joined it, and the child returned a verdict with its own command output.
 
 **FAIL.** No such spawn, spawn used the same model as the writer, the child wrote files, or the child skipped running the two python commands.
 
@@ -1005,19 +1091,20 @@ Evidence dir:
 [ ] Did not use scripts/verify-harness.py (or any Python harness) as proof
 [ ] Did not use a Cloud Agent VM transcript as proof
 [ ] Gate 0 PASS  grok-4.6 + --always-approve + --reasoning-effort xhigh ping
+[ ] Gate 0a PASS built-in workspace Herdr callback: hinted `HERDR_AGENT=grok` is `idle` + `herdr:grok`; no-hint is native `herdr:grok` + `unknown`; both disposable workspaces closed
 [ ] Gate 1 PASS  grok plugin install --trust, then grok plugin enable pstack
 [ ] Gate 1 note  without --trust: exit 1, no TUI wait (or recorded CLI delta)
-[ ] Gate 2 PASS  poteto-mode, setup-pstack, how, unslop visible; 22 agents visible
+[ ] Gate 2 PASS  `poteto-mode`, `setup-pstack`, `how`, `unslop` visible; 22 agents visible
 [ ] Gate 3 PASS  no live AskQuestion / TodoWrite / generalPurpose / environment cloud; installed skills have no Cursor panel slugs
-[ ] Gate 4 PASS  detected slugs from live task.model rejection; effort from live `use one of:` (no reserved max unless listed)
-[ ] Gate 4a PASS accept-defaults / step 5; grok-4.6 + computed [effort] from live enum; ~/.grok/roles/pstack:feature.toml matches mechanical tier; TUI has no Cursor words
-[ ] Gate 4b PASS missing toml; feature spawn sends grok-4.6 (or omits if rejected); no task.reasoning_effort; agents/feature.md effort: medium (ship-time mechanical)
-[ ] Gate 4c PASS independent-verifier set to a live slug (grok-4.5 when present); task accepts it
+[ ] Gate 4 PASS  detected slugs from live TUI `spawn_subagent` `model` (wire aliases `task` / `Task`); effort from live `use one of:` (no reserved max unless listed)
+[ ] Gate 4a PASS accept-defaults / step 5; grok-4.6 + computed [effort] from live enum; mechanical tier in `~/.grok/roles/pstack:feature.toml`; TUI has no Cursor words
+[ ] Gate 4b PASS missing toml; TUI `spawn_subagent` sends grok-4.6 (or omits if rejected); no model-facing `reasoning_effort`; agents/feature.md effort: medium (ship-time mechanical)
+[ ] Gate 4c PASS independent-verifier set to a live slug (grok-4.5 when present); TUI `spawn_subagent` accepts it
 [ ] Gate 4d PASS ~/.cursor/rules/pstack-models.mdc does not exist after setup
-[ ] Gate 4e PASS live effort ladder wrote ~/.grok/roles/pstack:feature.toml mechanical, pstack:bug-fix.toml instruction, pstack:how-explainer.toml judgment, pstack:independent-verifier.toml judgment; no task.reasoning_effort
+[ ] Gate 4e PASS live effort ladder wrote ~/.grok/roles/pstack:feature.toml mechanical, pstack:bug-fix.toml instruction, pstack:how-explainer.toml judgment, pstack:independent-verifier.toml judgment; no model-facing `reasoning_effort`
 [ ] Gate 5 PASS  /poteto-mode matched Investigation; Principles first; steps copied to todos
 [ ] Gate 6 PASS  Feature on /tmp/pstack-edith-lab; both python commands + exact stdout in-session
-[ ] Gate 7 PASS  parent task independent-verifier + different model + child command evidence
+[ ] Gate 7 PASS  parent TUI `spawn_subagent` independent-verifier + different model + child command evidence
      or [ ] Gate 7 CANNOT-PROVE (only one detected slug). Not ticked as PASS.
 [ ] Gate 8 PASS cheap /loop 60s + scheduler_delete in <10 min
      or [ ] Gate 8 SKIP (missing scheduler, or cannot prove in <10 min). Not ticked as PASS.
@@ -1025,7 +1112,7 @@ Evidence dir:
 [ ] Evidence directory saved (ndjson, toml, hello.py, stdout files)
 
 Final: every required gate is PASS, and Gate 7/8 are PASS or an allowed CANNOT-PROVE/SKIP.
-Required: 0, 1, 2, 3, 4, 4a, 4b, 4c, 4d, 4e, 5, 6. Gate 7 required unless CANNOT-PROVE. Gate 8 optional with SKIP.
+Required: 0, 0a, 1, 2, 3, 4, 4a, 4b, 4c, 4d, 4e, 5, 6. Gate 7 required unless CANNOT-PROVE. Gate 8 optional with SKIP.
 ```
 
 ---
