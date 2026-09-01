@@ -224,6 +224,10 @@ def test_poteto_mode_copies_tui_spawn_names() -> None:
 def test_herdr_workspace_gate_is_documented() -> None:
     plan = (ROOT / "TEST-PLAN.md").read_text(encoding="utf-8")
     assert "Gate 0a. Herdr callback from the built-in workspace sandbox" in plan
+    assert "source-managed Bash/Zsh helper" in plan
+    assert 'test -r "$HOME/.bashrc.d/30-herdr-grok.sh"' in plan
+    assert 'herdr pane run "$HINTED_PANE" grok --sandbox workspace --no-alt-screen' in plan
+    assert 'herdr pane run "$NOHINT_PANE" command grok --sandbox workspace --no-alt-screen' in plan
     assert "HERDR_AGENT=grok" in plan
     assert "herdr:grok" in plan
     assert "agent_status == \"unknown\"" in plan

@@ -133,7 +133,7 @@ grok -p "Reply with exactly the word pong and stop. Do not call tools." \
 
 ## Gate 0a. Herdr callback from the built-in workspace sandbox
 
-This is a host-integration gate, separate from plugin trust/enable. It requires the Herdr integration to have been installed from a host shell and a Herdr-managed pane (`HERDR_ENV=1`). It does not install or mutate hooks, sandbox profiles, or plugin state.
+This is a host-integration gate, separate from plugin trust/enable. It requires the Herdr integration to have been installed from a host shell, a Herdr-managed pane (`HERDR_ENV=1`), and the dev-env source-managed Bash/Zsh helper deployed at `$HOME/.bashrc.d/30-herdr-grok.sh`. It does not install or mutate hooks, sandbox profiles, or plugin state.
 
 **Commands**
 
@@ -141,6 +141,7 @@ This is a host-integration gate, separate from plugin trust/enable. It requires 
 export HERDR_EVIDENCE="$EVIDENCE/herdr-workspace"
 mkdir -p "$HERDR_EVIDENCE"
 test "${HERDR_ENV:-}" = 1
+test -r "$HOME/.bashrc.d/30-herdr-grok.sh"
 
 cleanup() {
   test -z "${HINTED_WORKSPACE:-}" || herdr workspace close "$HINTED_WORKSPACE" || true
@@ -153,7 +154,7 @@ hinted="$(herdr workspace create --cwd "$PWD" \
 printf '%s\n' "$hinted" | tee "$HERDR_EVIDENCE/hinted-create.json"
 HINTED_WORKSPACE="$(printf '%s\n' "$hinted" | jq -r '.result.workspace.workspace_id')"
 HINTED_PANE="$(printf '%s\n' "$hinted" | jq -r '.result.root_pane.pane_id')"
-herdr pane run "$HINTED_PANE" env HERDR_AGENT=grok grok --sandbox workspace --no-alt-screen
+herdr pane run "$HINTED_PANE" grok --sandbox workspace --no-alt-screen
 sleep 4
 herdr pane send-text "$HINTED_PANE" /doctor
 sleep 4
@@ -169,13 +170,16 @@ nohint="$(herdr workspace create --cwd "$PWD" \
 printf '%s\n' "$nohint" | tee "$HERDR_EVIDENCE/nohint-create.json"
 NOHINT_WORKSPACE="$(printf '%s\n' "$nohint" | jq -r '.result.workspace.workspace_id')"
 NOHINT_PANE="$(printf '%s\n' "$nohint" | jq -r '.result.root_pane.pane_id')"
-herdr pane run "$NOHINT_PANE" grok --sandbox workspace --no-alt-screen
+herdr pane run "$NOHINT_PANE" command grok --sandbox workspace --no-alt-screen
 sleep 4
 herdr pane send-text "$NOHINT_PANE" /doctor
 sleep 4
 herdr pane read "$NOHINT_PANE" --source recent-unwrapped --lines 80 \
   | tee "$HERDR_EVIDENCE/nohint-output.txt"
 herdr pane get "$NOHINT_PANE" | tee "$HERDR_EVIDENCE/nohint-pane.json"
+herdr agent list | jq --arg workspace "$NOHINT_WORKSPACE" \
+  '.result.agents[] | select(.workspace_id == $workspace)' \
+  | tee "$HERDR_EVIDENCE/nohint-agent.json"
 ```
 
 **Inspect**
@@ -210,9 +214,9 @@ test "$remaining" = 0
 trap - EXIT
 ```
 
-**PASS.** The built-in `workspace` profile delivers SessionStart to Herdr. With `HERDR_AGENT=grok`, the pane is registered as Grok and reports `idle`; without the hint, the native session may still be retained while wrapper detection reports `unknown`. The latter is not hook denial.
+**PASS.** The built-in `workspace` profile delivers SessionStart to Herdr. The source-managed helper sets `HERDR_AGENT=grok` only for the plain Grok launch inside Herdr, so the hinted pane and `herdr agent list` row both report `herdr:grok` and `idle`. The explicit `command grok` bypass remains the negative control and may report `unknown`; that difference is wrapper detection, not hook denial.
 
-**FAIL.** The hinted callback has no `herdr:grok` session, the hinted pane is not `idle`, or Herdr cannot register the hinted pane.
+**FAIL.** The helper is absent, the hinted callback has no `herdr:grok` session, the hinted pane or agent row is not `idle`, or Herdr cannot register the hinted pane.
 
 **Evidence to keep.** All files under `$HERDR_EVIDENCE`, including create, pane, agent, and before/after workspace-list JSON plus unwrapped output. Close both disposable workspaces before accepting the gate.
 

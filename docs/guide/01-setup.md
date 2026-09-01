@@ -26,11 +26,13 @@ retaining the `workspace-secrets` denials.
 
 The host-installed Herdr hook also reports from `workspace`; hook files remain
 read-only while the callback writes temporary state and reports through
-`$HERDR_SOCKET_PATH`. Launch with
-`env HERDR_AGENT=grok grok --sandbox workspace --no-alt-screen` when the
-`bwrap` wrapper must be classified as Grok. The hint changes process detection,
-not sandbox permissions or callback delivery. Without it, a native
-`herdr:grok` session may persist while Herdr reports `unknown`.
+`$HERDR_SOCKET_PATH`. In dev-env, run `task sync-chezmoi` once, then launch
+plain `grok --sandbox workspace --no-alt-screen` from a Herdr-managed Bash or
+Zsh shell. The source-managed helper sets `HERDR_AGENT=grok` only inside
+`HERDR_ENV=1`, so `herdr pane get` and `herdr agent list` should report the
+Grok pane as `idle`. Outside that host helper, use
+`env HERDR_AGENT=grok grok --sandbox workspace --no-alt-screen`; `command grok`
+is the explicit no-hint negative control and may report `unknown`.
 
 `homelab` is a dev-env custom extension of `workspace` for extra cache writes.
 Do not add hook or Herdr-socket write grants. Keep plugin enable on
