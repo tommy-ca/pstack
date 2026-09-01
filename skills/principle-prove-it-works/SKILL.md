@@ -16,6 +16,8 @@ Check the real thing, not a proxy:
 - Check process liveness directly, not indirectly through derived state
 - Read the actual value, not a cached or derived representation
 - When verification fails, suspect the observation method before suspecting the system
+- A Chezmoi dest file matching a worktree render is not proof. Proof is apply from merged source plus empty `chezmoi diff` for those targets
+- Nested `grok inspect` is not this TUI's sandbox. Read this process's argv, `__GROK_INSIDE_BWRAP`, and `sandbox-events.jsonl`
 
 Code and features:
 1. Build it (necessary but not sufficient)
