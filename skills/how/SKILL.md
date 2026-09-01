@@ -42,6 +42,8 @@ Decompose the question into 2-4 parallel exploration angles, each a distinct sli
 
 The right decomposition depends on the question. Use your judgment. Narrow questions: 2 explorers is fine. Broad subsystems: up to 4.
 
+For enforcement or runtime questions (sandbox, hooks, multiplexer, kernel policy), split **declared config** from **this process**. Nested `inspect` is a new process. It is not evidence of the parent TUI's profile.
+
 Spawn all explorers in one parent turn with `spawn_subagent` (`background: true`). Join with `get_command_or_subagent_output`. Fields: `HARNESS.md`.
 
 - `subagent_type`: `pstack:how-explorer` ([`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md)). Builtin `explore` is the later fallback when this plugin agent is unknown (HARNESS Skill order).
@@ -94,7 +96,7 @@ Follow this structure, adapted to the question. Not every section is needed for 
 
 **Where Things Live.** A brief map of the relevant files/directories. Not every file, just the ones needed to start working in this area.
 
-**Gotchas.** Non-obvious or surprising things that would trip someone up. Historical context that explains why something looks weird. Known sharp edges.
+**Gotchas.** Non-obvious or surprising things that would trip someone up. Historical context that explains why something looks weird. Known sharp edges. For Grok sandbox, config `[sandbox] profile` and nested `grok inspect` are not this TUI. Measure `argv`, `__GROK_INSIDE_BWRAP`, session `summary.json` `sandbox_profile`, `/proc/self/mountinfo`, and `~/.grok/sandbox-events.jsonl`.
 
 ## Critique Mode
 

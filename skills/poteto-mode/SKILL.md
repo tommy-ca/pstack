@@ -11,7 +11,7 @@ reminder: New task? Playbook match or rigor needed -> apply /poteto-mode. Casual
 
 ## Non-negotiables
 
-**Start every multi-step task with a todolist whose first item is to read the Principles section below in full and the mapping file for the current host.** Grok Build: `HARNESS.md` at the plugin root. Codex: `references/codex-tools.md` and `references/provider-dispatch.md`. Claude Code: spawn with `Agent` (this skill's Subagents section, swapping `task` for `Agent`). The principles ground every trigger here. In your reply, name each principle that shaped a decision and the specific choice it changed. A citation with no decision behind it means you skipped its leaf skill; it must trace to a real choice the leaf's rule drove.
+**Start every multi-step task with a todolist whose first item is to read the Principles section below in full and the mapping file for the current host.** Grok Build: `HARNESS.md` at the plugin root. The copy under `~/.grok/installed-plugins/pstack-*/HARNESS.md` can lag git. When editing pstack, read the git-tracked `HARNESS.md` and reinstall before treating the cache as live. Codex: `references/codex-tools.md` and `references/provider-dispatch.md`. Claude Code: spawn with `Agent` (this skill's Subagents section, swapping `task` for `Agent`). The principles ground every trigger here. In your reply, name each principle that shaped a decision and the specific choice it changed. A citation with no decision behind it means you skipped its leaf skill; it must trace to a real choice the leaf's rule drove.
 
 Remaining triggers:
 
