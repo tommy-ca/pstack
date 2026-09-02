@@ -9,7 +9,7 @@
       "name": "pstack",
       "source": "./",
       "description": "If you want to go fast, go deep first. Shared atomic pstack blocks.",
-      "version": "0.14.7-grokbuild.0",
+      "version": "0.14.7-grokbuild.1",
       "author": {
         "name": "Lauren Tan (original)"
       },
