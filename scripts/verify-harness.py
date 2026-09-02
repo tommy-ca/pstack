@@ -81,7 +81,7 @@ CURSOR_MODEL_SLUGS = (
     "claude-opus-5-thinking-xhigh",
 )
 
-SKIP_DIRS = {".git", "automations", "scripts", ".superpowers", ".worktrees", "openspec"}
+SKIP_DIRS = {".git", "automations", "scripts", ".superpowers", ".worktrees", "openspec", ".audit"}
 SKIP_FILES = {
     "HARNESS.md",
     "UPSTREAM",
@@ -241,7 +241,7 @@ def main() -> None:
         if not path.is_file() or path.suffix not in {".md", ".toml", ".json", ".mjs"}:
             continue
         rel = path.relative_to(ROOT)
-        if rel.parts[0] in SKIP_DIRS or path.name in SKIP_FILES:
+        if set(rel.parts) & SKIP_DIRS or path.name in SKIP_FILES:
             continue
         text = path.read_text(encoding="utf-8")
         for pat in FORBIDDEN:
@@ -260,6 +260,8 @@ def main() -> None:
             fail(f"plugin.json skills path missing: {sp}")
         for path in skills_root.rglob("*"):
             if not path.is_file() or path.suffix not in {".md", ".mjs"}:
+                continue
+            if set(path.relative_to(ROOT).parts) & SKIP_DIRS:
                 continue
             text = path.read_text(encoding="utf-8")
             for slug in CURSOR_MODEL_SLUGS:

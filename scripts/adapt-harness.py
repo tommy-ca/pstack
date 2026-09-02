@@ -23,7 +23,7 @@ import re
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
-SKIP_DIRS = {".git", "automations", ".superpowers", ".worktrees", "openspec"}
+SKIP_DIRS = {".git", "automations", ".superpowers", ".worktrees", "openspec", ".audit"}
 SKIP_FILES = {
     "HARNESS.md",
     "UPSTREAM",
