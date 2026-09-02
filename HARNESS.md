@@ -129,5 +129,6 @@ Then `get_command_or_subagent_output` with `task_ids` and a positive `timeout_ms
 Code-writing delegates: `pstack:<playbook-role>` (`pstack:feature`, `pstack:bug-fix`, …). Ad-hoc helpers with no role key: `pstack:poteto-agent`.
 Read-only codebase walks: `pstack:how-explorer` / `pstack:how-explainer` / `pstack:how-critics` (not the built-in `explore`, so role effort can apply).
 MCP-backed `why` investigators: `pstack:why-investigators` / `pstack:why-synthesizer`. Instruct no writes in the prompt. Posture, not a sandbox.
+Reflect reviewers: `pstack:reflect-judgment` / `pstack:reflect-tooling`. Same prompt posture: forbid writes in the prompt; the parent applies edits.
 `/no-comments`: `pstack:comment-sicko`.
 Independent verify: `pstack:independent-verifier` plus toml key `independent-verifier` when that key is a detected slug different from the writer; no toml: `grok-4.6`. Effort from frontmatter `xhigh` unless overlaid.

@@ -119,7 +119,7 @@ Launch all matching investigators in a single message so they run concurrently. 
 Subagent config (each):
 - `subagent_type`: `pstack:why-investigators` ([`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md))
 - `model`: toml key `why-investigators` per `../setup-pstack/references/resolve-model.md`. Per that file: no toml sends `grok-4.6` (omit if rejected); inherit-parent/auto/missing key omits. Do not send `reasoning_effort` on `task`.
-- MCP-backed work: spawn `why-investigators` and forbid writes in the prompt. Do not send `readonly` on `task`.
+- MCP-backed work: spawn `pstack:why-investigators` and forbid writes in the prompt. Do not send `readonly` on `task`.
 
 Each investigator gets:
 1. The base prompt from `references/investigator-prompt.md`
@@ -165,7 +165,7 @@ Spawn one synthesizer subagent:
 
 - `subagent_type`: `pstack:why-synthesizer` ([`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md))
 - `model`: toml key `why-synthesizer` per `../setup-pstack/references/resolve-model.md`. Per that file: no toml sends `grok-4.6` (omit if rejected); inherit-parent/auto/missing key omits. Do not send `reasoning_effort` on `task`.
-- MCP-backed work: spawn `why-synthesizer` and forbid writes in the prompt. Do not send `readonly` on `task`.
+- MCP-backed work: spawn `pstack:why-synthesizer` and forbid writes in the prompt. Do not send `readonly` on `task`.
 
 The synthesizer gets:
 1. The investigator findings, including any null results and any categories skipped with justification
