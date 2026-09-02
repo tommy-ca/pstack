@@ -56,9 +56,19 @@ def test_natives_page_names_plugin_tag() -> None:
     assert "grok --sandbox off plugin tag" in tag_rows[0]
 
 
+def test_release_spec_increments_n_when_head_outruns_tag() -> None:
+    spec = (ROOT / "openspec/specs/pstack-release-tag/spec.md").read_text(
+        encoding="utf-8"
+    )
+    assert "Adapter counter advances when HEAD outruns the last tag" in spec
+    assert "MAJOR.MINOR.PATCH-grokbuild.(N+1)" in spec
+    assert "Existing tags MUST NOT be moved." in spec
+
+
 if __name__ == "__main__":
     test_release_script_tags_without_force()
     test_github_release_workflow_on_version_tags()
     test_plugin_version_is_semver_grokbuild()
     test_natives_page_names_plugin_tag()
+    test_release_spec_increments_n_when_head_outruns_tag()
     print("PASS tests/test_release.py")
