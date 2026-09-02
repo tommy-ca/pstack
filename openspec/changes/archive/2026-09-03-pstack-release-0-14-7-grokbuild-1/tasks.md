@@ -12,10 +12,10 @@
 
 ## 3. Land on main
 
-- [ ] 3.1 Commit OpenSpec artifacts, then the version bump, as signed Conventional Commits.
-- [ ] 3.2 Push `main` to origin without `--force`.
+- [x] 3.1 Commit OpenSpec artifacts, then the version bump, as signed Conventional Commits.
+- [x] 3.2 Push `main` to origin without `--force`.
 
 ## 4. Tag and Release
 
-- [ ] 4.1 From a host shell run `./scripts/release.sh`.
-- [ ] 4.2 Confirm origin has `v0.14.7-grokbuild.1`, GitHub has that Release, and `v0.14.7-grokbuild.0` still points at `420f4ec`.
+- [x] 4.1 From a host shell run `./scripts/release.sh`. `grok plugin tag` created the local tag. HTTPS `git push origin` failed; the tag and Release were completed with an SSH tag push and `gh release create --verify-tag`.
+- [x] 4.2 Confirm origin has `v0.14.7-grokbuild.1`, GitHub has that Release, and `v0.14.7-grokbuild.0` still points at `420f4ec`.
