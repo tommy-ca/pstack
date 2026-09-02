@@ -1016,21 +1016,33 @@ def test_forge_neutral_pr_path_without_graphite() -> None:
 def test_upstream_metadata_contract() -> None:
     upstream = (ROOT / "UPSTREAM").read_text(encoding="utf-8")
     assert "tree efa2a531985e0a8084d36ff3cf87233be8a9f34b" in upstream
-    manifest_paths = (
-        "plugin.json",
-        ".grok-plugin/plugin.json",
-        ".codex-plugin/plugin.json",
-        ".claude-plugin/plugin.json",
+    root_manifest = json.loads((ROOT / "plugin.json").read_text(encoding="utf-8"))
+    root_version = root_manifest["version"]
+    manifest_fields = (
+        ("plugin.json", ("version",)),
+        (".grok-plugin/plugin.json", ("version",)),
+        (".codex-plugin/plugin.json", ("version",)),
+        (".claude-plugin/plugin.json", ("version",)),
+        (".claude-plugin/marketplace.json", ("plugins", 0, "version")),
+        (".agents/plugins/marketplace.json", ("plugins", 0, "version")),
     )
-    versions = [
-        json.loads((ROOT / path).read_text(encoding="utf-8"))["version"]
-        for path in manifest_paths
-    ]
-    marketplace = json.loads(
-        (ROOT / ".claude-plugin/marketplace.json").read_text(encoding="utf-8")
-    )
-    versions.append(marketplace["plugins"][0]["version"])
-    assert versions == ["0.14.7-grokbuild.0"] * len(versions)
+    versions = []
+    for path, fields in manifest_fields:
+        data = (
+            root_manifest
+            if path == "plugin.json"
+            else json.loads((ROOT / path).read_text(encoding="utf-8"))
+        )
+        value = data
+        for field in fields:
+            value = value[field]
+        assert value == root_version, (
+            f"{path}: expected {root_version}, got {value}"
+        )
+        if path.endswith("marketplace.json"):
+            assert data["plugins"][0]["name"] == "pstack", path
+        versions.append(value)
+    assert versions == [root_version] * len(manifest_fields)
     for name in ("how", "typescript-best-practices", "unslop", "why"):
         frontmatter = (
             ROOT / "skills" / name / "SKILL.md"
