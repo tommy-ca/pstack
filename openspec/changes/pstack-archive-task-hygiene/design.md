@@ -47,7 +47,7 @@ After the two annotations, run `openspec validate --archived --strict` and confi
 2. Amend only task 3.3 in `2026-08-31-pstack-release-actions-proof/tasks.md` and `2026-08-31-pstack-release-tag-host-push/tasks.md`.
 3. Run strict archived validation, pstack harness tests, and a focused text check for the deferred annotations.
 4. Review the diff and confirm the sibling marketplace checkout and installed host state are unchanged.
-5. Leave release, marketplace update, commit, push, and archive actions to separately authorized operators.
+5. Commit the validated local hygiene/spec changes as semantic atomic OpenSpec delivery. Leave release actions, external marketplace updates or host mutations, remote pushes, and archive actions to separately authorized operators.
 
 Rollback is a normal revert of the two task-line amendments and the durable spec sync; no runtime or remote state changes occur.
 
