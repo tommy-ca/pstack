@@ -425,6 +425,11 @@ def test_playbooks_are_not_plugin_rhai_workflows() -> None:
     guide = (ROOT / "docs/guide/11-grok-workflows.md").read_text(encoding="utf-8")
     assert "agent_type" in guide
     assert "pstack:how-explorer" in guide
+    rhai_example = re.search(r"```rhai\n(.*?)```", guide, re.S)
+    assert rhai_example, "docs/guide/11-grok-workflows.md missing rhai example"
+    example = rhai_example.group(1)
+    assert 'agent_type: "pstack:how-explorer"' in example
+    assert "capability_mode" not in example
     assert ".grok/workflows" in guide
     assert "PluginManifest" in guide
     assert "/workflow" in guide
@@ -652,6 +657,8 @@ def test_grok_spawn_types_are_plugin_qualified() -> None:
     assert "pstack:how-critics" in how
     assert "pstack:why-investigators" in why
     assert "pstack:why-synthesizer" in why
+    assert "spawn `why-investigators`" not in why
+    assert "spawn `why-synthesizer`" not in why
     assert "pstack:arena-runners" in arena
     assert "pstack:arena-cross-judge-pool" in arena
     assert "pstack:swarm-workers" in swarm
@@ -933,6 +940,76 @@ def test_plugin_manifest_matches_grok_parsed_fields() -> None:
             assert "~/.grok/roles/pstack:" in text, path.name
 
 
+NO_WRITE_AGENT_STEMS = frozenset(
+    {
+        "how-explorer",
+        "how-explainer",
+        "how-critics",
+        "interrogate-reviewers",
+        "arena-cross-judge-pool",
+        "independent-verifier",
+        "comment-sicko",
+    }
+)
+POSTURE_NOWRITE_STEMS = frozenset(
+    {
+        "why-investigators",
+        "why-synthesizer",
+        "reflect-judgment",
+        "reflect-tooling",
+    }
+)
+
+
+def test_nowrite_agents_use_capability_mode_execute() -> None:
+    agents = list((ROOT / "agents").glob("*.md"))
+    assert agents, "agents/ is empty"
+    found = {path.stem for path in agents}
+    missing_execute = NO_WRITE_AGENT_STEMS - found
+    missing_posture = POSTURE_NOWRITE_STEMS - found
+    assert not missing_execute, (
+        f"execute-sandbox stems missing from agents/: {sorted(missing_execute)}"
+    )
+    assert not missing_posture, (
+        f"prompt-posture stems missing from agents/: {sorted(missing_posture)}"
+    )
+    execute_re = re.compile(r"^capabilityMode:\s*execute\s*$", re.MULTILINE)
+    for path in agents:
+        fm = path.read_text(encoding="utf-8").split("---", 2)[1]
+        if path.stem in NO_WRITE_AGENT_STEMS:
+            assert execute_re.search(fm), (
+                f"{path.relative_to(ROOT)}: no-write agent must set "
+                "capabilityMode: execute"
+            )
+            continue
+        if path.stem in POSTURE_NOWRITE_STEMS:
+            assert "capabilityMode:" not in fm, (
+                f"{path.relative_to(ROOT)}: prompt posture, not a sandbox; "
+                "do not set capabilityMode"
+            )
+            continue
+        assert "capabilityMode:" not in fm, (
+            f"{path.relative_to(ROOT)}: writer must omit capabilityMode"
+        )
+
+
+def test_audit_dir_skipped_by_harness_scanners() -> None:
+    spec = importlib.util.spec_from_file_location("verify_harness", SCANNER)
+    verify = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(verify)
+    adapt_path = ROOT / "scripts/adapt-harness.py"
+    adapt_spec = importlib.util.spec_from_file_location("adapt_harness", adapt_path)
+    adapt = importlib.util.module_from_spec(adapt_spec)
+    assert adapt_spec.loader is not None
+    adapt_spec.loader.exec_module(adapt)
+    assert ".audit" in verify.SKIP_DIRS
+    assert ".audit" in adapt.SKIP_DIRS
+    verify_src = SCANNER.read_text(encoding="utf-8")
+    assert "set(rel.parts) & SKIP_DIRS" in verify_src
+    assert "rel.parts[0] in SKIP_DIRS" not in verify_src
+
+
 def test_harness_skill_order_is_pstack_then_user_then_native() -> None:
     harness = (ROOT / "HARNESS.md").read_text(encoding="utf-8")
     poteto = (ROOT / "skills/poteto-mode/SKILL.md").read_text(encoding="utf-8")
@@ -1011,6 +1088,16 @@ def test_forge_neutral_pr_path_without_graphite() -> None:
     assert "graphite-first" not in opening
     assert "gt submit" not in shipping
     assert "origin" in opening
+    orchestrate = (
+        ROOT / "skills/poteto-mode/playbooks/orchestrate.md"
+    ).read_text(encoding="utf-8")
+    orch = orchestrate.lower()
+    assert "recompute it from `gt`" not in orch
+    assert "may run `gt`" not in orch
+    assert "gt tracking" not in orch
+    assert "where gt knows" not in orch
+    assert "github-pr-fallback.md" in orchestrate
+    assert "origin pr" in orch or "gh pr" in orch
 
 
 def test_upstream_metadata_contract() -> None:
@@ -1091,6 +1178,8 @@ if __name__ == "__main__":
     test_overlay_stems_and_adapter_are_plugin_qualified()
     test_effort_frontmatter_matches_ladder()
     test_plugin_manifest_matches_grok_parsed_fields()
+    test_nowrite_agents_use_capability_mode_execute()
+    test_audit_dir_skipped_by_harness_scanners()
     test_harness_skill_order_is_pstack_then_user_then_native()
     test_forge_neutral_pr_path_without_graphite()
     test_upstream_metadata_contract()
