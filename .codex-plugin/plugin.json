@@ -1,6 +1,6 @@
 {
   "name": "pstack",
-  "version": "0.14.5-grokbuild.4",
+  "version": "0.14.7-grokbuild.0",
   "description": "pstack for Codex: shared skills; tool names resolve via skills/poteto-mode/references/codex-tools.md.",
   "author": {
     "name": "Lauren Tan (original); tommy-ca (three-host port)"

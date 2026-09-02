@@ -1,39 +1,39 @@
-# GitHub-native PR fallback
+# Forge-neutral PR operations
 
-Use this map when `command -v gt` fails. Detect once per run. Do not invent Graphite. Official playbooks stay Graphite-first. This file rewrites the CLI only.
+Use this map when a playbook needs PR, stack, check, thread, or merge commands. Resolve the forge once per run. GitHub CLI (`gh`) is the default. If `command -v origin` succeeds and Origin can resolve the repository, use `origin pr ...` for every PR operation; otherwise stay on `gh` and record the fallback. Never require Graphite (`gt`).
 
-Bundled `/pr-babysit` is still skipped. `playbooks/babysit.md` stays.
+Bundled `/pr-babysit` is still skipped. `playbooks/babysit.md` stays host-native.
 
-## Detect
+## Resolve
 
 ```bash
-command -v gt
+command -v origin
 ```
 
-If that prints a path, keep using `gt`. If it fails, use the table below for every Graphite call site in the current playbook.
+If that prints a path and Origin resolves the repository, keep using `origin pr`. Otherwise use `gh` for the table below.
 
 ## Call sites
 
-| Playbook says | GitHub native |
+| Need | Resolved forge |
 |---|---|
-| `gt` submit / create a PR | `gh pr create --base <base> --head <branch> --title <title> --body <body>` then `gh pr view <n> --json url,number,baseRefName` |
-| Stack follow-ups with Graphite | Independent work: `--base main`. Dependent work: `--base <parent-branch>`. Push the parent first. |
-| `gt restack` / `gt sync` | `git fetch origin` and `git rebase` onto the parent branch. Then `gh pr view`. |
-| `gt submit --merge-when-ready` | Independent PR targeting protected trunk: `gh pr merge <n> --squash --auto` only after `playbooks/shipping.md` independent verify. |
-| `gt merge` | `gh pr merge <n> --squash` after a passing independent-verifier verdict. |
-| Graphite UI / stack order | `gh pr list` and `gh pr view <n> --json number,baseRefName,headRefName,url`. |
-| `gt track` | No-op. Git already has the branch. |
-| CI watch | `gh pr checks <n>` and `gh pr view <n>`. |
+| Create a PR | `origin pr create --status open --base <base> --head <branch>` or `gh pr create --base <base> --head <branch>` |
+| View a PR | `origin pr view <n>` or `gh pr view <n> --json url,number,baseRefName,headRefName` |
+| Stack follow-up | Rebase onto the exact parent tip and create or retarget with `--base <parent-branch>`. Independent work uses `--base main`. |
+| Rebase or restack | `git fetch origin` and `git rebase` onto the selected parent branch, then view the PR through the resolved forge. |
+| Merge one verified PR | `origin pr merge <n> --squash` or `gh pr merge <n> --squash` after a passing independent-verifier verdict. |
+| Merge when ready | Root PR targeting protected trunk only: use the selected forge's `--auto` after independent verification and an explicit user request. |
+| Stack order | `origin pr list`/`origin pr view` or `gh pr list`/`gh pr view <n> --json number,baseRefName,headRefName,url`. |
+| CI and threads | Use `origin pr checks <n>` / `origin pr thread list <n>` or `gh pr checks <n>` / `gh pr view <n>`; Grok wakes use `monitor` and `/loop` → `scheduler_create`. |
 
-Open every PR ready, never draft. If create defaults to draft, `gh pr ready <n>`.
+Open every PR ready, never draft. With Origin pass `--status open`; with `gh` use the host's ready flag or `gh pr ready <n>`.
 
 ## Do not
 
-- Do not run `gh pr merge --auto` when the PR base is another feature branch. GitHub would merge the child into the parent as soon as checks are green and collapse the stack.
-- Do not enable GitHub auto-merge on a stack of PRs. Land bottom-up with one `gh pr merge` per verified PR after its parent is on trunk.
-- Do not call `gt` after detect failed.
+- Do not run the selected forge's `--auto` when the PR base is another feature branch. That would collapse the stack.
+- Do not enable auto-merge on a stack. Land bottom-up with one verified PR at a time after its parent reaches trunk.
+- Do not introduce a repository-local watcher or replace Grok `monitor` with a compatibility utility.
 - Do not switch babysit to bundled `/pr-babysit`.
 
 ## Land path without a PR
 
-If the operator's overlay says merge to `main` and SSH-push with no GitHub PR, do that. This map is for playbooks that open or ship PRs.
+If the operator's overlay says merge to `main` and SSH-push with no PR, do that. This map is for playbooks that open or ship PRs.

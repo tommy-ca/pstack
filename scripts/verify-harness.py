@@ -77,7 +77,7 @@ FORBIDDEN = [
 CURSOR_MODEL_SLUGS = (
     "grok-4.6-fast-xhigh",
     "gpt-5.6-sol-max",
-    "claude-fable-5-thinking-max",
+    "claude-fable-5-1-thinking-max",
     "claude-opus-5-thinking-xhigh",
 )
 

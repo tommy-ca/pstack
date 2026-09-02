@@ -57,7 +57,7 @@ grok plugin enable pstack
 
 装完就能用，不必先 `/setup-pstack`。
 
-**模型.** 每个角色默认 `grok-4.6`。若 `spawn_subagent` 拒收这个 slug，就省略 `model`。不要编造 Cursor 面板 slug（`grok-4.6-fast-xhigh`、`gpt-5.6-sol-max`、`claude-fable-5-thinking-max`、`claude-opus-5-thinking-xhigh`）。Spawn 和 join 的名字见 [HARNESS.md](./HARNESS.md)。`spawn_subagent` 的线名别名是 `task`。
+**模型.** 每个角色默认 `grok-4.6`。若 `spawn_subagent` 拒收这个 slug，就省略 `model`。不要编造 Cursor 面板 slug（`grok-4.6-fast-xhigh`、`gpt-5.6-sol-max`、`claude-fable-5-1-thinking-max`、`claude-opus-5-thinking-xhigh`）。Spawn 和 join 的名字见 [HARNESS.md](./HARNESS.md)。`spawn_subagent` 的线名别名是 `task`。
 
 **effort.** 以 grok 1.0.13 现场 CLI 为准。`use one of: xhigh, high, medium, low`。本仓库出厂分层是判断 / 解释 / 核对 / 评审组 `xhigh`，跟指令（bug-fix、perf-issue、hillclimb、reflect-tooling）`high`，机械活（feature、refactoring、how-explorer、why-investigators、swarm-workers）`medium`。不默认 `max`。这个 CLI 不认 `max`。skill 从不在 `spawn_subagent` 上发送 `reasoning_effort`。
 
@@ -103,11 +103,11 @@ morning.
 | [authoring a skill](./skills/poteto-mode/playbooks/authoring-a-skill.md) | writing or editing a SKILL.md. |
 | [eval](./skills/poteto-mode/playbooks/eval.md) | test how a skill or prompt change affects agent behavior, blinded. |
 | [babysit](./skills/poteto-mode/playbooks/babysit.md) | drive a pr or a stack to merge-ready: conflicts, review threads, ci. |
-| [shipping](./skills/poteto-mode/playbooks/shipping.md) | independently verify a green stack, then land the contiguous verified run with graphite merge-when-ready. |
+| [shipping](./skills/poteto-mode/playbooks/shipping.md) | independently verify a green stack, then land the contiguous verified run bottom-up through `gh` by default or Origin when its cli is available. |
 | [autonomous run](./skills/poteto-mode/playbooks/autonomous-run.md) | drive a long task to completion without stopping. |
 | [orchestrate](./skills/poteto-mode/playbooks/orchestrate.md) | a standing project handed to one coordinator chat: multi-day, many stacked prs, fleets of subagents. |
 | [autopilot-full](./skills/poteto-mode/playbooks/autopilot-full.md) | run independent prs to merged with one owner per pr and root verification of each merge-ready head. |
-| [autopilot-stack](./skills/poteto-mode/playbooks/autopilot-stack.md) | build and verify one linear graphite stack for the operator to review and land. |
+| [autopilot-stack](./skills/poteto-mode/playbooks/autopilot-stack.md) | build and verify one linear base-branch stack for the operator to review and land. |
 | [session pickup](./skills/poteto-mode/playbooks/session-pickup.md) | resume or take over a prior agent's in-flight work. |
 | [pause safely](./skills/poteto-mode/playbooks/pause-safely.md) | suspend in-flight work cleanly so it can be resumed later. |
 | [multi-phase plan](./skills/poteto-mode/playbooks/multi-phase-plan.md) | work that spans phases or stacked PRs. |
@@ -262,7 +262,7 @@ Cursor 版 pstack 的 `poteto-mode` 还引用过这些，这里没有打包：
 
 - `/deslop`、`control-cli`、`control-ui` 在 `cursor-team-kit` 里。这里用 `/unslop`、`/no-comments`，应用自己去点、去跑。
 - 独立核验是 `spawn_subagent`，`subagent_type` 为 `pstack:independent-verifier`。toml 里是已探测到的 slug 时另传 `model`，否则省略 `model`。不是 Cursor Cloud Agent。见 [HARNESS.md](./HARNESS.md)。
-- Graphite `gt` 可选。没有就用 `gh` 和 git。
+- 一次解析 forge。默认 GitHub `gh`；只有 Origin 的 cli 能解析仓库时才使用 Origin。stack 子 PR 指向明确的 parent branch。不要求 Graphite `gt`。
 - Benny 的 Cursor 包在 `automations/benny/skills/`，是 **upstream reference**。现场 grok 合同在 [`automations/benny-grok/`](./automations/benny-grok/)（enable 后 `/benny-triage`）。不是本插件的 plugin hooks。
 
 ## 为什么没有规划技能

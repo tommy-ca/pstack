@@ -2,8 +2,8 @@
 """Show how to refresh this port from official Cursor pstack.
 
 Does not copy files. Prints the pin, the recipe, or `git log` since the
-recorded tree. Copy + adapt + verify stay operator-owned so grok-only
-files (HARNESS.md, plugin.json, README) are not overwritten blindly.
+recorded tree. Copy + adapt + verify stay operator-owned so Grok-only files
+and Cursor-only packaging are not overwritten blindly.
 
     python3 scripts/sync-from-upstream.py --pin
     python3 scripts/sync-from-upstream.py --recipe
@@ -38,9 +38,15 @@ def recipe() -> str:
     return f"""Refresh from official Cursor pstack (pin {sha}).
 
 1. python3 scripts/sync-from-upstream.py --log
-2. Copy intent from .worktrees/upstream-cursor-plugins/pstack/ (`skills/`, `agents/`). That tree is origin/main after --log. Skip make-bot-ui. Do not overwrite HARNESS.md, plugin.json, README.md, README.zh-CN.md, tests/, or scripts/.
+2. Copy applicable intent from .worktrees/upstream-cursor-plugins/pstack/
+   (`skills/`, `agents/`, and selected docs). That tree is origin/main after
+   --log. Skip make-bot-ui, `.cursor-plugin/`, and `assets/logo.png`. Do not
+   overwrite HARNESS.md, plugin.json, README.md, README.zh-CN.md, tests/, or
+   scripts/.
 3. python3 scripts/adapt-harness.py
-4. Hand-map depth-1 spawn (`pstack:<role>`) and persist-then-wake overnight (`/loop` → scheduler_create). Do not leave Cursor Task, same-run /loop, ~/.cursor/rules/*.mdc, or control-cli as live Grok calls.
+4. Hand-map depth-1 spawn (`pstack:<role>`) and persist-then-wake overnight
+   (`/loop` → scheduler_create). Do not leave Cursor Task, same-run /loop,
+   ~/.cursor/rules/*.mdc, or control-cli as live Grok calls.
 5. python3 scripts/verify-harness.py && python3 tests/test_verify_harness.py
 6. Update the `tree` line in UPSTREAM to the new pstack/ commit.
 """

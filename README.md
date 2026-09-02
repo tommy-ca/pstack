@@ -57,7 +57,7 @@ The other skills are situational. The mode skill uses them when a step needs the
 
 A fresh install is usable without `/setup-pstack`.
 
-**Model.** Every role defaults to `grok-4.6`. If `spawn_subagent` rejects that slug, omit `model`. Do not invent Cursor panel slugs (`grok-4.6-fast-xhigh`, `gpt-5.6-sol-max`, `claude-fable-5-thinking-max`, `claude-opus-5-thinking-xhigh`). Spawn and join names are in [HARNESS.md](./HARNESS.md). The wire alias for `spawn_subagent` is `task`.
+**Model.** Every role defaults to `grok-4.6`. If `spawn_subagent` rejects that slug, omit `model`. Do not invent Cursor panel slugs (`grok-4.6-fast-xhigh`, `gpt-5.6-sol-max`, `claude-fable-5-1-thinking-max`, `claude-opus-5-thinking-xhigh`). Spawn and join names are in [HARNESS.md](./HARNESS.md). The wire alias for `spawn_subagent` is `task`.
 
 **effort.** Effort follows the live grok 1.0.13 CLI. `use one of: xhigh, high, medium, low`. Shipped split is judgment / explainer / verifier / panels `xhigh`, instruction-following `high`, mechanical `medium`. Do not ship `max`. This CLI rejects `max`. Skills never send `reasoning_effort` on `spawn_subagent`.
 
@@ -103,11 +103,11 @@ morning.
 | [authoring a skill](./skills/poteto-mode/playbooks/authoring-a-skill.md) | writing or editing a SKILL.md. |
 | [eval](./skills/poteto-mode/playbooks/eval.md) | test how a skill or prompt change affects agent behavior, blinded. |
 | [babysit](./skills/poteto-mode/playbooks/babysit.md) | drive a pr or a stack to merge-ready: conflicts, review threads, ci. |
-| [shipping](./skills/poteto-mode/playbooks/shipping.md) | independently verify a green stack, then land the contiguous verified run with graphite merge-when-ready. |
+| [shipping](./skills/poteto-mode/playbooks/shipping.md) | independently verify a green stack, then land the contiguous verified run bottom-up through `gh` by default or Origin when its cli is available. |
 | [autonomous run](./skills/poteto-mode/playbooks/autonomous-run.md) | drive a long task to completion without stopping. |
 | [orchestrate](./skills/poteto-mode/playbooks/orchestrate.md) | a standing project handed to one coordinator chat: multi-day, many stacked prs, fleets of subagents. |
 | [autopilot-full](./skills/poteto-mode/playbooks/autopilot-full.md) | run independent prs to merged with one owner per pr and root verification of each merge-ready head. |
-| [autopilot-stack](./skills/poteto-mode/playbooks/autopilot-stack.md) | build and verify one linear graphite stack for the operator to review and land. |
+| [autopilot-stack](./skills/poteto-mode/playbooks/autopilot-stack.md) | build and verify one linear base-branch stack for the operator to review and land. |
 | [session pickup](./skills/poteto-mode/playbooks/session-pickup.md) | resume or take over a prior agent's in-flight work. |
 | [pause safely](./skills/poteto-mode/playbooks/pause-safely.md) | suspend in-flight work cleanly so it can be resumed later. |
 | [multi-phase plan](./skills/poteto-mode/playbooks/multi-phase-plan.md) | work that spans phases or stacked PRs. |
@@ -262,7 +262,7 @@ A few things `poteto-mode` referenced in Cursor pstack and does not bundle here:
 
 - `/deslop`, `control-cli`, and `control-ui` lived in `cursor-team-kit`. Use `/unslop`, `/no-comments`, and drive the real app yourself.
 - Independent verify is `spawn_subagent` with `subagent_type` `pstack:independent-verifier`. Send a different `model` when the toml names a detected slug; otherwise omit `model`. Not a Cursor Cloud Agent. See [HARNESS.md](./HARNESS.md).
-- Graphite `gt` is optional. If it is missing, use `gh` and git.
+- Resolve the forge once. GitHub `gh` is the default; use Origin only when its cli resolves the repository. Stacked children target explicit parent branches. Graphite `gt` is not required.
 - Benny Cursor pack under `automations/benny/skills/` is the **upstream reference**. Live grok contract is [`automations/benny-grok/`](./automations/benny-grok/) (`/benny-triage`, `/benny-repro` after enable). Not pstack plugin hooks.
 
 ## Why are there no planning skills?

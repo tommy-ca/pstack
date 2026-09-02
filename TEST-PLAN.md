@@ -10,7 +10,7 @@ First principles only. Do not treat community pstack ports as the spec.
 
 | Source | Pin | Role |
 |---|---|---|
-| Official pstack | [cursor/plugins `pstack/`](https://github.com/cursor/plugins/tree/main/pstack) tree `6fecddba65801f9b9c08b8b328d998ee5b09d290` | 22 named playbooks, `opening-a-pr.md`, 21 `principle-*` skills, `/poteto-mode` router |
+| Official pstack | [cursor/plugins `pstack/`](https://github.com/cursor/plugins/tree/main/pstack) tree `efa2a531985e0a8084d36ff3cf87233be8a9f34b` | 22 named playbooks, `opening-a-pr.md`, 21 `principle-*` skills, `/poteto-mode` router |
 | Official grok-build | [xai-org/grok-build](https://github.com/xai-org/grok-build) commit `c2ad97f87aea4303b6000a2c22128bc91ee76c9b` | Plugin install, inspect JSON, headless flags, live tool ids |
 | This port | [HARNESS.md](./HARNESS.md) | Call-site mapping onto those grok-build tools |
 
@@ -375,7 +375,7 @@ rg -n --hidden \
   -e 'AskQuestion' -e 'TodoWrite' -e 'generalPurpose' -e 'allow_multiple' \
   -e 'environment:\s*"cloud"' -e "environment:\s*'cloud'" \
   -e 'grok-4.6-fast-xhigh' -e 'gpt-5.6-sol-max' \
-  -e 'claude-fable-5-thinking-max' -e 'claude-opus-5-thinking-xhigh' \
+  -e 'claude-fable-5-1-thinking-max' -e 'claude-opus-5-thinking-xhigh' \
   "$PLUGIN_PATH" \
   | tee "$EVIDENCE/gate3-rg-installed.txt"
 
@@ -455,7 +455,7 @@ Build the detected set. Union of:
 2. `$GROK_MODEL` (`grok-4.6`) because Gate 0 used it successfully.
 3. Any slug that inspect actually listed (unexpected; keep it if present).
 
-Write the set one slug per line to `$EVIDENCE/gate4-detected-slugs.txt`. If the rejection text does **not** name other slugs, the detected set is **only** `grok-4.6`. Do not add `grok-4.6-fast-xhigh`, `claude-fable-5-thinking-max`, `gpt-5.6-sol-max`, or `claude-opus-5-thinking-xhigh`. Those are Cursor panel slugs. They are not live on this box. They must not appear in skill fallbacks or in the written toml.
+Write the set one slug per line to `$EVIDENCE/gate4-detected-slugs.txt`. If the rejection text does **not** name other slugs, the detected set is **only** `grok-4.6`. Do not add `grok-4.6-fast-xhigh`, `claude-fable-5-1-thinking-max`, `gpt-5.6-sol-max`, or `claude-opus-5-thinking-xhigh`. Those are Cursor panel slugs. They are not live on this box. They must not appear in skill fallbacks or in the written toml.
 
 On EDITH's Linux Grok Build the live set has been `grok-4.5` and `grok-4.6`. Record whatever this binary actually accepts.
 
@@ -512,7 +512,7 @@ Cursor panel slugs (FAIL tokens for 4a/4b and for any written toml). EDITH greps
 ```text
 grok-4.6-fast-xhigh
 gpt-5.6-sol-max
-claude-fable-5-thinking-max
+claude-fable-5-1-thinking-max
 claude-opus-5-thinking-xhigh
 ```
 
@@ -586,7 +586,7 @@ grep -oE '"[^"]+"' "$EVIDENCE/gate4a-pstack-models.toml" \
   | tee "$EVIDENCE/gate4a-written-slugs.txt"
 
 : > "$EVIDENCE/gate4a-cursor-slugs.txt"
-for slug in grok-4.6-fast-xhigh gpt-5.6-sol-max claude-fable-5-thinking-max claude-opus-5-thinking-xhigh; do
+for slug in grok-4.6-fast-xhigh gpt-5.6-sol-max claude-fable-5-1-thinking-max claude-opus-5-thinking-xhigh; do
   grep -F "$slug" "$EVIDENCE/gate4a-pstack-models.toml" \
     && echo "$slug" >> "$EVIDENCE/gate4a-cursor-slugs.txt"
 done
@@ -659,7 +659,7 @@ Inspect `rawInput.model` on the feature spawn (null / missing vs a string).
 
 **PASS.** At least one `spawn_subagent` spawn ran, `subagent_type` is `pstack:feature`, `model` is `grok-4.6` or omitted (omit only if the TUI rejected `grok-4.6`), `rawInput` has no `reasoning_effort` key, and the installed plugin's `agents/feature.md` frontmatter contains `effort: medium` (ship-time mechanical tier from `effort_ladder.py` with the grok 1.0.13 usable set).
 
-**FAIL.** Live `spawn_subagent.model` is `grok-4.6-fast-xhigh`, `gpt-5.6-sol-max`, `claude-fable-5-thinking-max`, `claude-opus-5-thinking-xhigh`, or any other slug not in the detected set. Or the spawn sent `reasoning_effort`. Or installed `agents/feature.md` lacks `effort: medium`. Or frontmatter is `max`.
+**FAIL.** Live `spawn_subagent.model` is `grok-4.6-fast-xhigh`, `gpt-5.6-sol-max`, `claude-fable-5-1-thinking-max`, `claude-opus-5-thinking-xhigh`, or any other slug not in the detected set. Or the spawn sent `reasoning_effort`. Or installed `agents/feature.md` lacks `effort: medium`. Or frontmatter is `max`.
 
 **Evidence to keep.** NDJSON, task-spawns JSONL, feature-effort grep, note that the toml was restored.
 

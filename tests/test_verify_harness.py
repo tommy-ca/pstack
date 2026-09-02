@@ -985,14 +985,16 @@ def test_harness_skill_order_is_pstack_then_user_then_native() -> None:
     assert "pstack:how-explorer" in adapt
 
 
-def test_github_pr_fallback_when_gt_missing() -> None:
+def test_forge_neutral_pr_path_without_graphite() -> None:
     harness = (ROOT / "HARNESS.md").read_text(encoding="utf-8")
     ref = ROOT / "skills/poteto-mode/references/github-pr-fallback.md"
     assert ref.is_file()
-    text = ref.read_text(encoding="utf-8")
+    text = ref.read_text(encoding="utf-8").lower()
+    harness_lower = harness.lower()
     assert "github-pr-fallback.md" in harness
-    assert "gh pr" in harness
-    assert "command -v gt" in text
+    assert "gh pr" in harness_lower
+    assert "origin pr" in harness_lower
+    assert "command -v gt" not in text
     assert "gh pr create" in text
     assert "gh pr view" in text
     assert "gh pr checks" in text
@@ -1002,13 +1004,58 @@ def test_github_pr_fallback_when_gt_missing() -> None:
     assert "--base" in text
     opening = (ROOT / "skills/poteto-mode/playbooks/opening-a-pr.md").read_text(
         encoding="utf-8"
-    )
+    ).lower()
     shipping = (ROOT / "skills/poteto-mode/playbooks/shipping.md").read_text(
         encoding="utf-8"
-    )
-    assert "Graphite" in opening
-    assert "gt submit" in shipping
+    ).lower()
+    assert "graphite-first" not in opening
+    assert "gt submit" not in shipping
+    assert "origin" in opening
 
+
+def test_upstream_metadata_contract() -> None:
+    upstream = (ROOT / "UPSTREAM").read_text(encoding="utf-8")
+    assert "tree efa2a531985e0a8084d36ff3cf87233be8a9f34b" in upstream
+    manifest_paths = (
+        "plugin.json",
+        ".grok-plugin/plugin.json",
+        ".codex-plugin/plugin.json",
+        ".claude-plugin/plugin.json",
+    )
+    versions = [
+        json.loads((ROOT / path).read_text(encoding="utf-8"))["version"]
+        for path in manifest_paths
+    ]
+    marketplace = json.loads(
+        (ROOT / ".claude-plugin/marketplace.json").read_text(encoding="utf-8")
+    )
+    versions.append(marketplace["plugins"][0]["version"])
+    assert versions == ["0.14.7-grokbuild.0"] * len(versions)
+    for name in ("how", "typescript-best-practices", "unslop", "why"):
+        frontmatter = (
+            ROOT / "skills" / name / "SKILL.md"
+        ).read_text(encoding="utf-8").split("---", 2)[1]
+        assert "disable-model-invocation: true" in frontmatter, name
+    typescript = (
+        ROOT / "skills/typescript-best-practices/SKILL.md"
+    ).read_text(encoding="utf-8")
+    assert '"**/*.ts"' in typescript
+    assert '"**/*.tsx"' in typescript
+    assert "schemas before guards" in typescript.lower()
+    assert "property-by-property type guard" in typescript.lower()
+    assert not (ROOT / ".cursor-plugin").exists()
+    assert not (ROOT / "assets/logo.png").exists()
+
+    for path in (
+        "README.md",
+        "README.zh-CN.md",
+        "TEST-PLAN.md",
+        "scripts/adapt-harness.py",
+        "scripts/verify-harness.py",
+    ):
+        text = (ROOT / path).read_text(encoding="utf-8")
+        assert "claude-fable-5-1-thinking-max" in text, path
+        assert "claude-fable-5-thinking-max" not in text, path
 
 if __name__ == "__main__":
     test_verify_harness_script_exists()
@@ -1033,5 +1080,6 @@ if __name__ == "__main__":
     test_effort_frontmatter_matches_ladder()
     test_plugin_manifest_matches_grok_parsed_fields()
     test_harness_skill_order_is_pstack_then_user_then_native()
-    test_github_pr_fallback_when_gt_missing()
+    test_forge_neutral_pr_path_without_graphite()
+    test_upstream_metadata_contract()
     print("PASS tests/test_verify_harness.py")
