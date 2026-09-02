@@ -43,11 +43,10 @@ Author with `/create-workflow`. Smoke-check with the `workflow` tool `validate_o
 let r = agent(prompt, #{
     label: "how",
     agent_type: "pstack:how-explorer",
-    capability_mode: "read-only",
 });
 ```
 
-Use `pstack:feature` or `pstack:independent-verifier` the same way. Do not send `reasoning_effort` on `spawn_subagent` from a playbook. In Rhai, `effort` on `AgentOpts` is the workflow child's effort.
+Use `pstack:feature` or `pstack:independent-verifier` the same way. Do not send `reasoning_effort` on `spawn_subagent` from a playbook. In Rhai, `effort` on `AgentOpts` is the workflow child's effort. Write bits come from the plugin agent YAML. Do not set `capability_mode` on `agent()`.
 
 `isolation_worktree: true` gives a private tree and does **not** merge edits back.
 

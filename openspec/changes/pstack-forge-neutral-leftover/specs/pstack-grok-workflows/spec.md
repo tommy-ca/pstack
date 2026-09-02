@@ -1,9 +1,4 @@
-# pstack-grok-workflows Specification
-
-## Purpose
-Define how Grok workflows are discovered and why pstack playbooks remain markdown instead of plugin Rhai workflows.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Document grok workflows without porting playbooks
 

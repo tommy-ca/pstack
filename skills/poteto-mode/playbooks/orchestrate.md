@@ -69,9 +69,9 @@ A dependency is a context relay, not just ordering: undeclared upstream context 
 
 #### Stack safety
 
-- The frontier is a computed host-state object, never narrative. Recompute it from `gt` after every merge and stack mutation because GitHub base refs drift mid-restack while gt tracking is authoritative: ordered PR list, branch names, head SHAs, a generation number, and the lowest unmerged PR. Resolve it where gt knows the stack, normally the stacker's clone; a checkout whose gt metadata never saw the submits reports no PRs and the command errors rather than guessing.
-- Exactly one stacker per stack may run `gt`, serialized within its stack; record the holder in the standing orders. Restacks run in a worktree child or locally; this host has no Cursor cloud VMs.
-- Workers never rebase and never run `gt`. Babysitters follow `playbooks/babysit.md`, one per stack, scoped to one immutable frontier generation; they report conflicts to the stacker rather than restacking.
+- The frontier is a computed host-state object, never narrative. Canonical host state remains the store. After every merge and stack mutation, refresh that object from the resolved forge because GitHub base refs drift mid-restack: ordered PR list, branch names, head SHAs, a generation number, and the lowest unmerged PR. Resolve the forge once per [`github-pr-fallback.md`](../references/github-pr-fallback.md). GitHub CLI (`gh`) is the default. If `command -v origin` succeeds and Origin resolves the repository, use `origin pr list` / `origin pr view`. Otherwise use `gh pr list` / `gh pr view`. A checkout that never saw the submits reports no PRs and the command errors rather than guessing.
+- Exactly one stacker per stack may restack, serialized within its stack; record the holder in the standing orders. Restacks run in a worktree child or locally with `git fetch` and `git rebase` onto the selected parent branch, then view the PR through the resolved forge. This host has no cloud VMs.
+- Workers never rebase and never restack. Babysitters follow `playbooks/babysit.md`, one per stack, scoped to one immutable frontier generation; they report conflicts to the stacker rather than restacking.
 - PR closes and retargets go through the stacker only; closing a base PR orphans every chain above it. Merges and stack surgery are units with briefs like any other.
 - One retro watcher follows merged PRs for reverts, post-merge CI breaks, and orphaned follow-ups.
 

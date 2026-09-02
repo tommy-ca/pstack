@@ -1,7 +1,4 @@
-## Purpose
-When Graphite `gt` is missing or not selected, pstack resolves GitHub `gh` by default or Origin when its CLI resolves the repository. PR and stack landing stays forge-neutral and does not require Graphite.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: GitHub-native PR path when Graphite is missing
 
