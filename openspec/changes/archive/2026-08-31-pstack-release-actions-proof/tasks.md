@@ -12,7 +12,7 @@
 
 - [x] 3.1 After the writers are on `origin/main`, bump `plugin.json` to `0.14.5-grokbuild.4` and land that commit.
 - [x] 3.2 From a host shell run `./scripts/release.sh`. Confirm `gh run list --workflow=release.yml` is non-empty and the GitHub Release for `v0.14.5-grokbuild.4` exists.
-- [ ] 3.3 Pin `grok-build-plugins` marketplace pstack sha to that pstack HEAD. `python3 tests/test_marketplace.py`. `grok --sandbox off plugin update pstack` and `plugin marketplace update grok-build-plugins`.
+- [x] 3.3 Review external follow-up. Original action: pin the `grok-build-plugins` marketplace pstack SHA to that pstack HEAD, run `python3 tests/test_marketplace.py`, then run `grok --sandbox off plugin update pstack` and `plugin marketplace update grok-build-plugins`. Outcome: deferred. Reason: the marketplace checkout and installed-host mutations were outside this pstack change and were not executed. Follow-up: `/home/tommyk/projects/grok-build-plugins`, its `tests/test_marketplace.py`, and its marketplace entry require separately authorized host work.
 
 ## 4. Archive
 

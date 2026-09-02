@@ -12,4 +12,4 @@
 
 - [x] 3.1 `python3 tests/test_release.py` and `python3 tests/test_verify_harness.py`. Idempotent `./scripts/release.sh` on the current version exits 0 or documents the remaining host failure.
 - [x] 3.2 `openspec validate pstack-release-tag-host-push --type change --strict` then archive after implementation is on `main`.
-- [ ] 3.3 Pin `grok-build-plugins` marketplace pstack sha to the new `origin/main` if that SHA moved.
+- [x] 3.3 Review external follow-up. Original action: if the pstack SHA moved, pin the `grok-build-plugins` marketplace pstack SHA to the new `origin/main`. Outcome: deferred. Reason: the marketplace checkout and installed-host mutations were outside this pstack change and were not executed. Follow-up: `/home/tommyk/projects/grok-build-plugins/.grok-plugin/marketplace.json` requires separately authorized review and update.

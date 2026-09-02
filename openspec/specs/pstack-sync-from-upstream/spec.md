@@ -9,7 +9,7 @@ Define the read-only upstream synchronization interface that reports the pinned 
 
 Feature: pstack-sync-from-upstream
 
-`scripts/sync-from-upstream.py --pin` MUST print the 40-hex `tree` SHA from `UPSTREAM`. `--recipe` MUST name `adapt-harness.py`, `verify-harness.py`, skip `make-bot-ui`, and `pstack:<role>`. Default invocation MUST print the recipe. The script MUST NOT overwrite this tree unless a later flag is added.
+`UPSTREAM` MUST record the current official Cursor pstack commit used by the port. `scripts/sync-from-upstream.py --pin` MUST print its 40-hex `tree` SHA. `--recipe` and the default invocation MUST print the same explicit refresh recipe. `--log` MUST fetch and fast-forward `.worktrees/upstream-cursor-plugins` to `origin/main`, then report the pinned SHA and commits after it. The recipe MUST name `adapt-harness.py`, `verify-harness.py`, `pstack:<role>`, and the intentional exclusions for `make-bot-ui` and Cursor-only packaging. The script MUST NOT copy upstream files into the port.
 
 #### Scenario: pin matches UPSTREAM
 
@@ -22,6 +22,7 @@ Feature: pstack-sync-from-upstream
 - **GIVEN** the shipped script
 - **WHEN** `python3 scripts/sync-from-upstream.py` runs with no flags
 - **THEN** stdout is the same as `--recipe`
+- **AND** stdout names the host adaptation and verification commands
 
 #### Scenario: log names pin and empty-or-commits
 
@@ -29,5 +30,12 @@ Feature: pstack-sync-from-upstream
 - **WHEN** `python3 scripts/sync-from-upstream.py --log` runs
 - **THEN** stdout contains `pin ` and the 40-hex SHA
 - **AND** stdout contains either `up to date` or at least one oneline commit
+- **AND** `.worktrees/upstream-cursor-plugins` `HEAD` matches `origin/main`
 - **AND** the script does not copy files into `skills/`
-- **AND** `.worktrees/upstream-cursor-plugins` `HEAD` matches `origin/main` after `--log`
+
+#### Scenario: recipe preserves host-owned files
+
+- **GIVEN** the port has Grok, Codex, Claude, Benny, release, and OpenSpec adaptations
+- **WHEN** an operator follows the recipe
+- **THEN** the recipe excludes `HARNESS.md`, manifests, README files, tests, and scripts from blind copying
+- **AND** the recipe excludes Cursor-only `.cursor-plugin`, `assets/logo.png`, and `make-bot-ui`

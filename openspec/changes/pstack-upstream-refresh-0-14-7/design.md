@@ -20,7 +20,7 @@ The local adapter owns Grok `spawn_subagent`, `monitor`, `scheduler_create`, dep
 - Do not restore `skills/make-bot-ui`; local `figure-it-out` remains its replacement.
 - Do not replace Grok host mappings with Cursor Task calls or Fable model slugs.
 - Do not change Codex compatibility utilities into Grok runtime dependencies.
-- Do not add dependencies, release tags, remote pushes, or production/marketplace updates.
+- Do not add dependencies, perform release tagging or remote pushes, or publish/update production or installed marketplace state; the tracked `.claude-plugin/marketplace.json` version update is in scope.
 - Do not repair unrelated historical OpenSpec task records; that is a separate approved change.
 
 ## Decisions
