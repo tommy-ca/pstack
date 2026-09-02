@@ -13,4 +13,4 @@
 - [x] 3.1 Run `python3 scripts/verify-harness.py`, `uv run --with pytest pytest -q tests/test_verify_harness.py`, `python3 tests/test_release.py`, and `grok plugin validate .`.
 - [x] 3.2 Run `openspec validate pstack-manifest-lockstep --type change --strict` and review the final diff for version-scope drift.
 - [x] 3.3 Sync the `pstack-plugin-schema` delta into the durable main specification after implementation verification.
-- [ ] 3.4 Commit the metadata, test, and specification changes as semantic atomic work without performing release, tag, push, or archive actions.
+- [x] 3.4 Commit the metadata, test, and specification changes as semantic atomic work without performing release, tag, push, or archive actions. Evidence: `420f4ec` on `main`. No release, tag, push, or archive.
