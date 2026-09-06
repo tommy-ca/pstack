@@ -1102,7 +1102,7 @@ def test_forge_neutral_pr_path_without_graphite() -> None:
 
 def test_upstream_metadata_contract() -> None:
     upstream = (ROOT / "UPSTREAM").read_text(encoding="utf-8")
-    assert "tree efa2a531985e0a8084d36ff3cf87233be8a9f34b" in upstream
+    assert "tree 93b00b89ef425a9c1bac0d0b317dfc49c930ac99" in upstream
     root_manifest = json.loads((ROOT / "plugin.json").read_text(encoding="utf-8"))
     root_version = root_manifest["version"]
     manifest_fields = (
@@ -1145,6 +1145,35 @@ def test_upstream_metadata_contract() -> None:
     assert not (ROOT / ".cursor-plugin").exists()
     assert not (ROOT / "assets/logo.png").exists()
 
+    recipe = subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "sync-from-upstream.py")],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout
+    recipe_lower = recipe.lower()
+    for marker in (
+        "scripts/orch",
+        "scripts/watch-pr",
+        "check-plan.mjs",
+        "worktree-audit.sh",
+        "advisor",
+    ):
+        assert marker in recipe_lower, marker
+    codex_map = (
+        ROOT / "skills/poteto-mode/references/codex-tools.md"
+    ).read_text(encoding="utf-8")
+    assert "Codex compatibility surface" in codex_map
+    assert "PSTACK_TRANSCRIPTS_DIR" in codex_map
+    for path in (
+        "skills/poteto-mode/scripts/check-plan.mjs",
+        "skills/poteto-mode/scripts/orch/orch.ts",
+        "skills/poteto-mode/scripts/orch/store.ts",
+        "skills/poteto-mode/scripts/watch-pr/watch-pr",
+        "skills/poteto-mode/scripts/worktree-audit.sh",
+    ):
+        assert (ROOT / path).is_file(), path
     for path in (
         "README.md",
         "README.zh-CN.md",

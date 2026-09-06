@@ -1,13 +1,14 @@
 Official pstack (discipline source)
 https://github.com/cursor/plugins/tree/main/pstack
-tree efa2a531985e0a8084d36ff3cf87233be8a9f34b
-Upstream pstack commits after the previous pin:
-- 73f8be4 fix(pstack): disable model invocation for five skills (#300)
-- 23a56e2 docs(pstack): port forge-neutral playbooks and Fable 5.1 defaults
-- efa2a53 feat(pstack): add plugin logo (#303)
+tree 93b00b89ef425a9c1bac0d0b317dfc49c930ac99
+Verified against upstream `main`: 2026-09-05; commit timestamp: 2026-09-04T12:37:48Z.
+Upstream commits after the previous pin:
+- 7314f723 fix(pstack): shrink logo under 512KiB (#309)
+- 659a6363 feat(advisor): add Advisor plugin (Grok 4.6 consults at key checkpoints) (#314)
+- 93b00b89 fix(advisor): address hook scripts via CURSOR_PLUGIN_ROOT (#315)
 Cursor plugin version at grokbuild import: see TEST-PLAN.md
-Cursor plugin.json on cursor/plugins main at refresh: 0.14.7
-Overlay after 4612556: multi-phase-plan checklist + check-plan.mjs; skipped make-bot-ui
+Cursor plugin.json on cursor/plugins main at refresh: 0.14.8
+Pstack-specific delta after efa2a531: packaging/logo only; executable surfaces unchanged
 
 Grok adapter ancestor
 https://github.com/aa2246740/pstack-grokbuild
@@ -20,7 +21,7 @@ https://github.com/ericlitman/open-pstack
 
 This port
 https://github.com/tommy-ca/pstack
-version 0.14.7-grokbuild.1
+version 0.14.8-grokbuild.0
 
 One shared skills/ tree. Host maps:
 - Grok Build: HARNESS.md
@@ -29,4 +30,4 @@ One shared skills/ tree. Host maps:
 
 Sync: python3 scripts/sync-from-upstream.py --log && python3 scripts/sync-from-upstream.py --recipe
 Then copy intent files, run scripts/adapt-harness.py, hand-fix depth-1 and overnight, then scripts/verify-harness.py.
-Cursor-only `.cursor-plugin/` and `assets/logo.png` stay out of this host adapter.
+Cursor-only `.cursor-plugin/`, `assets/logo.png`, and the separate `advisor` plugin stay out of this host adapter. Retained `scripts/orch`, `scripts/watch-pr`, `check-plan.mjs`, and `worktree-audit.sh` are audited Codex compatibility surfaces, not blind-copy targets.
