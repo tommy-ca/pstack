@@ -219,6 +219,11 @@ export type QueryFailure =
       readonly code: number;
     }
   | {
+      readonly kind: "command-error";
+      readonly retryable: true;
+      readonly detail: string;
+    }
+  | {
       readonly kind: "checks-unavailable";
       readonly retryable: true;
       readonly detail: string;

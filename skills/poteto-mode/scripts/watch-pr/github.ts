@@ -44,7 +44,18 @@ function run(argv: readonly [string, ...string[]]): Promise<CommandResult> {
     child.stderr.on("data", (chunk: string) => {
       stderr += chunk;
     });
-    child.on("error", reject);
+    child.on("error", (error) => {
+      const detail = `${argv[0]} could not be started: ${firstLine(
+        error instanceof Error ? error.message : String(error)
+      )}`.slice(0, 240);
+      reject(
+        new WatcherQueryError({
+          kind: "command-error",
+          retryable: true,
+          detail,
+        })
+      );
+    });
     child.on("close", (code) => resolve({ code: code ?? -1, stdout, stderr }));
   });
 }

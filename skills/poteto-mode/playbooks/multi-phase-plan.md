@@ -14,6 +14,8 @@
 
 **Real surface.** Pick it by what the user would touch. Browser, Electron, and web UIs: the running app plus Grok browser tools or the repo's screenshot harness. CLIs and TUIs: the real binary. Native mobile: the repo's simulator recipe. A PR that touches two surfaces gets lanes on both. A surface you cannot drive is a risk in Appendix C, and its live block still names how each lane runs.
 
+**Dependency graph.** Give every PR/task section a unique identifier in the final parentheses of its H2 title, such as `## Harden the watcher (watcher-errors)`. Write `**Depends on.** None.` for a root or a comma-separated list of identifiers for its direct parents. The checker resolves those references recursively and rejects duplicates, unknown identifiers, and cycles. A nested box remains a sub-step of its parent task; it is not a new graph node.
+
 ````markdown
 # <Program> plan
 
@@ -21,7 +23,7 @@
 
 ## How to read this
 
-One box is one unit of work. Every box names the evidence that checks it. A nested box is a sub-step of the box above it. Check a box only when its evidence exists, a file, a log line, a screenshot, a test run, or a SHA. The body is a how-to. The appendices explain and record.
+One box is one unit of work. Every box names the evidence that checks it. A nested box is a sub-step of the box above it. Each PR/task section also has a unique parenthesized identifier and a `Depends on.` list that names direct parents or `None.`. Check a box only when its evidence exists, a file, a log line, a screenshot, a test run, or a SHA. The body is a how-to. The appendices explain and record.
 
 The program runs `skills/poteto-mode/playbooks/<execution playbook>.md`. <Who merges, and which PR ids are the operator's items that stop at merge-ready.>
 
@@ -75,9 +77,9 @@ Each live lane runs in its own `isolation: "worktree"` child at the PR head. Dri
 - [ ] <Deliver input on that surface. Name the read-only diagnostics.>
 - [ ] Save every screenshot to `/tmp/swarm-<pr-id>/worker-<n>/<slug>.png` and return the paths with the report.
 
-## <Task as a verb phrase> (<PR id>)
+## <Task as a verb phrase> (task-id)
 
-**Depends on.** <PR id, or None.>
+**Depends on.** None.
 
 **Files.**
 

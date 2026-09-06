@@ -38,11 +38,14 @@ def recipe() -> str:
     return f"""Refresh from official Cursor pstack (pin {sha}).
 
 1. python3 scripts/sync-from-upstream.py --log
-2. Copy applicable intent from .worktrees/upstream-cursor-plugins/pstack/
-   (`skills/`, `agents/`, and selected docs). That tree is origin/main after
-   --log. Skip make-bot-ui, `.cursor-plugin/`, and `assets/logo.png`. Do not
-   overwrite HARNESS.md, plugin.json, README.md, README.zh-CN.md, tests/, or
-   scripts/.
+2. Review applicable intent from .worktrees/upstream-cursor-plugins/pstack/
+   (`skills/`, `agents/`, and selected docs). The current compare has a
+   pstack-only 0.14.8 packaging/logo bump; the other commits add the separate
+   Cursor-only `advisor` plugin. Skip `make-bot-ui`, `.cursor-plugin/`,
+   `assets/logo.png`, and the entire `advisor/` plugin. Do not overwrite
+   HARNESS.md, plugin.json, README.md, README.zh-CN.md, tests/, or scripts/.
+   Audit retained `scripts/orch/`, `scripts/watch-pr/`, `check-plan.mjs`, and
+   `worktree-audit.sh` as Codex compatibility surfaces instead of blind-copying.
 3. python3 scripts/adapt-harness.py
 4. Hand-map depth-1 spawn (`pstack:<role>`) and persist-then-wake overnight
    (`/loop` → scheduler_create). Do not leave Cursor Task, same-run /loop,

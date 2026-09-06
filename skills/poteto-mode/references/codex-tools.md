@@ -50,7 +50,7 @@ Cursor same-run `/loop` is **not** live.
 
 ## Vendored scripts
 
-`skills/poteto-mode/scripts/` (`watch-pr`, `orch`, `worktree-audit.sh`) are Codex compatibility utilities for bun/bash hosts. Invoke them through `shell`. They are not a Grok durable orchestration surface: Grok uses canonical task and agent state plus `monitor`/`/loop` and Gas City/Beads. Transcript paths: Grok `~/.grok/sessions/`; Claude `~/.claude/projects/`; Codex session storage. Not `~/.cursor/projects/`.
+`skills/poteto-mode/scripts/` is a bounded set of Codex compatibility utilities and the Codex compatibility surface for bun/bash hosts. It includes `orch/orch.ts` plus `orch/store.ts` and tests, `watch-pr/watch-pr` plus its TypeScript reader/policy/tests, `check-plan.mjs`, and `worktree-audit.sh`. Invoke these through `shell`; they are not a Grok durable orchestration surface. Grok uses canonical task and agent state plus `monitor`/`/loop` and Gas City/Beads. `worktree-audit.sh` accepts `PSTACK_TRANSCRIPTS_DIR` when the host supplies a transcript root and otherwise falls back to its historical Cursor path. Transcript paths: Grok `~/.grok/sessions/`; Claude `~/.claude/projects/`; Codex session storage. Not `~/.cursor/projects/`.
 
 ## Instructions file
 

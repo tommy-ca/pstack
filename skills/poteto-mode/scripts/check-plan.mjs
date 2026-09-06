@@ -105,6 +105,116 @@ const programIndex = sections.indexOf(program);
 const closeIndex = sections.indexOf(close);
 const prSections = programIndex === -1 || closeIndex === -1 ? [] : sections.slice(programIndex + 1, closeIndex);
 if (prSections.length === 0) fail(1, "no PR sections between Program checklist and Close the program");
+const ID = /^[A-Za-z0-9#][A-Za-z0-9._/#-]*$/;
+const graphNodes = new Map();
+const graphIds = new Map();
+const graphDeps = new Map();
+for (const pr of prSections) {
+	const match = /\(([^()]+)\)\s*$/.exec(pr.title);
+	if (!match) {
+		fail(pr.n, `${pr.title}: H2 title must end with (identifier)`);
+		continue;
+	}
+	const id = match[1];
+	if (!ID.test(id)) {
+		fail(pr.n, `${pr.title}: invalid identifier ${JSON.stringify(id)}`);
+		continue;
+	}
+	if (id === "None.") {
+		fail(pr.n, `${pr.title}: reserved identifier ${JSON.stringify(id)}`);
+		continue;
+	}
+	if (graphNodes.has(id)) {
+		fail(pr.n, `${pr.title}: duplicate identifier ${id}`);
+		continue;
+	}
+	graphNodes.set(id, pr);
+	graphIds.set(pr, id);
+	const depends = pr.body.find(
+		(l) => !l.code && /^\*\*Depends on\.\*\*/.test(l.text)
+	);
+	if (!depends) {
+		fail(pr.n, `${pr.title}: missing Depends on. block`);
+		graphDeps.set(id, []);
+		continue;
+	}
+	const rest = depends.text.replace(/^\*\*Depends on\.\*\*/, "").trim();
+	if (rest === "None.") {
+		graphDeps.set(id, []);
+		continue;
+	}
+	if (rest === "") {
+		fail(depends.n, `${pr.title}: Depends on names nothing`);
+		graphDeps.set(id, []);
+		continue;
+	}
+	const refs = rest
+		.split(",")
+		.map((value) => value.trim().replace(/`/g, ""));
+	graphDeps.set(id, refs);
+}
+
+for (const [id, refs] of graphDeps) {
+	const pr = graphNodes.get(id);
+	for (const ref of refs) {
+		if (!ID.test(ref)) {
+			fail(pr?.n ?? 1, `${id}: invalid dependency identifier ${JSON.stringify(ref)}`);
+		} else if (!graphNodes.has(ref)) {
+			fail(pr?.n ?? 1, `${id}: unknown dependency ${ref}`);
+		}
+	}
+}
+
+const graphState = new Map();
+const graphDepths = new Map();
+const graphStack = [];
+const reportedCycles = new Set();
+const visit = (root) => {
+	if (graphState.get(root) === "done") return graphDepths.get(root) ?? 0;
+	const frames = [{ id: root, next: 0, depth: 0 }];
+	graphState.set(root, "visiting");
+	graphStack.push(root);
+	while (frames.length) {
+		const frame = frames.at(-1);
+		const refs = graphDeps.get(frame.id) ?? [];
+		if (frame.next >= refs.length) {
+			const completedDepth = frame.depth;
+			graphStack.pop();
+			graphState.set(frame.id, "done");
+			graphDepths.set(frame.id, completedDepth);
+			frames.pop();
+			const parent = frames.at(-1);
+			if (parent) parent.depth = Math.max(parent.depth, completedDepth + 1);
+			continue;
+		}
+		const ref = refs[frame.next++];
+		if (!graphNodes.has(ref)) continue;
+		const state = graphState.get(ref);
+		if (state === "done") {
+			frame.depth = Math.max(frame.depth, (graphDepths.get(ref) ?? 0) + 1);
+			continue;
+		}
+		if (state === "visiting") {
+			const start = graphStack.indexOf(ref);
+			const cycle = [...graphStack.slice(start), ref];
+			const key = cycle.join("->");
+			if (!reportedCycles.has(key)) {
+				reportedCycles.add(key);
+				fail(
+					graphNodes.get(ref)?.n ?? 1,
+					`${ref}: dependency cycle ${cycle.join(" -> ")}`
+				);
+			}
+			continue;
+		}
+		graphState.set(ref, "visiting");
+		graphStack.push(ref);
+		frames.push({ id: ref, next: 0, depth: 0 });
+	}
+	return graphDepths.get(root) ?? 0;
+};
+for (const id of graphNodes.keys()) visit(id);
+
 
 const report = [];
 for (const pr of prSections) {
@@ -169,7 +279,9 @@ for (const pr of prSections) {
 
 	const total = boxes(pr.body).length;
 	const cells = SUB_BLOCKS.filter((s) => s !== "Depends on.").map((s) => `${s.replace(/[ ,.]+/g, "-").replace(/-$/, "").toLowerCase()}=${counts[s] ?? 0}`);
-	report.push(`${pr.title}  boxes=${total}  ${cells.join(" ")}`);
+	const id = graphIds.get(pr);
+	const graph = id === undefined ? "" : ` id=${id} depth=${graphDepths.get(id) ?? "?"}`;
+	report.push(`${pr.title}${graph}  boxes=${total}  ${cells.join(" ")}`);
 }
 
 if (closeIndex !== -1) {
