@@ -39,7 +39,7 @@ The source files under `skills/poteto-mode/scripts/` remain in place because the
 
 ### Validate a section graph in the existing checker
 
-Use the existing H2 PR sections as graph nodes. A node title must end with `(identifier)`, where the identifier is a non-whitespace token composed of letters, digits, `_`, `.`, `/`, `#`, or `-`. Its `**Depends on.**` rest is either `None.` or a comma-separated list of those identifiers. The checker builds a map, reports duplicate or unknown identifiers, and runs depth-first traversal with a visiting stack to report cycles. It prints `id=<identifier> depth=<n>` in each section's existing summary; depth is the longest dependency path below that node, with a root at zero.
+Use the existing H2 PR sections as graph nodes. A node title must end with `(identifier)`, where the identifier starts with a letter, digit, or `#` and continues with a non-whitespace token composed of letters, digits, `_`, `.`, `/`, `#`, or `-`. Its `**Depends on.**` rest is either `None.` or a comma-separated list of those identifiers. The checker builds a map, reports duplicate or unknown identifiers, and runs depth-first traversal with a visiting stack to report cycles. It prints `id=<identifier> depth=<n>` in each section's existing summary; depth is the longest dependency path below that node, with a root at zero.
 
 This is a strict extension of the local host-adapted checker. The multi-phase plan skeleton will use a concrete `task-id` placeholder and explain the format, so authors no longer have to invent dependency syntax.
 
