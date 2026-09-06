@@ -1,6 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import {
   ChecksUnavailable,
+  GhGitHubReader,
   WatcherQueryError,
   mapRollupNode,
   orderStack,
@@ -281,6 +282,25 @@ describe("context and stack discovery", () => {
       })
     ).toEqual({ owner: "local", repo: "checkout", number: context.number });
     expect(reader.calls).toEqual(["originRepo"]);
+  });
+
+  it("normalizes a missing gh executable as a retryable query error", async () => {
+    const originalPath = process.env.PATH;
+    process.env.PATH = "";
+    try {
+      await expect(
+        new GhGitHubReader().currentPr(parsePrNumber(1))
+      ).rejects.toMatchObject({
+        name: "WatcherQueryError",
+        failure: {
+          kind: "command-error",
+          retryable: true,
+        },
+      });
+    } finally {
+      if (originalPath === undefined) delete process.env.PATH;
+      else process.env.PATH = originalPath;
+    }
   });
 
   it("orders the connected stack bottom-to-top", () => {
