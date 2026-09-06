@@ -101,12 +101,18 @@ git worktree list --porcelain | sed -n 's/^worktree //p' | while IFS= read -r wt
 	fi
 	recent=$([ "$last_ts" -gt 0 ] 2>/dev/null && [ $(( (now - last_ts) / 86400 )) -le 4 ] && echo yes || echo no)
 
-	case "$dirty" in wip:*) bucket=hold-wip ;; *)
-		case "$pr" in *OPEN*) bucket=hold-open-pr ;; *)
-			if [ "$recent" = yes ]; then bucket=verify-recent-chat
-			elif [ "$merged" = YES ] || [ "$pr" != "-" ]; then bucket=safe
-			else bucket=review; fi ;;
-		esac ;;
+	case "$dirty" in
+		wip:*) bucket=hold-wip ;;
+		*)
+			case "$pr" in
+				*OPEN*) bucket=hold-open-pr ;;
+				*)
+					if [ "$recent" = yes ]; then bucket=verify-recent-chat
+					elif [ "$merged" = YES ] || [ "${pr##*/}" = MERGED ]; then bucket=safe
+					else bucket=review; fi
+					;;
+			esac
+			;;
 	esac
 
 	printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" \
