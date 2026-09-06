@@ -115,9 +115,9 @@ describe("recursive dependency graph", () => {
   it("reports depth for an acyclic nested graph", async () => {
     const result = await runChecker(
       plan([
-        section("Sync upstream (#sync)", "None."),
-        section("Harden checker (checker)", "#sync"),
         section("Run smoke (smoke)", "checker"),
+        section("Harden checker (checker)", "#sync"),
+        section("Sync upstream (#sync)", "None."),
       ])
     );
     expect(result.code).toBe(0);

@@ -174,10 +174,13 @@ const visit = (root) => {
 		const frame = frames.at(-1);
 		const refs = graphDeps.get(frame.id) ?? [];
 		if (frame.next >= refs.length) {
+			const completedDepth = frame.depth;
 			graphStack.pop();
 			graphState.set(frame.id, "done");
-			graphDepths.set(frame.id, frame.depth);
+			graphDepths.set(frame.id, completedDepth);
 			frames.pop();
+			const parent = frames.at(-1);
+			if (parent) parent.depth = Math.max(parent.depth, completedDepth + 1);
 			continue;
 		}
 		const ref = refs[frame.next++];
