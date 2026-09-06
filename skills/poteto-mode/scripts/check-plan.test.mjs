@@ -184,6 +184,14 @@ describe("recursive dependency graph", () => {
     expect(result.stderr).toContain("invalid identifier");
   });
 
+  it("rejects the reserved None identifier", async () => {
+    const result = await runChecker(
+      plan([section("Malformed (None.)", "None.")])
+    );
+    expect(result.code).toBe(1);
+    expect(result.stderr).toContain("reserved identifier");
+  });
+
   it("rejects empty dependency entries", async () => {
     const result = await runChecker(
       plan([

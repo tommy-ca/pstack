@@ -120,6 +120,10 @@ for (const pr of prSections) {
 		fail(pr.n, `${pr.title}: invalid identifier ${JSON.stringify(id)}`);
 		continue;
 	}
+	if (id === "None.") {
+		fail(pr.n, `${pr.title}: reserved identifier ${JSON.stringify(id)}`);
+		continue;
+	}
 	if (graphNodes.has(id)) {
 		fail(pr.n, `${pr.title}: duplicate identifier ${id}`);
 		continue;
