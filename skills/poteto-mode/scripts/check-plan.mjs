@@ -105,6 +105,92 @@ const programIndex = sections.indexOf(program);
 const closeIndex = sections.indexOf(close);
 const prSections = programIndex === -1 || closeIndex === -1 ? [] : sections.slice(programIndex + 1, closeIndex);
 if (prSections.length === 0) fail(1, "no PR sections between Program checklist and Close the program");
+const ID = /^[A-Za-z0-9#][A-Za-z0-9._/#-]*$/;
+const graphNodes = new Map();
+const graphIds = new Map();
+const graphDeps = new Map();
+for (const pr of prSections) {
+	const match = /\(([^()]+)\)\s*$/.exec(pr.title);
+	if (!match) {
+		fail(pr.n, `${pr.title}: H2 title must end with (identifier)`);
+		continue;
+	}
+	const id = match[1].trim();
+	if (!ID.test(id)) {
+		fail(pr.n, `${pr.title}: invalid identifier ${JSON.stringify(id)}`);
+		continue;
+	}
+	if (graphNodes.has(id)) {
+		fail(pr.n, `${pr.title}: duplicate identifier ${id}`);
+		continue;
+	}
+	graphNodes.set(id, pr);
+	graphIds.set(pr, id);
+	const depends = pr.body.find(
+		(l) => !l.code && /^\*\*Depends on\.\*\*/.test(l.text)
+	);
+	if (!depends) {
+		fail(pr.n, `${pr.title}: missing Depends on. block`);
+		graphDeps.set(id, []);
+		continue;
+	}
+	const rest = depends.text.replace(/^\*\*Depends on\.\*\*/, "").trim();
+	if (rest === "" || /^None\.?$/i.test(rest)) {
+		if (rest === "") fail(depends.n, `${pr.title}: Depends on names nothing`);
+		graphDeps.set(id, []);
+		continue;
+	}
+	const refs = rest
+		.split(",")
+		.map((value) => value.trim().replace(/\.$/, "").replace(/`/g, ""))
+		.filter(Boolean);
+	graphDeps.set(id, refs);
+}
+
+for (const [id, refs] of graphDeps) {
+	const pr = graphNodes.get(id);
+	for (const ref of refs) {
+		if (!ID.test(ref)) {
+			fail(pr?.n ?? 1, `${id}: invalid dependency identifier ${JSON.stringify(ref)}`);
+		} else if (!graphNodes.has(ref)) {
+			fail(pr?.n ?? 1, `${id}: unknown dependency ${ref}`);
+		}
+	}
+}
+
+const graphState = new Map();
+const graphDepths = new Map();
+const graphStack = [];
+const reportedCycles = new Set();
+const visit = (id) => {
+	const state = graphState.get(id);
+	if (state === "done") return graphDepths.get(id) ?? 0;
+	if (state === "visiting") {
+		const start = graphStack.indexOf(id);
+		const cycle = [...graphStack.slice(start), id];
+		const key = cycle.join("->");
+		if (!reportedCycles.has(key)) {
+			reportedCycles.add(key);
+			fail(
+				graphNodes.get(id)?.n ?? 1,
+				`${id}: dependency cycle ${cycle.join(" -> ")}`
+			);
+		}
+		return 0;
+	}
+	graphState.set(id, "visiting");
+	graphStack.push(id);
+	let depth = 0;
+	for (const ref of graphDeps.get(id) ?? []) {
+		if (graphNodes.has(ref)) depth = Math.max(depth, visit(ref) + 1);
+	}
+	graphStack.pop();
+	graphState.set(id, "done");
+	graphDepths.set(id, depth);
+	return depth;
+};
+for (const id of graphNodes.keys()) visit(id);
+
 
 const report = [];
 for (const pr of prSections) {
@@ -169,7 +255,9 @@ for (const pr of prSections) {
 
 	const total = boxes(pr.body).length;
 	const cells = SUB_BLOCKS.filter((s) => s !== "Depends on.").map((s) => `${s.replace(/[ ,.]+/g, "-").replace(/-$/, "").toLowerCase()}=${counts[s] ?? 0}`);
-	report.push(`${pr.title}  boxes=${total}  ${cells.join(" ")}`);
+	const id = graphIds.get(pr);
+	const graph = id === undefined ? "" : ` id=${id} depth=${graphDepths.get(id) ?? "?"}`;
+	report.push(`${pr.title}${graph}  boxes=${total}  ${cells.join(" ")}`);
 }
 
 if (closeIndex !== -1) {
