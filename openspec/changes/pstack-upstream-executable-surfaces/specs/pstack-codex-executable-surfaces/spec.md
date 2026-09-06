@@ -4,7 +4,7 @@
 
 Feature: pstack-codex-executable-surfaces
 
-The repository MUST retain and identify the following executable compatibility surfaces: `skills/poteto-mode/scripts/orch/orch.ts`, `skills/poteto-mode/scripts/orch/store.ts`, their tests, `skills/poteto-mode/scripts/watch-pr/watch-pr` and its TypeScript implementation/tests, `skills/poteto-mode/scripts/check-plan.mjs`, and `skills/poteto-mode/scripts/worktree-audit.sh`. `skills/poteto-mode/references/codex-tools.md` MUST identify them as Codex compatibility utilities. Grok playbooks MUST use canonical host task, agent, monitoring, and scheduler state instead of invoking these tools or creating their local store.
+The repository MUST retain and identify the following executable compatibility surfaces: `skills/poteto-mode/scripts/orch/orch.ts`, `skills/poteto-mode/scripts/orch/store.ts`, their tests, `skills/poteto-mode/scripts/watch-pr/watch-pr` and its TypeScript implementation/tests, `skills/poteto-mode/scripts/check-plan.mjs`, and `skills/poteto-mode/scripts/worktree-audit.sh`. `skills/poteto-mode/references/codex-tools.md` MUST identify them as Codex compatibility utilities. Grok durable orchestration MUST use canonical host task, agent, monitoring, and scheduler state instead of invoking `scripts/orch` or `scripts/watch-pr`, and MUST NOT create a repository-local orchestration store. Mapped read-only validation and cleanup playbooks MAY invoke `check-plan.mjs` and `worktree-audit.sh`; those utilities MUST NOT own durable host state.
 
 #### Scenario: executable inventory has a testable entrypoint
 
@@ -55,6 +55,13 @@ Feature: pstack-codex-executable-surfaces
 - **WHEN** `worktree-audit.sh` classifies a worktree
 - **THEN** its merge field is `unknown`
 - **AND** it does not label the worktree `no` solely because the ref is unavailable
+
+#### Scenario: closed PR does not prove a merge
+
+- **GIVEN** `origin/main` is unavailable and the forge reports a `CLOSED` PR
+- **WHEN** `worktree-audit.sh` classifies a clean worktree
+- **THEN** its bucket is `review`
+- **AND** it does not label the worktree safe without a merge proof
 
 #### Scenario: transcript root is explicit
 

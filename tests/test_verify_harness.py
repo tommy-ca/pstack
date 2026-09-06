@@ -1144,6 +1144,7 @@ def test_upstream_metadata_contract() -> None:
     assert "property-by-property type guard" in typescript.lower()
     assert not (ROOT / ".cursor-plugin").exists()
     assert not (ROOT / "assets/logo.png").exists()
+    assert not (ROOT / "advisor").exists()
 
     recipe = subprocess.run(
         [sys.executable, str(ROOT / "scripts" / "sync-from-upstream.py")],

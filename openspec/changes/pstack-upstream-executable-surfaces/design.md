@@ -1,6 +1,6 @@
 ## Context
 
-The port is a host adapter, not a byte-for-byte Cursor plugin mirror. `UPSTREAM` points at `efa2a531985e0a8084d36ff3cf87233be8a9f34b`; the live Cursor pstack tree is `93b00b89ef425a9c1bac0d0b317dfc49c930ac99`. The compare range contains a pstack `0.14.8` logo/manifest bump and two commits for a separate Cursor-only `advisor` plugin. No pstack skill, playbook, agent, or executable changed in that range.
+The port is a host adapter, not a byte-for-byte Cursor plugin mirror. `UPSTREAM` records the previous pin `efa2a531985e0a8084d36ff3cf87233be8a9f34b` and now points at the live Cursor pstack tree `93b00b89ef425a9c1bac0d0b317dfc49c930ac99`. The compare range contains a pstack `0.14.8` logo/manifest bump and two commits for a separate Cursor-only `advisor` plugin. No pstack skill, playbook, agent, or executable changed in that range.
 
 The local tree retains upstream's Codex utilities. `orch` and `store` implement plain-file units, ledgers, inbox, gates, frontier, standing orders, status, atomic writes, and locking. `watch-pr`, `check-plan.mjs`, and `worktree-audit.sh` are executable compatibility surfaces. The Grok path already uses host-native task/agent state and MUST continue to avoid the local store.
 
@@ -33,13 +33,13 @@ Update `UPSTREAM` to `93b00b89ef425a9c1bac0d0b317dfc49c930ac99`, record the thre
 
 The sync recipe will classify unchanged executable paths as audit-and-adapt surfaces rather than blind-copy candidates. The sync script remains read-only and continues to update no port files.
 
-### Keep executable tools Codex-only
+### Keep durable orchestration host-bounded
 
-The source files under `skills/poteto-mode/scripts/` remain in place because the Codex map references them. Add durable contract coverage and package test coverage, but do not route Grok playbooks through them. `orch/store` remains Graphite-specific at its frontier boundary; that limitation is documented rather than silently replaced with a second forge implementation.
+The source files under `skills/poteto-mode/scripts/` remain in place because the Codex map references them. Add durable contract coverage and package test coverage, but do not route Grok durable orchestration through `orch`, `store`, or `watch-pr`. Mapped read-only validation and cleanup playbooks may invoke `check-plan.mjs` and `worktree-audit.sh`; those utilities never own durable host state. `orch/store` remains Graphite-specific at its frontier boundary; that limitation is documented rather than silently replaced with a second forge implementation.
 
 ### Validate a section graph in the existing checker
 
-Use the existing H2 PR sections as graph nodes. A node title must end with `(identifier)`, where the identifier starts with a letter, digit, or `#` and continues with a non-whitespace token composed of letters, digits, `_`, `.`, `/`, `#`, or `-`. Its `**Depends on.**` rest is either `None.` or a comma-separated list of those identifiers. The checker builds a map, reports duplicate or unknown identifiers, and runs depth-first traversal with a visiting stack to report cycles. It prints `id=<identifier> depth=<n>` in each section's existing summary; depth is the longest dependency path below that node, with a root at zero.
+Use the existing H2 PR sections as graph nodes. A node title must end with `(identifier)`, where the identifier starts with a letter, digit, or `#` and continues with a non-whitespace token composed of letters, digits, `_`, `.`, `/`, `#`, or `-`. Its `**Depends on.**` rest is either `None.` or a comma-separated list of those identifiers. The checker builds a map, reports duplicate or unknown identifiers, and runs iterative depth-first traversal with a visiting stack to report cycles. It prints `id=<identifier> depth=<n>` in each section's existing summary; depth is the longest dependency path below that node, with a root at zero.
 
 This is a strict extension of the local host-adapted checker. The multi-phase plan skeleton will use a concrete `task-id` placeholder and explain the format, so authors no longer have to invent dependency syntax.
 
