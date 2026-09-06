@@ -125,6 +125,14 @@ describe("recursive dependency graph", () => {
     expect(result.stdout).toContain("depth=2");
   });
 
+  it("rejects a malformed None dependency", async () => {
+    const result = await runChecker(
+      plan([section("Malformed root (root)", "None")])
+    );
+    expect(result.code).toBe(1);
+    expect(result.stderr).toContain("None");
+  });
+
   it("rejects an unknown dependency", async () => {
     const result = await runChecker(
       plan([section("Watch errors (watcher)", "missing")])
@@ -156,4 +164,51 @@ describe("recursive dependency graph", () => {
     expect(result.stderr).toContain("cycle");
     expect(result.stderr).toContain("a -> b -> a");
   });
+
+  it("accepts identifiers ending with a period", async () => {
+    const result = await runChecker(
+      plan([
+        section("Root (root.)", "None."),
+        section("Leaf (leaf)", "root."),
+      ])
+    );
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain("depth=1");
+  });
+
+  it("rejects whitespace inside identifiers", async () => {
+    const result = await runChecker(
+      plan([section("Malformed ( foo )", "None.")])
+    );
+    expect(result.code).toBe(1);
+    expect(result.stderr).toContain("invalid identifier");
+  });
+
+  it("rejects empty dependency entries", async () => {
+    const result = await runChecker(
+      plan([
+        section("Root (root)", "None."),
+        section("Malformed (bad)", "root,"),
+      ])
+    );
+    expect(result.code).toBe(1);
+    expect(result.stderr).toContain("invalid dependency identifier");
+  });
+
+  it("handles a deep acyclic dependency chain", async () => {
+    const count = 20000;
+    const result = await runChecker(
+      plan(
+        Array.from({ length: count }, (_, index) =>
+          section(
+            `Task ${index} (${index})`,
+            index === 0 ? "None." : String(index - 1)
+          )
+        )
+      )
+    );
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain(`depth=${count - 1}`);
+  });
+
 });

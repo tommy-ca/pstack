@@ -115,7 +115,7 @@ for (const pr of prSections) {
 		fail(pr.n, `${pr.title}: H2 title must end with (identifier)`);
 		continue;
 	}
-	const id = match[1].trim();
+	const id = match[1];
 	if (!ID.test(id)) {
 		fail(pr.n, `${pr.title}: invalid identifier ${JSON.stringify(id)}`);
 		continue;
@@ -135,15 +135,18 @@ for (const pr of prSections) {
 		continue;
 	}
 	const rest = depends.text.replace(/^\*\*Depends on\.\*\*/, "").trim();
-	if (rest === "" || /^None\.?$/i.test(rest)) {
-		if (rest === "") fail(depends.n, `${pr.title}: Depends on names nothing`);
+	if (rest === "None.") {
+		graphDeps.set(id, []);
+		continue;
+	}
+	if (rest === "") {
+		fail(depends.n, `${pr.title}: Depends on names nothing`);
 		graphDeps.set(id, []);
 		continue;
 	}
 	const refs = rest
 		.split(",")
-		.map((value) => value.trim().replace(/\.$/, "").replace(/`/g, ""))
-		.filter(Boolean);
+		.map((value) => value.trim().replace(/`/g, ""));
 	graphDeps.set(id, refs);
 }
 
@@ -162,32 +165,46 @@ const graphState = new Map();
 const graphDepths = new Map();
 const graphStack = [];
 const reportedCycles = new Set();
-const visit = (id) => {
-	const state = graphState.get(id);
-	if (state === "done") return graphDepths.get(id) ?? 0;
-	if (state === "visiting") {
-		const start = graphStack.indexOf(id);
-		const cycle = [...graphStack.slice(start), id];
-		const key = cycle.join("->");
-		if (!reportedCycles.has(key)) {
-			reportedCycles.add(key);
-			fail(
-				graphNodes.get(id)?.n ?? 1,
-				`${id}: dependency cycle ${cycle.join(" -> ")}`
-			);
+const visit = (root) => {
+	if (graphState.get(root) === "done") return graphDepths.get(root) ?? 0;
+	const frames = [{ id: root, next: 0, depth: 0 }];
+	graphState.set(root, "visiting");
+	graphStack.push(root);
+	while (frames.length) {
+		const frame = frames.at(-1);
+		const refs = graphDeps.get(frame.id) ?? [];
+		if (frame.next >= refs.length) {
+			graphStack.pop();
+			graphState.set(frame.id, "done");
+			graphDepths.set(frame.id, frame.depth);
+			frames.pop();
+			continue;
 		}
-		return 0;
+		const ref = refs[frame.next++];
+		if (!graphNodes.has(ref)) continue;
+		const state = graphState.get(ref);
+		if (state === "done") {
+			frame.depth = Math.max(frame.depth, (graphDepths.get(ref) ?? 0) + 1);
+			continue;
+		}
+		if (state === "visiting") {
+			const start = graphStack.indexOf(ref);
+			const cycle = [...graphStack.slice(start), ref];
+			const key = cycle.join("->");
+			if (!reportedCycles.has(key)) {
+				reportedCycles.add(key);
+				fail(
+					graphNodes.get(ref)?.n ?? 1,
+					`${ref}: dependency cycle ${cycle.join(" -> ")}`
+				);
+			}
+			continue;
+		}
+		graphState.set(ref, "visiting");
+		graphStack.push(ref);
+		frames.push({ id: ref, next: 0, depth: 0 });
 	}
-	graphState.set(id, "visiting");
-	graphStack.push(id);
-	let depth = 0;
-	for (const ref of graphDeps.get(id) ?? []) {
-		if (graphNodes.has(ref)) depth = Math.max(depth, visit(ref) + 1);
-	}
-	graphStack.pop();
-	graphState.set(id, "done");
-	graphDepths.set(id, depth);
-	return depth;
+	return graphDepths.get(root) ?? 0;
 };
 for (const id of graphNodes.keys()) visit(id);
 
