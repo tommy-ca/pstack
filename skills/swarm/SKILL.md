@@ -25,6 +25,8 @@ Open a todolist with one entry per phase before launching anything.
 4. Pick the worker model from toml key `swarm-workers` per `../setup-pstack/references/resolve-model.md`. Absent file: send `grok-4.6` (omit if rejected). Missing key, `inherit-parent`, or `auto`: omit `model`. For a model race, name each arm from this session's detected slugs only.
 5. Give each worker its own writable output when it writes. Use a worktree, branch, or `/tmp/swarm-<slug>/worker-<n>/`.
 
+When the work is an upstream refresh, classify and slice from `references/classification.tsv` with `scripts/partition.py` (`print`, `print --coverage`, `partition`). Workers fill unclassified fragments. They do not rewrite the canonical TSV. Skip, host-owned, and audit rows stay out of worker slices.
+
 ## Phase B: Fan out
 
 Spawn all N workers in one parent turn with `spawn_subagent`: `subagent_type: "pstack:swarm-workers"` ([`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md)), `isolation: "worktree"`, `background: true`, and the configured `model`. Use `isolation: "none"` only when the worker needs this machine's cwd. Do not send `reasoning_effort`. Join with `get_command_or_subagent_output`.
