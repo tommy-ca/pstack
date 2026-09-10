@@ -39,13 +39,18 @@ def recipe() -> str:
 
 1. python3 scripts/sync-from-upstream.py --log
 2. Review applicable intent from .worktrees/upstream-cursor-plugins/pstack/
-   (`skills/`, `agents/`, and selected docs). The current compare has a
-   pstack-only 0.14.8 packaging/logo bump; the other commits add the separate
-   Cursor-only `advisor` plugin. Skip `make-bot-ui`, `.cursor-plugin/`,
+   (`skills/`, `agents/`, and selected docs). Classify the live delta with
+   skills/swarm/references/classification.tsv and
+   skills/swarm/scripts/partition.py (print, print --coverage, partition). Pack
+   interrogate reviewer prompts with skills/interrogate/scripts/pack.py.
+   The current compare is official pstack 0.15.1: two new principle leaves
+   (attack-the-premise, test-behavior-not-implementation), a density pass,
+   and the evidence-or-label rule. Skip `make-bot-ui`, `.cursor-plugin/`,
    `assets/logo.png`, and the entire `advisor/` plugin. Do not overwrite
    HARNESS.md, plugin.json, README.md, README.zh-CN.md, tests/, or scripts/.
    Audit retained `scripts/orch/`, `scripts/watch-pr/`, `check-plan.mjs`, and
    `worktree-audit.sh` as Codex compatibility surfaces instead of blind-copying.
+   Do not replace Grok `agents/` (22 role files) with upstream's two files.
 3. python3 scripts/adapt-harness.py
 4. Hand-map depth-1 spawn (`pstack:<role>`) and persist-then-wake overnight
    (`/loop` → scheduler_create). Do not leave Cursor Task, same-run /loop,

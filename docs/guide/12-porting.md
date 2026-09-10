@@ -11,7 +11,7 @@ From the official README and `docs/guide/08-principles.md`:
 - **Less code, higher quality.** Throughput without quality is not the goal. Opposite of maximizing loc.
 - **Go deep, then parallelize.** Trust each agent because it applies the same principles. Then fan out.
 - **One router.** `/poteto-mode` matches a playbook and calls situational skills. The operator gives a goal and a checkable outcome in their own words.
-- **Steer with principle names.** 21 principles as leaf skills. You do not invoke them. One phrase redirects. The agent must name the decision the principle changed.
+- **Steer with principle names.** 23 principles as leaf skills. You do not invoke them. One phrase redirects. The agent must name the decision the principle changed.
 - **Prove on the real artifact.** Compiling is not done.
 - **Never block on reversible work.** Pause on irreversible writes.
 - **Encode lessons in structure.** The second time you write an instruction, turn it into a check or script. **Laziness Protocol** is the default sizing rule: smallest change, prefer deletion.

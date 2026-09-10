@@ -41,7 +41,7 @@ as the call-site and profile mapping source of truth.
 
 ## How grok-native pstack works
 
-This port is official pstack playbooks and 21 principles on Grok Build 1.0.13. It is not the Cursor plugin runtime.
+This port is official pstack playbooks and 23 principles on Grok Build 1.0.13. It is not the Cursor plugin runtime.
 
 **Router.** `/poteto-mode` matches a playbook and copies its steps into todos. It does not auto-enter. Skill order is pstack first, then user, then bundled and builtin. Example: `/tdd` before `/test-driven-development`.
 
