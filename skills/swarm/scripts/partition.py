@@ -180,10 +180,15 @@ def default_cache_path(root: Path) -> Path:
 
 
 def resolve_cache(root: Path, cache: Path | None) -> Path:
-    path = Path(cache) if cache is not None else default_cache_path(root)
+    if cache is None:
+        path = default_cache_path(root)
+    else:
+        path = Path(cache)
+        if not path.is_absolute():
+            path = primary_checkout_root(root) / path
     if not path.exists():
         raise SystemExit(f"missing cache: {path}")
-    return path
+    return path.resolve()
 
 
 def read_upstream_pin(root: Path) -> str:
