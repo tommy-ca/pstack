@@ -192,3 +192,204 @@ def test_sync_remote_cache_is_primary_checkout() -> None:
     assert got == Path(
         "/home/tommyk/projects/pstack/.worktrees/upstream-cursor-plugins"
     ).resolve()
+
+
+def test_host_script_literal_and_apply_skills_eperm(tmp_path: Path, capsys) -> None:
+    mod = load()
+    root = tmp_path / "pstack"
+    root.mkdir()
+    subprocess.run(
+        ["git", "init", "-b", "main", str(root)], check=True, capture_output=True
+    )
+    src = root / "skills" / "reflect" / "SKILL.md"
+    src.parent.mkdir(parents=True)
+    src.write_text("GROK_SESSION_ID\n", encoding="utf-8")
+    skills = tmp_path / "skills"
+    dest = skills / "reflect" / "SKILL.md"
+    dest.parent.mkdir(parents=True)
+    dest.write_text(
+        "transcripts live in ~/.claude/projects/encoded\n", encoding="utf-8"
+    )
+
+    assert mod.main(["--root", str(root), "--skills", str(skills)]) == 0
+    assert dest.read_text(encoding="utf-8") == (
+        "transcripts live in ~/.claude/projects/encoded\n"
+    )
+    assert capsys.readouterr().out == (
+        "kind\taction\tpath\tnote\n"
+        f"stale-skill\treport\t{dest}\tclaude-shaped\n"
+    )
+
+    assert (
+        mod.main(
+            ["--root", str(root), "--skills", str(skills), "--host-script"]
+        )
+        == 0
+    )
+    assert capsys.readouterr().out == f"cp -- {src} {dest}\n"
+    assert dest.read_text(encoding="utf-8") == (
+        "transcripts live in ~/.claude/projects/encoded\n"
+    )
+
+    dest.chmod(0o444)
+    try:
+        assert (
+            mod.main(
+                ["--root", str(root), "--skills", str(skills), "--apply-skills"]
+            )
+            == 2
+        )
+        assert capsys.readouterr().out == (
+            "kind\taction\tpath\tnote\n"
+            f"stale-skill\teperm\t{dest}\tEPERM\n"
+        )
+        assert dest.read_text(encoding="utf-8") == (
+            "transcripts live in ~/.claude/projects/encoded\n"
+        )
+        assert stat.S_IMODE(dest.stat().st_mode) == 0o444
+    finally:
+        dest.chmod(0o644)
+
+
+def test_host_script_dest_is_overlay_not_symlink_target(
+    tmp_path: Path, capsys
+) -> None:
+    mod = load()
+    root = tmp_path / "pstack"
+    src = root / "skills" / "reflect" / "SKILL.md"
+    src.parent.mkdir(parents=True)
+    src.write_text("GROK_SESSION_ID\n", encoding="utf-8")
+    agents = tmp_path / "agents" / "skills" / "reflect"
+    agents.mkdir(parents=True)
+    (agents / "SKILL.md").write_text(
+        "transcripts live in ~/.claude/projects/encoded\n", encoding="utf-8"
+    )
+    skills = tmp_path / "skills"
+    skills.mkdir()
+    (skills / "reflect").symlink_to(agents)
+    dest = skills / "reflect" / "SKILL.md"
+    assert dest.resolve() == (agents / "SKILL.md").resolve()
+    assert (
+        mod.main(
+            ["--root", str(root), "--skills", str(skills), "--host-script"]
+        )
+        == 0
+    )
+    out = capsys.readouterr().out
+    assert out == f"cp -- {src} {dest}\n"
+    assert str(agents) not in out
+    assert dest.read_text(encoding="utf-8") == (
+        "transcripts live in ~/.claude/projects/encoded\n"
+    )
+
+
+def test_parent_symlink_cache_is_keep_not_deleted(tmp_path: Path, capsys) -> None:
+    mod = load()
+    repo, primary, nested, skills = _repo(tmp_path)
+    sample = repo / ".worktrees" / "fix" / "sample"
+    elsewhere = tmp_path / "elsewhere" / ".worktrees" / "upstream-cursor-plugins"
+    elsewhere.mkdir(parents=True)
+    (elsewhere / "marker").write_text("via-symlink\n", encoding="utf-8")
+    mod.rmtree_git_clone(nested)
+    nested.parent.rmdir()
+    (sample / ".worktrees").symlink_to(elsewhere.parent)
+    cand = sample / ".worktrees" / "upstream-cursor-plugins"
+    assert cand.is_dir()
+    assert (sample / ".worktrees").is_symlink()
+    assert (
+        mod.main(["--root", str(repo), "--skills", str(skills), "--apply"]) == 0
+    )
+    assert (elsewhere / "marker").read_text(encoding="utf-8") == "via-symlink\n"
+    out = capsys.readouterr().out
+    assert f"nested-cache\tkeep\t{cand}\tsymlink" in out
+    assert f"nested-cache\tdeleted\t{elsewhere.resolve()}" not in out
+
+
+def test_apply_collects_then_records_error_and_still_present(
+    tmp_path: Path, capsys, monkeypatch
+) -> None:
+    mod = load()
+    repo, primary, nested, skills = _repo(tmp_path)
+    skill = skills / "reflect" / "SKILL.md"
+
+    def boom(path: Path, guard: object) -> None:
+        assert nested.exists()
+        raise OSError("nope")
+
+    monkeypatch.setattr(mod, "guarded_delete", boom)
+    assert (
+        mod.main(["--root", str(repo), "--skills", str(skills), "--apply"]) == 0
+    )
+    assert nested.exists()
+    assert (primary / "marker").read_text(encoding="utf-8") == "primary\n"
+    assert capsys.readouterr().out == (
+        "kind\taction\tpath\tnote\n"
+        f"nested-cache\terror\t{nested.resolve()}\tnope\n"
+        f"nested-cache\tkeep\t{primary.resolve()}\tprimary overlay cache\n"
+        f"stale-skill\treport\t{skill.resolve()}\tclaude-shaped\n"
+    )
+
+    def silent(path: Path, guard: object) -> None:
+        return None
+
+    monkeypatch.setattr(mod, "guarded_delete", silent)
+    assert (
+        mod.main(["--root", str(repo), "--skills", str(skills), "--apply"]) == 0
+    )
+    assert nested.exists()
+    out = capsys.readouterr().out
+    assert f"nested-cache\tdeleted\t{nested.resolve()}" not in out
+    assert f"nested-cache\terror\t{nested.resolve()}\tstill present" in out
+
+
+def test_leftover_worktree_when_squash_from_log_empty(
+    tmp_path: Path, capsys
+) -> None:
+    mod = load()
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    subprocess.run(
+        ["git", "init", "--initial-branch=main", str(repo)],
+        check=True,
+        capture_output=True,
+    )
+    _git(repo, "config", "user.name", "Hygiene Test")
+    _git(repo, "config", "user.email", "hygiene@example.com")
+    (repo / "f.txt").write_text("a\n", encoding="utf-8")
+    _git(repo, "add", ".")
+    _git(repo, "commit", "-m", "main")
+    worktree = tmp_path / "demo"
+    _git(repo, "worktree", "add", "-b", "feat/demo", str(worktree))
+    (worktree / "f.txt").write_text("b\n", encoding="utf-8")
+    _git(worktree, "add", ".")
+    _git(worktree, "commit", "-m", "feat: demo")
+    skills = tmp_path / "skills"
+    skill = skills / "reflect" / "SKILL.md"
+    skill.parent.mkdir(parents=True)
+    skill.write_text("GROK_SESSION_ID only\n", encoding="utf-8")
+    assert mod.main(["--root", str(repo), "--skills", str(skills)]) == 0
+    assert capsys.readouterr().out == (
+        "kind\taction\tpath\tnote\n"
+        f"leftover-worktree\treport\t{worktree.resolve()}\t"
+        "HEAD not ancestor of main\n"
+    )
+
+
+def test_scan_skills_permission_error_emits_unread(
+    tmp_path: Path, monkeypatch
+) -> None:
+    mod = load()
+    skills = tmp_path / "skills"
+    skill = skills / "reflect" / "SKILL.md"
+    skill.parent.mkdir(parents=True)
+    skill.write_text("secret\n", encoding="utf-8")
+    real = Path.read_text
+
+    def deny(self: Path, *args: object, **kwargs: object) -> str:
+        if Path(self) == skill:
+            raise PermissionError("denied")
+        return real(self, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "read_text", deny)
+    rows = mod.scan_skills(skills)
+    assert rows == (mod.Row(mod.KIND_SKILL, "report", skill, "unread"),)

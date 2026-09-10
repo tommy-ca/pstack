@@ -650,8 +650,14 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert "up to date" in logged.stdout or re.search(
         r"^[0-9a-f]{7} ", logged.stdout, re.MULTILINE
     )
-    cache = ROOT / ".worktrees" / "upstream-cursor-plugins"
-    if (cache / ".git").is_dir():
+    sync_loader = importlib.util.spec_from_file_location(
+        "sync_from_upstream_log", ROOT / "scripts/sync-from-upstream.py"
+    )
+    assert sync_loader is not None and sync_loader.loader is not None
+    sync = importlib.util.module_from_spec(sync_loader)
+    sync_loader.loader.exec_module(sync)
+    cache = sync.remote_cache()
+    if (cache / ".git").is_dir() or (cache / "HEAD").is_file():
         head = subprocess.run(
             ["git", "-C", str(cache), "rev-parse", "HEAD"],
             capture_output=True,

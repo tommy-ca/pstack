@@ -490,12 +490,33 @@ def test_mixed_cursor_team_kit_negation_and_call_on_same_line_is_live(
     assert mod.live_leftover_tokens(mixed) == ("cursor-team-kit",)
 
 
-def test_resolve_cache_relative_joins_primary_from_feat_worktree() -> None:
+def test_resolve_cache_relative_joins_primary_from_feat_worktree(
+    tmp_path: Path,
+) -> None:
     mod = load_partition()
-    got = mod.resolve_cache(ROOT, Path(".worktrees/upstream-cursor-plugins"))
-    assert got == (
-        mod.primary_checkout_root(ROOT) / ".worktrees" / "upstream-cursor-plugins"
-    ).resolve()
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    subprocess.run(
+        ["git", "init", "-b", "main", str(repo)], check=True, capture_output=True
+    )
+    _git(repo, "config", "user.email", "t@example.com")
+    _git(repo, "config", "user.name", "t")
+    (repo / "README").write_text("root\n", encoding="utf-8")
+    _git(repo, "add", "README")
+    _git(repo, "commit", "-m", "init")
+    worktree = repo / ".worktrees" / "feat" / "demo"
+    worktree.parent.mkdir(parents=True)
+    _git(repo, "worktree", "add", "--detach", str(worktree))
+    primary = repo / ".worktrees" / "upstream-cursor-plugins"
+    primary.mkdir()
+    (primary / "marker").write_text("primary\n", encoding="utf-8")
+    decoy = worktree / ".worktrees" / "upstream-cursor-plugins"
+    decoy.mkdir(parents=True)
+    (decoy / "marker").write_text("decoy\n", encoding="utf-8")
+    got = mod.resolve_cache(worktree, Path(".worktrees/upstream-cursor-plugins"))
+    assert got == primary.resolve()
+    assert got != decoy.resolve()
+    assert (got / "marker").read_text(encoding="utf-8") == "primary\n"
 
 
 def test_print_coverage_relative_cache_uses_primary(capsys) -> None:
