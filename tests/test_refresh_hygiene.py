@@ -492,6 +492,44 @@ def test_apply_skills_claude_shaped_writable_dest_copies(
     assert not dest.is_symlink()
 
 
+def test_apply_skills_missing_dest_is_not_stale(tmp_path: Path, capsys) -> None:
+    mod = load()
+    root = tmp_path / "pstack"
+    src = root / "skills" / "reflect" / "SKILL.md"
+    src.parent.mkdir(parents=True)
+    src.write_text(GROK, encoding="utf-8")
+    skills = tmp_path / "skills"
+    dest = skills / "reflect" / "SKILL.md"
+    dest.parent.mkdir(parents=True)
+    assert not dest.exists()
+    assert (
+        mod.main(["--root", str(root), "--skills", str(skills), "--apply-skills"])
+        == 0
+    )
+    out = capsys.readouterr().out
+    assert out == (
+        "kind\taction\tpath\tnote\n"
+        f"stale-skill\tnot-stale\t{dest}\tnot-stale\n"
+    )
+    assert not dest.exists()
+
+
+def test_apply_skills_binary_dest_is_not_stale(tmp_path: Path, capsys) -> None:
+    mod = load()
+    root, src, skills, dest = _src_dest(tmp_path, GROK)
+    dest.write_bytes(b"\xff\xfe")
+    assert (
+        mod.main(["--root", str(root), "--skills", str(skills), "--apply-skills"])
+        == 0
+    )
+    out = capsys.readouterr().out
+    assert out == (
+        "kind\taction\tpath\tnote\n"
+        f"stale-skill\tnot-stale\t{dest}\tnot-stale\n"
+    )
+    assert dest.read_bytes() == b"\xff\xfe"
+
+
 def test_apply_skills_second_copy_is_not_stale(tmp_path: Path, capsys) -> None:
     mod = load()
     root, src, skills, dest = _src_dest(tmp_path, CLAUDE)

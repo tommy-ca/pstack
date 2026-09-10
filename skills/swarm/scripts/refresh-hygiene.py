@@ -114,13 +114,15 @@ def apply_skill_copy(plan: SkillCopy) -> Row:
         if not dest.is_file():
             return Row(KIND_SKILL, "not-stale", dest, "not-stale")
         text = dest.read_text(encoding="utf-8")
-    except PermissionError:
+    except UnicodeError:
+        return Row(KIND_SKILL, "not-stale", dest, "not-stale")
+    except OSError:
         return Row(KIND_SKILL, "eperm", dest, "EPERM")
     if skill_shape(text) != "claude-shaped":
         return Row(KIND_SKILL, "not-stale", dest, "not-stale")
     try:
         shutil.copyfile(plan.source, dest)
-    except PermissionError:
+    except OSError:
         return Row(KIND_SKILL, "eperm", dest, "EPERM")
     return Row(KIND_SKILL, "copied", dest, "ok")
 
