@@ -556,20 +556,16 @@ def looks_remapped(source_text: str, dest_text: str) -> bool:
 
 def leftover_mention_allowed(text: str, token: str, index: int) -> bool:
     line_start = text.rfind("\n", 0, index) + 1
-    line_end = text.find("\n", index)
-    line = text[line_start : len(text) if line_end < 0 else line_end]
-    if token == "/deslop" and ("no `/deslop`" in line or "no /deslop" in line):
-        return True
-    if token == "cursor-team-kit" and (
-        "There is no cursor-team-kit" in line
-        or "There is no `cursor-team-kit`" in line
-        or "no cursor-team-kit" in line
-    ):
-        return True
+    prefix = text[line_start:index]
+    if token == "/deslop":
+        return prefix.endswith(("no ", "no `"))
+    if token == "cursor-team-kit":
+        return prefix.endswith(("There is no ", "There is no `", "no ", "no `"))
     return False
 
 
-def dest_looks_raw_cursor(text: str) -> bool:
+def live_leftover_tokens(text: str) -> tuple[str, ...]:
+    live: list[str] = []
     for token in LEFTOVER_TOKENS:
         start = 0
         while True:
@@ -577,9 +573,14 @@ def dest_looks_raw_cursor(text: str) -> bool:
             if idx < 0:
                 break
             if not leftover_mention_allowed(text, token, idx):
-                return True
+                live.append(token)
+                break
             start = idx + len(token)
-    return False
+    return tuple(live)
+
+
+def dest_looks_raw_cursor(text: str) -> bool:
+    return bool(live_leftover_tokens(text))
 
 
 def leftover_hits(dest_root: Path) -> tuple[LeftoverHit, ...]:
@@ -602,17 +603,7 @@ def leftover_hits(dest_root: Path) -> tuple[LeftoverHit, ...]:
         except UnicodeDecodeError:
             continue
         rel_s = rel.as_posix()
-        for token in LEFTOVER_TOKENS:
-            start = 0
-            while True:
-                idx = text.find(token, start)
-                if idx < 0:
-                    break
-                if leftover_mention_allowed(text, token, idx):
-                    start = idx + len(token)
-                    continue
-                hits.append(LeftoverHit(rel_s, token))
-                break
+        hits.extend(LeftoverHit(rel_s, token) for token in live_leftover_tokens(text))
     return tuple(hits)
 
 

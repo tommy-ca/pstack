@@ -109,16 +109,11 @@ def allows_cursor_rules_mention(path: pathlib.Path) -> bool:
 
 def leftover_mention_allowed(text: str, token: str, index: int) -> bool:
     line_start = text.rfind("\n", 0, index) + 1
-    line_end = text.find("\n", index)
-    line = text[line_start : len(text) if line_end < 0 else line_end]
-    if "/deslop" in token and ("no `/deslop`" in line or "no /deslop" in line):
-        return True
-    if "cursor-team-kit" in token and (
-        "There is no cursor-team-kit" in line
-        or "There is no `cursor-team-kit`" in line
-        or "no cursor-team-kit" in line
-    ):
-        return True
+    prefix = text[line_start:index]
+    if "/deslop" in token:
+        return prefix.endswith(("no ", "no `"))
+    if "cursor-team-kit" in token:
+        return prefix.endswith(("There is no ", "There is no `", "no ", "no `"))
     return False
 
 

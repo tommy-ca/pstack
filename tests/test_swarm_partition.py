@@ -448,6 +448,69 @@ def test_read_upstream_blob_skips_workdir_when_tip_is_git_object(
 def test_dest_looks_raw_cursor_ignores_allowed_negation() -> None:
     mod = load_partition()
     assert mod.dest_looks_raw_cursor("There is no `cursor-team-kit` here.\n") is False
+    assert mod.live_leftover_tokens("There is no `cursor-team-kit` here.\n") == ()
     assert mod.dest_looks_raw_cursor("there is no /deslop in this port\n") is False
     assert mod.dest_looks_raw_cursor("run /deslop on this tree\n") is True
+    assert mod.live_leftover_tokens("run /deslop on this tree\n") == ("/deslop",)
     assert mod.dest_looks_raw_cursor("Call AskQuestion for the fork.\n") is True
+
+
+def test_mixed_deslop_negation_and_call_on_same_line_is_live(tmp_path: Path) -> None:
+    mod = load_partition()
+    mixed = "there is no /deslop; run /deslop anyway\n"
+    dest = tmp_path / "dest"
+    skill = dest / "skills" / "live"
+    skill.mkdir(parents=True)
+    (skill / "SKILL.md").write_text(mixed, encoding="utf-8")
+    assert mod.leftover_hits(dest) == (
+        mod.LeftoverHit("skills/live/SKILL.md", "/deslop"),
+    )
+    assert mod.dest_looks_raw_cursor(mixed) is True
+    assert mod.live_leftover_tokens(mixed) == ("/deslop",)
+
+
+def test_print_coverage_uses_classified_comments_not_refresh_range(
+    tmp_path: Path, capsys
+) -> None:
+    mod = load_partition()
+    cache = tmp_path / "cache"
+    pin_sha, tip_sha = _init_cache_with_origin_main(cache)
+    extra = cache / "pstack" / "skills" / "extra.md"
+    extra.write_text("extra\n", encoding="utf-8")
+    _git(cache, "add", "pstack")
+    _git(cache, "commit", "-m", "ahead")
+    ahead = _git(cache, "rev-parse", "HEAD").stdout.strip()
+    _git(cache, "update-ref", "refs/remotes/origin/main", ahead)
+    table_path = tmp_path / "overlay.tsv"
+    write_table(
+        table_path,
+        f"# pin={pin_sha}\n"
+        f"# tip={tip_sha}\n"
+        "path\tchange\tbucket\tnote\n"
+        "skills/how/SKILL.md\tM\tport\tkeep\n"
+        "skills/x.md\tM\tport\tkeep\n"
+        "skills/brand.md\tA\tport\tkeep\n",
+    )
+    refresh_pin, refresh_tip = mod.next_refresh_range(ROOT, cache, None, None)
+    assert (refresh_pin, refresh_tip) == (mod.read_upstream_pin(ROOT), ahead)
+    assert (refresh_pin, refresh_tip) != (pin_sha, tip_sha)
+    try:
+        refresh_errors = mod.coverage_errors(
+            mod.read_table(table_path),
+            mod.git_name_status(cache, refresh_pin, refresh_tip),
+        )
+    except SystemExit:
+        refresh_errors = ("git failed",)
+    assert refresh_errors != ()
+    mod.partition_main(
+        [
+            "print",
+            "--coverage",
+            "--cache",
+            str(cache),
+            "--table",
+            str(table_path),
+        ]
+    )
+    captured = capsys.readouterr()
+    assert captured.out == "coverage ok\n"

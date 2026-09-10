@@ -30,6 +30,12 @@ def test_leftover_askquestion_after_there_is_no_is_live() -> None:
     allowed_idx = allowed.find("cursor-team-kit")
     assert scanner.leftover_mention_allowed(allowed, "cursor-team-kit", allowed_idx) is True
     assert scanner.forbidden_pattern_is_live(dummy, allowed, r"cursor-team-kit") is False
+    mixed = "there is no /deslop; run /deslop anyway\n"
+    first = mixed.find("/deslop")
+    second = mixed.find("/deslop", first + 1)
+    assert scanner.leftover_mention_allowed(mixed, "/deslop", first) is True
+    assert scanner.leftover_mention_allowed(mixed, "/deslop", second) is False
+    assert scanner.forbidden_pattern_is_live(dummy, mixed, r"/deslop") is True
 
 
 def test_verify_harness_passes_on_this_tree() -> None:
