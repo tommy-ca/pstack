@@ -582,6 +582,17 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert "upstream-cursor-plugins/pstack" in recipe.stdout
     assert "classification.tsv" in recipe.stdout
     assert "partition.py" in recipe.stdout
+    assert "apply.py" in recipe.stdout
+    assert "apply-check" in recipe.stdout
+    assert "print --coverage" in recipe.stdout
+    assert not (ROOT / ".grok/workflows").exists()
+    rhai = ROOT / "skills/swarm/references/pstack-upstream-refresh.rhai"
+    assert rhai.is_file()
+    rhai_text = rhai.read_text(encoding="utf-8")
+    assert "capability_mode" not in rhai_text
+    assert 'agent_type: "pstack:swarm-workers"' in rhai_text
+    assert 'agent_type: "pstack:interrogate-reviewers"' in rhai_text
+    assert 'agent_type: "pstack:independent-verifier"' in rhai_text
     assert "pack.py" in recipe.stdout
     assert "scripts/orch/" in recipe.stdout
     assert "advisor" in recipe.stdout

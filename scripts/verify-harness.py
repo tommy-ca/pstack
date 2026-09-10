@@ -71,6 +71,8 @@ FORBIDDEN = [
     r"/loop` in dynamic mode",
     r"under `/loop` in dynamic mode",
     r"Transcripts live at `~/.cursor/projects",
+    r"/deslop",
+    r"cursor-team-kit",
 ]
 
 # Official Cursor panel slugs. Must not appear as skill fallbacks.
@@ -91,6 +93,7 @@ SKIP_FILES = {
     "README.zh-CN.md",
     "codex-tools.md",
     "provider-dispatch.md",
+    "classification.tsv",
 }
 
 
@@ -102,6 +105,46 @@ def allows_cursor_rules_mention(path: pathlib.Path) -> bool:
     if parts and parts[0] == "docs":
         return True
     return parts[:2] == ("skills", "setup-pstack")
+
+
+def leftover_mention_allowed(text: str, token: str, index: int) -> bool:
+    line_start = text.rfind("\n", 0, index) + 1
+    line_end = text.find("\n", index)
+    line = text[line_start : len(text) if line_end < 0 else line_end]
+    if "There is no" in line:
+        return True
+    if "/deslop" in token and ("no `/deslop`" in line or "no /deslop" in line):
+        return True
+    if "cursor-team-kit" in token and (
+        "There is no cursor-team-kit" in line
+        or "There is no `cursor-team-kit`" in line
+        or "no cursor-team-kit" in line
+    ):
+        return True
+    return False
+
+
+def allows_cursor_compat_scanner(path: pathlib.Path, text: str, index: int) -> bool:
+    rel = path.relative_to(ROOT)
+    if rel.parts[:2] != ("skills", "automate-me") or "if Cursor-compat" not in text:
+        return False
+    line_start = text.rfind("\n", 0, index) + 1
+    line_end = text.find("\n", index)
+    line = text[line_start : len(text) if line_end < 0 else line_end]
+    return "Cursor-compat" in line or ".cursor/skills" in line
+
+
+def forbidden_pattern_is_live(path: pathlib.Path, text: str, pat: str) -> bool:
+    if path.name == "classification.tsv":
+        return False
+    for match in re.finditer(pat, text):
+        token = match.group(0)
+        if leftover_mention_allowed(text, token, match.start()):
+            continue
+        if allows_cursor_compat_scanner(path, text, match.start()):
+            continue
+        return True
+    return False
 
 
 def archivable_changes_missing_artifacts(changes_root: pathlib.Path) -> list[str]:
@@ -248,7 +291,7 @@ def main() -> None:
         for pat in FORBIDDEN:
             if pat == r"~/.cursor/rules/" and allows_cursor_rules_mention(path):
                 continue
-            if re.search(pat, text):
+            if forbidden_pattern_is_live(path, text, pat):
                 rel = path.relative_to(ROOT)
                 hits.append(f"{rel}: /{pat}/")
     if hits:

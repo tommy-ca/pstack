@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Print, cover, and partition the upstream refresh classification TSV.
+"""Print, cover, seed, and check the upstream refresh classification TSV.
 
 Does not copy files. Does not fetch. Canonical table is
 skills/swarm/references/classification.tsv.
@@ -27,6 +27,19 @@ Bucket = Literal[
     "unclassified",
 ]
 PartitionBy = Literal["group", "path"]
+WriteAction = Literal["copy", "skip", "refuse"]
+WriteReason = Literal[
+    "permitted-copy",
+    "idempotent-equal",
+    "fence",
+    "not-copy-bucket",
+    "unclassified",
+    "already-remapped",
+    "host-keep",
+    "delete",
+    "missing-source-blob",
+    "dest-is-cache",
+]
 
 CHANGES: frozenset[str] = frozenset({"A", "M", "D"})
 BUCKETS: frozenset[str] = frozenset(
@@ -40,10 +53,54 @@ BUCKETS: frozenset[str] = frozenset(
     }
 )
 FENCE_BUCKETS: frozenset[str] = frozenset({"skip", "host-owned", "audit"})
+COPY_BUCKETS: frozenset[str] = frozenset({"port", "new-skill-lever"})
 SLICE_BUCKETS: frozenset[str] = BUCKETS - FENCE_BUCKETS
 HEADER: tuple[str, str, str, str] = ("path", "change", "bucket", "note")
 WORKER_PATHS_RE = re.compile(r"^worker-[0-9]+\.paths$")
 PIN_RE = re.compile(r"^tree ([0-9a-f]{40})$", re.M)
+
+assert COPY_BUCKETS.isdisjoint(FENCE_BUCKETS)
+assert "unclassified" not in COPY_BUCKETS
+assert "unclassified" in SLICE_BUCKETS
+
+LEFTOVER_TOKENS: tuple[str, ...] = (
+    "AskQuestion",
+    "TodoWrite",
+    "generalPurpose",
+    'environment: "cloud"',
+    "/deslop",
+    "cursor-team-kit",
+    "Transcripts live at ~/.cursor/projects",
+    "Transcripts live at `~/.cursor/projects",
+)
+
+HOST_MARKERS: tuple[str, ...] = (
+    "spawn_subagent",
+    "pstack:",
+    "~/.grok/",
+    "scheduler_create",
+    "ask_user_question",
+    "todo_write",
+)
+
+APPLY_CHECK_SKIP_DIRS: frozenset[str] = frozenset(
+    {".git", "automations", "scripts", ".superpowers", ".worktrees", "openspec", ".audit"}
+)
+APPLY_CHECK_SKIP_FILES: frozenset[str] = frozenset(
+    {
+        "HARNESS.md",
+        "UPSTREAM",
+        "TEST-PLAN.md",
+        "README.md",
+        "README.zh-CN.md",
+        "codex-tools.md",
+        "provider-dispatch.md",
+        "classification.tsv",
+    }
+)
+LEFTOVER_TEXT_SUFFIXES: frozenset[str] = frozenset(
+    {".md", ".toml", ".json", ".mjs", ".txt"}
+)
 
 
 class Row(NamedTuple):
@@ -66,6 +123,32 @@ class Table(NamedTuple):
         return self.comments.get("tip")
 
 
+class WriteDecision(NamedTuple):
+    row: Row
+    action: WriteAction
+    reason: WriteReason
+
+
+class LeftoverHit(NamedTuple):
+    relpath: str
+    token: str
+
+
+class ApplyCheckReport(NamedTuple):
+    leftover: tuple[LeftoverHit, ...]
+    fence_copied: tuple[str, ...]
+    recopied_after_remap: tuple[str, ...]
+    missing_dest: tuple[str, ...]
+    ok: bool
+
+
+class ApplyReport(NamedTuple):
+    copied: tuple[str, ...]
+    skipped: tuple[str, ...]
+    refused: tuple[WriteDecision, ...]
+    dry_run: bool
+
+
 def repo_root_from_script(script_file: Path) -> Path:
     return script_file.resolve().parents[3]
 
@@ -74,8 +157,34 @@ def default_table_path(root: Path) -> Path:
     return root / "skills" / "swarm" / "references" / "classification.tsv"
 
 
+def primary_checkout_root(root: Path) -> Path:
+    proc = subprocess.run(
+        ["git", "-C", str(root), "rev-parse", "--git-common-dir"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if proc.returncode != 0:
+        return root
+    common = Path(proc.stdout.strip())
+    if not common.is_absolute():
+        common = (root / common).resolve()
+    else:
+        common = common.resolve()
+    if common.name == ".git":
+        return common.parent
+    return common
+
+
 def default_cache_path(root: Path) -> Path:
-    return root / ".worktrees" / "upstream-cursor-plugins"
+    return primary_checkout_root(root) / ".worktrees" / "upstream-cursor-plugins"
+
+
+def resolve_cache(root: Path, cache: Path | None) -> Path:
+    path = Path(cache) if cache is not None else default_cache_path(root)
+    if not path.exists():
+        raise SystemExit(f"missing cache: {path}")
+    return path
 
 
 def read_upstream_pin(root: Path) -> str:
@@ -256,6 +365,32 @@ def skeleton_table(
     return Table({"pin": pin, "tip": tip}, rows)
 
 
+def overlay_seed(
+    prior: Table,
+    name_status: Sequence[tuple[str, str]],
+    pin: str,
+    tip: str,
+) -> Table:
+    prior_map = {row.path: row for row in prior.rows}
+    rows: list[Row] = []
+    for change, path in name_status:
+        prev = prior_map.get(path)
+        if prev is None:
+            rows.append(Row(path, change, "unclassified", ""))
+            continue
+        if prev.bucket != "unclassified":
+            rows.append(Row(path, change, prev.bucket, prev.note))
+            continue
+        if prev.change == change:
+            rows.append(Row(path, change, prev.bucket, prev.note))
+            continue
+        rows.append(Row(path, change, "unclassified", prev.note))
+    comments = dict(prior.comments)
+    comments["pin"] = pin
+    comments["tip"] = tip
+    return Table(comments, tuple(rows))
+
+
 def coverage_errors(
     table: Table,
     name_status: Sequence[tuple[str, str]],
@@ -356,6 +491,266 @@ def _resolve_range(
     return resolved_pin, resolved_tip
 
 
+def read_upstream_blob(cache: Path, tip: str, relpath: str) -> bytes | None:
+    proc = subprocess.run(
+        ["git", "-C", str(cache), "show", f"{tip}:pstack/{relpath}"],
+        capture_output=True,
+        check=False,
+    )
+    if proc.returncode == 0:
+        return proc.stdout
+    path = cache / "pstack" / relpath
+    if path.is_file():
+        return path.read_bytes()
+    return None
+
+
+def read_dest_bytes(dest_root: Path, relpath: str) -> bytes | None:
+    path = dest_root / relpath
+    if not path.is_file():
+        return None
+    return path.read_bytes()
+
+
+def read_dest_text(dest_root: Path, relpath: str) -> str | None:
+    data = read_dest_bytes(dest_root, relpath)
+    if data is None:
+        return None
+    return data.decode("utf-8", errors="replace")
+
+
+def _decode(data: bytes) -> str:
+    return data.decode("utf-8", errors="replace")
+
+
+def dest_is_cache_tree(dest_root: Path, cache: Path) -> bool:
+    dest = dest_root.resolve()
+    cached = cache.resolve()
+    return dest == cached or dest == (cached / "pstack")
+
+
+def looks_remapped(source_text: str, dest_text: str) -> bool:
+    return any(marker in dest_text and marker not in source_text for marker in HOST_MARKERS)
+
+
+def dest_looks_raw_cursor(text: str) -> bool:
+    return any(token in text for token in LEFTOVER_TOKENS)
+
+
+def leftover_mention_allowed(text: str, token: str, index: int) -> bool:
+    line_start = text.rfind("\n", 0, index) + 1
+    line_end = text.find("\n", index)
+    line = text[line_start : len(text) if line_end < 0 else line_end]
+    if "There is no" in line:
+        return True
+    if token == "/deslop" and ("no `/deslop`" in line or "no /deslop" in line):
+        return True
+    if token == "cursor-team-kit" and (
+        "There is no cursor-team-kit" in line
+        or "There is no `cursor-team-kit`" in line
+        or "no cursor-team-kit" in line
+    ):
+        return True
+    return False
+
+
+def leftover_hits(dest_root: Path) -> tuple[LeftoverHit, ...]:
+    skills = dest_root / "skills"
+    if not skills.is_dir():
+        return ()
+    hits: list[LeftoverHit] = []
+    for path in skills.rglob("*"):
+        if not path.is_file() or path.suffix not in LEFTOVER_TEXT_SUFFIXES:
+            continue
+        rel = path.relative_to(dest_root)
+        if set(rel.parts) & APPLY_CHECK_SKIP_DIRS:
+            continue
+        if path.name in APPLY_CHECK_SKIP_FILES:
+            continue
+        if rel.parts[:1] == ("docs",):
+            continue
+        try:
+            text = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            continue
+        rel_s = rel.as_posix()
+        for token in LEFTOVER_TOKENS:
+            start = 0
+            while True:
+                idx = text.find(token, start)
+                if idx < 0:
+                    break
+                if leftover_mention_allowed(text, token, idx):
+                    start = idx + len(token)
+                    continue
+                hits.append(LeftoverHit(rel_s, token))
+                break
+    return tuple(hits)
+
+
+def fence_copied_paths(
+    table: Table,
+    cache: Path,
+    dest_root: Path,
+    tip: str,
+) -> tuple[str, ...]:
+    copied: list[str] = []
+    for row in table.rows:
+        if row.bucket not in FENCE_BUCKETS:
+            continue
+        source = read_upstream_blob(cache, tip, row.path)
+        dest = read_dest_bytes(dest_root, row.path)
+        if source is None or dest is None:
+            continue
+        if dest == source:
+            copied.append(row.path)
+    return tuple(copied)
+
+
+def recopied_after_remap(
+    table: Table,
+    cache: Path,
+    dest_root: Path,
+    tip: str,
+) -> tuple[str, ...]:
+    hits: list[str] = []
+    for row in table.rows:
+        if row.bucket not in COPY_BUCKETS or row.change == "D":
+            continue
+        source = read_upstream_blob(cache, tip, row.path)
+        dest = read_dest_bytes(dest_root, row.path)
+        if source is None or dest is None or dest != source:
+            continue
+        source_text = _decode(source)
+        if any(token in source_text for token in LEFTOVER_TOKENS):
+            hits.append(row.path)
+            continue
+        dest_text = _decode(dest)
+        if looks_remapped(source_text, dest_text):
+            hits.append(row.path)
+    return tuple(hits)
+
+
+def missing_copy_dests(table: Table, dest_root: Path) -> tuple[str, ...]:
+    missing: list[str] = []
+    for row in table.rows:
+        if row.bucket not in COPY_BUCKETS:
+            continue
+        if row.change not in {"A", "M"}:
+            continue
+        if read_dest_bytes(dest_root, row.path) is None:
+            missing.append(row.path)
+    return tuple(missing)
+
+
+def apply_check(
+    table: Table,
+    cache: Path,
+    dest_root: Path,
+    tip: str,
+) -> ApplyCheckReport:
+    leftover = leftover_hits(dest_root)
+    fence = fence_copied_paths(table, cache, dest_root, tip)
+    recopy = recopied_after_remap(table, cache, dest_root, tip)
+    missing = missing_copy_dests(table, dest_root)
+    ok = not leftover and not fence and not recopy and not missing
+    return ApplyCheckReport(leftover, fence, recopy, missing, ok)
+
+
+def decide_write(
+    row: Row,
+    source_bytes: bytes | None,
+    dest_bytes: bytes | None,
+    *,
+    dest_is_cache: bool,
+) -> WriteDecision:
+    if dest_is_cache:
+        return WriteDecision(row, "refuse", "dest-is-cache")
+    if row.change == "D":
+        return WriteDecision(row, "refuse", "delete")
+    if row.bucket in FENCE_BUCKETS:
+        return WriteDecision(row, "refuse", "fence")
+    if row.bucket == "unclassified":
+        return WriteDecision(row, "refuse", "unclassified")
+    if row.bucket not in COPY_BUCKETS:
+        return WriteDecision(row, "refuse", "not-copy-bucket")
+    if source_bytes is None:
+        return WriteDecision(row, "refuse", "missing-source-blob")
+    if dest_bytes is None:
+        return WriteDecision(row, "copy", "permitted-copy")
+    if dest_bytes == source_bytes:
+        return WriteDecision(row, "skip", "idempotent-equal")
+    dest_text = _decode(dest_bytes)
+    source_text = _decode(source_bytes)
+    if looks_remapped(source_text, dest_text):
+        return WriteDecision(row, "refuse", "already-remapped")
+    if not dest_looks_raw_cursor(dest_text):
+        return WriteDecision(row, "refuse", "host-keep")
+    return WriteDecision(row, "copy", "permitted-copy")
+
+
+def write_decisions(
+    table: Table,
+    dest_root: Path,
+    cache: Path,
+    tip: str | None = None,
+) -> tuple[WriteDecision, ...]:
+    resolved_tip = tip or table.tip
+    if not resolved_tip:
+        raise SystemExit("missing tip for write decisions")
+    dest_is_cache = dest_is_cache_tree(dest_root, cache)
+    decisions: list[WriteDecision] = []
+    for row in table.rows:
+        source = (
+            None
+            if row.change == "D"
+            else read_upstream_blob(cache, resolved_tip, row.path)
+        )
+        dest = read_dest_bytes(dest_root, row.path)
+        decisions.append(
+            decide_write(row, source, dest, dest_is_cache=dest_is_cache)
+        )
+    return tuple(decisions)
+
+
+def format_apply_check_errors(report: ApplyCheckReport) -> str:
+    lines: list[str] = []
+    for hit in report.leftover:
+        lines.append(f"leftover {hit.token}: {hit.relpath}")
+    for path in report.fence_copied:
+        lines.append(f"fence copied: {path}")
+    for path in report.recopied_after_remap:
+        lines.append(f"recopied after remap: {path}")
+    for path in report.missing_dest:
+        lines.append(f"missing dest: {path}")
+    return "\n".join(lines) + ("\n" if lines else "")
+
+
+def seed_main(args: argparse.Namespace, root: Path) -> None:
+    cache = resolve_cache(root, args.cache)
+    table = read_table(args.table or default_table_path(root))
+    pin, tip = _resolve_range(table, root, cache, args.pin, args.tip)
+    overlay = overlay_seed(table, git_name_status(cache, pin, tip), pin, tip)
+    text = format_table(overlay)
+    if args.out is not None:
+        args.out.parent.mkdir(parents=True, exist_ok=True)
+        args.out.write_text(text, encoding="utf-8")
+        return
+    sys.stdout.write(text)
+
+
+def apply_check_main(args: argparse.Namespace, root: Path) -> None:
+    cache = resolve_cache(root, args.cache)
+    dest_root = Path(args.dest) if args.dest is not None else root
+    table = read_table(args.table or default_table_path(root))
+    _pin, tip = _resolve_range(table, root, cache, args.pin, args.tip)
+    report = apply_check(table, cache, dest_root, tip)
+    if not report.ok:
+        sys.stderr.write(format_apply_check_errors(report))
+        raise SystemExit(2)
+    sys.stdout.write("apply-check ok\n")
+
+
 def partition_main(argv: Sequence[str] | None = None) -> None:
     root = repo_root_from_script(Path(__file__))
     parser = argparse.ArgumentParser(description=__doc__)
@@ -378,6 +773,20 @@ def partition_main(argv: Sequence[str] | None = None) -> None:
     part_p.add_argument("--table", type=Path)
     part_p.add_argument("--bucket")
     part_p.add_argument("--by", choices=("group", "path"), default="group")
+
+    seed_p = sub.add_parser("seed")
+    seed_p.add_argument("--cache", type=Path)
+    seed_p.add_argument("--table", type=Path)
+    seed_p.add_argument("--out", type=Path)
+    seed_p.add_argument("--pin")
+    seed_p.add_argument("--tip")
+
+    check_p = sub.add_parser("apply-check")
+    check_p.add_argument("--cache", type=Path)
+    check_p.add_argument("--table", type=Path)
+    check_p.add_argument("--dest", type=Path)
+    check_p.add_argument("--pin")
+    check_p.add_argument("--tip")
 
     args = parser.parse_args(list(argv) if argv is not None else None)
     if args.cmd == "print":
@@ -405,6 +814,14 @@ def partition_main(argv: Sequence[str] | None = None) -> None:
             sys.stdout.write(format_paths(rows))
             return
         sys.stdout.write(format_table(Table(table.comments, rows)))
+        return
+
+    if args.cmd == "seed":
+        seed_main(args, root)
+        return
+
+    if args.cmd == "apply-check":
+        apply_check_main(args, root)
         return
 
     table = read_table(args.table or default_table_path(root))
