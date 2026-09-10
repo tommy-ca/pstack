@@ -70,6 +70,7 @@ FORBIDDEN = [
     r"via Task ",
     r"/loop` in dynamic mode",
     r"under `/loop` in dynamic mode",
+    r"Transcripts live at `~/.cursor/projects",
 ]
 
 # Official Cursor panel slugs. Must not appear as skill fallbacks.
@@ -170,8 +171,8 @@ def main() -> None:
         fail(f"unexpected playbook files: {extra}")
 
     principles = sorted(p.name for p in ROOT.joinpath("skills").glob("principle-*") if p.is_dir())
-    if len(principles) != 21:
-        fail(f"expected 21 principle-* skills, got {len(principles)}: {principles}")
+    if len(principles) != 23:
+        fail(f"expected 23 principle-* skills, got {len(principles)}: {principles}")
 
     skill_text = SKILL.read_text(encoding="utf-8")
     for name in NAMED_22:

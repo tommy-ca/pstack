@@ -6,7 +6,7 @@
 
 ## 来源
 
-22 个玩法（playbooks）和 21 条原则（principles）是 [poteto](https://x.com/poteto) 写的，出自 [official pstack](https://github.com/cursor/plugins/tree/main/pstack)。本仓库是 **`tommy-ca/pstack`**，适配自 [aa2246740/pstack-grokbuild](https://github.com/aa2246740/pstack-grokbuild)。调用层用 [HARNESS.md](./HARNESS.md) 里的 Grok Build 工具名。玩法和原则不是本仓库写的。
+22 个玩法（playbooks）和 23 条原则（principles）是 [poteto](https://x.com/poteto) 写的，出自 [official pstack](https://github.com/cursor/plugins/tree/main/pstack)。本仓库是 **`tommy-ca/pstack`**，适配自 [aa2246740/pstack-grokbuild](https://github.com/aa2246740/pstack-grokbuild)。调用层用 [HARNESS.md](./HARNESS.md) 里的 Grok Build 工具名。玩法和原则不是本仓库写的。
 
 poteto 的判断是：少写 slop；想快就先做深；当你能信一个 agent 写出可核验的代码，才谈得上放心并行。那是 poteto 的想法，下面按来源引用，不当成本仓库作者的自述。
 
@@ -225,16 +225,17 @@ automate-me:       /automate-me
 
 ## 原则
 
-二十一个短 skill，一条原则一个。`poteto-mode` 在开头内联索引并读一遍。独立文件是为了别的 skill 能按名字引用，以及索引能链到完整规则。
+二十三个短 skill，一条原则一个。`poteto-mode` 在开头内联索引并读一遍。独立文件是为了别的 skill 能按名字引用，以及索引能链到完整规则。
 
 <details>
-<summary>全部二十一条原则</summary>
+<summary>全部二十三条原则</summary>
 
 | principle | group | rule |
 |---|---|---|
 | [laziness-protocol](./skills/principle-laziness-protocol/SKILL.md) | core | Bias toward deletion and the smallest change that solves the problem. |
 | [foundational-thinking](./skills/principle-foundational-thinking/SKILL.md) | core | Apply before writing logic: choosing core types and data structures, sequencing scaffold-vs-feature work, asking what concurrent actors share. Get the data structures right so downstream code becomes obvious. |
 | [redesign-from-first-principles](./skills/principle-redesign-from-first-principles/SKILL.md) | core | Redesign as if the requirement had been a foundational assumption from day one, instead of bolting it on. |
+| [attack-the-premise](./skills/principle-attack-the-premise/SKILL.md) | core | When two or more fixes that share one premise have failed the same gate, census which actors hold the imbalance, then question the premise instead of writing another fix that assumes it. |
 | [subtract-before-you-add](./skills/principle-subtract-before-you-add/SKILL.md) | core | Remove dead weight, redundant validators, and stub references first, then build on the simpler base. |
 | [minimize-reader-load](./skills/principle-minimize-reader-load/SKILL.md) | core | Count layers between question and answer, and hidden state in the reader's head; collapse one-caller wrappers and shrink mutable scope. |
 | [outcome-oriented-execution](./skills/principle-outcome-oriented-execution/SKILL.md) | core | Apply during planned rewrites and migrations with explicit phase boundaries. Converge on the target architecture; don't preserve smooth intermediate states with throwaway compatibility code. |
@@ -250,6 +251,7 @@ automate-me:       /automate-me
 | [prove-it-works](./skills/principle-prove-it-works/SKILL.md) | verification | Apply after completing a task, before declaring done. Verify against the real artifact (run the feature, read the actual value, inspect the diff), not a proxy, self-report, or 'it compiles.'. |
 | [fix-root-causes](./skills/principle-fix-root-causes/SKILL.md) | verification | Trace each symptom to its root cause and fix it there; reproduce first, ask why until you reach it, resist nil-check guards that silence crashes. |
 | [sequence-verifiable-units](./skills/principle-sequence-verifiable-units/SKILL.md) | verification | Apply to multi-step work (sweeps, migrations, runs of similar edits) and to how you stack commits and PRs. Break work into small units that each end in a verifiable state, check each before the next, and order delivery so the sequence proves itself to a reviewer. |
+| [test-behavior-not-implementation](./skills/principle-test-behavior-not-implementation/SKILL.md) | verification | Call the code the way its users do and assert a literal expected value. Delete a test that would still pass if every imported function returned `undefined`. |
 | [guard-the-context-window](./skills/principle-guard-the-context-window/SKILL.md) | delegation | Route bulk to subagents; keep summaries in the main thread, not raw payloads. |
 | [never-block-on-the-human](./skills/principle-never-block-on-the-human/SKILL.md) | delegation | Proceed, present the result, let the human course-correct after the fact; reserve confirmation for irreversible actions. |
 | [encode-lessons-in-structure](./skills/principle-encode-lessons-in-structure/SKILL.md) | meta | Encode the rule as a lint, metadata flag, runtime check, or script instead of more text. |

@@ -536,7 +536,7 @@ def test_guide_teaches_sync_then_adapt() -> None:
     plugin = json.loads((ROOT / "plugin.json").read_text(encoding="utf-8"))
     assert "HARNESS" not in json.dumps(plugin)
     port = (ROOT / "docs/guide/12-porting.md").read_text(encoding="utf-8")
-    assert "21 principles" in port
+    assert "23 principles" in port
     assert "host map" in port
     assert "Laziness Protocol" in port
     assert "Capability checklist" in port
@@ -580,6 +580,14 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert "make-bot-ui" in recipe.stdout
     assert "pstack:<role>" in recipe.stdout
     assert "upstream-cursor-plugins/pstack" in recipe.stdout
+    assert "classification.tsv" in recipe.stdout
+    assert "partition.py" in recipe.stdout
+    assert "pack.py" in recipe.stdout
+    assert "scripts/orch/" in recipe.stdout
+    assert "advisor" in recipe.stdout
+    assert "0.15.1-grokbuild.0" in (ROOT / "plugin.json").read_text(
+        encoding="utf-8"
+    )
     default = subprocess.run(
         [sys.executable, str(ROOT / "scripts/sync-from-upstream.py")],
         cwd=ROOT,
@@ -1102,7 +1110,8 @@ def test_forge_neutral_pr_path_without_graphite() -> None:
 
 def test_upstream_metadata_contract() -> None:
     upstream = (ROOT / "UPSTREAM").read_text(encoding="utf-8")
-    assert "tree 93b00b89ef425a9c1bac0d0b317dfc49c930ac99" in upstream
+    assert "tree 7366ac128bdf95f45e6734f412b49a4031800169" in upstream
+    assert "93b00b89ef425a9c1bac0d0b317dfc49c930ac99" in upstream
     root_manifest = json.loads((ROOT / "plugin.json").read_text(encoding="utf-8"))
     root_version = root_manifest["version"]
     manifest_fields = (
