@@ -23,8 +23,8 @@ Depends: none. Lane C.
 
 Depends: none. Lane D.
 
-- [ ] 4.1 Delete `test_print_coverage_relative_cache_uses_primary`.
-- [ ] 4.2 Keep `test_print_coverage_decoy_nested.py`.
+- [x] 4.1 Delete `test_print_coverage_relative_cache_uses_primary`.
+- [x] 4.2 Keep `test_print_coverage_decoy_nested.py`.
 
 ## 5. Lever verification
 

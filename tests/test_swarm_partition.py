@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
-import os
 import subprocess
 import sys
 from pathlib import Path
@@ -517,27 +516,6 @@ def test_resolve_cache_relative_joins_primary_from_feat_worktree(
     assert got == primary.resolve()
     assert got != decoy.resolve()
     assert (got / "marker").read_text(encoding="utf-8") == "primary\n"
-
-
-def test_print_coverage_relative_cache_uses_primary(capsys) -> None:
-    mod = load_partition()
-    table = ROOT / "skills" / "swarm" / "references" / "classification.tsv"
-    cwd = Path.cwd()
-    try:
-        os.chdir(ROOT)
-        mod.partition_main(
-            [
-                "print",
-                "--coverage",
-                "--cache",
-                ".worktrees/upstream-cursor-plugins",
-                "--table",
-                str(table),
-            ]
-        )
-    finally:
-        os.chdir(cwd)
-    assert capsys.readouterr().out == "coverage ok\n"
 
 
 def test_resolve_cache_absolute_existing_is_resolved_not_rewritten(
