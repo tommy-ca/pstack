@@ -39,10 +39,14 @@ def recipe() -> str:
 
 1. python3 scripts/sync-from-upstream.py --log
 2. Review applicable intent from .worktrees/upstream-cursor-plugins/pstack/
-   (`skills/`, `agents/`, and selected docs). Classify the live delta with
-   skills/swarm/references/classification.tsv and
-   skills/swarm/scripts/partition.py (print, print --coverage, partition). Pack
-   interrogate reviewer prompts with skills/interrogate/scripts/pack.py.
+   (`skills/`, `agents/`, and selected docs). Overlay last classification with
+   skills/swarm/scripts/partition.py seed --cache .worktrees/upstream-cursor-plugins.
+   Classify unclassified fragments with partition.py partition. Coverage is
+   name-status only: partition.py print --coverage --cache. port is shared intent,
+   not a write permit. Copy with skills/swarm/scripts/apply.py. After adapt, run
+   partition.py apply-check --cache. Canonical table is
+   skills/swarm/references/classification.tsv. Pack interrogate reviewer prompts
+   with skills/interrogate/scripts/pack.py.
    The current compare is official pstack 0.15.1: two new principle leaves
    (attack-the-premise, test-behavior-not-implementation), a density pass,
    and the evidence-or-label rule. Skip `make-bot-ui`, `.cursor-plugin/`,

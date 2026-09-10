@@ -43,7 +43,7 @@ For each reviewer:
 
 If `task` rejects a slug, omit `model` or retry only with a slug the error text named that is already in this session's detected set. Do not pick a closest family equivalent. If the configured value is `inherit-parent` or `auto`, omit `model`; never treat those aliases as broken slugs.
 
-Fill the reviewer prompt with `scripts/pack.py` (intent, diff, `references/rubric.md`, `references/code-quality-review.md`). Do not hand-fill the template. Point reviewers at the packed `prompt.md` rather than inlining dumps. The same packed prompt goes to all reviewers, so every model applies the code-quality lens.
+Fill the reviewer prompt with `scripts/pack.py --intent` plus exactly one of `--range` or `--diff-file` (`references/rubric.md`, `references/code-quality-review.md`). Do not hand-fill the template. Point reviewers at the packed `prompt.md` rather than inlining dumps. The same packed prompt goes to all reviewers, so every model applies the code-quality lens.
 
 Each reviewer produces structured findings as described in the prompt template.
 

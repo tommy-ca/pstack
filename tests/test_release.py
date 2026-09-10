@@ -11,7 +11,10 @@ def test_release_script_tags_without_force() -> None:
     script = (ROOT / "scripts/release.sh").read_text(encoding="utf-8")
     assert "grok plugin validate" in script
     assert "grok --sandbox off plugin tag --push" in script
-    assert "git push origin" in script
+    assert "push origin" in script
+    assert "GIT_TERMINAL_PROMPT=0" in script
+    assert "credential.helper='!gh auth git-credential'" in script
+    assert "url.https://github.com/.insteadOf=git@github.com:" in script
     assert "gh release view" in script
     assert "gh release create" in script
     assert "--verify-tag" in script

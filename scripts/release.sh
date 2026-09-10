@@ -11,7 +11,10 @@ version="$(python3 -c 'import json; print(json.load(open("plugin.json"))["versio
 tag="v${version}"
 if ! grok --sandbox off plugin tag --push; then
   git rev-parse "refs/tags/${tag}" >/dev/null
-  git push origin "refs/tags/${tag}"
+  GIT_TERMINAL_PROMPT=0 git \
+    -c credential.helper='!gh auth git-credential' \
+    -c url.https://github.com/.insteadOf=git@github.com: \
+    push origin "refs/tags/${tag}"
 fi
 if gh release view "$tag" >/dev/null 2>&1; then
   exit 0
