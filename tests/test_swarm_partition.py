@@ -469,6 +469,26 @@ def test_mixed_deslop_negation_and_call_on_same_line_is_live(tmp_path: Path) -> 
     assert mod.live_leftover_tokens(mixed) == ("/deslop",)
 
 
+def test_mixed_cursor_team_kit_negation_and_call_on_same_line_is_live(
+    tmp_path: Path,
+) -> None:
+    mod = load_partition()
+    mixed = "There is no `cursor-team-kit`; run cursor-team-kit anyway\n"
+    first = mixed.find("cursor-team-kit")
+    second = mixed.find("cursor-team-kit", first + 1)
+    assert mod.leftover_mention_allowed(mixed, "cursor-team-kit", first) is True
+    assert mod.leftover_mention_allowed(mixed, "cursor-team-kit", second) is False
+    dest = tmp_path / "dest"
+    skill = dest / "skills" / "live"
+    skill.mkdir(parents=True)
+    (skill / "SKILL.md").write_text(mixed, encoding="utf-8")
+    assert mod.leftover_hits(dest) == (
+        mod.LeftoverHit("skills/live/SKILL.md", "cursor-team-kit"),
+    )
+    assert mod.dest_looks_raw_cursor(mixed) is True
+    assert mod.live_leftover_tokens(mixed) == ("cursor-team-kit",)
+
+
 def test_print_coverage_uses_classified_comments_not_refresh_range(
     tmp_path: Path, capsys
 ) -> None:
@@ -481,6 +501,9 @@ def test_print_coverage_uses_classified_comments_not_refresh_range(
     _git(cache, "commit", "-m", "ahead")
     ahead = _git(cache, "rev-parse", "HEAD").stdout.strip()
     _git(cache, "update-ref", "refs/remotes/origin/main", ahead)
+    root = tmp_path / "root"
+    root.mkdir()
+    (root / "UPSTREAM").write_text(f"tree {pin_sha}\n", encoding="utf-8")
     table_path = tmp_path / "overlay.tsv"
     write_table(
         table_path,
@@ -491,17 +514,14 @@ def test_print_coverage_uses_classified_comments_not_refresh_range(
         "skills/x.md\tM\tport\tkeep\n"
         "skills/brand.md\tA\tport\tkeep\n",
     )
-    refresh_pin, refresh_tip = mod.next_refresh_range(ROOT, cache, None, None)
-    assert (refresh_pin, refresh_tip) == (mod.read_upstream_pin(ROOT), ahead)
+    refresh_pin, refresh_tip = mod.next_refresh_range(root, cache, None, None)
+    assert (refresh_pin, refresh_tip) == (pin_sha, ahead)
     assert (refresh_pin, refresh_tip) != (pin_sha, tip_sha)
-    try:
-        refresh_errors = mod.coverage_errors(
-            mod.read_table(table_path),
-            mod.git_name_status(cache, refresh_pin, refresh_tip),
-        )
-    except SystemExit:
-        refresh_errors = ("git failed",)
-    assert refresh_errors != ()
+    refresh_errors = mod.coverage_errors(
+        mod.read_table(table_path),
+        mod.git_name_status(cache, pin_sha, ahead),
+    )
+    assert "missing diff path: skills/extra.md" in refresh_errors
     mod.partition_main(
         [
             "print",

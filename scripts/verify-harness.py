@@ -6,6 +6,7 @@ Does not edit files. Exit 0 on pass.
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import pathlib
 import re
@@ -96,6 +97,21 @@ SKIP_FILES = {
     "classification.tsv",
 }
 
+PARTITION_SCRIPT = ROOT / "skills" / "swarm" / "scripts" / "partition.py"
+
+
+def _load_partition():
+    spec = importlib.util.spec_from_file_location("swarm_partition", PARTITION_SCRIPT)
+    if spec is None or spec.loader is None:
+        raise SystemExit(f"missing partition.py: {PARTITION_SCRIPT}")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+P = _load_partition()
+leftover_mention_allowed = P.leftover_mention_allowed
+
 
 def allows_cursor_rules_mention(path: pathlib.Path) -> bool:
     rel = path.relative_to(ROOT)
@@ -105,16 +121,6 @@ def allows_cursor_rules_mention(path: pathlib.Path) -> bool:
     if parts and parts[0] == "docs":
         return True
     return parts[:2] == ("skills", "setup-pstack")
-
-
-def leftover_mention_allowed(text: str, token: str, index: int) -> bool:
-    line_start = text.rfind("\n", 0, index) + 1
-    prefix = text[line_start:index]
-    if "/deslop" in token:
-        return prefix.endswith(("no ", "no `"))
-    if "cursor-team-kit" in token:
-        return prefix.endswith(("There is no ", "There is no `", "no ", "no `"))
-    return False
 
 
 def allows_cursor_compat_scanner(path: pathlib.Path, text: str, index: int) -> bool:
@@ -375,8 +381,6 @@ def main() -> None:
 
     # Not a TEST-PLAN pass gate. Catches the adapter eating "never create
     # ~/.cursor/rules" or rewriting TEST-PLAN FAIL tokens on a second run.
-    import importlib.util
-
     adapt_path = ROOT / "scripts" / "adapt-harness.py"
     spec = importlib.util.spec_from_file_location("adapt_harness", adapt_path)
     adapt = importlib.util.module_from_spec(spec)
