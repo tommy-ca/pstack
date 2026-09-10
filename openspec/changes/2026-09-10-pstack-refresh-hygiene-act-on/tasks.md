@@ -9,8 +9,8 @@ Depends: none. Lane A.
 
 Depends: none. Lane B.
 
-- [ ] 2.1 `--apply` exit 2 when any nested-cache row is `action=error`.
-- [ ] 2.2 Update `test_apply_collects_then_records_error_and_still_present` to expect 2.
+- [x] 2.1 `--apply` exit 2 when any nested-cache row is `action=error`.
+- [x] 2.2 Update `test_apply_collects_then_records_error_and_still_present` to expect 2.
 
 ## 3. Sync log bind proof
 

@@ -504,7 +504,7 @@ def test_apply_collects_then_records_error_and_still_present(
 
     monkeypatch.setattr(mod, "guarded_delete", boom)
     assert (
-        mod.main(["--root", str(repo), "--skills", str(skills), "--apply"]) == 0
+        mod.main(["--root", str(repo), "--skills", str(skills), "--apply"]) == 2
     )
     assert nested.exists()
     assert (primary / "marker").read_text(encoding="utf-8") == "primary\n"
@@ -520,7 +520,7 @@ def test_apply_collects_then_records_error_and_still_present(
 
     monkeypatch.setattr(mod, "guarded_delete", silent)
     assert (
-        mod.main(["--root", str(repo), "--skills", str(skills), "--apply"]) == 0
+        mod.main(["--root", str(repo), "--skills", str(skills), "--apply"]) == 2
     )
     assert nested.exists()
     out = capsys.readouterr().out

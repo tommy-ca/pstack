@@ -445,6 +445,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 2 if row.action == "eperm" else 0
     rows = refresh(args.root, args.skills, apply=args.apply)
     sys.stdout.write(format_rows(rows))
+    if args.apply and any(row.action == "error" for row in rows):
+        return 2
     if not args.apply and nested_would_delete(rows):
         return 2
     return 0
