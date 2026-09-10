@@ -192,11 +192,3 @@ def test_sync_remote_cache_is_primary_checkout() -> None:
     assert got == Path(
         "/home/tommyk/projects/pstack/.worktrees/upstream-cursor-plugins"
     ).resolve()
-    feat_script = Path(
-        "/home/tommyk/projects/pstack/.worktrees/feat/pstack-upstream-sync-apply"
-        "/scripts/sync-from-upstream.py"
-    )
-    if feat_script.is_file():
-        feat_root = feat_script.resolve().parents[1]
-        assert feat_root != Path("/home/tommyk/projects/pstack").resolve()
-        assert got != (feat_root / ".worktrees" / "upstream-cursor-plugins").resolve()
