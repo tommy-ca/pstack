@@ -30,5 +30,5 @@ Depends: none. Lane D.
 
 Depends: 1.2, 2.2, 3.2, 4.1.
 
-- [ ] 5.1 Add `skills/swarm/scripts/verify-refresh-hygiene.py` that runs the hygiene pytest slice and CLI dry-run.
-- [ ] 5.2 Run `python3 scripts/verify-harness.py` and `uv run --with pytest pytest -q tests/test_refresh_hygiene.py tests/test_print_coverage_decoy_nested.py`.
+- [x] 5.1 Add `skills/swarm/scripts/verify-refresh-hygiene.py` that runs the hygiene pytest slice and CLI dry-run.
+- [x] 5.2 Run `python3 scripts/verify-harness.py` and `uv run --with pytest pytest -q tests/test_refresh_hygiene.py tests/test_print_coverage_decoy_nested.py`.
