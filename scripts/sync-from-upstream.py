@@ -13,30 +13,38 @@ and Cursor-only packaging are not overwritten blindly.
 from __future__ import annotations
 
 import argparse
-import importlib.util
 import re
 import subprocess
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PARTITION_SCRIPT = ROOT / "skills" / "swarm" / "scripts" / "partition.py"
 UPSTREAM = ROOT / "UPSTREAM"
 CURSOR_PLUGINS = "https://github.com/cursor/plugins.git"
 PIN_RE = re.compile(r"^tree ([0-9a-f]{40})$", re.M)
 
 
-def _load_partition():
-    spec = importlib.util.spec_from_file_location("swarm_partition", PARTITION_SCRIPT)
-    if spec is None or spec.loader is None:
-        raise SystemExit(f"missing partition.py: {PARTITION_SCRIPT}")
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod
+def primary_checkout_root(root: Path) -> Path:
+    proc = subprocess.run(
+        ["git", "-C", str(root), "rev-parse", "--git-common-dir"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if proc.returncode != 0:
+        return root
+    common = Path(proc.stdout.strip())
+    if not common.is_absolute():
+        common = (root / common).resolve()
+    else:
+        common = common.resolve()
+    if common.name == ".git":
+        return common.parent
+    return common
 
 
 def remote_cache() -> Path:
-    return _load_partition().default_cache_path(ROOT)
+    return primary_checkout_root(ROOT) / ".worktrees" / "upstream-cursor-plugins"
 
 
 def pin() -> str:

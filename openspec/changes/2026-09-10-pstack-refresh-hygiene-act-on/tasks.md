@@ -16,8 +16,8 @@ Depends: none. Lane B.
 
 Depends: none. Lane C.
 
-- [ ] 3.1 Inline `primary_checkout_root` in `sync-from-upstream.py`. `--pin`/`--recipe` do not load partition.
-- [ ] 3.2 Load a tmp linked-worktree copy of the script and assert `remote_cache()` is primary.
+- [x] 3.1 Inline `primary_checkout_root` in `sync-from-upstream.py`. `--pin`/`--recipe` do not load partition.
+- [x] 3.2 Load a tmp linked-worktree copy of the script and assert `remote_cache()` is primary.
 
 ## 4. Coverage tests
 

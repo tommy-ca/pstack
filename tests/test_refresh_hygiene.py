@@ -196,16 +196,62 @@ def test_squash_from_log_rejects_subject_prefix() -> None:
     )
 
 
-def test_sync_remote_cache_is_primary_checkout() -> None:
-    script = ROOT / "scripts" / "sync-from-upstream.py"
-    spec = importlib.util.spec_from_file_location("sync_from_upstream", script)
-    assert spec is not None and spec.loader is not None
-    sync = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(sync)
-    got = sync.remote_cache().resolve()
-    assert got == Path(
-        "/home/tommyk/projects/pstack/.worktrees/upstream-cursor-plugins"
-    ).resolve()
+def test_sync_remote_cache_is_primary_checkout(tmp_path: Path) -> None:
+    wt = tmp_path / "sync-wt"
+    subprocess.run(
+        ["git", "-C", str(ROOT), "worktree", "add", "--detach", str(wt)],
+        check=True,
+        capture_output=True,
+    )
+    try:
+        live = ROOT / "scripts" / "sync-from-upstream.py"
+        script = wt / "scripts" / "sync-from-upstream.py"
+        script.write_text(live.read_text(encoding="utf-8"), encoding="utf-8")
+        spec = importlib.util.spec_from_file_location("sync_from_upstream_wt", script)
+        assert spec is not None and spec.loader is not None
+        sync = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(sync)
+        common_proc = subprocess.run(
+            ["git", "-C", str(ROOT), "rev-parse", "--git-common-dir"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        common = Path(common_proc.stdout.strip())
+        if not common.is_absolute():
+            common = (ROOT / common).resolve()
+        else:
+            common = common.resolve()
+        primary = common.parent if common.name == ".git" else common
+        expected = primary / ".worktrees" / "upstream-cursor-plugins"
+        got = sync.remote_cache()
+        assert got == expected
+        assert got != wt / ".worktrees" / "upstream-cursor-plugins"
+        pin = subprocess.run(
+            [sys.executable, str(script), "--pin"],
+            cwd=wt,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert pin.returncode == 0, pin.stderr
+        recipe = subprocess.run(
+            [sys.executable, str(script), "--recipe"],
+            cwd=wt,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert recipe.returncode == 0, recipe.stderr
+        src = script.read_text(encoding="utf-8")
+        assert "_load_partition" not in src
+        assert "PARTITION_SCRIPT" not in src
+    finally:
+        subprocess.run(
+            ["git", "-C", str(ROOT), "worktree", "remove", "--force", str(wt)],
+            check=True,
+            capture_output=True,
+        )
 
 
 def test_host_script_literal_and_apply_skills_eperm(tmp_path: Path, capsys) -> None:
