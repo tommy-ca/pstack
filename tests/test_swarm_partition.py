@@ -489,15 +489,33 @@ def test_mixed_cursor_team_kit_negation_and_call_on_same_line_is_live(
     assert mod.live_leftover_tokens(mixed) == ("cursor-team-kit",)
 
 
-def test_resolve_cache_relative_joins_primary_from_feat_worktree() -> None:
+def test_resolve_cache_relative_joins_primary_from_feat_worktree(
+    tmp_path: Path,
+) -> None:
     mod = load_partition()
-    feat_root = Path(
-        "/home/tommyk/projects/pstack/.worktrees/feat/pstack-upstream-sync-apply"
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    subprocess.run(
+        ["git", "init", "-b", "main", str(repo)], check=True, capture_output=True
     )
-    got = mod.resolve_cache(feat_root, Path(".worktrees/upstream-cursor-plugins"))
-    assert got == Path(
-        "/home/tommyk/projects/pstack/.worktrees/upstream-cursor-plugins"
-    ).resolve()
+    _git(repo, "config", "user.email", "t@example.com")
+    _git(repo, "config", "user.name", "t")
+    (repo / "README").write_text("root\n", encoding="utf-8")
+    _git(repo, "add", "README")
+    _git(repo, "commit", "-m", "init")
+    worktree = repo / ".worktrees" / "feat" / "demo"
+    worktree.parent.mkdir(parents=True)
+    _git(repo, "worktree", "add", "--detach", str(worktree))
+    primary = repo / ".worktrees" / "upstream-cursor-plugins"
+    primary.mkdir()
+    (primary / "marker").write_text("primary\n", encoding="utf-8")
+    decoy = worktree / ".worktrees" / "upstream-cursor-plugins"
+    decoy.mkdir(parents=True)
+    (decoy / "marker").write_text("decoy\n", encoding="utf-8")
+    got = mod.resolve_cache(worktree, Path(".worktrees/upstream-cursor-plugins"))
+    assert got == primary.resolve()
+    assert got != decoy.resolve()
+    assert (got / "marker").read_text(encoding="utf-8") == "primary\n"
 
 
 def test_resolve_cache_absolute_existing_is_resolved_not_rewritten(
@@ -506,29 +524,21 @@ def test_resolve_cache_absolute_existing_is_resolved_not_rewritten(
     mod = load_partition()
     cache = tmp_path / "elsewhere" / "cache"
     cache.mkdir(parents=True)
-    feat_root = Path(
-        "/home/tommyk/projects/pstack/.worktrees/feat/pstack-upstream-sync-apply"
-    )
-    got = mod.resolve_cache(feat_root, cache)
+    got = mod.resolve_cache(ROOT, cache)
     assert got == cache.resolve()
-    assert got != Path(
-        "/home/tommyk/projects/pstack/.worktrees/upstream-cursor-plugins"
+    assert got != (
+        mod.primary_checkout_root(ROOT) / ".worktrees" / "upstream-cursor-plugins"
     ).resolve()
 
 
 def test_resolve_cache_missing_relative_exits() -> None:
     mod = load_partition()
-    feat_root = Path(
-        "/home/tommyk/projects/pstack/.worktrees/feat/pstack-upstream-sync-apply"
-    )
+    primary = mod.primary_checkout_root(ROOT)
     try:
-        mod.resolve_cache(feat_root, Path(".worktrees/no-such-cache"))
+        mod.resolve_cache(ROOT, Path(".worktrees/no-such-cache"))
         raise AssertionError("missing cache must fail")
     except SystemExit as exc:
-        assert (
-            str(exc)
-            == "missing cache: /home/tommyk/projects/pstack/.worktrees/no-such-cache"
-        )
+        assert str(exc) == f"missing cache: {primary / '.worktrees' / 'no-such-cache'}"
 
 
 def test_print_coverage_uses_classified_comments_not_refresh_range(

@@ -787,8 +787,8 @@ def partition_main(argv: Sequence[str] | None = None) -> None:
 
     args = parser.parse_args(list(argv) if argv is not None else None)
     if args.cmd == "print":
-        cache = args.cache or default_cache_path(root)
         if args.diff:
+            cache = resolve_cache(root, args.cache)
             pin, tip = next_refresh_range(root, cache, args.pin, args.tip)
             table = skeleton_table(pin, tip, git_name_status(cache, pin, tip))
             sys.stdout.write(format_table(table))
@@ -797,6 +797,7 @@ def partition_main(argv: Sequence[str] | None = None) -> None:
         table = _load_tables(tables)
         rows = filter_rows(table.rows, args.bucket)
         if args.coverage:
+            cache = resolve_cache(root, args.cache)
             pin, tip = classified_range(table, args.pin, args.tip)
             errors = coverage_errors(table, git_name_status(cache, pin, tip))
             if errors:
