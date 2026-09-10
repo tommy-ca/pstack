@@ -2,8 +2,8 @@
 
 Depends: none. Lane A.
 
-- [ ] 1.1 Gate `--apply-skills` on claude-shaped dest and `has_symlink_parent`.
-- [ ] 1.2 Pytest: symlink parent is `eperm`, grok-shaped dest is not-stale, dest bytes unchanged.
+- [x] 1.1 Gate `--apply-skills` on claude-shaped dest and `has_symlink_parent`.
+- [x] 1.2 Pytest: symlink parent is `eperm`, grok-shaped dest is not-stale, dest bytes unchanged.
 
 ## 2. Apply error exit
 

@@ -8,6 +8,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "skills" / "swarm" / "scripts" / "refresh-hygiene.py"
+CLAUDE = "transcripts live in ~/.claude/projects/encoded\n"
+GROK = "GROK_SESSION_ID\n"
 
 
 def load():
@@ -17,6 +19,18 @@ def load():
     sys.modules[spec.name] = mod
     spec.loader.exec_module(mod)
     return mod
+
+
+def _src_dest(tmp_path: Path, dest_text: str) -> tuple[Path, Path, Path, Path]:
+    root = tmp_path / "pstack"
+    src = root / "skills" / "reflect" / "SKILL.md"
+    src.parent.mkdir(parents=True)
+    src.write_text(GROK, encoding="utf-8")
+    skills = tmp_path / "skills"
+    dest = skills / "reflect" / "SKILL.md"
+    dest.parent.mkdir(parents=True)
+    dest.write_text(dest_text, encoding="utf-8")
+    return root, src, skills, dest
 
 
 def _git(cwd: Path, *args: str) -> None:
@@ -281,6 +295,178 @@ def test_host_script_dest_is_overlay_not_symlink_target(
     assert dest.read_text(encoding="utf-8") == (
         "transcripts live in ~/.claude/projects/encoded\n"
     )
+
+
+def test_apply_skills_symlink_parent_is_eperm_dest_unchanged(
+    tmp_path: Path, capsys
+) -> None:
+    mod = load()
+    root = tmp_path / "pstack"
+    src = root / "skills" / "reflect" / "SKILL.md"
+    src.parent.mkdir(parents=True)
+    src.write_text(GROK, encoding="utf-8")
+    agents = tmp_path / "agents" / "skills" / "reflect"
+    agents.mkdir(parents=True)
+    target = agents / "SKILL.md"
+    target.write_text(CLAUDE, encoding="utf-8")
+    skills = tmp_path / "skills"
+    skills.mkdir()
+    (skills / "reflect").symlink_to(agents)
+    dest = skills / "reflect" / "SKILL.md"
+    assert dest.parent.is_symlink()
+    assert not dest.is_symlink()
+    before_mode = stat.S_IMODE(dest.stat().st_mode)
+
+    assert (
+        mod.main(["--root", str(root), "--skills", str(skills), "--apply-skills"])
+        == 2
+    )
+    out = capsys.readouterr().out
+    assert out == (
+        "kind\taction\tpath\tnote\n"
+        f"stale-skill\teperm\t{dest}\tEPERM\n"
+    )
+    assert str(agents) not in out
+    assert dest.read_text(encoding="utf-8") == CLAUDE
+    assert dest.parent.is_symlink()
+    assert stat.S_IMODE(dest.stat().st_mode) == before_mode
+    assert target.read_text(encoding="utf-8") == CLAUDE
+
+
+def test_apply_skills_symlink_ancestor_is_eperm_dest_unchanged(
+    tmp_path: Path, capsys
+) -> None:
+    mod = load()
+    root = tmp_path / "pstack"
+    src = root / "skills" / "reflect" / "SKILL.md"
+    src.parent.mkdir(parents=True)
+    src.write_text(GROK, encoding="utf-8")
+    real_skills = tmp_path / "real_skills"
+    real_dest = real_skills / "reflect" / "SKILL.md"
+    real_dest.parent.mkdir(parents=True)
+    real_dest.write_text(CLAUDE, encoding="utf-8")
+    overlay = tmp_path / "overlay"
+    overlay.mkdir()
+    (overlay / "skills").symlink_to(real_skills)
+    skills = overlay / "skills"
+    dest = skills / "reflect" / "SKILL.md"
+    assert not dest.is_symlink()
+    assert not dest.parent.is_symlink()
+    assert mod.has_symlink_parent(dest)
+    before_mode = stat.S_IMODE(dest.stat().st_mode)
+
+    assert (
+        mod.main(["--root", str(root), "--skills", str(skills), "--apply-skills"])
+        == 2
+    )
+    out = capsys.readouterr().out
+    assert out == (
+        "kind\taction\tpath\tnote\n"
+        f"stale-skill\teperm\t{dest}\tEPERM\n"
+    )
+    assert str(real_skills) not in out
+    assert dest.read_text(encoding="utf-8") == CLAUDE
+    assert stat.S_IMODE(dest.stat().st_mode) == before_mode
+
+
+def test_apply_skills_dest_symlink_is_eperm_even_when_target_is_grok_shaped(
+    tmp_path: Path, capsys
+) -> None:
+    mod = load()
+    root = tmp_path / "pstack"
+    src = root / "skills" / "reflect" / "SKILL.md"
+    src.parent.mkdir(parents=True)
+    src.write_text(GROK, encoding="utf-8")
+    agents = tmp_path / "agents" / "skills" / "reflect"
+    agents.mkdir(parents=True)
+    target = agents / "SKILL.md"
+    target.write_text(GROK, encoding="utf-8")
+    skills = tmp_path / "skills"
+    dest = skills / "reflect" / "SKILL.md"
+    dest.parent.mkdir(parents=True)
+    dest.symlink_to(target)
+    assert dest.is_symlink()
+    before_mode = stat.S_IMODE(target.stat().st_mode)
+
+    assert (
+        mod.main(["--root", str(root), "--skills", str(skills), "--apply-skills"])
+        == 2
+    )
+    out = capsys.readouterr().out
+    assert out == (
+        "kind\taction\tpath\tnote\n"
+        f"stale-skill\teperm\t{dest}\tEPERM\n"
+    )
+    assert str(agents) not in out
+    assert dest.is_symlink()
+    assert dest.read_text(encoding="utf-8") == GROK
+    assert target.read_text(encoding="utf-8") == GROK
+    assert stat.S_IMODE(target.stat().st_mode) == before_mode
+
+
+def test_apply_skills_grok_shaped_dest_is_not_stale_dest_unchanged(
+    tmp_path: Path, capsys
+) -> None:
+    mod = load()
+    root, src, skills, dest = _src_dest(tmp_path, GROK)
+    before_mode = stat.S_IMODE(dest.stat().st_mode)
+    src.write_text("GROK_SESSION_ID plus extra\n", encoding="utf-8")
+
+    assert (
+        mod.main(["--root", str(root), "--skills", str(skills), "--apply-skills"])
+        == 0
+    )
+    out = capsys.readouterr().out
+    assert out == (
+        "kind\taction\tpath\tnote\n"
+        f"stale-skill\tnot-stale\t{dest}\tnot-stale\n"
+    )
+    assert dest.read_text(encoding="utf-8") == GROK
+    assert stat.S_IMODE(dest.stat().st_mode) == before_mode
+    assert src.read_text(encoding="utf-8") == "GROK_SESSION_ID plus extra\n"
+
+
+def test_apply_skills_claude_shaped_writable_dest_copies(
+    tmp_path: Path, capsys
+) -> None:
+    mod = load()
+    root, src, skills, dest = _src_dest(tmp_path, CLAUDE)
+
+    assert (
+        mod.main(["--root", str(root), "--skills", str(skills), "--apply-skills"])
+        == 0
+    )
+    out = capsys.readouterr().out
+    assert out == (
+        "kind\taction\tpath\tnote\n"
+        f"stale-skill\tcopied\t{dest}\tok\n"
+    )
+    assert dest.read_text(encoding="utf-8") == GROK
+    assert src.read_text(encoding="utf-8") == GROK
+    assert not dest.is_symlink()
+
+
+def test_apply_skills_second_copy_is_not_stale(tmp_path: Path, capsys) -> None:
+    mod = load()
+    root, src, skills, dest = _src_dest(tmp_path, CLAUDE)
+    assert (
+        mod.main(["--root", str(root), "--skills", str(skills), "--apply-skills"])
+        == 0
+    )
+    assert dest.read_text(encoding="utf-8") == GROK
+    capsys.readouterr()
+    src.write_text("GROK_SESSION_ID plus extra\n", encoding="utf-8")
+    assert (
+        mod.main(["--root", str(root), "--skills", str(skills), "--apply-skills"])
+        == 0
+    )
+    out = capsys.readouterr().out
+    assert out == (
+        "kind\taction\tpath\tnote\n"
+        f"stale-skill\tnot-stale\t{dest}\tnot-stale\n"
+    )
+    assert dest.read_text(encoding="utf-8") == GROK
+    assert src.read_text(encoding="utf-8") == "GROK_SESSION_ID plus extra\n"
 
 
 def test_parent_symlink_cache_is_keep_not_deleted(tmp_path: Path, capsys) -> None:

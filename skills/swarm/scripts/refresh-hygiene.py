@@ -108,8 +108,16 @@ def host_copy_command(plan: SkillCopy) -> str:
 
 def apply_skill_copy(plan: SkillCopy) -> Row:
     dest = plan.dest
-    if dest.is_symlink() or dest.parent.is_symlink():
+    if dest.is_symlink() or has_symlink_parent(dest):
         return Row(KIND_SKILL, "eperm", dest, "EPERM")
+    try:
+        if not dest.is_file():
+            return Row(KIND_SKILL, "not-stale", dest, "not-stale")
+        text = dest.read_text(encoding="utf-8")
+    except PermissionError:
+        return Row(KIND_SKILL, "eperm", dest, "EPERM")
+    if skill_shape(text) != "claude-shaped":
+        return Row(KIND_SKILL, "not-stale", dest, "not-stale")
     try:
         shutil.copyfile(plan.source, dest)
     except PermissionError:
