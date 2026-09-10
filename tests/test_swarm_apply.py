@@ -34,6 +34,7 @@ def test_dry_run_refuses_fence_and_writes_nothing(tmp_path: Path) -> None:
     table = tmp_path / "t.tsv"
     write_table(
         table,
+        "# pin=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
         "# tip=not-a-git-object\n"
         "path\tchange\tbucket\tnote\n"
         "skills/how/SKILL.md\tM\taudit\tfence\n",
@@ -64,6 +65,7 @@ def test_copy_port_and_skip_equal_dest(tmp_path: Path) -> None:
     table = tmp_path / "t.tsv"
     write_table(
         table,
+        "# pin=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
         "# tip=not-a-git-object\n"
         "path\tchange\tbucket\tnote\n"
         f"{rel}\tM\tport\tkeep\n",
@@ -96,6 +98,7 @@ def test_refuse_remapped_dest(tmp_path: Path) -> None:
     table = tmp_path / "t.tsv"
     write_table(
         table,
+        "# pin=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
         "# tip=not-a-git-object\n"
         "path\tchange\tbucket\tnote\n"
         f"{rel}\tM\tport\thost map\n",
@@ -121,6 +124,36 @@ def test_refuse_host_keep_when_dest_differs_without_cursor_tokens(tmp_path: Path
     table = tmp_path / "t.tsv"
     write_table(
         table,
+        "# pin=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
+        "# tip=not-a-git-object\n"
+        "path\tchange\tbucket\tnote\n"
+        f"{rel}\tM\tport\thost keep\n",
+    )
+    report = mod.apply_main(
+        ["--cache", str(cache), "--table", str(table), "--dest", str(dest)]
+    )
+    assert report.copied == ()
+    assert any(d.reason == "host-keep" for d in report.refused)
+    assert dest_file.read_bytes() == before
+
+
+def test_host_keep_when_dest_only_has_allowed_leftover_mention(tmp_path: Path) -> None:
+    mod = load_apply()
+    cache = tmp_path / "cache"
+    dest = tmp_path / "dest"
+    rel = "skills/recall/SKILL.md"
+    put_blob(cache, rel, b"install cursor-team-kit then /deslop\n")
+    dest_file = dest / rel
+    dest_file.parent.mkdir(parents=True, exist_ok=True)
+    dest_file.write_text(
+        "There is no `cursor-team-kit` here.\nthere is no /deslop in this port\n",
+        encoding="utf-8",
+    )
+    before = dest_file.read_bytes()
+    table = tmp_path / "t.tsv"
+    write_table(
+        table,
+        "# pin=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
         "# tip=not-a-git-object\n"
         "path\tchange\tbucket\tnote\n"
         f"{rel}\tM\tport\thost keep\n",

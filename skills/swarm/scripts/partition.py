@@ -469,25 +469,45 @@ def _load_tables(paths: Sequence[Path]) -> Table:
     return merge_tables([read_table(path) for path in paths])
 
 
-def _resolve_range(
-    table: Table | None, root: Path, cache: Path, pin: str | None, tip: str | None
+def next_refresh_range(
+    root: Path, cache: Path, pin: str | None, tip: str | None
 ) -> tuple[str, str]:
-    resolved_pin = pin or (table.pin if table else None) or read_upstream_pin(root)
+    resolved_pin = pin or read_upstream_pin(root)
     if tip:
-        resolved_tip = tip
-    elif table and table.tip:
-        resolved_tip = table.tip
-    else:
+        return resolved_pin, tip
+    proc = subprocess.run(
+        ["git", "-C", str(cache), "rev-parse", "origin/main"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if proc.returncode != 0:
+        raise SystemExit(proc.stderr.strip() or "git rev-parse failed")
+    return resolved_pin, proc.stdout.strip()
+
+
+def classified_range(
+    table: Table, pin: str | None, tip: str | None
+) -> tuple[str, str]:
+    resolved_pin = pin or table.pin
+    resolved_tip = tip or table.tip
+    if not resolved_pin:
+        raise SystemExit("missing classified pin")
+    if not resolved_tip:
+        raise SystemExit("missing classified tip")
+    return resolved_pin, resolved_tip
+
+
+def _tip_is_git_object(cache: Path, tip: str) -> bool:
+    for spec in (f"{tip}^{{commit}}", tip):
         proc = subprocess.run(
-            ["git", "-C", str(cache), "rev-parse", "origin/main"],
+            ["git", "-C", str(cache), "cat-file", "-e", spec],
             capture_output=True,
-            text=True,
             check=False,
         )
-        if proc.returncode != 0:
-            raise SystemExit(proc.stderr.strip() or "git rev-parse failed")
-        resolved_tip = proc.stdout.strip()
-    return resolved_pin, resolved_tip
+        if proc.returncode == 0:
+            return True
+    return False
 
 
 def read_upstream_blob(cache: Path, tip: str, relpath: str) -> bytes | None:
@@ -498,6 +518,8 @@ def read_upstream_blob(cache: Path, tip: str, relpath: str) -> bytes | None:
     )
     if proc.returncode == 0:
         return proc.stdout
+    if _tip_is_git_object(cache, tip):
+        return None
     path = cache / "pstack" / relpath
     if path.is_file():
         return path.read_bytes()
@@ -532,10 +554,6 @@ def looks_remapped(source_text: str, dest_text: str) -> bool:
     return any(marker in dest_text and marker not in source_text for marker in HOST_MARKERS)
 
 
-def dest_looks_raw_cursor(text: str) -> bool:
-    return any(token in text for token in LEFTOVER_TOKENS)
-
-
 def leftover_mention_allowed(text: str, token: str, index: int) -> bool:
     line_start = text.rfind("\n", 0, index) + 1
     line_end = text.find("\n", index)
@@ -548,6 +566,19 @@ def leftover_mention_allowed(text: str, token: str, index: int) -> bool:
         or "no cursor-team-kit" in line
     ):
         return True
+    return False
+
+
+def dest_looks_raw_cursor(text: str) -> bool:
+    for token in LEFTOVER_TOKENS:
+        start = 0
+        while True:
+            idx = text.find(token, start)
+            if idx < 0:
+                break
+            if not leftover_mention_allowed(text, token, idx):
+                return True
+            start = idx + len(token)
     return False
 
 
@@ -699,7 +730,7 @@ def format_apply_check_errors(report: ApplyCheckReport) -> str:
 def seed_main(args: argparse.Namespace, root: Path) -> None:
     cache = resolve_cache(root, args.cache)
     table = read_table(args.table or default_table_path(root))
-    pin, tip = _resolve_range(table, root, cache, args.pin, args.tip)
+    pin, tip = next_refresh_range(root, cache, args.pin, args.tip)
     overlay = overlay_seed(table, git_name_status(cache, pin, tip), pin, tip)
     text = format_table(overlay)
     if args.out is not None:
@@ -713,7 +744,7 @@ def apply_check_main(args: argparse.Namespace, root: Path) -> None:
     cache = resolve_cache(root, args.cache)
     dest_root = Path(args.dest) if args.dest is not None else root
     table = read_table(args.table or default_table_path(root))
-    _pin, tip = _resolve_range(table, root, cache, args.pin, args.tip)
+    _pin, tip = classified_range(table, args.pin, args.tip)
     report = apply_check(table, cache, dest_root, tip)
     if not report.ok:
         sys.stderr.write(format_apply_check_errors(report))
@@ -762,7 +793,7 @@ def partition_main(argv: Sequence[str] | None = None) -> None:
     if args.cmd == "print":
         cache = args.cache or default_cache_path(root)
         if args.diff:
-            pin, tip = _resolve_range(None, root, cache, args.pin, args.tip)
+            pin, tip = next_refresh_range(root, cache, args.pin, args.tip)
             table = skeleton_table(pin, tip, git_name_status(cache, pin, tip))
             sys.stdout.write(format_table(table))
             return
@@ -770,7 +801,7 @@ def partition_main(argv: Sequence[str] | None = None) -> None:
         table = _load_tables(tables)
         rows = filter_rows(table.rows, args.bucket)
         if args.coverage:
-            pin, tip = _resolve_range(table, root, cache, args.pin, args.tip)
+            pin, tip = classified_range(table, args.pin, args.tip)
             errors = coverage_errors(table, git_name_status(cache, pin, tip))
             if errors:
                 sys.stderr.write("\n".join(errors) + "\n")

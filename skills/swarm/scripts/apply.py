@@ -83,7 +83,7 @@ def apply_main(argv: Sequence[str] | None = None) -> P.ApplyReport:
     cache = P.resolve_cache(root, args.cache)
     dest_root = Path(args.dest) if args.dest is not None else root
     table = P.read_table(args.table or P.default_table_path(root))
-    _pin, tip = P._resolve_range(table, root, cache, args.pin, args.tip)
+    _pin, tip = P.classified_range(table, args.pin, args.tip)
     decisions = P.write_decisions(table, dest_root, cache, tip)
     report = apply_copies(decisions, cache, dest_root, tip, dry_run=args.dry_run)
     sys.stdout.write(format_apply_plan(report))

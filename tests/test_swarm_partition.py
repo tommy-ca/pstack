@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import argparse
 import importlib.util
+import subprocess
 import sys
 from pathlib import Path
 
@@ -283,7 +285,11 @@ def test_apply_check_fails_on_leftover_and_skips_name_status(
     assert any(hit.token == "/deslop" and "SKILL.md" in hit.relpath for hit in hits)
     assert all(hit.relpath.endswith("classification.tsv") is False for hit in hits)
     table_path = tmp_path / "t.tsv"
-    write_table(table_path, "path\tchange\tbucket\tnote\n")
+    write_table(
+        table_path,
+        "# pin=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
+        "path\tchange\tbucket\tnote\n",
+    )
     cache = tmp_path / "cache"
     cache.mkdir()
     try:
@@ -321,3 +327,127 @@ def test_leftover_askquestion_after_there_is_no_is_live(tmp_path: Path) -> None:
     hits = mod.leftover_hits(dest)
     assert any(hit.token == "AskQuestion" and hit.relpath.endswith("SKILL.md") for hit in hits)
     assert all(hit.relpath.endswith("OK.md") is False for hit in hits)
+
+
+def _git(cache: Path, *args: str, check: bool = True) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        ["git", "-C", str(cache), *args],
+        check=check,
+        capture_output=True,
+        text=True,
+    )
+
+
+def _init_cache_with_origin_main(cache: Path) -> tuple[str, str]:
+    subprocess.run(["git", "init", "-b", "main", str(cache)], check=True, capture_output=True)
+    _git(cache, "config", "user.email", "t@example.com")
+    _git(cache, "config", "user.name", "t")
+    how = cache / "pstack" / "skills" / "how" / "SKILL.md"
+    x_md = cache / "pstack" / "skills" / "x.md"
+    how.parent.mkdir(parents=True)
+    how.write_text("old how\n", encoding="utf-8")
+    x_md.write_text("old x\n", encoding="utf-8")
+    _git(cache, "add", "pstack")
+    _git(cache, "commit", "-m", "pin")
+    pin = _git(cache, "rev-parse", "HEAD").stdout.strip()
+    how.write_text("new how\n", encoding="utf-8")
+    x_md.write_text("new x\n", encoding="utf-8")
+    (cache / "pstack" / "skills" / "brand.md").write_text("brand\n", encoding="utf-8")
+    _git(cache, "add", "pstack")
+    _git(cache, "commit", "-m", "tip")
+    tip = _git(cache, "rev-parse", "HEAD").stdout.strip()
+    _git(cache, "update-ref", "refs/remotes/origin/main", tip)
+    return pin, tip
+
+
+def test_classified_range_uses_table_comments_not_origin_main() -> None:
+    mod = load_partition()
+    table = mod.Table(
+        {
+            "pin": "1111111111111111111111111111111111111111",
+            "tip": "2222222222222222222222222222222222222222",
+        },
+        (),
+    )
+    pin, tip = mod.classified_range(table, None, None)
+    assert pin == "1111111111111111111111111111111111111111"
+    assert tip == "2222222222222222222222222222222222222222"
+    pin2, tip2 = mod.classified_range(table, "cli-pin", "cli-tip")
+    assert pin2 == "cli-pin"
+    assert tip2 == "cli-tip"
+
+
+def test_seed_main_uses_upstream_and_origin_main(tmp_path: Path) -> None:
+    mod = load_partition()
+    cache = tmp_path / "cache"
+    pin_sha, tip_sha = _init_cache_with_origin_main(cache)
+    root = tmp_path / "root"
+    root.mkdir()
+    (root / "UPSTREAM").write_text(f"tree {pin_sha}\n", encoding="utf-8")
+    table_path = tmp_path / "prior.tsv"
+    write_table(
+        table_path,
+        "# pin=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
+        "# tip=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\n"
+        "path\tchange\tbucket\tnote\n"
+        "skills/how/SKILL.md\tM\taudit\tkeep critics\n"
+        "stale.md\tM\tport\tgone\n"
+        "skills/x.md\tM\tunclassified\told note\n",
+    )
+    out = tmp_path / "overlay.tsv"
+    pin, tip = mod.next_refresh_range(root, cache, None, None)
+    assert pin == pin_sha
+    assert tip == tip_sha
+    mod.seed_main(
+        argparse.Namespace(
+            cache=cache,
+            table=table_path,
+            out=out,
+            pin=None,
+            tip=None,
+        ),
+        root,
+    )
+    overlay = mod.read_table(out)
+    assert overlay.pin == pin_sha
+    assert overlay.tip == tip_sha
+    by_path = {row.path: row for row in overlay.rows}
+    assert "stale.md" not in by_path
+    assert by_path["skills/how/SKILL.md"] == mod.Row(
+        "skills/how/SKILL.md", "M", "audit", "keep critics"
+    )
+    assert by_path["skills/brand.md"].bucket == "unclassified"
+    assert by_path["skills/x.md"] == mod.Row(
+        "skills/x.md", "M", "unclassified", "old note"
+    )
+
+
+def test_read_upstream_blob_skips_workdir_when_tip_is_git_object(
+    tmp_path: Path,
+) -> None:
+    mod = load_partition()
+    cache = tmp_path / "cache"
+    pin_sha, tip_sha = _init_cache_with_origin_main(cache)
+    missing = cache / "pstack" / "skills" / "ghost.md"
+    missing.write_text("only on disk\n", encoding="utf-8")
+    assert mod.read_upstream_blob(cache, tip_sha, "skills/ghost.md") is None
+    assert (
+        mod.read_upstream_blob(cache, tip_sha, "skills/how/SKILL.md") == b"new how\n"
+    )
+    loose = tmp_path / "loose"
+    put = loose / "pstack" / "skills" / "ghost.md"
+    put.parent.mkdir(parents=True)
+    put.write_text("workdir fallback\n", encoding="utf-8")
+    assert (
+        mod.read_upstream_blob(loose, "not-a-git-object", "skills/ghost.md")
+        == b"workdir fallback\n"
+    )
+    assert pin_sha != tip_sha
+
+
+def test_dest_looks_raw_cursor_ignores_allowed_negation() -> None:
+    mod = load_partition()
+    assert mod.dest_looks_raw_cursor("There is no `cursor-team-kit` here.\n") is False
+    assert mod.dest_looks_raw_cursor("there is no /deslop in this port\n") is False
+    assert mod.dest_looks_raw_cursor("run /deslop on this tree\n") is True
+    assert mod.dest_looks_raw_cursor("Call AskQuestion for the fork.\n") is True

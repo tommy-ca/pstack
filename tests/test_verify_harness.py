@@ -601,6 +601,14 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert "apply.py" in recipe.stdout
     assert "apply-check" in recipe.stdout
     assert "print --coverage" in recipe.stdout
+    cache_table = (
+        "--cache .worktrees/upstream-cursor-plugins --table "
+        "/tmp/pstack-refresh/overlay.tsv"
+    )
+    assert cache_table in recipe.stdout
+    assert recipe.stdout.count(cache_table) >= 3
+    assert "seed --cache .worktrees/upstream-cursor-plugins" in recipe.stdout
+    assert "--cache --table" not in recipe.stdout
     assert not (ROOT / ".grok/workflows").exists()
     rhai = ROOT / "skills/swarm/references/pstack-upstream-refresh.rhai"
     assert rhai.is_file()
