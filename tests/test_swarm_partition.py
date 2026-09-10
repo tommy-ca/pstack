@@ -489,6 +489,48 @@ def test_mixed_cursor_team_kit_negation_and_call_on_same_line_is_live(
     assert mod.live_leftover_tokens(mixed) == ("cursor-team-kit",)
 
 
+def test_resolve_cache_relative_joins_primary_from_feat_worktree() -> None:
+    mod = load_partition()
+    feat_root = Path(
+        "/home/tommyk/projects/pstack/.worktrees/feat/pstack-upstream-sync-apply"
+    )
+    got = mod.resolve_cache(feat_root, Path(".worktrees/upstream-cursor-plugins"))
+    assert got == Path(
+        "/home/tommyk/projects/pstack/.worktrees/upstream-cursor-plugins"
+    ).resolve()
+
+
+def test_resolve_cache_absolute_existing_is_resolved_not_rewritten(
+    tmp_path: Path,
+) -> None:
+    mod = load_partition()
+    cache = tmp_path / "elsewhere" / "cache"
+    cache.mkdir(parents=True)
+    feat_root = Path(
+        "/home/tommyk/projects/pstack/.worktrees/feat/pstack-upstream-sync-apply"
+    )
+    got = mod.resolve_cache(feat_root, cache)
+    assert got == cache.resolve()
+    assert got != Path(
+        "/home/tommyk/projects/pstack/.worktrees/upstream-cursor-plugins"
+    ).resolve()
+
+
+def test_resolve_cache_missing_relative_exits() -> None:
+    mod = load_partition()
+    feat_root = Path(
+        "/home/tommyk/projects/pstack/.worktrees/feat/pstack-upstream-sync-apply"
+    )
+    try:
+        mod.resolve_cache(feat_root, Path(".worktrees/no-such-cache"))
+        raise AssertionError("missing cache must fail")
+    except SystemExit as exc:
+        assert (
+            str(exc)
+            == "missing cache: /home/tommyk/projects/pstack/.worktrees/no-such-cache"
+        )
+
+
 def test_print_coverage_uses_classified_comments_not_refresh_range(
     tmp_path: Path, capsys
 ) -> None:
