@@ -13,16 +13,30 @@ and Cursor-only packaging are not overwritten blindly.
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import re
 import subprocess
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+PARTITION_SCRIPT = ROOT / "skills" / "swarm" / "scripts" / "partition.py"
 UPSTREAM = ROOT / "UPSTREAM"
 CURSOR_PLUGINS = "https://github.com/cursor/plugins.git"
 PIN_RE = re.compile(r"^tree ([0-9a-f]{40})$", re.M)
-REMOTE_CACHE = ROOT / ".worktrees" / "upstream-cursor-plugins"
+
+
+def _load_partition():
+    spec = importlib.util.spec_from_file_location("swarm_partition", PARTITION_SCRIPT)
+    if spec is None or spec.loader is None:
+        raise SystemExit(f"missing partition.py: {PARTITION_SCRIPT}")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def remote_cache() -> Path:
+    return _load_partition().default_cache_path(ROOT)
 
 
 def pin() -> str:
@@ -68,10 +82,11 @@ def recipe() -> str:
 
 
 def ensure_remote() -> Path:
-    REMOTE_CACHE.parent.mkdir(parents=True, exist_ok=True)
-    if (REMOTE_CACHE / ".git").is_dir() or (REMOTE_CACHE / "HEAD").is_file():
+    cache = remote_cache()
+    cache.parent.mkdir(parents=True, exist_ok=True)
+    if (cache / ".git").is_dir() or (cache / "HEAD").is_file():
         subprocess.run(
-            ["git", "-C", str(REMOTE_CACHE), "fetch", "--quiet", "origin", "main"],
+            ["git", "-C", str(cache), "fetch", "--quiet", "origin", "main"],
             check=True,
         )
     else:
@@ -83,19 +98,19 @@ def ensure_remote() -> Path:
                 "--sparse",
                 "--quiet",
                 CURSOR_PLUGINS,
-                str(REMOTE_CACHE),
+                str(cache),
             ],
             check=True,
         )
         subprocess.run(
-            ["git", "-C", str(REMOTE_CACHE), "sparse-checkout", "set", "pstack"],
+            ["git", "-C", str(cache), "sparse-checkout", "set", "pstack"],
             check=True,
         )
     subprocess.run(
-        ["git", "-C", str(REMOTE_CACHE), "merge", "--ff-only", "--quiet", "origin/main"],
+        ["git", "-C", str(cache), "merge", "--ff-only", "--quiet", "origin/main"],
         check=True,
     )
-    return REMOTE_CACHE
+    return cache
 
 
 def show_log() -> int:
