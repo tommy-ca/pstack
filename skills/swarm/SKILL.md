@@ -25,7 +25,7 @@ Open a todolist with one entry per phase before launching anything.
 4. Pick the worker model from toml key `swarm-workers` per `../setup-pstack/references/resolve-model.md`. Absent file: send `grok-4.6` (omit if rejected). Missing key, `inherit-parent`, or `auto`: omit `model`. For a model race, name each arm from this session's detected slugs only.
 5. Give each worker its own writable output when it writes. Use a worktree, branch, or `/tmp/swarm-<slug>/worker-<n>/`.
 
-When the work is an upstream refresh, `port` and `new-skill-lever` are shared-intent labels, not a write permit. Overlay the last table with `scripts/partition.py seed --cache` at the primary-checkout sparse clone (`.worktrees/upstream-cursor-plugins` on the main checkout). Coverage is name-status only (`print --coverage`). Workers fill unclassified fragments. They do not rewrite the canonical TSV. Skip, host-owned, and audit stay fences. After classify, copy with `scripts/apply.py` and prove dest with `scripts/partition.py apply-check`. Do not treat coverage as apply-check.
+When the work is an upstream refresh, `port` and `new-skill-lever` are shared-intent labels, not a write permit. Overlay the last table with `scripts/partition.py seed --cache <primary-checkout-cache> --out /tmp/pstack-refresh/overlay.tsv`. Coverage is name-status only (`print --coverage --table` that overlay). Workers fill unclassified fragments. They do not rewrite the canonical TSV. Skip, host-owned, and audit stay fences. After classify, copy with `scripts/apply.py --table` that overlay and prove dest with `scripts/partition.py apply-check --table` that overlay. Do not treat coverage as apply-check. Pass the same `--cache` to seed, coverage, apply, and apply-check.
 
 ## Phase B: Fan out
 

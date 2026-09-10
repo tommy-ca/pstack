@@ -202,7 +202,6 @@ verify_prompt += "Return ok=true only if those commands passed. Inconclusive is 
 let verify = agent(verify_prompt, #{
     label: "refresh-verify",
     agent_type: "pstack:independent-verifier",
-    isolation_worktree: true,
     output_schema: step_schema,
 });
 if verify == () || !verify.success || verify.output.ok != true {

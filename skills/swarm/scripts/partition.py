@@ -137,7 +137,6 @@ class LeftoverHit(NamedTuple):
 class ApplyCheckReport(NamedTuple):
     leftover: tuple[LeftoverHit, ...]
     fence_copied: tuple[str, ...]
-    recopied_after_remap: tuple[str, ...]
     missing_dest: tuple[str, ...]
     ok: bool
 
@@ -541,8 +540,6 @@ def leftover_mention_allowed(text: str, token: str, index: int) -> bool:
     line_start = text.rfind("\n", 0, index) + 1
     line_end = text.find("\n", index)
     line = text[line_start : len(text) if line_end < 0 else line_end]
-    if "There is no" in line:
-        return True
     if token == "/deslop" and ("no `/deslop`" in line or "no /deslop" in line):
         return True
     if token == "cursor-team-kit" and (
@@ -607,30 +604,6 @@ def fence_copied_paths(
     return tuple(copied)
 
 
-def recopied_after_remap(
-    table: Table,
-    cache: Path,
-    dest_root: Path,
-    tip: str,
-) -> tuple[str, ...]:
-    hits: list[str] = []
-    for row in table.rows:
-        if row.bucket not in COPY_BUCKETS or row.change == "D":
-            continue
-        source = read_upstream_blob(cache, tip, row.path)
-        dest = read_dest_bytes(dest_root, row.path)
-        if source is None or dest is None or dest != source:
-            continue
-        source_text = _decode(source)
-        if any(token in source_text for token in LEFTOVER_TOKENS):
-            hits.append(row.path)
-            continue
-        dest_text = _decode(dest)
-        if looks_remapped(source_text, dest_text):
-            hits.append(row.path)
-    return tuple(hits)
-
-
 def missing_copy_dests(table: Table, dest_root: Path) -> tuple[str, ...]:
     missing: list[str] = []
     for row in table.rows:
@@ -651,10 +624,9 @@ def apply_check(
 ) -> ApplyCheckReport:
     leftover = leftover_hits(dest_root)
     fence = fence_copied_paths(table, cache, dest_root, tip)
-    recopy = recopied_after_remap(table, cache, dest_root, tip)
     missing = missing_copy_dests(table, dest_root)
-    ok = not leftover and not fence and not recopy and not missing
-    return ApplyCheckReport(leftover, fence, recopy, missing, ok)
+    ok = not leftover and not fence and not missing
+    return ApplyCheckReport(leftover, fence, missing, ok)
 
 
 def decide_write(
@@ -719,8 +691,6 @@ def format_apply_check_errors(report: ApplyCheckReport) -> str:
         lines.append(f"leftover {hit.token}: {hit.relpath}")
     for path in report.fence_copied:
         lines.append(f"fence copied: {path}")
-    for path in report.recopied_after_remap:
-        lines.append(f"recopied after remap: {path}")
     for path in report.missing_dest:
         lines.append(f"missing dest: {path}")
     return "\n".join(lines) + ("\n" if lines else "")

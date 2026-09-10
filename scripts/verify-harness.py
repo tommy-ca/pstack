@@ -111,8 +111,6 @@ def leftover_mention_allowed(text: str, token: str, index: int) -> bool:
     line_start = text.rfind("\n", 0, index) + 1
     line_end = text.find("\n", index)
     line = text[line_start : len(text) if line_end < 0 else line_end]
-    if "There is no" in line:
-        return True
     if "/deslop" in token and ("no `/deslop`" in line or "no /deslop" in line):
         return True
     if "cursor-team-kit" in token and (

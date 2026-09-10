@@ -303,3 +303,21 @@ def test_apply_check_fails_on_leftover_and_skips_name_status(
         raise AssertionError("leftover apply-check must fail")
     except SystemExit as exc:
         assert exc.code == 2
+
+
+def test_leftover_askquestion_after_there_is_no_is_live(tmp_path: Path) -> None:
+    mod = load_partition()
+    dest = tmp_path / "dest"
+    skill = dest / "skills" / "live"
+    skill.mkdir(parents=True)
+    (skill / "SKILL.md").write_text(
+        "There is no setup. Call AskQuestion for the fork.\n",
+        encoding="utf-8",
+    )
+    (skill / "OK.md").write_text(
+        "There is no `cursor-team-kit` here.\n",
+        encoding="utf-8",
+    )
+    hits = mod.leftover_hits(dest)
+    assert any(hit.token == "AskQuestion" and hit.relpath.endswith("SKILL.md") for hit in hits)
+    assert all(hit.relpath.endswith("OK.md") is False for hit in hits)

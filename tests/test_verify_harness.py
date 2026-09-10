@@ -16,6 +16,22 @@ def test_verify_harness_script_exists() -> None:
     assert SCANNER.is_file(), SCANNER
 
 
+def test_leftover_askquestion_after_there_is_no_is_live() -> None:
+    loader = importlib.util.spec_from_file_location("verify_harness", SCANNER)
+    assert loader is not None and loader.loader is not None
+    scanner = importlib.util.module_from_spec(loader)
+    loader.loader.exec_module(scanner)
+    live = "There is no setup. Call AskQuestion for the fork.\n"
+    live_idx = live.find("AskQuestion")
+    assert scanner.leftover_mention_allowed(live, "AskQuestion", live_idx) is False
+    dummy = ROOT / "skills" / "poteto-mode" / "SKILL.md"
+    assert scanner.forbidden_pattern_is_live(dummy, live, r"\bAskQuestion\b") is True
+    allowed = "There is no `cursor-team-kit` here.\n"
+    allowed_idx = allowed.find("cursor-team-kit")
+    assert scanner.leftover_mention_allowed(allowed, "cursor-team-kit", allowed_idx) is True
+    assert scanner.forbidden_pattern_is_live(dummy, allowed, r"cursor-team-kit") is False
+
+
 def test_verify_harness_passes_on_this_tree() -> None:
     proc = subprocess.run(
         [sys.executable, str(SCANNER)],
