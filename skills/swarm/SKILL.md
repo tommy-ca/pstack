@@ -25,11 +25,11 @@ Open a todolist with one entry per phase before launching anything.
 4. Pick the worker model from toml key `swarm-workers` per `../setup-pstack/references/resolve-model.md`. Absent file: send `grok-4.6` (omit if rejected). Missing key, `inherit-parent`, or `auto`: omit `model`. For a model race, name each arm from this session's detected slugs only.
 5. Give each worker its own writable output when it writes. Use a worktree, branch, or `/tmp/swarm-<slug>/worker-<n>/`.
 
-When the work is an upstream refresh, classify and slice from `references/classification.tsv` with `scripts/partition.py` (`print`, `print --coverage`, `partition`). Workers fill unclassified fragments. They do not rewrite the canonical TSV. Skip, host-owned, and audit rows stay out of worker slices.
+When the work is an upstream refresh, `port` and `new-skill-lever` are shared-intent labels, not a write permit. Overlay the last table with `scripts/partition.py seed --cache <primary-checkout-cache> --out /tmp/pstack-refresh/overlay.tsv`. Coverage is name-status only (`print --coverage --table` that overlay). Workers fill unclassified fragments. They do not rewrite the canonical TSV. Skip, host-owned, and audit stay fences. After classify, copy with `scripts/apply.py --table` that overlay and prove dest with `scripts/partition.py apply-check --table` that overlay. Do not treat coverage as apply-check. Pass the same `--cache` to seed, coverage, apply, and apply-check.
 
 ## Phase B: Fan out
 
-Spawn all N workers in one parent turn with `spawn_subagent`: `subagent_type: "pstack:swarm-workers"` ([`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md)), `isolation: "worktree"`, `background: true`, and the configured `model`. Use `isolation: "none"` only when the worker needs this machine's cwd. Do not send `reasoning_effort`. Join with `get_command_or_subagent_output`.
+`mkdir` each worker output dir before spawn `cwd`. Spawn all N workers in one parent turn with `spawn_subagent`: `subagent_type: "pstack:swarm-workers"` ([`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md)), `isolation: "worktree"`, `background: true`, and the configured `model`. Use `isolation: "none"` only when the worker needs this machine's cwd. Do not send `reasoning_effort`. Join with `get_command_or_subagent_output`.
 
 Every brief stands alone. Include the goal, scope, exact slice or race arm, how to verify, and what to report. Reports use `PASS`, `ISSUES`, or `BLOCKED` with evidence.
 

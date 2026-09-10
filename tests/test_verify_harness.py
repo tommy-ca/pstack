@@ -16,6 +16,22 @@ def test_verify_harness_script_exists() -> None:
     assert SCANNER.is_file(), SCANNER
 
 
+def test_leftover_askquestion_after_there_is_no_is_live() -> None:
+    loader = importlib.util.spec_from_file_location("verify_harness", SCANNER)
+    assert loader is not None and loader.loader is not None
+    scanner = importlib.util.module_from_spec(loader)
+    loader.loader.exec_module(scanner)
+    live = "There is no setup. Call AskQuestion for the fork.\n"
+    live_idx = live.find("AskQuestion")
+    assert scanner.leftover_mention_allowed(live, "AskQuestion", live_idx) is False
+    dummy = ROOT / "skills" / "poteto-mode" / "SKILL.md"
+    assert scanner.forbidden_pattern_is_live(dummy, live, r"\bAskQuestion\b") is True
+    allowed = "There is no `cursor-team-kit` here.\n"
+    allowed_idx = allowed.find("cursor-team-kit")
+    assert scanner.leftover_mention_allowed(allowed, "cursor-team-kit", allowed_idx) is True
+    assert scanner.forbidden_pattern_is_live(dummy, allowed, r"cursor-team-kit") is False
+
+
 def test_verify_harness_passes_on_this_tree() -> None:
     proc = subprocess.run(
         [sys.executable, str(SCANNER)],
@@ -582,6 +598,17 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert "upstream-cursor-plugins/pstack" in recipe.stdout
     assert "classification.tsv" in recipe.stdout
     assert "partition.py" in recipe.stdout
+    assert "apply.py" in recipe.stdout
+    assert "apply-check" in recipe.stdout
+    assert "print --coverage" in recipe.stdout
+    assert not (ROOT / ".grok/workflows").exists()
+    rhai = ROOT / "skills/swarm/references/pstack-upstream-refresh.rhai"
+    assert rhai.is_file()
+    rhai_text = rhai.read_text(encoding="utf-8")
+    assert "capability_mode" not in rhai_text
+    assert 'agent_type: "pstack:swarm-workers"' in rhai_text
+    assert 'agent_type: "pstack:interrogate-reviewers"' in rhai_text
+    assert 'agent_type: "pstack:independent-verifier"' in rhai_text
     assert "pack.py" in recipe.stdout
     assert "scripts/orch/" in recipe.stdout
     assert "advisor" in recipe.stdout
