@@ -22,7 +22,7 @@ Only edit the verification skill's own directory (its SKILL.md, features/, and a
 
 ## Pass
 
-0. **Locate the target.** Find the verification skill to maintain: the project-local skill whose body has launch/drive sections and a feature map. Look in `.grok/skills/verify-*/` for an app, and in `skills/verify-*/` when `plugin.json` lists `./skills/`. If several candidates exist, ask which one. If none exist, stop and point at `/create-verification-skill` instead of inventing a target.
+0. **Locate the target.** Find the verification skill to maintain: the project-local skill whose body has launch/drive sections and a feature map. Look in `.grok/skills/verify-*/`. Plugin doctor lives at `.grok/skills/verify-pstack/`. App skills stay `.grok/skills/verify-<app>/`. Do not ship `verify-pstack` under `skills/`. Do not name an app skill `verify-pstack`. If several candidates exist, ask which one. If none exist, stop and point at `/create-verification-skill` instead of inventing a target.
 
 1. **Index hygiene.** Read the feature map README and glob its sibling files. The README Full sweep order is the live-pass order. Fix missing, extra, duplicate, or dead entries. Keep it lightweight. Do not generate an inventory.
 

@@ -12,7 +12,7 @@ Upstream recipe prints the operator steps for refreshing this port from official
 
 - From the plugin checkout, run `python3 scripts/sync-from-upstream.py --recipe`.
 - Run `python3 scripts/sync-from-upstream.py` with no flags. That is the same print.
-- Run `python3 skills/verify-pstack/scripts/verify.py drive --root . --feature upstream-recipe`.
+- Run `python3 .grok/skills/verify-pstack/scripts/verify.py drive --root . --feature upstream-recipe`.
 
 ## Driving it with verify.py
 
@@ -20,8 +20,8 @@ Preconditions:
 
 - Leftover scanner printed `PASS` for this run.
 
-- **Doctor first.** If this run has no leftover `PASS` yet, run `python3 skills/verify-pstack/scripts/verify.py doctor --root .`.
-- **Print recipe.** Run `python3 skills/verify-pstack/scripts/verify.py drive --root . --feature upstream-recipe`. Exit code `0`. Evidence stdout names `--pin`, `--log`, `adapt-harness.py`, `verify.py run`, `Full sweep`, leftover-scanner, upstream-pin, upstream-recipe, refresh-hygiene, release-tag, `verify-harness.py`, `partition.py`, `apply.py`, and `apply-check`.
+- **Doctor first.** If this run has no leftover `PASS` yet, run `python3 .grok/skills/verify-pstack/scripts/verify.py doctor --root .`.
+- **Print recipe.** Run `python3 .grok/skills/verify-pstack/scripts/verify.py drive --root . --feature upstream-recipe`. Exit code `0`. Evidence stdout names `--pin`, `--log`, `adapt-harness.py`, `verify.py run`, `Full sweep`, leftover-scanner, upstream-pin, upstream-recipe, refresh-hygiene, release-tag, `verify-harness.py`, `partition.py`, `apply.py`, and `apply-check`.
 - **Direct CLI.** Run `python3 scripts/sync-from-upstream.py --recipe`. Exit code `0`. Stdout matches the evidence file.
 - **Proof.** Read `features/upstream-recipe/stdout.txt`. The command argv contains `--recipe` and does not contain `--log`.
 

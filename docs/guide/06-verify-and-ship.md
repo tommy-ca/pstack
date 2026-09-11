@@ -56,12 +56,12 @@ Do not treat this plane as the recipe for **this** plugin checkout. This plugin 
 
 ## Plugin plane
 
-This repository is the pstack Grok plugin. It already ships [`/verify-pstack`](../../skills/verify-pstack/SKILL.md) at `skills/verify-pstack/`. `plugin.json` lists `./skills/`. Isolation is `--run-id`. There is no CDP checkout flag. Do not write `.grok/skills/verify-pstack`. Do not write `.claude/skills`. Do not write `~/.grok/skills`.
+This repository is the pstack Grok plugin. It already ships [`/verify-pstack`](../../.grok/skills/verify-pstack/SKILL.md) at `.grok/skills/verify-pstack/`. Plugin doctor lives at `.grok/skills/verify-pstack/`. Do not ship it under `skills/`. `plugin.json` lists `./skills/` and must not list `.grok/skills`. Isolation is `--run-id`. There is no CDP checkout flag. Do not write `.claude/skills`. Do not write `~/.grok/skills`.
 
 Doctor is leftover scanner, then `grok plugin validate .` as companion only.
 
 ```bash
-python3 skills/verify-pstack/scripts/verify.py doctor --root .
+python3 .grok/skills/verify-pstack/scripts/verify.py doctor --root .
 ```
 
 Leftover stdout must start with `PASS` and include `playbooks: 22 named + opening-a-pr`, `principles: 23`, and `plugin.json name: pstack`.
@@ -71,7 +71,7 @@ Leftover stdout must start with `PASS` and include `playbooks: 22 named + openin
 Full sweep walks leftover-scanner, then upstream-pin, then upstream-recipe, then refresh-hygiene, then release-tag:
 
 ```bash
-python3 skills/verify-pstack/scripts/verify.py drive --root .
+python3 .grok/skills/verify-pstack/scripts/verify.py drive --root .
 ```
 
 Pin proof is `python3 scripts/sync-from-upstream.py --pin`. Recipe proof is `--recipe` stdout needles plus argv without `--log`. Hygiene uses tmp `--skills` and never `--apply-skills`. Release proof is `python3 tests/test_release.py`. Do not run `scripts/release.sh` to completion from nested grok.

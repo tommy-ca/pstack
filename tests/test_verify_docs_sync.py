@@ -63,7 +63,7 @@ def test_live_specs_count_twenty_three_principles() -> None:
 def test_readme_lists_slash_verify_pstack() -> None:
     for name in ("README.md", "README.zh-CN.md"):
         text = (ROOT / name).read_text(encoding="utf-8")
-        assert "[`/verify-pstack`](./skills/verify-pstack/SKILL.md)" in text
+        assert "[`/verify-pstack`](./.grok/skills/verify-pstack/SKILL.md)" in text
 
 
 def test_guide_06_is_three_planes() -> None:
@@ -81,10 +81,13 @@ def test_guide_06_is_three_planes() -> None:
     ship = ship.split("## ", 1)[0]
     assert ".grok/skills/verify-<app>/" in app
     assert "/create-verification-skill" in app
-    assert "skills/verify-pstack/" in plugin
+    assert ".grok/skills/verify-pstack/" in plugin
     assert "verify.py doctor" in plugin
     assert "leftover" in plugin.lower()
-    assert "Do not write `.grok/skills/verify-pstack`" in plugin
+    assert "Plugin doctor lives at `.grok/skills/verify-pstack/`" in plugin
+    assert "Do not ship it under `skills/`." in plugin
+    assert "Do not write `~/.grok/skills`" in plugin
+    assert "Do not write `.grok/skills/verify-pstack`" not in plugin
     assert "`monitor`" in ship
     assert "bundled watcher" not in text
     assert ".cursor/skills" not in text
@@ -93,10 +96,14 @@ def test_guide_06_is_three_planes() -> None:
 
 def test_guide_01_plugin_versus_app() -> None:
     text = (ROOT / "docs" / "guide" / "01-setup.md").read_text(encoding="utf-8")
-    assert "skills/verify-pstack/" in text
+    assert ".grok/skills/verify-pstack/" in text
     assert ".grok/skills/verify-<app>/" in text
-    assert "Do not generate `.grok/skills/verify-pstack`" in text
+    assert "Plugin doctor lives at `.grok/skills/verify-pstack/`" in text
+    assert "Do not ship it under `skills/`." in text
+    assert "Do not write `~/.grok/skills`" in text
+    assert "Do not generate `.grok/skills/verify-pstack`" not in text
     assert "writes `.grok/skills/verify-<app>/`" in text
+    assert "Do not name an app skill `verify-pstack`" in text
     assert "leftover scanner" in text.lower()
     assert ".cursor/skills" not in text
 
@@ -104,6 +111,7 @@ def test_guide_01_plugin_versus_app() -> None:
 def test_leftover_gotcha_names_scanner_skip_dirs() -> None:
     path = (
         ROOT
+        / ".grok"
         / "skills"
         / "verify-pstack"
         / "features"
@@ -123,11 +131,14 @@ def test_leftover_gotcha_names_scanner_skip_dirs() -> None:
         assert name in gotchas, name
     for name in sorted(scanner.SKIP_FILES):
         assert name in gotchas, name
+    assert ".grok" not in scanner.SKIP_DIRS
+    assert "`.grok` is not a skip dir" in gotchas
+    assert ".grok/workflows" in gotchas
     assert "docs/" not in gotchas or "docs/` is walked" in gotchas or "`docs/` is walked" in gotchas
 
 
 def test_no_eight_edith_feature_maps() -> None:
-    folder = ROOT / "skills" / "verify-pstack" / "features"
+    folder = ROOT / ".grok" / "skills" / "verify-pstack" / "features"
     names = {p.name for p in folder.glob("*.md") if p.name != "README.md"}
     assert not (names & EDITH_MAPS), names & EDITH_MAPS
     assert names == OWNED_MAPS, names

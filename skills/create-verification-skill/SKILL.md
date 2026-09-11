@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 Every serious project needs a scripted way to drive the real app and prove behavior: launch it, exercise a feature the way a user would, and capture evidence. This skill generates that as a project-local skill tailored to the repo. You write the generator's output for the next agent, not for a human: it will be read cold, mid-task, by an agent that has never seen the app.
 
-Default path is `.grok/skills/verify-<app>/` for an application repo. If `plugin.json` lists `./skills/`, ship at `skills/verify-<app>/` instead. This pstack plugin is that case (`skills/verify-pstack/`). Do not write `~/.grok/skills`. Do not write `.claude/skills`.
+Default path is `.grok/skills/verify-<app>/` for an application repo. Plugin doctor lives at `.grok/skills/verify-pstack/`. Do not ship it under `skills/`. Do not write `~/.grok/skills`. Do not write `.claude/skills`. Do not name an app skill `verify-pstack`.
 
 ## Why not a wiki
 

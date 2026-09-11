@@ -89,11 +89,11 @@ A missing override file uses the shipped default. Run `/setup-pstack` again to c
 
 ## Accept the verification offer, or don't
 
-This plugin already ships [`/verify-pstack`](../../skills/verify-pstack/SKILL.md). Run that to prove leftover-scanner, upstream-pin, upstream-recipe, refresh-hygiene, and the release-tag contract. It is not an EDITH live-CLI gate. That plan lives in `TEST-PLAN.md`.
+This plugin already ships [`/verify-pstack`](../../.grok/skills/verify-pstack/SKILL.md). Plugin doctor lives at `.grok/skills/verify-pstack/`. Do not ship it under `skills/`. Do not write `~/.grok/skills`. Run that to prove leftover-scanner, upstream-pin, upstream-recipe, refresh-hygiene, and the release-tag contract. It is not an EDITH live-CLI gate. That plan lives in `TEST-PLAN.md`.
 
 At the end of setup, `/setup-pstack` looks for a way to prove **your app**. It looks under `.grok/skills/verify-*` or an existing harness. If it finds neither, it offers once to generate one with [`/create-verification-skill`](../../skills/create-verification-skill/SKILL.md).
 
-Say yes and it writes `.grok/skills/verify-<app>/` for that app. Do not generate `.grok/skills/verify-pstack`. This plugin already has `skills/verify-pstack/`. Leftover scanner is the plugin doctor. Say no and setup moves on.
+Say yes and it writes `.grok/skills/verify-<app>/` for that app. Do not name an app skill `verify-pstack`. Plugin doctor lives at `.grok/skills/verify-pstack/`. Do not ship it under `skills/`. Do not write `~/.grok/skills`. Leftover scanner is the plugin doctor. Say no and setup moves on.
 
 After setup, start a new session. The model file applies.
 

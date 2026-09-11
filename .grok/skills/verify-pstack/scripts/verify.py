@@ -82,10 +82,10 @@ def resolve_root(explicit: Path | None) -> Path:
             fail(f"not a pstack plugin checkout: {root}")
         return root
     here = Path(__file__).resolve()
-    if here.parent.name == "scripts":
-        installed = here.parents[2]
-        if looks_like_plugin(installed):
-            return installed
+    # Extra .grok/skills/verify-pstack/scripts segments sit between the lever and plugin.json.
+    for parent in here.parents:
+        if looks_like_plugin(parent):
+            return parent
     cwd = Path.cwd()
     if looks_like_plugin(cwd):
         return cwd

@@ -106,6 +106,8 @@ def test_host_manifests_keep_grok_parity_and_adapter_asymmetry() -> None:
 
     assert "./skills/" in root["skills"]
     assert "./automations/benny-grok/skills/" in root["skills"]
+    assert root["skills"] == ["./skills/", "./automations/benny-grok/skills/"]
+    assert all(".grok/skills" not in p for p in root["skills"])
     assert codex["skills"] == "./skills/"
     assert claude["skills"] == "./skills/"
     assert "./automations/benny-grok/skills/" not in json.dumps(codex)
