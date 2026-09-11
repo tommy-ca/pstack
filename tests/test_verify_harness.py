@@ -106,6 +106,8 @@ def test_host_manifests_keep_grok_parity_and_adapter_asymmetry() -> None:
 
     assert "./skills/" in root["skills"]
     assert "./automations/benny-grok/skills/" in root["skills"]
+    assert root["skills"] == ["./skills/", "./automations/benny-grok/skills/"]
+    assert all(".grok/skills" not in p for p in root["skills"])
     assert codex["skills"] == "./skills/"
     assert claude["skills"] == "./skills/"
     assert "./automations/benny-grok/skills/" not in json.dumps(codex)
@@ -599,6 +601,15 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert sha in recipe.stdout
     assert "adapt-harness.py" in recipe.stdout
     assert "verify-harness.py" in recipe.stdout
+    assert "verify.py run" in recipe.stdout
+    assert "sync-from-upstream.py --pin" in recipe.stdout
+    assert "Full sweep" in recipe.stdout
+    assert "leftover-scanner" in recipe.stdout
+    assert "upstream-pin" in recipe.stdout
+    assert "upstream-recipe" in recipe.stdout
+    assert "refresh-hygiene" in recipe.stdout
+    assert "release-tag" in recipe.stdout
+    assert "verify-harness.py && python3 tests/test_verify_harness.py" not in recipe.stdout
     assert "make-bot-ui" in recipe.stdout
     assert "pstack:<role>" in recipe.stdout
     assert "upstream-cursor-plugins/pstack" in recipe.stdout

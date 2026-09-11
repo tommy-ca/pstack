@@ -174,7 +174,7 @@ Tell the user `~/.grok/pstack-models.toml` was written and that matching `~/.gro
 
 ### 7. Offer a verification skill (optional)
 
-Look for a `verify-*` skill under `.grok/skills/` or an existing harness. If neither exists, offer once via `ask_user_question` to generate one with `/create-verification-skill`. That question is yes or no. On yes, write `.grok/skills/verify-<app>/`. On no, move on.
+Look for a `verify-*` skill under `.grok/skills/` or an existing harness. If this checkout is the pstack plugin, `.grok/skills/verify-pstack/` is the plugin doctor. Do not generate another. Do not name an app skill `verify-pstack`. If neither a verify skill nor a harness exists, offer once via `ask_user_question` to generate one with `/create-verification-skill`. That question is yes or no. On yes, write `.grok/skills/verify-<app>/`. On no, move on.
 
 ## Agent only. Do not quote this section
 

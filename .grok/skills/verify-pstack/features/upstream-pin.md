@@ -11,7 +11,7 @@ Upstream pin prints the official Cursor pstack tree SHA recorded in `UPSTREAM` s
 ## How to get to it (user POV)
 
 - From the plugin checkout, run `python3 scripts/sync-from-upstream.py --pin`.
-- Run `python3 skills/verify-pstack/scripts/verify.py drive --root . --feature upstream-pin`.
+- Run `python3 .grok/skills/verify-pstack/scripts/verify.py drive --root . --feature upstream-pin`.
 
 ## Driving it with verify.py
 
@@ -20,8 +20,8 @@ Preconditions:
 - Leftover scanner printed `PASS` for this run.
 - `UPSTREAM` exists at the plugin root and contains a `tree` line.
 
-- **Doctor first.** If this run has no leftover `PASS` yet, run `python3 skills/verify-pstack/scripts/verify.py doctor --root .`.
-- **Print pin.** Run `python3 skills/verify-pstack/scripts/verify.py drive --root . --feature upstream-pin`. Exit code `0`. Stdout is one 40-hex SHA.
+- **Doctor first.** If this run has no leftover `PASS` yet, run `python3 .grok/skills/verify-pstack/scripts/verify.py doctor --root .`.
+- **Print pin.** Run `python3 .grok/skills/verify-pstack/scripts/verify.py drive --root . --feature upstream-pin`. Exit code `0`. Wrapper stdout is `PASS upstream-pin` plus the 40-hex SHA. Evidence `features/upstream-pin/stdout.txt` is that SHA.
 - **Direct CLI.** Run `python3 scripts/sync-from-upstream.py --pin`. Exit code `0`. Stdout equals the SHA in `UPSTREAM`.
 - **Proof.** Read `features/upstream-pin/stdout.txt`. The trimmed text matches `[0-9a-f]{40}` and appears on the `tree` line of `UPSTREAM`. The command argv contains `--pin` and does not contain `--log`.
 

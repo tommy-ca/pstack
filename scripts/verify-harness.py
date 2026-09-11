@@ -236,6 +236,8 @@ def main() -> None:
         fail("plugin.json skills must include ./skills/")
     if "./automations/benny-grok/skills/" not in skill_paths:
         fail("plugin.json skills must include ./automations/benny-grok/skills/")
+    if any(".grok/skills" in p for p in skill_paths):
+        fail("plugin.json skills must not list .grok/skills")
     if "hooks" in plugin:
         fail("plugin.json must not register hooks")
     if plugin.get("agents") != "./agents/":

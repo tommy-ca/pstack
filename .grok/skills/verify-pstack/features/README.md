@@ -10,7 +10,7 @@ A wiki is for humans. Agents pay for every token they reread. Open one feature f
 
 - cwd is a pstack plugin checkout. `plugin.json` name is `pstack`.
 - `python3` and `grok` are on `PATH`. Do not run `mise use -g`.
-- Run `python3 skills/verify-pstack/scripts/verify.py doctor --root .` and require leftover-scanner `PASS` plus `Plugin manifest is valid.`
+- Run `python3 .grok/skills/verify-pstack/scripts/verify.py doctor --root .` and require leftover-scanner `PASS` plus `Plugin manifest is valid.`
 - Evidence goes to `/tmp/verify-pstack-evidence-<runid>/`. Scratch goes to `/tmp/verify-pstack-scratch-<runid>/`.
 - Isolation is `--run-id`, not `--checkout`. Two runs may share a checkout when `--run-id` differs. Never drive until leftover scanner printed `PASS` in this run's doctor log.
 - Never write live `~/.grok/skills`. That is the shared user instance. Refuse to double-drive it.
@@ -48,11 +48,12 @@ Keep implementation details out of the map. Name only user paths, stable handles
 
 ## Full sweep
 
-Walk this map top to bottom for a broad regression. Order is leftover-scanner, then upstream-pin, then refresh-hygiene, then release-tag. `verify.py drive` with no `--feature` is that walk. Leftover scanner is required doctor and the first mapped feature. This plugin has no cross-feature journeys file. Driving one convenient feature is not a sweep.
+Walk this map top to bottom for a broad regression. Order is leftover-scanner, then upstream-pin, then upstream-recipe, then refresh-hygiene, then release-tag. `verify.py drive` with no `--feature` is that walk. Leftover scanner is required doctor and the first mapped feature. This plugin has no cross-feature journeys file. Driving one convenient feature is not a sweep.
 
 ## Features
 
 - [Leftover Cursor harness scan](./leftover-scanner.md) covers `scripts/verify-harness.py` as required doctor and as a driveable operator check.
 - [Upstream pin](./upstream-pin.md) covers `scripts/sync-from-upstream.py --pin` against the `UPSTREAM` tree line.
+- [Upstream refresh recipe](./upstream-recipe.md) covers print-only `--recipe`. `--log` fetches the cache and is not this drive.
 - [Refresh hygiene](./refresh-hygiene.md) covers dry-run TSV, `--host-script` with tmp `--skills`, and `verify-refresh-hygiene.py`.
 - [Release tag contract](./release-tag.md) covers `tests/test_release.py` and refuses nested `scripts/release.sh`.
