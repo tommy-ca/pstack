@@ -34,6 +34,7 @@ Preconditions:
 - `grok plugin validate .` and `grok inspect --json` are not leftover scanner. Validate is doctor companion only. Inspect `enabled` is trust.
 - `uv run --with pytest pytest tests/test_verify_harness.py` is not leftover scanner. The tree walk is `scripts/verify-harness.py`.
 - TEST-PLAN.md says verify-harness is not an EDITH pass gate. This map still requires leftover `PASS` as doctor.
+- The scanner skips `README.md`, `TEST-PLAN.md`, `docs/`, and `openspec/`. Leftover `PASS` does not prove those pages still name 23 principles or `/verify-pstack`.
 - Allowed mentions such as `There is no cursor-team-kit` and `classification.tsv` notes must not be treated as live hits.
 - Later `drive` on the same `--run-id` for other features refuses if leftover scanner did not PASS.
 - `HARNESS.md`, `scripts/`, and `automations/benny` may name Cursor leftovers. Skills markdown must not keep them as call sites.

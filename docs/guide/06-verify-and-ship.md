@@ -24,6 +24,14 @@ Match the check to the change:
 
 For a small diff you don't fully trust, [`/blast-radius`](../../skills/blast-radius/SKILL.md) finds what it could break elsewhere. It picks the one fact the change is safe because of and proves it by running code instead of writing an essay about it.
 
+## Three verification planes
+
+Do not mix these.
+
+- **Plugin static doctor.** In this repo, [`/verify-pstack`](../../skills/verify-pstack/SKILL.md) runs leftover scanner plus `grok plugin validate`. Feature map: `skills/verify-pstack/features/`. Drive with `python3 skills/verify-pstack/scripts/verify.py doctor --root .`.
+- **Your app control skill.** Generate with `/create-verification-skill` into `.grok/skills/verify-<app>/` when this checkout is not the pstack plugin, or when you need a harness for another app.
+- **Live CLI EDITH gates.** `TEST-PLAN.md`. Leftover `PASS` is not that gate. EDITH will not accept the scanner as proof.
+
 ## Create a project verification skill
 
 The UI bullet above hides a real requirement. The agent needs a scripted way to drive your app. If your project has one, great. If not, run:
@@ -34,7 +42,7 @@ The UI bullet above hides a real requirement. The agent needs a scripted way to 
 
 [`/create-verification-skill`](../../skills/create-verification-skill/SKILL.md) interviews the repository, not you. It works out what a user touches, how the app launches locally, what can drive it (an existing harness first, otherwise browser and CDP, a PTY, or plain HTTP), what evidence proves behavior, and whether two instances can run side by side. It asks you only what the code can't answer.
 
-It writes `.grok/skills/verify-<app>/`, agent-facing instructions with exact Launch, Doctor, Drive, Evidence, and Cleanup sections, plus a feature map under `features/` that indexes what the app does and what result proves each feature works. The skill ships a [worked feature-map example](../../skills/create-verification-skill/references/feature-map-example/) with a README index and one file per feature using the four required H2s. Before handing it over, the generator proves the skill once end to end: launch, doctor check, drive one feature, capture evidence, clean up. If that proof fails, don't use the output.
+For an application repo it writes `.grok/skills/verify-<app>/`. For this plugin it already shipped `skills/verify-pstack/`. Agent-facing instructions use Launch, Doctor, Drive, Proof bar, Evidence, and Cleanup, plus a feature map under `features/` with a Full sweep README. The generator ships a [worked feature-map example](../../skills/create-verification-skill/references/feature-map-example/). Before handing a generated skill over, prove it once end to end: launch, doctor, drive one feature, capture evidence, clean up. That smoke is not a Full sweep. If that proof fails, don't use the output.
 
 From then on, "verify it in the app" is a step any agent can execute, in this repo, with no setup conversation.
 

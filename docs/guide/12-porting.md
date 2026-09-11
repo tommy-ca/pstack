@@ -22,7 +22,7 @@ A port that copies files and keeps the previous host's spawn fields is not a por
 
 | Layer | What | Port how |
 |---|---|---|
-| Core | 21 `principle-*` skills, 22 playbook **intents**, router skill shape, unslop, no-comments, tdd, how, why | Copy. Keep names. |
+| Core | 23 `principle-*` skills, 22 playbook **intents**, router skill shape, unslop, no-comments, tdd, how, why | Copy. Keep names. |
 | Host map | One file the router reads first | Fill the checklist below. Grok reference: [`HARNESS.md`](../../HARNESS.md). Codex: `skills/poteto-mode/references/codex-tools.md`. |
 | Domain packs | Benny, TypeScript practices, visual-parity, forge-neutral PR and stack landing | Keep only if the domain matches. |
 

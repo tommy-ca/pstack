@@ -31,7 +31,7 @@ The machine that wrote this plan (`cursor.com/agents/bc-01a0363c-5279-7a80-8c72-
 - `/loop` → `scheduler_create`
 - `--always-approve` and `--reasoning-effort xhigh` on a real binary
 
-`scripts/verify-harness.py` is a static repo check. **It is not a pass gate.** Do not attach its output as proof. Cola will not accept it. EDITH will not accept it.
+`scripts/verify-harness.py` is a static repo check. **It is not a pass gate.** Do not attach its output as proof. Cola will not accept it. EDITH will not accept it. For leftover scan, pin, hygiene, and release-tag on this plugin, run `/verify-pstack` (`python3 skills/verify-pstack/scripts/verify.py doctor --root .`). That doctor is not this EDITH plan.
 
 Also run `grok plugin validate` on the plugin tree. The harness test does this when `grok` is on PATH.
 
