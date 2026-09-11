@@ -21,7 +21,7 @@ Preconditions:
 - Leftover scanner printed `PASS` for this run.
 
 - **Doctor first.** If this run has no leftover `PASS` yet, run `python3 skills/verify-pstack/scripts/verify.py doctor --root .`.
-- **Print recipe.** Run `python3 skills/verify-pstack/scripts/verify.py drive --root . --feature upstream-recipe`. Exit code `0`. Evidence stdout names `--pin`, `--log`, `adapt-harness.py`, `verify.py doctor`, `Full sweep`, `verify-harness.py`, and `verify.py drive`.
+- **Print recipe.** Run `python3 skills/verify-pstack/scripts/verify.py drive --root . --feature upstream-recipe`. Exit code `0`. Evidence stdout names `--pin`, `--log`, `adapt-harness.py`, `verify.py doctor`, `Full sweep`, `verify-harness.py`, `verify.py drive`, `partition.py`, `apply.py`, and `apply-check`.
 - **Direct CLI.** Run `python3 scripts/sync-from-upstream.py --recipe`. Exit code `0`. Stdout matches the evidence file.
 - **Proof.** Read `features/upstream-recipe/stdout.txt`. The command argv contains `--recipe` and does not contain `--log`.
 
@@ -30,4 +30,5 @@ Preconditions:
 - `--log` fetches `origin/main` into the primary overlay cache. Recipe drive does not fetch.
 - `--pin` is a different mapped feature. Recipe stdout includes the pin SHA. That is not pin proof.
 - Pytest `tests/test_verify_harness.py` is not leftover doctor. Recipe step 5 is `verify.py doctor` then Full sweep drive.
+- Doctor then drive as two processes need the same `--run-id`, or use `verify.py run`.
 - `apply.py` copies. This feature does not run it.

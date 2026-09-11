@@ -24,9 +24,9 @@ Preconditions:
 - `__GROK_INSIDE_BWRAP` may be set. Drive tests anyway. Do not run `scripts/release.sh`.
 
 - **Doctor first.** If this run has no leftover `PASS` yet, run `python3 skills/verify-pstack/scripts/verify.py doctor --root .`.
-- **Drive the contract tests.** Run `python3 skills/verify-pstack/scripts/verify.py drive --root . --feature release-tag`. Exit code `0`. Stdout contains `PASS tests/test_release.py`.
-- **Direct CLI.** Run `python3 tests/test_release.py`. Exit code `0`. Same PASS line.
-- **Proof.** Evidence argv is `python3 tests/test_release.py`. Evidence argv does not contain `scripts/release.sh`. Evidence stdout is not `grok plugin tag` creating a tag.
+- **Drive the contract tests.** Run `python3 skills/verify-pstack/scripts/verify.py drive --root . --feature release-tag`. Exit code `0`. Wrapper stdout is `PASS release-tag`. Evidence stdout contains `PASS tests/test_release.py`.
+- **Direct CLI.** Run `python3 tests/test_release.py`. Exit code `0`. Stdout contains `PASS tests/test_release.py`.
+- **Proof.** Read `features/release-tag/stdout.txt` and `features/release-tag/cmd.txt`. Evidence argv is `sys.executable` plus `tests/test_release.py`, not the literal `python3 tests/test_release.py`. Evidence argv does not contain `scripts/release.sh`. Evidence stdout is not `grok plugin tag` creating a tag.
 
 ## Gotchas
 
