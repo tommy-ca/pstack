@@ -74,7 +74,7 @@ Full sweep walks leftover-scanner, then upstream-pin, then upstream-recipe, then
 python3 skills/verify-pstack/scripts/verify.py drive --root .
 ```
 
-Pin proof is `python3 scripts/sync-from-upstream.py --pin`. Hygiene uses tmp `--skills` and never `--apply-skills`. Release proof is `python3 tests/test_release.py`. Do not run `scripts/release.sh` to completion from nested grok.
+Pin proof is `python3 scripts/sync-from-upstream.py --pin`. Recipe proof is `--recipe` stdout needles plus argv without `--log`. Hygiene uses tmp `--skills` and never `--apply-skills`. Release proof is `python3 tests/test_release.py`. Do not run `scripts/release.sh` to completion from nested grok.
 
 Keep the map honest with [`/maintain-verification-skill`](../../skills/maintain-verification-skill/SKILL.md). The map stays leftover-scanner, upstream-pin, upstream-recipe, refresh-hygiene, and release-tag.
 

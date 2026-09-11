@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Verify pstack
 
-Short-lived CLI plugin. No server. Drive it with `scripts/verify.py`. Do not improvise doctor.
+Short-lived CLI plugin. No server. Drive it with `skills/verify-pstack/scripts/verify.py`. Do not improvise doctor.
 
 Ship this skill at `skills/verify-pstack/`. `plugin.json` lists `./skills/`. Do not write `.claude/skills` or `.grok/skills/verify-pstack`. Do not write `~/.grok/skills`.
 
@@ -70,7 +70,7 @@ Read `features/README.md`, then the feature file. Drive the listed commands thro
 
 ## Proof bar
 
-Do not submit "look, it opens" captures. `grok plugin validate` plus inspect is not leftover scanner. A leftover `PASS` line, a 40-hex pin, a hygiene TSV, or `PASS tests/test_release.py` counts only when it is the mapped operator path with stdout, stderr, and exit code in the same evidence directory.
+Do not submit "look, it opens" captures. `grok plugin validate` plus inspect is not leftover scanner. A leftover `PASS` line, a 40-hex pin, `--recipe` stdout needles plus argv without `--log`, a hygiene TSV, or `PASS tests/test_release.py` counts only when it is the mapped operator path with stdout, stderr, and exit code in the same evidence directory.
 
 - Drive the operator command through `verify.py`. Do not call internal Python functions as the proof.
 - Run doctor first. A capture without leftover `PASS` in this run's doctor log is not evidence.
@@ -83,7 +83,7 @@ Do not submit "look, it opens" captures. `grok plugin validate` plus inspect is 
 
 Directory: `/tmp/verify-pstack-evidence-<runid>/`. `verify.py` prints `run_id` and `evidence` on PASS.
 
-Keep command, stdout, stderr, and exit code for every step. Leftover proof is the `PASS` line plus playbook and principle counts. Pin proof is the 40-hex SHA that matches `UPSTREAM`. Hygiene proof is the TSV header, the `cp -- ` line, and an unchanged live skills fingerprint. Release proof is `PASS tests/test_release.py`.
+Keep command, stdout, stderr, and exit code for every step. Leftover proof is the `PASS` line plus playbook and principle counts. Pin proof is the 40-hex SHA that matches `UPSTREAM`. Recipe proof is `--recipe` stdout needles plus argv without `--log`. Hygiene proof is the TSV header, the `cp -- ` line, and an unchanged live skills fingerprint. Release proof is `PASS tests/test_release.py`.
 
 Cleanup must not delete this directory.
 
@@ -116,6 +116,7 @@ Pass `--root` when the script is not inside `skills/verify-pstack/scripts/`. Pas
 
 `verify.py` refuses these. Do not run them by hand during a verify run either.
 
+- `--log` (sync-only fetch; not a verify path)
 - `--apply-skills` (default dest is `~/.grok/skills`; live `reflect` may be a symlink)
 - `scripts/release.sh` to completion when `__GROK_INSIDE_BWRAP` is set
 - `mise use -g`
@@ -132,6 +133,7 @@ Stop. Run `verify.py doctor`. Start over.
 
 - Doctor log has validate, inspect, or pytest and no leftover-scanner `PASS`
 - Evidence missing `doctor/leftover-scanner/stdout.txt`
+- `--log` on `verify.py`
 - `--apply-skills` without a tmp `--skills`
 - dest path contains `/.grok/skills/`
 - `scripts/release.sh` ran inside nested grok

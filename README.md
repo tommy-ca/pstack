@@ -163,7 +163,7 @@ Type [`/poteto-mode`](./skills/poteto-mode/SKILL.md) when a playbook matches or 
 | [`/typescript-best-practices`](./skills/typescript-best-practices/SKILL.md) | you're reading or editing typescript. grounds the type-system-discipline principle in syntax. |
 | [`/figure-it-out`](./skills/figure-it-out/SKILL.md) | no bundled playbook fits. designs a rigorous, auditable playbook for the task. |
 | [`/show-me-your-work`](./skills/show-me-your-work/SKILL.md) | you want a reviewable decision trail. logs decisions to a tsv you can commit. |
-| [`/verify-pstack`](./skills/verify-pstack/SKILL.md) | prove this plugin checkout. leftover scanner is required doctor. drives pin, hygiene, and release-tag through `scripts/verify.py`. |
+| [`/verify-pstack`](./skills/verify-pstack/SKILL.md) | prove this plugin checkout. leftover scanner is required doctor. drives leftover-scanner, upstream-pin, upstream-recipe, refresh-hygiene, and release-tag through `skills/verify-pstack/scripts/verify.py`. |
 | [`/create-verification-skill`](./skills/create-verification-skill/SKILL.md) | your project has no scripted way to prove app behavior. generates a project-local verify skill with a feature map, for any language or platform. |
 | [`/maintain-verification-skill`](./skills/maintain-verification-skill/SKILL.md) | your verify skill's feature map has drifted from the app. source wave + one live pass, at most one PR of proven corrections. |
 | [`/unslop`](./skills/unslop/SKILL.md) | you're cleaning up writing. removes AI tells. |
