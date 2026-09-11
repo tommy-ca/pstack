@@ -601,6 +601,8 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert "verify-harness.py" in recipe.stdout
     assert "verify.py doctor" in recipe.stdout
     assert "verify.py drive" in recipe.stdout
+    assert "sync-from-upstream.py --pin" in recipe.stdout
+    assert "Full sweep" in recipe.stdout
     assert "verify-harness.py && python3 tests/test_verify_harness.py" not in recipe.stdout
     assert "make-bot-ui" in recipe.stdout
     assert "pstack:<role>" in recipe.stdout

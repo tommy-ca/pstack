@@ -123,6 +123,8 @@ def banned_argv(argv: Sequence[str]) -> str | None:
         return "--apply-skills is not a verify path"
     if "--apply" in argv:
         return "--apply is not a verify path"
+    if "--log" in argv:
+        return "--log is not a verify path"
     if "release.sh" in joined:
         return "do not run scripts/release.sh from verify"
     if "mise use -g" in joined or (len(argv) >= 3 and "mise" in argv and "use" in argv and "-g" in argv):
@@ -406,10 +408,12 @@ def drive_upstream_recipe(paths: Paths) -> None:
         fail("recipe drive must not pass --log")
     text = got.stdout
     for needle in (
+        "sync-from-upstream.py --pin",
         "sync-from-upstream.py --log",
         "adapt-harness.py",
         "verify.py doctor",
         "verify-harness.py",
+        "Full sweep",
         "verify.py drive",
         "partition.py",
         "apply.py",

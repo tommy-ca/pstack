@@ -51,6 +51,18 @@ def test_doctor_leftover_stdout_has_pass_and_playbooks() -> None:
     assert "plugin.json name: pstack" in text
 
 
+def test_log_argv_is_refused() -> None:
+    proc = subprocess.run(
+        [sys.executable, str(LEVER), "doctor", "--root", str(ROOT), "--log"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert proc.returncode == 2, proc.stderr + proc.stdout
+    assert "REFUSED: --log is not a verify path" in proc.stderr
+
+
 def test_apply_skills_argv_is_refused() -> None:
     proc = subprocess.run(
         [

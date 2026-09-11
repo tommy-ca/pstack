@@ -59,7 +59,8 @@ def recipe() -> str:
     sha = pin()
     return f"""Refresh from official Cursor pstack (pin {sha}).
 
-1. python3 scripts/sync-from-upstream.py --log
+1. python3 scripts/sync-from-upstream.py --pin
+   python3 scripts/sync-from-upstream.py --log
 2. Review applicable intent from .worktrees/upstream-cursor-plugins/pstack/
    (`skills/`, `agents/`, and selected docs). Overlay last classification with
    skills/swarm/scripts/partition.py seed --cache .worktrees/upstream-cursor-plugins
@@ -86,7 +87,7 @@ def recipe() -> str:
    ~/.cursor/rules/*.mdc, or control-cli as live Grok calls.
 5. python3 skills/verify-pstack/scripts/verify.py doctor --root .
    That runs scripts/verify-harness.py then grok plugin validate.
-   Then python3 skills/verify-pstack/scripts/verify.py drive --root .
+   Full sweep drive: python3 skills/verify-pstack/scripts/verify.py drive --root .
 6. Update the `tree` line in UPSTREAM to the new pstack/ commit.
 """
 
