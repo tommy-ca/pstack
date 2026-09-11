@@ -89,7 +89,7 @@ A missing override file uses the shipped default. Run `/setup-pstack` again to c
 
 ## Accept the verification offer, or don't
 
-This plugin already ships [`/verify-pstack`](../../skills/verify-pstack/SKILL.md). Run that to prove leftover scan, pin, hygiene, and the release-tag contract. It is not an EDITH live-CLI gate. That plan lives in `TEST-PLAN.md`.
+This plugin already ships [`/verify-pstack`](../../skills/verify-pstack/SKILL.md). Run that to prove leftover-scanner, upstream-pin, upstream-recipe, refresh-hygiene, and the release-tag contract. It is not an EDITH live-CLI gate. That plan lives in `TEST-PLAN.md`.
 
 At the end of setup, `/setup-pstack` looks for a way to prove **your app**. It looks under `.grok/skills/verify-*` or an existing harness. If it finds neither, it offers once to generate one with [`/create-verification-skill`](../../skills/create-verification-skill/SKILL.md).
 

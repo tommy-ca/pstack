@@ -29,7 +29,7 @@ One shared skills/ tree. Host maps:
 - Codex: skills/poteto-mode/references/codex-tools.md and provider-dispatch.md
 - Claude Code: .claude-plugin/plugin.json (Agent tool)
 
-Sync: python3 scripts/sync-from-upstream.py --log && python3 scripts/sync-from-upstream.py --recipe
-Then copy intent files, run scripts/adapt-harness.py, hand-fix depth-1 and overnight, then scripts/verify-harness.py.
+Sync: python3 scripts/sync-from-upstream.py --pin && python3 scripts/sync-from-upstream.py --log
+Then copy intent files, run scripts/adapt-harness.py, hand-fix depth-1 and overnight, then python3 skills/verify-pstack/scripts/verify.py doctor --root . then Full sweep python3 skills/verify-pstack/scripts/verify.py drive --root .
 Cursor-only `.cursor-plugin/`, `assets/logo.png`, and the separate `advisor` plugin stay out of this host adapter. Retained `scripts/orch`, `scripts/watch-pr`, `check-plan.mjs`, and `worktree-audit.sh` are audited Codex compatibility surfaces, not blind-copy targets.
 The current compare is official pstack 0.15.1 at `7366ac128bdf95f45e6734f412b49a4031800169` against pin `93b00b89`. Classify with `skills/swarm/references/classification.tsv` and `skills/swarm/scripts/partition.py`. Pack interrogate prompts with `skills/interrogate/scripts/pack.py`.

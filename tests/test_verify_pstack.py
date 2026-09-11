@@ -115,6 +115,73 @@ def test_later_drive_without_leftover_pass_is_refused() -> None:
     assert evidence.is_dir(), evidence
 
 
+def test_verify_pstack_drive_upstream_recipe_operator_path() -> None:
+    run_id = f"recipe-{os.getpid()}-{time.time_ns()}"
+    evidence = Path(f"/tmp/verify-pstack-evidence-{run_id}")
+    try:
+        doctor = subprocess.run(
+            [
+                sys.executable,
+                str(LEVER),
+                "doctor",
+                "--root",
+                str(ROOT),
+                "--run-id",
+                run_id,
+            ],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert doctor.returncode == 0, doctor.stderr + doctor.stdout
+        drive = subprocess.run(
+            [
+                sys.executable,
+                str(LEVER),
+                "drive",
+                "--root",
+                str(ROOT),
+                "--feature",
+                "upstream-recipe",
+                "--run-id",
+                run_id,
+            ],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert drive.returncode == 0, drive.stderr + drive.stdout
+        cmd = (evidence / "features" / "upstream-recipe" / "cmd.txt").read_text(
+            encoding="utf-8"
+        )
+        assert "sync-from-upstream.py" in cmd
+        assert "--recipe" in cmd
+        assert "--log" not in cmd
+        stdout = (evidence / "features" / "upstream-recipe" / "stdout.txt").read_text(
+            encoding="utf-8"
+        )
+        for needle in (
+            "--pin",
+            "--log",
+            "verify.py doctor",
+            "Full sweep",
+            "verify.py drive",
+        ):
+            assert needle in stdout, needle
+    finally:
+        cleanup = subprocess.run(
+            [sys.executable, str(LEVER), "cleanup", "--run-id", run_id],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert cleanup.returncode == 0, cleanup.stderr + cleanup.stdout
+        assert evidence.is_dir(), evidence
+
+
 FOUR_H2_PREFIX = (
     "Sub-features",
     "How to get to it (user POV)",
@@ -147,10 +214,11 @@ def _feature_files(folder: Path) -> list[Path]:
 
 
 def test_verify_pstack_feature_ids_include_upstream_recipe() -> None:
-    text = (ROOT / "skills" / "verify-pstack" / "scripts" / "verify.py").read_text(
-        encoding="utf-8"
-    )
-    assert '"upstream-recipe"' in text
+    mod = load_lever()
+    folder = ROOT / "skills" / "verify-pstack" / "features"
+    stems = tuple(p.stem for p in _feature_files(folder))
+    assert mod.FEATURE_IDS == tuple(mod.DRIVERS)
+    assert tuple(sorted(mod.FEATURE_IDS)) == stems
 
 
 def test_verify_pstack_feature_files_have_four_h2s() -> None:
@@ -182,9 +250,27 @@ def test_live_openspec_specs_do_not_say_21_principles() -> None:
 
 
 def test_readme_lists_verify_pstack() -> None:
-    text = (ROOT / "README.md").read_text(encoding="utf-8")
-    assert "/verify-pstack" in text
-    assert "skills/verify-pstack" in text
+    for name in ("README.md", "README.zh-CN.md"):
+        text = (ROOT / name).read_text(encoding="utf-8")
+        assert "/verify-pstack" in text
+        assert "skills/verify-pstack/scripts/verify.py" in text
+        for feature in (
+            "leftover-scanner",
+            "upstream-pin",
+            "upstream-recipe",
+            "refresh-hygiene",
+            "release-tag",
+        ):
+            assert feature in text, (name, feature)
+    skill = (ROOT / "skills" / "verify-pstack" / "SKILL.md").read_text(encoding="utf-8")
+    assert "Drive it with `skills/verify-pstack/scripts/verify.py`" in skill
+    assert "Drive it with `scripts/verify.py`" not in skill
+    upstream = (ROOT / "UPSTREAM").read_text(encoding="utf-8")
+    assert "sync-from-upstream.py --pin" in upstream
+    assert "sync-from-upstream.py --log" in upstream
+    assert "verify.py doctor" in upstream
+    assert "Full sweep" in upstream
+    assert "verify.py drive" in upstream
 
 
 def test_feature_indexes_name_full_sweep() -> None:
