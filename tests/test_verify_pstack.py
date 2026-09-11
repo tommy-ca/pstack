@@ -101,3 +101,69 @@ def test_later_drive_without_leftover_pass_is_refused() -> None:
     assert cleanup.returncode == 0, cleanup.stderr + cleanup.stdout
     evidence = Path(f"/tmp/verify-pstack-evidence-{run_id}")
     assert evidence.is_dir(), evidence
+
+
+FOUR_H2_PREFIX = (
+    "Sub-features",
+    "How to get to it (user POV)",
+)
+FOUR_H2_SUFFIX = ("Gotchas",)
+
+
+def _h2s(path: Path) -> list[str]:
+    return [
+        line[3:].strip()
+        for line in path.read_text(encoding="utf-8").splitlines()
+        if line.startswith("## ")
+    ]
+
+
+def _assert_four_h2s(path: Path, harness: str) -> None:
+    got = _h2s(path)
+    expected = [
+        *FOUR_H2_PREFIX,
+        f"Driving it with {harness}",
+        *FOUR_H2_SUFFIX,
+    ]
+    assert got == expected, f"{path}: {got!r}"
+
+
+def _feature_files(folder: Path) -> list[Path]:
+    files = sorted(p for p in folder.glob("*.md") if p.name != "README.md")
+    assert files, folder
+    return files
+
+
+def test_verify_pstack_feature_files_have_four_h2s() -> None:
+    folder = ROOT / "skills" / "verify-pstack" / "features"
+    for path in _feature_files(folder):
+        _assert_four_h2s(path, "verify.py")
+
+
+def test_feature_map_example_files_have_four_h2s() -> None:
+    folder = (
+        ROOT
+        / "skills"
+        / "create-verification-skill"
+        / "references"
+        / "feature-map-example"
+    )
+    for path in _feature_files(folder):
+        _assert_four_h2s(path, "control-notes")
+
+
+def test_feature_indexes_name_full_sweep() -> None:
+    paths = (
+        ROOT / "skills" / "verify-pstack" / "features" / "README.md",
+        ROOT
+        / "skills"
+        / "create-verification-skill"
+        / "references"
+        / "feature-map-example"
+        / "README.md",
+    )
+    for path in paths:
+        text = path.read_text(encoding="utf-8")
+        assert "## Full sweep" in text, path
+        assert "top to bottom" in text, path
+

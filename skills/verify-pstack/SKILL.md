@@ -10,13 +10,15 @@ Short-lived CLI plugin. No server. Drive it with `scripts/verify.py`. Do not imp
 
 Ship this skill at `skills/verify-pstack/`. `plugin.json` lists `./skills/`. Do not write `.claude/skills` or `.grok/skills/verify-pstack`. Do not write `~/.grok/skills`.
 
+The map lives at `features/`, next to this file. Do not read OpenSpec for drive recipes. Do not look under `references/features/`.
+
 ## Launch
 
 Work in a pstack plugin checkout. `plugin.json` name is `pstack`. `scripts/verify-harness.py` exists.
 
 Need `python3` and `grok` on `PATH`. Refresh-hygiene also needs `uv`. Do not run `mise use -g` to get them.
 
-Each drive is its own process. Two runs may share a checkout when they use different `--run-id` values. There is no long-lived instance to keep alive.
+Each drive is its own process. Isolation is `--run-id`, not `--checkout`. There is no CDP checkout flag. Two runs may share a checkout when they use different `--run-id` values. There is no long-lived instance to keep alive. Refuse a second drive that would share live `~/.grok/skills` or the user's overlay dest.
 
 Ready means leftover scanner printed `PASS` and exited 0. Run doctor until that is true.
 
@@ -61,11 +63,20 @@ python3 skills/verify-pstack/scripts/verify.py drive --root . --feature refresh-
 python3 skills/verify-pstack/scripts/verify.py drive --root . --feature release-tag
 ```
 
-Omit `--feature` to drive every mapped feature. That path requires leftover `PASS` in this run's doctor evidence first. `drive leftover-scanner` may run without that log. Other features on the same `--run-id` refuse until leftover scanner PASSed.
+Omit `--feature` to drive every mapped feature. That walk follows `features/README.md` top to bottom. It is the Full sweep. Driving one convenient feature is not a sweep. That path requires leftover `PASS` in this run's doctor evidence first. `drive leftover-scanner` may run without that log. Other features on the same `--run-id` refuse until leftover scanner PASSed.
 
 Read `features/README.md`, then the feature file. Drive the listed commands through `verify.py`. Do not paste `refresh-hygiene.py --apply-skills`. Do not run `scripts/release.sh` to completion from nested grok.
 
-Proof is the captured command plus the resulting stdout, stderr, and exit code. For hygiene, also prove `~/.grok/skills/reflect` did not change and that `--host-script` dest is under `/tmp/`.
+## Proof bar
+
+Do not submit "look, it opens" captures. `grok plugin validate` plus inspect is not leftover scanner. A leftover `PASS` line, a 40-hex pin, a hygiene TSV, or `PASS tests/test_release.py` counts only when it is the mapped operator path with stdout, stderr, and exit code in the same evidence directory.
+
+- Drive the operator command through `verify.py`. Do not call internal Python functions as the proof.
+- Run doctor first. A capture without leftover `PASS` in this run's doctor log is not evidence.
+- Read the feature file. Exercise every reachable entry point it lists, and the success, cancel, error, empty, and persistence paths the change can affect.
+- For a broad regression, walk `features/README.md` top to bottom. That is leftover-scanner, upstream-pin, refresh-hygiene, then release-tag.
+- Show the trigger command and the stable end state in the same evidence directory.
+- Verify side effects, not only stdout. Hygiene must leave `~/.grok/skills/reflect` unchanged and write `--host-script` dest under `/tmp/`.
 
 ## Evidence
 
@@ -85,7 +96,9 @@ Removes `/tmp/verify-pstack-scratch-<runid>/` only. Confirm the evidence directo
 
 ## Helpers
 
-`skills/verify-pstack/scripts/verify.py` is executable. From a checkout that already has the skill:
+`skills/verify-pstack/scripts/verify.py` is executable. This skill ships that driver. The verification-skill-example omits its driver on purpose. Do not omit this helper.
+
+From a checkout that already has the skill:
 
 ```bash
 python3 skills/verify-pstack/scripts/verify.py doctor --root .
@@ -96,7 +109,7 @@ python3 skills/verify-pstack/scripts/verify.py cleanup --run-id <runid>
 
 `run` is doctor, then every feature (or `--feature`), then cleanup. Evidence survives `run`.
 
-Pass `--root` when the script is not inside `skills/verify-pstack/scripts/`.
+Pass `--root` when the script is not inside `skills/verify-pstack/scripts/`. Pass `--run-id` to isolate concurrent runs. Do not pass `--checkout`.
 
 ## Refused paths
 
@@ -125,5 +138,6 @@ Stop. Run `verify.py doctor`. Start over.
 - `git worktree remove`
 - `chmod` on an overlay dest
 - cleanup deleted `/tmp/verify-pstack-evidence-*`
+- a proof that only shows the process started
 
 Keep the map honest with `/maintain-verification-skill`.

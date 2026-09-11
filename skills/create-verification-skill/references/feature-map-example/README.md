@@ -2,6 +2,12 @@
 
 This directory is the maintained source for verifying the user-facing behavior of Notes. Read the index before driving the app, then use the matching feature file as the recipe.
 
+This file is the generator seed. Generated skills copy the shape to skill-root `features/`, next to `SKILL.md`. Do not nest the generated map under `references/features/`. Do not put it in OpenSpec.
+
+## Why not a wiki
+
+A wiki is for humans. Agents pay for every token they reread. Open one feature file for the change under test, not the whole corpus. Each file answers the same four questions: what exists, how a user reaches it, how to drive it with the harness, what usually lies. The README is the sweep order. Drift is fixed in the same PR as the product change, or by `/maintain-verification-skill`.
+
 ## Baseline preconditions
 
 - Launch Notes at `http://127.0.0.1:4173` with a disposable data directory.
@@ -9,7 +15,8 @@ This directory is the maintained source for verifying the user-facing behavior o
 - Seed notes titled `Quarterly plan` and `Grocery list`.
 - Put `control-notes` and the `notes` CLI on `PATH`.
 - Run `control-notes doctor` and require the expected URL, data directory, and build revision.
-- Never drive an instance that was not started by this verification run.
+- Never drive an instance that was not started by this verification run. Refuse to double-drive a shared Notes instance.
+- Isolation is `NOTES_DATA_DIR` plus `$RUN_ID`. Do not emit `--checkout` unless the app is a long-lived desktop driven over CDP from a git checkout.
 
 ## Driving conventions
 
@@ -22,6 +29,9 @@ This directory is the maintained source for verifying the user-facing behavior o
 
 ## Proof and skip reporting
 
+Do not submit "look, it opens." A window that loaded is not proof.
+
+- Exercise every reachable entry point, mode, gated variant, and the success, cancel, error, empty, and persistence paths the change can affect.
 - Capture the user action and the resulting state, not only the final screen.
 - UI proof includes an ARIA snapshot and a screenshot with the app identity visible.
 - CLI proof includes the command, stdout, stderr, and exit code.
@@ -40,6 +50,10 @@ Each feature file starts with an H1 title and one paragraph describing the user-
 4. `Gotchas` lists traps that can waste or invalidate a verification run.
 
 Keep implementation details out of the map. Name only user paths, stable handles, required state, commands, and observable proof.
+
+## Full sweep
+
+Walk this map top to bottom for a broad regression. Order is create-note, then search. Driving one convenient entry point is not a sweep. This Notes sample has no cross-feature journeys file. Add one only when the app has paths that span feature files.
 
 ## Features
 
