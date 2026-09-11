@@ -1,6 +1,6 @@
 ---
 name: verify-pstack
-description: "Use when verifying this pstack Grok plugin, leftover Cursor harness call sites may still be live, plugin doctor is in doubt, refresh-hygiene, upstream pin, upstream recipe, or release-tag checks are needed, or an agent reaches for grok plugin validate, grok inspect, or pytest as a substitute for scripts/verify-harness.py."
+description: "Use when verifying this pstack Grok plugin, leftover Cursor harness call sites may still be live (leftover-scanner is Cursor harness token doctor, not git leftover clones or disk prune), plugin doctor is in doubt, refresh-hygiene, upstream pin, upstream recipe, or release-tag checks are needed, or an agent reaches for grok plugin validate, grok inspect, or pytest as a substitute for scripts/verify-harness.py."
 disable-model-invocation: true
 ---
 
@@ -24,7 +24,7 @@ Ready means leftover scanner printed `PASS` and exited 0. Run doctor until that 
 
 ## Doctor
 
-Leftover scanner is required doctor. Run it. No substitutes.
+Leftover scanner is required doctor. Run it. No substitutes. leftover-scanner is not git leftover clones; isolation reclaim is the worktree-cleanup playbook.
 
 ```bash
 python3 .grok/skills/verify-pstack/scripts/verify.py doctor --root .
@@ -93,7 +93,7 @@ Cleanup must not delete this directory.
 python3 .grok/skills/verify-pstack/scripts/verify.py cleanup --run-id <runid>
 ```
 
-Removes `/tmp/verify-pstack-scratch-<runid>/` only. Confirm the evidence directory still exists after cleanup. Do not kill by process name. Do not `git worktree remove`. Do not delete leftover-worktree rows for OPEN PRs. Do not `rm` `/tmp/verify-pstack-evidence-<runid>/`.
+Removes `/tmp/verify-pstack-scratch-<runid>/` only. Confirm the evidence directory still exists after cleanup. Do not kill by process name. Do not `git worktree remove`. Isolation reclaim is the worktree-cleanup playbook, not verify cleanup. Do not delete leftover-worktree rows for OPEN PRs. Do not `rm` `/tmp/verify-pstack-evidence-<runid>/`.
 
 ## Helpers
 
@@ -120,7 +120,7 @@ Pass `--root` when the script is not inside `.grok/skills/verify-pstack/scripts/
 - `--apply-skills` (default dest is `~/.grok/skills`; live `reflect` may be a symlink)
 - `scripts/release.sh` to completion when `__GROK_INSIDE_BWRAP` is set
 - `mise use -g`
-- `git worktree remove` of OPEN PR worktrees
+- `git worktree remove` of OPEN PR worktrees. Isolation reclaim is worktree-cleanup, not verify.
 - creating plugin `.grok/workflows`
 - `chmod` on overlay dests
 - writes under `~/.grok/skills`
