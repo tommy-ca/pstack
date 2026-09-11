@@ -227,6 +227,36 @@ def test_verify_pstack_feature_files_have_four_h2s() -> None:
         _assert_four_h2s(path, "verify.py")
 
 
+def test_maps_lock_proven_drive_needles() -> None:
+    features = ROOT / "skills" / "verify-pstack" / "features"
+    leftover = (features / "leftover-scanner.md").read_text(encoding="utf-8")
+    walk = next(
+        line for line in leftover.splitlines() if "`leftover-tree-walk`" in line
+    )
+    assert "skills markdown" not in walk
+    assert "`docs/`" in walk
+    for suffix in (".md", ".toml", ".json", ".mjs"):
+        assert suffix in walk, suffix
+
+    recipe = (features / "upstream-recipe.md").read_text(encoding="utf-8")
+    driving, gotchas = recipe.split("## Driving it with verify.py", 1)[1].split(
+        "## Gotchas", 1
+    )
+    for needle in ("partition.py", "apply.py", "apply-check"):
+        assert needle in driving, needle
+    assert "--run-id" in gotchas
+    assert "verify.py run" in gotchas
+
+    release = (features / "release-tag.md").read_text(encoding="utf-8")
+    driving = release.split("## Driving it with verify.py", 1)[1]
+    assert "PASS release-tag" in driving
+    assert "PASS tests/test_release.py" in driving
+    assert "sys.executable" in driving
+    assert "features/release-tag/stdout.txt" in driving
+    assert "features/release-tag/cmd.txt" in driving
+    assert "Evidence argv is `python3 tests/test_release.py`" not in driving
+
+
 def test_feature_map_example_files_have_four_h2s() -> None:
     folder = (
         ROOT
