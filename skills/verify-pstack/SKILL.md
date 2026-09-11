@@ -1,6 +1,6 @@
 ---
 name: verify-pstack
-description: "Use when verifying this pstack Grok plugin, leftover Cursor harness call sites may still be live, plugin doctor is in doubt, refresh-hygiene, upstream pin, or release-tag checks are needed, or an agent reaches for grok plugin validate, grok inspect, or pytest as a substitute for scripts/verify-harness.py."
+description: "Use when verifying this pstack Grok plugin, leftover Cursor harness call sites may still be live, plugin doctor is in doubt, refresh-hygiene, upstream pin, upstream recipe, or release-tag checks are needed, or an agent reaches for grok plugin validate, grok inspect, or pytest as a substitute for scripts/verify-harness.py."
 disable-model-invocation: true
 ---
 
@@ -59,6 +59,7 @@ Re-run doctor after any failed drive, and before the first drive of a run.
 ```bash
 python3 skills/verify-pstack/scripts/verify.py drive --root . --feature leftover-scanner
 python3 skills/verify-pstack/scripts/verify.py drive --root . --feature upstream-pin
+python3 skills/verify-pstack/scripts/verify.py drive --root . --feature upstream-recipe
 python3 skills/verify-pstack/scripts/verify.py drive --root . --feature refresh-hygiene
 python3 skills/verify-pstack/scripts/verify.py drive --root . --feature release-tag
 ```
@@ -74,7 +75,7 @@ Do not submit "look, it opens" captures. `grok plugin validate` plus inspect is 
 - Drive the operator command through `verify.py`. Do not call internal Python functions as the proof.
 - Run doctor first. A capture without leftover `PASS` in this run's doctor log is not evidence.
 - Read the feature file. Exercise every reachable entry point it lists, and the success, cancel, error, empty, and persistence paths the change can affect.
-- For a broad regression, walk `features/README.md` top to bottom. That is leftover-scanner, upstream-pin, refresh-hygiene, then release-tag.
+- For a broad regression, walk `features/README.md` top to bottom. That is leftover-scanner, upstream-pin, upstream-recipe, refresh-hygiene, then release-tag.
 - Show the trigger command and the stable end state in the same evidence directory.
 - Verify side effects, not only stdout. Hygiene must leave `~/.grok/skills/reflect` unchanged and write `--host-script` dest under `/tmp/`.
 

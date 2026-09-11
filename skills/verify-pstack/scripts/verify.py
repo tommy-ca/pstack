@@ -21,6 +21,7 @@ from pathlib import Path
 FEATURE_IDS = (
     "leftover-scanner",
     "upstream-pin",
+    "upstream-recipe",
     "refresh-hygiene",
     "release-tag",
 )
@@ -392,6 +393,43 @@ def drive_upstream_pin(paths: Paths) -> None:
     print(f"PASS upstream-pin {sha}")
 
 
+def drive_upstream_recipe(paths: Paths) -> None:
+    script = paths.root / "scripts" / "sync-from-upstream.py"
+    got = capture(
+        [sys.executable, str(script), "--recipe"],
+        cwd=paths.root,
+        out_dir=paths.evidence / "features" / "upstream-recipe",
+    )
+    if got.returncode != 0:
+        fail("sync-from-upstream.py --recipe failed")
+    if "--log" in got.cmd:
+        fail("recipe drive must not pass --log")
+    text = got.stdout
+    for needle in (
+        "sync-from-upstream.py --log",
+        "adapt-harness.py",
+        "verify.py doctor",
+        "verify-harness.py",
+        "verify.py drive",
+        "partition.py",
+        "apply.py",
+        "apply-check",
+    ):
+        if needle not in text:
+            fail(f"recipe stdout missing {needle}")
+    if "verify-harness.py && python3 tests/test_verify_harness.py" in text:
+        fail("recipe step 5 must not use pytest as leftover doctor")
+    data = load_run(paths)
+    features = dict(data.get("features") or {})
+    features["upstream-recipe"] = {
+        "exit": got.returncode,
+        "evidence": str(got.out_dir),
+    }
+    data["features"] = features
+    save_run(paths, data)
+    print("PASS upstream-recipe")
+
+
 def host_dest(line: str) -> Path:
     first = line.splitlines()[0] if line.strip() else ""
     try:
@@ -492,6 +530,7 @@ def drive_release_tag(paths: Paths) -> None:
 DRIVERS: dict[str, Callable[[Paths], None]] = {
     "leftover-scanner": drive_leftover_scanner,
     "upstream-pin": drive_upstream_pin,
+    "upstream-recipe": drive_upstream_recipe,
     "refresh-hygiene": drive_refresh_hygiene,
     "release-tag": drive_release_tag,
 }

@@ -21,7 +21,7 @@ Preconditions:
 - `UPSTREAM` exists at the plugin root and contains a `tree` line.
 
 - **Doctor first.** If this run has no leftover `PASS` yet, run `python3 skills/verify-pstack/scripts/verify.py doctor --root .`.
-- **Print pin.** Run `python3 skills/verify-pstack/scripts/verify.py drive --root . --feature upstream-pin`. Exit code `0`. Stdout is one 40-hex SHA.
+- **Print pin.** Run `python3 skills/verify-pstack/scripts/verify.py drive --root . --feature upstream-pin`. Exit code `0`. Wrapper stdout is `PASS upstream-pin` plus the 40-hex SHA. Evidence `features/upstream-pin/stdout.txt` is that SHA.
 - **Direct CLI.** Run `python3 scripts/sync-from-upstream.py --pin`. Exit code `0`. Stdout equals the SHA in `UPSTREAM`.
 - **Proof.** Read `features/upstream-pin/stdout.txt`. The trimmed text matches `[0-9a-f]{40}` and appears on the `tree` line of `UPSTREAM`. The command argv contains `--pin` and does not contain `--log`.
 

@@ -9,6 +9,7 @@ OWNED_MAPS = frozenset(
     {
         "leftover-scanner.md",
         "upstream-pin.md",
+        "upstream-recipe.md",
         "refresh-hygiene.md",
         "release-tag.md",
     }

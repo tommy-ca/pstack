@@ -68,7 +68,7 @@ Leftover stdout must start with `PASS` and include `playbooks: 22 named + openin
 
 `grok inspect --json` proves enable and trust. It is not leftover scanner. `grok plugin validate` alone is not leftover scanner. `pytest` and `tests/test_verify_harness.py` are not leftover scanner.
 
-Full sweep walks leftover-scanner, then upstream-pin, then refresh-hygiene, then release-tag:
+Full sweep walks leftover-scanner, then upstream-pin, then upstream-recipe, then refresh-hygiene, then release-tag:
 
 ```bash
 python3 skills/verify-pstack/scripts/verify.py drive --root .
@@ -76,7 +76,7 @@ python3 skills/verify-pstack/scripts/verify.py drive --root .
 
 Pin proof is `python3 scripts/sync-from-upstream.py --pin`. Hygiene uses tmp `--skills` and never `--apply-skills`. Release proof is `python3 tests/test_release.py`. Do not run `scripts/release.sh` to completion from nested grok.
 
-Keep the map honest with [`/maintain-verification-skill`](../../skills/maintain-verification-skill/SKILL.md). The map stays leftover-scanner, upstream-pin, refresh-hygiene, and release-tag.
+Keep the map honest with [`/maintain-verification-skill`](../../skills/maintain-verification-skill/SKILL.md). The map stays leftover-scanner, upstream-pin, upstream-recipe, refresh-hygiene, and release-tag.
 
 ## Ship plane
 
