@@ -10,6 +10,7 @@ set -u
 repo="${1:-$(git rev-parse --show-toplevel 2>/dev/null)}"
 [ -z "$repo" ] && { echo "not in a git repo; pass a repo path" >&2; exit 1; }
 cd "$repo" || exit 1
+repo=$(pwd -P)
 
 # Main worktree is the first entry; everything else is a candidate.
 main_wt=$(git worktree list --porcelain | sed -n 's/^worktree //p' | sed -n '1p')
@@ -29,11 +30,14 @@ prs=$(mktemp)
 gh pr list --author "@me" --state all --limit 1000 \
 	--json number,state,headRefName 2>/dev/null > "$prs" || echo "[]" > "$prs"
 
-# Transcripts dir: explicit override first, historical Cursor path otherwise.
 transcripts="${PSTACK_TRANSCRIPTS_DIR:-}"
 if [ -z "$transcripts" ]; then
-	slug=$(printf '%s' "$main_wt" | sed 's#^/##; s#/#-#g')
-	transcripts="$HOME/.cursor/projects/$slug/agent-transcripts"
+	if [ -d "$HOME/.grok/sessions" ]; then
+		transcripts="$HOME/.grok/sessions"
+	else
+		slug=$(printf '%s' "$main_wt" | sed 's#^/##; s#/#-#g')
+		transcripts="$HOME/.cursor/projects/$slug/agent-transcripts"
+	fi
 fi
 file_mtime() {
 	local file="$1" value
@@ -43,12 +47,24 @@ file_mtime() {
 format_date() {
 	date -d "@$1" '+%Y-%m-%d' 2>/dev/null || date -r "$1" '+%Y-%m-%d' 2>/dev/null || true
 }
+abs_dir() {
+	(cd "$1" && pwd -P) 2>/dev/null || printf '%s\n' "$1"
+}
 now=$(date +%s)
 
-printf "SIZE\tAGE\tMERGED\tDIRTY\tREMOTE\tPR\tLAST_CHAT\tBUCKET\tWORKTREE\n"
+porcelain_list=$(mktemp)
+git worktree list --porcelain | sed -n 's/^worktree //p' > "$porcelain_list"
+listed() {
+	local p="$1"
+	grep -Fxq "$p" "$porcelain_list" && return 0
+	grep -Fxq "$(abs_dir "$p")" "$porcelain_list" && return 0
+	return 1
+}
 
-git worktree list --porcelain | sed -n 's/^worktree //p' | while IFS= read -r wt; do
-	[ "$wt" = "$main_wt" ] && continue
+emit_row() {
+	local wt="$1" kind="$2"
+	local size head head_ts age merged porcelain dirty branch remote pr
+	local last last_ts recent bucket
 
 	size=$(du -sh "$wt" 2>/dev/null | awk '{print $1}')
 	head=$(git -C "$wt" rev-parse HEAD 2>/dev/null)
@@ -71,7 +87,9 @@ git worktree list --porcelain | sed -n 's/^worktree //p' | while IFS= read -r wt
 	else dirty="scratch:$(printf '%s\n' "$porcelain" | grep -c '^??')"; fi
 
 	branch=$(git -C "$wt" symbolic-ref --quiet --short HEAD 2>/dev/null || echo "")
-	if [ -z "$branch" ]; then remote=detached
+	if [ "$kind" = clone ]; then
+		remote=clone
+	elif [ -z "$branch" ]; then remote=detached
 	elif git -C "$wt" show-ref --verify --quiet "refs/remotes/origin/$branch"; then
 		[ "$(git -C "$wt" rev-parse "origin/$branch" 2>/dev/null)" = "$head" ] \
 			&& remote=pushed \
@@ -101,22 +119,56 @@ git worktree list --porcelain | sed -n 's/^worktree //p' | while IFS= read -r wt
 	fi
 	recent=$([ "$last_ts" -gt 0 ] 2>/dev/null && [ $(( (now - last_ts) / 86400 )) -le 4 ] && echo yes || echo no)
 
-	case "$dirty" in
-		wip:*) bucket=hold-wip ;;
-		*)
-			case "$pr" in
-				*OPEN*) bucket=hold-open-pr ;;
-				*)
-					if [ "$recent" = yes ]; then bucket=verify-recent-chat
-					elif [ "$merged" = YES ] || [ "${pr##*/}" = MERGED ]; then bucket=safe
-					else bucket=review; fi
-					;;
-			esac
-			;;
-	esac
+	if [ "$kind" = clone ]; then
+		case "$dirty" in
+			wip:*) bucket=hold-wip ;;
+			*) bucket=review ;;
+		esac
+	else
+		case "$dirty" in
+			wip:*) bucket=hold-wip ;;
+			*)
+				case "$pr" in
+					*OPEN*) bucket=hold-open-pr ;;
+					*)
+						if [ "$recent" = yes ]; then bucket=verify-recent-chat
+						elif [ "$merged" = YES ] || [ "${pr##*/}" = MERGED ]; then bucket=safe
+						else bucket=review; fi
+						;;
+				esac
+				;;
+		esac
+	fi
 
 	printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" \
 		"$size" "$age" "$merged" "$dirty" "$remote" "$pr" "$last" "$bucket" "$wt"
-done | sort -t$'\t' -k1,1 -rh
+}
 
-rm -f "$prs"
+printf "SIZE\tAGE\tMERGED\tDIRTY\tREMOTE\tPR\tLAST_CHAT\tBUCKET\tWORKTREE\n"
+
+{
+	while IFS= read -r wt; do
+		[ -n "$wt" ] || continue
+		[ "$wt" = "$main_wt" ] && continue
+		emit_row "$wt" registered
+	done < "$porcelain_list"
+
+	leftover_parent="${PSTACK_LEFTOVER_PARENT:-}"
+	if [ -n "$leftover_parent" ] && [ -d "$leftover_parent" ]; then
+		leftover_parent=$(abs_dir "$leftover_parent")
+		overlay="$repo/.worktrees"
+		while IFS= read -r d; do
+			[ -n "$d" ] || continue
+			d=$(abs_dir "$d")
+			listed "$d" && continue
+			case "$d" in
+				"$overlay"|"$overlay"/*) continue ;;
+			esac
+			[ -d "$d/.git" ] || continue
+			[ ! -f "$d/.git" ] || continue
+			emit_row "$d" clone
+		done < <(find "$leftover_parent" -maxdepth 1 -mindepth 1 -type d | sort)
+	fi
+} | sort -t$'\t' -k1,1 -rh
+
+rm -f "$prs" "$porcelain_list"

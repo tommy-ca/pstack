@@ -37,5 +37,6 @@ Preconditions:
 - Scanner skip dirs are `.git`, `automations`, `scripts`, `.superpowers`, `.worktrees`, `openspec`, and `.audit`. A leftover `PASS` does not mean skipped dirs are clean. Skills markdown is not a skip dir. `docs/` is walked. `.grok` is not a skip dir. Project-local skill markdown stays scanned. Doctor still fails if `.grok/workflows` exists.
 - Scanner skip files are `HARNESS.md`, `UPSTREAM`, `TEST-PLAN.md`, `README.md`, `README.zh-CN.md`, `codex-tools.md`, `provider-dispatch.md`, and `classification.tsv`. Those names may mention Cursor leftovers. Skills markdown must not keep them as call sites.
 - Allowed mentions such as `There is no cursor-team-kit` and `classification.tsv` notes must not be treated as live hits.
+- leftover-scanner is not unregistered isolation clones. Isolation reclaim is worktree-cleanup.
 - Later `drive` on the same `--run-id` for other features refuses if leftover scanner did not PASS.
 - `HARNESS.md`, `scripts/`, and `automations/benny` may name Cursor leftovers. Skills markdown must not keep them as call sites.
