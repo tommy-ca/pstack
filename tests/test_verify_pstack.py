@@ -152,6 +152,22 @@ def test_feature_map_example_files_have_four_h2s() -> None:
         _assert_four_h2s(path, "control-notes")
 
 
+def test_live_openspec_specs_do_not_say_21_principles() -> None:
+    specs = ROOT / "openspec" / "specs"
+    stale = []
+    for path in specs.rglob("*.md"):
+        text = path.read_text(encoding="utf-8")
+        if "21 principle" in text or "principles: 21" in text or "Twenty-one principle" in text:
+            stale.append(str(path.relative_to(ROOT)))
+    assert stale == [], stale
+
+
+def test_readme_lists_verify_pstack() -> None:
+    text = (ROOT / "README.md").read_text(encoding="utf-8")
+    assert "/verify-pstack" in text
+    assert "skills/verify-pstack" in text
+
+
 def test_feature_indexes_name_full_sweep() -> None:
     paths = (
         ROOT / "skills" / "verify-pstack" / "features" / "README.md",

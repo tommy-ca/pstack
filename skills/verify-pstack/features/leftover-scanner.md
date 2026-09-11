@@ -34,6 +34,8 @@ Preconditions:
 - `grok plugin validate .` and `grok inspect --json` are not leftover scanner. Validate is doctor companion only. Inspect `enabled` is trust.
 - `uv run --with pytest pytest tests/test_verify_harness.py` is not leftover scanner. The tree walk is `scripts/verify-harness.py`.
 - TEST-PLAN.md says verify-harness is not an EDITH pass gate. This map still requires leftover `PASS` as doctor.
+- Scanner skip dirs are `.git`, `automations`, `scripts`, `.superpowers`, `.worktrees`, `openspec`, and `.audit`. A leftover `PASS` does not mean skipped dirs are clean. Skills markdown is not a skip dir. `docs/` is walked.
+- Scanner skip files are `HARNESS.md`, `UPSTREAM`, `TEST-PLAN.md`, `README.md`, `README.zh-CN.md`, `codex-tools.md`, `provider-dispatch.md`, and `classification.tsv`. Those names may mention Cursor leftovers. Skills markdown must not keep them as call sites.
 - Allowed mentions such as `There is no cursor-team-kit` and `classification.tsv` notes must not be treated as live hits.
 - Later `drive` on the same `--run-id` for other features refuses if leftover scanner did not PASS.
 - `HARNESS.md`, `scripts/`, and `automations/benny` may name Cursor leftovers. Skills markdown must not keep them as call sites.

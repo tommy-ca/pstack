@@ -12,7 +12,7 @@ Default path is `.grok/skills/verify-<app>/` for an application repo. If `plugin
 
 ## Why not a wiki
 
-A wiki is for humans. Agents pay for every token they reread. Write a skill plus a feature map. Use one short file per feature, the same four H2s, and a README that is the sweep order. Keep the map next to the skill at `features/`. Do not grow it into a wiki. Do not put it in OpenSpec. `openspec/specs` is capability Gherkin, not a drive recipe.
+A wiki is for humans. Agents pay for every token they reread. Write a skill plus a feature map. Use one short file per feature, the same four H2s, and a README that is the sweep order. Keep the map next to the skill at `features/`. Do not grow it into a wiki. Do not put drive recipes in OpenSpec. `openspec/specs` is capability Gherkin, not a drive recipe.
 
 ## 1. Interview the repo, not the user
 

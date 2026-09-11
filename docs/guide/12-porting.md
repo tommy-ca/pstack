@@ -1,6 +1,6 @@
 # Port pstack to another agent harness
 
-Official pstack (poteto, Cursor plugin pin `efa2a531`) is a philosophy plus a file layout. This Grok port is a **reference implementation** of that layout. Use this page to port the core onto **any** new agent whose tools you can name.
+Official pstack (poteto, Cursor plugin pin in [`UPSTREAM`](../../UPSTREAM)) is a philosophy plus a file layout. This Grok port is a **reference implementation** of that layout. Use this page to port the core onto **any** new agent whose tools you can name.
 
 The host map is the only required new file. Fill the checklist from that agent's docs or source. Write `gap` when the host has no equivalent. Playbooks then call the names you wrote, not Cursor spawn fields.
 
@@ -22,7 +22,7 @@ A port that copies files and keeps the previous host's spawn fields is not a por
 
 | Layer | What | Port how |
 |---|---|---|
-| Core | 21 `principle-*` skills, 22 playbook **intents**, router skill shape, unslop, no-comments, tdd, how, why | Copy. Keep names. |
+| Core | 23 `principle-*` skills, 22 playbook **intents**, router skill shape, unslop, no-comments, tdd, how, why | Copy. Keep names. |
 | Host map | One file the router reads first | Fill the checklist below. Grok reference: [`HARNESS.md`](../../HARNESS.md). Codex: `skills/poteto-mode/references/codex-tools.md`. |
 | Domain packs | Benny, TypeScript practices, visual-parity, forge-neutral PR and stack landing | Keep only if the domain matches. |
 

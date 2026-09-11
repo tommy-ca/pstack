@@ -9,13 +9,13 @@ Define the portable pstack core and host-map method for adapting principles and 
 
 Feature: pstack-reference-port
 
-Operator docs MUST extract official pstack philosophy: less code over loc, go deep then parallelize, one router, steer with 21 principle names, prove on the real artifact. They MUST split the tree into core (principles, playbook intent, router), host map, and optional domain packs. The host map MUST be the only required new file for a port. This Grok tree MUST be named as a reference implementation of that host-map step.
+Operator docs MUST extract official pstack philosophy: less code over loc, go deep then parallelize, one router, steer with 23 principle names, prove on the real artifact. They MUST split the tree into core (principles, playbook intent, router), host map, and optional domain packs. The host map MUST be the only required new file for a port. This Grok tree MUST be named as a reference implementation of that host-map step.
 
 #### Scenario: porting page names the layers
 
 - **GIVEN** `docs/guide/12-porting.md`
 - **WHEN** an operator wants pstack on another host
-- **THEN** the page names 21 principles, host map, and Laziness Protocol
+- **THEN** the page names 23 principles, host map, and Laziness Protocol
 - **AND** it tells them not to copy the previous host's spawn fields as the core
 
 #### Scenario: capability checklist is fill-in
