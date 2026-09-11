@@ -85,9 +85,11 @@ def recipe() -> str:
 4. Hand-map depth-1 spawn (`pstack:<role>`) and persist-then-wake overnight
    (`/loop` → scheduler_create). Do not leave Cursor Task, same-run /loop,
    ~/.cursor/rules/*.mdc, or control-cli as live Grok calls.
-5. python3 skills/verify-pstack/scripts/verify.py doctor --root .
-   That runs scripts/verify-harness.py then grok plugin validate.
-   Full sweep drive: python3 skills/verify-pstack/scripts/verify.py drive --root .
+5. python3 skills/verify-pstack/scripts/verify.py run --root .
+   That is leftover doctor then Full sweep drive then cleanup on one run-id.
+   Leftover doctor runs scripts/verify-harness.py then grok plugin validate.
+   Evidence survives. Full sweep walks leftover-scanner, upstream-pin,
+   upstream-recipe, refresh-hygiene, and release-tag.
 6. Update the `tree` line in UPSTREAM to the new pstack/ commit.
 """
 

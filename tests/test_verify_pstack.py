@@ -165,9 +165,17 @@ def test_verify_pstack_drive_upstream_recipe_operator_path() -> None:
         for needle in (
             "--pin",
             "--log",
-            "verify.py doctor",
+            "adapt-harness.py",
+            "verify.py run",
             "Full sweep",
-            "verify.py drive",
+            "leftover-scanner",
+            "upstream-pin",
+            "upstream-recipe",
+            "refresh-hygiene",
+            "release-tag",
+            "partition.py",
+            "apply.py",
+            "apply-check",
         ):
             assert needle in stdout, needle
     finally:
@@ -242,10 +250,22 @@ def test_maps_lock_proven_drive_needles() -> None:
     driving, gotchas = recipe.split("## Driving it with verify.py", 1)[1].split(
         "## Gotchas", 1
     )
-    for needle in ("partition.py", "apply.py", "apply-check"):
+    for needle in (
+        "partition.py",
+        "apply.py",
+        "apply-check",
+        "verify.py run",
+        "Full sweep",
+        "leftover-scanner",
+        "upstream-pin",
+        "upstream-recipe",
+        "refresh-hygiene",
+        "release-tag",
+    ):
         assert needle in driving, needle
     assert "--run-id" in gotchas
     assert "verify.py run" in gotchas
+    assert "Pytest" in gotchas
 
     release = (features / "release-tag.md").read_text(encoding="utf-8")
     driving = release.split("## Driving it with verify.py", 1)[1]
@@ -298,9 +318,7 @@ def test_readme_lists_verify_pstack() -> None:
     upstream = (ROOT / "UPSTREAM").read_text(encoding="utf-8")
     assert "sync-from-upstream.py --pin" in upstream
     assert "sync-from-upstream.py --log" in upstream
-    assert "verify.py doctor" in upstream
-    assert "Full sweep" in upstream
-    assert "verify.py drive" in upstream
+    assert "verify.py run" in upstream
 
 
 def test_feature_indexes_name_full_sweep() -> None:
