@@ -134,6 +134,13 @@ def _feature_files(folder: Path) -> list[Path]:
     return files
 
 
+def test_verify_pstack_feature_ids_include_upstream_recipe() -> None:
+    text = (ROOT / "skills" / "verify-pstack" / "scripts" / "verify.py").read_text(
+        encoding="utf-8"
+    )
+    assert '"upstream-recipe"' in text
+
+
 def test_verify_pstack_feature_files_have_four_h2s() -> None:
     folder = ROOT / "skills" / "verify-pstack" / "features"
     for path in _feature_files(folder):

@@ -599,6 +599,9 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert sha in recipe.stdout
     assert "adapt-harness.py" in recipe.stdout
     assert "verify-harness.py" in recipe.stdout
+    assert "verify.py doctor" in recipe.stdout
+    assert "verify.py drive" in recipe.stdout
+    assert "verify-harness.py && python3 tests/test_verify_harness.py" not in recipe.stdout
     assert "make-bot-ui" in recipe.stdout
     assert "pstack:<role>" in recipe.stdout
     assert "upstream-cursor-plugins/pstack" in recipe.stdout

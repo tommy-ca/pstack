@@ -84,7 +84,9 @@ def recipe() -> str:
 4. Hand-map depth-1 spawn (`pstack:<role>`) and persist-then-wake overnight
    (`/loop` → scheduler_create). Do not leave Cursor Task, same-run /loop,
    ~/.cursor/rules/*.mdc, or control-cli as live Grok calls.
-5. python3 scripts/verify-harness.py && python3 tests/test_verify_harness.py
+5. python3 skills/verify-pstack/scripts/verify.py doctor --root .
+   That runs scripts/verify-harness.py then grok plugin validate.
+   Then python3 skills/verify-pstack/scripts/verify.py drive --root .
 6. Update the `tree` line in UPSTREAM to the new pstack/ commit.
 """
 
