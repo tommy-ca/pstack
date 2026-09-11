@@ -16,7 +16,8 @@ When the work isn't trivial, build the tool that does it instead of doing it by 
 - A deterministic lever beats fan-out. If the tool can process every unit in one pass, run it yourself. Don't fan out delegates to hand-apply what a script can do.
 - When you fan work out to subagents, write the lever as a skill they all read: the recipe, the verification contract, and the do-not-touch fences in one artifact. Keep it outside the delegates' write scope so they can't quietly edit the contract.
 - Applying this principle produces a file. If you cited it and there is no codemod, script, generator, or delegate skill in the diff, you didn't apply it.
-- Commit the lever when the work outlives the session.
+- Commit the lever when the work outlives the session. Keep a session-local execute lever uncommitted when it hardcodes a host path. A plugin lever takes repo and prefix as arguments.
+- A destructor must be safe to mis-invoke. Owning checkout is a pin, not a convenience `--repo`. Default is dry-run. Delete is opt-in after confirmation.
 
 **Balance:** The bar is triviality, not repetition. A one-off still earns a lever when the lever is what makes the work checkable. Per the [Laziness Protocol](../principle-laziness-protocol/SKILL.md), build the smallest script that does or proves the job, never a framework.
 
