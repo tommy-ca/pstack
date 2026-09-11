@@ -71,10 +71,18 @@ Playbooks and principles come from [official Cursor `pstack/`](https://github.co
 When Cursor moves:
 
 ```bash
+python3 scripts/sync-from-upstream.py --pin
 python3 scripts/sync-from-upstream.py --log
 python3 scripts/sync-from-upstream.py --recipe
 ```
 
-Then copy intent (`skills/`, `agents/`). Skip `make-bot-ui`. Do not overwrite `HARNESS.md`, `plugin.json`, README files, `tests/`, or `scripts/`. Run `python3 scripts/adapt-harness.py`. Hand-map depth-1 spawn (`pstack:<role>`) and persist-then-wake overnight (`/loop` → `scheduler_create`). Do not leave Cursor `Task`, same-run `/loop`, `~/.cursor/rules/*.mdc`, or `control-cli` as live Grok calls. Run `python3 scripts/verify-harness.py` and `python3 tests/test_verify_harness.py`. Update the `tree` line in [`UPSTREAM`](../../UPSTREAM).
+Then copy intent (`skills/`, `agents/`). Skip `make-bot-ui`. Do not overwrite `HARNESS.md`, `plugin.json`, README files, `tests/`, or `scripts/`. Run `python3 scripts/adapt-harness.py`. Hand-map depth-1 spawn (`pstack:<role>`) and persist-then-wake overnight (`/loop` → `scheduler_create`). Do not leave Cursor `Task`, same-run `/loop`, `~/.cursor/rules/*.mdc`, or `control-cli` as live Grok calls. Plugin doctor is leftover scanner (`python3 scripts/verify-harness.py` via `verify.py doctor`), not pytest:
+
+```bash
+python3 skills/verify-pstack/scripts/verify.py doctor --root .
+python3 skills/verify-pstack/scripts/verify.py drive --root .
+```
+
+`--pin` must print the 40-hex SHA in [`UPSTREAM`](../../UPSTREAM). Hygiene drive uses tmp `--skills`. Do not pass `--apply-skills`. Release proof is `python3 tests/test_release.py`. Do not run `scripts/release.sh` to completion from nested grok. Update the `tree` line in [`UPSTREAM`](../../UPSTREAM).
 
 Next: [Recipes and pitfalls](./10-recipes-and-pitfalls.md).

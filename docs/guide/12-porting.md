@@ -1,6 +1,6 @@
 # Port pstack to another agent harness
 
-Official pstack (poteto, Cursor plugin pin `efa2a531`) is a philosophy plus a file layout. This Grok port is a **reference implementation** of that layout. Use this page to port the core onto **any** new agent whose tools you can name.
+Official pstack (poteto, Cursor plugin pin in [`UPSTREAM`](../../UPSTREAM)) is a philosophy plus a file layout. This Grok port is a **reference implementation** of that layout. Use this page to port the core onto **any** new agent whose tools you can name.
 
 The host map is the only required new file. Fill the checklist from that agent's docs or source. Write `gap` when the host has no equivalent. Playbooks then call the names you wrote, not Cursor spawn fields.
 

@@ -93,7 +93,7 @@ This plugin already ships [`/verify-pstack`](../../skills/verify-pstack/SKILL.md
 
 At the end of setup, `/setup-pstack` looks for a way to prove **your app**. It looks under `.grok/skills/verify-*` or an existing harness. If it finds neither, it offers once to generate one with [`/create-verification-skill`](../../skills/create-verification-skill/SKILL.md).
 
-Say yes and it writes `.grok/skills/verify-<app>/` for that app. Do not write `.grok/skills/verify-pstack`. This plugin already has `skills/verify-pstack/`. Say no and setup moves on.
+Say yes and it writes `.grok/skills/verify-<app>/` for that app. Do not generate `.grok/skills/verify-pstack`. This plugin already has `skills/verify-pstack/`. Leftover scanner is the plugin doctor. Say no and setup moves on.
 
 After setup, start a new session. The model file applies.
 
