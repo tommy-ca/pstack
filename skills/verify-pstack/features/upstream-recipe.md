@@ -21,7 +21,7 @@ Preconditions:
 - Leftover scanner printed `PASS` for this run.
 
 - **Doctor first.** If this run has no leftover `PASS` yet, run `python3 skills/verify-pstack/scripts/verify.py doctor --root .`.
-- **Print recipe.** Run `python3 skills/verify-pstack/scripts/verify.py drive --root . --feature upstream-recipe`. Exit code `0`. Evidence stdout names `--log`, `adapt-harness.py`, `verify.py doctor`, `verify-harness.py`, and `verify.py drive`.
+- **Print recipe.** Run `python3 skills/verify-pstack/scripts/verify.py drive --root . --feature upstream-recipe`. Exit code `0`. Evidence stdout names `--pin`, `--log`, `adapt-harness.py`, `verify.py doctor`, `Full sweep`, `verify-harness.py`, and `verify.py drive`.
 - **Direct CLI.** Run `python3 scripts/sync-from-upstream.py --recipe`. Exit code `0`. Stdout matches the evidence file.
 - **Proof.** Read `features/upstream-recipe/stdout.txt`. The command argv contains `--recipe` and does not contain `--log`.
 
