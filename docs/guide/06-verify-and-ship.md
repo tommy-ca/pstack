@@ -52,11 +52,11 @@ Apps change and feature maps rot. When yours drifts, run:
 
 [`/maintain-verification-skill`](../../skills/maintain-verification-skill/SKILL.md) audits the generated skill: one read-only source reader per feature in parallel, then one live pass that drives every mapped feature. It ends in exactly one of three outcomes. `clean` means full coverage and nothing to ship. `changed` means one PR of proven corrections, confined to the verification skill's own directory. `blocked` names the blocker. It never edits product code. If the live pass catches a product regression, it reports the regression instead of papering over it in docs.
 
-Do not treat this plane as the recipe for **this** plugin checkout. This plugin has no CDP, no `--checkout`, and already ships its verify skill.
+Do not treat this plane as the recipe for **this** plugin checkout. This plugin has no CDP, no `--checkout`, and keeps verify-pstack as a checkout-local meta skill.
 
 ## Plugin plane
 
-This repository is the pstack Grok plugin. It already ships [`/verify-pstack`](../../.grok/skills/verify-pstack/SKILL.md) at `.grok/skills/verify-pstack/`. Plugin doctor lives at `.grok/skills/verify-pstack/`. Do not ship it under `skills/`. `plugin.json` lists `./skills/` and must not list `.grok/skills`. Isolation is `--run-id`. There is no CDP checkout flag. Do not write `.claude/skills`. Do not write `~/.grok/skills`.
+This repository is the pstack Grok plugin. Checkout-local [`/verify-pstack`](../../.grok/skills/verify-pstack/SKILL.md) lives at `.grok/skills/verify-pstack/`. Plugin doctor lives at `.grok/skills/verify-pstack/`. Do not ship it under `skills/`. `plugin.json` lists `./skills/` and must not list `.grok/skills`. Isolation is `--run-id`. There is no CDP checkout flag. Do not write `.claude/skills`. Do not write `~/.grok/skills`.
 
 Doctor is leftover scanner, then `grok plugin validate .` as companion only.
 
