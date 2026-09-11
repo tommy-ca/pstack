@@ -58,21 +58,15 @@ Do not treat this plane as the recipe for **this** plugin checkout. This plugin 
 
 This repository is the pstack Grok plugin. Checkout-local [`/verify-pstack`](../../.grok/skills/verify-pstack/SKILL.md) lives at `.grok/skills/verify-pstack/`. Plugin doctor lives at `.grok/skills/verify-pstack/`. Do not ship it under `skills/`. `plugin.json` lists `./skills/` and must not list `.grok/skills`. Isolation is `--run-id`. There is no CDP checkout flag. Do not write `.claude/skills`. Do not write `~/.grok/skills`.
 
-Doctor is leftover scanner, then `grok plugin validate .` as companion only.
+Doctor is leftover scanner, then `grok plugin validate .` as companion only. `verify.py doctor` is that pair. Two processes without the same `--run-id` each mint a new run-id, and Full sweep drive then misses leftover `PASS`. Full sweep is one process:
 
 ```bash
-python3 .grok/skills/verify-pstack/scripts/verify.py doctor --root .
+python3 .grok/skills/verify-pstack/scripts/verify.py run --root .
 ```
 
-Leftover stdout must start with `PASS` and include `playbooks: 22 named + opening-a-pr`, `principles: 23`, and `plugin.json name: pstack`.
+That is leftover doctor, then leftover-scanner, upstream-pin, upstream-recipe, refresh-hygiene, and release-tag, then cleanup. Evidence survives. Leftover stdout must start with `PASS` and include `playbooks: 22 named + opening-a-pr`, `principles: 23`, and `plugin.json name: pstack`.
 
 `grok inspect --json` proves enable and trust. It is not leftover scanner. `grok plugin validate` alone is not leftover scanner. `pytest` and `tests/test_verify_harness.py` are not leftover scanner.
-
-Full sweep walks leftover-scanner, then upstream-pin, then upstream-recipe, then refresh-hygiene, then release-tag:
-
-```bash
-python3 .grok/skills/verify-pstack/scripts/verify.py drive --root .
-```
 
 Pin proof is `python3 scripts/sync-from-upstream.py --pin`. Recipe proof is `--recipe` stdout needles plus argv without `--log`. Hygiene uses tmp `--skills` and never `--apply-skills`. Release proof is `python3 tests/test_release.py`. Do not run `scripts/release.sh` to completion from nested grok.
 

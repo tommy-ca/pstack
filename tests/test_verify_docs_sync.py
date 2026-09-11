@@ -83,6 +83,7 @@ def test_guide_06_is_three_planes() -> None:
     assert "/create-verification-skill" in app
     assert ".grok/skills/verify-pstack/" in plugin
     assert "verify.py doctor" in plugin
+    assert "verify.py run" in plugin
     assert "leftover" in plugin.lower()
     assert "Plugin doctor lives at `.grok/skills/verify-pstack/`" in plugin
     assert "Do not ship it under `skills/`." in plugin
