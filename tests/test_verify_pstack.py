@@ -88,6 +88,7 @@ def test_banned_argv_catches_git_c_worktree_remove() -> None:
     mod = load_lever()
     ban = "do not git worktree remove"
     assert mod.banned_argv(["git", "-C", "/tmp/x", "worktree", "remove"]) == ban
+    assert mod.banned_argv(["/usr/bin/git", "-C", "/tmp/x", "worktree", "remove"]) == ban
     assert mod.banned_argv(["git", "worktree", "remove"]) == ban
     assert mod.banned_argv(["git", "worktree", "list"]) is None
 
