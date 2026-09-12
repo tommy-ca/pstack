@@ -1,6 +1,6 @@
 ---
 name: verify-pstack
-description: "Use when verifying this pstack Grok plugin, leftover Cursor harness call sites may still be live (leftover-scanner is Cursor harness token doctor, not git leftover clones or disk prune), plugin doctor is in doubt, refresh-hygiene, upstream pin, upstream recipe, or release-tag checks are needed, or an agent reaches for grok plugin validate, grok inspect, or pytest as a substitute for scripts/verify-harness.py."
+description: "Use when verifying this pstack Grok plugin, leftover Cursor harness call sites may still be live (leftover-scanner is Cursor harness token doctor), plugin doctor is in doubt, refresh-hygiene, upstream pin, upstream recipe, or release-tag checks are needed, or an agent reaches for grok plugin validate, grok inspect, or pytest as a substitute for scripts/verify-harness.py."
 disable-model-invocation: true
 ---
 
@@ -52,6 +52,7 @@ Re-run doctor after any failed drive, and before the first drive of a run.
 | pytest already covers leftover tokens | `tests/test_verify_harness.py` is not `scripts/verify-harness.py` walking the tree. Run the scanner. |
 | TEST-PLAN says verify-harness is not a pass gate | EDITH live-CLI gates are a different check. This doctor still requires leftover `PASS`. |
 | Static scan is not a user path | The operator path is `python3 scripts/verify-harness.py`. Drive it. |
+| leftover-clone or worktree-drop leftover_count | leftover-scanner is Cursor harness token doctor. Isolation reclaim is worktree-cleanup. |
 | I will run leftover scanner later | Doctor first. A drive without leftover `PASS` is invalid. |
 
 ## Drive
