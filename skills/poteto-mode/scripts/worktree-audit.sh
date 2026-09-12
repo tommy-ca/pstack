@@ -7,6 +7,10 @@
 # Usage: worktree-audit.sh [repo-path]   (defaults to the current repo)
 set -u
 
+here=$(cd "$(dirname "$0")" && pwd)
+# shellcheck source=leftover-clone.sh
+. "$here/leftover-clone.sh"
+
 repo="${1:-$(git rev-parse --show-toplevel 2>/dev/null)}"
 [ -z "$repo" ] && { echo "not in a git repo; pass a repo path" >&2; exit 1; }
 cd "$repo" || exit 1
@@ -161,11 +165,7 @@ printf "SIZE\tAGE\tMERGED\tDIRTY\tREMOTE\tPR\tLAST_CHAT\tBUCKET\tWORKTREE\n"
 			[ -n "$d" ] || continue
 			d=$(abs_dir "$d")
 			listed "$d" && continue
-			case "$d" in
-				"$overlay"|"$overlay"/*) continue ;;
-			esac
-			[ -d "$d/.git" ] || continue
-			[ ! -f "$d/.git" ] || continue
+			is_leftover_clone "$d" "$repo" "$overlay" || continue
 			emit_row "$d" clone
 		done < <(find "$leftover_parent" -maxdepth 1 -mindepth 1 -type d | sort)
 	fi
