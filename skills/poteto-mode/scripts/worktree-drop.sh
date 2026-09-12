@@ -1,14 +1,19 @@
 #!/usr/bin/env bash
 # Usage:
 #   worktree-drop.sh --repo <primary> --dry-run|--apply \
-#     --expect-registered N --expect-leftover N [--leftover-parent DIR]
+#     --expect-registered N --expect-leftover N [--leftover-parent DIR] [--path DIR ...]
 set -euo pipefail
+
+here=$(cd "$(dirname "$0")" && pwd)
+# shellcheck source=leftover-clone.sh
+. "$here/leftover-clone.sh"
 
 repo=""
 mode=""
 expect_registered=""
 expect_leftover=""
 leftover_parent=""
+paths=()
 
 while [ $# -gt 0 ]; do
 	case "$1" in
@@ -26,17 +31,43 @@ while [ $# -gt 0 ]; do
 		--expect-registered) expect_registered="${2:?}"; shift 2 ;;
 		--expect-leftover) expect_leftover="${2:?}"; shift 2 ;;
 		--leftover-parent) leftover_parent="${2:?}"; shift 2 ;;
+		--path) paths+=("${2:?}"); shift 2 ;;
 		*) echo "unknown arg: $1" >&2; exit 2 ;;
 	esac
 done
 
 [ -n "$repo" ] && [ -n "$mode" ] && [ -n "$expect_registered" ] && [ -n "$expect_leftover" ] || {
-	echo "usage: $0 --repo DIR --dry-run|--apply --expect-registered N --expect-leftover N [--leftover-parent DIR]" >&2
+	echo "usage: $0 --repo DIR --dry-run|--apply --expect-registered N --expect-leftover N [--leftover-parent DIR] [--path DIR ...]" >&2
 	exit 2
 }
 
+case "$expect_registered" in
+	''|*[!0-9]*)
+		echo "refusing: --expect-registered is not a non-negative integer: $expect_registered" >&2
+		exit 1
+		;;
+esac
+case "$expect_leftover" in
+	''|*[!0-9]*)
+		echo "refusing: --expect-leftover is not a non-negative integer: $expect_leftover" >&2
+		exit 1
+		;;
+esac
+
 [ -d "$repo" ] || { echo "refusing: --repo is not a directory: $repo" >&2; exit 1; }
 repo=$(cd "$repo" && pwd -P)
+
+case "$repo" in
+	*/.worktrees|*/.worktrees/*)
+		echo "refusing: --repo $repo is under .worktrees" >&2
+		exit 1
+		;;
+esac
+
+if [ -f "$repo/.git/grok-worktree-source" ]; then
+	echo "refusing: --repo $repo is a leftover isolation clone" >&2
+	exit 1
+fi
 
 common=$(cd "$repo" && cd "$(git rev-parse --git-common-dir)" && pwd -P)
 [ "$common" = "$repo/.git" ] || {
@@ -51,10 +82,6 @@ primary=$(cd "$primary" && pwd -P)
 	echo "refusing: porcelain primary $primary is not --repo $repo" >&2
 	exit 1
 }
-if [ -f "$repo/.git/grok-worktree-source" ]; then
-	echo "refusing: --repo $repo is a leftover isolation clone" >&2
-	exit 1
-fi
 
 overlay="$repo/.worktrees"
 if [ -n "$leftover_parent" ]; then
@@ -110,24 +137,8 @@ while IFS= read -r wt; do
 		echo "refusing: would remove primary $wt" >&2
 		exit 1
 	fi
-	if path_in_use "$wt"; then
-		echo "refusing: $wt is a process cwd" >&2
-		exit 1
-	fi
 	remove_registered+=("$wt")
 done < <(list_registered)
-
-is_leftover_clone() {
-	local d="$1" src
-	[ -d "$d/.git" ] || return 1
-	[ ! -f "$d/.git" ] || return 1
-	case "$d" in
-		"$overlay"|"$overlay"/*) return 1 ;;
-	esac
-	[ -f "$d/.git/grok-worktree-source" ] || return 1
-	src=$(tr -d '\n' < "$d/.git/grok-worktree-source")
-	[ "$src" = "$repo" ]
-}
 
 in_porcelain() {
 	local d="$1" live
@@ -148,11 +159,7 @@ classify_leftovers() {
 		[ -n "$d" ] || continue
 		d=$(cd "$d" && pwd -P)
 		in_porcelain "$d" && continue
-		is_leftover_clone "$d" || continue
-		if path_in_use "$d"; then
-			echo "refusing: leftover $d is a process cwd" >&2
-			exit 1
-		fi
+		is_leftover_clone "$d" "$repo" "$overlay" || continue
 		remove_leftover+=("$d")
 	done < <(find "$leftover_parent" -maxdepth 1 -mindepth 1 -type d | sort)
 }
@@ -166,6 +173,63 @@ fi
 if [ "${#remove_leftover[@]}" -ne "$expect_leftover" ]; then
 	echo "refusing: leftover_count ${#remove_leftover[@]} != --expect-leftover $expect_leftover" >&2
 	exit 1
+fi
+
+if [ "$mode" = apply ] && [ "${#paths[@]}" -eq 0 ]; then
+	if [ "${#remove_registered[@]}" -ne 0 ] || [ "${#remove_leftover[@]}" -ne 0 ]; then
+		echo "refusing: --apply requires at least one --path" >&2
+		exit 1
+	fi
+fi
+
+path_in_classified() {
+	local p="$1" candidate
+	for candidate in "${remove_registered[@]+"${remove_registered[@]}"}"; do
+		[ "$p" = "$candidate" ] && return 0
+	done
+	for candidate in "${remove_leftover[@]+"${remove_leftover[@]}"}"; do
+		[ "$p" = "$candidate" ] && return 0
+	done
+	return 1
+}
+
+target_registered=()
+target_leftover=()
+if [ "${#paths[@]}" -eq 0 ]; then
+	if [ "${#remove_registered[@]}" -gt 0 ]; then
+		target_registered=("${remove_registered[@]}")
+	fi
+	if [ "${#remove_leftover[@]}" -gt 0 ]; then
+		target_leftover=("${remove_leftover[@]}")
+	fi
+else
+	seen=""
+	for p in "${paths[@]}"; do
+		[ -d "$p" ] || {
+			echo "refusing: --path is not a directory: $p" >&2
+			exit 1
+		}
+		p=$(cd "$p" && pwd -P)
+		case "$seen" in
+			*"|$p|"*) continue ;;
+		esac
+		path_in_classified "$p" || {
+			echo "refusing: unknown --path $p" >&2
+			exit 1
+		}
+		seen="${seen}|$p|"
+		matched=0
+		for candidate in "${remove_registered[@]+"${remove_registered[@]}"}"; do
+			if [ "$p" = "$candidate" ]; then
+				target_registered+=("$p")
+				matched=1
+				break
+			fi
+		done
+		if [ "$matched" -eq 0 ]; then
+			target_leftover+=("$p")
+		fi
+	done
 fi
 
 printf "primary\t%s\n" "$primary"
@@ -182,8 +246,12 @@ run() {
 	fi
 }
 
-if [ "${#remove_registered[@]}" -gt 0 ]; then
-	for wt in "${remove_registered[@]}"; do
+if [ "${#target_registered[@]}" -gt 0 ]; then
+	for wt in "${target_registered[@]}"; do
+		if path_in_use "$wt"; then
+			echo "refusing: $wt is a process cwd" >&2
+			exit 1
+		fi
 		if [ "$mode" = apply ]; then
 			in_porcelain "$wt" || {
 				echo "refusing: $wt vanished from porcelain before remove" >&2
@@ -213,10 +281,10 @@ else
 	printf "DRY\tgit -C %s worktree prune\n" "$repo"
 fi
 
-if [ "${#remove_leftover[@]}" -gt 0 ]; then
-	for d in "${remove_leftover[@]}"; do
+if [ "${#target_leftover[@]}" -gt 0 ]; then
+	for d in "${target_leftover[@]}"; do
 		if [ "$mode" = apply ]; then
-			is_leftover_clone "$d" || {
+			is_leftover_clone "$d" "$repo" "$overlay" || {
 				echo "refusing: $d is not a leftover clone at rm time" >&2
 				exit 1
 			}
@@ -231,6 +299,10 @@ if [ "${#remove_leftover[@]}" -gt 0 ]; then
 			printf "RUN\trm -rf -- %s\n" "$d"
 			rm -rf -- "$d"
 		else
+			if path_in_use "$d"; then
+				echo "refusing: leftover $d is a process cwd" >&2
+				exit 1
+			fi
 			printf "DRY\trm -rf -- %s\n" "$d"
 		fi
 	done

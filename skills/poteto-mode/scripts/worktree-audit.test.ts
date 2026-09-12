@@ -128,6 +128,19 @@ describe("worktree-audit", () => {
       git(clone, ["add", "."]);
       git(clone, ["commit", "-m", "clone"]);
 
+      const wrongSource = join(leftoverParent, "wrong-source");
+      await mkdir(wrongSource, { recursive: true });
+      git(wrongSource, ["init", "--initial-branch=main"]);
+      git(wrongSource, ["config", "user.name", "Audit Test"]);
+      git(wrongSource, ["config", "user.email", "audit@example.com"]);
+      await writeFile(join(wrongSource, "wrong.txt"), "wrong\n");
+      git(wrongSource, ["add", "."]);
+      git(wrongSource, ["commit", "-m", "wrong"]);
+      await writeFile(
+        join(wrongSource, ".git", "grok-worktree-source"),
+        "/other/repo\n"
+      );
+
       const gitfileDir = join(leftoverParent, "gitfile");
       await mkdir(gitfileDir);
       await writeFile(join(gitfileDir, ".git"), "gitdir: /tmp/not-a-worktree\n");
@@ -158,6 +171,9 @@ describe("worktree-audit", () => {
       expect(linkedFields[linkedFields.length - 1]).toBe(worktree);
 
       expect(lines.some((line) => line.endsWith(`\t${gitfileDir}`))).toBe(false);
+      expect(lines.some((line) => line.endsWith(`\t${wrongSource}`))).toBe(
+        false
+      );
       expect(existsSync(clone)).toBe(true);
     } finally {
       await rm(directory, { recursive: true, force: true });
