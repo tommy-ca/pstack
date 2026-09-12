@@ -128,9 +128,19 @@ def banned_argv(argv: Sequence[str]) -> str | None:
         return "do not run scripts/release.sh from verify"
     if "mise use -g" in joined or (len(argv) >= 3 and "mise" in argv and "use" in argv and "-g" in argv):
         return "do not run mise use -g"
-    seq = iter(os.path.basename(a) for a in argv)
-    if "git" in seq and "worktree" in seq and "remove" in seq:
-        return "do not git worktree remove"
+    saw_git = False
+    saw_worktree = False
+    for a in argv:
+        if not saw_git:
+            if os.path.basename(a) == "git":
+                saw_git = True
+            continue
+        if not saw_worktree:
+            if a == "worktree":
+                saw_worktree = True
+            continue
+        if a == "remove":
+            return "do not git worktree remove"
     return None
 
 
