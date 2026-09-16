@@ -20,7 +20,7 @@ Open a todolist whose first item is to read the Principles section of the **pote
 
 Ground first, then commit. Don't start the run until you can state:
 
-- The definition of done as a falsifiable predicate (the **prove-it-works** principle skill). "Done well" has to be checkable.
+- The definition of done as a falsifiable predicate (the **prove-it-works** principle skill). "Done well" has to be checkable. The predicate fails while inspect lists `collidesWith` on a pstack plugin skill. An enabled plugin path does not pass that.
 - Scope, quantified: rough units and effort, plus the blockers grounding surfaced. Raise them before spending hours, not after fifty doomed commits.
 - The rigor level, biased high. One-way doors and high blast radius get more; reversible low-stakes steps get less. Rigor is gates and artifacts, not "try harder".
 
@@ -42,7 +42,7 @@ Then put the design into motion. Add its steps to the todolist as concrete items
 Each unit is an experiment: state the hypothesis, make the smallest change, measure against the predicate on the real artifact, keep it if it advanced, revert it if it didn't.
 Apply the **sequence-verifiable-units** principle skill, verifying each unit before starting the next instead of batching checks at the end.
 
-- Verify by inspecting the artifact, never a self-report. When something passes too easily, suspect the observation method before the system. A blank screenshot passes a lazy gate.
+- Verify by inspecting the artifact, never a self-report. When something passes too easily, suspect the observation method before the system. A blank screenshot passes a lazy gate. Re-read live inspect `collidesWith`. A missing overlay on disk is not proof if inspect still lists the collision.
 - Pair delegated work with a judge and audit the delegates' artifacts yourself before trusting them. If a worker games the gate, reset and harden the contract. If the gate itself is wrong, fix the gate in its own change rather than routing around it.
 - A verdict is VERIFIED, NOT VERIFIED, or INCONCLUSIVE. Inconclusive is not a pass. Don't hide a negative.
 
@@ -52,6 +52,6 @@ Log the run via the **show-me-your-work** skill, one canonical TSV with a row pe
 
 ## Phase E: Verify and hand back
 
-Check the whole against the Phase A predicate on the real product, not just the harness. Encode any recurring correction as a gate, a lint rule, a check, or a script, so the win can't silently regress (the **encode-lessons-in-structure** principle skill).
+Check the whole against the Phase A predicate on the real product, not just the harness. Re-check inspect `collidesWith` on the live product. Encode any recurring correction as a gate, a lint rule, a check, or a script, so the win can't silently regress (the **encode-lessons-in-structure** principle skill).
 
 **Reply:** the playbook you designed, the rigor level and why, the decision-trail path, what's verified against the predicate, and what's still open.

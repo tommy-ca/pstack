@@ -63,6 +63,8 @@ The explanation uses the sections defined in `references/explainer-prompt.md`, d
 
 **Gotchas (Grok sandbox).** Config `[sandbox] profile` and nested `grok inspect` are not this TUI. Measure `argv`, `__GROK_INSIDE_BWRAP`, session `summary.json` `sandbox_profile`, `/proc/self/mountinfo`, and `~/.grok/sandbox-events.jsonl`.
 
+**Gotchas (skill provenance).** Resolve the symlink and inspect `source.path` before calling a `~/.grok/skills` path a personal skill. A `collidesWith` row is not provenance. Do not copy plugin skills into `~/.grok/skills`.
+
 ## Critique Mode
 
 Triggered when the user asks for architectural issues, problems, or improvements, not just understanding.
