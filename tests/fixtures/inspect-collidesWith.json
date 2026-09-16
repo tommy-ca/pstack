@@ -1,0 +1,24 @@
+{
+  "agents": [
+    { "name": "pstack:swarm-workers" }
+  ],
+  "plugins": [
+    {
+      "name": "pstack",
+      "enabled": true,
+      "path": "/tmp/installed-plugins/pstack-clean"
+    }
+  ],
+  "skills": [
+    {
+      "name": "poteto-mode",
+      "source": {
+        "type": "plugin",
+        "plugin_name": "pstack",
+        "path": "/tmp/installed-plugins/pstack-clean/skills/poteto-mode/SKILL.md"
+      },
+      "collidesWith": "poteto-mode",
+      "invocableAs": "pstack:poteto-mode"
+    }
+  ]
+}

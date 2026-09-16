@@ -1,0 +1,12 @@
+{
+  "agents": [
+    { "name": "pstack:swarm-workers" }
+  ],
+  "plugins": [
+    {
+      "name": "pstack",
+      "enabled": true,
+      "path": "/opt/grok/plugins/marketplaces/pstack-claude/plugins/pstack"
+    }
+  ]
+}
