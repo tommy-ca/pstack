@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import subprocess
 import sys
 from pathlib import Path
@@ -9,7 +10,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts" / "check-plugin-agents.py"
 CLAUDE = ROOT / "tests" / "fixtures" / "inspect-claude-marketplace-pstack.json"
-CHECKOUT = ROOT / "tests" / "fixtures" / "inspect-checkout-pstack.json"
 
 
 def test_claude_marketplace_pstack_fails_closed() -> None:
@@ -25,9 +25,34 @@ def test_claude_marketplace_pstack_fails_closed() -> None:
     assert "pstack-claude/plugins/pstack" in got.stderr
 
 
-def test_checkout_pstack_passes() -> None:
+def test_name_without_enabled_path_fails() -> None:
     got = subprocess.run(
-        [sys.executable, str(SCRIPT), "--inspect-json", str(CHECKOUT)],
+        [
+            sys.executable,
+            str(SCRIPT),
+            "--inspect-json",
+            str(ROOT / "tests" / "fixtures" / "inspect-name-only.json"),
+        ],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert got.returncode == 1, got.stdout + got.stderr
+    assert "no enabled pstack plugin path" in got.stderr
+
+
+def test_checkout_pstack_passes(tmp_path: Path) -> None:
+    payload = {
+        "agents": [{"name": "pstack:swarm-workers"}],
+        "plugins": [
+            {"name": "pstack", "enabled": True, "path": str(ROOT)},
+        ],
+    }
+    inspect = tmp_path / "inspect.json"
+    inspect.write_text(json.dumps(payload), encoding="utf-8")
+    got = subprocess.run(
+        [sys.executable, str(SCRIPT), "--inspect-json", str(inspect)],
         cwd=ROOT,
         capture_output=True,
         text=True,

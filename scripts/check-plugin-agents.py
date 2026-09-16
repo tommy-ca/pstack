@@ -65,18 +65,22 @@ def main() -> int:
         return 1
     names = agent_names(data)
     paths = enabled_pstack_paths(data)
-    if NEED in names:
+    if not paths:
+        print("FAIL plugin-agents no enabled pstack plugin path", file=sys.stderr)
+        return 1
+    stem = Path(paths[0]) / "agents" / "swarm-workers.md"
+    if NEED in names and stem.is_file():
         print(f"PASS plugin-agents {NEED}")
-        if paths:
-            print("enabled pstack path: " + paths[0])
+        print("enabled pstack path: " + paths[0])
         return 0
     print(f"FAIL plugin-agents missing {NEED}", file=sys.stderr)
-    if paths:
-        print("enabled pstack path: " + paths[0], file=sys.stderr)
-        print(
-            "Install this checkout with grok --sandbox off plugin install <root> --trust",
-            file=sys.stderr,
-        )
+    print("enabled pstack path: " + paths[0], file=sys.stderr)
+    if not stem.is_file():
+        print("enabled pstack has no agents/swarm-workers.md", file=sys.stderr)
+    print(
+        "Install this checkout with grok --sandbox off plugin install <root> --trust",
+        file=sys.stderr,
+    )
     return 1
 
 
