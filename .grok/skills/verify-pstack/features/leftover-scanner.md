@@ -38,5 +38,6 @@ Preconditions:
 - Scanner skip files are `HARNESS.md`, `UPSTREAM`, `TEST-PLAN.md`, `README.md`, `README.zh-CN.md`, `codex-tools.md`, `provider-dispatch.md`, and `classification.tsv`. Those names may mention Cursor leftovers. Skills markdown must not keep them as call sites.
 - Allowed mentions such as `There is no cursor-team-kit` and `classification.tsv` notes must not be treated as live hits.
 - leftover-scanner is not leftover-clone and not leftover_count from worktree-drop. Isolation reclaim is worktree-cleanup.
+- `grok inspect --json` `.agents[].name` must include `pstack:swarm-workers` after enable. Missing that name means Grok is not loading https://github.com/tommy-ca/pstack. `python3 scripts/check-plugin-agents.py` is the enable check. It is not leftover scanner.
 - Later `drive` on the same `--run-id` for other features refuses if leftover scanner did not PASS.
 - `HARNESS.md`, `scripts/`, and `automations/benny` may name Cursor leftovers. Skills markdown must not keep them as call sites.

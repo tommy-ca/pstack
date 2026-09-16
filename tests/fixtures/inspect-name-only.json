@@ -1,0 +1,6 @@
+{
+  "agents": [
+    { "name": "pstack:swarm-workers" }
+  ],
+  "plugins": []
+}
