@@ -1,0 +1,12 @@
+{
+  "agents": [
+    { "name": "pstack:swarm-workers" }
+  ],
+  "plugins": [
+    {
+      "name": "pstack",
+      "enabled": true,
+      "path": "/home/operator/.grok/plugins/pstack"
+    }
+  ]
+}
