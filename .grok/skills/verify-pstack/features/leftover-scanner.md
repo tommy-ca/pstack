@@ -8,7 +8,7 @@ Leftover scan walks this plugin tree for live Cursor harness call sites and chec
 - `leftover-playbooks` requires 22 named playbooks plus `opening-a-pr.md`.
 - `leftover-principles` requires 23 `principle-*` skill directories.
 - `leftover-plugin-json` requires `plugin.json` name `pstack` and skills paths `./skills/` plus `./automations/benny-grok/skills/`. It must not list `.grok/skills`.
-- `leftover-pass-line` prints `PASS` and exits 0.
+- `leftover-pass-line` prints `PASS` and exits 0. That PASS is checkout token cleanliness, not catalog identity.
 
 ## How to get to it (user POV)
 
@@ -34,10 +34,10 @@ Preconditions:
 - `grok plugin validate .` and `grok inspect --json` are not leftover scanner. Validate is doctor companion only. Inspect `enabled` is trust.
 - `uv run --with pytest pytest tests/test_verify_harness.py` is not leftover scanner. The tree walk is `scripts/verify-harness.py`.
 - TEST-PLAN.md says verify-harness is not an EDITH pass gate. This map still requires leftover `PASS` as doctor.
-- Scanner skip dirs are `.git`, `automations`, `scripts`, `.superpowers`, `.worktrees`, `openspec`, and `.audit`. A leftover `PASS` does not mean skipped dirs are clean. Skills markdown is not a skip dir. `docs/` is walked. `.grok` is not a skip dir. Project-local skill markdown stays scanned. Doctor still fails if `.grok/workflows` exists.
+- Scanner skip dirs are `.git`, `automations`, `scripts`, `.superpowers`, `.worktrees`, `openspec`, and `.audit`. A leftover `PASS` does not mean skipped dirs are clean. Skills markdown is not a skip dir. `docs/` is walked. `.grok` is not a skip dir. Project-local skill markdown stays scanned. Doctor still fails if `.grok/workflows` exists. The scanner does not walk `$HOME`.
 - Scanner skip files are `HARNESS.md`, `UPSTREAM`, `TEST-PLAN.md`, `README.md`, `README.zh-CN.md`, `codex-tools.md`, `provider-dispatch.md`, and `classification.tsv`. Those names may mention Cursor leftovers. Skills markdown must not keep them as call sites.
 - Allowed mentions such as `There is no cursor-team-kit` and `classification.tsv` notes must not be treated as live hits.
 - leftover-scanner is not leftover-clone and not leftover_count from worktree-drop. Isolation reclaim is worktree-cleanup.
-- `grok inspect --json` `.agents[].name` must include `pstack:swarm-workers` after enable. Missing that name means Grok is not loading https://github.com/tommy-ca/pstack. `python3 scripts/check-plugin-agents.py` is the enable check. It is not leftover scanner.
+- Leftover PASS is checkout token cleanliness, not catalog identity. After enable, `grok inspect --json` `.agents[].name` must include `pstack:swarm-workers`. Read inspect `plugins[].path` and `skills[]` `collidesWith`. `[compat.claude] skills=false` does not hide `~/.grok/skills`. Missing `pstack:swarm-workers` means Grok is not loading https://github.com/tommy-ca/pstack. `python3 scripts/check-plugin-agents.py` is the enable check. It is not leftover scanner.
 - Later `drive` on the same `--run-id` for other features refuses if leftover scanner did not PASS.
 - `HARNESS.md`, `scripts/`, and `automations/benny` may name Cursor leftovers. Skills markdown must not keep them as call sites.
