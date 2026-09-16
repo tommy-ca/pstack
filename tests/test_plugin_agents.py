@@ -1,5 +1,3 @@
-"""Enabled grok pstack must be the intended tree, not a marketplace or overlay."""
-
 from __future__ import annotations
 
 import json
@@ -207,6 +205,27 @@ def test_installed_plugins_tree_passes(tmp_path: Path) -> None:
     got = run_check(write_inspect(tmp_path, payload))
     assert got.returncode == 0, got.stdout + got.stderr
     assert got.stdout.splitlines()[0] == "PASS plugin-agents pstack:swarm-workers"
+
+
+def test_tilde_installed_plugins_path_passes(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setenv("HOME", str(tmp_path))
+    tree = tree_with_swarm_workers(
+        tmp_path / ".grok" / "installed-plugins" / "pstack-6ff43f58"
+    )
+    payload = {
+        "agents": [{"name": "pstack:swarm-workers"}],
+        "plugins": [
+            {
+                "name": "pstack",
+                "enabled": True,
+                "path": "~/.grok/installed-plugins/pstack-6ff43f58",
+            },
+        ],
+    }
+    got = run_check(write_inspect(tmp_path, payload))
+    assert got.returncode == 0, got.stdout + got.stderr
+    assert got.stdout.splitlines()[0] == "PASS plugin-agents pstack:swarm-workers"
+    assert str(tree) in got.stdout or "~/.grok/installed-plugins/pstack-6ff43f58" in got.stdout
 
 
 def test_committed_marketplace_fixture_fails() -> None:

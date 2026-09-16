@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-"""Fail unless enabled grok pstack is the intended tree with pstack:swarm-workers."""
 
 from __future__ import annotations
 
@@ -9,7 +8,6 @@ import os
 import subprocess
 import sys
 from pathlib import Path
-from typing import Literal
 
 NEED = "pstack:swarm-workers"
 INSTALL = (
@@ -21,18 +19,6 @@ OVERLAY = (
     "Remove the overlapping user overlay. "
     "Do not copy plugin skills into ~/.grok/skills."
 )
-
-PathKind = Literal[
-    "installed-plugins",
-    "checkout",
-    "marketplace",
-    "home-plugins-symlink",
-    "other",
-]
-KIND_FAIL = {
-    "marketplace": "FAIL plugin-agents marketplace path",
-    "home-plugins-symlink": "FAIL plugin-agents ~/.grok/plugins/pstack bind",
-}
 
 
 def load_inspect(path: Path | None) -> object:
@@ -77,8 +63,12 @@ def agent_names(data: dict) -> list[str]:
     return names
 
 
+def normalize_path(path: str) -> str:
+    return os.path.normpath(os.path.expanduser(path))
+
+
 def is_marketplace_tree(path: str) -> bool:
-    parts = Path(path).expanduser().parts
+    parts = Path(normalize_path(path)).parts
     if "marketplaces" not in parts:
         return False
     idx = parts.index("marketplaces")
@@ -86,25 +76,16 @@ def is_marketplace_tree(path: str) -> bool:
 
 
 def is_home_plugins_bind(path: str) -> bool:
-    posix = os.path.normpath(os.path.expanduser(path)).replace("\\", "/")
-    if posix.rstrip("/").endswith("/.grok/plugins/pstack"):
-        return True
-    bind = Path.home() / ".grok" / "plugins" / "pstack"
-    return Path(posix) == Path(os.path.normpath(str(bind)))
+    posix = normalize_path(path).replace("\\", "/").rstrip("/")
+    return posix.endswith("/.grok/plugins/pstack")
 
 
-def classify_path(path: str) -> PathKind:
+def path_identity_fault(path: str) -> str | None:
     if is_marketplace_tree(path):
-        return "marketplace"
+        return "FAIL plugin-agents marketplace path"
     if is_home_plugins_bind(path):
-        return "home-plugins-symlink"
-    parts = Path(path).expanduser().parts
-    if "installed-plugins" in parts:
-        return "installed-plugins"
-    root = Path(path)
-    if (root / "plugin.json").is_file() and (root / "agents").is_dir():
-        return "checkout"
-    return "other"
+        return "FAIL plugin-agents ~/.grok/plugins/pstack bind"
+    return None
 
 
 def plugin_name_of(skill: dict) -> str | None:
@@ -163,7 +144,7 @@ def main() -> int:
     stderr: list[str] = []
     path_blocked = False
     for path in paths:
-        fault = KIND_FAIL.get(classify_path(path))
+        fault = path_identity_fault(path)
         if fault is not None:
             stderr.append(fault)
             path_blocked = True
@@ -173,7 +154,9 @@ def main() -> int:
         stderr.append("FAIL plugin-agents collidesWith " + ", ".join(collisions))
 
     missing_files = [
-        path for path in paths if not (Path(path) / "agents" / "swarm-workers.md").is_file()
+        path
+        for path in paths
+        if not (Path(normalize_path(path)) / "agents" / "swarm-workers.md").is_file()
     ]
     agent_ok = NEED in names and not missing_files
     if not path_blocked and not agent_ok:
