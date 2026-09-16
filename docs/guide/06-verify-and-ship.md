@@ -66,7 +66,7 @@ python3 .grok/skills/verify-pstack/scripts/verify.py run --root .
 
 That is leftover doctor, then leftover-scanner, upstream-pin, upstream-recipe, refresh-hygiene, and release-tag, then cleanup. Evidence survives. Leftover stdout must start with `PASS` and include `playbooks: 22 named + opening-a-pr`, `principles: 23`, and `plugin.json name: pstack`.
 
-`grok inspect --json` proves enable and trust. It is not leftover scanner. Plugin-agents uses inspect to require `pstack:swarm-workers` from https://github.com/tommy-ca/pstack. `grok plugin validate` alone is not leftover scanner. `pytest` and `tests/test_verify_harness.py` are not leftover scanner.
+`grok inspect --json` proves enable and trust. It is not leftover scanner. Leftover PASS is checkout token cleanliness, not catalog identity. Plugin-agents uses inspect to require `pstack:swarm-workers` from https://github.com/tommy-ca/pstack. The widened enable check fails on a marketplace `plugins[].path`, a `~/.grok/plugins/pstack` bind, and pstack `collidesWith`. `grok plugin validate` alone is not leftover scanner. `pytest` and `tests/test_verify_harness.py` are not leftover scanner.
 
 Pin proof is `python3 scripts/sync-from-upstream.py --pin`. Recipe proof is `--recipe` stdout needles plus argv without `--log`. Hygiene uses tmp `--skills` and never `--apply-skills`. Release proof is `python3 tests/test_release.py`. Do not run `scripts/release.sh` to completion from nested grok.
 

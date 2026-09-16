@@ -20,7 +20,7 @@ Need `python3` and `grok` on `PATH`. Refresh-hygiene also needs `uv`. Do not run
 
 Each drive is its own process. Isolation is `--run-id`, not `--checkout`. There is no CDP checkout flag. Two runs may share a checkout when they use different `--run-id` values. There is no long-lived instance to keep alive. Refuse a second drive that would share live `~/.grok/skills` or the user's overlay dest.
 
-Ready means leftover scanner printed `PASS` and exited 0. Run doctor until that is true.
+Ready means leftover scanner printed `PASS` and exited 0. That PASS is checkout token cleanliness, not catalog identity. Run doctor until leftover PASS is true.
 
 ## Doctor
 
@@ -32,7 +32,7 @@ python3 .grok/skills/verify-pstack/scripts/verify.py doctor --root .
 
 That runs `python3 scripts/verify-harness.py`, then `grok plugin validate .`. Leftover stdout must start with `PASS` and include `playbooks: 22 named + opening-a-pr`, `principles: 23`, and `plugin.json name: pstack`. Leftover exit 0. Validate stdout contains `Plugin manifest is valid.` Exit 0.
 
-`python3 scripts/check-plugin-agents.py` is not leftover scanner. It is the enable check for workflow `agent_type` `pstack:swarm-workers`. If inspect lacks that name, Grok is not loading https://github.com/tommy-ca/pstack.
+`python3 scripts/check-plugin-agents.py` is not leftover scanner. It is the enable check for workflow `agent_type` `pstack:swarm-workers`. It reads inspect `plugins[].path` and `skills[]` `collidesWith`. `[compat.claude] skills=false` does not hide `~/.grok/skills`. If inspect lacks `pstack:swarm-workers`, Grok is not loading https://github.com/tommy-ca/pstack. `grok plugin marketplace add` is catalog-only. Do not treat it as plugin install.
 
 Later `drive` on the same `--run-id` refuses if leftover scanner did not PASS. `drive leftover-scanner` may run the scanner without a prior doctor log. Other features still require that leftover `PASS` in this run's doctor evidence.
 
