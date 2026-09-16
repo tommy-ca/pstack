@@ -20,7 +20,7 @@ Open a todolist whose first item is to read the Principles section of the **pote
 
 Ground first, then commit. Don't start the run until you can state:
 
-- The definition of done as a falsifiable predicate (the **prove-it-works** principle skill). "Done well" has to be checkable. Include inspect `skills[]` `collidesWith` in that predicate. An enabled plugin path alone does not certify remaining overlay bodies.
+- The definition of done as a falsifiable predicate (the **prove-it-works** principle skill). "Done well" has to be checkable. The predicate fails while inspect lists `collidesWith` on a pstack plugin skill. An enabled plugin path does not pass that.
 - Scope, quantified: rough units and effort, plus the blockers grounding surfaced. Raise them before spending hours, not after fifty doomed commits.
 - The rigor level, biased high. One-way doors and high blast radius get more; reversible low-stakes steps get less. Rigor is gates and artifacts, not "try harder".
 
