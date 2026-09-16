@@ -78,7 +78,7 @@ def main() -> int:
     if not stem.is_file():
         print("enabled pstack has no agents/swarm-workers.md", file=sys.stderr)
     print(
-        "Install this checkout with grok --sandbox off plugin install <root> --trust",
+        "Install https://github.com/tommy-ca/pstack with grok --sandbox off plugin install tommy-ca/pstack --trust",
         file=sys.stderr,
     )
     return 1

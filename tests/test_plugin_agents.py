@@ -1,4 +1,4 @@
-"""Enabled grok pstack must expose pstack:swarm-workers."""
+"""Enabled grok pstack must be this tommy-ca/pstack checkout."""
 
 from __future__ import annotations
 
@@ -9,12 +9,24 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts" / "check-plugin-agents.py"
-CLAUDE = ROOT / "tests" / "fixtures" / "inspect-claude-marketplace-pstack.json"
 
 
-def test_claude_marketplace_pstack_fails_closed() -> None:
+def test_enabled_tree_without_swarm_workers_fails(tmp_path: Path) -> None:
+    foreign = tmp_path / "other-pstack"
+    (foreign / "agents").mkdir(parents=True)
+    payload = {
+        "agents": [
+            {"name": "pstack:poteto-agent"},
+            {"name": "pstack:comment-sicko"},
+        ],
+        "plugins": [
+            {"name": "pstack", "enabled": True, "path": str(foreign)},
+        ],
+    }
+    inspect = tmp_path / "inspect.json"
+    inspect.write_text(json.dumps(payload), encoding="utf-8")
     got = subprocess.run(
-        [sys.executable, str(SCRIPT), "--inspect-json", str(CLAUDE)],
+        [sys.executable, str(SCRIPT), "--inspect-json", str(inspect)],
         cwd=ROOT,
         capture_output=True,
         text=True,
@@ -22,7 +34,8 @@ def test_claude_marketplace_pstack_fails_closed() -> None:
     )
     assert got.returncode == 1, got.stdout + got.stderr
     assert "pstack:swarm-workers" in got.stderr
-    assert "pstack-claude/plugins/pstack" in got.stderr
+    assert "agents/swarm-workers.md" in got.stderr
+    assert "tommy-ca/pstack" in got.stderr
 
 
 def test_name_without_enabled_path_fails() -> None:

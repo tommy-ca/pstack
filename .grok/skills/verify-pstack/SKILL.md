@@ -32,7 +32,7 @@ python3 .grok/skills/verify-pstack/scripts/verify.py doctor --root .
 
 That runs `python3 scripts/verify-harness.py`, then `grok plugin validate .`. Leftover stdout must start with `PASS` and include `playbooks: 22 named + opening-a-pr`, `principles: 23`, and `plugin.json name: pstack`. Leftover exit 0. Validate stdout contains `Plugin manifest is valid.` Exit 0.
 
-`python3 scripts/check-plugin-agents.py` is not leftover scanner. It is the enable check for workflow `agent_type` `pstack:swarm-workers`. If inspect lists only `pstack:poteto-agent` and `pstack:comment-sicko`, the enabled plugin is the Claude marketplace copy, not this checkout.
+`python3 scripts/check-plugin-agents.py` is not leftover scanner. It is the enable check for workflow `agent_type` `pstack:swarm-workers`. If inspect lacks that name, Grok is not loading https://github.com/tommy-ca/pstack.
 
 Later `drive` on the same `--run-id` refuses if leftover scanner did not PASS. `drive leftover-scanner` may run the scanner without a prior doctor log. Other features still require that leftover `PASS` in this run's doctor evidence.
 
