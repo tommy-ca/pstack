@@ -12,7 +12,7 @@ SCRIPT = ROOT / "scripts" / "check-plugin-agents.py"
 
 
 def test_enabled_tree_without_swarm_workers_fails(tmp_path: Path) -> None:
-    foreign = tmp_path / "other-pstack"
+    foreign = tmp_path / "enabled-tree"
     (foreign / "agents").mkdir(parents=True)
     payload = {
         "agents": [
