@@ -130,8 +130,13 @@ path_in_use() {
 }
 
 remove_registered=()
+stale_missing=()
 while IFS= read -r wt; do
 	[ -n "$wt" ] || continue
+	if [ ! -d "$wt" ]; then
+		stale_missing+=("$wt")
+		continue
+	fi
 	wt=$(cd "$wt" && pwd -P)
 	if [ "$wt" = "$primary" ]; then
 		echo "refusing: would remove primary $wt" >&2
@@ -236,6 +241,10 @@ printf "primary\t%s\n" "$primary"
 printf "mode\t%s\n" "$mode"
 printf "registered_count\t%s\n" "${#remove_registered[@]}"
 printf "leftover_count\t%s\n" "${#remove_leftover[@]}"
+for stale in "${stale_missing[@]+"${stale_missing[@]}"}"; do
+	[ -n "$stale" ] || continue
+	printf "stale-missing\t%s\n" "$stale"
+done
 
 run() {
 	if [ "$mode" = dry-run ]; then
