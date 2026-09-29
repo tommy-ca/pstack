@@ -149,6 +149,7 @@ in_porcelain() {
 	local d="$1" live
 	while IFS= read -r live; do
 		[ -n "$live" ] || continue
+		[ -d "$live" ] || continue
 		live=$(cd "$live" && pwd -P)
 		[ "$d" = "$live" ] && return 0
 	done < <(git -C "$repo" worktree list --porcelain | sed -n 's/^worktree //p')

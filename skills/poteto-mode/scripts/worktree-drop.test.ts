@@ -363,4 +363,63 @@ describe("worktree-drop", () => {
       await rm(directory, { recursive: true, force: true });
     }
   });
+
+  it("drops a leftover clone while a registered directory is already gone", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "worktree-drop-stale-leftover-"));
+    try {
+      const repo = join(directory, "repo");
+      await initRepo(repo);
+      const extra = join(directory, "extra");
+      git(repo, ["worktree", "add", "-b", "feature", extra]);
+      await rm(extra, { recursive: true, force: true });
+
+      const leftoverParent = join(directory, "leftovers");
+      const clone = join(leftoverParent, "clone");
+      await initRepo(clone);
+      await writeFile(join(clone, ".git", "grok-worktree-source"), `${repo}\n`);
+
+      const dry = drop([
+        "--repo",
+        repo,
+        "--dry-run",
+        "--expect-registered",
+        "0",
+        "--expect-leftover",
+        "1",
+        "--leftover-parent",
+        leftoverParent,
+        "--path",
+        clone,
+      ]);
+      expect(dry.exitCode).toBe(0);
+      expect(dry.stdout).toContain(`stale-missing\t${extra}`);
+      expect(dry.stdout).toContain(`rm -rf -- ${clone}`);
+      expect(existsSync(clone)).toBe(true);
+
+      const applied = drop([
+        "--repo",
+        repo,
+        "--apply",
+        "--expect-registered",
+        "0",
+        "--expect-leftover",
+        "1",
+        "--leftover-parent",
+        leftoverParent,
+        "--path",
+        clone,
+      ]);
+      expect(applied.exitCode).toBe(0);
+      expect(existsSync(clone)).toBe(false);
+      const porcelain = git(repo, ["worktree", "list", "--porcelain"]);
+      const trees = porcelain
+        .split("\n")
+        .filter((line) => line.startsWith("worktree "))
+        .map((line) => line.slice("worktree ".length));
+      expect(trees).toEqual([repo]);
+      expect(git(repo, ["branch", "--list", "feature"])).toContain("feature");
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
 });
