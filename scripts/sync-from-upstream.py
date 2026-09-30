@@ -73,9 +73,10 @@ def recipe() -> str:
    Canonical table is
    skills/swarm/references/classification.tsv. Pack interrogate reviewer prompts
    with skills/interrogate/scripts/pack.py.
-   The current compare is official pstack 0.15.1: two new principle leaves
-   (attack-the-premise, test-behavior-not-implementation), a density pass,
-   and the evidence-or-label rule. Skip `make-bot-ui`, `.cursor-plugin/`,
+   The current compare is official pstack packaging 0.15.5 at tree
+   4b4d98e5e3b3c139f63dbc1ce4b538954c8f2f52. This port stays
+   0.15.1-grokbuild.4. Earlier 0.15.1 density, the two principle leaves,
+   and the evidence-or-label rule stay absorbed. Skip `make-bot-ui`, `.cursor-plugin/`,
    `assets/logo.png`, and the entire `advisor/` plugin. Do not overwrite
    HARNESS.md, plugin.json, README.md, README.zh-CN.md, tests/, or scripts/.
    Audit retained `scripts/orch/`, `scripts/watch-pr/`, `check-plan.mjs`, and
@@ -89,7 +90,7 @@ def recipe() -> str:
    That is leftover doctor then Full sweep drive then cleanup on one run-id.
    Leftover doctor runs scripts/verify-harness.py then grok plugin validate.
    Evidence survives. Full sweep walks leftover-scanner, upstream-pin,
-   upstream-recipe, refresh-hygiene, and release-tag.
+   absorbed-intent, upstream-recipe, refresh-hygiene, and release-tag.
 6. Update the `tree` line in UPSTREAM to the new pstack/ commit.
 """
 

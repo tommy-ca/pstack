@@ -606,6 +606,7 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert "Full sweep" in recipe.stdout
     assert "leftover-scanner" in recipe.stdout
     assert "upstream-pin" in recipe.stdout
+    assert "absorbed-intent" in recipe.stdout
     assert "upstream-recipe" in recipe.stdout
     assert "refresh-hygiene" in recipe.stdout
     assert "release-tag" in recipe.stdout
@@ -1168,7 +1169,7 @@ def test_forge_neutral_pr_path_without_graphite() -> None:
 
 def test_upstream_metadata_contract() -> None:
     upstream = (ROOT / "UPSTREAM").read_text(encoding="utf-8")
-    assert "tree 7366ac128bdf95f45e6734f412b49a4031800169" in upstream
+    assert "tree 4b4d98e5e3b3c139f63dbc1ce4b538954c8f2f52" in upstream
     assert "93b00b89ef425a9c1bac0d0b317dfc49c930ac99" in upstream
     root_manifest = json.loads((ROOT / "plugin.json").read_text(encoding="utf-8"))
     root_version = root_manifest["version"]
