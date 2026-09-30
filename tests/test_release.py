@@ -2,6 +2,8 @@
 
 import json
 import re
+import subprocess
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -59,6 +61,29 @@ def test_natives_page_names_plugin_tag() -> None:
     assert "grok --sandbox off plugin tag" in tag_rows[0]
 
 
+def test_port_base_tracks_upstream_packaging() -> None:
+    recipe = subprocess.run(
+        [sys.executable, str(ROOT / "scripts/sync-from-upstream.py"), "--recipe"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert recipe.returncode == 0, recipe.stderr
+    match = re.search(
+        r"official pstack packaging (\d+\.\d+\.\d+)",
+        recipe.stdout,
+    )
+    assert match is not None
+    packaging = match.group(1)
+    version = json.loads((ROOT / "plugin.json").read_text(encoding="utf-8"))[
+        "version"
+    ]
+    assert re.fullmatch(rf"{re.escape(packaging)}-grokbuild\.\d+", version), (
+        version
+    )
+
+
 def test_release_spec_increments_n_when_head_outruns_tag() -> None:
     spec = (ROOT / "openspec/specs/pstack-release-tag/spec.md").read_text(
         encoding="utf-8"
@@ -73,5 +98,6 @@ if __name__ == "__main__":
     test_github_release_workflow_on_version_tags()
     test_plugin_version_is_semver_grokbuild()
     test_natives_page_names_plugin_tag()
+    test_port_base_tracks_upstream_packaging()
     test_release_spec_increments_n_when_head_outruns_tag()
     print("PASS tests/test_release.py")

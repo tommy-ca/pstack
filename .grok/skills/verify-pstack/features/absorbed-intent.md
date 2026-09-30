@@ -33,4 +33,4 @@ Preconditions:
 - `--log` fetches. This feature does not run it. Do not add the commit walk to `upstream-pin`.
 - An empty `--commits-file` means the caller claims there are no commits after the pin. That is the CI path. It does not read the gitignored cache.
 - `--cache` runs `git log <pin>..HEAD -- pstack` and does not fetch. A cache left on an old `HEAD` can hide later upstream commits.
-- `plugin.json` stays `0.15.1-grokbuild.4`. A bare `"version": "0.15.5"` fails this check.
+- `plugin.json` stays `0.15.5-grokbuild.0`. A bare `"version": "0.15.5"` fails this check.

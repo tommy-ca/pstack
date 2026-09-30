@@ -638,7 +638,7 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert "pack.py" in recipe.stdout
     assert "scripts/orch/" in recipe.stdout
     assert "advisor" in recipe.stdout
-    assert "0.15.1-grokbuild.5" in (ROOT / "plugin.json").read_text(
+    assert "0.15.5-grokbuild.0" in (ROOT / "plugin.json").read_text(
         encoding="utf-8"
     )
     default = subprocess.run(
