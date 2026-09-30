@@ -62,6 +62,7 @@ Re-run doctor after any failed drive, and before the first drive of a run.
 ```bash
 python3 .grok/skills/verify-pstack/scripts/verify.py drive --root . --feature leftover-scanner
 python3 .grok/skills/verify-pstack/scripts/verify.py drive --root . --feature upstream-pin
+python3 .grok/skills/verify-pstack/scripts/verify.py drive --root . --feature absorbed-intent
 python3 .grok/skills/verify-pstack/scripts/verify.py drive --root . --feature upstream-recipe
 python3 .grok/skills/verify-pstack/scripts/verify.py drive --root . --feature refresh-hygiene
 python3 .grok/skills/verify-pstack/scripts/verify.py drive --root . --feature release-tag
@@ -73,12 +74,12 @@ Read `features/README.md`, then the feature file. Drive the listed commands thro
 
 ## Proof bar
 
-Do not submit "look, it opens" captures. `grok plugin validate` plus inspect is not leftover scanner. A leftover `PASS` line, a 40-hex pin, `--recipe` stdout needles plus argv without `--log`, a hygiene TSV, or `PASS tests/test_release.py` counts only when it is the mapped operator path with stdout, stderr, and exit code in the same evidence directory.
+Do not submit "look, it opens" captures. `grok plugin validate` plus inspect is not leftover scanner. A leftover `PASS` line, a 40-hex pin, `PASS absorbed-intent`, `--recipe` stdout needles plus argv without `--log`, a hygiene TSV, or `PASS tests/test_release.py` counts only when it is the mapped operator path with stdout, stderr, and exit code in the same evidence directory.
 
 - Drive the operator command through `verify.py`. Do not call internal Python functions as the proof.
 - Run doctor first. A capture without leftover `PASS` in this run's doctor log is not evidence.
 - Read the feature file. Exercise every reachable entry point it lists, and the success, cancel, error, empty, and persistence paths the change can affect.
-- For a broad regression, walk `features/README.md` top to bottom. That is leftover-scanner, upstream-pin, upstream-recipe, refresh-hygiene, then release-tag.
+- For a broad regression, walk `features/README.md` top to bottom. That is leftover-scanner, upstream-pin, absorbed-intent, upstream-recipe, refresh-hygiene, then release-tag.
 - Show the trigger command and the stable end state in the same evidence directory.
 - Verify side effects, not only stdout. Hygiene must leave `~/.grok/skills/reflect` unchanged and write `--host-script` dest under `/tmp/`.
 

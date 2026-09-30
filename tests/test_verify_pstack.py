@@ -208,6 +208,7 @@ def test_verify_pstack_drive_upstream_recipe_operator_path() -> None:
             "Full sweep",
             "leftover-scanner",
             "upstream-pin",
+            "absorbed-intent",
             "upstream-recipe",
             "refresh-hygiene",
             "release-tag",
@@ -297,6 +298,7 @@ def test_maps_lock_proven_drive_needles() -> None:
         "Full sweep",
         "leftover-scanner",
         "upstream-pin",
+        "absorbed-intent",
         "upstream-recipe",
         "refresh-hygiene",
         "release-tag",
@@ -346,6 +348,7 @@ def test_readme_lists_verify_pstack() -> None:
         for feature in (
             "leftover-scanner",
             "upstream-pin",
+            "absorbed-intent",
             "upstream-recipe",
             "refresh-hygiene",
             "release-tag",

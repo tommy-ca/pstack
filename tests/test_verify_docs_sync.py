@@ -7,6 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 OWNED_MAPS = frozenset(
     {
+        "absorbed-intent.md",
         "leftover-scanner.md",
         "upstream-pin.md",
         "upstream-recipe.md",

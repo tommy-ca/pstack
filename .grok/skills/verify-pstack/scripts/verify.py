@@ -21,6 +21,7 @@ from pathlib import Path
 FEATURE_IDS = (
     "leftover-scanner",
     "upstream-pin",
+    "absorbed-intent",
     "upstream-recipe",
     "refresh-hygiene",
     "release-tag",
@@ -405,6 +406,37 @@ def drive_upstream_pin(paths: Paths) -> None:
     print(f"PASS upstream-pin {sha}")
 
 
+def drive_absorbed_intent(paths: Paths) -> None:
+    script = paths.root / ".grok" / "skills" / "verify-pstack" / "scripts" / "absorbed.py"
+    cache = paths.root / ".worktrees" / "upstream-cursor-plugins"
+    got = capture(
+        [
+            sys.executable,
+            str(script),
+            "check",
+            "--root",
+            str(paths.root),
+            "--cache",
+            str(cache),
+        ],
+        cwd=paths.root,
+        out_dir=paths.evidence / "features" / "absorbed-intent",
+    )
+    if "--log" in got.cmd or "fetch" in got.cmd:
+        fail("absorbed-intent drive must not fetch")
+    if got.returncode != 0 or "PASS absorbed-intent" not in got.stdout:
+        fail("absorbed-intent check failed")
+    data = load_run(paths)
+    features = dict(data.get("features") or {})
+    features["absorbed-intent"] = {
+        "exit": got.returncode,
+        "evidence": str(got.out_dir),
+    }
+    data["features"] = features
+    save_run(paths, data)
+    print("PASS absorbed-intent")
+
+
 def drive_upstream_recipe(paths: Paths) -> None:
     script = paths.root / "scripts" / "sync-from-upstream.py"
     got = capture(
@@ -426,6 +458,7 @@ def drive_upstream_recipe(paths: Paths) -> None:
         "Full sweep",
         "leftover-scanner",
         "upstream-pin",
+        "absorbed-intent",
         "upstream-recipe",
         "refresh-hygiene",
         "release-tag",
@@ -548,6 +581,7 @@ def drive_release_tag(paths: Paths) -> None:
 DRIVERS: dict[str, Callable[[Paths], None]] = {
     "leftover-scanner": drive_leftover_scanner,
     "upstream-pin": drive_upstream_pin,
+    "absorbed-intent": drive_absorbed_intent,
     "upstream-recipe": drive_upstream_recipe,
     "refresh-hygiene": drive_refresh_hygiene,
     "release-tag": drive_release_tag,
