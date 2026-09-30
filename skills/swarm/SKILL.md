@@ -23,7 +23,7 @@ Open a todolist with one entry per phase before launching anything.
 2. Choose the shape. Partition into slices, race N workers on identical briefs, or mix both. For a race or mixed shape, declare `first pass`, `rank all`, or `best-of` before spawning.
 3. Set N from the user or derive it from the shape. N is total workers.
 4. Pick the worker model from toml key `swarm-workers` per `../setup-pstack/references/resolve-model.md`. Absent file: send `grok-4.6` (omit if rejected). Missing key, `inherit-parent`, or `auto`: omit `model`. For a model race, name each arm from this session's detected slugs only.
-5. Give each worker its own writable output when it writes. Use a worktree, branch, or `/tmp/swarm-<slug>/worker-<n>/`.
+5. Give each worker its own writable output when it writes. Use a worktree, branch, or `/tmp/swarm-<slug>/worker-<n>/`. When workers verify or measure commits, each brief names the exact SHAs. A measurement brief also names the method: sample count, what one sample is, and order. The worker records both in its result.
 
 When the work is an upstream refresh, `port` and `new-skill-lever` are shared-intent labels, not a write permit. Seed with `scripts/partition.py seed --cache .worktrees/upstream-cursor-plugins --out /tmp/pstack-refresh/overlay.tsv`. Seed pin and tip are the UPSTREAM tree and cache `origin/main`, not the prior table comments. `apply-check ok` plus dry-run copy=0 is not overlay-seeded. Overlay identity is skip `idempotent-equal`. Dest-adapted is copy-bucket rows refused `already-remapped` or `host-keep`. Relative `--cache` is resolved on the primary checkout. Coverage is name-status only (`print --coverage` on that overlay). Workers fill unclassified fragments and do not rewrite the canonical TSV. Skip, host-owned, and audit stay fences. Reopen audit rows whose notes only record skipped density. After classify, copy with `scripts/apply.py` on that overlay. Remap proof is apply refuse (`already-remapped`, `host-keep` via `dest_looks_raw_cursor`), not dest-equals-source. Prove dest with `apply-check`. Pass the same `--cache` primary-checkout path to seed, coverage, apply, and apply-check. Nested overlay caches under linked worktrees are leftovers. `python3 skills/swarm/scripts/refresh-hygiene.py` reports them. `--apply` deletes only those clones. Coverage CLI uses `resolve_cache`.
 
@@ -31,13 +31,13 @@ When the work is an upstream refresh, `port` and `new-skill-lever` are shared-in
 
 `mkdir` each worker output dir before spawn `cwd`. Spawn all N workers in one parent turn with `spawn_subagent`: `subagent_type: "pstack:swarm-workers"` ([`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md)), `isolation: "worktree"`, `background: true`, and the configured `model`. Use `isolation: "none"` only when the worker needs this machine's cwd. Do not send `reasoning_effort`. Join with `get_command_or_subagent_output`.
 
-Every brief stands alone. Include the goal, scope, exact slice or race arm, how to verify, and what to report. Reports use `PASS`, `ISSUES`, or `BLOCKED` with evidence.
+Every brief stands alone. Include the goal, scope, exact slice or race arm, how to verify, and what to report. Reports use `PASS`, `ISSUES`, or `BLOCKED` with evidence. A worker that can prove a defect reports `ISSUES` and lists every issue it can prove, not only the first.
 
 If a worker drops out, proceed with N-1 and note it.
 
 ## Phase C: Aggregate
 
-Read the terminal results. For coverage, every required slice needs a result. For a race, apply the selection rule declared up front. Use first pass, rank all, or best-of. Do not paste raw worker dumps.
+Read the terminal results. Drop a result that does not record the SHAs and method its brief names, and rerun that worker once. After a second miss, record a gap. A gap does not count as a pass. For coverage, every required slice needs a result. For a race, apply the selection rule declared up front. Use first pass, rank all, or best-of. Do not paste raw worker dumps.
 
 Keep a compact result table, one-line evidenced issues, and explicit gaps or dropouts.
 
