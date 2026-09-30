@@ -458,6 +458,7 @@ def drive_upstream_recipe(paths: Paths) -> None:
         "Full sweep",
         "leftover-scanner",
         "upstream-pin",
+        "absorbed-intent",
         "upstream-recipe",
         "refresh-hygiene",
         "release-tag",

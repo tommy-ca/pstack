@@ -74,7 +74,7 @@ Read `features/README.md`, then the feature file. Drive the listed commands thro
 
 ## Proof bar
 
-Do not submit "look, it opens" captures. `grok plugin validate` plus inspect is not leftover scanner. A leftover `PASS` line, a 40-hex pin, `--recipe` stdout needles plus argv without `--log`, a hygiene TSV, or `PASS tests/test_release.py` counts only when it is the mapped operator path with stdout, stderr, and exit code in the same evidence directory.
+Do not submit "look, it opens" captures. `grok plugin validate` plus inspect is not leftover scanner. A leftover `PASS` line, a 40-hex pin, `PASS absorbed-intent`, `--recipe` stdout needles plus argv without `--log`, a hygiene TSV, or `PASS tests/test_release.py` counts only when it is the mapped operator path with stdout, stderr, and exit code in the same evidence directory.
 
 - Drive the operator command through `verify.py`. Do not call internal Python functions as the proof.
 - Run doctor first. A capture without leftover `PASS` in this run's doctor log is not evidence.
