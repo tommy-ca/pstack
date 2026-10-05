@@ -1,19 +1,19 @@
 # Codex tool mapping for pstack
 
-Shared skill bodies in this tree use **Grok Build** call-site names after the grokbuild adapter (`task`, `ask_user_question`, `todo_write`). See `skills/poteto-mode/SKILL.md` Subagents. On Codex those names resolve to Codex primitives. On Claude Code they resolve to `Agent` / structured questions. Model routing is in [`provider-dispatch.md`](provider-dispatch.md).
+This document maps portable pstack capabilities (defined in [`pstack-portability`](../../../openspec/specs/pstack-portability/spec.md)) directly to Codex native primitives and execution conventions. Grok reference mapping is maintained separately in [`HARNESS.md`](../../../HARNESS.md); Codex does not inherit Grok vocabulary as an intermediate specification. Model routing is in [`provider-dispatch.md`](provider-dispatch.md).
 
 ## Tool actions
 
-| Shared skill language (Grok-facing) | Codex | Claude Code |
-| --- | --- | --- |
-| Read / edit / shell / search | `shell`, `apply_patch`, `rg` | Claude Read / Edit / Bash |
-| Fetch a URL | `shell` with `curl` | Claude WebFetch / Bash |
-| Invoke a skill | Skills load natively | Skills load natively |
-| Spawn (`task` / `spawn_subagent`) | `spawn_agent` | `Agent` |
-| N parallel children | N `spawn_agent` in one turn | N `Agent` in one turn |
-| Wait / join | `wait_agent` | wait on Agent handles |
-| Todos (`todo_write`) | `update_plan` | Claude todolist |
-| Ask a fixed-choice question (`ask_user_question`) | Ask in plain text | `AskUserQuestion` |
+| Portable Capability | Codex Primitive | Claude Code Equivalent | Grok Reference |
+| --- | --- | --- | --- |
+| Read / edit / shell / search | `shell`, `apply_patch`, `rg` | Read / Edit / Bash | `run_command`, `write_to_file` |
+| Fetch a URL | `shell` with `curl` | WebFetch / Bash | `read_url_content` |
+| Invoke a skill | Skills load natively | Skills load natively | Skills load natively |
+| `agent.spawn` | `spawn_agent` | `Agent` | `spawn_subagent` |
+| `agent.fan_out` | N `spawn_agent` in one turn | N `Agent` in one turn | N `spawn_subagent` in one turn |
+| `agent.join` | `wait_agent` | wait on Agent handles | `get_command_or_subagent_output` |
+| `plan.update` | `update_plan` | todolist | `todo_write` |
+| `human.ask` | Ask in plain text | `AskUserQuestion` | `ask_user_question` |
 
 Subagent dispatch on Codex needs `multi_agent` in `~/.codex/config.toml`:
 
@@ -26,12 +26,12 @@ Without it, the native Codex lane is a named dropout. Never collapse a panel int
 
 ## Subagent policy
 
-poteto-mode Subagents defaults are Grok `task` fields (`subagent_type`, `run_in_background: true`). Translate:
+Subagent dispatch follows the portable `agent.spawn` and `workspace.isolated` capabilities:
 
-- Codex has no `poteto-agent` type. Dispatch `spawn_agent` told to read `poteto-mode` first.
-- `spawn_agent` is already concurrent; there is no `run_in_background` flag.
-- No `comment-sicko` type: `spawn_agent` told to read `agents/comment-sicko.md`.
-- Writers isolate with worktrees (`isolation: worktree` on Grok `task`; Codex isolated worktree).
+- Codex has no `poteto-agent` type: dispatch `spawn_agent` instructed to read `poteto-mode` first.
+- `spawn_agent` is concurrent natively; `run_in_background` is implicit.
+- No `comment-sicko` type: dispatch `spawn_agent` instructed to read `agents/comment-sicko.md`.
+- Writers isolate with worktrees (`workspace.isolated`: Codex isolated worktree; Grok reference `isolation: worktree`).
 - Pass file pointers, not inlined dumps. Parent owns every spawn (depth 1).
 
 ## Models
