@@ -1,0 +1,246 @@
+{
+  "pin": "4b4d98e5e3b3c139f63dbc1ce4b538954c8f2f52",
+  "upstream_head": "e5a8186d7b43be8d6ac4452440fbead5f1a51c70",
+  "total_changed_files": 33,
+  "buckets": {
+    "host_cursor": 1,
+    "packaging_docs": 12,
+    "agents": 1,
+    "verification_skills": 10,
+    "playbooks_router": 8,
+    "principles": 1
+  },
+  "entries": [
+    {
+      "path": ".cursor-plugin/plugin.json",
+      "status": "M",
+      "bucket": "host_cursor",
+      "mode": "exclude",
+      "note": "Cursor packaging; version bump only"
+    },
+    {
+      "path": "README.md",
+      "status": "M",
+      "bucket": "packaging_docs",
+      "mode": "adapt",
+      "note": "Documentation guide refresh"
+    },
+    {
+      "path": "agents/poteto-agent.md",
+      "status": "M",
+      "bucket": "agents",
+      "mode": "adapt",
+      "note": "Role agent definition"
+    },
+    {
+      "path": "docs/guide/01-setup.md",
+      "status": "M",
+      "bucket": "packaging_docs",
+      "mode": "adapt",
+      "note": "Documentation guide refresh"
+    },
+    {
+      "path": "docs/guide/02-poteto-mode.md",
+      "status": "M",
+      "bucket": "packaging_docs",
+      "mode": "adapt",
+      "note": "Documentation guide refresh"
+    },
+    {
+      "path": "docs/guide/03-understand.md",
+      "status": "M",
+      "bucket": "packaging_docs",
+      "mode": "adapt",
+      "note": "Documentation guide refresh"
+    },
+    {
+      "path": "docs/guide/04-design.md",
+      "status": "M",
+      "bucket": "packaging_docs",
+      "mode": "adapt",
+      "note": "Documentation guide refresh"
+    },
+    {
+      "path": "docs/guide/05-build-and-clean.md",
+      "status": "M",
+      "bucket": "packaging_docs",
+      "mode": "adapt",
+      "note": "Documentation guide refresh"
+    },
+    {
+      "path": "docs/guide/06-verify-and-ship.md",
+      "status": "M",
+      "bucket": "packaging_docs",
+      "mode": "adapt",
+      "note": "Documentation guide refresh"
+    },
+    {
+      "path": "docs/guide/07-overnight.md",
+      "status": "M",
+      "bucket": "packaging_docs",
+      "mode": "adapt",
+      "note": "Documentation guide refresh"
+    },
+    {
+      "path": "docs/guide/08-principles.md",
+      "status": "M",
+      "bucket": "packaging_docs",
+      "mode": "adapt",
+      "note": "Documentation guide refresh"
+    },
+    {
+      "path": "docs/guide/09-make-it-yours.md",
+      "status": "M",
+      "bucket": "packaging_docs",
+      "mode": "adapt",
+      "note": "Documentation guide refresh"
+    },
+    {
+      "path": "docs/guide/10-recipes-and-pitfalls.md",
+      "status": "M",
+      "bucket": "packaging_docs",
+      "mode": "adapt",
+      "note": "Documentation guide refresh"
+    },
+    {
+      "path": "docs/guide/README.md",
+      "status": "M",
+      "bucket": "packaging_docs",
+      "mode": "adapt",
+      "note": "Documentation guide refresh"
+    },
+    {
+      "path": "skills/architect/SKILL.md",
+      "status": "M",
+      "bucket": "verification_skills",
+      "mode": "adapt",
+      "note": "Verification and engineering skill updates"
+    },
+    {
+      "path": "skills/architect/references/design-red-flags.md",
+      "status": "M",
+      "bucket": "verification_skills",
+      "mode": "adapt",
+      "note": "Verification and engineering skill updates"
+    },
+    {
+      "path": "skills/benchmark-checklist/SKILL.md",
+      "status": "A",
+      "bucket": "verification_skills",
+      "mode": "adapt",
+      "note": "Verification and engineering skill updates"
+    },
+    {
+      "path": "skills/correct/SKILL.md",
+      "status": "A",
+      "bucket": "verification_skills",
+      "mode": "adapt",
+      "note": "Verification and engineering skill updates"
+    },
+    {
+      "path": "skills/poteto-help/SKILL.md",
+      "status": "A",
+      "bucket": "verification_skills",
+      "mode": "adapt",
+      "note": "Verification and engineering skill updates"
+    },
+    {
+      "path": "skills/poteto-help/references/prompting.md",
+      "status": "A",
+      "bucket": "verification_skills",
+      "mode": "adapt",
+      "note": "Verification and engineering skill updates"
+    },
+    {
+      "path": "skills/poteto-help/references/recipes.md",
+      "status": "A",
+      "bucket": "verification_skills",
+      "mode": "adapt",
+      "note": "Verification and engineering skill updates"
+    },
+    {
+      "path": "skills/poteto-mode/SKILL.md",
+      "status": "M",
+      "bucket": "playbooks_router",
+      "mode": "adapt",
+      "note": "Playbook and router updates; preserved with host-neutral mapping"
+    },
+    {
+      "path": "skills/poteto-mode/playbooks/autopilot-full.md",
+      "status": "M",
+      "bucket": "playbooks_router",
+      "mode": "adapt",
+      "note": "Playbook and router updates; preserved with host-neutral mapping"
+    },
+    {
+      "path": "skills/poteto-mode/playbooks/autopilot-stack.md",
+      "status": "M",
+      "bucket": "playbooks_router",
+      "mode": "adapt",
+      "note": "Playbook and router updates; preserved with host-neutral mapping"
+    },
+    {
+      "path": "skills/poteto-mode/playbooks/hillclimb.md",
+      "status": "M",
+      "bucket": "playbooks_router",
+      "mode": "adapt",
+      "note": "Playbook and router updates; preserved with host-neutral mapping"
+    },
+    {
+      "path": "skills/poteto-mode/playbooks/multi-phase-plan.md",
+      "status": "M",
+      "bucket": "playbooks_router",
+      "mode": "adapt",
+      "note": "Playbook and router updates; preserved with host-neutral mapping"
+    },
+    {
+      "path": "skills/poteto-mode/playbooks/opening-a-pr.md",
+      "status": "M",
+      "bucket": "playbooks_router",
+      "mode": "adapt",
+      "note": "Playbook and router updates; preserved with host-neutral mapping"
+    },
+    {
+      "path": "skills/poteto-mode/playbooks/perf-issue.md",
+      "status": "M",
+      "bucket": "playbooks_router",
+      "mode": "adapt",
+      "note": "Playbook and router updates; preserved with host-neutral mapping"
+    },
+    {
+      "path": "skills/poteto-mode/scripts/check-plan.mjs",
+      "status": "M",
+      "bucket": "playbooks_router",
+      "mode": "adapt",
+      "note": "Playbook and router updates; preserved with host-neutral mapping"
+    },
+    {
+      "path": "skills/principle-explain-the-number/SKILL.md",
+      "status": "A",
+      "bucket": "principles",
+      "mode": "preserve",
+      "note": "Canonical principle leaf"
+    },
+    {
+      "path": "skills/swarm/SKILL.md",
+      "status": "M",
+      "bucket": "verification_skills",
+      "mode": "adapt",
+      "note": "Verification and engineering skill updates"
+    },
+    {
+      "path": "skills/technical-writing/SKILL.md",
+      "status": "M",
+      "bucket": "verification_skills",
+      "mode": "adapt",
+      "note": "Verification and engineering skill updates"
+    },
+    {
+      "path": "skills/typescript-best-practices/references/patterns.md",
+      "status": "M",
+      "bucket": "verification_skills",
+      "mode": "adapt",
+      "note": "Verification and engineering skill updates"
+    }
+  ]
+}

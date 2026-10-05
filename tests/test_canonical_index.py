@@ -89,3 +89,31 @@ def test_canonical_index_dynamic_count_adaptation() -> None:
 
     assert principles_count == 3
     assert playbooks_count == 1
+
+
+def test_canonical_index_drift_observation_metadata() -> None:
+    proc = subprocess.run(
+        [sys.executable, str(SCRIPT), "--drift"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert proc.returncode == 0, proc.stderr or proc.stdout
+    assert "Observation Source:" in proc.stdout
+    assert "Observation Time:" in proc.stdout
+
+
+def test_canonical_index_classify_drift_cli() -> None:
+    proc = subprocess.run(
+        [sys.executable, str(SCRIPT), "--classify-drift"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert proc.returncode == 0, proc.stderr or proc.stdout
+    assert "Total changed files: 33" in proc.stdout
+    assert "principles: 1" in proc.stdout
+    assert "playbooks_router: 8" in proc.stdout
+    assert "verification_skills: 10" in proc.stdout

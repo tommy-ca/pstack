@@ -1,0 +1,36 @@
+# pin=4b4d98e5e3b3c139f63dbc1ce4b538954c8f2f52
+# tip=e5a8186d7b43be8d6ac4452440fbead5f1a51c70
+path	change	bucket	note
+.cursor-plugin/plugin.json	M	host_cursor	Cursor packaging; version bump only
+README.md	M	packaging_docs	Documentation guide refresh
+agents/poteto-agent.md	M	agents	Role agent definition
+docs/guide/01-setup.md	M	packaging_docs	Documentation guide refresh
+docs/guide/02-poteto-mode.md	M	packaging_docs	Documentation guide refresh
+docs/guide/03-understand.md	M	packaging_docs	Documentation guide refresh
+docs/guide/04-design.md	M	packaging_docs	Documentation guide refresh
+docs/guide/05-build-and-clean.md	M	packaging_docs	Documentation guide refresh
+docs/guide/06-verify-and-ship.md	M	packaging_docs	Documentation guide refresh
+docs/guide/07-overnight.md	M	packaging_docs	Documentation guide refresh
+docs/guide/08-principles.md	M	packaging_docs	Documentation guide refresh
+docs/guide/09-make-it-yours.md	M	packaging_docs	Documentation guide refresh
+docs/guide/10-recipes-and-pitfalls.md	M	packaging_docs	Documentation guide refresh
+docs/guide/README.md	M	packaging_docs	Documentation guide refresh
+skills/architect/SKILL.md	M	verification_skills	Verification and engineering skill updates
+skills/architect/references/design-red-flags.md	M	verification_skills	Verification and engineering skill updates
+skills/benchmark-checklist/SKILL.md	A	verification_skills	Verification and engineering skill updates
+skills/correct/SKILL.md	A	verification_skills	Verification and engineering skill updates
+skills/poteto-help/SKILL.md	A	verification_skills	Verification and engineering skill updates
+skills/poteto-help/references/prompting.md	A	verification_skills	Verification and engineering skill updates
+skills/poteto-help/references/recipes.md	A	verification_skills	Verification and engineering skill updates
+skills/poteto-mode/SKILL.md	M	playbooks_router	Playbook and router updates; preserved with host-neutral mapping
+skills/poteto-mode/playbooks/autopilot-full.md	M	playbooks_router	Playbook and router updates; preserved with host-neutral mapping
+skills/poteto-mode/playbooks/autopilot-stack.md	M	playbooks_router	Playbook and router updates; preserved with host-neutral mapping
+skills/poteto-mode/playbooks/hillclimb.md	M	playbooks_router	Playbook and router updates; preserved with host-neutral mapping
+skills/poteto-mode/playbooks/multi-phase-plan.md	M	playbooks_router	Playbook and router updates; preserved with host-neutral mapping
+skills/poteto-mode/playbooks/opening-a-pr.md	M	playbooks_router	Playbook and router updates; preserved with host-neutral mapping
+skills/poteto-mode/playbooks/perf-issue.md	M	playbooks_router	Playbook and router updates; preserved with host-neutral mapping
+skills/poteto-mode/scripts/check-plan.mjs	M	playbooks_router	Playbook and router updates; preserved with host-neutral mapping
+skills/principle-explain-the-number/SKILL.md	A	principles	Canonical principle leaf
+skills/swarm/SKILL.md	M	verification_skills	Verification and engineering skill updates
+skills/technical-writing/SKILL.md	M	verification_skills	Verification and engineering skill updates
+skills/typescript-best-practices/references/patterns.md	M	verification_skills	Verification and engineering skill updates

@@ -210,11 +210,104 @@ def classify_artifact(canonical_path: str, blob_hash: str) -> Dict[str, Any]:
     }
 
 
+import datetime
+
+DRIFT_FILE = ROOT / "openspec" / "canonical-drift.json"
+
+
+def classify_drift_entry(rel_path: str, status: str) -> Dict[str, Any]:
+    """Partition upstream changes into Swarm buckets and assess portability impact."""
+    if rel_path.startswith(".cursor-plugin/") or rel_path == ".cursor-plugin":
+        return {
+            "path": rel_path,
+            "status": status,
+            "bucket": "host_cursor",
+            "mode": "exclude",
+            "note": "Cursor packaging; version bump only",
+        }
+    if rel_path.startswith("skills/principle-"):
+        return {
+            "path": rel_path,
+            "status": status,
+            "bucket": "principles",
+            "mode": "preserve",
+            "note": "Canonical principle leaf",
+        }
+    if rel_path.startswith("skills/poteto-mode/playbooks/") or rel_path == "skills/poteto-mode/SKILL.md" or rel_path.startswith("skills/poteto-mode/scripts/"):
+        return {
+            "path": rel_path,
+            "status": status,
+            "bucket": "playbooks_router",
+            "mode": "adapt",
+            "note": "Playbook and router updates; preserved with host-neutral mapping",
+        }
+    if rel_path.startswith("agents/"):
+        return {
+            "path": rel_path,
+            "status": status,
+            "bucket": "agents",
+            "mode": "adapt",
+            "note": "Role agent definition",
+        }
+    if rel_path.startswith("docs/") or rel_path == "README.md":
+        return {
+            "path": rel_path,
+            "status": status,
+            "bucket": "packaging_docs",
+            "mode": "adapt",
+            "note": "Documentation guide refresh",
+        }
+    return {
+        "path": rel_path,
+        "status": status,
+        "bucket": "verification_skills",
+        "mode": "adapt",
+        "note": "Verification and engineering skill updates",
+    }
+
+
+def classify_drift_report(cache: Path, pin_sha: str, upstream_head: str) -> Dict[str, Any]:
+    proc = subprocess.run(
+        ["git", "-C", str(cache), "diff", "--name-status", f"{pin_sha}..{upstream_head}", "--", "pstack/"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if proc.returncode != 0:
+        return {"error": "git diff failed", "raw": proc.stderr}
+
+    items = []
+    for line in proc.stdout.splitlines():
+        parts = line.strip().split("\t", 1)
+        if len(parts) == 2:
+            status, full_path = parts
+            rel = full_path[7:] if full_path.startswith("pstack/") else full_path
+            items.append(classify_drift_entry(rel, status))
+
+    buckets: Dict[str, List[Dict[str, Any]]] = {}
+    for item in items:
+        buckets.setdefault(item["bucket"], []).append(item)
+
+    return {
+        "pin": pin_sha,
+        "upstream_head": upstream_head,
+        "total_changed_files": len(items),
+        "buckets": {k: len(v) for k, v in buckets.items()},
+        "entries": items,
+    }
+
+
 def compute_inventory(cache: Optional[Path]) -> Dict[str, Any]:
     pin_sha = get_pin()
+    now_iso = datetime.datetime.now(datetime.timezone.utc).isoformat()
+
     if cache is None:
         if INVENTORY_FILE.is_file():
-            return json.loads(INVENTORY_FILE.read_text(encoding="utf-8"))
+            inv = json.loads(INVENTORY_FILE.read_text(encoding="utf-8"))
+            inv["upstream_freshness"] = "UNKNOWN"
+            inv["observation_source"] = None
+            inv["observation_time"] = None
+            return inv
         raise SystemExit("No upstream cache found and openspec/canonical-inventory.json does not exist")
 
     pstack_tree = resolve_pstack_tree(cache, pin_sha)
@@ -231,22 +324,30 @@ def compute_inventory(cache: Optional[Path]) -> Dict[str, Any]:
         text=True,
         check=False,
     )
-    upstream_head = head_proc.stdout.strip() if head_proc.returncode == 0 else "unknown"
-
-    drift_proc = subprocess.run(
-        ["git", "-C", str(cache), "rev-list", f"{pin_sha}..HEAD", "--count"],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    drift_count = int(drift_proc.stdout.strip()) if drift_proc.returncode == 0 and drift_proc.stdout.strip().isdigit() else 0
+    if head_proc.returncode != 0:
+        upstream_head = "unknown"
+        freshness = "UNKNOWN"
+        drift_count = -1
+    else:
+        upstream_head = head_proc.stdout.strip()
+        drift_proc = subprocess.run(
+            ["git", "-C", str(cache), "rev-list", f"{pin_sha}..HEAD", "--count"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if drift_proc.returncode == 0 and drift_proc.stdout.strip().isdigit():
+            drift_count = int(drift_proc.stdout.strip())
+            freshness = "DRIFT" if drift_count > 0 else "CURRENT"
+        else:
+            drift_count = -1
+            freshness = "UNKNOWN"
 
     principles_count = sum(1 for c in classified if c["category"] == "principle" and c["mode"] in ("preserve", "adapt"))
     playbooks_count = sum(1 for c in classified if c["category"] == "playbook" and c["mode"] in ("preserve", "adapt"))
     gaps_count = sum(1 for c in classified if c["mode"] == "gap")
 
     conformance = "PASS" if gaps_count == 0 else "FAIL"
-    freshness = "DRIFT" if drift_count > 0 else "CURRENT"
 
     inventory = {
         "pin": pin_sha,
@@ -254,6 +355,8 @@ def compute_inventory(cache: Optional[Path]) -> Dict[str, Any]:
         "pin_conformance": conformance,
         "upstream_freshness": freshness,
         "upstream_head": upstream_head,
+        "observation_time": now_iso,
+        "observation_source": str(cache),
         "commits_ahead": drift_count,
         "counts": {
             "principles": principles_count,
@@ -274,6 +377,7 @@ def main() -> None:
     parser.add_argument("--generate", action="store_true", help="Generate canonical-inventory.json")
     parser.add_argument("--check", action="store_true", help="Check canonical conformance and inventory")
     parser.add_argument("--drift", action="store_true", help="Report upstream drift status")
+    parser.add_argument("--classify-drift", action="store_true", help="Generate canonical-drift.json partition classification")
     parser.add_argument("--json", action="store_true", help="Output raw JSON")
     args = parser.parse_args()
 
@@ -286,6 +390,19 @@ def main() -> None:
         print(f"Generated {INVENTORY_FILE} (pin {inventory['pin'][:7]}, {inventory['counts']['total_artifacts']} artifacts)")
         sys.exit(0)
 
+    if args.classify_drift:
+        if cache is None:
+            print("FAIL: Upstream cache not found for drift classification", file=sys.stderr)
+            sys.exit(1)
+        report = classify_drift_report(cache, inventory["pin"], inventory["upstream_head"])
+        DRIFT_FILE.parent.mkdir(parents=True, exist_ok=True)
+        DRIFT_FILE.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+        print(f"Generated {DRIFT_FILE}")
+        print(f"Total changed files: {report['total_changed_files']}")
+        for bucket, count in report["buckets"].items():
+            print(f"  {bucket}: {count}")
+        sys.exit(0)
+
     if args.json:
         print(json.dumps(inventory, indent=2))
         sys.exit(0)
@@ -293,6 +410,8 @@ def main() -> None:
     if args.drift:
         print(f"Upstream Freshness: {inventory['upstream_freshness']}")
         print(f"Pin: {inventory['pin']} | Upstream HEAD: {inventory['upstream_head']}")
+        print(f"Observation Source: {inventory.get('observation_source')}")
+        print(f"Observation Time: {inventory.get('observation_time')}")
         print(f"Commits ahead: {inventory['commits_ahead']}")
         sys.exit(0)
 
