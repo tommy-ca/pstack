@@ -14,6 +14,8 @@ from scripts.portability_schema import (
     Evidence,
     HarnessProfile,
     PackageDescriptor,
+    RuntimeConventions,
+    SkillOrderItem,
     ToolMapping,
     ValidationError,
 )
@@ -145,9 +147,13 @@ def test_antigravity_profile_conformance() -> None:
         plugin_manifest=data.get("plugin_manifest"),
         evidence_ledger=evidence,
         tool_mappings=data.get("tool_mappings"),
+        skill_order=data.get("skill_order"),
+        runtime_conventions=data.get("runtime_conventions"),
     )
     profile.validate()
     assert isinstance(profile.tool_mappings, ToolMapping)
+    assert isinstance(profile.runtime_conventions, RuntimeConventions)
+    assert profile.skill_order is not None and len(profile.skill_order) > 0
 
 
 def test_all_harness_profiles_conform_to_layout_and_model() -> None:
@@ -168,6 +174,8 @@ def test_all_harness_profiles_conform_to_layout_and_model() -> None:
         assert data.get("skills_dir") == expected_skills_dir
         assert data.get("plugin_manifest") == expected_manifest
         assert "tool_mappings" in data, f"Profile {host} missing tool_mappings"
+        assert "skill_order" in data, f"Profile {host} missing skill_order"
+        assert "runtime_conventions" in data, f"Profile {host} missing runtime_conventions"
 
         bindings = [Binding(**b) for b in data.get("bindings", [])]
         evidence = [Evidence(**e) for e in data.get("evidence_ledger", [])]
@@ -180,9 +188,13 @@ def test_all_harness_profiles_conform_to_layout_and_model() -> None:
             plugin_manifest=data.get("plugin_manifest"),
             evidence_ledger=evidence,
             tool_mappings=data.get("tool_mappings"),
+            skill_order=data.get("skill_order"),
+            runtime_conventions=data.get("runtime_conventions"),
         )
         profile.validate()
         assert isinstance(profile.tool_mappings, ToolMapping)
+        assert isinstance(profile.runtime_conventions, RuntimeConventions)
+        assert profile.skill_order is not None and len(profile.skill_order) > 0
 
 
 def test_harness_profile_rejects_missing_skills_dir_or_manifest() -> None:
@@ -275,6 +287,80 @@ def test_tool_mapping_json_schema_conformance() -> None:
         # No forbidden or unknown fields
         for k in tm_data:
             assert k in allowed_fields, f"Host {host} has unknown tool mapping: {k}"
+
+
+def test_skill_order_validation() -> None:
+    item = SkillOrderItem(need="TDD", primary_pstack="/tdd", secondary_user="/test-driven-development")
+    item.validate()
+
+    bad_item = SkillOrderItem(need="")
+    with pytest.raises(ValidationError, match="need cannot be empty"):
+        bad_item.validate()
+
+
+def test_runtime_conventions_validation() -> None:
+    rc = RuntimeConventions(
+        max_subagent_depth=1,
+        supported_isolation_modes=["none", "worktree"],
+        default_model="grok-4.6",
+        allowed_spawn_fields=["prompt", "description"],
+        forbidden_spawn_fields=["readonly"],
+        wire_aliases={"task": "spawn_subagent"},
+    )
+    rc.validate()
+
+    bad_depth = RuntimeConventions(
+        max_subagent_depth=0,
+        supported_isolation_modes=["none"],
+        default_model="grok-4.6",
+        allowed_spawn_fields=[],
+        forbidden_spawn_fields=[],
+    )
+    with pytest.raises(ValidationError, match="Invalid max_subagent_depth"):
+        bad_depth.validate()
+
+    bad_modes = RuntimeConventions(
+        max_subagent_depth=1,
+        supported_isolation_modes=[],
+        default_model="grok-4.6",
+        allowed_spawn_fields=[],
+        forbidden_spawn_fields=[],
+    )
+    with pytest.raises(ValidationError, match="supported_isolation_modes cannot be empty"):
+        bad_modes.validate()
+
+
+def test_harness_profiles_skill_order_and_runtime_conventions_json_schemas() -> None:
+    profiles_dir = ROOT / "profiles"
+    skill_order_schema = json.loads((SCHEMAS_DIR / "skill-order.schema.json").read_text(encoding="utf-8"))
+    runtime_schema = json.loads((SCHEMAS_DIR / "runtime-conventions.schema.json").read_text(encoding="utf-8"))
+
+    so_required = set(skill_order_schema.get("required", []))
+    so_allowed = set(skill_order_schema.get("properties", {}).keys())
+
+    rc_required = set(runtime_schema.get("required", []))
+    rc_allowed = set(runtime_schema.get("properties", {}).keys())
+
+    for host in ("grok", "codex", "omp", "opencode", "antigravity"):
+        pf = profiles_dir / f"{host}.json"
+        data = json.loads(pf.read_text(encoding="utf-8"))
+
+        # Skill order validation
+        so_data = data.get("skill_order", [])
+        assert len(so_data) > 0, f"Host {host} has empty skill_order"
+        for item in so_data:
+            for rf in so_required:
+                assert rf in item, f"Host {host} skill_order item missing {rf}"
+            for k in item:
+                assert k in so_allowed, f"Host {host} skill_order item has unknown key {k}"
+
+        # Runtime conventions validation
+        rc_data = data.get("runtime_conventions", {})
+        for rf in rc_required:
+            assert rf in rc_data, f"Host {host} runtime_conventions missing {rf}"
+        for k in rc_data:
+            assert k in rc_allowed, f"Host {host} runtime_conventions has unknown key {k}"
+
 
 
 

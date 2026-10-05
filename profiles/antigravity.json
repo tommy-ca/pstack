@@ -93,5 +93,75 @@
     "tool_mcp": "call_mcp_tool / list_resources / read_resource",
     "plan_update": "todo.md / artifacts",
     "human_ask": "ask_question"
+  },
+  "skill_order": [
+    {
+      "need": "TDD",
+      "primary_pstack": "/tdd",
+      "secondary_user": null,
+      "fallback_builtin": null
+    },
+    {
+      "need": "Review a diff or PR",
+      "primary_pstack": "/interrogate",
+      "secondary_user": null,
+      "fallback_builtin": null
+    },
+    {
+      "need": "Babysit",
+      "primary_pstack": "playbooks/babysit.md",
+      "secondary_user": null,
+      "fallback_builtin": null
+    },
+    {
+      "need": "Prove work is done",
+      "primary_pstack": "prove-it-works",
+      "secondary_user": null,
+      "fallback_builtin": null
+    },
+    {
+      "need": "Debug a failure",
+      "primary_pstack": "playbooks/bug-fix.md",
+      "secondary_user": null,
+      "fallback_builtin": null
+    },
+    {
+      "need": "Design a playbook",
+      "primary_pstack": "/figure-it-out",
+      "secondary_user": null,
+      "fallback_builtin": null
+    },
+    {
+      "need": "Spec then plan",
+      "primary_pstack": null,
+      "secondary_user": null,
+      "fallback_builtin": "/plan"
+    },
+    {
+      "need": "Execute a written plan",
+      "primary_pstack": "playbooks/feature.md",
+      "secondary_user": null,
+      "fallback_builtin": null
+    }
+  ],
+  "runtime_conventions": {
+    "max_subagent_depth": 1,
+    "supported_isolation_modes": ["inherit", "branch", "share"],
+    "default_model": "inherit",
+    "allowed_spawn_fields": [
+      "TypeName",
+      "Role",
+      "Prompt",
+      "Workspace",
+      "Model"
+    ],
+    "forbidden_spawn_fields": [
+      "readonly",
+      "environment"
+    ],
+    "wire_aliases": {
+      "invoke_subagent": "spawn_subagent",
+      "manage_subagents": "join_subagent"
+    }
   }
 }
