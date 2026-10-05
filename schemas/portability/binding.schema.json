@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pstack.dev/schemas/portability/binding.schema.json",
+  "title": "Binding",
+  "description": "An adapter binding of a portable capability to host primitives.",
+  "type": "object",
+  "required": ["host", "capability", "implementation_status", "enforcement", "verification_status"],
+  "properties": {
+    "host": {
+      "type": "string",
+      "enum": ["grok", "codex", "omp", "opencode", "claude", "custom"]
+    },
+    "capability": {
+      "type": "string"
+    },
+    "implementation_status": {
+      "type": "string",
+      "enum": ["native", "shim", "version-gated", "gap"]
+    },
+    "primitive": {
+      "type": "string"
+    },
+    "enforcement": {
+      "type": "string",
+      "enum": ["hard", "soft", "advisory"]
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": ["verified", "static-only", "unverified", "stale"]
+    },
+    "evidence_ref": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

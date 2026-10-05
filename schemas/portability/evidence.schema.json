@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pstack.dev/schemas/portability/evidence.schema.json",
+  "title": "Evidence",
+  "description": "An evidence record validating a capability or conformance claim.",
+  "type": "object",
+  "required": ["claim", "kind", "artifact"],
+  "properties": {
+    "claim": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string",
+      "enum": ["static", "runtime", "external"]
+    },
+    "artifact": {
+      "type": "string"
+    },
+    "command": {
+      "type": "string"
+    },
+    "verdict": {
+      "type": "string",
+      "enum": ["PASS", "FAIL", "BLOCKED"]
+    },
+    "timestamp": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

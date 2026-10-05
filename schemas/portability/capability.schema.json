@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pstack.dev/schemas/portability/capability.schema.json",
+  "title": "Capability",
+  "description": "A semantic capability required or optionally provided by an agent harness.",
+  "type": "object",
+  "required": ["id", "required_postconditions"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z]+(\\.[a-z0-9_-]+)+$"
+    },
+    "description": {
+      "type": "string"
+    },
+    "required_postconditions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    }
+  },
+  "additionalProperties": false
+}
