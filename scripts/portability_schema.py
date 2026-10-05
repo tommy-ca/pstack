@@ -160,19 +160,50 @@ class PackageDescriptor:
                 )
 
 
+DEFAULT_SKILLS_DIRS = {
+    "grok": ".grok/skills",
+    "codex": ".codex/skills",
+    "omp": ".omp/skills",
+    "opencode": ".opencode/skills",
+    "antigravity": ".agents/skills",
+}
+
+DEFAULT_PLUGIN_MANIFESTS = {
+    "grok": ".grok-plugin/plugin.json",
+    "codex": ".codex-plugin/plugin.json",
+    "omp": ".omp-plugin/plugin.json",
+    "opencode": ".opencode-plugin/package.json",
+    "antigravity": ".antigravity-plugin/plugin.json",
+}
+
+
 @dataclass
 class HarnessProfile:
     host: str
     support_state: str
     bindings: List[Binding]
+    skills_dir: Optional[str] = None
+    plugins_dir: Optional[str] = None
+    plugin_manifest: Optional[str] = None
     package_descriptor: Optional[PackageDescriptor] = None
     evidence_ledger: List[Evidence] = field(default_factory=list)
+
+    def __post_init__(self) -> None:
+        if self.skills_dir is None and self.host in DEFAULT_SKILLS_DIRS:
+            self.skills_dir = DEFAULT_SKILLS_DIRS[self.host]
+        if self.plugin_manifest is None and self.host in DEFAULT_PLUGIN_MANIFESTS:
+            self.plugin_manifest = DEFAULT_PLUGIN_MANIFESTS[self.host]
 
     def validate(self) -> None:
         if self.host not in HOSTS:
             raise ValidationError(f"Unknown host: {self.host!r}")
         if self.support_state not in SUPPORT_STATES:
             raise ValidationError(f"Invalid support state: {self.support_state!r}")
+        if not self.skills_dir:
+            raise ValidationError(f"Harness profile for {self.host} must declare a non-empty skills_dir")
+        if not self.plugin_manifest:
+            raise ValidationError(f"Harness profile for {self.host} must declare a plugin_manifest")
+
 
         for b in self.bindings:
             b.validate()

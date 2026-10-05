@@ -1,6 +1,9 @@
 {
   "host": "omp",
   "support_state": "verified",
+  "skills_dir": ".omp/skills",
+  "plugins_dir": "~/.omp/plugins",
+  "plugin_manifest": ".omp-plugin/plugin.json",
   "bindings": [
     {
       "host": "omp",
