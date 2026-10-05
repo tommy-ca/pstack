@@ -38,7 +38,7 @@
 ## Epic #127: Revalidate Current Pstack Portability Against the Formal Contract
 ### Phase 1: Canonical Truth & Upstream Freshness (Sub-epic #128)
 - [x] Unit 1: Issue #132 Eliminate hardcoded canonical counts from portable verification (`verify-portable.py`, `verify-harness.py`, `test_canonical_index.py`)
-- [ ] Unit 2: Issue #133 Classify upstream drift from pinned 0.15.5 to current 0.15.13
+- [x] Unit 2: Issue #133 Classify upstream drift from pinned 0.15.5 to current 0.15.13 (`canonical-index.py`, `canonical-drift.json`, `classification-0.15.13.tsv`)
 
 ### Phase 2: Contract, Adapter Boundary & Evidence Reconciliation (Sub-epic #129)
 - [ ] Unit 3: Issue #134 Reconcile portable capability universe with support-floor semantics
