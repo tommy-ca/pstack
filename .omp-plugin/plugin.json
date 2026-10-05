@@ -1,0 +1,11 @@
+{
+  "name": "pstack",
+  "version": "0.15.5-grokbuild.0",
+  "description": "pstack for Oh-My-Pi (OMP): portable principles and playbooks.",
+  "skills_root": "./skills/",
+  "entrypoint": "skills/poteto-mode/SKILL.md",
+  "lifecycle": {
+    "install": "python3 scripts/canonical-index.py --check",
+    "verify": "python3 scripts/verify-portable.py run"
+  }
+}
