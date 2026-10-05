@@ -1,0 +1,78 @@
+{
+  "host": "omp",
+  "support_state": "verified",
+  "bindings": [
+    {
+      "host": "omp",
+      "capability": "agent.spawn",
+      "implementation_status": "native",
+      "primitive": "pi_spawn",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/omp-receipt.json"
+    },
+    {
+      "host": "omp",
+      "capability": "agent.join",
+      "implementation_status": "native",
+      "primitive": "pi_wait",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/omp-receipt.json"
+    },
+    {
+      "host": "omp",
+      "capability": "workspace.isolated",
+      "implementation_status": "native",
+      "primitive": "git worktree",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/omp-receipt.json"
+    },
+    {
+      "host": "omp",
+      "capability": "workspace.readonly",
+      "implementation_status": "native",
+      "primitive": "read_only_mount",
+      "enforcement": "advisory",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/omp-receipt.json"
+    },
+    {
+      "host": "omp",
+      "capability": "human.ask",
+      "implementation_status": "native",
+      "primitive": "pi_prompt",
+      "enforcement": "advisory",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/omp-receipt.json"
+    },
+    {
+      "host": "omp",
+      "capability": "plan.update",
+      "implementation_status": "native",
+      "primitive": "task_tracker",
+      "enforcement": "advisory",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/omp-receipt.json"
+    },
+    {
+      "host": "omp",
+      "capability": "verify",
+      "implementation_status": "native",
+      "primitive": "scripts/verify-portable.py",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/omp-receipt.json"
+    }
+  ],
+  "evidence_ledger": [
+    {
+      "claim": "OMP implements required capabilities with verified runtime proof bar",
+      "kind": "runtime",
+      "artifact": ".audit/evidence/omp-receipt.json",
+      "command": "python3 scripts/verify-portable.py run --host omp",
+      "timestamp": "2026-10-05T17:01:00Z"
+    }
+  ]
+}
