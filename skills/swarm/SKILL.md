@@ -29,7 +29,7 @@ When the work is an upstream refresh, `port` and `new-skill-lever` are shared-in
 
 ## Phase B: Fan out
 
-`mkdir` each worker output dir before spawn `cwd`. Spawn all N workers in one parent turn with `spawn_subagent`: `subagent_type: "pstack:swarm-workers"` ([`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md)), `isolation: "worktree"`, `background: true`, and the configured `model`. Use `isolation: "none"` only when the worker needs this machine's cwd. Do not send `reasoning_effort`. Join with `get_command_or_subagent_output`.
+`mkdir` each worker output dir before spawn `cwd`. Spawn all N workers in one parent turn using the current host's subagent primitive (Grok: `spawn_subagent`, Antigravity: `invoke_subagent`, Codex: `spawn_agent`, OMP: `pi_spawn`, OpenCode: `task.spawn` per `references/*-tools.md`): role/type `pstack:swarm-workers` ([`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md)), `isolation: "worktree"` (or `Workspace: "branch"`), `background: true`, and the configured `model`. Use `isolation: "none"` (or `Workspace: "inherit"`) only when the worker needs this machine's cwd. Do not send `reasoning_effort`. Join with the host's join primitive (Grok: `get_command_or_subagent_output`, Antigravity: `manage_subagents` / reactive messaging, Codex: `wait_agent`, OMP: `pi_wait`, OpenCode: `task.wait`).
 
 Every brief stands alone. Include the goal, scope, exact slice or race arm, how to verify, and what to report. Reports use `PASS`, `ISSUES`, or `BLOCKED` with evidence. A worker that can prove a defect reports `ISSUES` and lists every issue it can prove, not only the first.
 

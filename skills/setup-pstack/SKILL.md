@@ -7,6 +7,8 @@ description: Configure which models and reasoning effort pstack uses per role. D
 
 Write `~/.grok/pstack-models.toml` (model slugs and `[effort]`) and pstack-managed overlay files `~/.grok/roles/pstack:<key>.toml`. This is an **override layer**. A fresh install with no setup already uses the shipped default: `grok-4.6` plus per-role `effort` on the plugin agents (ship-time three-tier split in [`references/effort-ladder.md`](references/effort-ladder.md)). See [`references/defaults.toml`](references/defaults.toml), [`references/resolve-model.md`](references/resolve-model.md), and [`references/resolve-effort.md`](references/resolve-effort.md).
 
+On Google Antigravity, model tiers are configured natively via `.antigravity-plugin/models.json` (and `~/.gemini/config/plugins/pstack/models.json`) binding roles to `pro`, `flash`, `flash_lite`, and `inherit`. On Codex, OMP, and OpenCode, model configurations are bound in projected plugin manifests (`.codex-plugin/plugin.json`, `.omp-plugin/plugin.json`, `.opencode-plugin/package.json`).
+
 Skills read the toml for `task.model`. Grok Build applies effort from `~/.grok/roles/pstack:<role>.toml` when that overlay exists (`SubagentRole.reasoning_effort`), else from the plugin agent's frontmatter `effort`. Missing override file uses the shipped default. Missing key or `inherit-parent` or `auto` in an existing toml: omit `task.model`; delete the role overlay so frontmatter remains.
 
 The models file is not a grok-build `[subagents.models]` table. That table maps agent types (`explore`, `plan`), not pstack roles. Never send `reasoning_effort` on `task`.
