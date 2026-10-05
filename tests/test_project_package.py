@@ -22,6 +22,7 @@ def test_load_package_descriptor() -> None:
     assert "codex" in desc.host_targets
     assert "omp" in desc.host_targets
     assert "opencode" in desc.host_targets
+    assert "antigravity" in desc.host_targets
 
 
 def test_generate_manifests() -> None:
@@ -42,6 +43,15 @@ def test_generate_manifests() -> None:
     opencode_m = project_package.generate_opencode_manifest(desc)
     assert opencode_m["id"] == "pstack"
     assert "skills" in opencode_m
+
+    antigravity_m = project_package.generate_antigravity_manifest(desc)
+    assert antigravity_m["name"] == "pstack"
+    assert "skills" in antigravity_m
+    assert "agents" in antigravity_m
+
+    antigravity_models = project_package.generate_antigravity_models(desc)
+    assert antigravity_models["singleRoleDefault"] == "pro"
+    assert "roles" in antigravity_models
 
 
 def test_check_all_in_sync() -> None:
