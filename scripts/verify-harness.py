@@ -212,9 +212,18 @@ def main() -> None:
     if extra:
         fail(f"unexpected playbook files: {extra}")
 
+    expected_principles = 23
+    inventory_file = ROOT / "openspec" / "canonical-inventory.json"
+    if inventory_file.is_file():
+        try:
+            inv = json.loads(inventory_file.read_text(encoding="utf-8"))
+            expected_principles = inv.get("counts", {}).get("principles", 23)
+        except Exception:
+            expected_principles = 23
+
     principles = sorted(p.name for p in ROOT.joinpath("skills").glob("principle-*") if p.is_dir())
-    if len(principles) != 23:
-        fail(f"expected 23 principle-* skills, got {len(principles)}: {principles}")
+    if len(principles) != expected_principles:
+        fail(f"expected {expected_principles} principle-* skills, got {len(principles)}: {principles}")
 
     skill_text = SKILL.read_text(encoding="utf-8")
     for name in NAMED_22:
