@@ -14,6 +14,7 @@ from scripts.portability_schema import (
     Evidence,
     HarnessProfile,
     PackageDescriptor,
+    ToolMapping,
     ValidationError,
 )
 
@@ -143,8 +144,10 @@ def test_antigravity_profile_conformance() -> None:
         plugins_dir=data.get("plugins_dir"),
         plugin_manifest=data.get("plugin_manifest"),
         evidence_ledger=evidence,
+        tool_mappings=data.get("tool_mappings"),
     )
     profile.validate()
+    assert isinstance(profile.tool_mappings, ToolMapping)
 
 
 def test_all_harness_profiles_conform_to_layout_and_model() -> None:
@@ -164,6 +167,7 @@ def test_all_harness_profiles_conform_to_layout_and_model() -> None:
         assert data["host"] == host
         assert data.get("skills_dir") == expected_skills_dir
         assert data.get("plugin_manifest") == expected_manifest
+        assert "tool_mappings" in data, f"Profile {host} missing tool_mappings"
 
         bindings = [Binding(**b) for b in data.get("bindings", [])]
         evidence = [Evidence(**e) for e in data.get("evidence_ledger", [])]
@@ -175,8 +179,10 @@ def test_all_harness_profiles_conform_to_layout_and_model() -> None:
             plugins_dir=data.get("plugins_dir"),
             plugin_manifest=data.get("plugin_manifest"),
             evidence_ledger=evidence,
+            tool_mappings=data.get("tool_mappings"),
         )
         profile.validate()
+        assert isinstance(profile.tool_mappings, ToolMapping)
 
 
 def test_harness_profile_rejects_missing_skills_dir_or_manifest() -> None:
@@ -200,5 +206,75 @@ def test_harness_profile_rejects_missing_skills_dir_or_manifest() -> None:
     )
     with pytest.raises(ValidationError, match="must declare a plugin_manifest"):
         p_no_manifest.validate()
+
+
+def test_tool_mapping_validation() -> None:
+    tm = ToolMapping(
+        file_read="view_file",
+        file_edit="replace_file_content",
+        shell_run="run_command",
+        agent_spawn="invoke_subagent",
+        agent_join="manage_subagents",
+        plan_update="todo.md",
+        human_ask="ask_question",
+    )
+    tm.validate()
+
+    # Empty required field raises ValidationError
+    tm_empty = ToolMapping(
+        file_read="",
+        file_edit="replace_file_content",
+        shell_run="run_command",
+        agent_spawn="invoke_subagent",
+        agent_join="manage_subagents",
+        plan_update="todo.md",
+        human_ask="ask_question",
+    )
+    with pytest.raises(ValidationError, match="missing or empty required field"):
+        tm_empty.validate()
+
+
+def test_harness_profile_tool_mapping_rejection() -> None:
+    b = Binding(
+        host="grok",
+        capability="agent.spawn",
+        implementation_status="native",
+        enforcement="hard",
+        verification_status="verified",
+        primitive="spawn_subagent",
+        evidence_ref=".audit/evidence/grok-spawn.log",
+    )
+    # Unknown field in tool_mappings dict raises ValidationError
+    with pytest.raises(ValidationError, match="Unknown fields in tool_mappings"):
+        HarnessProfile(
+            host="grok",
+            support_state="mapped",
+            bindings=[b],
+            skills_dir=".grok/skills",
+            plugin_manifest=".grok-plugin/plugin.json",
+            tool_mappings={"file_read": "read", "invalid_unknown_tool": "boom"},
+        )
+
+
+def test_tool_mapping_json_schema_conformance() -> None:
+    schema_path = SCHEMAS_DIR / "tool-mapping.schema.json"
+    assert schema_path.is_file()
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    required_fields = set(schema.get("required", []))
+    allowed_fields = set(schema.get("properties", {}).keys())
+
+    profiles_dir = ROOT / "profiles"
+    for host in ("grok", "codex", "omp", "opencode", "antigravity"):
+        pf = profiles_dir / f"{host}.json"
+        data = json.loads(pf.read_text(encoding="utf-8"))
+        tm_data = data.get("tool_mappings", {})
+        # All required fields must be present
+        for rf in required_fields:
+            assert rf in tm_data, f"Host {host} missing required tool mapping: {rf}"
+            assert isinstance(tm_data[rf], str) and tm_data[rf].strip()
+        # No forbidden or unknown fields
+        for k in tm_data:
+            assert k in allowed_fields, f"Host {host} has unknown tool mapping: {k}"
+
 
 

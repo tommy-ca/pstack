@@ -87,6 +87,20 @@ A prompt-only "do not write" posture is advisory and MUST NOT be reported as har
 - **THEN** the binding records the weaker enforcement strength
 - **AND** the adapter does not claim semantic equivalence silently
 
+### Requirement: Harness tool mappings are structured and schema-validated
+
+Each harness adapter profile MUST declare a typed `tool_mappings` object conforming to `schemas/portability/tool-mapping.schema.json`.
+
+The tool mapping defines explicit host primitives for file operations (`file_read`, `file_edit`, `file_write`), command execution (`shell_run`), network operations (`web_fetch`, `web_search`), subagent operations (`agent_spawn`, `agent_fanout`, `agent_join`, `agent_message`), background tasks (`task_background`), tool protocols (`tool_mcp`), plan updates (`plan_update`), and human questions (`human_ask`).
+
+Upstream pstack skills MUST NOT be modified to hardcode host-specific execution commands. Primitives are resolved dynamically from the active harness profile.
+
+#### Scenario: tool mapping validation
+- **GIVEN** a harness profile in `profiles/`
+- **WHEN** portability verification executes
+- **THEN** the profile's `tool_mappings` object validates against `schemas/portability/tool-mapping.schema.json`
+- **AND** missing or unmapped required capabilities fail the adapter gate
+
 ### Requirement: Canonical coverage is discovered, not counted
 
 Portability verification MUST enumerate principles, playbooks, and relevant skills from the pinned canonical tree. Generic portability specs and tests MUST NOT encode literal inventory counts as the source of truth.

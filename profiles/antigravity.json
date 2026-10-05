@@ -77,5 +77,21 @@
       "command": "python3 scripts/verify-portable.py run --host antigravity",
       "timestamp": "2026-10-05T17:30:00Z"
     }
-  ]
+  ],
+  "tool_mappings": {
+    "file_read": "view_file",
+    "file_edit": "replace_file_content",
+    "file_write": "write_to_file",
+    "shell_run": "run_command",
+    "web_fetch": "read_url_content",
+    "web_search": "search_web",
+    "agent_spawn": "invoke_subagent",
+    "agent_fanout": "N Subagents in invoke_subagent",
+    "agent_join": "manage_subagents / reactive messaging",
+    "agent_message": "send_message",
+    "task_background": "run_command (async) / manage_task / schedule",
+    "tool_mcp": "call_mcp_tool / list_resources / read_resource",
+    "plan_update": "todo.md / artifacts",
+    "human_ask": "ask_question"
+  }
 }

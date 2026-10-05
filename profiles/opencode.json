@@ -77,5 +77,21 @@
       "command": "python3 scripts/verify-portable.py run --host opencode",
       "timestamp": "2026-10-05T17:01:00Z"
     }
-  ]
+  ],
+  "tool_mappings": {
+    "file_read": "terminal / ripgrep",
+    "file_edit": "file_edit",
+    "file_write": "file.write / terminal",
+    "shell_run": "terminal",
+    "web_fetch": "curl via terminal",
+    "web_search": "web.search / ripgrep",
+    "agent_spawn": "task.spawn",
+    "agent_fanout": "N task.spawn in one turn",
+    "agent_join": "task.wait",
+    "agent_message": "task.message",
+    "task_background": "task.background",
+    "tool_mcp": "mcp.invoke",
+    "plan_update": "workbench.plan / todo.md",
+    "human_ask": "window.showInputBox / chat"
+  }
 }

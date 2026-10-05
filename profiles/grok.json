@@ -77,5 +77,21 @@
       "command": "python3 scripts/verify-portable.py run --host grok",
       "timestamp": "2026-10-05T16:55:00Z"
     }
-  ]
+  ],
+  "tool_mappings": {
+    "file_read": "read_file",
+    "file_edit": "edit_file / write_to_file",
+    "file_write": "write_to_file",
+    "shell_run": "run_command",
+    "web_fetch": "read_url_content",
+    "web_search": "search_web",
+    "agent_spawn": "spawn_subagent",
+    "agent_fanout": "N spawn_subagent in one turn",
+    "agent_join": "get_command_or_subagent_output",
+    "agent_message": "inter-agent message / parent routing",
+    "task_background": "spawn_subagent background: true / monitor",
+    "tool_mcp": "session MCP client",
+    "plan_update": "todo_write",
+    "human_ask": "ask_user_question"
+  }
 }
