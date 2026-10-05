@@ -230,6 +230,7 @@ class PackageDescriptor:
     lifecycle: Dict[str, str]
     description: Optional[str] = None
     roles: List[Dict[str, str]] = field(default_factory=list)
+    commands: List[Dict[str, str]] = field(default_factory=list)
     entrypoints: Dict[str, str] = field(default_factory=dict)
     namespace_policy: str = "prefixed"
     exclusions: List[str] = field(default_factory=list)

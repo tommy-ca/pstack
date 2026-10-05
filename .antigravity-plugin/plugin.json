@@ -12,5 +12,6 @@
   "skills": [
     "./skills/"
   ],
-  "agents": "./agents/"
+  "agents": "./agents/",
+  "commands": "./commands/"
 }

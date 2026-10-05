@@ -1,0 +1,2 @@
+description = "Run multi-model arena competitive design comparison"
+prompt = "Run /arena {{args}}. Compare candidate approaches across diverse models and synthesize a winning approach."

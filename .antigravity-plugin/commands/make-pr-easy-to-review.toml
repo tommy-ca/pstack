@@ -1,0 +1,2 @@
+description = "Prepare PRs for review by cleaning history and descriptions"
+prompt = "Run /make-pr-easy-to-review {{args}}. Prepare pull requests for review by cleaning noisy history and improving PR descriptions."

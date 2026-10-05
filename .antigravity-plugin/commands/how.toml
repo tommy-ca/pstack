@@ -1,0 +1,2 @@
+description = "Investigate how a subsystem or flow works"
+prompt = "Run /how {{args}}. Trace data paths, call graphs, and lifecycle state transitions."

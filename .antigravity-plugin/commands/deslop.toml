@@ -1,0 +1,2 @@
+description = "Remove AI code slop, redundant abstractions, and comments"
+prompt = "Remove AI code slop {{args}}. Strip unnecessary boilerplate, speculative abstractions, defensive checks, and commentary."

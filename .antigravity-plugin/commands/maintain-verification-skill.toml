@@ -1,0 +1,2 @@
+description = "Update and maintain an existing verification skill"
+prompt = "Run /maintain-verification-skill {{args}}. Update verification levers, predicates, and evidence matrices."

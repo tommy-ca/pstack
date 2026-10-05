@@ -1,0 +1,2 @@
+description = "Test-driven development workflow"
+prompt = "Execute /tdd {{args}}. Write red tests first, verify failure, implement minimal code, make tests green, and refactor."

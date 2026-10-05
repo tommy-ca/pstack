@@ -66,6 +66,18 @@
         "verify": { "type": "string" }
       }
     },
+    "commands": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "description", "prompt"],
+        "properties": {
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "prompt": { "type": "string" }
+        }
+      }
+    },
     "exclusions": {
       "type": "array",
       "items": { "type": "string" }

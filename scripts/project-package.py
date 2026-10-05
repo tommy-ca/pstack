@@ -121,7 +121,18 @@ def generate_antigravity_manifest(desc: PackageDescriptor) -> Dict[str, Any]:
         "license": "MIT",
         "skills": ["./skills/"],
         "agents": "./agents/",
+        "commands": "./commands/",
     }
+
+
+def generate_antigravity_commands(desc: PackageDescriptor) -> Dict[str, str]:
+    cmds = {}
+    for cmd in desc.commands:
+        name = cmd["name"]
+        d = cmd["description"]
+        p = cmd["prompt"]
+        cmds[f"{name}.toml"] = f'description = "{d}"\nprompt = "{p}"\n'
+    return cmds
 
 
 def generate_antigravity_models(desc: PackageDescriptor) -> Dict[str, Any]:
@@ -180,6 +191,13 @@ def project_all(desc: PackageDescriptor, hosts: List[str] | None = None) -> None
             models_file.write_text(json.dumps(generate_antigravity_models(desc), indent=2) + "\n", encoding="utf-8")
             print(f"Projected antigravity models -> {models_file.relative_to(ROOT)}")
 
+            cmds_dir = ROOT / ".antigravity-plugin" / "commands"
+            cmds_dir.mkdir(parents=True, exist_ok=True)
+            for fname, toml_str in generate_antigravity_commands(desc).items():
+                (cmds_dir / fname).write_text(toml_str, encoding="utf-8")
+            print(f"Projected {len(desc.commands)} antigravity commands -> {cmds_dir.relative_to(ROOT)}")
+
+
 
 def check_all(desc: PackageDescriptor, hosts: List[str] | None = None) -> bool:
     targets = hosts or list(TARGET_MAP.keys())
@@ -222,6 +240,26 @@ def check_all(desc: PackageDescriptor, hosts: List[str] | None = None) -> bool:
                 except Exception as e:
                     print(f"ERROR: {models_file.relative_to(ROOT)} failed to parse: {e}")
                     all_ok = False
+
+            cmds_dir = ROOT / ".antigravity-plugin" / "commands"
+            expected_cmds = generate_antigravity_commands(desc)
+            if not cmds_dir.is_dir() and expected_cmds:
+                print(f"MISSING: antigravity commands directory not found at {cmds_dir.relative_to(ROOT)}")
+                all_ok = False
+            elif expected_cmds:
+                cmds_ok = True
+                for fname, expected_content in expected_cmds.items():
+                    target_file = cmds_dir / fname
+                    if not target_file.is_file():
+                        print(f"MISSING: antigravity command not found at {target_file.relative_to(ROOT)}")
+                        cmds_ok = False
+                        all_ok = False
+                    elif target_file.read_text(encoding="utf-8") != expected_content:
+                        print(f"DRIFT: antigravity command at {target_file.relative_to(ROOT)} does not match expected")
+                        cmds_ok = False
+                        all_ok = False
+                if cmds_ok:
+                    print(f"PASS: {len(expected_cmds)} antigravity commands at {cmds_dir.relative_to(ROOT)} in sync")
     return all_ok
 
 

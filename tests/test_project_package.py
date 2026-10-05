@@ -48,6 +48,13 @@ def test_generate_manifests() -> None:
     assert antigravity_m["name"] == "pstack"
     assert "skills" in antigravity_m
     assert "agents" in antigravity_m
+    assert "commands" in antigravity_m
+
+    cmds = project_package.generate_antigravity_commands(desc)
+    assert len(cmds) >= 13
+    assert "poteto-mode.toml" in cmds
+    assert "babysit.toml" in cmds
+    assert "thermo-nuclear-code-quality-review.toml" in cmds
 
     antigravity_models = project_package.generate_antigravity_models(desc)
     assert antigravity_models["singleRoleDefault"] == "pro"
@@ -57,3 +64,4 @@ def test_generate_manifests() -> None:
 def test_check_all_in_sync() -> None:
     desc, _ = project_package.load_package_descriptor()
     assert project_package.check_all(desc) is True
+

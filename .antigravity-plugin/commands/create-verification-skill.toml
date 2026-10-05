@@ -1,0 +1,2 @@
+description = "Create a new verification skill with offline levers"
+prompt = "Run /create-verification-skill {{args}}. Scaffold an offline verification skill following the verification skill lifecycle."
