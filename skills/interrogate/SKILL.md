@@ -35,11 +35,11 @@ Write one clear paragraph. Reviewers challenge whether the work achieves the int
 
 ## Step 3, Spawn Reviewers
 
-Launch all reviewers in a single message using `spawn_subagent`. Use toml array `interrogate-reviewers` per `../setup-pstack/references/resolve-model.md`, one reviewer per entry. If the file or key is absent, spawn **one** reviewer and send `grok-4.6` (omit if rejected).
+Launch all reviewers in a single message using the current host's subagent primitive (Grok: `spawn_subagent`, Antigravity: `invoke_subagent`, Codex: `spawn_agent`, OMP: `pi_spawn`, OpenCode: `task.spawn` per `references/*-tools.md`). Use toml array `interrogate-reviewers` per `../setup-pstack/references/resolve-model.md` (or Antigravity `models.json` `interrogate` tier), one reviewer per entry. If the configuration is absent, spawn **one** reviewer with the host default (`grok-4.6` on Grok, `pro` on Antigravity).
 
 For each reviewer:
-- `subagent_type`: `pstack:interrogate-reviewers` ([`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md))
-- `model`: that array entry when it is a detected slug; omit when the entry is `inherit-parent`/`auto`. File or key absent: `grok-4.6` (omit if rejected). Do not send `reasoning_effort` on `task`.
+- role / `subagent_type`: `pstack:interrogate-reviewers` ([`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md))
+- `model`: that entry when it is a detected slug; omit when the entry is `inherit-parent`/`auto`. Configuration absent: host default. Do not send `reasoning_effort` on spawn.
 
 If `task` rejects a slug, omit `model` or retry only with a slug the error text named that is already in this session's detected set. Do not pick a closest family equivalent. If the configured value is `inherit-parent` or `auto`, omit `model`; never treat those aliases as broken slugs.
 
