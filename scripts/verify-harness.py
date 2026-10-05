@@ -94,6 +94,9 @@ SKIP_FILES = {
     "README.zh-CN.md",
     "codex-tools.md",
     "provider-dispatch.md",
+    "antigravity-tools.md",
+    "omp-tools.md",
+    "opencode-tools.md",
     "classification.tsv",
 }
 

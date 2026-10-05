@@ -1,5 +1,6 @@
 import importlib.util
 import json
+import subprocess
 import sys
 from pathlib import Path
 import pytest
@@ -111,4 +112,17 @@ def test_portable_verifier_drives_verification_skill_scaffolding_across_hosts(tm
         check_res = next(s for s in verifier.scenarios if s.id == "drive-verification-skill-check")
         assert scaffold_res.verdict == "PASS"
         assert check_res.verdict == "PASS"
+
+
+def test_portable_verifier_cli_host_all_doctor(tmp_path: Path) -> None:
+    res = subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "verify-portable.py"), "doctor", "--host", "all", "--evidence-dir", str(tmp_path)],
+        capture_output=True,
+        text=True,
+    )
+    assert res.returncode == 0
+    assert "5-Harness Matrix Verdict: PASS" in res.stdout
+    for host in ("grok", "codex", "omp", "opencode", "antigravity"):
+        assert f"Host: {host}" in res.stdout
+
 
