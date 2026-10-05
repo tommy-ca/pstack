@@ -1,0 +1,78 @@
+{
+  "host": "antigravity",
+  "support_state": "verified",
+  "bindings": [
+    {
+      "host": "antigravity",
+      "capability": "agent.spawn",
+      "implementation_status": "native",
+      "primitive": "invoke_subagent / define_subagent",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/antigravity-receipt.json"
+    },
+    {
+      "host": "antigravity",
+      "capability": "agent.join",
+      "implementation_status": "native",
+      "primitive": "manage_subagents / reactive messaging",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/antigravity-receipt.json"
+    },
+    {
+      "host": "antigravity",
+      "capability": "workspace.isolated",
+      "implementation_status": "native",
+      "primitive": "Workspace: branch | share",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/antigravity-receipt.json"
+    },
+    {
+      "host": "antigravity",
+      "capability": "workspace.readonly",
+      "implementation_status": "native",
+      "primitive": "Workspace: share (read-only tools)",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/antigravity-receipt.json"
+    },
+    {
+      "host": "antigravity",
+      "capability": "human.ask",
+      "implementation_status": "native",
+      "primitive": "ask_question",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/antigravity-receipt.json"
+    },
+    {
+      "host": "antigravity",
+      "capability": "plan.update",
+      "implementation_status": "native",
+      "primitive": "artifacts / todo.md",
+      "enforcement": "advisory",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/antigravity-receipt.json"
+    },
+    {
+      "host": "antigravity",
+      "capability": "verify",
+      "implementation_status": "native",
+      "primitive": "scripts/verify-portable.py",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/antigravity-receipt.json"
+    }
+  ],
+  "evidence_ledger": [
+    {
+      "claim": "Antigravity implements agent.spawn, agent.join, and workspace.isolated via native subagents and reactive messaging",
+      "kind": "runtime",
+      "artifact": ".audit/evidence/antigravity-receipt.json",
+      "command": "python3 scripts/verify-portable.py run --host antigravity",
+      "timestamp": "2026-10-05T17:30:00Z"
+    }
+  ]
+}

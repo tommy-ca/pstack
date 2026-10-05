@@ -69,7 +69,7 @@ verification: verified | static-only | unverified | stale
 
 Write `gap` instead of inventing a host field.
 
-Grok's detailed reference mapping remains [`HARNESS.md`](../../HARNESS.md). Codex and Claude Code have their own mapping/packaging surfaces; they do not inherit Grok semantics.
+Grok's detailed reference mapping remains [`HARNESS.md`](../../HARNESS.md). Codex, OMP, OpenCode, and Antigravity have their own mapping/packaging surfaces (`codex-tools.md`, `omp-tools.md`, `opencode-tools.md`, `antigravity-tools.md`); they do not inherit Grok semantics.
 
 ## Preserve the composed skills
 

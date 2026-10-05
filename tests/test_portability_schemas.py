@@ -124,3 +124,20 @@ def test_adaptation_requires_reason_for_exclude_and_gap() -> None:
 
     ad.reason = "Replaced by local figure-it-out"
     ad.validate()
+
+
+def test_antigravity_profile_conformance() -> None:
+    profile_path = ROOT / "profiles" / "antigravity.json"
+    assert profile_path.is_file()
+    data = json.loads(profile_path.read_text(encoding="utf-8"))
+    assert data["host"] == "antigravity"
+    bindings = [Binding(**b) for b in data.get("bindings", [])]
+    evidence = [Evidence(**e) for e in data.get("evidence_ledger", [])]
+    profile = HarnessProfile(
+        host=data["host"],
+        support_state=data["support_state"],
+        bindings=bindings,
+        evidence_ledger=evidence,
+    )
+    profile.validate()
+
