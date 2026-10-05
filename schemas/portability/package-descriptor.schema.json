@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pstack.dev/schemas/portability/package-descriptor.schema.json",
+  "title": "PackageDescriptor",
+  "description": "Portable pstack agent package descriptor separating metadata from runtime orchestration.",
+  "type": "object",
+  "required": ["id", "name", "version", "upstream_pin", "host_targets", "skills_root", "lifecycle"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_-]+$"
+    },
+    "name": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "upstream_pin": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "host_targets": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["grok", "codex", "omp", "opencode", "claude", "custom"]
+      },
+      "minItems": 1
+    },
+    "roles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "description"],
+        "properties": {
+          "id": { "type": "string" },
+          "description": { "type": "string" },
+          "default_model_role": { "type": "string" }
+        }
+      }
+    },
+    "skills_root": {
+      "type": "string"
+    },
+    "entrypoints": {
+      "type": "object",
+      "properties": {
+        "router": { "type": "string" }
+      }
+    },
+    "namespace_policy": {
+      "type": "string",
+      "enum": ["prefixed", "flat", "namespaced"]
+    },
+    "lifecycle": {
+      "type": "object",
+      "required": ["install", "verify", "uninstall"],
+      "properties": {
+        "install": { "type": "string" },
+        "update": { "type": "string" },
+        "uninstall": { "type": "string" },
+        "verify": { "type": "string" }
+      }
+    },
+    "exclusions": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "evidence": {
+      "type": "array",
+      "items": { "$ref": "evidence.schema.json" }
+    }
+  },
+  "additionalProperties": false
+}
