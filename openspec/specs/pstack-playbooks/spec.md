@@ -1,20 +1,30 @@
 # pstack-playbooks Specification
 
 ## Purpose
-Define the complete pstack playbook inventory, opening-a-pr handoff, and intentional exclusions from the Grok plugin.
+
+Require the port to preserve the canonical playbook set and playbook intent while allowing host-specific mechanism changes at adapter boundaries.
 
 ## Requirements
 
-### Requirement: Twenty-two named playbooks plus opening-a-pr
+### Requirement: Playbook inventory follows the canonical pin
 
 Feature: pstack-playbooks
 
-The plugin MUST ship the official playbook set under `skills/poteto-mode/playbooks/`: investigation, bug-fix, perf-issue, hillclimb, runtime-forensics, trace-forensics, feature, refactoring, prototype, visual-parity, authoring-a-skill, eval, babysit, shipping, autonomous-run, orchestrate, autopilot-full, autopilot-stack, session-pickup, pause-safely, multi-phase-plan, worktree-cleanup, plus `opening-a-pr.md` invoked at the end of other playbooks.
+The port MUST cover every canonical Markdown playbook under `skills/poteto-mode/playbooks/` at the `UPSTREAM` pin. The expected set MUST be discovered from that pin rather than encoded as a literal count.
 
-#### Scenario: inventories match official pin
+Playbooks remain Markdown workflow intent. They MUST NOT be reimplemented as a portable workflow DSL merely to support another harness.
 
-- **GIVEN** official pstack at UPSTREAM `tree` pin
-- **WHEN** playbook filenames are listed
-- **THEN** this port has the same 23 markdown files
+#### Scenario: inventories match the pin
 
-`make-bot-ui` is a **skill**, not a playbook. This port MUST NOT ship `skills/make-bot-ui`. No-match / large work routes to `/figure-it-out` (`skills/figure-it-out/SKILL.md`), not a playbook file.
+- **GIVEN** official pstack at the recorded `UPSTREAM` pin
+- **WHEN** playbook filenames are enumerated
+- **THEN** every canonical playbook has a preserve, adapt, exclude, or gap record
+- **AND** host-specific tool syntax is handled by the adapter
+
+### Requirement: Composed skills retain their semantics
+
+The `swarm`, `arena`, and `interrogate` skills remain compositions over playbook/agent capabilities rather than new harness primitives. Their independence, evidence, aggregation, synthesis, and verification rules MUST be preserved according to `pstack-portability`.
+
+### Requirement: Domain skills are explicit scope decisions
+
+A canonical skill that is intentionally not shipped by a host port, such as a host- or domain-specific skill, MUST be represented as an explicit exclusion with a reason. Omission alone is not coverage.
