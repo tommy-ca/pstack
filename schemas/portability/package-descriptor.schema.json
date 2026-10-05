@@ -27,7 +27,7 @@
       "type": "array",
       "items": {
         "type": "string",
-        "enum": ["grok", "codex", "omp", "opencode", "claude", "custom"]
+        "enum": ["grok", "codex", "omp", "opencode", "antigravity", "claude", "custom"]
       },
       "minItems": 1
     },

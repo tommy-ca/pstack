@@ -16,7 +16,7 @@ IMPLEMENTATION_STATUSES = ("native", "shim", "version-gated", "gap")
 ENFORCEMENT_LEVELS = ("hard", "soft", "advisory")
 VERIFICATION_STATUSES = ("verified", "static-only", "unverified", "stale")
 ADAPTATION_MODES = ("preserve", "adapt", "exclude", "gap")
-HOSTS = ("grok", "codex", "omp", "opencode", "claude", "custom")
+HOSTS = ("grok", "codex", "omp", "opencode", "antigravity", "claude", "custom")
 
 REQUIRED_CAPABILITIES = (
     "agent.spawn",
