@@ -25,6 +25,43 @@
     },
     {
       "host": "grok",
+      "capability": "agent.message",
+      "implementation_status": "native",
+      "primitive": "spawn_subagent (resume)",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/grok-receipt.json"
+    },
+    {
+      "host": "grok",
+      "capability": "agent.cancel",
+      "implementation_status": "gap",
+      "primitive": null,
+      "enforcement": "advisory",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/grok-receipt.json",
+      "notes": "No explicit cancel command in Grok Build CLI"
+    },
+    {
+      "host": "grok",
+      "capability": "agent.resume",
+      "implementation_status": "native",
+      "primitive": "spawn_subagent (resume_from)",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/grok-receipt.json"
+    },
+    {
+      "host": "grok",
+      "capability": "workspace.shared",
+      "implementation_status": "native",
+      "primitive": "isolation: none",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/grok-receipt.json"
+    },
+    {
+      "host": "grok",
       "capability": "workspace.isolated",
       "implementation_status": "native",
       "primitive": "isolation: worktree",
@@ -52,9 +89,63 @@
     },
     {
       "host": "grok",
+      "capability": "human.gate",
+      "implementation_status": "native",
+      "primitive": "ask_user_question (blocking gate)",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/grok-receipt.json"
+    },
+    {
+      "host": "grok",
       "capability": "plan.update",
       "implementation_status": "native",
       "primitive": "todo_write",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/grok-receipt.json"
+    },
+    {
+      "host": "grok",
+      "capability": "schedule",
+      "implementation_status": "native",
+      "primitive": "scheduler_create",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/grok-receipt.json"
+    },
+    {
+      "host": "grok",
+      "capability": "monitor",
+      "implementation_status": "native",
+      "primitive": "monitor command + scheduler_create",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/grok-receipt.json"
+    },
+    {
+      "host": "grok",
+      "capability": "session.persist",
+      "implementation_status": "native",
+      "primitive": "~/.grok/ persistence",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/grok-receipt.json"
+    },
+    {
+      "host": "grok",
+      "capability": "session.resume",
+      "implementation_status": "native",
+      "primitive": "grok resume",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/grok-receipt.json"
+    },
+    {
+      "host": "grok",
+      "capability": "evidence.capture",
+      "implementation_status": "native",
+      "primitive": "receipts under .audit/evidence/",
       "enforcement": "hard",
       "verification_status": "verified",
       "evidence_ref": ".audit/evidence/grok-receipt.json"

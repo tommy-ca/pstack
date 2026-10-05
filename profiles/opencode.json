@@ -25,6 +25,42 @@
     },
     {
       "host": "opencode",
+      "capability": "agent.message",
+      "implementation_status": "native",
+      "primitive": "task.message",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/opencode-receipt.json"
+    },
+    {
+      "host": "opencode",
+      "capability": "agent.cancel",
+      "implementation_status": "native",
+      "primitive": "task.cancel",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/opencode-receipt.json"
+    },
+    {
+      "host": "opencode",
+      "capability": "agent.resume",
+      "implementation_status": "native",
+      "primitive": "task.resume",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/opencode-receipt.json"
+    },
+    {
+      "host": "opencode",
+      "capability": "workspace.shared",
+      "implementation_status": "native",
+      "primitive": "workspace folder (cwd)",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/opencode-receipt.json"
+    },
+    {
+      "host": "opencode",
       "capability": "workspace.isolated",
       "implementation_status": "native",
       "primitive": "git worktree",
@@ -52,10 +88,65 @@
     },
     {
       "host": "opencode",
+      "capability": "human.gate",
+      "implementation_status": "native",
+      "primitive": "window.showQuickPick (modal/blocking)",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/opencode-receipt.json"
+    },
+    {
+      "host": "opencode",
       "capability": "plan.update",
       "implementation_status": "native",
       "primitive": "workbench.plan",
       "enforcement": "advisory",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/opencode-receipt.json"
+    },
+    {
+      "host": "opencode",
+      "capability": "schedule",
+      "implementation_status": "gap",
+      "primitive": null,
+      "enforcement": "advisory",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/opencode-receipt.json",
+      "notes": "No native cron scheduler in OpenCode"
+    },
+    {
+      "host": "opencode",
+      "capability": "monitor",
+      "implementation_status": "shim",
+      "primitive": "task.background watch loop",
+      "enforcement": "soft",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/opencode-receipt.json"
+    },
+    {
+      "host": "opencode",
+      "capability": "session.persist",
+      "implementation_status": "native",
+      "primitive": "opencode session storage",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/opencode-receipt.json"
+    },
+    {
+      "host": "opencode",
+      "capability": "session.resume",
+      "implementation_status": "native",
+      "primitive": "opencode restore workspace",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/opencode-receipt.json"
+    },
+    {
+      "host": "opencode",
+      "capability": "evidence.capture",
+      "implementation_status": "native",
+      "primitive": "receipts under .audit/evidence/",
+      "enforcement": "hard",
       "verification_status": "verified",
       "evidence_ref": ".audit/evidence/opencode-receipt.json"
     },

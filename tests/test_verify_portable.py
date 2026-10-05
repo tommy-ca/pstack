@@ -51,6 +51,7 @@ def test_portable_verifier_antigravity(tmp_path: Path) -> None:
     assert receipt.overall_verdict == "PASS"
     assert receipt.planes["canonical"] == "PASS"
     assert receipt.planes["adapter"] == "PASS"
+    assert receipt.planes["package"] == "PASS"
     assert receipt.planes["runtime"] == "PASS"
 
 
@@ -85,6 +86,7 @@ def test_portable_verifier_proof_bar_and_receipt(tmp_path: Path) -> None:
     assert receipt.overall_verdict == "FAIL"
     assert receipt.planes["canonical"] == "PASS"
     assert receipt.planes["adapter"] == "FAIL"
+    assert receipt.planes["package"] == "UNTESTED"
     assert receipt.planes["runtime"] == "UNTESTED"
 
     evidence_file = verifier.evidence(receipt)

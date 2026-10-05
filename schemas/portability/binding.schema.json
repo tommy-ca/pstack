@@ -11,7 +11,26 @@
       "enum": ["grok", "codex", "omp", "opencode", "antigravity", "claude", "custom"]
     },
     "capability": {
-      "type": "string"
+      "type": "string",
+      "enum": [
+        "agent.spawn",
+        "agent.join",
+        "agent.message",
+        "agent.cancel",
+        "agent.resume",
+        "workspace.shared",
+        "workspace.isolated",
+        "workspace.readonly",
+        "human.ask",
+        "human.gate",
+        "plan.update",
+        "schedule",
+        "monitor",
+        "session.persist",
+        "session.resume",
+        "evidence.capture",
+        "verify"
+      ]
     },
     "implementation_status": {
       "type": "string",

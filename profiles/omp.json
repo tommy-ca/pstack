@@ -25,6 +25,42 @@
     },
     {
       "host": "omp",
+      "capability": "agent.message",
+      "implementation_status": "native",
+      "primitive": "pi_send",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/omp-receipt.json"
+    },
+    {
+      "host": "omp",
+      "capability": "agent.cancel",
+      "implementation_status": "native",
+      "primitive": "pi_cancel / process kill",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/omp-receipt.json"
+    },
+    {
+      "host": "omp",
+      "capability": "agent.resume",
+      "implementation_status": "native",
+      "primitive": "pi_resume",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/omp-receipt.json"
+    },
+    {
+      "host": "omp",
+      "capability": "workspace.shared",
+      "implementation_status": "native",
+      "primitive": "working directory (cwd) / single repo",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/omp-receipt.json"
+    },
+    {
+      "host": "omp",
       "capability": "workspace.isolated",
       "implementation_status": "native",
       "primitive": "git worktree",
@@ -52,10 +88,65 @@
     },
     {
       "host": "omp",
+      "capability": "human.gate",
+      "implementation_status": "native",
+      "primitive": "pi_prompt (blocking confirmation)",
+      "enforcement": "advisory",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/omp-receipt.json"
+    },
+    {
+      "host": "omp",
       "capability": "plan.update",
       "implementation_status": "native",
       "primitive": "task_tracker",
       "enforcement": "advisory",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/omp-receipt.json"
+    },
+    {
+      "host": "omp",
+      "capability": "schedule",
+      "implementation_status": "gap",
+      "primitive": null,
+      "enforcement": "advisory",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/omp-receipt.json",
+      "notes": "No native scheduler in OMP"
+    },
+    {
+      "host": "omp",
+      "capability": "monitor",
+      "implementation_status": "shim",
+      "primitive": "pi_bg polling loop",
+      "enforcement": "soft",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/omp-receipt.json"
+    },
+    {
+      "host": "omp",
+      "capability": "session.persist",
+      "implementation_status": "native",
+      "primitive": "omp session state",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/omp-receipt.json"
+    },
+    {
+      "host": "omp",
+      "capability": "session.resume",
+      "implementation_status": "native",
+      "primitive": "omp resume",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/omp-receipt.json"
+    },
+    {
+      "host": "omp",
+      "capability": "evidence.capture",
+      "implementation_status": "native",
+      "primitive": "receipts under .audit/evidence/",
+      "enforcement": "hard",
       "verification_status": "verified",
       "evidence_ref": ".audit/evidence/omp-receipt.json"
     },
