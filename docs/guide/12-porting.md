@@ -2,11 +2,11 @@
 
 Official pstack at the immutable pin in [`UPSTREAM`](../../UPSTREAM) is canonical. This repository is a **reference port**. Its Grok implementation is evidence for how to adapt a host, not an intermediate specification that other hosts must copy.
 
-The cross-harness contract is [`pstack-portability`](../../openspec/specs/pstack-portability/spec.md).
+The host map is the primary adapter document, defined under the cross-harness contract [`pstack-portability`](../../openspec/specs/pstack-portability/spec.md).
 
 ## Keep the pstack meaning
 
-Preserve the canonical principles, skills, router behavior, playbook intent, role boundaries, ordering, and verification rules. Port host-dependent mechanisms only.
+Preserve the canonical principles, skills, router behavior, playbook intent, role boundaries, ordering, and verification rules. Focus on less code, not loc. Port host-dependent mechanisms only.
 
 The architecture is intentionally small:
 
@@ -26,7 +26,7 @@ The principles that matter most during a port are **Laziness Protocol**, **Model
 
 ## Discover, do not count
 
-Enumerate the canonical principle, playbook, and relevant skill inventory from the recorded pin. Do not use a literal number as the source of truth.
+Enumerate the canonical principle, playbook, and relevant skill inventory from the recorded pin. The reference canonical pin establishes 23 principles as leaf skills and 23 `principle-*` skills. Do not use a literal number as the permanent source of truth for future pins.
 
 For every relevant canonical artifact record one state:
 
@@ -41,9 +41,9 @@ An exclusion needs a reason such as packaging, host-specific, domain-pack, or po
 
 Track pin conformance separately from upstream freshness. The port can conform to its immutable pin while newer canonical changes remain to be classified.
 
-## Map the small capability surface
+## Capability checklist
 
-For the new host, document these capabilities from live docs/source and runtime evidence where possible:
+For the new host, document these capabilities from live docs/source and runtime evidence where possible. Map primitives such as Spawn a child (`agent.spawn`), Join / wait (`agent.join`), and Overnight loop (`schedule`). Write `gap` when a capability is absent:
 
 | capability | question |
 |---|---|

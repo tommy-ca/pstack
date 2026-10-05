@@ -10,9 +10,16 @@ Define this repository as a reference port of canonical Cursor pstack and preven
 
 Feature: pstack-reference-port
 
-Official `cursor/plugins/pstack` at the immutable `UPSTREAM` pin MUST remain the canonical authority for principles, skills, router behavior, playbook intent, roles, ordering, and verification rules.
+Official `cursor/plugins/pstack` at the immutable `UPSTREAM` pin MUST remain the canonical authority for principles, skills, router behavior, playbook intent, roles, ordering, and verification rules. Operator docs MUST extract official pstack philosophy: less code over loc, go deep then parallelize, one router, steer with 23 principle names, prove on the real artifact.
 
 This repository MUST be described as a reference port. Grok Build is the strongest implemented reference adapter in this tree. Codex and Claude Code mappings or manifests MAY be present, but their support status MUST follow `pstack-portability` conformance rather than inherit authority from the Grok adapter.
+
+#### Scenario: porting page names the layers
+
+- **GIVEN** `docs/guide/12-porting.md`
+- **WHEN** an operator wants pstack on another host
+- **THEN** the page names 23 principles, host map, and Laziness Protocol
+- **AND** it tells them not to copy the previous host's spawn fields as the core
 
 #### Scenario: port another harness
 

@@ -6,7 +6,7 @@ Define the smallest portable contract that preserves canonical pstack intent acr
 
 Official `cursor/plugins/pstack` at the immutable `UPSTREAM` pin is the canonical source. This repository is a reference port. Grok Build is the strongest reference adapter in this tree; Codex and Claude Code have mapping/packaging surfaces whose runtime support must be proven separately.
 
-## Requirements
+## ADDED Requirements
 
 ### Requirement: Canonical intent is upstream-owned
 
