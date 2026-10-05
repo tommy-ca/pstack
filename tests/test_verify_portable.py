@@ -40,6 +40,19 @@ def test_portable_verifier_codex_doctor(tmp_path: Path) -> None:
         assert s.verdict == "PASS"
 
 
+def test_portable_verifier_antigravity(tmp_path: Path) -> None:
+    verifier = PortableVerifier(host="antigravity", evidence_root=tmp_path)
+    assert verifier.launch()
+    ok = verifier.doctor()
+    assert ok is True
+    assert verifier.drive() is True
+    receipt = verifier.proof_bar()
+    assert receipt.overall_verdict == "PASS"
+    assert receipt.planes["canonical"] == "PASS"
+    assert receipt.planes["adapter"] == "PASS"
+    assert receipt.planes["runtime"] == "PASS"
+
+
 def test_portable_verifier_proof_bar_and_receipt(tmp_path: Path) -> None:
     verifier = PortableVerifier(host="codex", evidence_root=tmp_path)
     verifier.launch()
