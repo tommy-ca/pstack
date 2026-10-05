@@ -1,0 +1,78 @@
+{
+  "host": "opencode",
+  "support_state": "verified",
+  "bindings": [
+    {
+      "host": "opencode",
+      "capability": "agent.spawn",
+      "implementation_status": "native",
+      "primitive": "task.spawn",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/opencode-receipt.json"
+    },
+    {
+      "host": "opencode",
+      "capability": "agent.join",
+      "implementation_status": "native",
+      "primitive": "task.wait",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/opencode-receipt.json"
+    },
+    {
+      "host": "opencode",
+      "capability": "workspace.isolated",
+      "implementation_status": "native",
+      "primitive": "git worktree",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/opencode-receipt.json"
+    },
+    {
+      "host": "opencode",
+      "capability": "workspace.readonly",
+      "implementation_status": "native",
+      "primitive": "fs.readonly",
+      "enforcement": "advisory",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/opencode-receipt.json"
+    },
+    {
+      "host": "opencode",
+      "capability": "human.ask",
+      "implementation_status": "native",
+      "primitive": "window.showInputBox",
+      "enforcement": "advisory",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/opencode-receipt.json"
+    },
+    {
+      "host": "opencode",
+      "capability": "plan.update",
+      "implementation_status": "native",
+      "primitive": "workbench.plan",
+      "enforcement": "advisory",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/opencode-receipt.json"
+    },
+    {
+      "host": "opencode",
+      "capability": "verify",
+      "implementation_status": "native",
+      "primitive": "scripts/verify-portable.py",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/opencode-receipt.json"
+    }
+  ],
+  "evidence_ledger": [
+    {
+      "claim": "OpenCode implements required capabilities with verified runtime proof bar",
+      "kind": "runtime",
+      "artifact": ".audit/evidence/opencode-receipt.json",
+      "command": "python3 scripts/verify-portable.py run --host opencode",
+      "timestamp": "2026-10-05T17:01:00Z"
+    }
+  ]
+}
