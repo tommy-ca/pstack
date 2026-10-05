@@ -131,13 +131,74 @@ def test_antigravity_profile_conformance() -> None:
     assert profile_path.is_file()
     data = json.loads(profile_path.read_text(encoding="utf-8"))
     assert data["host"] == "antigravity"
+    assert data["skills_dir"] == ".agents/skills"
+    assert data["plugin_manifest"] == ".antigravity-plugin/plugin.json"
     bindings = [Binding(**b) for b in data.get("bindings", [])]
     evidence = [Evidence(**e) for e in data.get("evidence_ledger", [])]
     profile = HarnessProfile(
         host=data["host"],
         support_state=data["support_state"],
         bindings=bindings,
+        skills_dir=data.get("skills_dir"),
+        plugins_dir=data.get("plugins_dir"),
+        plugin_manifest=data.get("plugin_manifest"),
         evidence_ledger=evidence,
     )
     profile.validate()
+
+
+def test_all_harness_profiles_conform_to_layout_and_model() -> None:
+    profiles_dir = ROOT / "profiles"
+    assert profiles_dir.is_dir()
+    expected_hosts = {
+        "grok": (".grok/skills", ".grok-plugin/plugin.json"),
+        "codex": (".codex/skills", ".codex-plugin/plugin.json"),
+        "omp": (".omp/skills", ".omp-plugin/plugin.json"),
+        "opencode": (".opencode/skills", ".opencode-plugin/package.json"),
+        "antigravity": (".agents/skills", ".antigravity-plugin/plugin.json"),
+    }
+    for host, (expected_skills_dir, expected_manifest) in expected_hosts.items():
+        pf = profiles_dir / f"{host}.json"
+        assert pf.is_file(), f"Missing profile for {host}"
+        data = json.loads(pf.read_text(encoding="utf-8"))
+        assert data["host"] == host
+        assert data.get("skills_dir") == expected_skills_dir
+        assert data.get("plugin_manifest") == expected_manifest
+
+        bindings = [Binding(**b) for b in data.get("bindings", [])]
+        evidence = [Evidence(**e) for e in data.get("evidence_ledger", [])]
+        profile = HarnessProfile(
+            host=data["host"],
+            support_state=data["support_state"],
+            bindings=bindings,
+            skills_dir=data.get("skills_dir"),
+            plugins_dir=data.get("plugins_dir"),
+            plugin_manifest=data.get("plugin_manifest"),
+            evidence_ledger=evidence,
+        )
+        profile.validate()
+
+
+def test_harness_profile_rejects_missing_skills_dir_or_manifest() -> None:
+    b = Binding(
+        host="grok",
+        capability="agent.spawn",
+        implementation_status="native",
+        enforcement="hard",
+        verification_status="verified",
+        primitive="spawn_subagent",
+        evidence_ref=".audit/evidence/grok-spawn.log",
+    )
+    # Explicitly empty skills_dir
+    p_no_skills = HarnessProfile(host="grok", support_state="mapped", bindings=[b], skills_dir="")
+    with pytest.raises(ValidationError, match="must declare a non-empty skills_dir"):
+        p_no_skills.validate()
+
+    # Explicitly empty manifest
+    p_no_manifest = HarnessProfile(
+        host="grok", support_state="mapped", bindings=[b], skills_dir=".grok/skills", plugin_manifest=""
+    )
+    with pytest.raises(ValidationError, match="must declare a plugin_manifest"):
+        p_no_manifest.validate()
+
 

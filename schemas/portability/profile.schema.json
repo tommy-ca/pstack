@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pstack.dev/schemas/portability/profile.schema.json",
+  "title": "HarnessProfile",
+  "description": "Typed capability profile and layout bindings for an agent harness.",
+  "type": "object",
+  "required": ["host", "support_state", "bindings", "skills_dir", "plugin_manifest"],
+  "properties": {
+    "host": {
+      "type": "string",
+      "enum": ["grok", "codex", "omp", "opencode", "antigravity", "claude", "custom"]
+    },
+    "support_state": {
+      "type": "string",
+      "enum": ["candidate", "mapped", "packaged", "verified", "supported"]
+    },
+    "skills_dir": {
+      "type": "string",
+      "description": "Relative project-local path where skills reside for this harness (e.g. .grok/skills, .agents/skills)."
+    },
+    "plugins_dir": {
+      "type": "string",
+      "description": "Host-level plugins directory where external or global plugins are installed."
+    },
+    "plugin_manifest": {
+      "type": "string",
+      "description": "Relative path to projected harness-native plugin manifest."
+    },
+    "bindings": {
+      "type": "array",
+      "items": {
+        "$ref": "binding.schema.json"
+      }
+    },
+    "evidence_ledger": {
+      "type": "array",
+      "items": {
+        "$ref": "evidence.schema.json"
+      }
+    }
+  },
+  "additionalProperties": false
+}

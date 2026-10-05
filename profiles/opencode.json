@@ -1,6 +1,9 @@
 {
   "host": "opencode",
   "support_state": "verified",
+  "skills_dir": ".opencode/skills",
+  "plugins_dir": "~/.opencode/plugins",
+  "plugin_manifest": ".opencode-plugin/package.json",
   "bindings": [
     {
       "host": "opencode",

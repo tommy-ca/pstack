@@ -1,6 +1,9 @@
 {
   "host": "grok",
   "support_state": "supported",
+  "skills_dir": ".grok/skills",
+  "plugins_dir": "~/.grok/installed-plugins",
+  "plugin_manifest": ".grok-plugin/plugin.json",
   "bindings": [
     {
       "host": "grok",

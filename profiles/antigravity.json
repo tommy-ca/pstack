@@ -1,6 +1,9 @@
 {
   "host": "antigravity",
   "support_state": "verified",
+  "skills_dir": ".agents/skills",
+  "plugins_dir": "~/.gemini/config/plugins",
+  "plugin_manifest": ".antigravity-plugin/plugin.json",
   "bindings": [
     {
       "host": "antigravity",

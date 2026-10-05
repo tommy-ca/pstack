@@ -1,6 +1,9 @@
 {
   "host": "codex",
   "support_state": "verified",
+  "skills_dir": ".codex/skills",
+  "plugins_dir": "~/.codex/plugins",
+  "plugin_manifest": ".codex-plugin/plugin.json",
   "bindings": [
     {
       "host": "codex",
