@@ -101,6 +101,35 @@ Upstream pstack skills MUST NOT be modified to hardcode host-specific execution 
 - **THEN** the profile's `tool_mappings` object validates against `schemas/portability/tool-mapping.schema.json`
 - **AND** missing or unmapped required capabilities fail the adapter gate
 
+### Requirement: Harness runtime conventions are structured and schema-validated
+
+Each harness adapter profile MUST declare a typed `runtime_conventions` object conforming to `schemas/portability/runtime-conventions.schema.json`.
+
+The runtime conventions define maximum subagent depth (`max_subagent_depth`), supported workspace isolation modes (`supported_isolation_modes`), default model slug (`default_model`), allowed model-facing spawn fields (`allowed_spawn_fields`), forbidden spawn fields (`forbidden_spawn_fields`), and optional wire aliases (`wire_aliases`).
+
+#### Scenario: runtime convention validation
+- **GIVEN** a harness profile in `profiles/`
+- **WHEN** portability verification executes
+- **THEN** `runtime_conventions` validates against `schemas/portability/runtime-conventions.schema.json`
+- **AND** subagent recursion depth exceeding the configured maximum is rejected
+
+### Requirement: Skill order resolution follows a declared 3-tier fallback matrix
+
+Each harness adapter profile MUST declare an ordered `skill_order` list conforming to `schemas/portability/skill-order.schema.json`.
+
+For each capability need, resolution follows three strict tiers:
+1. Primary pstack skill or playbook.
+2. Secondary user skill fallback when primary pstack is not loaded.
+3. Third-tier host bundled or builtin fallback.
+
+Upstream skills MUST NOT contain hardcoded host branching. The skill order matrix defines deterministic fallback behavior.
+
+#### Scenario: skill fallback resolution
+- **GIVEN** a user request for a capability need
+- **WHEN** the primary pstack skill is not active
+- **THEN** the harness resolves the secondary user skill
+- **AND** falls back to host builtin primitives only when secondary is absent
+
 ### Requirement: Canonical coverage is discovered, not counted
 
 Portability verification MUST enumerate principles, playbooks, and relevant skills from the pinned canonical tree. Generic portability specs and tests MUST NOT encode literal inventory counts as the source of truth.

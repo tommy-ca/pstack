@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pstack.dev/schemas/portability/skill-order.schema.json",
+  "title": "SkillOrderItem",
+  "description": "Structured 3-tier skill resolution and fallback order for a portable pstack capability need.",
+  "type": "object",
+  "required": ["need", "primary_pstack"],
+  "properties": {
+    "need": {
+      "type": "string",
+      "description": "The engineering task or intent (e.g. tdd, review, babysit, prove_it_works, debug_failure)."
+    },
+    "primary_pstack": {
+      "type": "string",
+      "description": "First-tier pstack skill or playbook (e.g. /tdd, /interrogate, playbooks/babysit.md)."
+    },
+    "secondary_user": {
+      "type": ["string", "null"],
+      "description": "Second-tier user skill fallback when primary pstack skill is not loaded."
+    },
+    "fallback_builtin": {
+      "type": ["string", "null"],
+      "description": "Third-tier host bundled or builtin fallback."
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional notes on gating, precedence, or conditions."
+    }
+  },
+  "additionalProperties": false
+}
