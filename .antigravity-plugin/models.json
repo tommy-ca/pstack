@@ -1,0 +1,138 @@
+{
+  "singleRoleDefault": "pro",
+  "panel": [
+    "pro",
+    "flash"
+  ],
+  "available": [
+    {
+      "label": "Gemini Pro",
+      "slug": "pro"
+    },
+    {
+      "label": "Gemini Flash",
+      "slug": "flash"
+    },
+    {
+      "label": "Gemini Flash Lite",
+      "slug": "flash_lite"
+    },
+    {
+      "label": "Inherited Model",
+      "slug": "inherit"
+    }
+  ],
+  "roles": [
+    {
+      "role": "feature, refactoring",
+      "models": [
+        "pro"
+      ],
+      "skill": "poteto-mode"
+    },
+    {
+      "role": "bug-fix",
+      "models": [
+        "pro"
+      ],
+      "skill": "poteto-mode"
+    },
+    {
+      "role": "perf-issue",
+      "models": [
+        "pro"
+      ],
+      "skill": "poteto-mode"
+    },
+    {
+      "role": "hillclimb",
+      "models": [
+        "pro"
+      ],
+      "skill": "poteto-mode"
+    },
+    {
+      "role": "judgment and prose",
+      "models": [
+        "pro"
+      ],
+      "skill": "poteto-mode"
+    },
+    {
+      "role": "strongest judgment",
+      "models": [
+        "pro"
+      ],
+      "skill": "poteto-mode"
+    },
+    {
+      "role": "how explorer",
+      "models": [
+        "pro"
+      ],
+      "skill": "how"
+    },
+    {
+      "role": "how explainer",
+      "models": [
+        "pro"
+      ],
+      "skill": "how"
+    },
+    {
+      "role": "why investigators",
+      "models": [
+        "pro"
+      ],
+      "skill": "why"
+    },
+    {
+      "role": "why synthesizer",
+      "models": [
+        "pro"
+      ],
+      "skill": "why"
+    },
+    {
+      "role": "reflect tooling",
+      "models": [
+        "pro"
+      ],
+      "skill": "reflect"
+    },
+    {
+      "role": "reflect judgment, divergent, synthesizer",
+      "models": [
+        "pro"
+      ],
+      "skill": "reflect"
+    },
+    {
+      "role": "arena runners",
+      "models": "panel",
+      "skill": "arena"
+    },
+    {
+      "role": "arena cross-judge pool",
+      "models": "panel",
+      "skill": "arena"
+    },
+    {
+      "role": "swarm workers",
+      "models": [
+        "flash"
+      ],
+      "skill": "swarm"
+    },
+    {
+      "role": "architect runners",
+      "models": "panel",
+      "skill": "architect"
+    },
+    {
+      "role": "interrogate reviewers",
+      "models": "panel",
+      "skill": "interrogate"
+    }
+  ]
+}

@@ -107,11 +107,61 @@ def generate_opencode_manifest(desc: PackageDescriptor) -> Dict[str, Any]:
     }
 
 
+def generate_antigravity_manifest(desc: PackageDescriptor) -> Dict[str, Any]:
+    return {
+        "name": desc.name,
+        "version": desc.version,
+        "displayName": desc.name,
+        "description": f"{desc.description} (Google Antigravity port)",
+        "author": {
+            "name": "Lauren Tan (original); tommy-ca (multi-harness port)",
+        },
+        "homepage": "https://github.com/tommy-ca/pstack",
+        "repository": "https://github.com/tommy-ca/pstack",
+        "license": "MIT",
+        "skills": ["./skills/"],
+        "agents": "./agents/",
+    }
+
+
+def generate_antigravity_models(desc: PackageDescriptor) -> Dict[str, Any]:
+    return {
+        "singleRoleDefault": "pro",
+        "panel": ["pro", "flash"],
+        "available": [
+            {"label": "Gemini Pro", "slug": "pro"},
+            {"label": "Gemini Flash", "slug": "flash"},
+            {"label": "Gemini Flash Lite", "slug": "flash_lite"},
+            {"label": "Inherited Model", "slug": "inherit"},
+        ],
+        "roles": [
+            {"role": "feature, refactoring", "models": ["pro"], "skill": "poteto-mode"},
+            {"role": "bug-fix", "models": ["pro"], "skill": "poteto-mode"},
+            {"role": "perf-issue", "models": ["pro"], "skill": "poteto-mode"},
+            {"role": "hillclimb", "models": ["pro"], "skill": "poteto-mode"},
+            {"role": "judgment and prose", "models": ["pro"], "skill": "poteto-mode"},
+            {"role": "strongest judgment", "models": ["pro"], "skill": "poteto-mode"},
+            {"role": "how explorer", "models": ["pro"], "skill": "how"},
+            {"role": "how explainer", "models": ["pro"], "skill": "how"},
+            {"role": "why investigators", "models": ["pro"], "skill": "why"},
+            {"role": "why synthesizer", "models": ["pro"], "skill": "why"},
+            {"role": "reflect tooling", "models": ["pro"], "skill": "reflect"},
+            {"role": "reflect judgment, divergent, synthesizer", "models": ["pro"], "skill": "reflect"},
+            {"role": "arena runners", "models": "panel", "skill": "arena"},
+            {"role": "arena cross-judge pool", "models": "panel", "skill": "arena"},
+            {"role": "swarm workers", "models": ["flash"], "skill": "swarm"},
+            {"role": "architect runners", "models": "panel", "skill": "architect"},
+            {"role": "interrogate reviewers", "models": "panel", "skill": "interrogate"},
+        ],
+    }
+
+
 TARGET_MAP = {
     "grok": (ROOT / ".grok-plugin" / "plugin.json", generate_grok_manifest),
     "codex": (ROOT / ".codex-plugin" / "plugin.json", generate_codex_manifest),
     "omp": (ROOT / ".omp-plugin" / "plugin.json", generate_omp_manifest),
     "opencode": (ROOT / ".opencode-plugin" / "package.json", generate_opencode_manifest),
+    "antigravity": (ROOT / ".antigravity-plugin" / "plugin.json", generate_antigravity_manifest),
 }
 
 
@@ -125,6 +175,10 @@ def project_all(desc: PackageDescriptor, hosts: List[str] | None = None) -> None
         content = generator(desc)
         dest_file.write_text(json.dumps(content, indent=2) + "\n", encoding="utf-8")
         print(f"Projected {host} -> {dest_file.relative_to(ROOT)}")
+        if host == "antigravity":
+            models_file = ROOT / ".antigravity-plugin" / "models.json"
+            models_file.write_text(json.dumps(generate_antigravity_models(desc), indent=2) + "\n", encoding="utf-8")
+            print(f"Projected antigravity models -> {models_file.relative_to(ROOT)}")
 
 
 def check_all(desc: PackageDescriptor, hosts: List[str] | None = None) -> bool:
@@ -150,6 +204,24 @@ def check_all(desc: PackageDescriptor, hosts: List[str] | None = None) -> bool:
             all_ok = False
         else:
             print(f"PASS: {host} manifest at {dest_file.relative_to(ROOT)} in sync")
+
+        if host == "antigravity":
+            models_file = ROOT / ".antigravity-plugin" / "models.json"
+            if not models_file.is_file():
+                print(f"MISSING: antigravity models not found at {models_file.relative_to(ROOT)}")
+                all_ok = False
+            else:
+                expected_models = generate_antigravity_models(desc)
+                try:
+                    actual_models = json.loads(models_file.read_text(encoding="utf-8"))
+                    if actual_models != expected_models:
+                        print(f"DRIFT: antigravity models at {models_file.relative_to(ROOT)} does not match expected")
+                        all_ok = False
+                    else:
+                        print(f"PASS: antigravity models at {models_file.relative_to(ROOT)} in sync")
+                except Exception as e:
+                    print(f"ERROR: {models_file.relative_to(ROOT)} failed to parse: {e}")
+                    all_ok = False
     return all_ok
 
 
