@@ -77,5 +77,21 @@
       "command": "python3 scripts/verify-portable.py run --host omp",
       "timestamp": "2026-10-05T17:01:00Z"
     }
-  ]
+  ],
+  "tool_mappings": {
+    "file_read": "bash / grep",
+    "file_edit": "file_edit",
+    "file_write": "write / bash",
+    "shell_run": "bash",
+    "web_fetch": "fetch",
+    "web_search": "web_search",
+    "agent_spawn": "pi_spawn",
+    "agent_fanout": "N pi_spawn concurrent calls",
+    "agent_join": "pi_wait",
+    "agent_message": "pi_send",
+    "task_background": "pi_bg",
+    "tool_mcp": "mcp_bridge",
+    "plan_update": "task_tracker / todo.md",
+    "human_ask": "pi_prompt"
+  }
 }

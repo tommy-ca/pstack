@@ -37,6 +37,9 @@
       "items": {
         "$ref": "evidence.schema.json"
       }
+    },
+    "tool_mappings": {
+      "$ref": "tool-mapping.schema.json"
     }
   },
   "additionalProperties": false

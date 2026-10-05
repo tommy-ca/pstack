@@ -124,6 +124,66 @@ class Adaptation:
             )
 
 
+REQUIRED_TOOL_MAPPINGS = (
+    "file_read",
+    "file_edit",
+    "shell_run",
+    "agent_spawn",
+    "agent_join",
+    "plan_update",
+    "human_ask",
+)
+
+ALLOWED_TOOL_MAPPINGS = (
+    "file_read",
+    "file_edit",
+    "file_write",
+    "shell_run",
+    "web_fetch",
+    "web_search",
+    "agent_spawn",
+    "agent_fanout",
+    "agent_join",
+    "agent_message",
+    "task_background",
+    "tool_mcp",
+    "plan_update",
+    "human_ask",
+)
+
+
+@dataclass
+class ToolMapping:
+    file_read: str
+    file_edit: str
+    shell_run: str
+    agent_spawn: str
+    agent_join: str
+    plan_update: str
+    human_ask: str
+    file_write: Optional[str] = None
+    web_fetch: Optional[str] = None
+    web_search: Optional[str] = None
+    agent_fanout: Optional[str] = None
+    agent_message: Optional[str] = None
+    task_background: Optional[str] = None
+    tool_mcp: Optional[str] = None
+
+    def validate(self) -> None:
+        required = (
+            ("file_read", self.file_read),
+            ("file_edit", self.file_edit),
+            ("shell_run", self.shell_run),
+            ("agent_spawn", self.agent_spawn),
+            ("agent_join", self.agent_join),
+            ("plan_update", self.plan_update),
+            ("human_ask", self.human_ask),
+        )
+        for name, val in required:
+            if not val or not isinstance(val, str) or not val.strip():
+                raise ValidationError(f"ToolMapping missing or empty required field: {name}")
+
+
 @dataclass
 class PackageDescriptor:
     id: str
@@ -187,12 +247,21 @@ class HarnessProfile:
     plugin_manifest: Optional[str] = None
     package_descriptor: Optional[PackageDescriptor] = None
     evidence_ledger: List[Evidence] = field(default_factory=list)
+    tool_mappings: Optional[ToolMapping | Dict[str, Any]] = None
 
     def __post_init__(self) -> None:
         if self.skills_dir is None and self.host in DEFAULT_SKILLS_DIRS:
             self.skills_dir = DEFAULT_SKILLS_DIRS[self.host]
         if self.plugin_manifest is None and self.host in DEFAULT_PLUGIN_MANIFESTS:
             self.plugin_manifest = DEFAULT_PLUGIN_MANIFESTS[self.host]
+        if isinstance(self.tool_mappings, dict):
+            extra_keys = set(self.tool_mappings.keys()) - set(ALLOWED_TOOL_MAPPINGS)
+            if extra_keys:
+                raise ValidationError(f"Unknown fields in tool_mappings: {sorted(extra_keys)}")
+            try:
+                self.tool_mappings = ToolMapping(**self.tool_mappings)
+            except TypeError as err:
+                raise ValidationError(f"Invalid tool_mappings: {err}") from err
 
     def validate(self) -> None:
         if self.host not in HOSTS:
@@ -203,7 +272,6 @@ class HarnessProfile:
             raise ValidationError(f"Harness profile for {self.host} must declare a non-empty skills_dir")
         if not self.plugin_manifest:
             raise ValidationError(f"Harness profile for {self.host} must declare a plugin_manifest")
-
 
         for b in self.bindings:
             b.validate()
@@ -225,3 +293,7 @@ class HarnessProfile:
                     )
                 if binding.implementation_status == "gap":
                     raise ValidationError(f"Supported harness {self.host} cannot have gap on required capability {req}")
+
+        # Domain Rule: Harness tool mappings are structured and schema-validated
+        if self.tool_mappings is not None:
+            self.tool_mappings.validate()

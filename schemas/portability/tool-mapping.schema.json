@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pstack.dev/schemas/portability/tool-mapping.schema.json",
+  "title": "ToolMapping",
+  "description": "Structured mapping of portable pstack capabilities to host-native agent harness tools and execution conventions.",
+  "type": "object",
+  "required": [
+    "file_read",
+    "file_edit",
+    "shell_run",
+    "agent_spawn",
+    "agent_join",
+    "plan_update",
+    "human_ask"
+  ],
+  "properties": {
+    "file_read": {
+      "type": "string",
+      "description": "Host primitive to read files (e.g. view_file, read_file)."
+    },
+    "file_edit": {
+      "type": "string",
+      "description": "Host primitive to edit existing files (e.g. replace_file_content, edit_file)."
+    },
+    "file_write": {
+      "type": "string",
+      "description": "Host primitive to create or overwrite files (e.g. write_to_file)."
+    },
+    "shell_run": {
+      "type": "string",
+      "description": "Host primitive to execute terminal commands (e.g. run_command, bash)."
+    },
+    "web_fetch": {
+      "type": "string",
+      "description": "Host primitive to fetch remote URL content (e.g. read_url_content, curl)."
+    },
+    "web_search": {
+      "type": "string",
+      "description": "Host primitive to perform web searches (e.g. search_web)."
+    },
+    "agent_spawn": {
+      "type": "string",
+      "description": "Host primitive to spawn child subagents (e.g. invoke_subagent, spawn_subagent, spawn_agent)."
+    },
+    "agent_fanout": {
+      "type": "string",
+      "description": "Host convention for parallel fanout (e.g. N Subagents array items, N spawn_subagent in one turn)."
+    },
+    "agent_join": {
+      "type": "string",
+      "description": "Host primitive to join, wait, or receive subagent output (e.g. manage_subagents, wait_agent, get_command_or_subagent_output)."
+    },
+    "agent_message": {
+      "type": "string",
+      "description": "Host primitive for direct inter-agent messaging (e.g. send_message)."
+    },
+    "task_background": {
+      "type": "string",
+      "description": "Host primitive for background tasks and timers (e.g. manage_task, schedule, background_job)."
+    },
+    "tool_mcp": {
+      "type": "string",
+      "description": "Host primitive for Model Context Protocol server interaction (e.g. call_mcp_tool)."
+    },
+    "plan_update": {
+      "type": "string",
+      "description": "Host primitive or artifact convention to update task plans (e.g. todo.md, todo_write)."
+    },
+    "human_ask": {
+      "type": "string",
+      "description": "Host primitive to ask user questions (e.g. ask_question, ask_user_question)."
+    }
+  },
+  "additionalProperties": false
+}
