@@ -1,0 +1,2 @@
+description = "Execute multi-agent swarm partition and synthesis"
+prompt = "Run /swarm {{args}}. Follow the swarm skill to partition work across subagents and synthesize results with PASS/ISSUES/BLOCKED reports."

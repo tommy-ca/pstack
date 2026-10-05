@@ -1,0 +1,2 @@
+description = "Exhaustive high-standard code quality review"
+prompt = "Run /thermo-nuclear-code-quality-review {{args}}. Perform an unusually strict review focused on abstraction quality, maintainability, and architectural health."

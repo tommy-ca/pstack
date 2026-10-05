@@ -1,0 +1,2 @@
+description = "Find failing PR checks and apply focused fixes"
+prompt = "Run /fix-ci {{args}}. Inspect failing checks and apply focused fixes to achieve green CI."

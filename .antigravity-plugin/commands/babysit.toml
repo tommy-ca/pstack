@@ -1,0 +1,2 @@
+description = "Watch an open PR — fix failing CI, address feedback, and drive to mergeable"
+prompt = "Run /babysit {{args}}. Shepherd open pull requests to green, resolve CI checks, triage review comments, and ensure clean mergeability."

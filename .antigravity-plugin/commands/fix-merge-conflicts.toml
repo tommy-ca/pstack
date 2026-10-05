@@ -1,0 +1,2 @@
+description = "Resolve merge conflicts non-interactively"
+prompt = "Run /fix-merge-conflicts {{args}}. Resolve merge conflicts non-interactively with minimal, correctness-first edits."

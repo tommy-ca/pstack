@@ -1,0 +1,2 @@
+description = "Fetch and summarize review comments from active PR"
+prompt = "Run /get-pr-comments {{args}}. Fetch and summarize review comments from the active pull request."

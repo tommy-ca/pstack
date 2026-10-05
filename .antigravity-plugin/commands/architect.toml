@@ -1,0 +1,2 @@
+description = "Architectural design and boundary planning"
+prompt = "Run /architect {{args}}. Design system boundaries, contracts, and deep modules."

@@ -1,0 +1,2 @@
+description = "Reflect on session progress, learnings, and next steps"
+prompt = "Run /reflect {{args}}. Review what was accomplished, what was deferred, and capture durable lessons."

@@ -40,6 +40,103 @@
     }
   ],
   "skills_root": "skills",
+  "commands": [
+    {
+      "name": "poteto-mode",
+      "description": "Enter poteto-mode: disciplined agent workflow and principles",
+      "prompt": "Enter /poteto-mode {{args}}. Read the poteto-mode skill in full and follow its discipline: if you want to go fast, go deep first; write less, but higher quality code; rigorous agent workflows parallelized with confidence."
+    },
+    {
+      "name": "architect",
+      "description": "Architectural design and boundary planning",
+      "prompt": "Run /architect {{args}}. Design system boundaries, contracts, and deep modules."
+    },
+    {
+      "name": "arena",
+      "description": "Run multi-model arena competitive design comparison",
+      "prompt": "Run /arena {{args}}. Compare candidate approaches across diverse models and synthesize a winning approach."
+    },
+    {
+      "name": "swarm",
+      "description": "Execute multi-agent swarm partition and synthesis",
+      "prompt": "Run /swarm {{args}}. Follow the swarm skill to partition work across subagents and synthesize results with PASS/ISSUES/BLOCKED reports."
+    },
+    {
+      "name": "interrogate",
+      "description": "Run adversarial interrogation and review on changes or plans",
+      "prompt": "Run /interrogate {{args}}. Audit against failure modes, edge cases, missing evidence, and unverified assumptions."
+    },
+    {
+      "name": "tdd",
+      "description": "Test-driven development workflow",
+      "prompt": "Execute /tdd {{args}}. Write red tests first, verify failure, implement minimal code, make tests green, and refactor."
+    },
+    {
+      "name": "why",
+      "description": "Investigate why a decision, bug, or design pattern exists",
+      "prompt": "Run /why {{args}}. Uncover root causes, historical context, and architectural rationale."
+    },
+    {
+      "name": "how",
+      "description": "Investigate how a subsystem or flow works",
+      "prompt": "Run /how {{args}}. Trace data paths, call graphs, and lifecycle state transitions."
+    },
+    {
+      "name": "reflect",
+      "description": "Reflect on session progress, learnings, and next steps",
+      "prompt": "Run /reflect {{args}}. Review what was accomplished, what was deferred, and capture durable lessons."
+    },
+    {
+      "name": "create-verification-skill",
+      "description": "Create a new verification skill with offline levers",
+      "prompt": "Run /create-verification-skill {{args}}. Scaffold an offline verification skill following the verification skill lifecycle."
+    },
+    {
+      "name": "maintain-verification-skill",
+      "description": "Update and maintain an existing verification skill",
+      "prompt": "Run /maintain-verification-skill {{args}}. Update verification levers, predicates, and evidence matrices."
+    },
+    {
+      "name": "deslop",
+      "description": "Remove AI code slop, redundant abstractions, and comments",
+      "prompt": "Remove AI code slop {{args}}. Strip unnecessary boilerplate, speculative abstractions, defensive checks, and commentary."
+    },
+    {
+      "name": "thermo-nuclear-code-quality-review",
+      "description": "Exhaustive high-standard code quality review",
+      "prompt": "Run /thermo-nuclear-code-quality-review {{args}}. Perform an unusually strict review focused on abstraction quality, maintainability, and architectural health."
+    },
+    {
+      "name": "babysit",
+      "description": "Watch an open PR — fix failing CI, address feedback, and drive to mergeable",
+      "prompt": "Run /babysit {{args}}. Shepherd open pull requests to green, resolve CI checks, triage review comments, and ensure clean mergeability."
+    },
+    {
+      "name": "fix-ci",
+      "description": "Find failing PR checks and apply focused fixes",
+      "prompt": "Run /fix-ci {{args}}. Inspect failing checks and apply focused fixes to achieve green CI."
+    },
+    {
+      "name": "fix-merge-conflicts",
+      "description": "Resolve merge conflicts non-interactively",
+      "prompt": "Run /fix-merge-conflicts {{args}}. Resolve merge conflicts non-interactively with minimal, correctness-first edits."
+    },
+    {
+      "name": "get-pr-comments",
+      "description": "Fetch and summarize review comments from active PR",
+      "prompt": "Run /get-pr-comments {{args}}. Fetch and summarize review comments from the active pull request."
+    },
+    {
+      "name": "make-pr-easy-to-review",
+      "description": "Prepare PRs for review by cleaning history and descriptions",
+      "prompt": "Run /make-pr-easy-to-review {{args}}. Prepare pull requests for review by cleaning noisy history and improving PR descriptions."
+    },
+    {
+      "name": "what-did-i-get-done",
+      "description": "Summarize authored commits over a specified time period",
+      "prompt": "Run /what-did-i-get-done {{args}}. Summarize authored commits over a specified time period into a concise update."
+    }
+  ],
   "entrypoints": {
     "router": "skills/poteto-mode/SKILL.md"
   },

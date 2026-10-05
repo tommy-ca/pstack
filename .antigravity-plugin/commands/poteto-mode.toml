@@ -1,0 +1,2 @@
+description = "Enter poteto-mode: disciplined agent workflow and principles"
+prompt = "Enter /poteto-mode {{args}}. Read the poteto-mode skill in full and follow its discipline: if you want to go fast, go deep first; write less, but higher quality code; rigorous agent workflows parallelized with confidence."

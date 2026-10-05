@@ -1,0 +1,2 @@
+description = "Run adversarial interrogation and review on changes or plans"
+prompt = "Run /interrogate {{args}}. Audit against failure modes, edge cases, missing evidence, and unverified assumptions."

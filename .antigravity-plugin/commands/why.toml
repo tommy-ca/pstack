@@ -1,0 +1,2 @@
+description = "Investigate why a decision, bug, or design pattern exists"
+prompt = "Run /why {{args}}. Uncover root causes, historical context, and architectural rationale."
