@@ -154,6 +154,16 @@ class PortableVerifier:
             )
             doctor_pass = doctor_pass and (r5.verdict == "PASS")
 
+        # 6. Antigravity live synchronization check
+        if self.host == "antigravity":
+            r6 = self.run_command(
+                "doctor-antigravity-sync",
+                "Verify live Antigravity plugin synchronization",
+                "adapter",
+                [sys.executable, str(ROOT / "scripts" / "sync-antigravity-plugin.py"), "--check"],
+            )
+            doctor_pass = doctor_pass and (r6.verdict == "PASS")
+
         return doctor_pass
 
     def drive(self, feature: Optional[str] = None) -> bool:

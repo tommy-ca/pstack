@@ -31,7 +31,7 @@
 - [x] Unit 1: Issue #121 Ingest & harden 8 PR/review skills into canonical repository (`skills/`)
 - [x] Unit 2: Issue #122 Formalize Antigravity commands and 22 subagents packaging projection (`scripts/project-package.py`)
 - [x] Unit 3: Issue #123 Upgrade Antigravity plugin synchronization lever with bidirectional verification (`scripts/sync-antigravity-plugin.py`)
-- [ ] Unit 4: Issue #124 Update multi-harness profiles, skill orders, and portability schemas (`profiles/antigravity.json`)
-- [ ] Unit 5: Swarm, Arena, Interrogate, and 5-Harness Lever verification (`verify-portable.py run --host all`)
-- [ ] Unit 6: Stacked PRs creation and Babysit protocol execution
+- [x] Unit 4: Issue #124 Update multi-harness profiles, skill orders, and portability schemas (`profiles/antigravity.json`)
+- [x] Unit 5: Swarm, Arena, Interrogate, and 5-Harness Lever verification (`verify-portable.py run --host all`)
+- [x] Unit 6: Stacked PRs creation and Babysit protocol execution
 
