@@ -151,3 +151,15 @@ Evidence gathered during the Codex pilot reconciled core contract expectations:
 4. Secondary scale harnesses (OMP and OpenCode) consume the reconciled capabilities and projected manifests directly.
 
 A port that copies another port's host calls is not portable pstack. A thin adapter with strong evidence is.
+
+## Batch 2 acceptance matrix (5 harnesses)
+
+Batch 2 expands the verified host matrix to 5 harnesses across 3 verification planes (Canonical, Adapter, Runtime):
+1. **Grok Build** (`grok`): Reference host. Subagent tree with depth 2 and shared workspace.
+2. **Codex** (`codex`): Pilot host. Independent workspace git-tree with advisory read-only enforcement.
+3. **OMP** (`omp`): Scale host. Subagent-driven, multi-lane execution with model tier binding.
+4. **OpenCode** (`opencode`): Scale host. Tool-call delegation and structured multi-lane orchestration.
+5. **Google Antigravity** (`antigravity`): Subagent orchestration (`invoke_subagent`, `define_subagent`, `manage_subagents`), background tasks (`run_command` async, `manage_task`, `schedule`), structured human gates (`ask_question`), Gemini model role bindings (`pro`, `flash`, `flash_lite`), and native `.agents/` / plugin rules.
+
+All 5 harnesses are verified via the 3-plane lever engine (`scripts/verify-portable.py run --host <host>`).
+
