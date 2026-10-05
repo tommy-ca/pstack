@@ -38,6 +38,7 @@ from scripts.portability_schema import (
 )
 
 SUPPORTED_HOSTS = ("grok", "codex", "omp", "opencode", "antigravity", "mock")
+FIVE_HARNESSES = ("grok", "codex", "omp", "opencode", "antigravity")
 DEFAULT_EVIDENCE_DIR = ROOT / ".audit" / "evidence"
 
 
@@ -289,44 +290,57 @@ class PortableVerifier:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("action", choices=["doctor", "drive", "run"], help="Action to execute")
-    parser.add_argument("--host", choices=SUPPORTED_HOSTS, default="grok", help="Target harness")
+    parser.add_argument("--host", choices=[*SUPPORTED_HOSTS, "all"], default="grok", help="Target harness (or 'all' for all 5)")
     parser.add_argument("--feature", help="Feature to drive (for 'drive' action)")
     parser.add_argument("--evidence-dir", type=Path, default=DEFAULT_EVIDENCE_DIR, help="Evidence directory")
     args = parser.parse_args()
 
-    verifier = PortableVerifier(host=args.host, evidence_root=args.evidence_dir)
-    verifier.launch()
+    hosts = list(FIVE_HARNESSES) if args.host == "all" else [args.host]
+    all_pass = True
+    receipts: List[VerificationReceipt] = []
 
-    if args.action == "doctor":
-        ok = verifier.doctor()
-        receipt = verifier.proof_bar()
-        verifier.evidence(receipt)
-        sys.exit(0 if ok else 1)
+    for h in hosts:
+        verifier = PortableVerifier(host=h, evidence_root=args.evidence_dir)
+        verifier.launch()
 
-    if args.action == "drive":
-        verifier.doctor()
-        ok = verifier.drive(feature=args.feature)
-        receipt = verifier.proof_bar()
-        verifier.evidence(receipt)
-        sys.exit(0 if ok else 1)
+        if args.action == "doctor":
+            ok = verifier.doctor()
+            receipt = verifier.proof_bar()
+            verifier.evidence(receipt)
+            receipts.append(receipt)
+            all_pass = all_pass and ok
 
-    if args.action == "run":
-        doc_ok = verifier.doctor()
-        drive_ok = verifier.drive()
-        receipt = verifier.proof_bar()
-        verifier.evidence(receipt)
-        verifier.cleanup()
+        elif args.action == "drive":
+            verifier.doctor()
+            ok = verifier.drive(feature=args.feature)
+            receipt = verifier.proof_bar()
+            verifier.evidence(receipt)
+            receipts.append(receipt)
+            all_pass = all_pass and ok
 
+        elif args.action == "run":
+            verifier.doctor()
+            verifier.drive()
+            receipt = verifier.proof_bar()
+            verifier.evidence(receipt)
+            verifier.cleanup()
+            receipts.append(receipt)
+            all_pass = all_pass and (receipt.overall_verdict == "PASS")
+
+    if args.action == "run" or len(hosts) > 1:
         print(f"\n================ Verification Summary ================")
-        print(f"Run ID: {receipt.run_id}")
-        print(f"Host: {receipt.host}")
-        print(f"Canonical Plane: {receipt.planes['canonical']}")
-        print(f"Adapter Plane:   {receipt.planes['adapter']}")
-        print(f"Runtime Plane:   {receipt.planes['runtime']}")
-        print(f"Overall Verdict: {receipt.overall_verdict}")
-        print(f"======================================================\n")
+        for r in receipts:
+            if args.action == "doctor":
+                status = "PASS" if (r.planes.get("canonical") == "PASS" and r.planes.get("adapter") == "PASS") else "FAIL"
+            elif args.action == "drive":
+                status = "PASS" if (r.planes.get("runtime") == "PASS") else "FAIL"
+            else:
+                status = r.overall_verdict
+            print(f"Host: {r.host:<12} | Canonical: {r.planes.get('canonical', 'N/A'):<4} | Adapter: {r.planes.get('adapter', 'N/A'):<4} | Runtime: {r.planes.get('runtime', 'N/A'):<4} | Status: {status}")
+        print(f"======================================================")
+        print(f"5-Harness Matrix Verdict: {'PASS' if all_pass else 'FAIL'}\n")
 
-        sys.exit(0 if receipt.overall_verdict == "PASS" else 1)
+    sys.exit(0 if all_pass else 1)
 
 
 if __name__ == "__main__":
