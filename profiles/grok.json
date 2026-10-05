@@ -1,0 +1,78 @@
+{
+  "host": "grok",
+  "support_state": "supported",
+  "bindings": [
+    {
+      "host": "grok",
+      "capability": "agent.spawn",
+      "implementation_status": "native",
+      "primitive": "spawn_subagent",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/grok-receipt.json"
+    },
+    {
+      "host": "grok",
+      "capability": "agent.join",
+      "implementation_status": "native",
+      "primitive": "get_command_or_subagent_output",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/grok-receipt.json"
+    },
+    {
+      "host": "grok",
+      "capability": "workspace.isolated",
+      "implementation_status": "native",
+      "primitive": "isolation: worktree",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/grok-receipt.json"
+    },
+    {
+      "host": "grok",
+      "capability": "workspace.readonly",
+      "implementation_status": "native",
+      "primitive": "subagent_readonly",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/grok-receipt.json"
+    },
+    {
+      "host": "grok",
+      "capability": "human.ask",
+      "implementation_status": "native",
+      "primitive": "ask_user_question",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/grok-receipt.json"
+    },
+    {
+      "host": "grok",
+      "capability": "plan.update",
+      "implementation_status": "native",
+      "primitive": "todo_write",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/grok-receipt.json"
+    },
+    {
+      "host": "grok",
+      "capability": "verify",
+      "implementation_status": "native",
+      "primitive": "scripts/verify-portable.py",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/grok-receipt.json"
+    }
+  ],
+  "evidence_ledger": [
+    {
+      "claim": "Grok Build implements all 7 required capabilities natively with hard enforcement",
+      "kind": "runtime",
+      "artifact": ".audit/evidence/grok-receipt.json",
+      "command": "python3 scripts/verify-portable.py run --host grok",
+      "timestamp": "2026-10-05T16:55:00Z"
+    }
+  ]
+}
