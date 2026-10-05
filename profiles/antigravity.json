@@ -25,6 +25,42 @@
     },
     {
       "host": "antigravity",
+      "capability": "agent.message",
+      "implementation_status": "native",
+      "primitive": "send_message",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/antigravity-receipt.json"
+    },
+    {
+      "host": "antigravity",
+      "capability": "agent.cancel",
+      "implementation_status": "native",
+      "primitive": "manage_subagents (kill)",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/antigravity-receipt.json"
+    },
+    {
+      "host": "antigravity",
+      "capability": "agent.resume",
+      "implementation_status": "native",
+      "primitive": "send_message / reactive resume",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/antigravity-receipt.json"
+    },
+    {
+      "host": "antigravity",
+      "capability": "workspace.shared",
+      "implementation_status": "native",
+      "primitive": "Workspace: inherit",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/antigravity-receipt.json"
+    },
+    {
+      "host": "antigravity",
       "capability": "workspace.isolated",
       "implementation_status": "native",
       "primitive": "Workspace: branch | share",
@@ -52,10 +88,64 @@
     },
     {
       "host": "antigravity",
+      "capability": "human.gate",
+      "implementation_status": "native",
+      "primitive": "ask_question (blocking gate)",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/antigravity-receipt.json"
+    },
+    {
+      "host": "antigravity",
       "capability": "plan.update",
       "implementation_status": "native",
       "primitive": "artifacts / todo.md",
       "enforcement": "advisory",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/antigravity-receipt.json"
+    },
+    {
+      "host": "antigravity",
+      "capability": "schedule",
+      "implementation_status": "native",
+      "primitive": "schedule (timer and cron)",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/antigravity-receipt.json"
+    },
+    {
+      "host": "antigravity",
+      "capability": "monitor",
+      "implementation_status": "native",
+      "primitive": "schedule / reactive messaging",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/antigravity-receipt.json"
+    },
+    {
+      "host": "antigravity",
+      "capability": "session.persist",
+      "implementation_status": "native",
+      "primitive": "transcripts and brain artifacts",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/antigravity-receipt.json"
+    },
+    {
+      "host": "antigravity",
+      "capability": "session.resume",
+      "implementation_status": "native",
+      "primitive": "conversation continuation",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/antigravity-receipt.json"
+    },
+    {
+      "host": "antigravity",
+      "capability": "evidence.capture",
+      "implementation_status": "native",
+      "primitive": "write_to_file (.audit/evidence/)",
+      "enforcement": "hard",
       "verification_status": "verified",
       "evidence_ref": ".audit/evidence/antigravity-receipt.json"
     },

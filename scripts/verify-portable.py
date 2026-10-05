@@ -46,7 +46,7 @@ DEFAULT_EVIDENCE_DIR = ROOT / ".audit" / "evidence"
 class ScenarioResult:
     id: str
     description: str
-    plane: str  # canonical | adapter | runtime
+    plane: str  # canonical | adapter | package | runtime
     command: str
     exit_code: int
     stdout_snippet: str
@@ -137,7 +137,7 @@ class PortableVerifier:
         r4 = self.run_command(
             "doctor-package-projection",
             "Verify package descriptor and projected native harness manifests",
-            "adapter",
+            "package",
             [sys.executable, str(ROOT / "scripts" / "project-package.py"), "--check"],
         )
 
@@ -159,7 +159,7 @@ class PortableVerifier:
             r6 = self.run_command(
                 "doctor-antigravity-sync",
                 "Verify live Antigravity plugin synchronization",
-                "adapter",
+                "package",
                 [sys.executable, str(ROOT / "scripts" / "sync-antigravity-plugin.py"), "--check"],
             )
             doctor_pass = doctor_pass and (r6.verdict == "PASS")
@@ -264,9 +264,9 @@ class PortableVerifier:
         return all(s.verdict == "PASS" for s in self.scenarios if s.plane == "runtime")
 
     def proof_bar(self) -> VerificationReceipt:
-        """Step 4: Compute the proof bar and verdicts across the three planes."""
+        """Step 4: Compute the proof bar and verdicts across the four planes."""
         planes = {}
-        for plane in ("canonical", "adapter", "runtime"):
+        for plane in ("canonical", "adapter", "package", "runtime"):
             results = [s for s in self.scenarios if s.plane == plane]
             if not results:
                 planes[plane] = "UNTESTED"
@@ -345,12 +345,12 @@ def main() -> None:
         print(f"\n================ Verification Summary ================")
         for r in receipts:
             if args.action == "doctor":
-                status = "PASS" if (r.planes.get("canonical") == "PASS" and r.planes.get("adapter") == "PASS") else "FAIL"
+                status = "PASS" if (r.planes.get("canonical") == "PASS" and r.planes.get("adapter") == "PASS" and r.planes.get("package") == "PASS") else "FAIL"
             elif args.action == "drive":
                 status = "PASS" if (r.planes.get("runtime") == "PASS") else "FAIL"
             else:
                 status = r.overall_verdict
-            print(f"Host: {r.host:<12} | Canonical: {r.planes.get('canonical', 'N/A'):<4} | Adapter: {r.planes.get('adapter', 'N/A'):<4} | Runtime: {r.planes.get('runtime', 'N/A'):<4} | Status: {status}")
+            print(f"Host: {r.host:<12} | Canonical: {r.planes.get('canonical', 'N/A'):<4} | Adapter: {r.planes.get('adapter', 'N/A'):<4} | Package: {r.planes.get('package', 'N/A'):<4} | Runtime: {r.planes.get('runtime', 'N/A'):<4} | Status: {status}")
         print(f"======================================================")
         print(f"5-Harness Matrix Verdict: {'PASS' if all_pass else 'FAIL'}\n")
 

@@ -11,9 +11,13 @@ from scripts.portability_schema import (
     Adaptation,
     Binding,
     Capability,
+    CONDITIONAL_CAPABILITIES,
+    CONFORMANCE_PLANES,
     Evidence,
     HarnessProfile,
+    MANDATORY_SUPPORT_FLOOR,
     PackageDescriptor,
+    PORTABLE_CAPABILITY_UNIVERSE,
     RuntimeConventions,
     SkillOrderItem,
     ToolMapping,
@@ -97,8 +101,15 @@ def test_package_descriptor_rejects_runtime_orchestration_fields() -> None:
         desc.validate()
 
 
+def test_portable_capability_universe_and_conformance_planes() -> None:
+    assert len(PORTABLE_CAPABILITY_UNIVERSE) == 17
+    assert len(MANDATORY_SUPPORT_FLOOR) == 9
+    assert len(CONDITIONAL_CAPABILITIES) == 8
+    assert CONFORMANCE_PLANES == ("canonical", "adapter", "package", "runtime")
+
+
 def test_harness_profile_requires_all_capabilities_verified_for_supported_state() -> None:
-    # A profile with static-only or missing capabilities cannot claim 'supported'
+    # A profile missing capabilities from the 17-capability universe cannot claim 'supported'
     b1 = Binding(
         host="codex",
         capability="agent.spawn",
@@ -110,13 +121,34 @@ def test_harness_profile_requires_all_capabilities_verified_for_supported_state(
     profile = HarnessProfile(
         host="codex",
         support_state="supported",
+        skills_dir=".codex/skills",
+        plugin_manifest=".codex-plugin/plugin.json",
         bindings=[b1],
     )
-    with pytest.raises(ValidationError, match="unverified required capability"):
+    with pytest.raises(ValidationError, match="must explicitly classify all 17 portable capabilities"):
         profile.validate()
 
-    # Mapped state allows unverified bindings
+    # When all 17 capabilities are present, but a mandatory capability is unverified, 'supported' fails
+    full_bindings = []
+    for cap in PORTABLE_CAPABILITY_UNIVERSE:
+        full_bindings.append(
+            Binding(
+                host="codex",
+                capability=cap,
+                implementation_status="native",
+                enforcement="hard",
+                verification_status="static-only" if cap == "agent.spawn" else "verified",
+                primitive="codex primitive",
+                evidence_ref=".audit/evidence/receipt.json" if cap != "agent.spawn" else None,
+            )
+        )
+    profile.bindings = full_bindings
+    with pytest.raises(ValidationError, match="has unverified mandatory capability"):
+        profile.validate()
+
+    # Mapped state allows unverified and partial bindings
     profile.support_state = "mapped"
+    profile.bindings = [b1]
     profile.validate()
 
 

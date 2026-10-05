@@ -18,15 +18,34 @@ VERIFICATION_STATUSES = ("verified", "static-only", "unverified", "stale")
 ADAPTATION_MODES = ("preserve", "adapt", "exclude", "gap")
 HOSTS = ("grok", "codex", "omp", "opencode", "antigravity", "claude", "custom")
 
-REQUIRED_CAPABILITIES = (
+CONFORMANCE_PLANES = ("canonical", "adapter", "package", "runtime")
+
+MANDATORY_SUPPORT_FLOOR = (
     "agent.spawn",
     "agent.join",
+    "workspace.shared",
     "workspace.isolated",
     "workspace.readonly",
     "human.ask",
     "plan.update",
     "verify",
+    "evidence.capture",
 )
+
+CONDITIONAL_CAPABILITIES: Dict[str, str] = {
+    "schedule": "orchestrate, overnight, autopilot-full",
+    "monitor": "orchestrate, monitor-watcher, loop",
+    "session.persist": "pause-safely",
+    "session.resume": "session-pickup",
+    "agent.message": "interactive multi-agent collaboration",
+    "agent.cancel": "task cancellation and kill",
+    "agent.resume": "subagent resume from checkpoint",
+    "human.gate": "irreversible action confirmation",
+}
+
+PORTABLE_CAPABILITY_UNIVERSE = MANDATORY_SUPPORT_FLOOR + tuple(sorted(CONDITIONAL_CAPABILITIES.keys()))
+
+REQUIRED_CAPABILITIES = MANDATORY_SUPPORT_FLOOR
 
 FORBIDDEN_ORCHESTRATION_FIELDS = (
     "spawn_topology",
@@ -86,6 +105,8 @@ class Binding:
     def validate(self) -> None:
         if self.host not in HOSTS:
             raise ValidationError(f"Unknown host: {self.host!r}")
+        if self.capability not in PORTABLE_CAPABILITY_UNIVERSE:
+            raise ValidationError(f"Unknown capability: {self.capability!r}")
         if self.implementation_status not in IMPLEMENTATION_STATUSES:
             raise ValidationError(f"Invalid implementation status: {self.implementation_status!r}")
         if self.enforcement not in ENFORCEMENT_LEVELS:
@@ -333,19 +354,25 @@ class HarnessProfile:
         if self.package_descriptor:
             self.package_descriptor.validate()
 
-        # Domain Rule: Supported state requires all required capabilities to be verified with runtime evidence
-        if self.support_state == "supported":
+        # Domain Rule: Supported/verified state requires all 17 capabilities in PORTABLE_CAPABILITY_UNIVERSE to be explicitly classified
+        if self.support_state in ("supported", "verified"):
             bound_caps = {b.capability: b for b in self.bindings}
-            for req in REQUIRED_CAPABILITIES:
-                if req not in bound_caps:
-                    raise ValidationError(f"Supported harness {self.host} missing required capability {req}")
+            missing_universe = set(PORTABLE_CAPABILITY_UNIVERSE) - set(bound_caps.keys())
+            if missing_universe:
+                raise ValidationError(
+                    f"{self.support_state.title()} harness profile for {self.host} must explicitly classify all 17 portable capabilities (missing: {sorted(missing_universe)})"
+                )
+
+            for req in MANDATORY_SUPPORT_FLOOR:
                 binding = bound_caps[req]
-                if binding.verification_status != "verified":
+                if binding.implementation_status == "gap" and req != "workspace.readonly":
                     raise ValidationError(
-                        f"Supported harness {self.host} has unverified required capability {req}: {binding.verification_status}"
+                        f"{self.support_state.title()} harness {self.host} cannot have gap on mandatory capability {req}"
                     )
-                if binding.implementation_status == "gap":
-                    raise ValidationError(f"Supported harness {self.host} cannot have gap on required capability {req}")
+                if self.support_state == "supported" and binding.verification_status != "verified":
+                    raise ValidationError(
+                        f"Supported harness {self.host} has unverified mandatory capability {req}: {binding.verification_status}"
+                    )
 
         # Domain Rule: Harness tool mappings are structured and schema-validated
         if self.tool_mappings is not None:
