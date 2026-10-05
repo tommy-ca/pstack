@@ -3,3 +3,6 @@ __pycache__/
 .pytest_cache/
 .worktrees/
 .audit/
+.commandcode/
+.grok/agent-memory/
+node_modules/

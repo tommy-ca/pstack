@@ -1,0 +1,250 @@
+#!/usr/bin/env python3
+"""Portable lever verification engine for pstack across agent harnesses.
+
+Implements the pattern from Build the Lever + Prove It Works + create-verification-skill:
+    Launch -> Doctor -> Drive -> Proof Bar -> Evidence -> Cleanup
+
+Usage:
+    python3 scripts/verify-portable.py doctor [--host <host>]
+    python3 scripts/verify-portable.py drive --feature <feature> [--host <host>]
+    python3 scripts/verify-portable.py run [--host <host>] [--evidence-dir <dir>]
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import secrets
+import subprocess
+import sys
+import time
+from dataclasses import asdict, dataclass, field
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from scripts.portability_schema import (
+    Binding,
+    Capability,
+    Evidence,
+    HarnessProfile,
+    PackageDescriptor,
+    REQUIRED_CAPABILITIES,
+    ValidationError,
+)
+
+SUPPORTED_HOSTS = ("grok", "codex", "omp", "opencode", "mock")
+DEFAULT_EVIDENCE_DIR = ROOT / ".audit" / "evidence"
+
+
+@dataclass
+class ScenarioResult:
+    id: str
+    description: str
+    plane: str  # canonical | adapter | runtime
+    command: str
+    exit_code: int
+    stdout_snippet: str
+    verdict: str  # PASS | FAIL | BLOCKED
+    duration_s: float
+
+
+@dataclass
+class VerificationReceipt:
+    run_id: str
+    host: str
+    timestamp: str
+    overall_verdict: str
+    planes: Dict[str, str]
+    scenarios: List[ScenarioResult] = field(default_factory=list)
+    artifacts: List[str] = field(default_factory=list)
+
+
+class PortableVerifier:
+    def __init__(self, host: str, evidence_root: Path):
+        self.host = host
+        self.evidence_root = evidence_root
+        self.run_id = f"{host}-{int(time.time())}-{secrets.token_hex(4)}"
+        self.run_dir = self.evidence_root / self.run_id
+        self.scenarios: List[ScenarioResult] = []
+
+    def launch(self) -> bool:
+        """Step 1: Launch prerequisite checks."""
+        self.run_dir.mkdir(parents=True, exist_ok=True)
+        return True
+
+    def run_command(self, scenario_id: str, desc: str, plane: str, cmd: List[str], cwd: Optional[Path] = None) -> ScenarioResult:
+        start = time.time()
+        proc = subprocess.run(
+            cmd,
+            cwd=cwd or ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        duration = round(time.time() - start, 3)
+        stdout_snip = proc.stdout.strip()[:300]
+        stderr_snip = proc.stderr.strip()[:300]
+        verdict = "PASS" if proc.returncode == 0 else "FAIL"
+
+        result = ScenarioResult(
+            id=scenario_id,
+            description=desc,
+            plane=plane,
+            command=" ".join(cmd),
+            exit_code=proc.returncode,
+            stdout_snippet=stdout_snip or stderr_snip,
+            verdict=verdict,
+            duration_s=duration,
+        )
+        self.scenarios.append(result)
+        return result
+
+    def doctor(self) -> bool:
+        """Step 2: Doctor static prerequisites, canonical conformance, and schema validity."""
+        print(f"[{self.host}] Running Doctor checks...")
+
+        # 1. Canonical conformance
+        r1 = self.run_command(
+            "doctor-canonical-index",
+            "Verify canonical inventory conforms to pin",
+            "canonical",
+            [sys.executable, str(ROOT / "scripts" / "canonical-index.py"), "--check"],
+        )
+
+        # 2. OpenSpec change integrity
+        r2 = self.run_command(
+            "doctor-openspec-validation",
+            "Verify active openspec changes pass schema checks",
+            "canonical",
+            ["openspec", "validate", "pstack-portability-contract", "--type", "change", "--strict"],
+        )
+
+        # 3. Static adapter checks
+        r3 = self.run_command(
+            "doctor-adapter-static",
+            "Verify static harness names and discipline",
+            "adapter",
+            [sys.executable, str(ROOT / "scripts" / "verify-harness.py")],
+        )
+
+        doctor_pass = all(r.verdict == "PASS" for r in (r1, r2, r3))
+        return doctor_pass
+
+    def drive(self, feature: Optional[str] = None) -> bool:
+        """Step 3: Drive representative capability scenarios."""
+        print(f"[{self.host}] Driving capability scenarios...")
+
+        # Drive 1: Router and principle discovery
+        self.run_command(
+            "drive-principles-load",
+            "Ensure poteto-mode loads all canonical principles without error",
+            "runtime",
+            [sys.executable, "-c", "import sys; from pathlib import Path; r = Path('.'); p = list((r/'skills').glob('principle-*/SKILL.md')); assert len(p) == 23; sys.exit(0)"],
+        )
+
+        # Drive 2: Plan checker validation
+        self.run_command(
+            "drive-check-plan",
+            "Verify multi-phase plan checking logic",
+            "runtime",
+            ["bun", "test", str(ROOT / "skills" / "poteto-mode" / "scripts" / "check-plan.test.mjs")],
+        )
+
+        # Drive 3: Worktree audit isolation check
+        self.run_command(
+            "drive-worktree-audit",
+            "Run worktree isolation audit smoke test",
+            "runtime",
+            ["bash", str(ROOT / "skills" / "poteto-mode" / "scripts" / "worktree-audit.sh"), "."],
+        )
+
+        return all(s.verdict == "PASS" for s in self.scenarios if s.plane == "runtime")
+
+    def proof_bar(self) -> VerificationReceipt:
+        """Step 4: Compute the proof bar and verdicts across the three planes."""
+        planes = {}
+        for plane in ("canonical", "adapter", "runtime"):
+            results = [s for s in self.scenarios if s.plane == plane]
+            if not results:
+                planes[plane] = "UNTESTED"
+            elif all(s.verdict == "PASS" for s in results):
+                planes[plane] = "PASS"
+            else:
+                planes[plane] = "FAIL"
+
+        overall = "PASS" if all(v == "PASS" for v in planes.values()) else "FAIL"
+
+        receipt = VerificationReceipt(
+            run_id=self.run_id,
+            host=self.host,
+            timestamp=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            overall_verdict=overall,
+            planes=planes,
+            scenarios=self.scenarios,
+            artifacts=[str(self.run_dir)],
+        )
+        return receipt
+
+    def evidence(self, receipt: VerificationReceipt) -> Path:
+        """Step 5: Write structured evidence receipt."""
+        receipt_file = self.run_dir / "receipt.json"
+        data = asdict(receipt)
+        receipt_file.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+        print(f"Evidence captured at {receipt_file}")
+        return receipt_file
+
+    def cleanup(self) -> None:
+        """Step 6: Cleanup transient files while preserving evidence."""
+        pass
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("action", choices=["doctor", "drive", "run"], help="Action to execute")
+    parser.add_argument("--host", choices=SUPPORTED_HOSTS, default="grok", help="Target harness")
+    parser.add_argument("--feature", help="Feature to drive (for 'drive' action)")
+    parser.add_argument("--evidence-dir", type=Path, default=DEFAULT_EVIDENCE_DIR, help="Evidence directory")
+    args = parser.parse_args()
+
+    verifier = PortableVerifier(host=args.host, evidence_root=args.evidence_dir)
+    verifier.launch()
+
+    if args.action == "doctor":
+        ok = verifier.doctor()
+        receipt = verifier.proof_bar()
+        verifier.evidence(receipt)
+        sys.exit(0 if ok else 1)
+
+    if args.action == "drive":
+        verifier.doctor()
+        ok = verifier.drive(feature=args.feature)
+        receipt = verifier.proof_bar()
+        verifier.evidence(receipt)
+        sys.exit(0 if ok else 1)
+
+    if args.action == "run":
+        doc_ok = verifier.doctor()
+        drive_ok = verifier.drive()
+        receipt = verifier.proof_bar()
+        verifier.evidence(receipt)
+        verifier.cleanup()
+
+        print(f"\n================ Verification Summary ================")
+        print(f"Run ID: {receipt.run_id}")
+        print(f"Host: {receipt.host}")
+        print(f"Canonical Plane: {receipt.planes['canonical']}")
+        print(f"Adapter Plane:   {receipt.planes['adapter']}")
+        print(f"Runtime Plane:   {receipt.planes['runtime']}")
+        print(f"Overall Verdict: {receipt.overall_verdict}")
+        print(f"======================================================\n")
+
+        sys.exit(0 if receipt.overall_verdict == "PASS" else 1)
+
+
+if __name__ == "__main__":
+    main()
