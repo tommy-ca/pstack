@@ -215,18 +215,18 @@ def main() -> None:
     if extra:
         fail(f"unexpected playbook files: {extra}")
 
-    expected_principles = 23
     inventory_file = ROOT / "openspec" / "canonical-inventory.json"
-    if inventory_file.is_file():
-        try:
-            inv = json.loads(inventory_file.read_text(encoding="utf-8"))
-            expected_principles = inv.get("counts", {}).get("principles", 23)
-        except Exception:
-            expected_principles = 23
+    if not inventory_file.is_file():
+        fail("openspec/canonical-inventory.json missing; run python3 scripts/canonical-index.py --generate")
+    try:
+        inv = json.loads(inventory_file.read_text(encoding="utf-8"))
+        expected_principles = inv["counts"]["principles"]
+    except Exception as exc:
+        fail(f"failed to read expected principles from canonical inventory: {exc}")
 
     principles = sorted(p.name for p in ROOT.joinpath("skills").glob("principle-*") if p.is_dir())
     if len(principles) != expected_principles:
-        fail(f"expected {expected_principles} principle-* skills, got {len(principles)}: {principles}")
+        fail(f"expected {expected_principles} principle-* skills per canonical inventory, got {len(principles)}: {principles}")
 
     skill_text = SKILL.read_text(encoding="utf-8")
     for name in NAMED_22:

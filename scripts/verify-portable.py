@@ -175,7 +175,11 @@ class PortableVerifier:
             "drive-principles-load",
             "Ensure poteto-mode loads all canonical principles without error",
             "runtime",
-            [sys.executable, "-c", "import sys; from pathlib import Path; r = Path('.'); p = list((r/'skills').glob('principle-*/SKILL.md')); assert len(p) == 23; sys.exit(0)"],
+            [
+                sys.executable,
+                "-c",
+                "import sys, json; from pathlib import Path; r = Path('.'); inv = json.loads((r/'openspec'/'canonical-inventory.json').read_text()); expected = [a['path'] for a in inv.get('artifacts', []) if a.get('category') == 'principle' and a.get('mode') in ('preserve', 'adapt')]; missing = [p for p in expected if not (r/p).is_file()]; sys.exit(1 if missing else 0)",
+            ],
         )
 
         # Drive 2: Plan checker validation
