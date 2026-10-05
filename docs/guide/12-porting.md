@@ -1,77 +1,144 @@
 # Port pstack to another agent harness
 
-Official pstack (poteto, Cursor plugin pin in [`UPSTREAM`](../../UPSTREAM)) is a philosophy plus a file layout. This Grok port is a **reference implementation** of that layout. Use this page to port the core onto **any** new agent whose tools you can name.
+Official pstack at the immutable pin in [`UPSTREAM`](../../UPSTREAM) is canonical. This repository is a **reference port**. Its Grok implementation is evidence for how to adapt a host, not an intermediate specification that other hosts must copy.
 
-The host map is the only required new file. Fill the checklist from that agent's docs or source. Write `gap` when the host has no equivalent. Playbooks then call the names you wrote, not Cursor spawn fields.
+The host map is the primary adapter document, defined under the cross-harness contract [`pstack-portability`](../../openspec/specs/pstack-portability/spec.md).
 
-## Philosophy (keep this)
+## Keep the pstack meaning
 
-From the official README and `docs/guide/08-principles.md`:
+Preserve the canonical principles, skills, router behavior, playbook intent, role boundaries, ordering, and verification rules. Focus on less code, not loc. Port host-dependent mechanisms only.
 
-- **Less code, higher quality.** Throughput without quality is not the goal. Opposite of maximizing loc.
-- **Go deep, then parallelize.** Trust each agent because it applies the same principles. Then fan out.
-- **One router.** `/poteto-mode` matches a playbook and calls situational skills. The operator gives a goal and a checkable outcome in their own words.
-- **Steer with principle names.** 23 principles as leaf skills. You do not invoke them. One phrase redirects. The agent must name the decision the principle changed.
-- **Prove on the real artifact.** Compiling is not done.
-- **Never block on reversible work.** Pause on irreversible writes.
-- **Encode lessons in structure.** The second time you write an instruction, turn it into a check or script. **Laziness Protocol** is the default sizing rule: smallest change, prefer deletion.
+The architecture is intentionally small:
 
-A port that copies files and keeps the previous host's spawn fields is not a port.
+```text
+canonical pstack
+    ↓
+portable capabilities
+    ↓
+host adapter
+    ↓
+conformance evidence
+```
 
-## Three layers
+Do not add a universal scheduler, task database, session manager, provider gateway, or workflow DSL just to make hosts look alike.
 
-| Layer | What | Port how |
-|---|---|---|
-| Core | 23 `principle-*` skills, 22 playbook **intents**, router skill shape, unslop, no-comments, tdd, how, why | Copy. Keep names. |
-| Host map | One file the router reads first | Fill the checklist below. Grok reference: [`HARNESS.md`](../../HARNESS.md). Codex: `skills/poteto-mode/references/codex-tools.md`. |
-| Domain packs | Benny, TypeScript practices, visual-parity, forge-neutral PR and stack landing | Keep only if the domain matches. |
+The principles that matter most during a port are **Laziness Protocol**, **Model the Domain**, **Boundary Discipline**, **Build the Lever**, **Prove It Works**, **Separate Before Serializing Shared State**, and **Encode Lessons in Structure**.
+
+## Discover, do not count
+
+Enumerate the canonical principle, playbook, and relevant skill inventory from the recorded pin. The reference canonical pin establishes 23 principles as leaf skills and 23 `principle-*` skills. Do not use a literal number as the permanent source of truth for future pins.
+
+For every relevant canonical artifact record one state:
+
+```text
+preserve
+adapt
+exclude
+gap
+```
+
+An exclusion needs a reason such as packaging, host-specific, domain-pack, or policy.
+
+Track pin conformance separately from upstream freshness. The port can conform to its immutable pin while newer canonical changes remain to be classified.
 
 ## Capability checklist
 
-Inventory the new agent from its **docs and source**, not from memory. For each pstack need, write the live primitive or write `gap`.
+For the new host, document these capabilities from live docs/source and runtime evidence where possible. Map primitives such as Spawn a child (`agent.spawn`), Join / wait (`agent.join`), and Overnight loop (`schedule`). Write `gap` when a capability is absent:
 
-| pstack need | What to find on the new host | Grok reference (this tree) |
-|---|---|---|
-| Slash / skill load | How SKILL.md becomes `/name`. Frontmatter the host actually parses. | Plugin `skills/` |
-| Install / enable / trust | Manifest path, enable list vs inspect "enabled". Sandbox write limits. | `plugin.json`, `[plugins].enabled`, EROFS on `config.toml` |
-| Spawn a child | Tool id and fields. Default type. | `spawn_subagent` (wire `task`) |
-| Background | Field name and default. | `background` (TUI default false) |
-| Join / wait | Block vs poll. Id field. | `get_command_or_subagent_output` |
-| Cancel | Kill primitive. | `kill_command_or_subagent` |
-| Role types | How plugin agents are named. Prefix? Overlay path. | `pstack:<role-key>`, `~/.grok/roles/pstack:<key>.toml` |
-| Model per spawn | Optional slug. Inherit parent? | `model`, omit to inherit |
-| Effort | On spawn vs agent frontmatter vs overlay. Live enum. | Frontmatter `effort` or overlay. No spawn `reasoning_effort` field here. |
-| Read-only child | Real field or a role with no edit tools. Ignored JSON is a `gap`. | `pstack:how-explorer` (not a spawn capability field) |
-| Isolation | Worktree vs cwd. | `isolation: none \| worktree` |
-| Resume | Same type, prior id. | `resume_from` |
-| Nested spawn | Max depth. If 1, parent fans out. | `MAX_SUBAGENT_DEPTH` 1 |
-| Todos | Merge semantics and statuses. | `todo_write` |
-| Ask the human | Fixed-choice only. Product or preference. | `ask_user_question` |
-| Overnight loop | Same-run vs persist-then-wake. Min interval. | `/loop` → `scheduler_create` (new turn, min 60s) |
-| Watch | Log or process watch without polling. | `monitor` |
-| Skill order | Plugin vs user vs builtin. | pstack, then user, then bundled |
-| Workflows | Plugin-shipped or project/user dirs only. | Not a plugin field. Target `.grok/workflows/` |
-| Hooks | Plugin-global vs opt-in. | This plugin has no `hooks` key |
+| capability | question |
+|---|---|
+| `agent.spawn` | How does the parent create a child and select a role/model? |
+| `agent.join` | How does the parent wait for terminal results? |
+| `agent.message` / `agent.cancel` / `agent.resume` | Which lifecycle operations exist? |
+| `workspace.isolated` | Can a writer get an independent writable tree/workspace? |
+| `workspace.readonly` | Is no-write enforcement hard, soft, or prompt-only? |
+| `human.ask` / `human.gate` | How are product questions and irreversible-action gates represented? |
+| `plan.update` | What is the host-native progress state? |
+| `schedule` | Can long-running work wake later, and in what context? |
+| `monitor` | Can a process/PR/condition be watched without polling loops? |
+| `session.persist` / `session.resume` | What state survives a turn or session boundary? |
+| `verify` / `evidence.capture` | How is real-artifact proof captured and retained? |
 
-Write `gap` for a missing row. Do not invent a field the host ignores. A `gap` means playbooks skip that step with `skip: host has no overnight primitive` (or the real reason).
+Each binding records:
 
-## Follow these steps
+```text
+implementation: native | shim | version-gated | gap
+enforcement: hard | soft | advisory
+verification: verified | static-only | unverified | stale
+```
 
-1. Fill the capability checklist from the new agent's user guide and, if you have it, the loader source (manifest struct, spawn input type).
-2. Copy `skills/principle-*` and `skills/poteto-mode/` (playbooks + router).
-3. Write `<host-map>.md` as a table like [`HARNESS.md`](../../HARNESS.md) **Mapping**. Point the router's first todo at that file (see `skills/poteto-mode/SKILL.md` Non-negotiables).
-4. Register skills and role agents in the host's plugin or skill dirs. Do not add `commands/` clones of slash skills unless the host has no skill `/name`.
-5. Rewrite playbook call sites to the map's names. Parent owns fan-out when nested spawn is a `gap` or depth is 1.
-6. Add a scanner that forbids leftover identifiers from the **previous** host in playbooks (this repo: `scripts/verify-harness.py`). Tests must fail on a leftover name.
-7. Domain packs last. Skip canvases the host lacks. Skip Benny until Slack and fail-closed are remapped. Do not ship a global merge-deny hook.
+Write `gap` instead of inventing a host field.
 
-This repo did those steps for Grok Build. `UPSTREAM` names the Cursor pin. `scripts/sync-from-upstream.py` is print-only. `adapt-harness.py` rewrites Cursor call sites.
+Grok's detailed reference mapping remains [`HARNESS.md`](../../HARNESS.md). Codex and Claude Code have their own mapping/packaging surfaces; they do not inherit Grok semantics.
 
-## What not to copy as "core"
+## Preserve the composed skills
 
-- Previous host spawn field names and panel slugs.
-- Plugin-global merge-deny hooks.
-- Workflow clones of playbooks (ADR 0005). If the host has workflows, they live in a **target** repo.
-- A 63-plugin marketplace tree. pstack is one plugin.
+### Swarm
 
-Next: [Grok Build workflows](./11-grok-workflows.md) if the host is Grok. Official principles: [Steer with principle names](./08-principles.md).
+```text
+frame → fan-out → join → validate evidence → aggregate → report
+```
+
+Use independent workers for independent slices or declared race arms. Every brief names the goal, scope, verification method, and output contract. A dropout or missing evidence is a gap, never PASS.
+
+### Arena
+
+```text
+frame rubric → independent candidates → cross-judge → pick → graft → verify
+```
+
+Declare the rubric before generation. Separate candidate writes. Verify the synthesized result after grafting.
+
+### Interrogate
+
+```text
+intent → independent reviewers → consensus/disagreement map → lead judgment
+```
+
+Reviewers do not mutate the artifact. Multi-model review is useful when available, but the portable invariant is independent adversarial review plus explicit synthesis.
+
+## Build the verification lever
+
+Use **Build the Lever** and **Prove It Works** together. A deterministic script, codemod, generator, driver, or project verification skill is preferable to hand repetition and often preferable to fan-out.
+
+When a project lacks a reliable proof path, use `create-verification-skill` to produce a small driver with:
+
+```text
+Launch
+Doctor
+Drive
+Proof Bar
+Evidence
+Cleanup
+```
+
+and a feature map. Drive the real artifact. Compilation or agent self-report is not runtime proof.
+
+## Keep durable state host-owned
+
+Use the host's native task, agent, scheduler, session, and persistence state. Do not create a second pstack scheduler/database to hide a host limitation. Record the limitation as a gap.
+
+## Support states
+
+Use these states instead of calling every mapping "supported":
+
+```text
+candidate → mapped → packaged → verified → supported
+```
+
+A host is supported only after its required capability bindings have static and runtime conformance evidence.
+
+## Port sequence
+
+1. Pin canonical pstack.
+2. Generate canonical inventory and classify drift.
+3. Map the semantic capability surface.
+4. Package skills/roles for the host.
+5. Adapt host-dependent call sites at the adapter boundary.
+6. Add static adapter checks.
+7. Prove live spawn/join, isolation, independent verification, and representative playbooks.
+8. Prove `swarm`, `arena`, `interrogate`, and a real verification lever.
+9. Only then mark the harness supported.
+10. Add domain packs last.
+
+A port that copies another port's host calls is not portable pstack. A thin adapter with strong evidence is.
