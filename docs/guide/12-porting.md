@@ -141,4 +141,13 @@ A host is supported only after its required capability bindings have static and 
 9. Only then mark the harness supported.
 10. Add domain packs last.
 
+## Reconciled pilot contract
+
+Evidence gathered during the Codex pilot reconciled core contract expectations:
+
+1. Prompt-only read-only posture is advisory. It must not be reported as hard isolation.
+2. Package descriptors are static metadata. They must not contain runtime orchestration fields.
+3. Native harness manifests are projected deterministically from `pstack.package.json` using `scripts/project-package.py`.
+4. Secondary scale harnesses (OMP and OpenCode) consume the reconciled capabilities and projected manifests directly.
+
 A port that copies another port's host calls is not portable pstack. A thin adapter with strong evidence is.

@@ -256,6 +256,23 @@ Portability changes MUST apply these design constraints:
 - **THEN** host primitives stop at the adapter boundary
 - **AND** canonical playbooks remain host-neutral
 
+### Requirement: Pilot reconciliation precedes scale
+
+Contract differences discovered during the pilot harness MUST be reconciled and documented before scaling to secondary harnesses.
+
+The pilot reconciliation MUST:
+1. Reconcile tool mapping to portable capabilities rather than reference host call sites.
+2. Enforce RFC 2119 separation between package descriptors and runtime orchestration.
+3. Validate deterministic projection of native manifests.
+4. Distinguish between global portability requirements and harness-specific compatibility utilities.
+
+#### Scenario: pilot reconciliation gate
+
+- **GIVEN** a completed pilot implementation for Codex
+- **WHEN** scaling to OMP or OpenCode
+- **THEN** the portability contract is reconciled against observed pilot evidence
+- **AND** secondary harnesses build directly on the reconciled contract
+
 ## Minimal data model
 
 ```yaml
