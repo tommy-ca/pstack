@@ -149,7 +149,7 @@ class PortableVerifier:
                 f"doctor-profile-{self.host}",
                 f"Validate typed harness profile for {self.host}",
                 "adapter",
-                [sys.executable, "-c", f"import json; from pathlib import Path; from scripts.portability_schema import HarnessProfile, Binding, Evidence; d = json.loads(Path('{profile_file}').read_text()); b = [Binding(**x) for x in d.get('bindings', [])]; e = [Evidence(**x) for x in d.get('evidence_ledger', [])]; HarnessProfile(host=d['host'], support_state=d['support_state'], bindings=b, evidence_ledger=e).validate()"],
+                [sys.executable, "-c", f"import json; from pathlib import Path; from scripts.portability_schema import HarnessProfile, Binding, Evidence; d = json.loads(Path('{profile_file}').read_text()); b = [Binding(**x) for x in d.get('bindings', [])]; e = [Evidence(**x) for x in d.get('evidence_ledger', [])]; HarnessProfile(host=d['host'], support_state=d['support_state'], bindings=b, skills_dir=d.get('skills_dir'), plugins_dir=d.get('plugins_dir'), plugin_manifest=d.get('plugin_manifest'), evidence_ledger=e).validate()"],
             )
             doctor_pass = doctor_pass and (r5.verdict == "PASS")
 
@@ -181,6 +181,39 @@ class PortableVerifier:
             "Run worktree isolation audit smoke test",
             "runtime",
             ["bash", str(ROOT / "skills" / "poteto-mode" / "scripts" / "worktree-audit.sh"), "."],
+        )
+
+        # Drive 4: Cross-harness verification skill scaffolding and check
+        smoke_target = self.run_dir / "verify-smoke"
+        self.run_command(
+            "drive-verification-skill-scaffold",
+            f"Prove verification skill scaffolding for {self.host}",
+            "runtime",
+            [
+                sys.executable,
+                str(ROOT / "scripts" / "scaffold-verification-skill.py"),
+                "--host",
+                self.host,
+                "--app",
+                "smoke",
+                "--write",
+                "--target-dir",
+                str(smoke_target),
+            ],
+        )
+        self.run_command(
+            "drive-verification-skill-check",
+            f"Validate generated verification skill structure for {self.host}",
+            "runtime",
+            [
+                sys.executable,
+                str(ROOT / "scripts" / "scaffold-verification-skill.py"),
+                "--host",
+                self.host,
+                "--check",
+                "--target-dir",
+                str(smoke_target),
+            ],
         )
 
         # Codex-specific runtime compatibility suites

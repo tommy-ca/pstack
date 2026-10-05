@@ -91,3 +91,24 @@ def test_portable_verifier_proof_bar_and_receipt(tmp_path: Path) -> None:
     data = json.loads(evidence_file.read_text(encoding="utf-8"))
     assert data["overall_verdict"] == "FAIL"
     assert data["host"] == "codex"
+
+
+def test_portable_verifier_drives_verification_skill_scaffolding_across_hosts(tmp_path: Path) -> None:
+    for host in ("grok", "codex", "omp", "opencode", "antigravity"):
+        verifier = PortableVerifier(host=host, evidence_root=tmp_path)
+        assert verifier.launch()
+        ok_doctor = verifier.doctor()
+        assert ok_doctor is True
+        ok_drive = verifier.drive()
+        assert ok_drive is True
+
+        # Ensure drive-verification-skill-scaffold and drive-verification-skill-check ran
+        scenario_ids = [s.id for s in verifier.scenarios]
+        assert "drive-verification-skill-scaffold" in scenario_ids
+        assert "drive-verification-skill-check" in scenario_ids
+
+        scaffold_res = next(s for s in verifier.scenarios if s.id == "drive-verification-skill-scaffold")
+        check_res = next(s for s in verifier.scenarios if s.id == "drive-verification-skill-check")
+        assert scaffold_res.verdict == "PASS"
+        assert check_res.verdict == "PASS"
+
