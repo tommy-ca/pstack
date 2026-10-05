@@ -5,6 +5,9 @@
   "homepage": "https://github.com/tommy-ca/pstack",
   "repository": "https://github.com/tommy-ca/pstack",
   "license": "MIT",
-  "skills": ["./skills/", "./automations/benny-grok/skills/"],
+  "skills": [
+    "./skills/",
+    "./automations/benny-grok/skills/"
+  ],
   "agents": "./agents/"
 }

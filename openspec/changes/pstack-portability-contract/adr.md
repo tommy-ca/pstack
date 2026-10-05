@@ -14,4 +14,4 @@ ADR review completed for the portable harness contract change.
 
 ## New Durable ADRs Created
 
-- None - follows established reference port architecture.
+- `adr/0012-portable-package-descriptor-and-projection.md` - portable package descriptor and deterministic harness projection.

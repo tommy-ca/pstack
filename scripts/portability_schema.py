@@ -133,6 +133,7 @@ class PackageDescriptor:
     host_targets: List[str]
     skills_root: str
     lifecycle: Dict[str, str]
+    description: Optional[str] = None
     roles: List[Dict[str, str]] = field(default_factory=list)
     entrypoints: Dict[str, str] = field(default_factory=dict)
     namespace_policy: str = "prefixed"

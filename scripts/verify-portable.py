@@ -132,7 +132,15 @@ class PortableVerifier:
             [sys.executable, str(ROOT / "scripts" / "verify-harness.py")],
         )
 
-        doctor_pass = all(r.verdict == "PASS" for r in (r1, r2, r3))
+        # 4. Package descriptor and native manifest projection integrity
+        r4 = self.run_command(
+            "doctor-package-projection",
+            "Verify package descriptor and projected native harness manifests",
+            "adapter",
+            [sys.executable, str(ROOT / "scripts" / "project-package.py"), "--check"],
+        )
+
+        doctor_pass = all(r.verdict == "PASS" for r in (r1, r2, r3, r4))
         return doctor_pass
 
     def drive(self, feature: Optional[str] = None) -> bool:

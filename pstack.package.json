@@ -1,0 +1,56 @@
+{
+  "$schema": "./schemas/portability/package-descriptor.schema.json",
+  "id": "pstack",
+  "name": "pstack",
+  "version": "0.15.5-grokbuild.0",
+  "description": "Portable atomic playbooks and principles across agent harnesses.",
+  "upstream_pin": "4b4d98e5e3b3c139f63dbc1ce4b538954c8f2f52",
+  "host_targets": [
+    "grok",
+    "codex",
+    "omp",
+    "opencode"
+  ],
+  "roles": [
+    {
+      "id": "feature",
+      "description": "Feature implementation and refactoring",
+      "default_model_role": "strongest"
+    },
+    {
+      "id": "bug-fix",
+      "description": "Defect reproduction and root-cause fix",
+      "default_model_role": "strong-judgment"
+    },
+    {
+      "id": "interrogate",
+      "description": "Multi-model adversarial code review",
+      "default_model_role": "adversarial-panel"
+    },
+    {
+      "id": "arena",
+      "description": "Parallel candidate generation and cross-judge synthesis",
+      "default_model_role": "diverse-runners"
+    },
+    {
+      "id": "swarm",
+      "description": "Parallel verification and gauntlet coverage",
+      "default_model_role": "fast-verifier"
+    }
+  ],
+  "skills_root": "skills",
+  "entrypoints": {
+    "router": "skills/poteto-mode/SKILL.md"
+  },
+  "namespace_policy": "prefixed",
+  "lifecycle": {
+    "install": "python3 scripts/canonical-index.py --check",
+    "update": "python3 scripts/sync-from-upstream.py --check",
+    "verify": "python3 scripts/verify-portable.py run",
+    "uninstall": "echo 'pstack removed'"
+  },
+  "exclusions": [
+    ".cursor-plugin/plugin.json",
+    "assets/logo.png"
+  ]
+}

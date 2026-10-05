@@ -1,0 +1,8 @@
+{
+  "id": "pstack",
+  "version": "0.15.5-grokbuild.0",
+  "description": "pstack extension for OpenCode harness.",
+  "skills": "./skills",
+  "namespace": "pstack",
+  "router": "skills/poteto-mode/SKILL.md"
+}

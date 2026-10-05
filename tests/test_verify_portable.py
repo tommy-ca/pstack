@@ -25,7 +25,7 @@ def test_portable_verifier_launch_and_doctor(tmp_path: Path) -> None:
 
     ok = verifier.doctor()
     assert ok is True
-    assert len(verifier.scenarios) == 3
+    assert len(verifier.scenarios) == 4
     for s in verifier.scenarios:
         assert s.verdict == "PASS"
 
