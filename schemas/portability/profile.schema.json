@@ -40,6 +40,17 @@
     },
     "tool_mappings": {
       "$ref": "tool-mapping.schema.json"
+    },
+    "skill_order": {
+      "type": "array",
+      "items": {
+        "$ref": "skill-order.schema.json"
+      },
+      "description": "Ordered 3-tier fallback table from pstack need to pstack, user, and builtin skills."
+    },
+    "runtime_conventions": {
+      "$ref": "runtime-conventions.schema.json",
+      "description": "Host-specific execution constraints, isolation modes, and model spawn fields."
     }
   },
   "additionalProperties": false

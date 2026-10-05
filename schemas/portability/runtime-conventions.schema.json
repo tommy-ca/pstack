@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pstack.dev/schemas/portability/runtime-conventions.schema.json",
+  "title": "RuntimeConventions",
+  "description": "Structured execution conventions and constraints for host agent runtimes.",
+  "type": "object",
+  "required": [
+    "max_subagent_depth",
+    "supported_isolation_modes",
+    "default_model",
+    "allowed_spawn_fields",
+    "forbidden_spawn_fields"
+  ],
+  "properties": {
+    "max_subagent_depth": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Maximum permitted subagent recursion depth (default 1 for parent-owned dispatch)."
+    },
+    "supported_isolation_modes": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1,
+      "description": "Supported workspace isolation modes (e.g. worktree, none, branch, share)."
+    },
+    "default_model": {
+      "type": "string",
+      "description": "Default model slug or role inherited by spawned subagents."
+    },
+    "allowed_spawn_fields": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Allowed field names on the model-facing subagent spawn primitive."
+    },
+    "forbidden_spawn_fields": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Forbidden field names on the model-facing subagent spawn primitive."
+    },
+    "wire_aliases": {
+      "type": "object",
+      "additionalProperties": { "type": "string" },
+      "description": "Mapping from host wire or internal alias to canonical TUI tool identifier."
+    }
+  },
+  "additionalProperties": false
+}
