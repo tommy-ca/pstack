@@ -37,7 +37,7 @@ from scripts.portability_schema import (
     ValidationError,
 )
 
-SUPPORTED_HOSTS = ("grok", "codex", "omp", "opencode", "mock")
+SUPPORTED_HOSTS = ("grok", "codex", "omp", "opencode", "antigravity", "mock")
 DEFAULT_EVIDENCE_DIR = ROOT / ".audit" / "evidence"
 
 
@@ -196,6 +196,21 @@ class PortableVerifier:
                 "Verify Codex watch-pr policy and CLI suite",
                 "runtime",
                 ["bun", "test", "./skills/poteto-mode/scripts/watch-pr/cli.test.ts", "./skills/poteto-mode/scripts/watch-pr/policy.test.ts"],
+            )
+
+        # Antigravity-specific runtime verification scenarios
+        if self.host == "antigravity":
+            self.run_command(
+                "drive-antigravity-models",
+                "Verify Antigravity model roles and panel definitions",
+                "runtime",
+                [sys.executable, "-c", "import json; from pathlib import Path; d = json.loads(Path('.antigravity-plugin/models.json').read_text()); assert d['singleRoleDefault'] == 'pro'; assert len(d['roles']) >= 10"],
+            )
+            self.run_command(
+                "drive-antigravity-tools-ref",
+                "Verify Antigravity tool-mapping reference integrity",
+                "runtime",
+                [sys.executable, "-c", "from pathlib import Path; p = Path('skills/poteto-mode/references/antigravity-tools.md'); assert p.is_file(); t = p.read_text(); assert 'invoke_subagent' in t; assert 'ask_question' in t"],
             )
 
         return all(s.verdict == "PASS" for s in self.scenarios if s.plane == "runtime")
