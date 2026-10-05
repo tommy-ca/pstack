@@ -185,6 +185,41 @@ class ToolMapping:
 
 
 @dataclass
+class SkillOrderItem:
+    need: str
+    primary_pstack: Optional[str] = None
+    secondary_user: Optional[str] = None
+    fallback_builtin: Optional[str] = None
+    notes: Optional[str] = None
+
+    def validate(self) -> None:
+        if not self.need or not isinstance(self.need, str) or not self.need.strip():
+            raise ValidationError("SkillOrderItem need cannot be empty")
+
+
+@dataclass
+class RuntimeConventions:
+    max_subagent_depth: int
+    supported_isolation_modes: List[str]
+    default_model: str
+    allowed_spawn_fields: List[str]
+    forbidden_spawn_fields: List[str]
+    wire_aliases: Dict[str, str] = field(default_factory=dict)
+
+    def validate(self) -> None:
+        if not isinstance(self.max_subagent_depth, int) or self.max_subagent_depth < 1:
+            raise ValidationError(f"Invalid max_subagent_depth: {self.max_subagent_depth}")
+        if not self.supported_isolation_modes or not isinstance(self.supported_isolation_modes, list):
+            raise ValidationError("supported_isolation_modes cannot be empty")
+        if not self.default_model or not isinstance(self.default_model, str):
+            raise ValidationError("default_model cannot be empty")
+        if not isinstance(self.allowed_spawn_fields, list):
+            raise ValidationError("allowed_spawn_fields must be a list")
+        if not isinstance(self.forbidden_spawn_fields, list):
+            raise ValidationError("forbidden_spawn_fields must be a list")
+
+
+@dataclass
 class PackageDescriptor:
     id: str
     name: str
@@ -248,6 +283,8 @@ class HarnessProfile:
     package_descriptor: Optional[PackageDescriptor] = None
     evidence_ledger: List[Evidence] = field(default_factory=list)
     tool_mappings: Optional[ToolMapping | Dict[str, Any]] = None
+    skill_order: Optional[List[SkillOrderItem] | List[Dict[str, Any]]] = None
+    runtime_conventions: Optional[RuntimeConventions | Dict[str, Any]] = None
 
     def __post_init__(self) -> None:
         if self.skills_dir is None and self.host in DEFAULT_SKILLS_DIRS:
@@ -262,6 +299,21 @@ class HarnessProfile:
                 self.tool_mappings = ToolMapping(**self.tool_mappings)
             except TypeError as err:
                 raise ValidationError(f"Invalid tool_mappings: {err}") from err
+        if self.skill_order is not None:
+            parsed_orders: List[SkillOrderItem] = []
+            for item in self.skill_order:
+                if isinstance(item, dict):
+                    parsed_orders.append(SkillOrderItem(**item))
+                elif isinstance(item, SkillOrderItem):
+                    parsed_orders.append(item)
+                else:
+                    raise ValidationError(f"Invalid skill_order item: {item!r}")
+            self.skill_order = parsed_orders
+        if isinstance(self.runtime_conventions, dict):
+            try:
+                self.runtime_conventions = RuntimeConventions(**self.runtime_conventions)
+            except TypeError as err:
+                raise ValidationError(f"Invalid runtime_conventions: {err}") from err
 
     def validate(self) -> None:
         if self.host not in HOSTS:
@@ -297,3 +349,12 @@ class HarnessProfile:
         # Domain Rule: Harness tool mappings are structured and schema-validated
         if self.tool_mappings is not None:
             self.tool_mappings.validate()
+
+        # Domain Rule: Skill order resolution follows a declared 3-tier fallback matrix
+        if self.skill_order is not None:
+            for item in self.skill_order:
+                item.validate()
+
+        # Domain Rule: Harness runtime conventions are structured and schema-validated
+        if self.runtime_conventions is not None:
+            self.runtime_conventions.validate()

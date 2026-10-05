@@ -11,7 +11,7 @@
       "description": "The engineering task or intent (e.g. tdd, review, babysit, prove_it_works, debug_failure)."
     },
     "primary_pstack": {
-      "type": "string",
+      "type": ["string", "null"],
       "description": "First-tier pstack skill or playbook (e.g. /tdd, /interrogate, playbooks/babysit.md)."
     },
     "secondary_user": {
