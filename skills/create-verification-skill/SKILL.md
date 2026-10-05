@@ -8,7 +8,14 @@ disable-model-invocation: true
 
 Every serious project needs a scripted way to drive the real app and prove behavior: launch it, exercise a feature the way a user would, and capture evidence. This skill generates that as a project-local skill tailored to the repo. You write the generator's output for the next agent, not for a human: it will be read cold, mid-task, by an agent that has never seen the app.
 
-Default path is `.grok/skills/verify-<app>/` for an application repo. Plugin doctor lives at `.grok/skills/verify-pstack/`. Do not ship it under `skills/`. Do not write `~/.grok/skills`. Do not write `.claude/skills`. Do not name an app skill `verify-pstack`.
+Project-local verification skills live under the active harness's native skills directory:
+- **Google Antigravity**: `.agents/skills/verify-<app>/`
+- **Codex**: `.codex/skills/verify-<app>/`
+- **OMP**: `.omp/skills/verify-<app>/`
+- **OpenCode**: `.opencode/skills/verify-<app>/`
+- **Grok Build**: `.grok/skills/verify-<app>/`
+
+Auto-detect from workspace markers (`.agents/`, `.codex/`, `.omp/`, `.opencode/`, `.grok/`), or accept `--host <harness>`. Plugin doctor lives at `<harness-skills-dir>/verify-pstack/`. Do not ship application verification skills under shared `skills/`. Do not write global home dirs (e.g. `~/.grok/skills`, `~/.gemini/skills`). Do not name an app skill `verify-pstack`. Helper script `scripts/scaffold-verification-skill.py` provides deterministic scaffolding across all 5 harnesses.
 
 ## Why not a wiki
 
