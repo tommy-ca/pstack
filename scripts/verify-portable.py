@@ -141,6 +141,18 @@ class PortableVerifier:
         )
 
         doctor_pass = all(r.verdict == "PASS" for r in (r1, r2, r3, r4))
+
+        # 5. Optional typed harness profile validation
+        profile_file = ROOT / "profiles" / f"{self.host}.json"
+        if profile_file.is_file():
+            r5 = self.run_command(
+                f"doctor-profile-{self.host}",
+                f"Validate typed harness profile for {self.host}",
+                "adapter",
+                [sys.executable, "-c", f"import json; from pathlib import Path; from scripts.portability_schema import HarnessProfile, Binding, Evidence; d = json.loads(Path('{profile_file}').read_text()); b = [Binding(**x) for x in d.get('bindings', [])]; e = [Evidence(**x) for x in d.get('evidence_ledger', [])]; HarnessProfile(host=d['host'], support_state=d['support_state'], bindings=b, evidence_ledger=e).validate()"],
+            )
+            doctor_pass = doctor_pass and (r5.verdict == "PASS")
+
         return doctor_pass
 
     def drive(self, feature: Optional[str] = None) -> bool:
@@ -170,6 +182,21 @@ class PortableVerifier:
             "runtime",
             ["bash", str(ROOT / "skills" / "poteto-mode" / "scripts" / "worktree-audit.sh"), "."],
         )
+
+        # Codex-specific runtime compatibility suites
+        if self.host == "codex":
+            self.run_command(
+                "drive-codex-orch",
+                "Verify Codex orch and store compatibility suite",
+                "runtime",
+                ["bun", "test", "./skills/poteto-mode/scripts/orch/orch.test.ts"],
+            )
+            self.run_command(
+                "drive-codex-watch-pr",
+                "Verify Codex watch-pr policy and CLI suite",
+                "runtime",
+                ["bun", "test", "./skills/poteto-mode/scripts/watch-pr/cli.test.ts", "./skills/poteto-mode/scripts/watch-pr/policy.test.ts"],
+            )
 
         return all(s.verdict == "PASS" for s in self.scenarios if s.plane == "runtime")
 

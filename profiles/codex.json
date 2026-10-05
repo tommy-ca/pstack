@@ -1,0 +1,78 @@
+{
+  "host": "codex",
+  "support_state": "verified",
+  "bindings": [
+    {
+      "host": "codex",
+      "capability": "agent.spawn",
+      "implementation_status": "native",
+      "primitive": "spawn_agent",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/codex-receipt.json"
+    },
+    {
+      "host": "codex",
+      "capability": "agent.join",
+      "implementation_status": "native",
+      "primitive": "wait_agent",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/codex-receipt.json"
+    },
+    {
+      "host": "codex",
+      "capability": "workspace.isolated",
+      "implementation_status": "native",
+      "primitive": "git worktree",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/codex-receipt.json"
+    },
+    {
+      "host": "codex",
+      "capability": "workspace.readonly",
+      "implementation_status": "native",
+      "primitive": "prompt-advisory",
+      "enforcement": "advisory",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/codex-receipt.json"
+    },
+    {
+      "host": "codex",
+      "capability": "human.ask",
+      "implementation_status": "native",
+      "primitive": "plain_text_question",
+      "enforcement": "advisory",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/codex-receipt.json"
+    },
+    {
+      "host": "codex",
+      "capability": "plan.update",
+      "implementation_status": "native",
+      "primitive": "update_plan / todo.md",
+      "enforcement": "advisory",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/codex-receipt.json"
+    },
+    {
+      "host": "codex",
+      "capability": "verify",
+      "implementation_status": "native",
+      "primitive": "scripts/verify-portable.py",
+      "enforcement": "hard",
+      "verification_status": "verified",
+      "evidence_ref": ".audit/evidence/codex-receipt.json"
+    }
+  ],
+  "evidence_ledger": [
+    {
+      "claim": "Codex implements agent.spawn, agent.join, and workspace.isolated via native spawn_agent and worktrees",
+      "kind": "runtime",
+      "artifact": ".audit/evidence/codex-receipt.json",
+      "command": "python3 scripts/verify-portable.py run --host codex",
+      "timestamp": "2026-10-05T16:55:00Z"
+    }
+  ]
+}

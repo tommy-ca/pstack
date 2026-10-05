@@ -25,7 +25,17 @@ def test_portable_verifier_launch_and_doctor(tmp_path: Path) -> None:
 
     ok = verifier.doctor()
     assert ok is True
-    assert len(verifier.scenarios) == 4
+    assert len(verifier.scenarios) >= 4
+    for s in verifier.scenarios:
+        assert s.verdict == "PASS"
+
+
+def test_portable_verifier_codex_doctor(tmp_path: Path) -> None:
+    verifier = PortableVerifier(host="codex", evidence_root=tmp_path)
+    assert verifier.launch()
+    ok = verifier.doctor()
+    assert ok is True
+    assert len(verifier.scenarios) >= 4
     for s in verifier.scenarios:
         assert s.verdict == "PASS"
 
