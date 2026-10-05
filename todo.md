@@ -35,3 +35,25 @@
 - [x] Unit 5: Swarm, Arena, Interrogate, and 5-Harness Lever verification (`verify-portable.py run --host all`)
 - [x] Unit 6: Stacked PRs creation and Babysit protocol execution
 
+## Epic #127: Revalidate Current Pstack Portability Against the Formal Contract
+### Phase 1: Canonical Truth & Upstream Freshness (Sub-epic #128)
+- [x] Unit 1: Issue #132 Eliminate hardcoded canonical counts from portable verification (`verify-portable.py`, `verify-harness.py`, `test_canonical_index.py`)
+- [ ] Unit 2: Issue #133 Classify upstream drift from pinned 0.15.5 to current 0.15.13
+
+### Phase 2: Contract, Adapter Boundary & Evidence Reconciliation (Sub-epic #129)
+- [ ] Unit 3: Issue #134 Reconcile portable capability universe with support-floor semantics
+- [ ] Unit 4: Sub-epic #142 Enforce host-neutral shared-skill adapter boundary
+  - [ ] Unit 4a: Issue #143 Move host execution primitives out of shared skills/playbooks
+  - [ ] Unit 4b: Issue #144 Move model/default and verification-lane policy behind harness profiles
+  - [ ] Unit 4c: Issue #145 Add forbidden-host-vocabulary scanner
+- [ ] Unit 5: Issue #135 Make support states revision-bound and evidence refs durable
+
+### Phase 3: Native Runtime Proof & Package Lifecycle (Sub-epic #130)
+- [ ] Unit 6: Issue #136 Replace proxy runtime plane with real harness-native drivers
+- [ ] Unit 7: Issue #137 Replace placeholder lifecycle commands with real native install/update/uninstall proof
+- [ ] Unit 8: Issue #139 Re-run five-harness evidence matrix on current main
+
+### Phase 4: Final 5-Harness Acceptance, Stacked PRs & Shipping (Gate #131)
+- [ ] Unit 9: Gate #131 Five-harness current-main Swarm + Interrogate acceptance
+- [ ] Unit 10: Stacked PRs creation, Babysit protocol, merge and ship
+
