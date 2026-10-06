@@ -36,7 +36,7 @@ class DroidDriver(HarnessDriver):
         bin_path = self.get_binary_path()
         if bin_path and bin_path.is_file():
             return True, f"Found droid at {bin_path}"
-        return False, "droid CLI binary not found in PATH or ~/.local/bin"
+        return False, "droid CLI binary not found in PATH, ~/.local/bin, or ~/.factory/bin"
 
     def get_version(self) -> Optional[str]:
         bin_path = self.get_binary_path()
@@ -95,7 +95,7 @@ class DroidDriver(HarnessDriver):
         return DriverScenarioResult(
             scenario_id="runtime-route-playbook-droid",
             description=f"Verify Droid advisory skill_order routes '{playbook}' ({target}); native precedence shadows plugin skills",
-            command=f"droid route-check --playbook {playbook} -> {target}",
+            command=f"offline profile skill_order check (playbook {playbook} -> {target}; no CLI invocation)",
             exit_code=0 if verdict == "PASS" else 1,
             stdout=f"Advisory-routed '{playbook}' to primary_pstack '{target}' (exists={exists})",
             stderr="",
@@ -121,7 +121,7 @@ class DroidDriver(HarnessDriver):
         return DriverScenarioResult(
             scenario_id="runtime-child-spawn-droid",
             description="Verify Droid spawn field contract (required fields, depth 1, no per-spawn model/readonly/cwd); no live spawn",
-            command="droid spawn-contract-check (profile, offline)",
+            command="offline profile spawn-contract check (no CLI invocation)",
             exit_code=0 if verdict == "PASS" else 1,
             stdout=f"Droid spawn contract verified offline (spawn={tm.get('agent_spawn')}, depth={rc.get('max_subagent_depth')}, live_spawn=untested)",
             stderr="",
@@ -162,7 +162,7 @@ class DroidDriver(HarnessDriver):
         return DriverScenarioResult(
             scenario_id="runtime-evidence-capture-droid",
             description="Verify Droid evidence binding: candidate profile plus droid-tools.md gap record; no durable runtime receipt by design",
-            command=f"check profile support_state=candidate and {gap_ref}",
+            command=f"offline profile support-state check ({gap_ref}; no CLI invocation)",
             exit_code=0 if ok else 1,
             stdout=f"support_state={profile_state}, gap reference exists={gap_ref.is_file()}",
             stderr="",
