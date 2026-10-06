@@ -3,8 +3,8 @@
   "hosts": {
     "grok": {
       "receipt": ".audit/evidence/grok-receipt.json",
-      "run_id": "grok-1791293353-f958ac64",
-      "timestamp": "2026-10-06T13:29:24Z",
+      "run_id": "grok-1791294264-d2496178",
+      "timestamp": "2026-10-06T13:44:36Z",
       "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
@@ -27,8 +27,8 @@
     },
     "codex": {
       "receipt": ".audit/evidence/codex-receipt.json",
-      "run_id": "codex-1791293364-aa39ee20",
-      "timestamp": "2026-10-06T13:29:38Z",
+      "run_id": "codex-1791294276-d3ffd714",
+      "timestamp": "2026-10-06T13:44:49Z",
       "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
@@ -51,8 +51,8 @@
     },
     "omp": {
       "receipt": ".audit/evidence/omp-receipt.json",
-      "run_id": "omp-1791293378-54b84661",
-      "timestamp": "2026-10-06T13:29:48Z",
+      "run_id": "omp-1791294289-4f09ab1e",
+      "timestamp": "2026-10-06T13:45:00Z",
       "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
@@ -75,8 +75,8 @@
     },
     "opencode": {
       "receipt": ".audit/evidence/opencode-receipt.json",
-      "run_id": "opencode-1791293388-98e7e4ca",
-      "timestamp": "2026-10-06T13:30:00Z",
+      "run_id": "opencode-1791294300-b432dd4c",
+      "timestamp": "2026-10-06T13:45:11Z",
       "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
@@ -99,8 +99,8 @@
     },
     "antigravity": {
       "receipt": ".audit/evidence/antigravity-receipt.json",
-      "run_id": "antigravity-1791293400-1332cc6d",
-      "timestamp": "2026-10-06T13:30:10Z",
+      "run_id": "antigravity-1791294311-8b1eb91a",
+      "timestamp": "2026-10-06T13:45:23Z",
       "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",

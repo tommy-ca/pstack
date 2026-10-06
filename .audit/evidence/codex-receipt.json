@@ -1,8 +1,8 @@
 {
-  "run_id": "codex-1791293364-aa39ee20",
+  "run_id": "codex-1791294276-d3ffd714",
   "host": "codex",
   "host_version": "codex-cli 0.160.0",
-  "timestamp": "2026-10-06T13:29:38Z",
+  "timestamp": "2026-10-06T13:44:49Z",
   "overall_verdict": "PASS",
   "planes": {
     "canonical": "PASS",
@@ -31,7 +31,7 @@
       "exit_code": 0,
       "stdout_snippet": "Conformance: PASS\nFreshness: DRIFT (53 commits ahead)\nPrinciples: 23 | Playbooks: 23\nArtifacts: 158 (preserved=85, adapted=64, excluded=9, gaps=0)\nPASS: Canonical inventory conforms to pin.",
       "verdict": "PASS",
-      "duration_s": 0.059
+      "duration_s": 0.057
     },
     {
       "id": "doctor-openspec-validation",
@@ -41,7 +41,7 @@
       "exit_code": 0,
       "stdout_snippet": "Change 'pstack-portability-contract' is valid",
       "verdict": "PASS",
-      "duration_s": 1.528
+      "duration_s": 1.547
     },
     {
       "id": "doctor-adapter-static",
@@ -51,7 +51,7 @@
       "exit_code": 0,
       "stdout_snippet": "PASS\nplaybooks: 22 named + opening-a-pr\nprinciples: 23\nplugin.json name: pstack",
       "verdict": "PASS",
-      "duration_s": 1.123
+      "duration_s": 1.141
     },
     {
       "id": "doctor-scan-host-boundary",
@@ -61,7 +61,7 @@
       "exit_code": 0,
       "stdout_snippet": "[scan-host-boundary] PASS: Scanned 87 files across portable surfaces. 0 boundary leaks.",
       "verdict": "PASS",
-      "duration_s": 0.408
+      "duration_s": 0.525
     },
     {
       "id": "doctor-package-projection",
@@ -71,7 +71,7 @@
       "exit_code": 0,
       "stdout_snippet": "PASS: grok manifest at .grok-plugin/plugin.json in sync\nPASS: codex manifest at .codex-plugin/plugin.json in sync\nPASS: omp manifest at .omp-plugin/plugin.json in sync\nPASS: opencode manifest at .opencode-plugin/package.json in sync\nPASS: antigravity manifest at .antigravity-plugin/plugin.json in sy",
       "verdict": "PASS",
-      "duration_s": 0.064
+      "duration_s": 0.097
     },
     {
       "id": "doctor-package-lifecycle-codex",
@@ -81,7 +81,7 @@
       "exit_code": 0,
       "stdout_snippet": "[codex] Executing verify...\nPASS: codex manifest at .codex-plugin/plugin.json in sync\n[codex] VERIFY PASS",
       "verdict": "PASS",
-      "duration_s": 0.064
+      "duration_s": 0.097
     },
     {
       "id": "doctor-profile-codex",
@@ -91,7 +91,7 @@
       "exit_code": 0,
       "stdout_snippet": "",
       "verdict": "PASS",
-      "duration_s": 0.046
+      "duration_s": 0.063
     },
     {
       "id": "drive-principles-load",
@@ -101,7 +101,7 @@
       "exit_code": 0,
       "stdout_snippet": "",
       "verdict": "PASS",
-      "duration_s": 0.026
+      "duration_s": 0.045
     },
     {
       "id": "drive-check-plan",
@@ -111,7 +111,7 @@
       "exit_code": 0,
       "stdout_snippet": "bun test v1.4.2 (744846f84)",
       "verdict": "PASS",
-      "duration_s": 1.874
+      "duration_s": 1.828
     },
     {
       "id": "drive-worktree-audit",
@@ -121,37 +121,37 @@
       "exit_code": 0,
       "stdout_snippet": "SIZE\tAGE\tMERGED\tDIRTY\tREMOTE\tPR\tLAST_CHAT\tBUCKET\tWORKTREE\n4.3M\t6d\tno\tclean\tpushed\t#46/MERGED\t2026-10-06\tverify-recent-chat\t/home/tommyk/projects/pstack/.worktrees/adapter-base-0155",
       "verdict": "PASS",
-      "duration_s": 3.756
+      "duration_s": 3.771
     },
     {
       "id": "drive-verification-skill-scaffold",
       "description": "Prove verification skill scaffolding for codex",
       "plane": "package",
-      "command": "/home/tommyk/.local/share/uv/tools/ansible/bin/python3 /home/tommyk/projects/pstack/scripts/scaffold-verification-skill.py --host codex --app smoke --write --target-dir /home/tommyk/projects/pstack/.audit/evidence/codex-1791293364-aa39ee20/verify-smoke",
+      "command": "/home/tommyk/.local/share/uv/tools/ansible/bin/python3 /home/tommyk/projects/pstack/scripts/scaffold-verification-skill.py --host codex --app smoke --write --target-dir /home/tommyk/projects/pstack/.audit/evidence/codex-1791294276-d3ffd714/verify-smoke",
       "exit_code": 0,
-      "stdout_snippet": "Scaffolded verification skill for 'smoke' on codex at /home/tommyk/projects/pstack/.audit/evidence/codex-1791293364-aa39ee20/verify-smoke",
+      "stdout_snippet": "Scaffolded verification skill for 'smoke' on codex at /home/tommyk/projects/pstack/.audit/evidence/codex-1791294276-d3ffd714/verify-smoke",
       "verdict": "PASS",
-      "duration_s": 0.058
+      "duration_s": 0.068
     },
     {
       "id": "drive-verification-skill-check",
       "description": "Validate generated verification skill structure for codex",
       "plane": "package",
-      "command": "/home/tommyk/.local/share/uv/tools/ansible/bin/python3 /home/tommyk/projects/pstack/scripts/scaffold-verification-skill.py --host codex --check --target-dir /home/tommyk/projects/pstack/.audit/evidence/codex-1791293364-aa39ee20/verify-smoke",
+      "command": "/home/tommyk/.local/share/uv/tools/ansible/bin/python3 /home/tommyk/projects/pstack/scripts/scaffold-verification-skill.py --host codex --check --target-dir /home/tommyk/projects/pstack/.audit/evidence/codex-1791294276-d3ffd714/verify-smoke",
       "exit_code": 0,
-      "stdout_snippet": "PASS: Verification skill at /home/tommyk/projects/pstack/.audit/evidence/codex-1791293364-aa39ee20/verify-smoke is valid.",
+      "stdout_snippet": "PASS: Verification skill at /home/tommyk/projects/pstack/.audit/evidence/codex-1791294276-d3ffd714/verify-smoke is valid.",
       "verdict": "PASS",
-      "duration_s": 0.054
+      "duration_s": 0.069
     },
     {
       "id": "drive-package-lifecycle-proof-codex",
       "description": "Prove isolated native package lifecycle for codex",
       "plane": "package",
-      "command": "/home/tommyk/.local/share/uv/tools/ansible/bin/python3 /home/tommyk/projects/pstack/scripts/package-lifecycle.py prove --host codex --target-dir /home/tommyk/projects/pstack/.audit/evidence/codex-1791293364-aa39ee20/lifecycle-codex",
+      "command": "/home/tommyk/.local/share/uv/tools/ansible/bin/python3 /home/tommyk/projects/pstack/scripts/package-lifecycle.py prove --host codex --target-dir /home/tommyk/projects/pstack/.audit/evidence/codex-1791294276-d3ffd714/lifecycle-codex",
       "exit_code": 0,
-      "stdout_snippet": "[codex] Executing prove...\n  [install] PASS (0.199s) - Installed codex into /home/tommyk/projects/pstack/.audit/evidence/codex-1791293364-aa39ee20/lifecycle-codex/.codex/plugins/pstack (verified=True)\n  [update] PASS (0.443s) - Idempotent convergence check for codex (errors=[])\n  [uninstall] PASS (0",
+      "stdout_snippet": "[codex] Executing prove...\n  [install] PASS (0.222s) - Installed codex into /home/tommyk/projects/pstack/.audit/evidence/codex-1791294276-d3ffd714/lifecycle-codex/.codex/plugins/pstack (verified=True)\n  [update] PASS (0.460s) - Idempotent convergence check for codex (errors=[])\n  [uninstall] PASS (0",
       "verdict": "PASS",
-      "duration_s": 0.728
+      "duration_s": 0.772
     },
     {
       "id": "drive-codex-orch",
@@ -161,7 +161,7 @@
       "exit_code": 0,
       "stdout_snippet": "bun test v1.4.2 (744846f84)",
       "verdict": "PASS",
-      "duration_s": 0.755
+      "duration_s": 0.782
     },
     {
       "id": "drive-codex-watch-pr",
@@ -171,7 +171,7 @@
       "exit_code": 0,
       "stdout_snippet": "bun test v1.4.2 (744846f84)",
       "verdict": "PASS",
-      "duration_s": 0.042
+      "duration_s": 0.05
     },
     {
       "id": "runtime-discover-codex",
@@ -181,7 +181,7 @@
       "exit_code": 0,
       "stdout_snippet": "Codex Doctor v0.160.0 \u00b7 linux-x86_64\n\nNotes\n   \u2191 updates      0.160.1 available (current 0.160.0, dismissed 0.160.0)\n   \u26a0 rollouts     1,029 active files \u00b7 385.39 MB on disk\n   \u26a0 mcp          MCP configuration has optional issues - Set the missing MC",
       "verdict": "PASS",
-      "duration_s": 3.033
+      "duration_s": 2.464
     },
     {
       "id": "runtime-route-playbook-codex",
@@ -211,7 +211,7 @@
       "exit_code": 0,
       "stdout_snippet": "Codex CLI supports managed git worktrees (found=True)",
       "verdict": "PASS",
-      "duration_s": 0.05
+      "duration_s": 0.07
     },
     {
       "id": "runtime-evidence-capture-codex",
@@ -225,7 +225,7 @@
     }
   ],
   "artifacts": [
-    "/home/tommyk/projects/pstack/.audit/evidence/codex-1791293364-aa39ee20/receipt.json",
+    "/home/tommyk/projects/pstack/.audit/evidence/codex-1791294276-d3ffd714/receipt.json",
     ".audit/evidence/codex-receipt.json"
   ],
   "claim": "codex 5-harness portability conformance verification",
