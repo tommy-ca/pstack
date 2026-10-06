@@ -2,7 +2,7 @@
 name: pstack-interrogate-reviewers
 description: pstack interrogate reviewer. Same posture as the pstack role of this name. Spawned on Droid with `Task` (`subagent_type: pstack-interrogate-reviewers`); the model inherits the parent session and there is no per-spawn effort field.
 model: inherit
-tools: execute
+tools: Read, Grep, Glob, LS, Execute
 ---
 
 # Interrogate Reviewers

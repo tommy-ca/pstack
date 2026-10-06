@@ -88,14 +88,28 @@ def test_generated_droid_frontmatter_contract() -> None:
 
 
 def test_capability_mode_maps_to_native_tools_restriction() -> None:
+    # Droid's `execute` tool category is shell-only, while Grok's execute
+    # capabilityMode also grants read access. The generated restriction must
+    # therefore spell out read + shell explicitly, as a comma-separated
+    # scalar of runtime llmIds (`LS`, not the property spelling `Ls`).
+    # Bracket literals are not stripped by the native frontmatter parser and
+    # file-edit IDs must stay absent from a read+shell posture.
+    EXECUTE_SCALAR = "Read, Grep, Glob, LS, Execute"
+    FILE_EDIT_IDS = ("Edit", "Create")
     roles = _generated_roles()
     for fname, fm in _agents_population().items():
         droid_name = f"pstack-{Path(fname).stem}"
         content = roles[f"{droid_name}.md"]
+        tools_lines = re.findall(r"(?m)^tools: (.+)$", content)
+        for line in tools_lines:
+            assert "[" not in line and "]" not in line, (droid_name, line)
+            ids = [tid.strip() for tid in line.split(",")]
+            for tid in ids:
+                assert tid not in FILE_EDIT_IDS, (droid_name, tid)
         if fm.get("capabilityMode") == "execute":
-            assert re.search(r"(?m)^tools: execute$", content), droid_name
+            assert tools_lines == [EXECUTE_SCALAR], droid_name
         else:
-            assert not re.search(r"(?m)^tools:", content), droid_name
+            assert not tools_lines, droid_name
 
 
 def test_generated_droids_free_of_host_vocabulary() -> None:

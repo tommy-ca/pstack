@@ -26,8 +26,12 @@ prove skill serving, model selection, or spawn execution.
   `reasoning_effort`, or `environment` fields. Sending them is the error.
 - Read-only posture is a per-droid-definition `tools` restriction
   (categories: `read-only`, `edit`, `execute`, `web`, `mcp`; omit the field
-  for all tools). `tools: all`, `ExitSpecMode`, and `GenerateDroid` are
-  invalid values, not categories.
+  for all tools). Categories expand to runtime tool llmIds: `read-only` is
+  `Read, Grep, Glob, LS`, and `execute` is shell-only (`Execute` alone). The
+  frontmatter parser splits comma-separated scalars but does not strip
+  bracket characters, so list IDs comma-separated (`tools: Read, Grep,
+  Glob, LS, Execute`), never bracket-wrapped. `tools: all`, `ExitSpecMode`,
+  and `GenerateDroid` are invalid values, not categories.
 - Depth is hard-fixed at 1: children cannot spawn children. Spawning is
   parent-owned.
 - Worktrees are session-level (`droid -w`); per-spawn isolation does not
@@ -39,7 +43,10 @@ prove skill serving, model selection, or spawn execution.
 - `model: inherit` resolves to the parent session model. No effort override:
   inherited models ignore `reasoningEffort`, and the shipped Grok `xhigh`
   ladder tier has no Droid equivalent.
-- Grok `capabilityMode: execute` maps to Droid `tools: execute`. Grok
+- Grok `capabilityMode: execute` grants read + shell, but Droid's `execute`
+  category is shell-only. Execute-mode pstack droids therefore pin the union
+  explicitly: `tools: Read, Grep, Glob, LS, Execute` (comma-separated scalar,
+  no file-edit IDs). Grok
   `inheritSkills: false` has no Droid equivalent, so plugin droids keep skill
   access and the parent prompt owns skill discipline.
 

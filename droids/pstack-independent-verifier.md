@@ -2,7 +2,7 @@
 name: pstack-independent-verifier
 description: Read-only independent verifier. Use when pstack needs a second spawn that did not write the diff. Different model from the writer. Does not edit files. Spawned on Droid with `Task` (`subagent_type: pstack-independent-verifier`); the model inherits the parent session and there is no per-spawn effort field.
 model: inherit
-tools: execute
+tools: Read, Grep, Glob, LS, Execute
 ---
 
 # Independent verifier

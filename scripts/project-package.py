@@ -77,6 +77,14 @@ LEFTOVER_CALL_SITES = (
     "generalPurpose",
 )
 FORBIDDEN_DROID_TOOLS = ("tools: all", "ExitSpecMode", "GenerateDroid")
+# Runtime-verified frontmatter llmIds (traced via the Droid runtime, not CLI
+# inventory names). Grok's execute capabilityMode grants read + shell, but
+# Droid's `execute` category is shell-only, so execute-mode roles spell the
+# union out explicitly as a comma-separated scalar. The native parser splits
+# commas without stripping bracket characters, and file-edit IDs must stay
+# absent from a read+shell posture.
+DROID_EXECUTE_TOOLS = "Read, Grep, Glob, LS, Execute"
+DROID_FILE_EDIT_TOOL_IDS = ("Edit", "Create")
 
 
 def load_package_descriptor() -> tuple[PackageDescriptor, Dict[str, Any]]:
@@ -277,8 +285,10 @@ def generate_droid_role(agent_path: Path) -> tuple[str, str]:
     lines = ["---", f"name: {droid_name}", f"description: {description}", "model: inherit"]
     # Native tool definitions: grok's capabilityMode becomes a per-definition
     # Droid tools restriction; roles without it get all tools (field omitted).
+    # Droid's execute category is shell-only, so the read+shell union is
+    # spelled out explicitly (comma-separated scalar of runtime llmIds).
     if fm.get("capabilityMode") == "execute":
-        lines.append("tools: execute")
+        lines.append(f"tools: {DROID_EXECUTE_TOOLS}")
     content = "\n".join(lines) + "\n---\n\n" + body
     if not content.endswith("\n"):
         content += "\n"
@@ -295,6 +305,12 @@ def validate_droid_role(droid_name: str, content: str) -> None:
     for forbidden in FORBIDDEN_DROID_TOOLS:
         if forbidden in content:
             raise ValidationError(f"generated droid {droid_name} uses forbidden tools value {forbidden!r}")
+    for tools_line in re.findall(r"(?m)^tools: (.+)$", content):
+        if "[" in tools_line or "]" in tools_line:
+            raise ValidationError(f"generated droid {droid_name} uses a bracket literal in tools restriction {tools_line!r}")
+        for tool_id in (tid.strip() for tid in tools_line.split(",")):
+            if tool_id in DROID_FILE_EDIT_TOOL_IDS:
+                raise ValidationError(f"generated droid {droid_name} grants file-edit tool {tool_id!r}")
     for token in HOST_PRIMITIVES + LEFTOVER_CALL_SITES:
         if token in content:
             raise ValidationError(f"generated droid {droid_name} carries host call site {token!r}")

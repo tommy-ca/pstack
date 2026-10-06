@@ -2,7 +2,7 @@
 name: pstack-arena-cross-judge-pool
 description: pstack arena cross-judge. Same posture as the pstack role of this name. Spawned on Droid with `Task` (`subagent_type: pstack-arena-cross-judge-pool`); the model inherits the parent session and there is no per-spawn effort field.
 model: inherit
-tools: execute
+tools: Read, Grep, Glob, LS, Execute
 ---
 
 # Arena Cross Judge Pool
