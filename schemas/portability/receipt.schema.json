@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pstack.dev/schemas/portability/receipt.schema.json",
+  "title": "VerificationReceipt",
+  "description": "Durable verification receipt recording conformance verdicts, scenario results, and proven surface revisions.",
+  "type": "object",
+  "required": [
+    "run_id",
+    "host",
+    "host_version",
+    "timestamp",
+    "overall_verdict",
+    "planes",
+    "surface_revisions",
+    "scenarios",
+    "artifacts"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string"
+    },
+    "host": {
+      "type": "string",
+      "enum": ["grok", "codex", "omp", "opencode", "antigravity", "claude", "custom", "mock"]
+    },
+    "host_version": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": "string"
+    },
+    "overall_verdict": {
+      "type": "string",
+      "enum": ["PASS", "FAIL", "BLOCKED"]
+    },
+    "planes": {
+      "type": "object",
+      "required": ["canonical", "adapter", "package", "runtime"],
+      "properties": {
+        "canonical": { "type": "string", "enum": ["PASS", "FAIL", "UNTESTED", "BLOCKED"] },
+        "adapter": { "type": "string", "enum": ["PASS", "FAIL", "UNTESTED", "BLOCKED"] },
+        "package": { "type": "string", "enum": ["PASS", "FAIL", "UNTESTED", "BLOCKED"] },
+        "runtime": { "type": "string", "enum": ["PASS", "FAIL", "UNTESTED", "BLOCKED"] }
+      },
+      "additionalProperties": false
+    },
+    "surface_revisions": {
+      "type": "object",
+      "required": [
+        "canonical_pin",
+        "upstream_head",
+        "spec_hash",
+        "skills_tree_hash",
+        "profile_hash",
+        "package_descriptor_hash",
+        "manifest_hash",
+        "driver_revision",
+        "package_driver_revision",
+        "boundary_driver_revision"
+      ],
+      "properties": {
+        "canonical_pin": { "type": "string" },
+        "upstream_head": { "type": "string" },
+        "spec_hash": { "type": "string" },
+        "skills_tree_hash": { "type": "string" },
+        "profile_hash": { "type": "string" },
+        "package_descriptor_hash": { "type": "string" },
+        "manifest_hash": { "type": "string" },
+        "driver_revision": { "type": "string" },
+        "package_driver_revision": { "type": "string" },
+        "boundary_driver_revision": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "scenarios": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "description", "plane", "command", "exit_code", "stdout_snippet", "verdict", "duration_s"],
+        "properties": {
+          "id": { "type": "string" },
+          "description": { "type": "string" },
+          "plane": { "type": "string", "enum": ["canonical", "adapter", "package", "runtime"] },
+          "command": { "type": "string" },
+          "exit_code": { "type": "integer" },
+          "stdout_snippet": { "type": "string" },
+          "verdict": { "type": "string", "enum": ["PASS", "FAIL", "BLOCKED"] },
+          "duration_s": { "type": "number" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "claim": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}
