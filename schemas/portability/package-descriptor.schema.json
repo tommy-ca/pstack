@@ -31,6 +31,16 @@
       },
       "minItems": 1
     },
+    "host_adapters": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "version": { "type": "string" },
+          "adapter_version": { "type": "string" }
+        }
+      }
+    },
     "roles": {
       "type": "array",
       "items": {

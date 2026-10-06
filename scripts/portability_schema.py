@@ -253,6 +253,7 @@ class PackageDescriptor:
     skills_root: str
     lifecycle: Dict[str, str]
     description: Optional[str] = None
+    host_adapters: Dict[str, Any] = field(default_factory=dict)
     roles: List[Dict[str, str]] = field(default_factory=list)
     commands: List[Dict[str, str]] = field(default_factory=list)
     entrypoints: Dict[str, str] = field(default_factory=dict)
@@ -624,8 +625,13 @@ def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path
     driver_revision = hasher.hexdigest()
 
     # 9. package driver revision
-    pkg_driver_file = root / "scripts" / "project-package.py"
-    package_driver_revision = hashlib.sha256(pkg_driver_file.read_bytes()).hexdigest() if pkg_driver_file.is_file() else "missing"
+    pkg_hasher = hashlib.sha256()
+    for fname in ("project-package.py", "package-lifecycle.py", "sync-antigravity-plugin.py"):
+        p = root / "scripts" / fname
+        if p.is_file():
+            pkg_hasher.update(fname.encode("utf-8"))
+            pkg_hasher.update(p.read_bytes())
+    package_driver_revision = pkg_hasher.hexdigest()
 
     # 10. boundary driver revision
     bnd_driver_file = root / "scripts" / "scan-host-boundary.py"
