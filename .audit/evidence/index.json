@@ -3,8 +3,8 @@
   "hosts": {
     "grok": {
       "receipt": ".audit/evidence/grok-receipt.json",
-      "run_id": "grok-1791286748-97ec1815",
-      "timestamp": "2026-10-06T11:39:17Z",
+      "run_id": "grok-1791289264-13f5ab3a",
+      "timestamp": "2026-10-06T12:21:13Z",
       "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
@@ -16,19 +16,19 @@
         "canonical_pin": "4b4d98e5e3b3c139f63dbc1ce4b538954c8f2f52",
         "upstream_head": "807c031086fcf71c88c863b4a4e6938b6785c58f",
         "spec_hash": "671f5d465db673df40350dab39fcf45ac14c7f0d178bace536a6dadf8c97e4d8",
-        "skills_tree_hash": "0aa53801e1c081178f1245a0e493c0ac2056f8bd569cc78fe702d26e82428da9",
+        "skills_tree_hash": "e2cfb6aae2724446aa2141c3281049792aed752acd1f8fb03c91f4b783f5e204",
         "profile_hash": "e67bc9a462febe5661afa7dc2484ccbfc888eea065031512113bcc417ec9183f",
         "package_descriptor_hash": "48007e1e658ab5a4167926e0f003a1ff8198b26d815b85d99c6dfb3101d39982",
         "manifest_hash": "c689c68e6b7c7f568557486f8f4c37cd7c177a910877c14c7993f415e50147f3",
-        "driver_revision": "e5a3c16857624e25b7227db81c5194d7a2775996e3e319aed9089b5f703552cf",
+        "driver_revision": "70f7dad515b6c040fd879ce5f5b8f652e1be3bf2aff789a9086f7f50c247c9c9",
         "package_driver_revision": "11d5f37a0b41cc1f85c9942be43e1698fb983cd4d9fa4c10da2adff4ad4e185b",
-        "boundary_driver_revision": "7372a459bc5a63a62b75b3385e924a14b02e88d4995591e8538eb3e7c3df990d"
+        "boundary_driver_revision": "d5e00ec96e4b5c35e510702fff7f7ad48bf831077fdedd56e9413fab801e15ea"
       }
     },
     "codex": {
       "receipt": ".audit/evidence/codex-receipt.json",
-      "run_id": "codex-1791286757-1481176d",
-      "timestamp": "2026-10-06T11:39:26Z",
+      "run_id": "codex-1791289273-bda7ec59",
+      "timestamp": "2026-10-06T12:21:25Z",
       "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
@@ -40,19 +40,19 @@
         "canonical_pin": "4b4d98e5e3b3c139f63dbc1ce4b538954c8f2f52",
         "upstream_head": "807c031086fcf71c88c863b4a4e6938b6785c58f",
         "spec_hash": "671f5d465db673df40350dab39fcf45ac14c7f0d178bace536a6dadf8c97e4d8",
-        "skills_tree_hash": "0aa53801e1c081178f1245a0e493c0ac2056f8bd569cc78fe702d26e82428da9",
+        "skills_tree_hash": "e2cfb6aae2724446aa2141c3281049792aed752acd1f8fb03c91f4b783f5e204",
         "profile_hash": "ec4d27fe8499ef4a0041a4e28d21262e8f1b1d429860eba6d295e8cf2aae12e1",
         "package_descriptor_hash": "48007e1e658ab5a4167926e0f003a1ff8198b26d815b85d99c6dfb3101d39982",
         "manifest_hash": "19f29440f3f70793c3e7a1230c2d3f8e75c794c3626a51afd8eda13e4441a3f6",
-        "driver_revision": "e5a3c16857624e25b7227db81c5194d7a2775996e3e319aed9089b5f703552cf",
+        "driver_revision": "70f7dad515b6c040fd879ce5f5b8f652e1be3bf2aff789a9086f7f50c247c9c9",
         "package_driver_revision": "11d5f37a0b41cc1f85c9942be43e1698fb983cd4d9fa4c10da2adff4ad4e185b",
-        "boundary_driver_revision": "7372a459bc5a63a62b75b3385e924a14b02e88d4995591e8538eb3e7c3df990d"
+        "boundary_driver_revision": "d5e00ec96e4b5c35e510702fff7f7ad48bf831077fdedd56e9413fab801e15ea"
       }
     },
     "omp": {
       "receipt": ".audit/evidence/omp-receipt.json",
-      "run_id": "omp-1791286766-b85f09ea",
-      "timestamp": "2026-10-06T11:39:36Z",
+      "run_id": "omp-1791289285-453945fb",
+      "timestamp": "2026-10-06T12:21:35Z",
       "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
@@ -64,19 +64,19 @@
         "canonical_pin": "4b4d98e5e3b3c139f63dbc1ce4b538954c8f2f52",
         "upstream_head": "807c031086fcf71c88c863b4a4e6938b6785c58f",
         "spec_hash": "671f5d465db673df40350dab39fcf45ac14c7f0d178bace536a6dadf8c97e4d8",
-        "skills_tree_hash": "0aa53801e1c081178f1245a0e493c0ac2056f8bd569cc78fe702d26e82428da9",
-        "profile_hash": "c630a69199bdf97fd3ef598375f6f6aeb2f19f072b0745ba31cbc21edf7876eb",
+        "skills_tree_hash": "e2cfb6aae2724446aa2141c3281049792aed752acd1f8fb03c91f4b783f5e204",
+        "profile_hash": "ed94aa8bded023486dcbdb687750d0244d9d70cd4565f893473f67dfd2be65d3",
         "package_descriptor_hash": "48007e1e658ab5a4167926e0f003a1ff8198b26d815b85d99c6dfb3101d39982",
         "manifest_hash": "77c0d57dfd673d316ceac9df914e2b8a9f9b02a7f03179fb1d0dd9ae41924246",
-        "driver_revision": "e5a3c16857624e25b7227db81c5194d7a2775996e3e319aed9089b5f703552cf",
+        "driver_revision": "70f7dad515b6c040fd879ce5f5b8f652e1be3bf2aff789a9086f7f50c247c9c9",
         "package_driver_revision": "11d5f37a0b41cc1f85c9942be43e1698fb983cd4d9fa4c10da2adff4ad4e185b",
-        "boundary_driver_revision": "7372a459bc5a63a62b75b3385e924a14b02e88d4995591e8538eb3e7c3df990d"
+        "boundary_driver_revision": "d5e00ec96e4b5c35e510702fff7f7ad48bf831077fdedd56e9413fab801e15ea"
       }
     },
     "opencode": {
       "receipt": ".audit/evidence/opencode-receipt.json",
-      "run_id": "opencode-1791286776-17cf2577",
-      "timestamp": "2026-10-06T11:39:46Z",
+      "run_id": "opencode-1791289295-eef93c48",
+      "timestamp": "2026-10-06T12:21:45Z",
       "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
@@ -88,19 +88,19 @@
         "canonical_pin": "4b4d98e5e3b3c139f63dbc1ce4b538954c8f2f52",
         "upstream_head": "807c031086fcf71c88c863b4a4e6938b6785c58f",
         "spec_hash": "671f5d465db673df40350dab39fcf45ac14c7f0d178bace536a6dadf8c97e4d8",
-        "skills_tree_hash": "0aa53801e1c081178f1245a0e493c0ac2056f8bd569cc78fe702d26e82428da9",
-        "profile_hash": "55e71ac8321dc951f5e36df519e93b0361ccb3aa21b57a99194176a46e1b2e29",
+        "skills_tree_hash": "e2cfb6aae2724446aa2141c3281049792aed752acd1f8fb03c91f4b783f5e204",
+        "profile_hash": "c2e17c6b5cd93feb68d473e7bcf2ba5c3253d0b92f48e18dee4b41c5098f12c5",
         "package_descriptor_hash": "48007e1e658ab5a4167926e0f003a1ff8198b26d815b85d99c6dfb3101d39982",
         "manifest_hash": "c16366a649ea17df0d902a48af7831c36dfa5c51afefa9995fddff97b15b41a3",
-        "driver_revision": "e5a3c16857624e25b7227db81c5194d7a2775996e3e319aed9089b5f703552cf",
+        "driver_revision": "70f7dad515b6c040fd879ce5f5b8f652e1be3bf2aff789a9086f7f50c247c9c9",
         "package_driver_revision": "11d5f37a0b41cc1f85c9942be43e1698fb983cd4d9fa4c10da2adff4ad4e185b",
-        "boundary_driver_revision": "7372a459bc5a63a62b75b3385e924a14b02e88d4995591e8538eb3e7c3df990d"
+        "boundary_driver_revision": "d5e00ec96e4b5c35e510702fff7f7ad48bf831077fdedd56e9413fab801e15ea"
       }
     },
     "antigravity": {
       "receipt": ".audit/evidence/antigravity-receipt.json",
-      "run_id": "antigravity-1791286786-eb14bcea",
-      "timestamp": "2026-10-06T11:39:55Z",
+      "run_id": "antigravity-1791289305-d06f8dfb",
+      "timestamp": "2026-10-06T12:21:54Z",
       "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
@@ -112,13 +112,13 @@
         "canonical_pin": "4b4d98e5e3b3c139f63dbc1ce4b538954c8f2f52",
         "upstream_head": "807c031086fcf71c88c863b4a4e6938b6785c58f",
         "spec_hash": "671f5d465db673df40350dab39fcf45ac14c7f0d178bace536a6dadf8c97e4d8",
-        "skills_tree_hash": "0aa53801e1c081178f1245a0e493c0ac2056f8bd569cc78fe702d26e82428da9",
+        "skills_tree_hash": "e2cfb6aae2724446aa2141c3281049792aed752acd1f8fb03c91f4b783f5e204",
         "profile_hash": "25886eef390843fc165b363c0f5056956a19cf71e061d4f42f4bf1f2e98dcebe",
         "package_descriptor_hash": "48007e1e658ab5a4167926e0f003a1ff8198b26d815b85d99c6dfb3101d39982",
         "manifest_hash": "4cb5ab68707642076fee12e20b4fa8ea82e6d98bdda758bc634f43a5c31ce9ce",
-        "driver_revision": "e5a3c16857624e25b7227db81c5194d7a2775996e3e319aed9089b5f703552cf",
+        "driver_revision": "70f7dad515b6c040fd879ce5f5b8f652e1be3bf2aff789a9086f7f50c247c9c9",
         "package_driver_revision": "11d5f37a0b41cc1f85c9942be43e1698fb983cd4d9fa4c10da2adff4ad4e185b",
-        "boundary_driver_revision": "7372a459bc5a63a62b75b3385e924a14b02e88d4995591e8538eb3e7c3df990d"
+        "boundary_driver_revision": "d5e00ec96e4b5c35e510702fff7f7ad48bf831077fdedd56e9413fab801e15ea"
       }
     }
   }

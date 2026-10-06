@@ -9,7 +9,7 @@
       "host": "omp",
       "capability": "agent.spawn",
       "implementation_status": "native",
-      "primitive": "pi_spawn",
+      "primitive": "task",
       "enforcement": "hard",
       "verification_status": "verified",
       "evidence_ref": ".audit/evidence/omp-receipt.json"
@@ -18,7 +18,7 @@
       "host": "omp",
       "capability": "agent.join",
       "implementation_status": "native",
-      "primitive": "pi_wait",
+      "primitive": "task (completion / wait)",
       "enforcement": "hard",
       "verification_status": "verified",
       "evidence_ref": ".audit/evidence/omp-receipt.json"
@@ -27,7 +27,7 @@
       "host": "omp",
       "capability": "agent.message",
       "implementation_status": "native",
-      "primitive": "pi_send",
+      "primitive": "task (session message)",
       "enforcement": "hard",
       "verification_status": "verified",
       "evidence_ref": ".audit/evidence/omp-receipt.json"
@@ -36,7 +36,7 @@
       "host": "omp",
       "capability": "agent.cancel",
       "implementation_status": "native",
-      "primitive": "pi_cancel / process kill",
+      "primitive": "task cancel / ps stop",
       "enforcement": "hard",
       "verification_status": "verified",
       "evidence_ref": ".audit/evidence/omp-receipt.json"
@@ -45,7 +45,7 @@
       "host": "omp",
       "capability": "agent.resume",
       "implementation_status": "native",
-      "primitive": "pi_resume",
+      "primitive": "omp session / --resume",
       "enforcement": "hard",
       "verification_status": "verified",
       "evidence_ref": ".audit/evidence/omp-receipt.json"
@@ -81,7 +81,7 @@
       "host": "omp",
       "capability": "human.ask",
       "implementation_status": "native",
-      "primitive": "pi_prompt",
+      "primitive": "ask",
       "enforcement": "advisory",
       "verification_status": "verified",
       "evidence_ref": ".audit/evidence/omp-receipt.json"
@@ -90,7 +90,7 @@
       "host": "omp",
       "capability": "human.gate",
       "implementation_status": "native",
-      "primitive": "pi_prompt (blocking confirmation)",
+      "primitive": "ask (blocking confirmation)",
       "enforcement": "advisory",
       "verification_status": "verified",
       "evidence_ref": ".audit/evidence/omp-receipt.json"
@@ -99,7 +99,7 @@
       "host": "omp",
       "capability": "plan.update",
       "implementation_status": "native",
-      "primitive": "task_tracker",
+      "primitive": "todo",
       "enforcement": "advisory",
       "verification_status": "verified",
       "evidence_ref": ".audit/evidence/omp-receipt.json"
@@ -118,7 +118,7 @@
       "host": "omp",
       "capability": "monitor",
       "implementation_status": "shim",
-      "primitive": "pi_bg polling loop",
+      "primitive": "ps / background tasks",
       "enforcement": "soft",
       "verification_status": "verified",
       "evidence_ref": ".audit/evidence/omp-receipt.json"
@@ -170,20 +170,20 @@
     }
   ],
   "tool_mappings": {
-    "file_read": "bash / grep",
-    "file_edit": "file_edit",
-    "file_write": "write / bash",
+    "file_read": "read",
+    "file_edit": "edit",
+    "file_write": "write",
     "shell_run": "bash",
-    "web_fetch": "fetch",
+    "web_fetch": "read",
     "web_search": "web_search",
-    "agent_spawn": "pi_spawn",
-    "agent_fanout": "N pi_spawn concurrent calls",
-    "agent_join": "pi_wait",
-    "agent_message": "pi_send",
-    "task_background": "pi_bg",
-    "tool_mcp": "mcp_bridge",
-    "plan_update": "task_tracker / todo.md",
-    "human_ask": "pi_prompt"
+    "agent_spawn": "task",
+    "agent_fanout": "N task concurrent calls",
+    "agent_join": "task completion",
+    "agent_message": "task (session continuation)",
+    "task_background": "ps",
+    "tool_mcp": "mcp",
+    "plan_update": "todo",
+    "human_ask": "ask"
   },
   "skill_order": [
     {
@@ -249,8 +249,7 @@
       "environment"
     ],
     "wire_aliases": {
-      "pi_spawn": "spawn_subagent",
-      "pi_wait": "join_subagent"
+      "task": "spawn_subagent"
     }
   }
 }

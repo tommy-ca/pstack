@@ -49,6 +49,7 @@ DEFAULT_EXEMPTIONS: Tuple[Exemption, ...] = (
     Exemption("README.zh-CN.md", "Repository documentation translation"),
     Exemption("HARNESS.md", "Host harness architecture doc"),
     Exemption("todo.md", "Program planning and issue tracking"),
+    Exemption(".atl/**", "Agent Teams Lite runtime directory"),
 )
 
 
@@ -102,6 +103,16 @@ GENERIC_WORDS: Set[str] = {
     "cloud",
     "background",
     "scripts/verify-portable.py",
+    "task",
+    "ask",
+    "todo",
+    "bash",
+    "read",
+    "edit",
+    "write",
+    "terminal",
+    "question",
+    "webfetch",
 }
 
 KNOWN_HOST_PRIMITIVES: Dict[str, str] = {

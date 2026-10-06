@@ -612,8 +612,16 @@ def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path
         manifest_hash = "missing"
 
     # 8. driver revision
+    hasher = hashlib.sha256()
     driver_file = root / "scripts" / "verify-portable.py"
-    driver_revision = hashlib.sha256(driver_file.read_bytes()).hexdigest() if driver_file.is_file() else "missing"
+    if driver_file.is_file():
+        hasher.update(driver_file.read_bytes())
+    drivers_dir = root / "scripts" / "drivers"
+    if drivers_dir.is_dir():
+        for p in sorted(drivers_dir.rglob("*.py")):
+            hasher.update(p.relative_to(drivers_dir).as_posix().encode("utf-8"))
+            hasher.update(p.read_bytes())
+    driver_revision = hasher.hexdigest()
 
     # 9. package driver revision
     pkg_driver_file = root / "scripts" / "project-package.py"
