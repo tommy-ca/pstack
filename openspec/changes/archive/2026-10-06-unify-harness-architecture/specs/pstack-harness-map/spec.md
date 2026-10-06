@@ -1,10 +1,4 @@
-# pstack-harness-map Specification
-
-## Purpose
-
-Define the Grok Build reference-adapter mapping. This legacy spec name is Grok-scoped; the cross-harness contract lives in `pstack-portability`.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Grok maps portable capabilities to Grok-native primitives
 

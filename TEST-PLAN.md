@@ -12,7 +12,7 @@ First principles only. Do not treat community pstack ports as the spec.
 |---|---|---|
 | Official pstack | [cursor/plugins `pstack/`](https://github.com/cursor/plugins/tree/main/pstack) tree `4b4d98e5e3b3c139f63dbc1ce4b538954c8f2f52` | 22 named playbooks, `opening-a-pr.md`, 23 `principle-*` skills, `/poteto-mode` router; current upstream packaging `0.15.5`. This port stays `0.15.5-grokbuild.0`. |
 | Official grok-build | [xai-org/grok-build](https://github.com/xai-org/grok-build) commit `c2ad97f87aea4303b6000a2c22128bc91ee76c9b` | Plugin install, inspect JSON, headless flags, live tool ids |
-| This port | [HARNESS.md](./HARNESS.md) | Call-site mapping onto those grok-build tools |
+| This port | [grok-tools.md](./skills/poteto-mode/references/grok-tools.md) | Call-site mapping onto those grok-build tools |
 
 User-guide `16-subagents.md` is the **Grok playbook contract**: playbooks use `spawn_subagent`, `background`, and `get_command_or_subagent_output`. The Rust types below are the implementation wire aliases (`task`, `run_in_background`, and `get_task_output`); they are not a second playbook vocabulary. See `crates/common/xai-tool-types/src/task.rs` `TaskToolInput`.
 
@@ -368,10 +368,10 @@ Static grep of the **installed** plugin path (not this Cloud Agent workspace) pl
 ```bash
 export PLUGIN_PATH="$(cat "$EVIDENCE/PLUGIN_PATH.txt")"
 
-# Disk. HARNESS.md may mention Cursor names as negatives. Exclude it.
+# Disk. grok-tools.md may mention Cursor names as negatives. Exclude it.
 # TEST-PLAN.md may name Cursor panel slugs as FAIL tokens. skills/ may not.
 rg -n --hidden \
-  -g '!HARNESS.md' -g '!UPSTREAM' -g '!TEST-PLAN.md' -g '!scripts/**' -g '!automations/**' \
+  -g '!grok-tools.md' -g '!UPSTREAM' -g '!TEST-PLAN.md' -g '!scripts/**' -g '!automations/**' \
   -e 'AskQuestion' -e 'TodoWrite' -e 'generalPurpose' -e 'allow_multiple' \
   -e 'environment:\s*"cloud"' -e "environment:\s*'cloud'" \
   -e 'grok-4.6-fast-xhigh' -e 'gpt-5.6-sol-max' \
@@ -403,7 +403,7 @@ Forbidden **live Cursor fields** on `spawn_subagent` (wire aliases `task` / `Tas
 
 Allowed live ids include `spawn_subagent` (with wire aliases `task` / `Task`), `todo_write`, `ask_user_question`, `get_command_or_subagent_output` (wire alias `get_task_output`), `run_terminal_cmd`, `read_file`, `grep`, and `scheduler_create`. Playbooks MUST use the TUI names; aliases are accepted only when inspecting the raw wire stream.
 
-**PASS.** Installed plugin tree (excluding HARNESS.md / scripts / benny / TEST-PLAN.md) has no forbidden Cursor call-site identifiers, no Cursor panel slugs in skill fallbacks, and the live `toolName` list contains none of `AskQuestion` / `TodoWrite`.
+**PASS.** Installed plugin tree (excluding grok-tools.md / scripts / benny / TEST-PLAN.md) has no forbidden Cursor call-site identifiers, no Cursor panel slugs in skill fallbacks, and the live `toolName` list contains none of `AskQuestion` / `TodoWrite`.
 
 **FAIL.** A live call uses a Cursor tool id, a live spawn payload includes `environment: "cloud"`, `capability_mode`, `reasoning_effort`, or `generalPurpose`, or `gate3-rg-installed.txt` is non-empty (Cursor call-site ids or Cursor panel slugs in the installed tree).
 
@@ -951,7 +951,7 @@ Independent-verifier spawn is scored in Gate 7 using this same stream when prese
 
 Feature step 4. Parent session only (`MAX_SUBAGENT_DEPTH` is 1; a child that calls `spawn_subagent` fails).
 
-Required spawn shape (`HARNESS.md` TUI contract; Rust `TaskToolInput` names are wire aliases):
+Required spawn shape (`grok-tools.md` TUI contract; Rust `TaskToolInput` names are wire aliases):
 
 ```text
 spawn_subagent

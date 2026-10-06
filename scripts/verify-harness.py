@@ -53,7 +53,7 @@ NAMED_22 = [
 ]
 
 # Cursor harness leftovers that must not remain as call sites in skills/.
-# HARNESS.md, grok-tools.md, scripts/, and automations/benny are allowed to mention them.
+# grok-tools.md, scripts/, and automations/benny are allowed to mention them.
 FORBIDDEN = [
     r"\bAskQuestion\b",
     r"\bTodoWrite\b",
@@ -87,7 +87,6 @@ CURSOR_MODEL_SLUGS = (
 
 SKIP_DIRS = {".git", "automations", "scripts", ".superpowers", ".worktrees", "openspec", ".audit", ".atl"}
 SKIP_FILES = {
-    "HARNESS.md",
     "UPSTREAM",
     "TEST-PLAN.md",
     "README.md",

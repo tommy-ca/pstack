@@ -66,7 +66,7 @@ Read every output yourself before accepting the verdict. If you disagree with th
 
 ## Keep Cursor pstack in sync
 
-Playbooks and principles come from [official Cursor `pstack/`](https://github.com/cursor/plugins/tree/main/pstack). This tree recomposes those **atomic building blocks** on Grok Build natives in [`HARNESS.md`](../../HARNESS.md) (`spawn_subagent`, `get_command_or_subagent_output`, `scheduler_create`, `monitor`). The pin is [`UPSTREAM`](../../UPSTREAM). This repo stays a single plugin. The Grok catalog is [tommy-ca/grok-build-plugins](https://github.com/tommy-ca/grok-build-plugins), an index, not a `cursor/plugins` sibling tree. Porting the core to another host is [Port pstack](./12-porting.md).
+Playbooks and principles come from [official Cursor `pstack/`](https://github.com/cursor/plugins/tree/main/pstack). This tree recomposes those **atomic building blocks** on Grok Build natives in [`grok-tools.md`](../../skills/poteto-mode/references/grok-tools.md) (`spawn_subagent`, `get_command_or_subagent_output`, `scheduler_create`, `monitor`). The pin is [`UPSTREAM`](../../UPSTREAM). This repo stays a single plugin. The Grok catalog is [tommy-ca/grok-build-plugins](https://github.com/tommy-ca/grok-build-plugins), an index, not a `cursor/plugins` sibling tree. Porting the core to another host is [Port pstack](./12-porting.md).
 
 When Cursor moves:
 
@@ -76,7 +76,7 @@ python3 scripts/sync-from-upstream.py --log
 python3 scripts/sync-from-upstream.py --recipe
 ```
 
-Then copy intent (`skills/`, `agents/`). Skip `make-bot-ui`. Do not overwrite `HARNESS.md`, `plugin.json`, README files, `tests/`, or `scripts/`. Run `python3 scripts/adapt-harness.py`. Hand-map depth-1 spawn (`pstack:<role>`) and persist-then-wake overnight (`/loop` → `scheduler_create`). Do not leave Cursor `Task`, same-run `/loop`, `~/.cursor/rules/*.mdc`, or `control-cli` as live Grok calls. Plugin doctor is leftover scanner (`python3 scripts/verify-harness.py` via `verify.py doctor`), not pytest. Step 5 of `--recipe` is one process:
+Then copy intent (`skills/`, `agents/`). Skip `make-bot-ui`. Do not overwrite `skills/poteto-mode/references/grok-tools.md`, `plugin.json`, README files, `tests/`, or `scripts/`. Run `python3 scripts/adapt-harness.py`. Hand-map depth-1 spawn (`pstack:<role>`) and persist-then-wake overnight (`/loop` → `scheduler_create`). Do not leave Cursor `Task`, same-run `/loop`, `~/.cursor/rules/*.mdc`, or `control-cli` as live Grok calls. Plugin doctor is leftover scanner (`python3 scripts/verify-harness.py` via `verify.py doctor`), not pytest. Step 5 of `--recipe` is one process:
 
 ```bash
 python3 .grok/skills/verify-pstack/scripts/verify.py run --root .

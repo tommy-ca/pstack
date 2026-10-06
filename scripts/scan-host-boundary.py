@@ -47,7 +47,6 @@ DEFAULT_EXEMPTIONS: Tuple[Exemption, ...] = (
     Exemption("CHANGELOG.md", "Historical change log"),
     Exemption("README.md", "Repository root documentation"),
     Exemption("README.zh-CN.md", "Repository documentation translation"),
-    Exemption("HARNESS.md", "Host harness architecture doc"),
     Exemption("todo.md", "Program planning and issue tracking"),
     Exemption(".atl/**", "Agent Teams Lite runtime directory"),
 )

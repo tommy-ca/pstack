@@ -9,12 +9,12 @@ Feature: pstack-github-pr-fallback
 
 Rule: pstack PR operations must not require Graphite
 
-`HARNESS.md` MUST document GitHub CLI (`gh`) as the default forge path and Origin as an optional path only when its CLI resolves the repository. The retained PR and stack playbooks MUST use forge-neutral `gh`/Origin operations and MUST NOT require Graphite `gt`. That set includes `playbooks/orchestrate.md`. Stacked work MUST use an explicit parent branch. GitHub `--auto` MUST be limited to a PR targeting protected trunk; stacked children MUST be landed one at a time rather than collapsed by GitHub auto-merge. Grok playbooks MUST retain the host `monitor` and `scheduler_create` boundaries instead of invoking the Codex compatibility watcher. The forge-neutral verification test MUST read `orchestrate.md`.
+`skills/poteto-mode/references/grok-tools.md` MUST document GitHub CLI (`gh`) as the default forge path and Origin as an optional path only when its CLI resolves the repository. The retained PR and stack playbooks MUST use forge-neutral `gh`/Origin operations and MUST NOT require Graphite `gt`. That set includes `playbooks/orchestrate.md`. Stacked work MUST use an explicit parent branch. GitHub `--auto` MUST be limited to a PR targeting protected trunk; stacked children MUST be landed one at a time rather than collapsed by GitHub auto-merge. Grok playbooks MUST retain the host `monitor` and `scheduler_create` boundaries instead of invoking the Codex compatibility watcher. The forge-neutral verification test MUST read `orchestrate.md`.
 
 #### Scenario: harness names the fallback
 
 - **GIVEN** no Origin CLI resolves the repository and Graphite is absent
-- **WHEN** an operator reads `HARNESS.md`
+- **WHEN** an operator reads the Grok host mapping (`skills/poteto-mode/references/grok-tools.md`)
 - **THEN** it names the GitHub `gh` path as the fallback
 - **AND** it does not make Graphite a prerequisite
 
