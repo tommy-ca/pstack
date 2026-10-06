@@ -1266,6 +1266,46 @@ def test_upstream_metadata_contract() -> None:
         assert "claude-fable-5-1-thinking-max" in text, path
         assert "claude-fable-5-thinking-max" not in text, path
 
+
+def test_harness_grok_profile_capability_parity() -> None:
+    harness = (ROOT / "HARNESS.md").read_text(encoding="utf-8")
+    profile = json.loads((ROOT / "profiles/grok.json").read_text(encoding="utf-8"))
+
+    # Cancellation tokens present in HARNESS.md
+    assert "kill_command_or_subagent" in harness
+    assert "kill_task" in harness
+
+    # Capabilities in profiles/grok.json match HARNESS.md
+    bindings = {b["capability"]: b for b in profile.get("bindings", [])}
+
+    assert bindings["agent.spawn"]["primitive"] == "spawn_subagent"
+    assert "spawn_subagent" in harness
+
+    assert bindings["agent.join"]["primitive"] == "get_command_or_subagent_output"
+    assert "get_command_or_subagent_output" in harness
+
+    assert bindings["agent.cancel"]["primitive"] == "kill_command_or_subagent"
+    assert bindings["agent.cancel"]["implementation_status"] == "native"
+    assert bindings["agent.cancel"]["enforcement"] == "hard"
+
+    assert bindings["workspace.isolated"]["primitive"] == "isolation: worktree"
+    assert "worktree" in harness
+
+    assert bindings["workspace.shared"]["primitive"] == "isolation: none"
+
+    assert bindings["plan.update"]["primitive"] == "todo_write"
+    assert "todo_write" in harness
+
+    assert bindings["schedule"]["primitive"] == "scheduler_create"
+    assert "scheduler_create" in harness
+
+    assert bindings["human.ask"]["primitive"] == "ask_user_question"
+    assert "ask_user_question" in harness
+
+    assert "pstack.package.json" in harness
+    assert ".grok-plugin/plugin.json" in harness
+
+
 if __name__ == "__main__":
     test_verify_harness_script_exists()
     test_verify_harness_passes_on_this_tree()
@@ -1293,4 +1333,5 @@ if __name__ == "__main__":
     test_harness_skill_order_is_pstack_then_user_then_native()
     test_forge_neutral_pr_path_without_graphite()
     test_upstream_metadata_contract()
+    test_harness_grok_profile_capability_parity()
     print("PASS tests/test_verify_harness.py")

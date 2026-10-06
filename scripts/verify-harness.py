@@ -281,6 +281,8 @@ def main() -> None:
         "scheduler_create",
         "get_task_output",
         "get_command_or_subagent_output",
+        "kill_command_or_subagent",
+        "kill_task",
         "isolation",
         "independent-verifier",
         "select_role",
