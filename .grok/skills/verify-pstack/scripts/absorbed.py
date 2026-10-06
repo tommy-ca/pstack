@@ -24,7 +24,7 @@ PRESENT = (
         "skills/principle-outcome-oriented-execution/SKILL.md",
         "Require full static and runtime verification",
     ),
-    ("skills/poteto-mode/SKILL.md", "spawn_subagent"),
+    ("skills/poteto-mode/SKILL.md", "agent.spawn"),
     ("skills/poteto-mode/SKILL.md", "HARNESS.md"),
     ("HARNESS.md", "spawn_subagent"),
     ("HARNESS.md", "scheduler_create"),
