@@ -13,11 +13,18 @@ This document maps portable pstack capabilities (defined in [`pstack-portability
 | `agent.fan_out` | N `spawn_subagent` in one turn | N `Agent` in one turn | N in `Subagents` array |
 | `agent.join` | `get_command_or_subagent_output` | wait on Agent handles | `manage_subagents` / reactive messaging |
 | `agent.message` | Inter-agent message / parent routing | `send_message` | `send_message` |
+| `agent.cancel` | `kill_command_or_subagent` (wire alias `kill_task`) | cancel child handle | `manage_task` (kill) |
+| `agent.resume` | `spawn_subagent (resume_from)` | resume session | `invoke_subagent` with task context |
+| `workspace.shared` | `isolation: "none"` | shared repo root | `Workspace: "inherit"` |
+| `workspace.isolated` | `isolation: "worktree"` | git worktree | `Workspace: "branch"` |
+| `workspace.readonly` | `pstack:how-explorer (no file-edit tools)` | read-only subagent | `Workspace: "share"` (read-only tools) |
 | `task.background` | `spawn_subagent` `background: true`, `monitor` | background jobs | `manage_task`, `schedule` |
 | `schedule` | `scheduler_create` (expanded from `/loop`) | `loop` | `schedule` |
+| `monitor` | `monitor` (command, description, timeout_ms, persistent) | process watcher | `manage_task`, background jobs |
 | `tool.mcp` | Session MCP client | MCP tools | `call_mcp_tool` |
 | `plan.update` | `todo_write` | todolist | artifacts / `todo.md` |
 | `human.ask` | `ask_user_question` | `AskUserQuestion` | `ask_question` |
+| `human.gate` | `ask_user_question (blocking gate)` | blocking confirm | `ask_question` |
 
 ## Subagent policy
 
@@ -27,6 +34,7 @@ This document maps portable pstack capabilities (defined in [`pstack-portability
 - Periodic audit ticks and heartbeats use `scheduler_create` (expanded from `/loop`).
 - Pass file pointers instead of inlined dumps.
 - Model defaults to `grok-4.6` unless overridden in `~/.grok/pstack-models.toml`.
+- Subagent cancellation uses `kill_command_or_subagent` (`kill_task`).
 
 ## Wire aliases
 

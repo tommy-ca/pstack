@@ -35,12 +35,11 @@
     {
       "host": "grok",
       "capability": "agent.cancel",
-      "implementation_status": "gap",
-      "primitive": null,
-      "enforcement": "advisory",
+      "implementation_status": "native",
+      "primitive": "kill_command_or_subagent",
+      "enforcement": "hard",
       "verification_status": "verified",
-      "evidence_ref": ".audit/evidence/grok-receipt.json",
-      "notes": "No explicit cancel command in Grok Build CLI"
+      "evidence_ref": ".audit/evidence/grok-receipt.json"
     },
     {
       "host": "grok",
@@ -73,7 +72,7 @@
       "host": "grok",
       "capability": "workspace.readonly",
       "implementation_status": "native",
-      "primitive": "subagent_readonly",
+      "primitive": "pstack:how-explorer (no file-edit tools)",
       "enforcement": "hard",
       "verification_status": "verified",
       "evidence_ref": ".audit/evidence/grok-receipt.json"
