@@ -59,7 +59,7 @@ Capture this as seed context (file paths, symbols, commits, PR numbers, linked t
 
 ### Discovery
 
-Before spawning investigators, list the MCP servers this session actually has. Prefer the session tool catalog (or `grok inspect --json` on Grok, tool schema discovery on Antigravity/Codex/OMP/OpenCode). Do not look at a Cursor `mcps/` directory.
+Before spawning investigators, list the MCP servers this session actually has. Prefer the session tool catalog or host tool discovery. Do not look at a Cursor `mcps/` directory.
 
 Map each available MCP to one evidence category:
 
@@ -75,12 +75,12 @@ Source control is always available through git and `gh`. For the other six, clas
 
 Aim for a complete **coverage map**, not a minimal one. Document the null, don't skip the search.
 
-Launch all matching investigators in a single message using the host's subagent primitive so they run concurrently. Don't ask one agent to cover multiple MCPs.
+Launch all matching investigators in a single message using the host's `agent.spawn` primitive so they run concurrently. Don't ask one agent to cover multiple MCPs.
 
 Subagent config (each):
 - `subagent_type` / `Role`: `pstack:why-investigators` ([`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md))
-- `model`: toml key `why-investigators` per `../setup-pstack/references/resolve-model.md` (or host configuration). Missing key omits; absent config sends host default (`grok-4.6` on Grok, `pro` on Antigravity). Do not send `reasoning_effort` on spawn.
-- MCP-backed work: spawn `pstack:why-investigators` using the host subagent primitive and forbid writes in the prompt. Do not send `readonly` on spawn.
+- `model`: toml key `why-investigators` per `../setup-pstack/references/resolve-model.md` (or host configuration). Missing key omits; absent config sends host default model resolved from active profile. Do not send `reasoning_effort` on spawn unless supported.
+- MCP-backed work: spawn `pstack:why-investigators` using the host's `agent.spawn` primitive and forbid writes in the prompt. Do not send `readonly` on spawn unless supported.
 
 Each investigator gets:
 1. The base prompt from `references/investigator-prompt.md`
@@ -123,8 +123,8 @@ If your scope assessment suggests a single-commit trivial target where the PR de
 Spawn one synthesizer subagent:
 
 - `subagent_type`: `pstack:why-synthesizer` ([`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md))
-- `model`: toml key `why-synthesizer` per `../setup-pstack/references/resolve-model.md`. Per that file: no toml sends `grok-4.6` (omit if rejected); inherit-parent/auto/missing key omits. Do not send `reasoning_effort` on `task`.
-- MCP-backed work: spawn `pstack:why-synthesizer` and forbid writes in the prompt. Do not send `readonly` on `task`.
+- `model`: toml key `why-synthesizer` per `../setup-pstack/references/resolve-model.md`. Per that file: no toml sends host default model resolved from active profile (omit if rejected); inherit-parent/auto/missing key omits. Do not send `reasoning_effort` on spawn unless supported.
+- MCP-backed work: spawn `pstack:why-synthesizer` and forbid writes in the prompt. Do not send `readonly` on spawn unless supported.
 
 The synthesizer gets:
 1. The investigator findings, including any null results and any categories skipped with justification

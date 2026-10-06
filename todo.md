@@ -41,11 +41,11 @@
 - [x] Unit 2: Issue #133 Classify upstream drift from pinned 0.15.5 to current 0.15.13 (`canonical-index.py`, `canonical-drift.json`, `classification-0.15.13.tsv`)
 
 ### Phase 2: Contract, Adapter Boundary & Evidence Reconciliation (Sub-epic #129)
-- [ ] Unit 3: Issue #134 Reconcile portable capability universe with support-floor semantics
-- [ ] Unit 4: Sub-epic #142 Enforce host-neutral shared-skill adapter boundary
-  - [ ] Unit 4a: Issue #143 Move host execution primitives out of shared skills/playbooks
-  - [ ] Unit 4b: Issue #144 Move model/default and verification-lane policy behind harness profiles
-  - [ ] Unit 4c: Issue #145 Add forbidden-host-vocabulary scanner
+- [x] Unit 3: Issue #134 Reconcile portable capability universe with support-floor semantics
+- [x] Unit 4: Sub-epic #142 Enforce host-neutral shared-skill adapter boundary
+  - [x] Unit 4a: Issue #143 Move host execution primitives out of shared skills/playbooks
+  - [x] Unit 4b: Issue #144 Move model/default and verification-lane policy behind harness profiles
+  - [x] Unit 4c: Issue #145 Add forbidden-host-vocabulary scanner
 - [ ] Unit 5: Issue #135 Make support states revision-bound and evidence refs durable
 
 ### Phase 3: Native Runtime Proof & Package Lifecycle (Sub-epic #130)

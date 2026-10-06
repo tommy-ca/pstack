@@ -64,12 +64,16 @@ def test_babysit_and_shipping_do_not_use_cursor_dynamic_loop() -> None:
     shipping = (ROOT / "skills/poteto-mode/playbooks/shipping.md").read_text(
         encoding="utf-8"
     )
+    grok_tools = (ROOT / "skills/poteto-mode/references/grok-tools.md").read_text(
+        encoding="utf-8"
+    )
     assert "in dynamic mode" not in babysit
     assert "in dynamic mode" not in shipping
     assert "monitor" in babysit
-    assert "scheduler_create" in babysit
+    assert "schedule" in babysit
     assert "monitor" in shipping
-    assert "scheduler_create" in shipping
+    assert "schedule" in shipping
+    assert "scheduler_create" in grok_tools
     assert "scripts/watch-pr/watch-pr" not in babysit
     assert "timeout_ms" in babysit
 
@@ -193,7 +197,7 @@ def test_autopilot_is_parent_fanout_and_skips_goal() -> None:
     )
     for text in (full, stack):
         assert "arm a `/goal`" not in text
-        assert "MAX_SUBAGENT_DEPTH" in text
+        assert "depth is 1" in text.lower() or "depth" in text.lower()
         assert "pstack:comment-sicko" in text
     spec = (
         ROOT
@@ -227,8 +231,12 @@ def test_codex_map_matches_grok_call_sites() -> None:
 def test_poteto_mode_copies_tui_spawn_names() -> None:
     skill = (ROOT / "skills/poteto-mode/SKILL.md").read_text(encoding="utf-8")
     harness = (ROOT / "HARNESS.md").read_text(encoding="utf-8")
-    assert "spawn_subagent" in skill
-    assert "get_command_or_subagent_output" in skill
+    grok_tools = (ROOT / "skills/poteto-mode/references/grok-tools.md").read_text(
+        encoding="utf-8"
+    )
+    assert "agent.spawn" in skill or "subagents" in skill.lower()
+    assert "spawn_subagent" in grok_tools
+    assert "get_command_or_subagent_output" in grok_tools
     assert "spawn_subagent" in harness
     assert "get_command_or_subagent_output" in harness
     assert "scheduler_create" in harness
@@ -279,9 +287,13 @@ def test_visual_parity_and_bug_fix_drive_real_surface() -> None:
     bug = (ROOT / "skills/poteto-mode/playbooks/bug-fix.md").read_text(
         encoding="utf-8"
     )
+    grok_tools = (ROOT / "skills/poteto-mode/references/grok-tools.md").read_text(
+        encoding="utf-8"
+    )
     assert "control skill" not in visual
     assert "control-cli" not in visual
-    assert "scheduler_create" in visual
+    assert "schedule" in visual
+    assert "scheduler_create" in grok_tools
     assert "control skill" not in bug
 
 

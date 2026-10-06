@@ -17,7 +17,7 @@ const SUB_BLOCKS = [
 	"Merge.",
 ];
 const PROGRAM_H3 = ["Arm the program", "Spawn owners", "PR mechanics", "Verdict and merge", "Boot recipe"];
-const PROGRAM_MARKERS = ["persist the plan path", "git show origin/main:", /30[- ]minute/, "status message", "scheduler_create"];
+const PROGRAM_MARKERS = ["persist the plan path", "git show origin/main:", /30[- ]minute/, "status message", /(?:schedule|scheduler_create)/];
 const HOW_TO_READ_MARKERS = [
 	"One box is one unit of work",
 	"names the evidence",

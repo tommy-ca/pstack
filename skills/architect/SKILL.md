@@ -30,7 +30,7 @@ Skip Phase A only when the work is genuinely greenfield with no surrounding syst
 
 Run the **arena** skill with the design-sketch task and the Phase A grounding artifacts. Pass `references/runner-prompt.md` as each runner's prompt. Each candidate produces a design package shaped per `references/rationale-template.md`: the caller's usage written first, then the type sketch, function signatures, module map, and prose rationale derived from it.
 
-Use toml array `architect-runners` per `../setup-pstack/references/resolve-model.md` (or host configuration). If the configuration is absent, spawn **two** arena runners using the host's subagent primitive with the host default (`grok-4.6` on Grok, `pro` on Antigravity). Two sketches, not a four-model panel. Each runner's role/type is `pstack:architect-runners` ([`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md)). Do not send `reasoning_effort` on spawn.
+Use toml array `architect-runners` per `../setup-pstack/references/resolve-model.md` (or host configuration). If the configuration is absent, spawn **two** arena runners using the host's `agent.spawn` primitive with the host default model resolved from the active profile. Two sketches, not a four-model panel. Each runner's role/type is `pstack:architect-runners` ([`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md)). Do not send `reasoning_effort` on spawn unless supported.
 
 Design it twice. Require at least two structurally distinct candidates before synthesis, even when the first looks sufficient. This is the **exhaust-the-design-space** principle skill made concrete. Whole-shape alternatives, not point fixes inside one shape.
 

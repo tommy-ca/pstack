@@ -10,9 +10,9 @@
 6. Run `node skills/poteto-mode/scripts/check-plan.mjs <plan.md>` and fix every line it prints (the **encode-lessons-in-structure** principle skill). It enforces the skeleton's shape, the verification rule in every verification block, and the punctuation rules.
 7. Hand back. Post the plan path and the script's output, then stop. Execution starts on the operator's explicit go, under the execution playbook the plan names.
 
-**Verification.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked (the **prove-it-works** principle skill). That sentence is the verification rule. Every verification block opens with it. The live block is mandatory. Ten lanes on `grok-4.6` at the PR head drive the real surface through the host's control tools, per the **swarm** skill. Each lane is one box with a concrete scenario, the screenshot it saves, and its pass predicate. One lane is the **Regression lane against trunk**. It runs the same load-bearing scenario on trunk and head. If trunk lacks the feature, record that fact and gate the behavior the diff adds plus the end state the user waits for instead of inventing a trunk result.
+**Verification.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked (the **prove-it-works** principle skill). That sentence is the verification rule. Every verification block opens with it. The live block is mandatory. Ten lanes on the active profile's resolved model at the PR head drive the real surface through the host's control tools, per the **swarm** skill. Each lane is one box with a concrete scenario, the screenshot it saves, and its pass predicate. One lane is the **Regression lane against trunk**. It runs the same load-bearing scenario on trunk and head. If trunk lacks the feature, record that fact and gate the behavior the diff adds plus the end state the user waits for instead of inventing a trunk result.
 
-**Real surface.** Pick it by what the user would touch. Browser, Electron, and web UIs: the running app plus Grok browser tools or the repo's screenshot harness. CLIs and TUIs: the real binary. Native mobile: the repo's simulator recipe. A PR that touches two surfaces gets lanes on both. A surface you cannot drive is a risk in Appendix C, and its live block still names how each lane runs.
+**Real surface.** Pick it by what the user would touch. Browser, Electron, and web UIs: the running app plus host browser tools or the repo's screenshot harness. CLIs and TUIs: the real binary. Native mobile: the repo's simulator recipe. A PR that touches two surfaces gets lanes on both. A surface you cannot drive is a risk in Appendix C, and its live block still names how each lane runs.
 
 **Dependency graph.** Give every PR/task section a unique identifier in the final parentheses of its H2 title, such as `## Harden the watcher (watcher-errors)`. Write `**Depends on.** None.` for a root or a comma-separated list of identifiers for its direct parents. The checker resolves those references recursively and rejects duplicates, unknown identifiers, and cycles. A nested box remains a sub-step of its parent task; it is not a new graph node.
 
@@ -41,13 +41,13 @@ Tests alone are not sufficient verification. A PR is verified only when its unit
   - [ ] `git show origin/main:<surface recipe path>`
   - [ ] `git show origin/main:skills/poteto-mode/playbooks/opening-a-pr.md`
   - [ ] `git show origin/main:skills/<each other leaf skill the program uses>`
-- [ ] Arm the 30-minute audit tick with `scheduler_create` (`interval: "30m"`, `fire_immediately: true`) and `monitor` for event wakes. Never leave the cadence to memory.
+- [ ] Arm the 30-minute audit tick with the host's schedule capability (`interval: "30m"`, `fire_immediately: true`) and `monitor` for event wakes. Never leave the cadence to memory.
 - [ ] Use this tick prompt, verbatim. "Re-read the execution playbook from trunk and the persisted plan. Audit the operation against both and fix drift in this tick. Probe every active lane and judge progress by side effects only. Stand down a stuck lane and dispatch its replacement now. Then send the operator a status message, whether or not anything changed, with the queue table of PR, owner, state, and head SHA, the verdicts since the last tick, what merged, open operator gates, and blockers."
 - [ ] On the operator's hold or stand-down, send every owner a zero-writes order at once.
 
 ### Spawn owners
 
-- [ ] From this parent session, spawn one owner per PR with `spawn_subagent` (`isolation: "worktree"`). Depth is 1. Owners do not spawn.
+- [ ] From this parent session, spawn one owner per PR using the host's `agent.spawn` primitive (isolated workspace). Depth is 1. Owners do not spawn.
 - [ ] Follow this dependency graph. Start dependent work only after its parent merges, or base it on the parent branch when the execution playbook stacks.
   - [ ] <PR id> and <PR id> are independent and first. Both branch from `main`.
   - [ ] <PR id> after <PR id>.
@@ -70,7 +70,7 @@ Tests alone are not sufficient verification. A PR is verified only when its unit
 
 ### Boot recipe, for every live lane
 
-Each live lane runs in its own `isolation: "worktree"` child at the PR head. Drive the real surface (running app, CLI, tests, or Grok browser tools).
+Each live lane runs in its own `isolation: "worktree"` child at the PR head. Drive the real surface (running app, CLI, tests, or browser tools).
 
 - [ ] `git fetch origin <head-branch> && git checkout <head SHA>`.
 - [ ] <Start the backend and the surface. Wait for ready.>
@@ -99,7 +99,7 @@ Each live lane runs in its own `isolation: "worktree"` child at the PR head. Dri
 
 - [ ] <Test file and the case it gains.> Run `<command>`.
 
-**Verify, live.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked. Ten lanes on `grok-4.6` at the PR head, per the boot recipe.
+**Verify, live.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked. Ten lanes on `resolved-model` at the PR head, per the boot recipe.
 
 - [ ] Lane 1. Regression lane against trunk. Run <the same load-bearing scenario> at trunk and head. If trunk lacks the feature, record that and gate <the behavior the diff adds plus the end state the user waits for>. Save `<slug>.png`. Pass when <predicate>.
 - [ ] Lane 2. <Scenario.> Save `<slug>.png`. Pass when <predicate>.

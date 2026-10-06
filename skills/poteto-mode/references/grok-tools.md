@@ -14,6 +14,7 @@ This document maps portable pstack capabilities (defined in [`pstack-portability
 | `agent.join` | `get_command_or_subagent_output` | wait on Agent handles | `manage_subagents` / reactive messaging |
 | `agent.message` | Inter-agent message / parent routing | `send_message` | `send_message` |
 | `task.background` | `spawn_subagent` `background: true`, `monitor` | background jobs | `manage_task`, `schedule` |
+| `schedule` | `scheduler_create` (expanded from `/loop`) | `loop` | `schedule` |
 | `tool.mcp` | Session MCP client | MCP tools | `call_mcp_tool` |
 | `plan.update` | `todo_write` | todolist | artifacts / `todo.md` |
 | `human.ask` | `ask_user_question` | `AskUserQuestion` | `ask_question` |
@@ -23,6 +24,7 @@ This document maps portable pstack capabilities (defined in [`pstack-portability
 - Subagent dispatch uses `spawn_subagent`. Parent owns every spawn.
 - Recursion depth is capped at 1. Child sessions must not spawn subagents.
 - Writers isolate with git worktrees (`isolation: "worktree"`).
+- Periodic audit ticks and heartbeats use `scheduler_create` (expanded from `/loop`).
 - Pass file pointers instead of inlined dumps.
 - Model defaults to `grok-4.6` unless overridden in `~/.grok/pstack-models.toml`.
 

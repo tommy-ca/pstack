@@ -41,7 +41,7 @@ If no path resolves, write a tight digest of the session and pass that instead.
 
 ### 2. Spawn three reviewers in parallel
 
-One message, three `task` calls. Judgment and divergent lenses use `subagent_type: "pstack:reflect-judgment"`. Tooling uses `subagent_type: "pstack:reflect-tooling"`. [`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md). Resolve `model` per `../setup-pstack/references/resolve-model.md`. Do not send `reasoning_effort` on `task`. Reviewers need MCP access for context lookups (tickets, chat threads, observability traces referenced in the transcript). The prompt forbids file writes; the parent applies edits.
+One message, three subagent spawn calls. Judgment and divergent lenses use `subagent_type: "pstack:reflect-judgment"`. Tooling uses `subagent_type: "pstack:reflect-tooling"`. [`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md). Resolve `model` per `../setup-pstack/references/resolve-model.md`. Do not send `reasoning_effort` on spawn. Reviewers need MCP access for context lookups (tickets, chat threads, observability traces referenced in the transcript). The prompt forbids file writes; the parent applies edits.
 
 | Lens | toml key | Prompt template |
 |---|---|---|
@@ -49,13 +49,13 @@ One message, three `task` calls. Judgment and divergent lenses use `subagent_typ
 | Tooling | `reflect-tooling` | `references/tooling-reviewer.md` |
 | Divergent | `reflect-judgment` | `references/divergent-reviewer.md` |
 
-Omit `model` on a spawn when that key is `inherit-parent` or `auto`. File absent: send `grok-4.6` (omit if rejected). Three lenses are three prompts, not a guessed multi-slug panel.
+Omit `model` on a spawn when that key is `inherit-parent` or `auto`. File absent: send host default model resolved from active profile (omit if rejected). Three lenses are three prompts, not a guessed multi-slug panel.
 
-Pass each template verbatim, substituting the transcript path or digest where marked. Reviewers return findings in the `task` response body.
+Pass each template verbatim, substituting the transcript path or digest where marked. Reviewers return findings in their response body.
 
 ### 3. Synthesize
 
-One `task` call, `subagent_type: "pstack:reflect-judgment"`, toml key `reflect-judgment` (no toml: `grok-4.6`; inherit-parent/`auto`/missing key: omit `model`). Do not send `reasoning_effort` on `task`. The synthesizer's quality check includes spot-verifying citations, which can require MCP access. Use `references/synthesizer.md` verbatim, with each reviewer's full output inlined where marked. The synthesizer returns a structured Accepted / Rejected / Backlog list.
+One subagent spawn call, `subagent_type: "pstack:reflect-judgment"`, toml key `reflect-judgment` (no toml: host default model resolved from active profile; inherit-parent/`auto`/missing key: omit `model`). Do not send `reasoning_effort` on spawn. The synthesizer's quality check includes spot-verifying citations, which can require MCP access. Use `references/synthesizer.md` verbatim, with each reviewer's full output inlined where marked. The synthesizer returns a structured Accepted / Rejected / Backlog list.
 
 ### 4. Structural enforcement check
 
