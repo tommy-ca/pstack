@@ -133,6 +133,14 @@ class PortableVerifier:
             [sys.executable, str(ROOT / "scripts" / "verify-harness.py")],
         )
 
+        # 3b. Host-neutral adapter boundary scanner
+        r3b = self.run_command(
+            "doctor-scan-host-boundary",
+            "Verify shared skills and playbooks maintain host-neutral adapter boundary",
+            "adapter",
+            [sys.executable, str(ROOT / "scripts" / "scan-host-boundary.py"), "--check"],
+        )
+
         # 4. Package descriptor and native manifest projection integrity
         r4 = self.run_command(
             "doctor-package-projection",
@@ -141,7 +149,7 @@ class PortableVerifier:
             [sys.executable, str(ROOT / "scripts" / "project-package.py"), "--check"],
         )
 
-        doctor_pass = all(r.verdict == "PASS" for r in (r1, r2, r3, r4))
+        doctor_pass = all(r.verdict == "PASS" for r in (r1, r2, r3, r3b, r4))
 
         # 5. Optional typed harness profile validation
         profile_file = ROOT / "profiles" / f"{self.host}.json"

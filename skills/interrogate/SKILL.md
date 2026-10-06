@@ -35,13 +35,13 @@ Write one clear paragraph. Reviewers challenge whether the work achieves the int
 
 ## Step 3, Spawn Reviewers
 
-Launch all reviewers in a single message using the current host's subagent primitive (Grok: `spawn_subagent`, Antigravity: `invoke_subagent`, Codex: `spawn_agent`, OMP: `pi_spawn`, OpenCode: `task.spawn` per `references/*-tools.md`). Use toml array `interrogate-reviewers` per `../setup-pstack/references/resolve-model.md` (or Antigravity `models.json` `interrogate` tier), one reviewer per entry. If the configuration is absent, spawn **one** reviewer with the host default (`grok-4.6` on Grok, `pro` on Antigravity).
+Launch all reviewers in a single message using the host's `agent.spawn` primitive (per active harness profile and host references). Use toml array `interrogate-reviewers` per `../setup-pstack/references/resolve-model.md` (or active profile model configuration), one reviewer per entry. If the configuration is absent, spawn **one** reviewer with the host default model resolved from the active profile.
 
 For each reviewer:
 - role / `subagent_type`: `pstack:interrogate-reviewers` ([`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md))
-- `model`: that entry when it is a detected slug; omit when the entry is `inherit-parent`/`auto`. Configuration absent: host default. Do not send `reasoning_effort` on spawn.
+- `model`: that entry when it is a detected slug; omit when the entry is `inherit-parent`/`auto`. Configuration absent: host default model resolved from active profile. Do not send `reasoning_effort` on spawn.
 
-If `task` rejects a slug, omit `model` or retry only with a slug the error text named that is already in this session's detected set. Do not pick a closest family equivalent. If the configured value is `inherit-parent` or `auto`, omit `model`; never treat those aliases as broken slugs.
+If the host rejects a slug, omit `model` or retry only with a slug the error text named that is already in this session's detected set. Do not pick a closest family equivalent. If the configured value is `inherit-parent` or `auto`, omit `model`; never treat those aliases as broken slugs.
 
 Fill the reviewer prompt with `scripts/pack.py --intent` plus exactly one of `--range` or `--diff-file` (`references/rubric.md`, `references/code-quality-review.md`). Do not hand-fill the template. Point reviewers at the packed `prompt.md` rather than inlining dumps. The same packed prompt goes to all reviewers, so every model applies the code-quality lens.
 

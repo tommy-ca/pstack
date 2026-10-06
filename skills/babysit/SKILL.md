@@ -31,7 +31,7 @@ Inside poteto-mode, the **Babysit** playbook ([`../poteto-mode/playbooks/babysit
    - Review comments: run the **get-pr-comments** skill for the summary, then act only on feedback you actually agree with. When a comment has a single mechanical answer — a rename, a guard clause, a formatting nit — make the edit and quote the comment in the commit message. When it hinges on a judgement call, or you can't tell what's being asked, don't guess: leave it and reply with what you would have done.
    - Review-bot comments (Bugbot and similar automation): classify fix/dismiss/ask before acting, per [`bugbot-triage.md`](../poteto-mode/references/bugbot-triage.md). Ask by default on security, data, and high-severity findings.
 
-3. **Loop.** Use host-native pacing to pace re-checks: Antigravity `schedule` tool or `/schedule`, Grok `scheduler_create`, Codex `watch-pr` or cron, Claude Code `loop` skill. Pick the interval from what you're watching:
+3. **Loop.** Use the host's native pacing capability (`schedule`, `monitor`, or background loop) to pace re-checks. Pick the interval from what you're watching:
    - Active CI run: poll `gh pr checks --watch` (it blocks until checks finish, so no separate loop interval needed).
    - Awaiting reviewer: 20–30 min heartbeat.
    - Idle but want to catch new comments: hourly.
@@ -39,7 +39,7 @@ Inside poteto-mode, the **Babysit** playbook ([`../poteto-mode/playbooks/babysit
 4. **When to stop.**
    - Build is green, every comment resolved, branch merges cleanly → call it ready.
    - You've run three rounds of fix → push → recheck and it still isn't fully green → stop, summarise what's still broken, and hand control back.
-   - The next fix would force a design choice → pause and put it to the user with the host question primitive (Antigravity `ask_question`, Grok `human.ask`, etc.).
+   - The next fix would force a design choice → pause and put it to the user with the host's question or confirmation capability (`human.ask`).
 
 5. **Report.** Summarize fixes applied, comments addressed, comments deferred (with reason), current PR status. Cite each commit by SHA.
 

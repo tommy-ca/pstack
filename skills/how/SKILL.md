@@ -28,28 +28,28 @@ For enforcement or runtime questions (sandbox, hooks, multiplexer, kernel policy
 
 ### Step 2a. Explore (complex questions only)
 
-Decompose the question into 2 to 4 exploration angles, each a distinct slice of the subsystem. Spawn all explorers in a single parent turn using the current host's subagent primitive (Grok: `spawn_subagent`, Antigravity: `invoke_subagent`, Codex: `spawn_agent`, OMP: `pi_spawn`, OpenCode: `task.spawn` per `references/*-tools.md`). Join with the host's join primitive.
+Decompose the question into 2 to 4 exploration angles, each a distinct slice of the subsystem. Spawn all explorers in a single parent turn using the current host's agent spawn capability (`agent.spawn`). Join with the host's join capability (`agent.join`).
 
 - `subagent_type` / `Role`: `pstack:how-explorer` ([`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md)). Builtin `explore` is the later fallback when this plugin agent is unknown (HARNESS Skill order).
-- `model`: toml key `how-explorer` per `../setup-pstack/references/resolve-model.md` (or host configuration). Missing key omits; absent config sends host default (`grok-4.6` on Grok, `pro` on Antigravity). Do not send `reasoning_effort`.
+- `model`: toml key `how-explorer` per `../setup-pstack/references/resolve-model.md` (or host configuration). Missing key omits; absent config resolves the host default model from the active profile. Do not send `reasoning_effort`.
 
 Each explorer gets the prompt in `references/explorer-prompt.md` with its angle filled in. Then go to Step 3.
 
 ### Step 2b. Direct Explain (simple questions)
 
-Spawn a single child using the host's subagent primitive that explores and explains in one pass:
+Spawn a single child using the host's agent spawn capability (`agent.spawn`) that explores and explains in one pass:
 
 - `subagent_type` / `Role`: `pstack:how-explainer` ([`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md))
-- `model`: toml key `how-explainer` per `../setup-pstack/references/resolve-model.md` (or host configuration). Missing key omits; absent config sends host default (`grok-4.6` on Grok, `pro` on Antigravity). Do not send `reasoning_effort`.
+- `model`: toml key `how-explainer` per `../setup-pstack/references/resolve-model.md` (or host configuration). Missing key omits; absent config resolves the host default model from the active profile. Do not send `reasoning_effort`.
 
 Build its prompt from `references/explainer-prompt.md` without the explorer-findings section. Go to Step 4.
 
 ### Step 3. Synthesize (complex questions only)
 
-Once all explorers have returned, spawn one child using the host's subagent primitive to synthesize their findings into one explanation:
+Once all explorers have returned, spawn one child using the host's agent spawn capability (`agent.spawn`) to synthesize their findings into one explanation:
 
 - `subagent_type` / `Role`: `pstack:how-explainer` ([`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md))
-- `model`: toml key `how-explainer` per `../setup-pstack/references/resolve-model.md` (or host configuration). Missing key omits; absent config sends host default (`grok-4.6` on Grok, `pro` on Antigravity). Do not send `reasoning_effort`.
+- `model`: toml key `how-explainer` per `../setup-pstack/references/resolve-model.md` (or host configuration). Missing key omits; absent config resolves the host default model from the active profile. Do not send `reasoning_effort`.
 
 Build its prompt from `references/explainer-prompt.md` with every explorer's findings filled in.
 
@@ -75,11 +75,11 @@ Run the full explain flow above (Steps 1-4). You must understand the architectur
 
 ### Step 2. Spawn Critics
 
-After the explanation is complete, spawn critics using the host's subagent primitive (from toml array `how-critics` or host configuration), all in a single message. If configuration is absent, spawn **one** critic and send host default (`grok-4.6` on Grok, `pro` on Antigravity). Do not invent a multi-model panel.
+After the explanation is complete, spawn critics using the host's `agent.spawn` primitive (from toml array `how-critics` or host configuration), all in a single message. If configuration is absent, spawn **one** critic using the host default model resolved from the active profile. Do not invent a multi-model panel.
 
 For each critic:
 - `subagent_type` / `Role`: `pstack:how-critics` ([`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md))
-- `model`: that array entry when it is a detected slug; omit when the entry is `inherit-parent`/`auto`. Configuration absent: host default (`grok-4.6` on Grok, `pro` on Antigravity). Do not send `reasoning_effort`.
+- `model`: that array entry when it is a detected slug; omit when the entry is `inherit-parent`/`auto`. Configuration absent: host default model resolved from the active profile. Do not send `reasoning_effort` unless supported.
 
 Read `references/critic-prompt.md` for the prompt template. Each critic gets:
 1. The explanation from Step 1 (so they don't re-explore)

@@ -1,13 +1,13 @@
 {
   "pin": "4b4d98e5e3b3c139f63dbc1ce4b538954c8f2f52",
-  "upstream_head": "e5a8186d7b43be8d6ac4452440fbead5f1a51c70",
-  "total_changed_files": 33,
+  "upstream_head": "df581122cde17e6e27686b5a448bde23e4ad4318",
+  "total_changed_files": 42,
   "buckets": {
     "host_cursor": 1,
     "packaging_docs": 12,
     "agents": 1,
-    "verification_skills": 10,
-    "playbooks_router": 8,
+    "verification_skills": 18,
+    "playbooks_router": 9,
     "principles": 1
   },
   "entries": [
@@ -124,6 +124,20 @@
       "note": "Verification and engineering skill updates"
     },
     {
+      "path": "skills/architect/references/runner-prompt.md",
+      "status": "M",
+      "bucket": "verification_skills",
+      "mode": "adapt",
+      "note": "Verification and engineering skill updates"
+    },
+    {
+      "path": "skills/arena/SKILL.md",
+      "status": "M",
+      "bucket": "verification_skills",
+      "mode": "adapt",
+      "note": "Verification and engineering skill updates"
+    },
+    {
       "path": "skills/benchmark-checklist/SKILL.md",
       "status": "A",
       "bucket": "verification_skills",
@@ -131,8 +145,29 @@
       "note": "Verification and engineering skill updates"
     },
     {
+      "path": "skills/blast-radius/SKILL.md",
+      "status": "M",
+      "bucket": "verification_skills",
+      "mode": "adapt",
+      "note": "Verification and engineering skill updates"
+    },
+    {
       "path": "skills/correct/SKILL.md",
       "status": "A",
+      "bucket": "verification_skills",
+      "mode": "adapt",
+      "note": "Verification and engineering skill updates"
+    },
+    {
+      "path": "skills/how/SKILL.md",
+      "status": "M",
+      "bucket": "verification_skills",
+      "mode": "adapt",
+      "note": "Verification and engineering skill updates"
+    },
+    {
+      "path": "skills/interrogate/SKILL.md",
+      "status": "M",
       "bucket": "verification_skills",
       "mode": "adapt",
       "note": "Verification and engineering skill updates"
@@ -215,11 +250,32 @@
       "note": "Playbook and router updates; preserved with host-neutral mapping"
     },
     {
+      "path": "skills/poteto-mode/scripts/orch/orch.test.ts",
+      "status": "M",
+      "bucket": "playbooks_router",
+      "mode": "adapt",
+      "note": "Playbook and router updates; preserved with host-neutral mapping"
+    },
+    {
       "path": "skills/principle-explain-the-number/SKILL.md",
       "status": "A",
       "bucket": "principles",
       "mode": "preserve",
       "note": "Canonical principle leaf"
+    },
+    {
+      "path": "skills/reflect/SKILL.md",
+      "status": "M",
+      "bucket": "verification_skills",
+      "mode": "adapt",
+      "note": "Verification and engineering skill updates"
+    },
+    {
+      "path": "skills/setup-pstack/SKILL.md",
+      "status": "M",
+      "bucket": "verification_skills",
+      "mode": "adapt",
+      "note": "Verification and engineering skill updates"
     },
     {
       "path": "skills/swarm/SKILL.md",
@@ -237,6 +293,13 @@
     },
     {
       "path": "skills/typescript-best-practices/references/patterns.md",
+      "status": "M",
+      "bucket": "verification_skills",
+      "mode": "adapt",
+      "note": "Verification and engineering skill updates"
+    },
+    {
+      "path": "skills/why/SKILL.md",
       "status": "M",
       "bucket": "verification_skills",
       "mode": "adapt",
