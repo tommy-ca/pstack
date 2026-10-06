@@ -9,7 +9,7 @@
       "host": "opencode",
       "capability": "agent.spawn",
       "implementation_status": "native",
-      "primitive": "task.spawn",
+      "primitive": "task",
       "enforcement": "hard",
       "verification_status": "verified",
       "evidence_ref": ".audit/evidence/opencode-receipt.json"
@@ -18,7 +18,7 @@
       "host": "opencode",
       "capability": "agent.join",
       "implementation_status": "native",
-      "primitive": "task.wait",
+      "primitive": "task (completion)",
       "enforcement": "hard",
       "verification_status": "verified",
       "evidence_ref": ".audit/evidence/opencode-receipt.json"
@@ -27,7 +27,7 @@
       "host": "opencode",
       "capability": "agent.message",
       "implementation_status": "native",
-      "primitive": "task.message",
+      "primitive": "session message",
       "enforcement": "hard",
       "verification_status": "verified",
       "evidence_ref": ".audit/evidence/opencode-receipt.json"
@@ -36,7 +36,7 @@
       "host": "opencode",
       "capability": "agent.cancel",
       "implementation_status": "native",
-      "primitive": "task.cancel",
+      "primitive": "task cancel",
       "enforcement": "hard",
       "verification_status": "verified",
       "evidence_ref": ".audit/evidence/opencode-receipt.json"
@@ -45,7 +45,7 @@
       "host": "opencode",
       "capability": "agent.resume",
       "implementation_status": "native",
-      "primitive": "task.resume",
+      "primitive": "opencode --continue",
       "enforcement": "hard",
       "verification_status": "verified",
       "evidence_ref": ".audit/evidence/opencode-receipt.json"
@@ -81,7 +81,7 @@
       "host": "opencode",
       "capability": "human.ask",
       "implementation_status": "native",
-      "primitive": "window.showInputBox",
+      "primitive": "question",
       "enforcement": "advisory",
       "verification_status": "verified",
       "evidence_ref": ".audit/evidence/opencode-receipt.json"
@@ -90,7 +90,7 @@
       "host": "opencode",
       "capability": "human.gate",
       "implementation_status": "native",
-      "primitive": "window.showQuickPick (modal/blocking)",
+      "primitive": "question (blocking confirmation)",
       "enforcement": "hard",
       "verification_status": "verified",
       "evidence_ref": ".audit/evidence/opencode-receipt.json"
@@ -99,7 +99,7 @@
       "host": "opencode",
       "capability": "plan.update",
       "implementation_status": "native",
-      "primitive": "workbench.plan",
+      "primitive": "todo",
       "enforcement": "advisory",
       "verification_status": "verified",
       "evidence_ref": ".audit/evidence/opencode-receipt.json"
@@ -118,7 +118,7 @@
       "host": "opencode",
       "capability": "monitor",
       "implementation_status": "shim",
-      "primitive": "task.background watch loop",
+      "primitive": "terminal (background) / ps",
       "enforcement": "soft",
       "verification_status": "verified",
       "evidence_ref": ".audit/evidence/opencode-receipt.json"
@@ -170,20 +170,20 @@
     }
   ],
   "tool_mappings": {
-    "file_read": "terminal / ripgrep",
-    "file_edit": "file_edit",
-    "file_write": "file.write / terminal",
+    "file_read": "read",
+    "file_edit": "edit",
+    "file_write": "write",
     "shell_run": "terminal",
-    "web_fetch": "curl via terminal",
-    "web_search": "web.search / ripgrep",
-    "agent_spawn": "task.spawn",
-    "agent_fanout": "N task.spawn in one turn",
-    "agent_join": "task.wait",
-    "agent_message": "task.message",
-    "task_background": "task.background",
-    "tool_mcp": "mcp.invoke",
-    "plan_update": "workbench.plan / todo.md",
-    "human_ask": "window.showInputBox / chat"
+    "web_fetch": "webfetch",
+    "web_search": "webfetch / search",
+    "agent_spawn": "task",
+    "agent_fanout": "N task in one turn",
+    "agent_join": "task completion",
+    "agent_message": "session message",
+    "task_background": "terminal (background)",
+    "tool_mcp": "mcp",
+    "plan_update": "todo",
+    "human_ask": "question"
   },
   "skill_order": [
     {
@@ -226,7 +226,7 @@
       "need": "Spec then plan",
       "primary_pstack": null,
       "secondary_user": null,
-      "fallback_builtin": "workbench.plan"
+      "fallback_builtin": "todo"
     },
     {
       "need": "Execute a written plan",
@@ -249,8 +249,7 @@
       "environment"
     ],
     "wire_aliases": {
-      "task.spawn": "spawn_subagent",
-      "task.wait": "join_subagent"
+      "task": "spawn_subagent"
     }
   }
 }

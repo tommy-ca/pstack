@@ -42,6 +42,7 @@ from scripts.portability_schema import (
     compute_surface_revisions,
     derive_support_state,
 )
+from scripts.drivers import get_driver
 
 SUPPORTED_HOSTS = ("grok", "codex", "omp", "opencode", "antigravity", "mock")
 FIVE_HARNESSES = ("grok", "codex", "omp", "opencode", "antigravity")
@@ -181,11 +182,12 @@ class PortableVerifier:
         """Step 3: Drive representative capability scenarios."""
         print(f"[{self.host}] Driving capability scenarios...")
 
-        # Drive 1: Router and principle discovery
+        # Reclassified repository-local static and adapter checks
+        # Canonical: principle discovery
         self.run_command(
             "drive-principles-load",
             "Ensure poteto-mode loads all canonical principles without error",
-            "runtime",
+            "canonical",
             [
                 sys.executable,
                 "-c",
@@ -193,28 +195,28 @@ class PortableVerifier:
             ],
         )
 
-        # Drive 2: Plan checker validation
+        # Adapter: Plan checker validation
         self.run_command(
             "drive-check-plan",
             "Verify multi-phase plan checking logic",
-            "runtime",
+            "adapter",
             ["bun", "test", str(ROOT / "skills" / "poteto-mode" / "scripts" / "check-plan.test.mjs")],
         )
 
-        # Drive 3: Worktree audit isolation check
+        # Adapter: Worktree audit isolation check
         self.run_command(
             "drive-worktree-audit",
             "Run worktree isolation audit smoke test",
-            "runtime",
+            "adapter",
             ["bash", str(ROOT / "skills" / "poteto-mode" / "scripts" / "worktree-audit.sh"), "."],
         )
 
-        # Drive 4: Cross-harness verification skill scaffolding and check
+        # Package: Cross-harness verification skill scaffolding and check
         smoke_target = self.run_dir / "verify-smoke"
         self.run_command(
             "drive-verification-skill-scaffold",
             f"Prove verification skill scaffolding for {self.host}",
-            "runtime",
+            "package",
             [
                 sys.executable,
                 str(ROOT / "scripts" / "scaffold-verification-skill.py"),
@@ -230,7 +232,7 @@ class PortableVerifier:
         self.run_command(
             "drive-verification-skill-check",
             f"Validate generated verification skill structure for {self.host}",
-            "runtime",
+            "package",
             [
                 sys.executable,
                 str(ROOT / "scripts" / "scaffold-verification-skill.py"),
@@ -242,35 +244,129 @@ class PortableVerifier:
             ],
         )
 
-        # Codex-specific runtime compatibility suites
+        # Codex-specific adapter compatibility suites
         if self.host == "codex":
             self.run_command(
                 "drive-codex-orch",
                 "Verify Codex orch and store compatibility suite",
-                "runtime",
+                "adapter",
                 ["bun", "test", "./skills/poteto-mode/scripts/orch/orch.test.ts"],
             )
             self.run_command(
                 "drive-codex-watch-pr",
                 "Verify Codex watch-pr policy and CLI suite",
-                "runtime",
+                "adapter",
                 ["bun", "test", "./skills/poteto-mode/scripts/watch-pr/cli.test.ts", "./skills/poteto-mode/scripts/watch-pr/policy.test.ts"],
             )
 
-        # Antigravity-specific runtime verification scenarios
+        # Antigravity-specific package/adapter verification scenarios
         if self.host == "antigravity":
             self.run_command(
                 "drive-antigravity-models",
                 "Verify Antigravity model roles and panel definitions",
-                "runtime",
+                "package",
                 [sys.executable, "-c", "import json; from pathlib import Path; d = json.loads(Path('.antigravity-plugin/models.json').read_text()); assert d['singleRoleDefault'] == 'pro'; assert len(d['roles']) >= 10"],
             )
             self.run_command(
                 "drive-antigravity-tools-ref",
                 "Verify Antigravity tool-mapping reference integrity",
-                "runtime",
+                "adapter",
                 [sys.executable, "-c", "from pathlib import Path; p = Path('skills/poteto-mode/references/antigravity-tools.md'); assert p.is_file(); t = p.read_text(); assert 'invoke_subagent' in t; assert 'ask_question' in t"],
             )
+
+        # Native Harness Driver Live Scenarios (Runtime Plane)
+        driver = get_driver(self.host, ROOT)
+        avail, reason = driver.is_available()
+        if not avail:
+            self.scenarios.append(
+                ScenarioResult(
+                    id=f"runtime-driver-{self.host}",
+                    description=f"Prove native harness execution for {self.host}",
+                    plane="runtime",
+                    command=f"check-harness-availability --host {self.host}",
+                    exit_code=127,
+                    stdout_snippet=f"BLOCKED: Host runtime '{self.host}' is unavailable ({reason})",
+                    verdict="BLOCKED",
+                    duration_s=0.0,
+                )
+            )
+            return False
+
+        # 1. Native harness discovery
+        sc_disc = driver.discover(self.run_dir)
+        self.scenarios.append(
+            ScenarioResult(
+                id=sc_disc.scenario_id,
+                description=sc_disc.description,
+                plane="runtime",
+                command=sc_disc.command,
+                exit_code=sc_disc.exit_code,
+                stdout_snippet=sc_disc.stdout_snippet,
+                verdict=sc_disc.verdict,
+                duration_s=sc_disc.duration_s,
+            )
+        )
+
+        # 2. Native playbook routing
+        target_playbook = feature or "feature"
+        sc_route = driver.route_playbook(target_playbook, self.run_dir)
+        self.scenarios.append(
+            ScenarioResult(
+                id=sc_route.scenario_id,
+                description=sc_route.description,
+                plane="runtime",
+                command=sc_route.command,
+                exit_code=sc_route.exit_code,
+                stdout_snippet=sc_route.stdout_snippet,
+                verdict=sc_route.verdict,
+                duration_s=sc_route.duration_s,
+            )
+        )
+
+        # 3. Native child spawn / subagent contract
+        sc_spawn = driver.child_spawn(self.run_dir)
+        self.scenarios.append(
+            ScenarioResult(
+                id=sc_spawn.scenario_id,
+                description=sc_spawn.description,
+                plane="runtime",
+                command=sc_spawn.command,
+                exit_code=sc_spawn.exit_code,
+                stdout_snippet=sc_spawn.stdout_snippet,
+                verdict=sc_spawn.verdict,
+                duration_s=sc_spawn.duration_s,
+            )
+        )
+
+        # 4. Native workspace isolation contract
+        sc_iso = driver.isolation(self.run_dir)
+        self.scenarios.append(
+            ScenarioResult(
+                id=sc_iso.scenario_id,
+                description=sc_iso.description,
+                plane="runtime",
+                command=sc_iso.command,
+                exit_code=sc_iso.exit_code,
+                stdout_snippet=sc_iso.stdout_snippet,
+                verdict=sc_iso.verdict,
+                duration_s=sc_iso.duration_s,
+            )
+        )
+
+        # 5. Native evidence capture contract
+        sc_ev = driver.evidence_capture(self.run_dir)
+        self.scenarios.append(
+            ScenarioResult(
+                id=sc_ev.scenario_id,
+                description=sc_ev.description,
+                plane="runtime",
+                command=sc_ev.command,
+                exit_code=sc_ev.exit_code,
+                stdout_snippet=sc_ev.stdout_snippet,
+                verdict=sc_ev.verdict,
+                duration_s=sc_ev.duration_s,
+            )
+        )
 
         return all(s.verdict == "PASS" for s in self.scenarios if s.plane == "runtime")
 
@@ -281,21 +377,38 @@ class PortableVerifier:
             results = [s for s in self.scenarios if s.plane == plane]
             if not results:
                 planes[plane] = "UNTESTED"
+            elif any(s.verdict == "BLOCKED" for s in results):
+                planes[plane] = "BLOCKED"
             elif all(s.verdict == "PASS" for s in results):
                 planes[plane] = "PASS"
             else:
                 planes[plane] = "FAIL"
 
-        overall = "PASS" if all(v == "PASS" for v in planes.values()) else "FAIL"
+        if any(v == "BLOCKED" for v in planes.values()):
+            overall = "BLOCKED"
+        elif all(v == "PASS" for v in planes.values()):
+            overall = "PASS"
+        else:
+            overall = "FAIL"
 
-        # Host version from pstack.package.json
+        # Host version from live driver or package descriptor fallback
         host_version = "0.15.5-grokbuild.0"
-        pkg_file = ROOT / "pstack.package.json"
-        if pkg_file.is_file():
-            try:
-                host_version = json.loads(pkg_file.read_text(encoding="utf-8")).get("version", host_version)
-            except Exception:
-                pass
+        try:
+            driver = get_driver(self.host, ROOT)
+            if driver.is_available()[0]:
+                live_v = driver.get_version()
+                if live_v:
+                    host_version = live_v
+        except Exception:
+            pass
+
+        if host_version == "0.15.5-grokbuild.0":
+            pkg_file = ROOT / "pstack.package.json"
+            if pkg_file.is_file():
+                try:
+                    host_version = json.loads(pkg_file.read_text(encoding="utf-8")).get("version", host_version)
+                except Exception:
+                    pass
 
         surface_revisions = compute_surface_revisions(ROOT, self.host)
 

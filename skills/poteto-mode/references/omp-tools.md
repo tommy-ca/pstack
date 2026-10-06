@@ -6,14 +6,14 @@ This document maps portable pstack capabilities (defined in [`pstack-portability
 
 | Portable Capability | OMP Primitive | Claude Code Equivalent | Grok Reference |
 | --- | --- | --- | --- |
-| Read / edit / shell / search | `bash`, `file_edit`, `grep` | Read / Edit / Bash | `run_command`, `write_to_file` |
-| Fetch a URL | `web_search`, `fetch` | WebFetch / Bash | `read_url_content` |
+| Read / edit / shell / search | `read`, `edit`, `write`, `bash`, `grep`, `glob` | Read / Edit / Bash | `run_command`, `write_to_file` |
+| Fetch a URL | `read`, `web_search` | WebFetch / Bash | `read_url_content` |
 | Invoke a skill | Skills load natively via plugin manifest | Skills load natively | Skills load natively |
-| `agent.spawn` | `pi_spawn` | `Agent` | `spawn_subagent` |
-| `agent.fan_out` | N `pi_spawn` concurrent calls | N `Agent` in one turn | N `spawn_subagent` in one turn |
-| `agent.join` | `pi_wait` / task handle | wait on Agent handles | `get_command_or_subagent_output` |
-| `plan.update` | `task_tracker` / `todo.md` | todolist | `todo_write` |
-| `human.ask` | `pi_prompt` | `AskUserQuestion` | `ask_user_question` |
+| `agent.spawn` | `task` | `Agent` | `spawn_subagent` |
+| `agent.fan_out` | N `task` concurrent calls | N `Agent` in one turn | N `spawn_subagent` in one turn |
+| `agent.join` | `task` completion / handle | wait on Agent handles | `get_command_or_subagent_output` |
+| `plan.update` | `todo` / `todo.md` | todolist | `todo_write` |
+| `human.ask` | `ask` | `AskUserQuestion` | `ask_user_question` |
 
 ## Subagent policy
 
