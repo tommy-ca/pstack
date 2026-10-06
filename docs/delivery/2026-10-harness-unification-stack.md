@@ -47,3 +47,29 @@ gate set applicable to its own slice, run serially at that PR's head SHA and
 recorded in the PR body; the full suite and CLI gates run at the final
 implementation head. Droid runtime capabilities (custom-role serving, model
 selection, live `Task` execution) remain explicitly untested.
+
+## Codex receipt recovery (2026-10-07)
+
+The session environment that produced the original S6 receipts had a stale
+PATH: `codex` resolved to the mise shim, which `drivers/base.py`
+`find_executable` resolved to the `mise` binary. The Codex durable receipt
+therefore honestly recorded `host_version: 2026.10.3` (mise) with two runtime
+scenario FAILs (`runtime-discover-codex`, `runtime-isolation-codex`). Driver
+code was not modified; the environment was repaired instead by prepending the
+installed native binary directory
+(`~/.local/share/mise/installs/npm-openai-codex/0.160.1/node_modules/.bin`)
+to `PATH` for each validation command.
+
+- Raw failed evidence preserved append-only:
+  [`.audit/evidence/codex-1791322741-shim-fail-receipt.json`](../../.audit/evidence/codex-1791322741-shim-fail-receipt.json)
+  (the FAIL receipt recorded at S6 `765392b`/`cf6c262`).
+- Regenerated via the existing `verify-portable.py run --host codex` at S6
+  head with the native binary on PATH: `run_id codex-1791324832-92c718e1`,
+  `host_version: codex-cli 0.160.1`, all planes and all 20 scenarios PASS.
+- Final-head gates re-run serially with the native binary: full suite
+  248 passed (previously 240 passed / 8 failed, same root cause),
+  `verify-harness.py`, `scan-host-boundary.py`, `canonical-index.py --check`,
+  `project-package.py --check`, `grok plugin validate .` all PASS;
+  `doctor --host all` PASS (five hosts, runtime UNTESTED by design);
+  `check-staleness --host all` reports no regeneration needed; native Droid
+  `drive --host droid` PASS with isolated evidence.

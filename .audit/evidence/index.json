@@ -27,14 +27,14 @@
     },
     "codex": {
       "receipt": ".audit/evidence/codex-receipt.json",
-      "run_id": "codex-1791322741-0f9feaae",
-      "timestamp": "2026-10-06T21:39:13Z",
-      "overall_verdict": "FAIL",
+      "run_id": "codex-1791324832-92c718e1",
+      "timestamp": "2026-10-06T22:14:07Z",
+      "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
         "adapter": "PASS",
         "package": "PASS",
-        "runtime": "FAIL"
+        "runtime": "PASS"
       },
       "surface_revisions": {
         "canonical_pin": "4b4d98e5e3b3c139f63dbc1ce4b538954c8f2f52",
