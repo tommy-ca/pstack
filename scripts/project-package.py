@@ -282,11 +282,16 @@ def generate_droid_role(agent_path: Path) -> tuple[str, str]:
     if not re.fullmatch(r"pstack-[a-z0-9-_]+", droid_name):
         raise ValidationError(f"droid name is not Droid-native: {droid_name!r}")
     description = adapt_droid_description(fm.get("description", ""), source_name, droid_name)
-    lines = ["---", f"name: {droid_name}", f"description: {description}", "model: inherit"]
+    # The description carries injected `key: value`-shaped text (the spawn
+    # contract sentence), which is invalid as an unquoted YAML plain scalar.
+    # Emit a double-quoted scalar so the frontmatter stays parseable YAML.
+    lines = ["---", f"name: {droid_name}", f"description: {json.dumps(description)}", "model: inherit"]
     # Native tool definitions: grok's capabilityMode becomes a per-definition
     # Droid tools restriction; roles without it get all tools (field omitted).
-    # Droid's execute category is shell-only, so the read+shell union is
+    # Grok's execute mode grants read + shell, so the read+shell union is
     # spelled out explicitly (comma-separated scalar of runtime llmIds).
+    # Note: the frontmatter `tools:` value namespace is load-time-untested
+    # (see droid-tools.md); the union IDs are verified llmIds.
     if fm.get("capabilityMode") == "execute":
         lines.append(f"tools: {DROID_EXECUTE_TOOLS}")
     content = "\n".join(lines) + "\n---\n\n" + body
@@ -302,6 +307,13 @@ def validate_droid_role(droid_name: str, content: str) -> None:
         raise ValidationError(f"generated droid {droid_name} pins Grok vocabulary or slugs")
     if "reasoningEffort" in content or "reasoning_effort" in content:
         raise ValidationError(f"generated droid {droid_name} carries an effort override")
+    desc_match = re.search(r"(?m)^description: (.+)$", content)
+    if not desc_match or not re.fullmatch(r'"(?:[^"\\]|\\.)*"', desc_match.group(1)):
+        raise ValidationError(f"generated droid {droid_name} description is not a quoted YAML scalar")
+    try:
+        json.loads(desc_match.group(1))
+    except json.JSONDecodeError as error:
+        raise ValidationError(f"generated droid {droid_name} description is not valid quoted YAML: {error}") from error
     for forbidden in FORBIDDEN_DROID_TOOLS:
         if forbidden in content:
             raise ValidationError(f"generated droid {droid_name} uses forbidden tools value {forbidden!r}")

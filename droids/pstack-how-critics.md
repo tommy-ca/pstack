@@ -1,6 +1,6 @@
 ---
 name: pstack-how-critics
-description: pstack how critic. Same posture as the pstack role of this name. Spawned on Droid with `Task` (`subagent_type: pstack-how-critics`); the model inherits the parent session and there is no per-spawn effort field.
+description: "pstack how critic. Same posture as the pstack role of this name. Spawned on Droid with `Task` (`subagent_type: pstack-how-critics`); the model inherits the parent session and there is no per-spawn effort field."
 model: inherit
 tools: Read, Grep, Glob, LS, Execute
 ---

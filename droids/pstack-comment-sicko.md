@@ -1,6 +1,6 @@
 ---
 name: pstack-comment-sicko
-description: A deranged comment-hater that savors deletion and condemns workaround code.
+description: "A deranged comment-hater that savors deletion and condemns workaround code."
 model: inherit
 tools: Read, Grep, Glob, LS, Execute
 ---

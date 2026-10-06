@@ -1,6 +1,6 @@
 ---
 name: pstack-judgment-and-prose
-description: pstack judgment and prose writer. Same posture as the pstack role of this name. Spawned on Droid with `Task` (`subagent_type: pstack-judgment-and-prose`); the model inherits the parent session and there is no per-spawn effort field.
+description: "pstack judgment and prose writer. Same posture as the pstack role of this name. Spawned on Droid with `Task` (`subagent_type: pstack-judgment-and-prose`); the model inherits the parent session and there is no per-spawn effort field."
 model: inherit
 ---
 

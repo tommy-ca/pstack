@@ -25,13 +25,21 @@ prove skill serving, model selection, or spawn execution.
 - There are no per-spawn `readonly`, `isolation`, `cwd`, `model`,
   `reasoning_effort`, or `environment` fields. Sending them is the error.
 - Read-only posture is a per-droid-definition `tools` restriction
-  (categories: `read-only`, `edit`, `execute`, `web`, `mcp`; omit the field
-  for all tools). Categories expand to runtime tool llmIds: `read-only` is
-  `Read, Grep, Glob, LS`, and `execute` is shell-only (`Execute` alone). The
-  frontmatter parser splits comma-separated scalars but does not strip
+  (omit the field for all tools). **Namespace caveat:** the `tools:` value
+  namespace is load-time-untested (see "Explicitly untested"). Two different
+  tool taxonomies are observed offline and must not be conflated:
+  `droid exec --list-tools -o json` on CLI 0.233.0 reports 30 tools under
+  `category` values `read`/`edit`/`execute` (the `execute` category has 12
+  members including the Task family and automation tools; the only
+  `edit`-category llmId is `ApplyPatch`), while the live session surface
+  exposes tools named `Edit` and `Create` that the inventory does not list.
+  The category-expansion claims below came from error-surface observation
+  during review, not from load-time acceptance.
+- The frontmatter parser splits comma-separated scalars but does not strip
   bracket characters, so list IDs comma-separated (`tools: Read, Grep,
-  Glob, LS, Execute`), never bracket-wrapped. `tools: all`, `ExitSpecMode`,
-  and `GenerateDroid` are invalid values, not categories.
+  Glob, LS, Execute`), never bracket-wrapped. `tools: all` is not a valid
+  member list. The shipped union IDs are all llmIds present in the offline
+  inventory.
 - Depth is hard-fixed at 1: children cannot spawn children. Spawning is
   parent-owned.
 - Worktrees are session-level (`droid -w`); per-spawn isolation does not
@@ -43,12 +51,15 @@ prove skill serving, model selection, or spawn execution.
 - `model: inherit` resolves to the parent session model. No effort override:
   inherited models ignore `reasoningEffort`, and the shipped Grok `xhigh`
   ladder tier has no Droid equivalent.
-- Grok `capabilityMode: execute` grants read + shell, but Droid's `execute`
-  category is shell-only. Execute-mode pstack droids therefore pin the union
-  explicitly: `tools: Read, Grep, Glob, LS, Execute` (comma-separated scalar,
-  no file-edit IDs). Grok
+- Grok `capabilityMode: execute` grants read + shell, but the per-spawn
+  model/effort surface does not exist, so execute-mode pstack droids pin the
+  union explicitly: `tools: Read, Grep, Glob, LS, Execute` (comma-separated
+  scalar, no file-edit IDs). Grok
   `inheritSkills: false` has no Droid equivalent, so plugin droids keep skill
   access and the parent prompt owns skill discipline.
+- The Droid builtin general-purpose subagent type observed in a live
+  session's subagent catalog is `worker` (used where Grok roles said
+  `general-purpose`).
 
 ## Skill precedence (inverted vs pstack-first hosts)
 

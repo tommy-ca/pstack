@@ -1,6 +1,6 @@
 ---
 name: pstack-why-synthesizer
-description: pstack why synthesizer. Same posture as the pstack role of this name. Spawned on Droid with `Task` (`subagent_type: pstack-why-synthesizer`); the model inherits the parent session and there is no per-spawn effort field.
+description: "pstack why synthesizer. Same posture as the pstack role of this name. Spawned on Droid with `Task` (`subagent_type: pstack-why-synthesizer`); the model inherits the parent session and there is no per-spawn effort field."
 model: inherit
 ---
 

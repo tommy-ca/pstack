@@ -1,6 +1,6 @@
 ---
 name: pstack-swarm-workers
-description: pstack swarm worker. Same posture as the pstack role of this name. Spawned on Droid with `Task` (`subagent_type: pstack-swarm-workers`); the model inherits the parent session and there is no per-spawn effort field.
+description: "pstack swarm worker. Same posture as the pstack role of this name. Spawned on Droid with `Task` (`subagent_type: pstack-swarm-workers`); the model inherits the parent session and there is no per-spawn effort field."
 model: inherit
 ---
 
