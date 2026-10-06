@@ -1,0 +1,98 @@
+{
+  "host": "droid",
+  "support_state": "candidate",
+  "skills_dir": ".factory/skills",
+  "plugins_dir": "~/.factory/plugins",
+  "plugin_manifest": ".factory-plugin/plugin.json",
+  "bindings": [],
+  "evidence_ledger": [],
+  "tool_mappings": {
+    "file_read": "Read / Grep / Glob / LS",
+    "file_edit": "Edit",
+    "file_write": "Create",
+    "shell_run": "Execute",
+    "web_fetch": "FetchUrl",
+    "web_search": "WebSearch",
+    "agent_spawn": "Task (subagent_type, description, prompt; parent-owned, depth 1)",
+    "agent_fanout": "N concurrent Task invocations in one turn",
+    "agent_join": "TaskOutput (block=true waits); background reports auto-deliver",
+    "agent_message": "Task with resume",
+    "task_background": "Task with await: false (report auto-delivered)",
+    "tool_mcp": "session MCP connector tools",
+    "plan_update": "todo_write",
+    "human_ask": "gap: no in-session ask primitive in the current tool surface; user questions surface out-of-band (untested)"
+  },
+  "skill_order": [
+    {
+      "need": "TDD",
+      "primary_pstack": "/tdd",
+      "secondary_user": "/test-driven-development",
+      "fallback_builtin": null,
+      "notes": "Advisory only: Droid precedence inverts pstack-first hosts - personal/project skills shadow pstack plugin skills, so a same-named user skill wins"
+    },
+    {
+      "need": "Review a diff or PR",
+      "primary_pstack": "/interrogate",
+      "secondary_user": "/requesting-code-review",
+      "fallback_builtin": null,
+      "notes": "Advisory: shadowed by personal/project skills with the same name"
+    },
+    {
+      "need": "Debug a failure",
+      "primary_pstack": "playbooks/bug-fix.md",
+      "secondary_user": "/systematic-debugging",
+      "fallback_builtin": null,
+      "notes": "Advisory: shadowed by personal/project skills with the same name"
+    },
+    {
+      "need": "Prove work is done",
+      "primary_pstack": "prove-it-works",
+      "secondary_user": "/verification-before-completion",
+      "fallback_builtin": null,
+      "notes": "Advisory: shadowed by personal/project skills with the same name"
+    },
+    {
+      "need": "Execute a written plan",
+      "primary_pstack": "playbooks/feature.md",
+      "secondary_user": "/executing-plans",
+      "fallback_builtin": null,
+      "notes": "Advisory: shadowed by personal/project skills with the same name"
+    },
+    {
+      "need": "Read-only spawn",
+      "primary_pstack": "pstack-how-explorer (droid definition restricts tools)",
+      "secondary_user": null,
+      "fallback_builtin": "explorer",
+      "notes": "Read-only is a per-droid-definition tools restriction; no per-spawn readonly field exists. Custom-role serving is untested (support_state candidate)"
+    },
+    {
+      "need": "Worktree isolation",
+      "primary_pstack": null,
+      "secondary_user": "/using-git-worktrees",
+      "fallback_builtin": "session-worktree (droid -w)",
+      "notes": "Isolation is session-level only; no per-spawn worktree field exists"
+    }
+  ],
+  "runtime_conventions": {
+    "max_subagent_depth": 1,
+    "supported_isolation_modes": ["none", "session-worktree"],
+    "default_model": "inherit",
+    "allowed_spawn_fields": [
+      "subagent_type",
+      "description",
+      "prompt",
+      "await",
+      "complexity",
+      "resume",
+      "image_paths"
+    ],
+    "forbidden_spawn_fields": [
+      "readonly",
+      "isolation",
+      "cwd",
+      "model",
+      "reasoning_effort",
+      "environment"
+    ]
+  }
+}

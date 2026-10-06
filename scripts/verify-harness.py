@@ -93,6 +93,7 @@ SKIP_FILES = {
     "README.zh-CN.md",
     "codex-tools.md",
     "grok-tools.md",
+    "droid-tools.md",
     "provider-dispatch.md",
     "antigravity-tools.md",
     "omp-tools.md",

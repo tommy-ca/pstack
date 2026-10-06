@@ -44,9 +44,12 @@ generate_opencode_manifest = _pp_mod.generate_opencode_manifest
 generate_antigravity_manifest = _pp_mod.generate_antigravity_manifest
 generate_antigravity_models = _pp_mod.generate_antigravity_models
 generate_antigravity_commands = _pp_mod.generate_antigravity_commands
+generate_droid_manifest = _pp_mod.generate_droid_manifest
+generate_droid_marketplace = _pp_mod.generate_droid_marketplace
+generate_droid_roles = _pp_mod.generate_droid_roles
 check_all_projected = _pp_mod.check_all
 
-SUPPORTED_HOSTS = ("grok", "codex", "omp", "opencode", "antigravity")
+SUPPORTED_HOSTS = ("grok", "codex", "omp", "opencode", "antigravity", "droid")
 
 HOST_PLUGIN_REL_PATHS = {
     "grok": Path(".grok/plugins/pstack"),
@@ -54,6 +57,7 @@ HOST_PLUGIN_REL_PATHS = {
     "omp": Path(".omp/plugins/pstack"),
     "opencode": Path(".opencode/plugins/pstack"),
     "antigravity": Path(".gemini/config/plugins/pstack"),
+    "droid": Path(".factory/plugins/pstack"),
 }
 
 
@@ -135,6 +139,19 @@ def install_plugin(host: str, target_base: Optional[Path] = None) -> Path:
         agents_dir = plugin_dir / "agents"
         copy_agents(agents_dir)
 
+    elif host == "droid":
+        plugin_meta = plugin_dir / ".factory-plugin"
+        plugin_meta.mkdir(parents=True, exist_ok=True)
+        manifest = generate_droid_manifest(desc)
+        (plugin_meta / "plugin.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+        marketplace = generate_droid_marketplace(desc)
+        (plugin_meta / "marketplace.json").write_text(json.dumps(marketplace, indent=2) + "\n", encoding="utf-8")
+        roles = generate_droid_roles()
+        droids_dir = plugin_dir / "droids"
+        droids_dir.mkdir(parents=True, exist_ok=True)
+        for fname, content in roles.items():
+            (droids_dir / fname).write_text(content, encoding="utf-8")
+
     return plugin_dir
 
 
@@ -168,8 +185,24 @@ def verify_plugin_at_dir(host: str, plugin_dir: Path, desc: Any) -> Tuple[bool, 
         return False, [f"Plugin directory does not exist: {plugin_dir}"]
 
     # 1. Manifest verification
-    manifest_name = "package.json" if host == "opencode" else "plugin.json"
-    manifest_path = plugin_dir / manifest_name
+    if host == "droid":
+        manifest_path = plugin_dir / ".factory-plugin" / "plugin.json"
+        marketplace_path = plugin_dir / ".factory-plugin" / "marketplace.json"
+        if not marketplace_path.is_file():
+            errors.append(f"Missing marketplace file: {marketplace_path}")
+        else:
+            try:
+                mk_data = json.loads(marketplace_path.read_text(encoding="utf-8"))
+                if mk_data.get("plugins", [{}])[0].get("name") != desc.name:
+                    errors.append(f"Droid marketplace plugin name mismatch: {mk_data.get('plugins')}")
+            except Exception as e:
+                errors.append(f"Marketplace file corrupt: {e}")
+        droids_dir = plugin_dir / "droids"
+        if not droids_dir.is_dir() or len(list(droids_dir.glob("*.md"))) == 0:
+            errors.append(f"Missing or empty droids directory: {droids_dir}")
+    else:
+        manifest_name = "package.json" if host == "opencode" else "plugin.json"
+        manifest_path = plugin_dir / manifest_name
     if not manifest_path.is_file():
         errors.append(f"Missing manifest file: {manifest_path}")
     else:

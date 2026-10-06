@@ -8,7 +8,7 @@
   "properties": {
     "host": {
       "type": "string",
-      "enum": ["grok", "codex", "omp", "opencode", "antigravity", "claude", "custom"]
+      "enum": ["grok", "codex", "omp", "opencode", "antigravity", "droid", "claude", "custom"]
     },
     "capability": {
       "type": "string",

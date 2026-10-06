@@ -44,7 +44,7 @@ from scripts.portability_schema import (
 )
 from scripts.drivers import get_driver
 
-SUPPORTED_HOSTS = ("grok", "codex", "omp", "opencode", "antigravity", "mock")
+SUPPORTED_HOSTS = ("grok", "codex", "omp", "opencode", "antigravity", "droid", "mock")
 FIVE_HARNESSES = ("grok", "codex", "omp", "opencode", "antigravity")
 DEFAULT_EVIDENCE_DIR = ROOT / ".audit" / "evidence"
 

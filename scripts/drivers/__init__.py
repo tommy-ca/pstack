@@ -9,6 +9,7 @@ from typing import Dict, Type
 from .antigravity import AntigravityDriver
 from .base import DriverScenarioResult, HarnessDriver
 from .codex import CodexDriver
+from .droid import DroidDriver
 from .grok import GrokDriver
 from .omp import OMPDriver
 from .opencode import OpenCodeDriver
@@ -19,6 +20,7 @@ DRIVER_REGISTRY: Dict[str, Type[HarnessDriver]] = {
     "codex": CodexDriver,
     "omp": OMPDriver,
     "opencode": OpenCodeDriver,
+    "droid": DroidDriver,
 }
 
 
@@ -39,4 +41,5 @@ __all__ = [
     "CodexDriver",
     "OMPDriver",
     "OpenCodeDriver",
+    "DroidDriver",
 ]

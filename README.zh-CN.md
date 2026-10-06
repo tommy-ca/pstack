@@ -26,6 +26,18 @@ grok plugin install /path/to/pstack --trust
 grok plugin enable pstack
 ```
 
+## Droid
+
+本仓库同时投影出原生的 Factory Droid 插件：`.factory-plugin/` 和生成的 `droids/`。从本地目录安装到你自己的 Droid 配置：
+
+```bash
+droid plugin marketplace add /path/to/pstack
+droid plugin list                                  # 登记的 marketplace 名跟目录名（basename）走
+droid plugin install pstack@<basename> --scope user
+```
+
+Droid 角色名是 `pstack-<role>`（`pstack-feature`，不是 `pstack:feature`）。spawn 契约、倒置的技能优先级（个人/项目技能会遮蔽插件技能）和能力缺口见 [droid-tools.md](./skills/poteto-mode/references/droid-tools.md)。离线检查（`droid doctor`、插件生命周期）只证明打包和工具面。自定义角色投喂和模型选择未经测试。
+
 ## 第一次会话
 
 1. `grok plugin enable pstack` 若对 `config.toml` 报 EROFS，到**宿主 shell** 跑：

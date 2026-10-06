@@ -87,6 +87,7 @@ HARNESS_NAMES: Set[str] = {
     "omp",
     "opencode",
     "antigravity",
+    "droid",
     "claude",
     "custom",
     "mock",

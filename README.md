@@ -26,6 +26,18 @@ grok plugin install /path/to/pstack --trust
 grok plugin enable pstack
 ```
 
+## Droid
+
+This checkout also projects a native Factory Droid package: `.factory-plugin/` plus generated `droids/`. Install from a local checkout into your own Droid config:
+
+```bash
+droid plugin marketplace add /path/to/pstack
+droid plugin list                                  # the registered marketplace name follows the directory basename
+droid plugin install pstack@<basename> --scope user
+```
+
+Droid roles are `pstack-<role>` (`pstack-feature`, not `pstack:feature`). The spawn contract, inverted skill precedence (personal and project skills shadow plugin skills), and capability gaps are in [droid-tools.md](./skills/poteto-mode/references/droid-tools.md). Offline checks (`droid doctor`, plugin lifecycle) prove packaging and the tool surface only. Custom-role serving and model selection are untested.
+
 ## First session
 
 1. Enable from a **host shell** if `grok plugin enable pstack` hits EROFS on `config.toml`:

@@ -18,7 +18,7 @@ IMPLEMENTATION_STATUSES = ("native", "shim", "version-gated", "gap")
 ENFORCEMENT_LEVELS = ("hard", "soft", "advisory")
 VERIFICATION_STATUSES = ("verified", "static-only", "unverified", "stale")
 ADAPTATION_MODES = ("preserve", "adapt", "exclude", "gap")
-HOSTS = ("grok", "codex", "omp", "opencode", "antigravity", "claude", "custom")
+HOSTS = ("grok", "codex", "omp", "opencode", "antigravity", "droid", "claude", "custom")
 
 CONFORMANCE_PLANES = ("canonical", "adapter", "package", "runtime")
 
@@ -292,6 +292,7 @@ DEFAULT_SKILLS_DIRS = {
     "omp": ".omp/skills",
     "opencode": ".opencode/skills",
     "antigravity": ".agents/skills",
+    "droid": ".factory/skills",
 }
 
 DEFAULT_PLUGIN_MANIFESTS = {
@@ -300,6 +301,7 @@ DEFAULT_PLUGIN_MANIFESTS = {
     "omp": ".omp-plugin/plugin.json",
     "opencode": ".opencode-plugin/package.json",
     "antigravity": ".antigravity-plugin/plugin.json",
+    "droid": ".factory-plugin/plugin.json",
 }
 
 
