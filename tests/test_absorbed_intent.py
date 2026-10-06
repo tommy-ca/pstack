@@ -15,7 +15,7 @@ INTENT_FILES = (
     "skills/principle-outcome-oriented-execution/SKILL.md",
     "skills/interrogate/references/reviewer-prompt.md",
     "skills/poteto-mode/SKILL.md",
-    "HARNESS.md",
+    "skills/poteto-mode/references/grok-tools.md",
     "plugin.json",
 )
 

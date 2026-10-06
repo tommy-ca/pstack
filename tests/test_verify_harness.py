@@ -230,7 +230,7 @@ def test_codex_map_matches_grok_call_sites() -> None:
 
 def test_poteto_mode_copies_tui_spawn_names() -> None:
     skill = (ROOT / "skills/poteto-mode/SKILL.md").read_text(encoding="utf-8")
-    harness = (ROOT / "HARNESS.md").read_text(encoding="utf-8")
+    harness = (ROOT / "skills" / "poteto-mode" / "references" / "grok-tools.md").read_text(encoding="utf-8")
     grok_tools = (ROOT / "skills/poteto-mode/references/grok-tools.md").read_text(
         encoding="utf-8"
     )
@@ -407,7 +407,7 @@ def test_benny_is_source_and_has_grok_remap() -> None:
     live_repro = (
         live_root / "skills/benny-repro/SKILL.md"
     ).read_text(encoding="utf-8")
-    harness = (ROOT / "HARNESS.md").read_text(encoding="utf-8")
+    harness = (ROOT / "skills" / "poteto-mode" / "references" / "grok-tools.md").read_text(encoding="utf-8")
     assert "automations/benny-grok" in harness
     assert "automations/benny/grok" not in harness
     live = f"{readme}\n{live_triage}\n{live_repro}"
@@ -447,7 +447,7 @@ def test_playbooks_are_not_plugin_rhai_workflows() -> None:
     assert not (ROOT / ".grok/workflows").exists()
     rhai = list((ROOT / "skills/poteto-mode/playbooks").glob("*.rhai"))
     assert rhai == []
-    harness = (ROOT / "HARNESS.md").read_text(encoding="utf-8")
+    harness = (ROOT / "skills" / "poteto-mode" / "references" / "grok-tools.md").read_text(encoding="utf-8")
     assert "not a plugin component" in harness
     spec = (
         ROOT
@@ -510,7 +510,7 @@ def test_openspec_intent_driven_schema_resolves() -> None:
 def test_guide_teaches_sync_then_adapt() -> None:
     guide = (ROOT / "docs/guide/09-make-it-yours.md").read_text(encoding="utf-8")
     setup = (ROOT / "docs/guide/01-setup.md").read_text(encoding="utf-8")
-    harness = (ROOT / "HARNESS.md").read_text(encoding="utf-8")
+    harness = (ROOT / "skills" / "poteto-mode" / "references" / "grok-tools.md").read_text(encoding="utf-8")
     upstream = (ROOT / "UPSTREAM").read_text(encoding="utf-8")
     assert "atomic building blocks" in guide
     assert "adapt-harness.py" in guide
@@ -715,7 +715,7 @@ def test_grok_spawn_types_are_plugin_qualified() -> None:
     effort = (
         ROOT / "skills/setup-pstack/references/resolve-effort.md"
     ).read_text(encoding="utf-8")
-    harness = (ROOT / "HARNESS.md").read_text(encoding="utf-8")
+    harness = (ROOT / "skills" / "poteto-mode" / "references" / "grok-tools.md").read_text(encoding="utf-8")
     how = (ROOT / "skills/how/SKILL.md").read_text(encoding="utf-8")
     why = (ROOT / "skills/why/SKILL.md").read_text(encoding="utf-8")
     arena = (ROOT / "skills/arena/SKILL.md").read_text(encoding="utf-8")
@@ -905,7 +905,7 @@ def test_overlay_stems_and_adapter_are_plugin_qualified() -> None:
     assert overlay["skills"] == root_manifest["skills"]
     assert overlay["agents"] == root_manifest["agents"]
     assert "hooks" not in overlay
-    harness = (ROOT / "HARNESS.md").read_text(encoding="utf-8")
+    harness = (ROOT / "skills" / "poteto-mode" / "references" / "grok-tools.md").read_text(encoding="utf-8")
     assert "~/.grok/roles/<pstack-role>.toml" not in harness
     assert "~/.grok/roles/pstack:<key>.toml" in harness
     setup = (ROOT / "skills/setup-pstack/SKILL.md").read_text(encoding="utf-8")
@@ -951,7 +951,7 @@ def test_effort_frontmatter_matches_ladder() -> None:
     resolve = (
         ROOT / "skills/setup-pstack/references/resolve-effort.md"
     ).read_text(encoding="utf-8")
-    harness = (ROOT / "HARNESS.md").read_text(encoding="utf-8")
+    harness = (ROOT / "skills" / "poteto-mode" / "references" / "grok-tools.md").read_text(encoding="utf-8")
     assert "use one of: xhigh, high, medium, low" in ladder
     assert "grok 1.0.13" in ladder
     assert "pstack:<role-key>" in defaults or "pstack:<key>" in defaults
@@ -1005,7 +1005,7 @@ def test_plugin_manifest_matches_grok_parsed_fields() -> None:
     assert not (ROOT / "hooks").exists()
     assert not (ROOT / ".mcp.json").exists()
     assert not (ROOT / ".lsp.json").exists()
-    harness = (ROOT / "HARNESS.md").read_text(encoding="utf-8")
+    harness = (ROOT / "skills" / "poteto-mode" / "references" / "grok-tools.md").read_text(encoding="utf-8")
     assert "## Plugin schema" in harness
     assert "PluginManifest" in harness
     assert "Do not ship `permissionMode: plan`" in harness
@@ -1090,7 +1090,7 @@ def test_audit_dir_skipped_by_harness_scanners() -> None:
 
 
 def test_harness_skill_order_is_pstack_then_user_then_native() -> None:
-    harness = (ROOT / "HARNESS.md").read_text(encoding="utf-8")
+    harness = (ROOT / "skills" / "poteto-mode" / "references" / "grok-tools.md").read_text(encoding="utf-8")
     poteto = (ROOT / "skills/poteto-mode/SKILL.md").read_text(encoding="utf-8")
     tdd = (ROOT / "skills/tdd/SKILL.md").read_text(encoding="utf-8")
     interrogate = (ROOT / "skills/interrogate/SKILL.md").read_text(
@@ -1142,7 +1142,7 @@ def test_harness_skill_order_is_pstack_then_user_then_native() -> None:
 
 
 def test_forge_neutral_pr_path_without_graphite() -> None:
-    harness = (ROOT / "HARNESS.md").read_text(encoding="utf-8")
+    harness = (ROOT / "skills" / "poteto-mode" / "references" / "grok-tools.md").read_text(encoding="utf-8")
     ref = ROOT / "skills/poteto-mode/references/github-pr-fallback.md"
     assert ref.is_file()
     text = ref.read_text(encoding="utf-8").lower()
@@ -1268,14 +1268,14 @@ def test_upstream_metadata_contract() -> None:
 
 
 def test_harness_grok_profile_capability_parity() -> None:
-    harness = (ROOT / "HARNESS.md").read_text(encoding="utf-8")
+    harness = (ROOT / "skills" / "poteto-mode" / "references" / "grok-tools.md").read_text(encoding="utf-8")
     profile = json.loads((ROOT / "profiles/grok.json").read_text(encoding="utf-8"))
 
-    # Cancellation tokens present in HARNESS.md
+    # Cancellation tokens present in grok-tools.md
     assert "kill_command_or_subagent" in harness
     assert "kill_task" in harness
 
-    # Capabilities in profiles/grok.json match HARNESS.md
+    # Capabilities in profiles/grok.json match grok-tools.md
     bindings = {b["capability"]: b for b in profile.get("bindings", [])}
 
     assert bindings["agent.spawn"]["primitive"] == "spawn_subagent"

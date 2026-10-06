@@ -78,7 +78,7 @@ def recipe() -> str:
    0.15.5-grokbuild.0. Earlier 0.15.1 density, the two principle leaves,
    and the evidence-or-label rule stay absorbed. Skip `make-bot-ui`, `.cursor-plugin/`,
    `assets/logo.png`, and the entire `advisor/` plugin. Do not overwrite
-   HARNESS.md, plugin.json, README.md, README.zh-CN.md, tests/, or scripts/.
+   HARNESS.md, grok-tools.md, plugin.json, README.md, README.zh-CN.md, tests/, or scripts/.
    Audit retained `scripts/orch/`, `scripts/watch-pr/`, `check-plan.mjs`, and
    `worktree-audit.sh` as Codex compatibility surfaces instead of blind-copying.
    Do not replace Grok `agents/` (22 role files) with upstream's two files.
