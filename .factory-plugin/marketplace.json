@@ -1,0 +1,14 @@
+{
+  "name": "pstack",
+  "description": "pstack plugin marketplace (self-hosted source ./)",
+  "owner": {
+    "name": "tommy-ca"
+  },
+  "plugins": [
+    {
+      "name": "pstack",
+      "description": "Portable atomic playbooks and principles across agent harnesses.",
+      "source": "./"
+    }
+  ]
+}

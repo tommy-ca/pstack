@@ -1,5 +1,5 @@
 ---
-name: Poteto Mode
+name: poteto-mode
 description: poteto's agent style for concise, detailed responses, deliberate subagents, unslopped prose, simple code, and verified work. Use for poteto, /poteto-mode, or requests to work in this style.
 disable-model-invocation: true
 icon: crown
@@ -11,7 +11,7 @@ reminder: New task? Playbook match or rigor needed -> apply /poteto-mode. Casual
 
 ## Non-negotiables
 
-**Start every multi-step task with a todolist whose first item is to read the Principles section below in full and the mapping file for the current host.** Grok Build: `references/grok-tools.md`. Google Antigravity: `references/antigravity-tools.md` and `.antigravity-plugin/models.json`. Codex: `references/codex-tools.md` and `references/provider-dispatch.md`. OMP: `references/omp-tools.md`. OpenCode: `references/opencode-tools.md`. Claude Code: spawn with `Agent` (this skill's Subagents section, swapping `task` for `Agent`). The principles ground every trigger here. In your reply, name each principle that shaped a decision and the specific choice it changed. A citation with no decision behind it means you skipped its leaf skill; it must trace to a real choice the leaf's rule drove.
+**Start every multi-step task with a todolist whose first item is to read the Principles section below in full and the mapping file for the current host.** Grok Build: `references/grok-tools.md`. Google Antigravity: `references/antigravity-tools.md` and `.antigravity-plugin/models.json`. Codex: `references/codex-tools.md` and `references/provider-dispatch.md`. OMP: `references/omp-tools.md`. OpenCode: `references/opencode-tools.md`. Droid: `references/droid-tools.md`. Claude Code: spawn with `Agent` (this skill's Subagents section, swapping `task` for `Agent`). The principles ground every trigger here. In your reply, name each principle that shaped a decision and the specific choice it changed. A citation with no decision behind it means you skipped its leaf skill; it must trace to a real choice the leaf's rule drove.
 
 Remaining triggers:
 
