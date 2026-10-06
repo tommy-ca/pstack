@@ -1,6 +1,6 @@
 # Codex tool mapping for pstack
 
-This document maps portable pstack capabilities (defined in [`pstack-portability`](../../../openspec/specs/pstack-portability/spec.md)) directly to Codex native primitives and execution conventions. Grok reference mapping is maintained separately in [`HARNESS.md`](../../../HARNESS.md); Codex does not inherit Grok vocabulary as an intermediate specification. Model routing is in [`provider-dispatch.md`](provider-dispatch.md).
+This document maps portable pstack capabilities (defined in [`pstack-portability`](../../../openspec/specs/pstack-portability/spec.md)) directly to Codex native primitives and execution conventions. Grok reference mapping is maintained separately in [`grok-tools.md`](grok-tools.md); Codex does not inherit Grok vocabulary as an intermediate specification. Model routing is in [`provider-dispatch.md`](provider-dispatch.md).
 
 ## Tool actions
 
@@ -54,4 +54,4 @@ Cursor same-run `/loop` is **not** live.
 
 ## Instructions file
 
-Codex: `AGENTS.md`. Claude Code: `CLAUDE.md`. Grok Build: `AGENTS.md` plus `HARNESS.md`.
+Codex: `AGENTS.md`. Claude Code: `CLAUDE.md`. Grok Build: `AGENTS.md` plus `references/grok-tools.md`.
