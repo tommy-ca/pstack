@@ -1,8 +1,8 @@
 {
-  "run_id": "antigravity-1791289305-d06f8dfb",
+  "run_id": "antigravity-1791290912-adc25b24",
   "host": "antigravity",
   "host_version": "1.3.0",
-  "timestamp": "2026-10-06T12:21:54Z",
+  "timestamp": "2026-10-06T12:48:42Z",
   "overall_verdict": "PASS",
   "planes": {
     "canonical": "PASS",
@@ -16,10 +16,10 @@
     "spec_hash": "671f5d465db673df40350dab39fcf45ac14c7f0d178bace536a6dadf8c97e4d8",
     "skills_tree_hash": "e2cfb6aae2724446aa2141c3281049792aed752acd1f8fb03c91f4b783f5e204",
     "profile_hash": "25886eef390843fc165b363c0f5056956a19cf71e061d4f42f4bf1f2e98dcebe",
-    "package_descriptor_hash": "48007e1e658ab5a4167926e0f003a1ff8198b26d815b85d99c6dfb3101d39982",
+    "package_descriptor_hash": "286375204aa9beb324e711a2b3d1ea081be232a6af3276d55cf12a03d7f2d5e2",
     "manifest_hash": "4cb5ab68707642076fee12e20b4fa8ea82e6d98bdda758bc634f43a5c31ce9ce",
-    "driver_revision": "70f7dad515b6c040fd879ce5f5b8f652e1be3bf2aff789a9086f7f50c247c9c9",
-    "package_driver_revision": "11d5f37a0b41cc1f85c9942be43e1698fb983cd4d9fa4c10da2adff4ad4e185b",
+    "driver_revision": "e162b112bf057aa4113ae2d4c03e86f2645b09df6b2b3c127ad8f77f16917d5c",
+    "package_driver_revision": "37439ff1e0d03dbfe84ab986fa268a414ee6a94ed72b989b13383eee96cd4f3e",
     "boundary_driver_revision": "d5e00ec96e4b5c35e510702fff7f7ad48bf831077fdedd56e9413fab801e15ea"
   },
   "scenarios": [
@@ -31,7 +31,7 @@
       "exit_code": 0,
       "stdout_snippet": "Conformance: PASS\nFreshness: DRIFT (53 commits ahead)\nPrinciples: 23 | Playbooks: 23\nArtifacts: 158 (preserved=85, adapted=64, excluded=9, gaps=0)\nPASS: Canonical inventory conforms to pin.",
       "verdict": "PASS",
-      "duration_s": 0.059
+      "duration_s": 0.069
     },
     {
       "id": "doctor-openspec-validation",
@@ -41,7 +41,7 @@
       "exit_code": 0,
       "stdout_snippet": "Change 'pstack-portability-contract' is valid",
       "verdict": "PASS",
-      "duration_s": 1.451
+      "duration_s": 1.561
     },
     {
       "id": "doctor-adapter-static",
@@ -51,7 +51,7 @@
       "exit_code": 0,
       "stdout_snippet": "PASS\nplaybooks: 22 named + opening-a-pr\nprinciples: 23\nplugin.json name: pstack",
       "verdict": "PASS",
-      "duration_s": 1.002
+      "duration_s": 1.079
     },
     {
       "id": "doctor-scan-host-boundary",
@@ -61,7 +61,7 @@
       "exit_code": 0,
       "stdout_snippet": "[scan-host-boundary] PASS: Scanned 87 files across portable surfaces. 0 boundary leaks.",
       "verdict": "PASS",
-      "duration_s": 0.488
+      "duration_s": 0.461
     },
     {
       "id": "doctor-package-projection",
@@ -70,6 +70,16 @@
       "command": "/home/tommyk/.local/share/uv/tools/ansible/bin/python3 /home/tommyk/projects/pstack/scripts/project-package.py --check",
       "exit_code": 0,
       "stdout_snippet": "PASS: grok manifest at .grok-plugin/plugin.json in sync\nPASS: codex manifest at .codex-plugin/plugin.json in sync\nPASS: omp manifest at .omp-plugin/plugin.json in sync\nPASS: opencode manifest at .opencode-plugin/package.json in sync\nPASS: antigravity manifest at .antigravity-plugin/plugin.json in sy",
+      "verdict": "PASS",
+      "duration_s": 0.057
+    },
+    {
+      "id": "doctor-package-lifecycle-antigravity",
+      "description": "Verify native package lifecycle contract for antigravity",
+      "plane": "package",
+      "command": "/home/tommyk/.local/share/uv/tools/ansible/bin/python3 /home/tommyk/projects/pstack/scripts/package-lifecycle.py verify --host antigravity",
+      "exit_code": 0,
+      "stdout_snippet": "[antigravity] Executing verify...\nPASS: antigravity manifest at .antigravity-plugin/plugin.json in sync\nPASS: antigravity models at .antigravity-plugin/models.json in sync\nPASS: 19 antigravity commands at .antigravity-plugin/commands in sync\n[antigravity] VERIFY PASS",
       "verdict": "PASS",
       "duration_s": 0.062
     },
@@ -81,7 +91,7 @@
       "exit_code": 0,
       "stdout_snippet": "",
       "verdict": "PASS",
-      "duration_s": 0.047
+      "duration_s": 0.05
     },
     {
       "id": "doctor-antigravity-sync",
@@ -91,7 +101,7 @@
       "exit_code": 0,
       "stdout_snippet": "PASS: Live Antigravity plugin is fully synchronized with canonical repo.",
       "verdict": "PASS",
-      "duration_s": 0.063
+      "duration_s": 0.072
     },
     {
       "id": "drive-principles-load",
@@ -101,7 +111,7 @@
       "exit_code": 0,
       "stdout_snippet": "",
       "verdict": "PASS",
-      "duration_s": 0.032
+      "duration_s": 0.03
     },
     {
       "id": "drive-check-plan",
@@ -111,7 +121,7 @@
       "exit_code": 0,
       "stdout_snippet": "bun test v1.4.2 (744846f84)",
       "verdict": "PASS",
-      "duration_s": 1.735
+      "duration_s": 1.798
     },
     {
       "id": "drive-worktree-audit",
@@ -121,27 +131,37 @@
       "exit_code": 0,
       "stdout_snippet": "SIZE\tAGE\tMERGED\tDIRTY\tREMOTE\tPR\tLAST_CHAT\tBUCKET\tWORKTREE\n4.3M\t6d\tno\tclean\tpushed\t#46/MERGED\t2026-10-06\tverify-recent-chat\t/home/tommyk/projects/pstack/.worktrees/adapter-base-0155",
       "verdict": "PASS",
-      "duration_s": 3.717
+      "duration_s": 3.523
     },
     {
       "id": "drive-verification-skill-scaffold",
       "description": "Prove verification skill scaffolding for antigravity",
       "plane": "package",
-      "command": "/home/tommyk/.local/share/uv/tools/ansible/bin/python3 /home/tommyk/projects/pstack/scripts/scaffold-verification-skill.py --host antigravity --app smoke --write --target-dir /home/tommyk/projects/pstack/.audit/evidence/antigravity-1791289305-d06f8dfb/verify-smoke",
+      "command": "/home/tommyk/.local/share/uv/tools/ansible/bin/python3 /home/tommyk/projects/pstack/scripts/scaffold-verification-skill.py --host antigravity --app smoke --write --target-dir /home/tommyk/projects/pstack/.audit/evidence/antigravity-1791290912-adc25b24/verify-smoke",
       "exit_code": 0,
-      "stdout_snippet": "Scaffolded verification skill for 'smoke' on antigravity at /home/tommyk/projects/pstack/.audit/evidence/antigravity-1791289305-d06f8dfb/verify-smoke",
+      "stdout_snippet": "Scaffolded verification skill for 'smoke' on antigravity at /home/tommyk/projects/pstack/.audit/evidence/antigravity-1791290912-adc25b24/verify-smoke",
       "verdict": "PASS",
-      "duration_s": 0.053
+      "duration_s": 0.068
     },
     {
       "id": "drive-verification-skill-check",
       "description": "Validate generated verification skill structure for antigravity",
       "plane": "package",
-      "command": "/home/tommyk/.local/share/uv/tools/ansible/bin/python3 /home/tommyk/projects/pstack/scripts/scaffold-verification-skill.py --host antigravity --check --target-dir /home/tommyk/projects/pstack/.audit/evidence/antigravity-1791289305-d06f8dfb/verify-smoke",
+      "command": "/home/tommyk/.local/share/uv/tools/ansible/bin/python3 /home/tommyk/projects/pstack/scripts/scaffold-verification-skill.py --host antigravity --check --target-dir /home/tommyk/projects/pstack/.audit/evidence/antigravity-1791290912-adc25b24/verify-smoke",
       "exit_code": 0,
-      "stdout_snippet": "PASS: Verification skill at /home/tommyk/projects/pstack/.audit/evidence/antigravity-1791289305-d06f8dfb/verify-smoke is valid.",
+      "stdout_snippet": "PASS: Verification skill at /home/tommyk/projects/pstack/.audit/evidence/antigravity-1791290912-adc25b24/verify-smoke is valid.",
       "verdict": "PASS",
-      "duration_s": 0.058
+      "duration_s": 0.087
+    },
+    {
+      "id": "drive-package-lifecycle-proof-antigravity",
+      "description": "Prove isolated native package lifecycle for antigravity",
+      "plane": "package",
+      "command": "/home/tommyk/.local/share/uv/tools/ansible/bin/python3 /home/tommyk/projects/pstack/scripts/package-lifecycle.py prove --host antigravity --target-dir /home/tommyk/projects/pstack/.audit/evidence/antigravity-1791290912-adc25b24/lifecycle-antigravity",
+      "exit_code": 0,
+      "stdout_snippet": "[antigravity] Executing prove...\n  [install] PASS (0.250s) - Installed antigravity into /home/tommyk/projects/pstack/.audit/evidence/antigravity-1791290912-adc25b24/lifecycle-antigravity/.gemini/config/plugins/pstack (verified=True)\n  [update] PASS (0.500s) - Idempotent convergence check for antigra",
+      "verdict": "PASS",
+      "duration_s": 0.88
     },
     {
       "id": "drive-antigravity-models",
@@ -151,7 +171,7 @@
       "exit_code": 0,
       "stdout_snippet": "",
       "verdict": "PASS",
-      "duration_s": 0.028
+      "duration_s": 0.03
     },
     {
       "id": "drive-antigravity-tools-ref",
@@ -161,7 +181,7 @@
       "exit_code": 0,
       "stdout_snippet": "",
       "verdict": "PASS",
-      "duration_s": 0.023
+      "duration_s": 0.025
     },
     {
       "id": "runtime-discover-antigravity",
@@ -171,7 +191,7 @@
       "exit_code": 0,
       "stdout_snippet": "\u001b[32m[ok]\u001b[0m    /home/tommyk/.gemini/config/plugins/pstack\n          \u001b[32m\u2714\u001b[0m skills      : 54 processed\n          \u001b[32m\u2714\u001b[0m agents      : 22 processed\n          \u001b[32m\u2714\u001b[0m commands    : 19 processed (converted to skills)\n          - mcpServers  : skipped (not found)\n          - hooks       : sk",
       "verdict": "PASS",
-      "duration_s": 0.108
+      "duration_s": 0.175
     },
     {
       "id": "runtime-route-playbook-antigravity",
@@ -215,7 +235,7 @@
     }
   ],
   "artifacts": [
-    "/home/tommyk/projects/pstack/.audit/evidence/antigravity-1791289305-d06f8dfb/receipt.json",
+    "/home/tommyk/projects/pstack/.audit/evidence/antigravity-1791290912-adc25b24/receipt.json",
     ".audit/evidence/antigravity-receipt.json"
   ],
   "claim": "antigravity 5-harness portability conformance verification",

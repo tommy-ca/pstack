@@ -5,7 +5,7 @@
   "skills_root": "./skills/",
   "entrypoint": "skills/poteto-mode/SKILL.md",
   "lifecycle": {
-    "install": "python3 scripts/canonical-index.py --check",
-    "verify": "python3 scripts/verify-portable.py run"
+    "install": "python3 scripts/package-lifecycle.py install",
+    "verify": "python3 scripts/package-lifecycle.py verify"
   }
 }

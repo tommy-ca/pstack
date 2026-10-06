@@ -12,6 +12,28 @@
     "opencode",
     "antigravity"
   ],
+  "host_adapters": {
+    "grok": {
+      "version": "0.15.5-grokbuild.0",
+      "adapter_version": "1.0.0"
+    },
+    "codex": {
+      "version": "0.15.5-grokbuild.0",
+      "adapter_version": "1.0.0"
+    },
+    "omp": {
+      "version": "0.15.5-grokbuild.0",
+      "adapter_version": "1.0.0"
+    },
+    "opencode": {
+      "version": "0.15.5-grokbuild.0",
+      "adapter_version": "1.0.0"
+    },
+    "antigravity": {
+      "version": "0.15.5-grokbuild.0",
+      "adapter_version": "1.0.0"
+    }
+  },
   "roles": [
     {
       "id": "feature",
@@ -142,10 +164,10 @@
   },
   "namespace_policy": "prefixed",
   "lifecycle": {
-    "install": "python3 scripts/canonical-index.py --check",
-    "update": "python3 scripts/sync-from-upstream.py --check",
-    "verify": "python3 scripts/verify-portable.py run",
-    "uninstall": "echo 'pstack removed'"
+    "install": "python3 scripts/package-lifecycle.py install",
+    "update": "python3 scripts/package-lifecycle.py update",
+    "verify": "python3 scripts/package-lifecycle.py verify",
+    "uninstall": "python3 scripts/package-lifecycle.py uninstall"
   },
   "exclusions": [
     ".cursor-plugin/plugin.json",

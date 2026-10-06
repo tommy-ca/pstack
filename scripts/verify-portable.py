@@ -133,7 +133,15 @@ class PortableVerifier:
             [sys.executable, str(ROOT / "scripts" / "project-package.py"), "--check"],
         )
 
-        doctor_pass = all(r.verdict == "PASS" for r in (r1, r2, r3, r3b, r4))
+        # 4b. Native package lifecycle verification
+        r4b = self.run_command(
+            f"doctor-package-lifecycle-{self.host}",
+            f"Verify native package lifecycle contract for {self.host}",
+            "package",
+            [sys.executable, str(ROOT / "scripts" / "package-lifecycle.py"), "verify", "--host", self.host],
+        )
+
+        doctor_pass = all(r.verdict == "PASS" for r in (r1, r2, r3, r3b, r4, r4b))
 
         # 5. Optional typed harness profile validation
         profile_file = ROOT / "profiles" / f"{self.host}.json"
@@ -241,6 +249,23 @@ class PortableVerifier:
                 "--check",
                 "--target-dir",
                 str(smoke_target),
+            ],
+        )
+
+        # Package: Native isolated lifecycle proof (install, verify, update convergence, uninstall residue)
+        lifecycle_target = self.run_dir / f"lifecycle-{self.host}"
+        self.run_command(
+            f"drive-package-lifecycle-proof-{self.host}",
+            f"Prove isolated native package lifecycle for {self.host}",
+            "package",
+            [
+                sys.executable,
+                str(ROOT / "scripts" / "package-lifecycle.py"),
+                "prove",
+                "--host",
+                self.host,
+                "--target-dir",
+                str(lifecycle_target),
             ],
         )
 
