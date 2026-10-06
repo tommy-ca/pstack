@@ -1,6 +1,6 @@
 ---
 name: pstack-hillclimb
-description: pstack hillclimb writer. Same posture as the pstack role of this name. Spawned on Droid with `Task` (`subagent_type: pstack-hillclimb`); the model inherits the parent session and there is no per-spawn effort field.
+description: "pstack hillclimb writer. Same posture as the pstack role of this name. Spawned on Droid with `Task` (`subagent_type: pstack-hillclimb`); the model inherits the parent session and there is no per-spawn effort field."
 model: inherit
 ---
 

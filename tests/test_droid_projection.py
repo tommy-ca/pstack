@@ -88,9 +88,8 @@ def test_generated_droid_frontmatter_contract() -> None:
 
 
 def test_capability_mode_maps_to_native_tools_restriction() -> None:
-    # Droid's `execute` tool category is shell-only, while Grok's execute
-    # capabilityMode also grants read access. The generated restriction must
-    # therefore spell out read + shell explicitly, as a comma-separated
+    # Grok's execute capabilityMode grants read + shell. The generated
+    # restriction spells out read + shell explicitly, as a comma-separated
     # scalar of runtime llmIds (`LS`, not the property spelling `Ls`).
     # Bracket literals are not stripped by the native frontmatter parser and
     # file-edit IDs must stay absent from a read+shell posture.
@@ -130,6 +129,34 @@ def test_spawn_dispatch_uses_native_subagent_type() -> None:
         droid_name = fname[: -len(".md")]
         if "Same posture" in content:
             assert f"subagent_type: {droid_name}" in content, droid_name
+
+
+def test_generated_descriptions_are_quoted_yaml_scalars() -> None:
+    # The adapted description carries `subagent_type: <name>`-shaped text.
+    # As an unquoted YAML plain scalar that `": "` sequence makes the
+    # frontmatter unparseable ("mapping values are not allowed here"), so
+    # every emitted description must be a quoted scalar that survives a
+    # strict parse round-trip.
+    for fname, content in _generated_roles().items():
+        match = re.search(r"(?m)^description: (.+)$", content)
+        assert match is not None, fname
+        scalar = match.group(1)
+        assert re.fullmatch(r'"(?:[^"\\]|\\.)*"', scalar), (fname, scalar[:80])
+        import json
+
+        assert isinstance(json.loads(scalar), str), fname
+        assert '": ' not in scalar or scalar.startswith('"'), fname
+
+
+def test_description_quoting_preserves_spawn_contract_content() -> None:
+    import json
+
+    for fname, content in _generated_roles().items():
+        droid_name = fname[: -len(".md")]
+        if "Same posture" not in content:
+            continue
+        scalar = re.search(r"(?m)^description: (.+)$", content).group(1)
+        assert f"subagent_type: {droid_name}" in json.loads(scalar), droid_name
 
 
 def test_droid_projection_deterministic() -> None:

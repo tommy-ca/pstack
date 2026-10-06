@@ -1,6 +1,6 @@
 ---
 name: pstack-how-explorer
-description: pstack how explorer. Same posture as the pstack role of this name. Spawned on Droid with `Task` (`subagent_type: pstack-how-explorer`); the model inherits the parent session and there is no per-spawn effort field.
+description: "pstack how explorer. Same posture as the pstack role of this name. Spawned on Droid with `Task` (`subagent_type: pstack-how-explorer`); the model inherits the parent session and there is no per-spawn effort field."
 model: inherit
 tools: Read, Grep, Glob, LS, Execute
 ---

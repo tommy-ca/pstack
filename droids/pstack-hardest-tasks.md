@@ -1,6 +1,6 @@
 ---
 name: pstack-hardest-tasks
-description: pstack hardest-tasks writer. Same posture as the pstack role of this name. Spawned on Droid with `Task` (`subagent_type: pstack-hardest-tasks`); the model inherits the parent session and there is no per-spawn effort field.
+description: "pstack hardest-tasks writer. Same posture as the pstack role of this name. Spawned on Droid with `Task` (`subagent_type: pstack-hardest-tasks`); the model inherits the parent session and there is no per-spawn effort field."
 model: inherit
 ---
 
