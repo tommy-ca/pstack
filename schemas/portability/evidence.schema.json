@@ -25,6 +25,9 @@
     },
     "timestamp": {
       "type": "string"
+    },
+    "surface_revisions": {
+      "type": "object"
     }
   },
   "additionalProperties": false

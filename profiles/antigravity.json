@@ -170,7 +170,7 @@
     {
       "claim": "Antigravity plugin synchronized with 54 skills, 22 subagents, and 19 commands validated via agy plugin validate",
       "kind": "runtime",
-      "artifact": ".audit/evidence/antigravity-sync-receipt.json",
+      "artifact": ".audit/evidence/antigravity-receipt.json",
       "command": "python3 scripts/sync-antigravity-plugin.py --check",
       "timestamp": "2026-10-05T20:23:00Z"
     }

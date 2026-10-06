@@ -6,10 +6,12 @@ and issues #50 and #76. Pure Python with zero external dependencies.
 
 from __future__ import annotations
 
+import hashlib
 import json
-from dataclasses import dataclass, field
+import re
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional, Tuple
 
 SUPPORT_STATES = ("candidate", "mapped", "packaged", "verified", "supported")
 IMPLEMENTATION_STATUSES = ("native", "shim", "version-gated", "gap")
@@ -81,6 +83,7 @@ class Evidence:
     command: Optional[str] = None
     verdict: Optional[Literal["PASS", "FAIL", "BLOCKED"]] = None
     timestamp: Optional[str] = None
+    surface_revisions: Optional[Dict[str, Any]] = None
 
     def validate(self) -> None:
         if not self.claim:
@@ -386,3 +389,430 @@ class HarnessProfile:
         # Domain Rule: Harness runtime conventions are structured and schema-validated
         if self.runtime_conventions is not None:
             self.runtime_conventions.validate()
+
+    def validate_evidence(
+        self,
+        root: Path,
+        check_freshness: bool = True,
+        current_revisions: Optional[SurfaceRevisions] = None,
+    ) -> Dict[str, Any]:
+        return check_evidence_durability(
+            self,
+            root,
+            check_freshness=check_freshness,
+            current_revisions=current_revisions,
+        )
+
+
+@dataclass
+class SurfaceRevisions:
+    canonical_pin: str
+    upstream_head: str
+    spec_hash: str
+    skills_tree_hash: str
+    profile_hash: str
+    package_descriptor_hash: str
+    manifest_hash: str
+    driver_revision: str
+    package_driver_revision: str
+    boundary_driver_revision: str
+
+    def to_dict(self) -> Dict[str, str]:
+        return asdict(self)
+
+
+PLANE_SURFACE_DEPENDENCIES: Dict[str, Tuple[str, ...]] = {
+    "canonical": (
+        "canonical_pin",
+        "spec_hash",
+    ),
+    "adapter": (
+        "profile_hash",
+        "driver_revision",
+        "boundary_driver_revision",
+    ),
+    "package": (
+        "package_descriptor_hash",
+        "manifest_hash",
+        "package_driver_revision",
+    ),
+    "runtime": (
+        "skills_tree_hash",
+        "profile_hash",
+        "package_descriptor_hash",
+        "manifest_hash",
+        "driver_revision",
+    ),
+}
+
+
+@dataclass
+class ScenarioResult:
+    id: str
+    description: str
+    plane: str  # canonical | adapter | package | runtime
+    command: str
+    exit_code: int
+    stdout_snippet: str
+    verdict: str  # PASS | FAIL | BLOCKED
+    duration_s: float
+
+    def validate(self) -> None:
+        if not self.id:
+            raise ValidationError("ScenarioResult id cannot be empty")
+        if self.plane not in CONFORMANCE_PLANES:
+            raise ValidationError(f"Invalid plane: {self.plane!r}")
+        if self.verdict not in ("PASS", "FAIL", "BLOCKED"):
+            raise ValidationError(f"Invalid verdict: {self.verdict!r}")
+
+
+@dataclass
+class VerificationReceipt:
+    run_id: str
+    host: str
+    host_version: str
+    timestamp: str
+    overall_verdict: str
+    planes: Dict[str, str]
+    surface_revisions: SurfaceRevisions | Dict[str, str]
+    scenarios: List[ScenarioResult | Dict[str, Any]] = field(default_factory=list)
+    artifacts: List[str] = field(default_factory=list)
+    claim: Optional[str] = None
+    kind: Optional[str] = "runtime"
+
+    def __post_init__(self) -> None:
+        if isinstance(self.surface_revisions, dict):
+            self.surface_revisions = SurfaceRevisions(**self.surface_revisions)
+        parsed_scenarios: List[ScenarioResult] = []
+        for s in self.scenarios:
+            if isinstance(s, dict):
+                parsed_scenarios.append(ScenarioResult(**s))
+            elif isinstance(s, ScenarioResult):
+                parsed_scenarios.append(s)
+            else:
+                raise ValidationError(f"Invalid scenario item: {s!r}")
+        self.scenarios = parsed_scenarios
+
+    def validate(self) -> None:
+        if not self.run_id:
+            raise ValidationError("run_id cannot be empty")
+        if self.host not in HOSTS and self.host != "mock":
+            raise ValidationError(f"Unknown host: {self.host!r}")
+        if not self.host_version:
+            raise ValidationError("host_version cannot be empty")
+        if self.overall_verdict not in ("PASS", "FAIL", "BLOCKED"):
+            raise ValidationError(f"Invalid overall_verdict: {self.overall_verdict!r}")
+        for p, v in self.planes.items():
+            if p not in CONFORMANCE_PLANES:
+                raise ValidationError(f"Unknown plane: {p!r}")
+            if v not in ("PASS", "FAIL", "UNTESTED", "BLOCKED"):
+                raise ValidationError(f"Invalid plane verdict: {v!r}")
+        for s in self.scenarios:
+            s.validate()
+
+    def evaluate_plane_staleness(self, current_revisions: SurfaceRevisions) -> Dict[str, List[str]]:
+        reasons: Dict[str, List[str]] = {p: [] for p in CONFORMANCE_PLANES}
+        receipt_dict = self.surface_revisions.to_dict()
+        current_dict = current_revisions.to_dict()
+        for plane, deps in PLANE_SURFACE_DEPENDENCIES.items():
+            for dep in deps:
+                rec_val = receipt_dict.get(dep)
+                curr_val = current_dict.get(dep)
+                if not rec_val:
+                    reasons[plane].append(f"missing {dep} in receipt")
+                elif rec_val != curr_val:
+                    reasons[plane].append(
+                        f"{dep} mismatch (receipt={rec_val[:8]}..., current={curr_val[:8]}...)"
+                    )
+        return reasons
+
+
+def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path] = None) -> SurfaceRevisions:
+    # 1. canonical pin
+    upstream_file = root / "UPSTREAM"
+    canonical_pin = "unknown"
+    if upstream_file.is_file():
+        m = re.search(r"^tree ([0-9a-f]{40})$", upstream_file.read_text(encoding="utf-8"), re.M)
+        if m:
+            canonical_pin = m.group(1)
+
+    # 2. upstream head
+    inv_file = root / "openspec" / "canonical-inventory.json"
+    upstream_head = "unknown"
+    if inv_file.is_file():
+        try:
+            inv = json.loads(inv_file.read_text(encoding="utf-8"))
+            upstream_head = inv.get("upstream_head", "unknown")
+        except Exception:
+            pass
+
+    # 3. spec hash
+    spec_file = root / "openspec" / "specs" / "pstack-portability" / "spec.md"
+    spec_hash = hashlib.sha256(spec_file.read_bytes()).hexdigest() if spec_file.is_file() else "missing"
+
+    # 4. skills tree hash
+    skills_dir = root / "skills"
+    if skills_dir.is_dir():
+        hasher = hashlib.sha256()
+        for p in sorted(skills_dir.rglob("*")):
+            if p.is_file():
+                rel = p.relative_to(skills_dir).as_posix()
+                hasher.update(rel.encode("utf-8"))
+                hasher.update(p.read_bytes())
+        skills_tree_hash = hasher.hexdigest()
+    else:
+        skills_tree_hash = "missing"
+
+    # 5. profile hash
+    if profile_path is None:
+        profile_path = root / "profiles" / f"{host}.json"
+    if profile_path.is_file():
+        try:
+            profile_data = json.loads(profile_path.read_text(encoding="utf-8"))
+            profile_hash = hashlib.sha256(
+                json.dumps(profile_data, sort_keys=True, indent=2).encode("utf-8")
+            ).hexdigest()
+        except Exception:
+            profile_hash = hashlib.sha256(profile_path.read_bytes()).hexdigest()
+    else:
+        profile_hash = "missing"
+
+    # 6. package descriptor hash
+    pkg_file = root / "pstack.package.json"
+    if pkg_file.is_file():
+        try:
+            pkg_data = json.loads(pkg_file.read_text(encoding="utf-8"))
+            package_descriptor_hash = hashlib.sha256(
+                json.dumps(pkg_data, sort_keys=True, indent=2).encode("utf-8")
+            ).hexdigest()
+        except Exception:
+            package_descriptor_hash = hashlib.sha256(pkg_file.read_bytes()).hexdigest()
+    else:
+        package_descriptor_hash = "missing"
+
+    # 7. manifest hash
+    manifest_rel = DEFAULT_PLUGIN_MANIFESTS.get(host)
+    if profile_path.is_file():
+        try:
+            pdata = json.loads(profile_path.read_text(encoding="utf-8"))
+            if pdata.get("plugin_manifest"):
+                manifest_rel = pdata["plugin_manifest"]
+        except Exception:
+            pass
+    manifest_file = root / manifest_rel if manifest_rel else None
+    if manifest_file and manifest_file.is_file():
+        try:
+            man_data = json.loads(manifest_file.read_text(encoding="utf-8"))
+            manifest_hash = hashlib.sha256(
+                json.dumps(man_data, sort_keys=True, indent=2).encode("utf-8")
+            ).hexdigest()
+        except Exception:
+            manifest_hash = hashlib.sha256(manifest_file.read_bytes()).hexdigest()
+    else:
+        manifest_hash = "missing"
+
+    # 8. driver revision
+    driver_file = root / "scripts" / "verify-portable.py"
+    driver_revision = hashlib.sha256(driver_file.read_bytes()).hexdigest() if driver_file.is_file() else "missing"
+
+    # 9. package driver revision
+    pkg_driver_file = root / "scripts" / "project-package.py"
+    package_driver_revision = hashlib.sha256(pkg_driver_file.read_bytes()).hexdigest() if pkg_driver_file.is_file() else "missing"
+
+    # 10. boundary driver revision
+    bnd_driver_file = root / "scripts" / "scan-host-boundary.py"
+    boundary_driver_revision = hashlib.sha256(bnd_driver_file.read_bytes()).hexdigest() if bnd_driver_file.is_file() else "missing"
+
+    return SurfaceRevisions(
+        canonical_pin=canonical_pin,
+        upstream_head=upstream_head,
+        spec_hash=spec_hash,
+        skills_tree_hash=skills_tree_hash,
+        profile_hash=profile_hash,
+        package_descriptor_hash=package_descriptor_hash,
+        manifest_hash=manifest_hash,
+        driver_revision=driver_revision,
+        package_driver_revision=package_driver_revision,
+        boundary_driver_revision=boundary_driver_revision,
+    )
+
+
+def derive_support_state(
+    profile: HarnessProfile,
+    root: Path,
+    current_revisions: Optional[SurfaceRevisions] = None,
+) -> str:
+    """Mechanically derive the support state proved by durable evidence."""
+    bound_caps = {b.capability: b for b in profile.bindings}
+    if not bound_caps or any(c not in bound_caps for c in PORTABLE_CAPABILITY_UNIVERSE):
+        return "candidate"
+
+    if current_revisions is None:
+        current_revisions = compute_surface_revisions(root, profile.host)
+
+    # Level: mapped
+    if profile.tool_mappings is None or profile.runtime_conventions is None:
+        return "mapped"
+
+    # Level: packaged
+    if not profile.plugin_manifest or not (root / profile.plugin_manifest).is_file():
+        return "mapped"
+    if not (root / "pstack.package.json").is_file():
+        return "mapped"
+
+    # Level: verified
+    # Requires:
+    # 1. All mandatory capabilities have verification_status == "verified"
+    #    (workspace.readonly can be gap/shim if soft/advisory)
+    # 2. Every mandatory capability has evidence_ref pointing to an existing file
+    # 3. The referenced receipt has canonical, adapter, and runtime PASS
+    # 4. None of canonical, adapter, runtime planes is STALE against current_revisions
+    has_mandatory_runtime_proof = True
+    for cap_id in MANDATORY_SUPPORT_FLOOR:
+        binding = bound_caps[cap_id]
+        if binding.verification_status != "verified":
+            has_mandatory_runtime_proof = False
+            break
+        if not binding.evidence_ref or not (root / binding.evidence_ref).is_file():
+            has_mandatory_runtime_proof = False
+            break
+        try:
+            rdata = json.loads((root / binding.evidence_ref).read_text(encoding="utf-8"))
+            receipt = VerificationReceipt(**rdata)
+            receipt.validate()
+            if receipt.host != profile.host:
+                has_mandatory_runtime_proof = False
+                break
+            if (
+                receipt.planes.get("canonical") != "PASS"
+                or receipt.planes.get("adapter") != "PASS"
+                or receipt.planes.get("runtime") != "PASS"
+            ):
+                has_mandatory_runtime_proof = False
+                break
+            stale_map = receipt.evaluate_plane_staleness(current_revisions)
+            if stale_map.get("canonical") or stale_map.get("adapter") or stale_map.get("runtime"):
+                has_mandatory_runtime_proof = False
+                break
+        except Exception:
+            has_mandatory_runtime_proof = False
+            break
+
+    if not has_mandatory_runtime_proof:
+        return "packaged"
+
+    # Level: supported
+    # Requires verified PLUS:
+    # 1. Package plane is verified with PASS and NOT STALE
+    # 2. All 17 capabilities in PORTABLE_CAPABILITY_UNIVERSE have verification_status == "verified" (or valid shim/gap)
+    #    with valid, non-stale receipts
+    is_supported = True
+    for cap_id, binding in bound_caps.items():
+        if binding.verification_status != "verified":
+            is_supported = False
+            break
+        if not binding.evidence_ref or not (root / binding.evidence_ref).is_file():
+            is_supported = False
+            break
+        try:
+            rdata = json.loads((root / binding.evidence_ref).read_text(encoding="utf-8"))
+            receipt = VerificationReceipt(**rdata)
+            if receipt.planes.get("package") != "PASS":
+                is_supported = False
+                break
+            stale_map = receipt.evaluate_plane_staleness(current_revisions)
+            if any(len(errs) > 0 for errs in stale_map.values()):
+                is_supported = False
+                break
+        except Exception:
+            is_supported = False
+            break
+
+    return "supported" if is_supported else "verified"
+
+
+def check_evidence_durability(
+    profile: HarnessProfile,
+    root: Path,
+    check_freshness: bool = True,
+    current_revisions: Optional[SurfaceRevisions] = None,
+) -> Dict[str, Any]:
+    """Check that all evidence references exist, receipts are valid, and support state is derived."""
+    refs = {b.evidence_ref for b in profile.bindings if b.evidence_ref}
+    refs.update(e.artifact for e in profile.evidence_ledger if e.artifact)
+
+    if profile.support_state in ("verified", "supported") and not refs:
+        raise ValidationError(
+            f"Harness profile for {profile.host} claims {profile.support_state} but declares no evidence references"
+        )
+
+    receipts_by_ref: Dict[str, VerificationReceipt] = {}
+    for ref in sorted(refs):
+        path = root / ref
+        if not path.is_file():
+            raise ValidationError(
+                f"Dangling evidence path for {profile.host}: {ref}"
+            )
+        try:
+            rdata = json.loads(path.read_text(encoding="utf-8"))
+            receipt = VerificationReceipt(**rdata)
+            receipt.validate()
+        except Exception as err:
+            raise ValidationError(
+                f"Evidence file {ref} for {profile.host} is not a valid VerificationReceipt: {err}"
+            ) from err
+
+        if receipt.host != profile.host:
+            raise ValidationError(
+                f"Evidence file {ref} host mismatch: expected {profile.host}, got {receipt.host}"
+            )
+        receipts_by_ref[ref] = receipt
+
+    if current_revisions is None:
+        current_revisions = compute_surface_revisions(root, profile.host)
+
+    staleness_by_ref: Dict[str, Dict[str, List[str]]] = {}
+    for ref, receipt in receipts_by_ref.items():
+        staleness_by_ref[ref] = receipt.evaluate_plane_staleness(current_revisions)
+
+    derived_state = derive_support_state(profile, root, current_revisions=current_revisions)
+
+    if check_freshness:
+        # Check staleness based on claimed support_state
+        if profile.support_state in ("verified", "supported"):
+            stale_details: List[str] = []
+            for b in profile.bindings:
+                if b.capability in MANDATORY_SUPPORT_FLOOR:
+                    if b.evidence_ref and b.evidence_ref in staleness_by_ref:
+                        s_map = staleness_by_ref[b.evidence_ref]
+                        for plane in ("canonical", "adapter", "runtime"):
+                            if s_map.get(plane):
+                                stale_details.append(f"{b.capability} ({plane}): {', '.join(s_map[plane])}")
+            if profile.support_state == "supported":
+                for b in profile.bindings:
+                    if b.evidence_ref and b.evidence_ref in staleness_by_ref:
+                        s_map = staleness_by_ref[b.evidence_ref]
+                        if s_map.get("package"):
+                            stale_details.append(f"{b.capability} (package): {', '.join(s_map['package'])}")
+
+            if stale_details:
+                raise ValidationError(
+                    f"Profile {profile.host} evidence is stale for claimed {profile.support_state}: {'; '.join(stale_details[:5])}"
+                )
+
+        claimed_idx = SUPPORT_STATES.index(profile.support_state)
+        derived_idx = SUPPORT_STATES.index(derived_state)
+        if claimed_idx > derived_idx:
+            raise ValidationError(
+                f"Hand-authored support state {profile.support_state!r} for {profile.host} exceeds "
+                f"evidence-derived support state {derived_state!r}."
+            )
+
+    return {
+        "valid": True,
+        "host": profile.host,
+        "claimed_support_state": profile.support_state,
+        "derived_support_state": derived_state,
+        "receipts_checked": len(receipts_by_ref),
+        "staleness": staleness_by_ref,
+    }

@@ -34,35 +34,18 @@ from scripts.portability_schema import (
     HarnessProfile,
     PackageDescriptor,
     REQUIRED_CAPABILITIES,
+    ScenarioResult,
+    SurfaceRevisions,
+    VerificationReceipt,
     ValidationError,
+    check_evidence_durability,
+    compute_surface_revisions,
+    derive_support_state,
 )
 
 SUPPORTED_HOSTS = ("grok", "codex", "omp", "opencode", "antigravity", "mock")
 FIVE_HARNESSES = ("grok", "codex", "omp", "opencode", "antigravity")
 DEFAULT_EVIDENCE_DIR = ROOT / ".audit" / "evidence"
-
-
-@dataclass
-class ScenarioResult:
-    id: str
-    description: str
-    plane: str  # canonical | adapter | package | runtime
-    command: str
-    exit_code: int
-    stdout_snippet: str
-    verdict: str  # PASS | FAIL | BLOCKED
-    duration_s: float
-
-
-@dataclass
-class VerificationReceipt:
-    run_id: str
-    host: str
-    timestamp: str
-    overall_verdict: str
-    planes: Dict[str, str]
-    scenarios: List[ScenarioResult] = field(default_factory=list)
-    artifacts: List[str] = field(default_factory=list)
 
 
 class PortableVerifier:
@@ -105,7 +88,7 @@ class PortableVerifier:
         self.scenarios.append(result)
         return result
 
-    def doctor(self) -> bool:
+    def doctor(self, check_durability: bool = True) -> bool:
         """Step 2: Doctor static prerequisites, canonical conformance, and schema validity."""
         print(f"[{self.host}] Running Doctor checks...")
 
@@ -171,6 +154,26 @@ class PortableVerifier:
                 [sys.executable, str(ROOT / "scripts" / "sync-antigravity-plugin.py"), "--check"],
             )
             doctor_pass = doctor_pass and (r6.verdict == "PASS")
+
+        # 7. Evidence durability and support-state derivation check (when running standalone doctor)
+        if check_durability and profile_file.is_file():
+            chk_cmd = [
+                sys.executable,
+                str(ROOT / "scripts" / "verify-portable.py"),
+                "check-evidence",
+                "--host",
+                self.host,
+                "--evidence-dir",
+                str(self.evidence_root),
+            ]
+
+            r7 = self.run_command(
+                f"doctor-evidence-durability-{self.host}",
+                f"Verify evidence durability and support-state derivation for {self.host}",
+                "adapter",
+                chk_cmd,
+            )
+            doctor_pass = doctor_pass and (r7.verdict == "PASS")
 
         return doctor_pass
 
@@ -285,23 +288,65 @@ class PortableVerifier:
 
         overall = "PASS" if all(v == "PASS" for v in planes.values()) else "FAIL"
 
+        # Host version from pstack.package.json
+        host_version = "0.15.5-grokbuild.0"
+        pkg_file = ROOT / "pstack.package.json"
+        if pkg_file.is_file():
+            try:
+                host_version = json.loads(pkg_file.read_text(encoding="utf-8")).get("version", host_version)
+            except Exception:
+                pass
+
+        surface_revisions = compute_surface_revisions(ROOT, self.host)
+
         receipt = VerificationReceipt(
             run_id=self.run_id,
             host=self.host,
+            host_version=host_version,
             timestamp=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
             overall_verdict=overall,
             planes=planes,
+            surface_revisions=surface_revisions,
             scenarios=self.scenarios,
-            artifacts=[str(self.run_dir)],
+            artifacts=[str(self.run_dir / "receipt.json"), f".audit/evidence/{self.host}-receipt.json"],
+            claim=f"{self.host} 5-harness portability conformance verification",
+            kind="runtime",
         )
         return receipt
 
-    def evidence(self, receipt: VerificationReceipt) -> Path:
-        """Step 5: Write structured evidence receipt."""
+    def evidence(self, receipt: VerificationReceipt, update_durable: bool = True) -> Path:
+        """Step 5: Write structured run evidence receipt and optionally durable pointer."""
+        self.evidence_root.mkdir(parents=True, exist_ok=True)
         receipt_file = self.run_dir / "receipt.json"
         data = asdict(receipt)
         receipt_file.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
-        print(f"Evidence captured at {receipt_file}")
+
+        if update_durable:
+            # Stable durable receipt copy
+            durable_file = self.evidence_root / f"{self.host}-receipt.json"
+            durable_file.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+
+            # Update durable index.json
+            index_file = self.evidence_root / "index.json"
+            index_data: Dict[str, Any] = {"version": 1, "hosts": {}}
+            if index_file.is_file():
+                try:
+                    index_data = json.loads(index_file.read_text(encoding="utf-8"))
+                except Exception:
+                    pass
+            index_data.setdefault("hosts", {})[self.host] = {
+                "receipt": f".audit/evidence/{self.host}-receipt.json",
+                "run_id": receipt.run_id,
+                "timestamp": receipt.timestamp,
+                "overall_verdict": receipt.overall_verdict,
+                "planes": receipt.planes,
+                "surface_revisions": asdict(receipt.surface_revisions) if isinstance(receipt.surface_revisions, SurfaceRevisions) else receipt.surface_revisions,
+            }
+            index_file.write_text(json.dumps(index_data, indent=2) + "\n", encoding="utf-8")
+            print(f"Evidence captured at {receipt_file} (durable: {durable_file})")
+        else:
+            print(f"Evidence captured at {receipt_file}")
+
         return receipt_file
 
     def cleanup(self) -> None:
@@ -311,13 +356,106 @@ class PortableVerifier:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=["doctor", "drive", "run"], help="Action to execute")
+    parser.add_argument("action", choices=["doctor", "drive", "run", "check-evidence", "check-staleness"], help="Action to execute")
     parser.add_argument("--host", choices=[*SUPPORTED_HOSTS, "all"], default="grok", help="Target harness (or 'all' for all 5)")
     parser.add_argument("--feature", help="Feature to drive (for 'drive' action)")
     parser.add_argument("--evidence-dir", type=Path, default=DEFAULT_EVIDENCE_DIR, help="Evidence directory")
+    parser.add_argument("--allow-stale", action="store_true", help="Allow stale evidence during durability check")
+    parser.add_argument("--json", action="store_true", help="Emit JSON output for machine consumption")
     args = parser.parse_args()
 
     hosts = list(FIVE_HARNESSES) if args.host == "all" else [args.host]
+
+    if args.action == "check-evidence":
+        all_ok = True
+        for h in hosts:
+            profile_file = ROOT / "profiles" / f"{h}.json"
+            if not profile_file.is_file():
+                print(f"[{h}] Profile not found at {profile_file}")
+                all_ok = False
+                continue
+            d = json.loads(profile_file.read_text(encoding="utf-8"))
+            b = [Binding(**x) for x in d.get("bindings", [])]
+            e = [Evidence(**x) for x in d.get("evidence_ledger", [])]
+            prof = HarnessProfile(
+                host=d["host"],
+                support_state=d["support_state"],
+                bindings=b,
+                skills_dir=d.get("skills_dir"),
+                plugins_dir=d.get("plugins_dir"),
+                plugin_manifest=d.get("plugin_manifest"),
+                evidence_ledger=e,
+                tool_mappings=d.get("tool_mappings"),
+                skill_order=d.get("skill_order"),
+                runtime_conventions=d.get("runtime_conventions"),
+            )
+            try:
+                res = check_evidence_durability(prof, ROOT, check_freshness=not args.allow_stale)
+                print(f"[{h}] PASS: Evidence durable, derived support state: {res['derived_support_state']} (claimed: {res['claimed_support_state']})")
+            except Exception as err:
+                print(f"[{h}] FAIL: {err}")
+                all_ok = False
+        sys.exit(0 if all_ok else 1)
+
+    if args.action == "check-staleness":
+        staleness_report: Dict[str, Any] = {}
+        all_fresh = True
+        for h in hosts:
+            current_revs = compute_surface_revisions(ROOT, h)
+            receipt_file = args.evidence_dir / f"{h}-receipt.json"
+            if not receipt_file.is_file():
+                staleness_report[h] = {
+                    "host": h,
+                    "receipt_exists": False,
+                    "needs_regeneration": True,
+                    "stale_planes": ["canonical", "adapter", "package", "runtime"],
+                    "stale_reasons": {"all": [f"Receipt file {receipt_file} not found"]},
+                }
+                all_fresh = False
+                continue
+            try:
+                rdata = json.loads(receipt_file.read_text(encoding="utf-8"))
+                receipt = VerificationReceipt(**rdata)
+                stale_map = receipt.evaluate_plane_staleness(current_revs)
+                stale_planes = [p for p, reasons in stale_map.items() if reasons]
+                needs_regen = bool(stale_planes)
+                if needs_regen:
+                    all_fresh = False
+                staleness_report[h] = {
+                    "host": h,
+                    "receipt_exists": True,
+                    "run_id": receipt.run_id,
+                    "timestamp": receipt.timestamp,
+                    "overall_verdict": receipt.overall_verdict,
+                    "needs_regeneration": needs_regen,
+                    "stale_planes": stale_planes,
+                    "stale_reasons": {p: errs for p, errs in stale_map.items() if errs},
+                }
+            except Exception as err:
+                staleness_report[h] = {
+                    "host": h,
+                    "receipt_exists": True,
+                    "needs_regeneration": True,
+                    "stale_planes": ["canonical", "adapter", "package", "runtime"],
+                    "stale_reasons": {"error": [str(err)]},
+                }
+                all_fresh = False
+
+        if args.json:
+            print(json.dumps(staleness_report, indent=2))
+        else:
+            print("\n================ Evidence Staleness Report ================")
+            for h, info in staleness_report.items():
+                status = "REGENERATE" if info["needs_regeneration"] else "FRESH"
+                stale_str = ", ".join(info["stale_planes"]) if info["stale_planes"] else "None"
+                print(f"Host: {h:<12} | Status: {status:<10} | Stale Planes: {stale_str}")
+                for p, reasons in info.get("stale_reasons", {}).items():
+                    for r in reasons:
+                        print(f"   - [{p}] {r}")
+            print("===========================================================")
+            print(f"Overall Matrix Evidence: {'ALL FRESH' if all_fresh else 'REGENERATION NEEDED'}\n")
+        sys.exit(0 if all_fresh else 1)
+
     all_pass = True
     receipts: List[VerificationReceipt] = []
 
@@ -326,25 +464,25 @@ def main() -> None:
         verifier.launch()
 
         if args.action == "doctor":
-            ok = verifier.doctor()
+            ok = verifier.doctor(check_durability=not args.allow_stale)
             receipt = verifier.proof_bar()
-            verifier.evidence(receipt)
+            verifier.evidence(receipt, update_durable=False)
             receipts.append(receipt)
             all_pass = all_pass and ok
 
         elif args.action == "drive":
-            verifier.doctor()
+            verifier.doctor(check_durability=False)
             ok = verifier.drive(feature=args.feature)
             receipt = verifier.proof_bar()
-            verifier.evidence(receipt)
+            verifier.evidence(receipt, update_durable=False)
             receipts.append(receipt)
             all_pass = all_pass and ok
 
         elif args.action == "run":
-            verifier.doctor()
+            verifier.doctor(check_durability=False)
             verifier.drive()
             receipt = verifier.proof_bar()
-            verifier.evidence(receipt)
+            verifier.evidence(receipt, update_durable=True)
             verifier.cleanup()
             receipts.append(receipt)
             all_pass = all_pass and (receipt.overall_verdict == "PASS")
