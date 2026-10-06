@@ -209,7 +209,7 @@ def test_autopilot_is_parent_fanout_and_skips_goal() -> None:
 
 def test_poteto_mode_first_todo_requires_host_map() -> None:
     skill = (ROOT / "skills/poteto-mode/SKILL.md").read_text(encoding="utf-8")
-    assert "HARNESS.md" in skill
+    assert "grok-tools.md" in skill
     assert "codex-tools.md" in skill
     assert "current host" in skill
     head = skill.split("## Principles", 1)[0]

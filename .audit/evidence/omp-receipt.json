@@ -1,8 +1,8 @@
 {
-  "run_id": "omp-1791294289-4f09ab1e",
+  "run_id": "omp-1791297259-d6d802a0",
   "host": "omp",
   "host_version": "omp/18.6.0",
-  "timestamp": "2026-10-06T13:45:00Z",
+  "timestamp": "2026-10-06T14:34:30Z",
   "overall_verdict": "PASS",
   "planes": {
     "canonical": "PASS",
@@ -14,7 +14,7 @@
     "canonical_pin": "4b4d98e5e3b3c139f63dbc1ce4b538954c8f2f52",
     "upstream_head": "807c031086fcf71c88c863b4a4e6938b6785c58f",
     "spec_hash": "671f5d465db673df40350dab39fcf45ac14c7f0d178bace536a6dadf8c97e4d8",
-    "skills_tree_hash": "e46005b5e915a5117883279f831e08916211d15aa4ced2d4470dcaac8f35d9c1",
+    "skills_tree_hash": "b529797540d1b841a9c697ab71bfc13fe76d0299b0aaac8ddc620023f41765b7",
     "profile_hash": "ed94aa8bded023486dcbdb687750d0244d9d70cd4565f893473f67dfd2be65d3",
     "package_descriptor_hash": "286375204aa9beb324e711a2b3d1ea081be232a6af3276d55cf12a03d7f2d5e2",
     "manifest_hash": "319eb25f6dd71985fd8d17813cc77ec00764fa9ea1f5021e1248764aaa8f6aa7",
@@ -31,7 +31,7 @@
       "exit_code": 0,
       "stdout_snippet": "Conformance: PASS\nFreshness: DRIFT (53 commits ahead)\nPrinciples: 23 | Playbooks: 23\nArtifacts: 158 (preserved=85, adapted=64, excluded=9, gaps=0)\nPASS: Canonical inventory conforms to pin.",
       "verdict": "PASS",
-      "duration_s": 0.06
+      "duration_s": 0.081
     },
     {
       "id": "doctor-openspec-validation",
@@ -41,7 +41,7 @@
       "exit_code": 0,
       "stdout_snippet": "Change 'pstack-portability-contract' is valid",
       "verdict": "PASS",
-      "duration_s": 1.43
+      "duration_s": 1.729
     },
     {
       "id": "doctor-adapter-static",
@@ -51,7 +51,7 @@
       "exit_code": 0,
       "stdout_snippet": "PASS\nplaybooks: 22 named + opening-a-pr\nprinciples: 23\nplugin.json name: pstack",
       "verdict": "PASS",
-      "duration_s": 1.231
+      "duration_s": 1.353
     },
     {
       "id": "doctor-scan-host-boundary",
@@ -61,7 +61,7 @@
       "exit_code": 0,
       "stdout_snippet": "[scan-host-boundary] PASS: Scanned 87 files across portable surfaces. 0 boundary leaks.",
       "verdict": "PASS",
-      "duration_s": 0.443
+      "duration_s": 0.446
     },
     {
       "id": "doctor-package-projection",
@@ -81,7 +81,7 @@
       "exit_code": 0,
       "stdout_snippet": "[omp] Executing verify...\nPASS: omp manifest at .omp-plugin/plugin.json in sync\n[omp] VERIFY PASS",
       "verdict": "PASS",
-      "duration_s": 0.067
+      "duration_s": 0.068
     },
     {
       "id": "doctor-profile-omp",
@@ -91,7 +91,7 @@
       "exit_code": 0,
       "stdout_snippet": "",
       "verdict": "PASS",
-      "duration_s": 0.056
+      "duration_s": 0.055
     },
     {
       "id": "drive-principles-load",
@@ -111,7 +111,7 @@
       "exit_code": 0,
       "stdout_snippet": "bun test v1.4.2 (744846f84)",
       "verdict": "PASS",
-      "duration_s": 1.885
+      "duration_s": 2.021
     },
     {
       "id": "drive-worktree-audit",
@@ -121,37 +121,37 @@
       "exit_code": 0,
       "stdout_snippet": "SIZE\tAGE\tMERGED\tDIRTY\tREMOTE\tPR\tLAST_CHAT\tBUCKET\tWORKTREE\n4.3M\t6d\tno\tclean\tpushed\t#46/MERGED\t2026-10-06\tverify-recent-chat\t/home/tommyk/projects/pstack/.worktrees/adapter-base-0155",
       "verdict": "PASS",
-      "duration_s": 3.582
+      "duration_s": 3.766
     },
     {
       "id": "drive-verification-skill-scaffold",
       "description": "Prove verification skill scaffolding for omp",
       "plane": "package",
-      "command": "/home/tommyk/.local/share/uv/tools/ansible/bin/python3 /home/tommyk/projects/pstack/scripts/scaffold-verification-skill.py --host omp --app smoke --write --target-dir /home/tommyk/projects/pstack/.audit/evidence/omp-1791294289-4f09ab1e/verify-smoke",
+      "command": "/home/tommyk/.local/share/uv/tools/ansible/bin/python3 /home/tommyk/projects/pstack/scripts/scaffold-verification-skill.py --host omp --app smoke --write --target-dir /home/tommyk/projects/pstack/.audit/evidence/omp-1791297259-d6d802a0/verify-smoke",
       "exit_code": 0,
-      "stdout_snippet": "Scaffolded verification skill for 'smoke' on omp at /home/tommyk/projects/pstack/.audit/evidence/omp-1791294289-4f09ab1e/verify-smoke",
+      "stdout_snippet": "Scaffolded verification skill for 'smoke' on omp at /home/tommyk/projects/pstack/.audit/evidence/omp-1791297259-d6d802a0/verify-smoke",
       "verdict": "PASS",
-      "duration_s": 0.103
+      "duration_s": 0.072
     },
     {
       "id": "drive-verification-skill-check",
       "description": "Validate generated verification skill structure for omp",
       "plane": "package",
-      "command": "/home/tommyk/.local/share/uv/tools/ansible/bin/python3 /home/tommyk/projects/pstack/scripts/scaffold-verification-skill.py --host omp --check --target-dir /home/tommyk/projects/pstack/.audit/evidence/omp-1791294289-4f09ab1e/verify-smoke",
+      "command": "/home/tommyk/.local/share/uv/tools/ansible/bin/python3 /home/tommyk/projects/pstack/scripts/scaffold-verification-skill.py --host omp --check --target-dir /home/tommyk/projects/pstack/.audit/evidence/omp-1791297259-d6d802a0/verify-smoke",
       "exit_code": 0,
-      "stdout_snippet": "PASS: Verification skill at /home/tommyk/projects/pstack/.audit/evidence/omp-1791294289-4f09ab1e/verify-smoke is valid.",
+      "stdout_snippet": "PASS: Verification skill at /home/tommyk/projects/pstack/.audit/evidence/omp-1791297259-d6d802a0/verify-smoke is valid.",
       "verdict": "PASS",
-      "duration_s": 0.082
+      "duration_s": 0.063
     },
     {
       "id": "drive-package-lifecycle-proof-omp",
       "description": "Prove isolated native package lifecycle for omp",
       "plane": "package",
-      "command": "/home/tommyk/.local/share/uv/tools/ansible/bin/python3 /home/tommyk/projects/pstack/scripts/package-lifecycle.py prove --host omp --target-dir /home/tommyk/projects/pstack/.audit/evidence/omp-1791294289-4f09ab1e/lifecycle-omp",
+      "command": "/home/tommyk/.local/share/uv/tools/ansible/bin/python3 /home/tommyk/projects/pstack/scripts/package-lifecycle.py prove --host omp --target-dir /home/tommyk/projects/pstack/.audit/evidence/omp-1791297259-d6d802a0/lifecycle-omp",
       "exit_code": 0,
-      "stdout_snippet": "[omp] Executing prove...\n  [install] PASS (0.220s) - Installed omp into /home/tommyk/projects/pstack/.audit/evidence/omp-1791294289-4f09ab1e/lifecycle-omp/.omp/plugins/pstack (verified=True)\n  [update] PASS (0.503s) - Idempotent convergence check for omp (errors=[])\n  [uninstall] PASS (0.022s) - Cle",
+      "stdout_snippet": "[omp] Executing prove...\n  [install] PASS (0.217s) - Installed omp into /home/tommyk/projects/pstack/.audit/evidence/omp-1791297259-d6d802a0/lifecycle-omp/.omp/plugins/pstack (verified=True)\n  [update] PASS (0.506s) - Idempotent convergence check for omp (errors=[])\n  [uninstall] PASS (0.020s) - Cle",
       "verdict": "PASS",
-      "duration_s": 0.816
+      "duration_s": 0.819
     },
     {
       "id": "runtime-discover-omp",
@@ -161,7 +161,7 @@
       "exit_code": 0,
       "stdout_snippet": "npm Plugins:\n\n\u25cf @dietrichgebert/ponytail@4.9.0",
       "verdict": "PASS",
-      "duration_s": 0.426
+      "duration_s": 0.361
     },
     {
       "id": "runtime-route-playbook-omp",
@@ -191,7 +191,7 @@
       "exit_code": 0,
       "stdout_snippet": "OMP CLI supports git worktree management (found=True)",
       "verdict": "PASS",
-      "duration_s": 0.189
+      "duration_s": 0.159
     },
     {
       "id": "runtime-evidence-capture-omp",
@@ -205,7 +205,7 @@
     }
   ],
   "artifacts": [
-    "/home/tommyk/projects/pstack/.audit/evidence/omp-1791294289-4f09ab1e/receipt.json",
+    "/home/tommyk/projects/pstack/.audit/evidence/omp-1791297259-d6d802a0/receipt.json",
     ".audit/evidence/omp-receipt.json"
   ],
   "claim": "omp 5-harness portability conformance verification",

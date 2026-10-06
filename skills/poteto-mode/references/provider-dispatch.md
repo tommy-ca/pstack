@@ -32,7 +32,7 @@ Effort on Grok Build is role overlay (`~/.grok/roles/pstack:<key>.toml`) or agen
 
 ## Mapping files
 
-- Grok Build: `HARNESS.md` at plugin root
+- Grok Build: `grok-tools.md`
 - Codex: this file plus `codex-tools.md`
 - Claude Code: `.claude-plugin/plugin.json` plus Claude `Agent`
 
