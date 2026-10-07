@@ -37,7 +37,7 @@ def find_executable(name: str, extra_search_dirs: Optional[List[Path]] = None) -
     """Find executable in PATH or standard user install locations."""
     which_path = shutil.which(name)
     if which_path:
-        p = Path(which_path).resolve()
+        p = Path(which_path)
         if p.is_file() and os.access(p, os.X_OK):
             return p
 
@@ -48,11 +48,11 @@ def find_executable(name: str, extra_search_dirs: Optional[List[Path]] = None) -
             # Check direct child first
             direct = base_dir / name
             if direct.is_file() and os.access(direct, os.X_OK):
-                return direct.resolve()
+                return direct
             # Check recursive search
             for match in base_dir.rglob(name):
                 if match.is_file() and os.access(match, os.X_OK):
-                    return match.resolve()
+                    return match
     return None
 
 
