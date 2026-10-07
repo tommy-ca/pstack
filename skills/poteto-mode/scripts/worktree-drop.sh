@@ -272,10 +272,10 @@ if [ "${#target_registered[@]}" -gt 0 ]; then
 				exit 1
 			fi
 		fi
-		run git -C "$repo" worktree remove --force "$wt"
+		run git -C "$repo" worktree remove "$wt"
 		if [ "$mode" = apply ] && [ -e "$wt" ]; then
-			printf "RUN\trm -rf surviving registered path %s\n" "$wt"
-			rm -rf -- "$wt"
+			echo "refusing: git worktree remove did not remove registered path $wt; stopping without force" >&2
+			exit 1
 		fi
 	done
 fi
