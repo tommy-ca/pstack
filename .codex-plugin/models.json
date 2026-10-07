@@ -1,0 +1,135 @@
+{
+  "singleRoleDefault": "gpt-6.1-sol",
+  "panel": [
+    "gpt-6.1-sol",
+    "gpt-6-astra",
+    "gpt-6-luna"
+  ],
+  "available": [
+    {
+      "label": "GPT-6.1 Sol",
+      "slug": "gpt-6.1-sol"
+    },
+    {
+      "label": "GPT-6 Astra",
+      "slug": "gpt-6-astra"
+    },
+    {
+      "label": "GPT-6 Luna",
+      "slug": "gpt-6-luna"
+    }
+  ],
+  "roles": [
+    {
+      "role": "feature, refactoring",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "skill": "poteto-mode"
+    },
+    {
+      "role": "bug-fix",
+      "models": [
+        "gpt-6.1-sol"
+      ],
+      "skill": "poteto-mode"
+    },
+    {
+      "role": "perf-issue",
+      "models": [
+        "gpt-6.1-sol"
+      ],
+      "skill": "poteto-mode"
+    },
+    {
+      "role": "hillclimb",
+      "models": [
+        "gpt-6.1-sol"
+      ],
+      "skill": "poteto-mode"
+    },
+    {
+      "role": "judgment and prose",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "skill": "poteto-mode"
+    },
+    {
+      "role": "strongest judgment",
+      "models": [
+        "gpt-6.1-sol"
+      ],
+      "skill": "poteto-mode"
+    },
+    {
+      "role": "how explorer",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "skill": "how"
+    },
+    {
+      "role": "how explainer",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "skill": "how"
+    },
+    {
+      "role": "why investigators",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "skill": "why"
+    },
+    {
+      "role": "why synthesizer",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "skill": "why"
+    },
+    {
+      "role": "reflect tooling",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "skill": "reflect"
+    },
+    {
+      "role": "reflect judgment, divergent, synthesizer",
+      "models": [
+        "gpt-6.1-sol"
+      ],
+      "skill": "reflect"
+    },
+    {
+      "role": "arena runners",
+      "models": "panel",
+      "skill": "arena"
+    },
+    {
+      "role": "arena cross-judge pool",
+      "models": "panel",
+      "skill": "arena"
+    },
+    {
+      "role": "swarm workers",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "skill": "swarm"
+    },
+    {
+      "role": "architect runners",
+      "models": "panel",
+      "skill": "architect"
+    },
+    {
+      "role": "interrogate reviewers",
+      "models": "panel",
+      "skill": "interrogate"
+    }
+  ]
+}

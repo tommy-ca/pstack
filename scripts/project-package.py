@@ -224,6 +224,37 @@ def generate_antigravity_models(desc: PackageDescriptor) -> Dict[str, Any]:
     }
 
 
+def generate_codex_models(desc: PackageDescriptor) -> Dict[str, Any]:
+    return {
+        "singleRoleDefault": "gpt-6.1-sol",
+        "panel": ["gpt-6.1-sol", "gpt-6-astra", "gpt-6-luna"],
+        "available": [
+            {"label": "GPT-6.1 Sol", "slug": "gpt-6.1-sol"},
+            {"label": "GPT-6 Astra", "slug": "gpt-6-astra"},
+            {"label": "GPT-6 Luna", "slug": "gpt-6-luna"},
+        ],
+        "roles": [
+            {"role": "feature, refactoring", "models": ["gpt-6-luna"], "skill": "poteto-mode"},
+            {"role": "bug-fix", "models": ["gpt-6.1-sol"], "skill": "poteto-mode"},
+            {"role": "perf-issue", "models": ["gpt-6.1-sol"], "skill": "poteto-mode"},
+            {"role": "hillclimb", "models": ["gpt-6.1-sol"], "skill": "poteto-mode"},
+            {"role": "judgment and prose", "models": ["gpt-6-luna"], "skill": "poteto-mode"},
+            {"role": "strongest judgment", "models": ["gpt-6.1-sol"], "skill": "poteto-mode"},
+            {"role": "how explorer", "models": ["gpt-6-luna"], "skill": "how"},
+            {"role": "how explainer", "models": ["gpt-6-luna"], "skill": "how"},
+            {"role": "why investigators", "models": ["gpt-6-luna"], "skill": "why"},
+            {"role": "why synthesizer", "models": ["gpt-6-luna"], "skill": "why"},
+            {"role": "reflect tooling", "models": ["gpt-6-luna"], "skill": "reflect"},
+            {"role": "reflect judgment, divergent, synthesizer", "models": ["gpt-6.1-sol"], "skill": "reflect"},
+            {"role": "arena runners", "models": "panel", "skill": "arena"},
+            {"role": "arena cross-judge pool", "models": "panel", "skill": "arena"},
+            {"role": "swarm workers", "models": ["gpt-6-luna"], "skill": "swarm"},
+            {"role": "architect runners", "models": "panel", "skill": "architect"},
+            {"role": "interrogate reviewers", "models": "panel", "skill": "interrogate"},
+        ],
+    }
+
+
 def generate_droid_manifest(desc: PackageDescriptor) -> Dict[str, Any]:
     return {
         "name": desc.name,
@@ -370,6 +401,11 @@ def project_all(desc: PackageDescriptor, hosts: List[str] | None = None) -> None
                 (cmds_dir / fname).write_text(toml_str, encoding="utf-8")
             print(f"Projected {len(desc.commands)} antigravity commands -> {cmds_dir.relative_to(ROOT)}")
 
+        if host == "codex":
+            models_file = ROOT / ".codex-plugin" / "models.json"
+            models_file.write_text(json.dumps(generate_codex_models(desc), indent=2) + "\n", encoding="utf-8")
+            print(f"Projected codex models -> {models_file.relative_to(ROOT)}")
+
         if host == "droid":
             marketplace_file = FACTORY_PLUGIN_DIR / "marketplace.json"
             marketplace_file.write_text(
@@ -450,6 +486,24 @@ def check_all(desc: PackageDescriptor, hosts: List[str] | None = None) -> bool:
                         all_ok = False
                 if cmds_ok:
                     print(f"PASS: {len(expected_cmds)} antigravity commands at {cmds_dir.relative_to(ROOT)} in sync")
+
+        if host == "codex":
+            models_file = ROOT / ".codex-plugin" / "models.json"
+            if not models_file.is_file():
+                print(f"MISSING: codex models not found at {models_file.relative_to(ROOT)}")
+                all_ok = False
+            else:
+                expected_models = generate_codex_models(desc)
+                try:
+                    actual_models = json.loads(models_file.read_text(encoding="utf-8"))
+                    if actual_models != expected_models:
+                        print(f"DRIFT: codex models at {models_file.relative_to(ROOT)} does not match expected")
+                        all_ok = False
+                    else:
+                        print(f"PASS: codex models at {models_file.relative_to(ROOT)} in sync")
+                except Exception as e:
+                    print(f"ERROR: {models_file.relative_to(ROOT)} failed to parse: {e}")
+                    all_ok = False
 
         if host == "droid":
             marketplace_file = FACTORY_PLUGIN_DIR / "marketplace.json"
