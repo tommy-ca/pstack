@@ -18,7 +18,16 @@ deterministic facts / explicit command / safety policy
              existing verification/gates
 ```
 
-Jev implements one optional provider behind a typed boundary. Shared pstack consumes only a decision result.
+Jev implements one optional provider behind a typed boundary. Shared pstack consumes only a provider-neutral decision result.
+
+The responsibilities stay separate:
+
+- **Routing policy** decides whether a semantic-provider decision is eligible and how it composes with higher-authority rules.
+- **Decision provider** performs one bounded semantic judgment and returns a typed outcome.
+- **Evidence sink/lever** records or evaluates receipts outside the provider interface.
+- **TypeSafe/Jev adapter** owns provider-specific transport, auth, model, serialization, and bounded retry behavior.
+
+This separation keeps the core dependent on the abstraction rather than on Jev, while avoiding a speculative multi-provider framework.
 
 ## Why not a new agent
 
@@ -50,7 +59,7 @@ No retry policy may block task progress indefinitely.
 1. Playbook classification when neither explicit command nor deterministic rule already decides.
 2. Skill suggestion/ranking.
 
-Both begin in shadow mode.
+Both begin in shadow mode. No later Jev use case is pre-designed here. It must earn a separate change after the pilot.
 
 ## Decision receipt
 
