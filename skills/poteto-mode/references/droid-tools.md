@@ -13,7 +13,7 @@ prove skill serving, model selection, or spawn execution.
 | Edit / write | `Edit`, `Create` | |
 | Shell | `Execute` | |
 | Fetch / web search | `FetchUrl`, `WebSearch` | |
-| `plan.update` | `todo_write` | Always included in every droid. |
+| `plan.update` | `todo_write` | Included only when the droid definition's explicit `tools` allowlist lists it; a restricted droid whose scalar omits it does not include it. |
 | `agent.spawn` | `Task` (`subagent_type`, `description`, `prompt`) | Parent-owned. Optional fields come from the live session schema (`await`, `complexity`, `resume`, `image_paths`); check the schema in the running session, not docs. |
 | `agent.join` | `TaskOutput` (`block=true` waits) | Background reports auto-deliver. |
 | `agent.cancel` | `TaskStop` | SIGTERM, then SIGKILL. |

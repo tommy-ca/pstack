@@ -64,6 +64,12 @@ Do not route babysit to `/pr-babysit`. That skill restacks. pstack `babysit.md` 
 - Child roles use `task.subagent_type`: built-in `general-purpose` (default), `explore`, `plan`; plugin agents: `pstack:<role-key>` (`pstack:feature`, `pstack:how-explainer`, `pstack:poteto-agent`, `pstack:comment-sicko`, `pstack:independent-verifier`, …). Bare keys are unknown. Overlay stem is `~/.grok/roles/pstack:<key>.toml`.
 - Effort ladder resolution: plugin agents ship frontmatter `effort` per [`effort-ladder.md`](../../setup-pstack/references/effort-ladder.md). Setup may overlay `SubagentRole.reasoning_effort` in `~/.grok/roles/pstack:<key>.toml`. Resolver uses `select_role(subagent_type)` and `apply_definition_runtime_defaults` in `resolve_runtime_config` for `AgentDefinition`.
 - Independent verify uses `pstack:independent-verifier` with model from toml when different from the writer; frontmatter effort `xhigh` unless overlaid.
+- Per-spawn model: `task.model` is an optional slug; omit it to inherit the parent, and do not pass `model` together with `resume_from`. Invalid slugs fail via `TaskModelValidator` (`TaskToolInput.model`).
+- Resume a finished child with `task.resume_from` set to the prior `subagent_id`, using the same `subagent_type` (`TaskToolInput.resume_from`).
+
+## Scheduler and delayed work
+
+`/loop` expands to `scheduler_create` (source: `xai-grok-tools-api/src/slash_commands.rs`). Fields: `interval` (`5m`/`2h`/`1d`, minimum 60 seconds), `prompt`, optional `durable`/`foreground`, and `fire_immediately` (default false; the `/loop` instruction sets it true). Update in place with `task_id`; cancel with `scheduler_delete` `{id}` (`scheduler/create.rs`; `scheduler/delete.rs`). `scheduler_create.recurring` is `#[schemars(skip)]` in the Rust schema, so sending `recurring: false` is rejected. One-shot delayed work is `sleep && cmd` in a background shell, not scheduler recurring work.
 
 ## Default spawn shape
 

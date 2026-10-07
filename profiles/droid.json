@@ -46,7 +46,7 @@
     },
     {
       "need": "Prove work is done",
-      "primary_pstack": "prove-it-works",
+      "primary_pstack": "/principle-prove-it-works",
       "secondary_user": "/verification-before-completion",
       "fallback_builtin": null,
       "notes": "Advisory: shadowed by personal/project skills with the same name"
@@ -60,10 +60,10 @@
     },
     {
       "need": "Read-only spawn",
-      "primary_pstack": "pstack-how-explorer (droid definition restricts tools)",
+      "primary_pstack": "pstack-how-explorer",
       "secondary_user": null,
       "fallback_builtin": "explorer",
-      "notes": "Read-only is a per-droid-definition tools restriction; no per-spawn readonly field exists. Custom-role serving is untested (support_state candidate)"
+      "notes": "pstack-how-explorer is a native droid definition whose tools allowlist restricts it to read-only; read-only is a per-droid-definition tools restriction, no per-spawn readonly field exists. Custom-role serving is untested (support_state candidate)"
     },
     {
       "need": "Worktree isolation",
