@@ -28,9 +28,10 @@ Only edit the verification skill's own directory (its SKILL.md, features/, and a
    - OMP: `.omp/skills/verify-*/`
    - OpenCode: `.opencode/skills/verify-*/`
    - Grok Build: `.grok/skills/verify-*/`
+   - Droid: `.factory/skills/verify-*/`
    Plugin doctor lives at `<harness-skills-dir>/verify-pstack/`. App skills stay `<harness-skills-dir>/verify-<app>/`. Do not ship `verify-pstack` under shared `skills/`. Do not name an app skill `verify-pstack`. If several candidates exist, ask which one. If none exist, stop and point at `/create-verification-skill` instead of inventing a target.
 
-1. **Index hygiene.** Read the feature map README and glob its sibling files. The README Full sweep order is the live-pass order. Fix missing, extra, duplicate, or dead entries. Keep it lightweight. Do not generate an inventory.
+1. **Index hygiene.** Read the feature map README and compare its ordered references with actual regular sibling markdown files. The README Full sweep order is the live-pass order. Accept numbered backtick filenames under Full sweep or ordered links under Features with Full sweep prose directing that order. Normalize `./core.md` to `core.md`. Fix missing, duplicate, outside-directory, or unlisted references; reject directories and symlinks as feature files. When both sections list files, require the same coverage and check duplicates within each section separately. Each feature uses exactly four H2s in order: `Sub-features`, `How to get to it (user POV)`, `Driving it with <harness>`, and `Gotchas`, with a named harness. Run `scripts/scaffold-verification-skill.py --check --target-dir <skill-dir>` when available. It checks structure and leaves runtime proof unassessed. Keep it lightweight. Do not generate an inventory.
 
 2. **Source wave.** One read-only subagent per feature file, launched concurrently. Each explains "how does this user-facing feature work?" from source, flags likely doc drift with citations, and returns one concise live-verification recipe. Children never drive the app and never edit files. Return shape: feature summary / source entry points / likely drift or none / one recipe.
 
@@ -41,5 +42,7 @@ Only edit the verification skill's own directory (its SKILL.md, features/, and a
 5. **Triage.** Wrong or missing user-POV description is doc drift. Fix it. Working behavior the harness can't drive is a harness gap. Fix it. A harness fix follows the same helpers rule as generation (scripts executable, invocation documented in the skill body). App behavior that's actually broken is a product gap. Record it for the user, keep it out of this PR. A capture that only shows "look, it opens" is not proof. Require the skill's Proof bar.
 
 6. **Ship or stop.** For changed: one PR of proven corrections, re-read every changed file first. For clean or blocked: no PR, report the outcome and the coverage honestly.
+
+Report draft status, structural validation, and runtime coverage separately. Six discovery directories reflect the six declared host census, but do not prove Droid native runtime operations or treat candidate status as verified proof in `verify-portable.py --host all`. A clean structural check or source wave cannot replace the required live Full sweep. Use fresh run and step evidence directories, preserve earlier captures, and record instance identity and source revision. Keep doctor, trigger, stable result, and side effects tied to each feature. Confirm the evidence survives cleanup. If live coverage cannot finish, report blocked with the exact gap rather than calling the map verified.
 
 Keep concise run notes (features covered, unreachable prerequisites, confirmed drift, outcome) in a scratch location. Don't commit them.

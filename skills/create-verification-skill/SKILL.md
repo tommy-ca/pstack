@@ -9,13 +9,19 @@ disable-model-invocation: true
 Every serious project needs a scripted way to drive the real app and prove behavior: launch it, exercise a feature the way a user would, and capture evidence. This skill generates that as a project-local skill tailored to the repo. You write the generator's output for the next agent, not for a human: it will be read cold, mid-task, by an agent that has never seen the app.
 
 Project-local verification skills live under the active harness's native skills directory:
+
 - **Google Antigravity**: `.agents/skills/verify-<app>/`
 - **Codex**: `.codex/skills/verify-<app>/`
 - **OMP**: `.omp/skills/verify-<app>/`
 - **OpenCode**: `.opencode/skills/verify-<app>/`
 - **Grok Build**: `.grok/skills/verify-<app>/`
+- **Droid**: `.factory/skills/verify-<app>/`
 
-Auto-detect from workspace markers (`.agents/`, `.codex/`, `.omp/`, `.opencode/`, `.grok/`), or accept `--host <harness>`. Plugin doctor lives at `<harness-skills-dir>/verify-pstack/`. Do not ship application verification skills under shared `skills/`. Do not write global home dirs (e.g. `~/.grok/skills`, `~/.gemini/skills`). Do not name an app skill `verify-pstack`. Helper script `scripts/scaffold-verification-skill.py` provides deterministic scaffolding across all 5 harnesses.
+The scaffold checks workspace markers in order (`.agents/`, `.codex/`, `.omp/`, `.opencode/`, `.grok/`, `.factory/`) and defaults to Grok when none exist. Set `--host <harness>` to override detection. Markers select a destination; they do not prove which host is running. Plugin doctor lives at `<harness-skills-dir>/verify-pstack/`. Do not ship application verification skills under shared `skills/`. Do not write global home directories. App names must use lowercase kebab-case, such as `demo-app`; `pstack` is reserved for the plugin doctor. Checking or listing an existing `verify-pstack` remains permitted.
+
+Use `scripts/scaffold-verification-skill.py --host codex --app demo-app --write` for a draft in `.codex/skills/verify-demo-app/`. The helper supports six scaffold destinations. This distinguishes the six declared host census from Droid unproven native operations in `verify-portable.py --host all`. It accepts an absent or empty target and refuses nonempty directories and symlink targets or ancestors before writing. A rerun preserves authored files by refusing to overwrite them. For an interrupted draft, inspect its files and deliberately choose a fresh target or recover the existing draft. An explicit `--target-dir` may have any scratch name; native skill directory names must match frontmatter.
+
+Run `scripts/scaffold-verification-skill.py --check --target-dir <skill-dir>` for structural validation. A structural pass checks metadata, required sections, and map references. It leaves runtime proof unassessed. The scaffold is a draft until you tailor its commands, ship the app driver, and complete the smoke below.
 
 ## Why not a wiki
 
@@ -57,11 +63,15 @@ Create `features/README.md` plus one file per user-facing feature you can identi
 
 Follow the shape in [`references/feature-map-example/`](references/feature-map-example/), with a README index and one file per feature. The README must include `## Full sweep`. Walk `features/README.md` top to bottom for a broad regression. Driving one convenient feature is not a sweep. Add a journeys closer only when the app has cross-feature paths.
 
-Each file answers, from the user's point of view, what the feature is, how to reach it, how to drive it with the harness, and what observable end state proves it works. The four H2s are `Sub-features`, `How to get to it (user POV)`, `Driving it with <harness>`, and `Gotchas`. The map is the repo's maintained verification source. A proof that drives one convenient entry point is incomplete when the map lists others.
+List sibling markdown filenames in sweep order, either as numbered backtick filenames under `## Full sweep` or as links under `## Features` with Full sweep prose directing that order. Each feature must appear once in that ordered list, with no missing or unlisted files. `./core.md` and `core.md` name the same sibling. References must stay inside `features/`; directories and symlinks are not feature files. If both sections list files, they must cover the same files. Repeating a file across those two sections is allowed; repeating it within either section is a duplicate.
+
+Each file answers, from the user's point of view, what the feature is, how to reach it, how to drive it with the harness, and what observable end state proves it works. Use exactly four H2s in this order: `Sub-features`, `How to get to it (user POV)`, `Driving it with <harness>`, and `Gotchas`. Name a harness after `Driving it with`. The map is the repo's maintained verification source. A proof that drives one convenient entry point is incomplete when the map lists others.
 
 ## 4. Prove the generated skill before handing it over
 
 Run its own instructions end to end once: launch, doctor, drive ONE mapped feature (one is enough for this smoke, and the map exists so later runs can cover the rest), capture evidence, clean up. That smoke is not a Full sweep. After cleanup, confirm the evidence still exists at the named location. A cleanup that eats the proof fails this step. Fix what fails, and run the generated cleanup after every failed iteration too, so broken attempts don't strand processes and ports. A generated skill that was never executed is a draft, not a deliverable.
+
+Use a fresh evidence directory for each run and each named step. Preserve earlier captures. Record the instance identity, source revision, feature, command, stdout, stderr, and exit code alongside the observed stable result and side effects. Keep doctor, trigger, result, and side-effect evidence tied to the same instance and feature. Static artifact names or a logging helper cannot prove an app drive. Report draft status, structural validation, and real runtime smoke evidence separately.
 
 ## 5. Offer the maintenance loop
 

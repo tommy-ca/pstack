@@ -2,101 +2,59 @@ from __future__ import annotations
 
 import importlib.util
 import pathlib
-import sys
 import subprocess
+import sys
+
 import pytest
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SCRIPT_PATH = ROOT / "scripts" / "scaffold-verification-skill.py"
-
 loader = importlib.util.spec_from_file_location("scaffold_verification_skill", SCRIPT_PATH)
 assert loader is not None and loader.loader is not None
 scaffold_mod = importlib.util.module_from_spec(loader)
 loader.loader.exec_module(scaffold_mod)
 
-check_skill = scaffold_mod.check_skill
-detect_host = scaffold_mod.detect_host
-get_skill_dir = scaffold_mod.get_skill_dir
-list_verification_skills = scaffold_mod.list_verification_skills
-scaffold_skill = scaffold_mod.scaffold_skill
+HOST_CASES = [
+    ("grok", ".grok/skills/verify-demo-app"),
+    ("codex", ".codex/skills/verify-demo-app"),
+    ("omp", ".omp/skills/verify-demo-app"),
+    ("opencode", ".opencode/skills/verify-demo-app"),
+    ("antigravity", ".agents/skills/verify-demo-app"),
+    ("droid", ".factory/skills/verify-demo-app"),
+]
+FEATURE = """# Core behavior
 
+## Sub-features
+Start and exit.
 
-def test_detect_host_from_workspace_markers(tmp_path: pathlib.Path) -> None:
-    # Empty workspace defaults to grok
-    assert detect_host(tmp_path) == "grok"
+## How to get to it (user POV)
+Run the CLI.
 
-    # Antigravity marker
-    (tmp_path / ".agents").mkdir()
-    assert detect_host(tmp_path) == "antigravity"
+## Driving it with CLI
+Run `demo --help` and observe usage and exit code 0.
 
-    # Clean and test codex marker
-    (tmp_path / ".agents").rmdir()
-    (tmp_path / ".codex").mkdir()
-    assert detect_host(tmp_path) == "codex"
+## Gotchas
+Use the built executable.
+"""
+NUMBERED_MAP = """# Map
 
+## Full sweep
+1. `./core.md`
+2. `search.md`
 
-def test_scaffold_and_check_across_all_five_hosts(tmp_path: pathlib.Path) -> None:
-    hosts = ["grok", "codex", "omp", "opencode", "antigravity"]
-    for host in hosts:
-        target = get_skill_dir(tmp_path, host, "demo-app")
-        scaffold_skill(target, "demo-app", host)
-        assert target.is_dir()
+## Features
+- [Core](core.md)
+- [Search](./search.md)
+"""
+LINK_MAP = """# Map
 
-        errors = check_skill(target)
-        assert errors == [], f"Validation failed for host {host}: {errors}"
+## Full sweep
+Walk Features top to bottom, first core, then search.
 
-        # Verify SKILL.md contents
-        skill_text = (target / "SKILL.md").read_text(encoding="utf-8")
-        assert "name: verify-demo-app" in skill_text
-        assert "## Launch" in skill_text
-        assert "## Doctor" in skill_text
-        assert "## Drive" in skill_text
-        assert "## Proof bar" in skill_text
-        assert "## Evidence" in skill_text
-        assert "## Cleanup" in skill_text
-
-        # Verify features
-        features_readme = (target / "features" / "README.md").read_text(encoding="utf-8")
-        assert "## Full sweep" in features_readme
-        assert (target / "features" / "core.md").is_file()
-
-
-def test_check_skill_detects_missing_sections(tmp_path: pathlib.Path) -> None:
-    target = tmp_path / "verify-bad"
-    scaffold_skill(target, "bad", "grok")
-
-    # Corrupt SKILL.md by removing Cleanup
-    skill_file = target / "SKILL.md"
-    content = skill_file.read_text(encoding="utf-8")
-    content = content.replace("## Cleanup", "## RemovedSection")
-    skill_file.write_text(content, encoding="utf-8")
-
-    errors = check_skill(target)
-    assert any("Cleanup" in err for err in errors)
-
-
-def test_check_skill_detects_missing_features(tmp_path: pathlib.Path) -> None:
-    target = tmp_path / "verify-nofeat"
-    scaffold_skill(target, "nofeat", "antigravity")
-
-    # Remove core.md
-    (target / "features" / "core.md").unlink()
-
-    errors = check_skill(target)
-    assert any("at least one feature markdown file" in err for err in errors)
-
-
-def test_list_verification_skills(tmp_path: pathlib.Path) -> None:
-    s1 = get_skill_dir(tmp_path, "grok", "app-one")
-    scaffold_skill(s1, "app-one", "grok")
-
-    s2 = get_skill_dir(tmp_path, "antigravity", "app-two")
-    scaffold_skill(s2, "app-two", "antigravity")
-
-    found = list_verification_skills(tmp_path)
-    assert len(found) == 2
-    assert s1 in found
-    assert s2 in found
+## Features
+- [Core](./core.md)
+- [Search](search.md)
+"""
 
 
 def cli(workspace: pathlib.Path, *args: str) -> subprocess.CompletedProcess[str]:
@@ -115,6 +73,51 @@ def draft(tmp_path: pathlib.Path) -> pathlib.Path:
     target = tmp_path / ".codex/skills/verify-demo"
     scaffold_mod.scaffold_skill(target, "demo", "codex")
     return target
+
+
+@pytest.mark.parametrize(("host", "relative"), HOST_CASES)
+def test_scaffold_check_and_list_across_all_six_hosts(tmp_path, host, relative):
+    assert {h for h, _ in HOST_CASES} == set(scaffold_mod.DEFAULT_SKILLS_DIRS)
+    result = cli(tmp_path, "--host", host, "--app", "demo-app", "--write")
+    assert result.returncode == 0, result.stderr
+    assert "Draft scaffold" in result.stdout
+    assert "requires tailoring and runtime proof" in result.stdout
+    target = tmp_path / relative
+    assert set(file_bytes(target)) == {"SKILL.md", "features/README.md", "features/core.md"}
+    assert "name: verify-demo-app\n" in (target / "SKILL.md").read_text()
+    result = cli(tmp_path, "--host", host, "--app", "demo-app", "--check")
+    assert result.returncode == 0, result.stdout
+    assert "PASS: Structural validation" in result.stdout
+    assert "runtime proof unassessed" in result.stdout
+    result = cli(tmp_path, "--list")
+    assert result.returncode == 0
+    assert result.stdout.splitlines() == ["Found 1 verification skill(s):", f"  {relative}"]
+
+
+@pytest.mark.parametrize(("host", "relative"), HOST_CASES)
+def test_detect_host_from_each_marker(tmp_path, host, relative):
+    assert scaffold_mod.detect_host(tmp_path) == "grok"
+    (tmp_path / pathlib.Path(relative).parts[0]).mkdir()
+    assert scaffold_mod.detect_host(tmp_path) == host
+
+
+def test_droid_detection_and_explicit_host_precedence(tmp_path):
+    (tmp_path / ".factory").mkdir()
+    result = cli(tmp_path, "--app", "demo-app", "--write")
+    assert result.returncode == 0, result.stderr
+    assert (tmp_path / ".factory/skills/verify-demo-app/SKILL.md").is_file()
+    (tmp_path / ".agents").mkdir()
+    (tmp_path / ".codex").mkdir()
+    assert scaffold_mod.detect_host(tmp_path) == "antigravity"
+    result = cli(tmp_path, "--host", "codex", "--app", "demo-app", "--write")
+    assert result.returncode == 0, result.stderr
+    assert (tmp_path / ".codex/skills/verify-demo-app/SKILL.md").is_file()
+    assert not (tmp_path / ".agents/skills").exists()
+    result = cli(tmp_path, "--list")
+    assert result.returncode == 0
+    assert set(result.stdout.splitlines()[1:]) == {
+        "  .factory/skills/verify-demo-app", "  .codex/skills/verify-demo-app",
+    }
 
 
 @pytest.mark.parametrize("app", ["", "foo/bar", "../escape", "../../../../../escape", "Demo", "demo_app", "-demo", "demo-", "demo--app", "pstack", "demo\nname: injected"])
@@ -254,6 +257,88 @@ def test_unrelated_nested_metadata_allowed(draft):
     result = cli(draft.parent, "--check", "--target-dir", str(draft))
     assert result.returncode == 0, result.stdout
     assert "PASS: Structural validation" in result.stdout
+
+
+@pytest.mark.parametrize("readme", [NUMBERED_MAP, LINK_MAP])
+def test_both_documented_ordered_map_forms(draft, readme):
+    (draft / "features/README.md").write_text(readme)
+    (draft / "features/core.md").write_text(FEATURE)
+    (draft / "features/search.md").write_text(FEATURE.replace("Core", "Search"))
+    assert scaffold_mod.check_skill(draft) == []
+    result = cli(draft.parent, "--check", "--target-dir", str(draft))
+    assert result.returncode == 0
+    assert "PASS: Structural validation" in result.stdout
+
+
+@pytest.mark.parametrize(("readme", "error"), [
+    ("## Full sweep\n\n", "nonempty ordered"),
+    ("## Full sweep\n\n## Features\n- [Core](core.md)\n", "prose directing"),
+    ("## Features\n- [Core](core.md)\n", "missing '## Full sweep'"),
+    ("## Full sweep\n1. `missing.md`\n", "Missing regular feature"),
+    ("## Full sweep\n1. `core.md`\n2. `./core.md`\n", "Duplicate Full sweep"),
+    ("## Full sweep\nSee Features.\n## Features\n- [Core](core.md)\n- [Again](./core.md)\n", "Duplicate Features"),
+    ("## Full sweep\n1. `core.md`\n## Features\n- [Other](missing.md)\n", "references disagree"),
+    ("## Full sweep\n1. `../core.md`\n", "must stay inside features/"),
+    ("## Full sweep\n1. `sub/core.md`\n", "must stay inside features/"),
+    ("## Full sweep\n1. `/tmp/core.md`\n", "must stay inside features/"),
+    ("## Full sweep\n1. `README.md`\n", "must stay inside features/"),
+    ("## Full sweep\n1. `core.md`\n## Features\n- [Other](../core.md)\n", "must stay inside features/"),
+    ("## Full sweep\n1. `core.md`\n## Full sweep\n1. `core.md`\n", "duplicate sections"),
+])
+def test_invalid_maps_report_structural_failure(draft, readme, error):
+    (draft / "features/README.md").write_text(readme)
+    assert any(error in message for message in scaffold_mod.check_skill(draft))
+    result = cli(draft.parent, "--check", "--target-dir", str(draft))
+    assert result.returncode == 1
+    assert error in result.stdout
+
+
+def test_unlisted_sibling_feature_rejected(draft):
+    (draft / "features/extra.md").write_text(FEATURE)
+    assert "Unlisted feature in Full sweep: extra.md" in scaffold_mod.check_skill(draft)
+
+
+@pytest.mark.parametrize("kind", ["missing", "directory", "outside-symlink", "inside-symlink", "dangling-symlink"])
+def test_feature_reference_requires_actual_regular_sibling(draft, kind):
+    core = draft / "features/core.md"
+    core.unlink()
+    if kind == "directory":
+        core.mkdir()
+    elif kind == "outside-symlink":
+        outside = draft / "outside.md"
+        outside.write_text(FEATURE)
+        core.symlink_to(outside)
+    elif kind == "inside-symlink":
+        other = draft / "features/other.md"
+        other.write_text(FEATURE)
+        core.symlink_to(other)
+    elif kind == "dangling-symlink":
+        core.symlink_to(draft / "absent.md")
+    assert any("Missing regular feature" in message for message in scaffold_mod.check_skill(draft))
+
+
+@pytest.mark.parametrize("relative", ["features", "features/README.md"])
+def test_feature_map_symlinks_rejected(draft, relative):
+    path = draft / relative
+    original = path.with_name(path.name + "-original")
+    path.rename(original)
+    path.symlink_to(original, target_is_directory=original.is_dir())
+    result = cli(draft.parent, "--check", "--target-dir", str(draft))
+    assert result.returncode == 1
+    assert "Missing regular features/" in result.stdout
+
+
+@pytest.mark.parametrize("feature", [
+    "# Core\n",
+    FEATURE.replace("## Driving it with CLI", "## Driving it with"),
+    FEATURE.replace("## Driving it with CLI", "## Driving it with   "),
+    FEATURE.replace("## Sub-features", "## Gotchas").replace("## Gotchas\nUse", "## Sub-features\nUse"),
+    FEATURE.replace("## Gotchas", "## Unknown"),
+    FEATURE + "\n## Extra\n",
+])
+def test_feature_requires_exactly_four_ordered_sections(draft, feature):
+    (draft / "features/core.md").write_text(feature)
+    assert any("four feature sections in order" in message for message in scaffold_mod.check_skill(draft))
 
 
 def test_cli_read_value_error_exits_two_without_traceback(draft):
