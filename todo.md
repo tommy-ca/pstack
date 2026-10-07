@@ -60,7 +60,7 @@
 ## Epic #209: Refresh portable pstack to upstream 0.15.15 and reconcile proven semantic defects
 ### Sub-epic #207: Reconcile current upstream semantics without reintroducing host coupling
 - [x] Unit 1: Issue #201 Refresh current upstream pstack and classify the 0.15.5 → 0.15.15 delta
-- [ ] Unit 2: Issue #202 Make poteto-agent a delegate-only contract across host projections
+- [x] Unit 2: Issue #202 Make poteto-agent a delegate-only contract across host projections
 - [ ] Unit 3: Issue #203 Make worktree cleanup loss-aware and remove forceful registered deletion
 - [ ] Unit 4: Issue #204 Correct Test Behavior principle and track the canonical semantic defect
 

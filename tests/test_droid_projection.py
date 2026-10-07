@@ -179,3 +179,13 @@ def test_check_all_covers_droid() -> None:
     desc, _ = project_package.load_package_descriptor()
     assert "droid" in project_package.TARGET_MAP
     assert project_package.check_all(desc) is True
+
+
+def test_poteto_agent_is_delegate_only_contract() -> None:
+    agent_text = (ROOT / "agents" / "poteto-agent.md").read_text(encoding="utf-8")
+    droid_text = (ROOT / "droids" / "pstack-poteto-agent.md").read_text(encoding="utf-8")
+    for text in (agent_text, droid_text):
+        assert "Routing target for `/poteto-mode`" not in text
+        assert "Delegated subagent worker" in text
+        assert "parent session coordinates" in text
+        assert "Depth is 1" in text
