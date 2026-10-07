@@ -1,10 +1,10 @@
 # Grok Build natives vs pstack
 
-Inventory is grok **1.0.13** (`grok --version`), user-guide under `~/.grok/docs/user-guide/`, and grok-build `PluginManifest` / slash docs. The live pstack map stays [`HARNESS.md`](../../HARNESS.md). This page lists natives pstack does **not** wrap, and a plan: adopt, skip, or gap.
+Inventory is grok **1.0.13** (`grok --version`), user-guide under `~/.grok/docs/user-guide/`, and grok-build `PluginManifest` / slash docs. The live pstack map stays [`grok-tools.md`](../../skills/poteto-mode/references/grok-tools.md). This page lists natives pstack does **not** wrap, and a plan: adopt, skip, or gap.
 
 ## Already mapped
 
-Spawn, join, cancel, roles `pstack:<key>`, isolation, resume, depth 1, todos, `ask_user_question`, `/loop` → `scheduler_create`, `monitor`, skill order, Benny as plugin skills, no plugin `hooks` or `commands/`. See HARNESS.
+Spawn, join, cancel, roles `pstack:<key>`, isolation, resume, depth 1, todos, `ask_user_question`, `/loop` → `scheduler_create`, `monitor`, skill order, Benny as plugin skills, no plugin `hooks` or `commands/`. See grok-tools.md.
 
 ## CLI (`grok --help`)
 
@@ -46,5 +46,18 @@ Spawn, join, cancel, roles `pstack:<key>`, isolation, resume, depth 1, todos, `a
 4. `scripts/release.sh` runs `grok --sandbox off plugin tag --push`. If the local tag exists and origin does not, it `git push origin` that ref. Then `gh release view` or `gh release create --verify-tag`. Actions on `v*` does the same Release step. A successful tag-push run is the dispatcher proof.
 
 Do not add `commands/`. Do not add plugin `hooks`. Do not wrap `/goal` or `/plan` as pstack slash clones.
+
+## Sources for the operational guidance in grok-tools.md
+
+The install, sandbox, Herdr, Benny, and forge sections in
+[`grok-tools.md`](../../skills/poteto-mode/references/grok-tools.md) cite these
+sources; dispatch does not need them inline:
+
+- Install, enable, and plugin manifest behavior: grok-build `09-plugins.md` and `14-headless-mode.md`; `crates/codegen/xai-grok-agent/src/plugins/manifest.rs`.
+- Sandbox profiles and `EROFS` on pinned config: `~/.grok/docs/user-guide/18-sandbox.md`.
+- Herdr integration (`herdr integration install grok`, `HERDR_AGENT=grok` detection hint): Herdr integration source.
+- Skill frontmatter fields: `crates/codegen/xai-grok-pager/docs/user-guide/08-skills.md`.
+- Forge fallback path: `skills/poteto-mode/references/github-pr-fallback.md`.
+- Benny live contract: `automations/benny-grok/`.
 
 Next: [Port pstack](./12-porting.md) to put these rows on another host's checklist.

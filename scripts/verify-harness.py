@@ -53,7 +53,7 @@ NAMED_22 = [
 ]
 
 # Cursor harness leftovers that must not remain as call sites in skills/.
-# HARNESS.md, scripts/, and automations/benny are allowed to mention them.
+# HARNESS.md, grok-tools.md, scripts/, and automations/benny are allowed to mention them.
 FORBIDDEN = [
     r"\bAskQuestion\b",
     r"\bTodoWrite\b",
@@ -93,6 +93,7 @@ SKIP_FILES = {
     "README.md",
     "README.zh-CN.md",
     "codex-tools.md",
+    "grok-tools.md",
     "provider-dispatch.md",
     "antigravity-tools.md",
     "omp-tools.md",
@@ -265,12 +266,12 @@ def main() -> None:
         "skills/setup-pstack/references/effort-ladder.md",
         "skills/setup-pstack/references/defaults.toml",
         "scripts/effort_ladder.py",
-        "HARNESS.md",
+        "skills/poteto-mode/references/grok-tools.md",
     ):
         if not (ROOT / required).is_file():
             fail(f"missing {required}")
 
-    harness = (ROOT / "HARNESS.md").read_text(encoding="utf-8")
+    harness = (ROOT / "skills" / "poteto-mode" / "references" / "grok-tools.md").read_text(encoding="utf-8")
     for token in (
         "TASK_TOOL_NAME",
         "spawn_subagent",
@@ -293,7 +294,7 @@ def main() -> None:
         "effort-ladder",
     ):
         if token not in harness:
-            fail(f"HARNESS.md missing {token}")
+            fail(f"grok-tools.md missing {token}")
 
     hits: list[str] = []
     for path in ROOT.rglob("*"):

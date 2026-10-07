@@ -6,7 +6,7 @@ This is a Grok Build port of official pstack. Playbooks and principles are potet
 
 ## Credits
 
-The 22 playbooks and 23 principles are [poteto](https://x.com/poteto)'s, from [official pstack](https://github.com/cursor/plugins/tree/main/pstack). This repository is **`tommy-ca/pstack`**, adapted from [aa2246740/pstack-grokbuild](https://github.com/aa2246740/pstack-grokbuild). Harness calls use Grok Build tools named in [HARNESS.md](./HARNESS.md). This port did not author those playbooks or principles.
+The 22 playbooks and 23 principles are [poteto](https://x.com/poteto)'s, from [official pstack](https://github.com/cursor/plugins/tree/main/pstack). This repository is **`tommy-ca/pstack`**, adapted from [aa2246740/pstack-grokbuild](https://github.com/aa2246740/pstack-grokbuild). Harness calls use Grok Build tools named in [grok-tools.md](./skills/poteto-mode/references/grok-tools.md). This port did not author those playbooks or principles.
 
 poteto's idea is less slop, go deep first, and parallelize only after one agent can be trusted to write verifiable code. That philosophy is theirs. This README does not speak as poteto.
 
@@ -40,7 +40,7 @@ grok plugin enable pstack
 
 4. Do not run `grok plugin marketplace add` from a sandboxed agent. That also rewrites `config.toml` and hits EROFS. Owner/repo install still works in-session.
 
-Tool mapping is in [HARNESS.md](./HARNESS.md).
+Tool mapping is in [grok-tools.md](./skills/poteto-mode/references/grok-tools.md).
 
 ## Get started
 
@@ -57,7 +57,7 @@ The other skills are situational. The mode skill uses them when a step needs the
 
 A fresh install is usable without `/setup-pstack`.
 
-**Model.** Every role defaults to `grok-4.6`. If `spawn_subagent` rejects that slug, omit `model`. Do not invent Cursor panel slugs (`grok-4.6-fast-xhigh`, `gpt-5.6-sol-max`, `claude-fable-5-1-thinking-max`, `claude-opus-5-thinking-xhigh`). Spawn and join names are in [HARNESS.md](./HARNESS.md). The wire alias for `spawn_subagent` is `task`.
+**Model.** Every role defaults to `grok-4.6`. If `spawn_subagent` rejects that slug, omit `model`. Do not invent Cursor panel slugs (`grok-4.6-fast-xhigh`, `gpt-5.6-sol-max`, `claude-fable-5-1-thinking-max`, `claude-opus-5-thinking-xhigh`). Spawn and join names are in [grok-tools.md](./skills/poteto-mode/references/grok-tools.md). The wire alias for `spawn_subagent` is `task`.
 
 **effort.** Effort follows the live grok 1.0.13 CLI. `use one of: xhigh, high, medium, low`. Shipped split is judgment / explainer / verifier / panels `xhigh`, instruction-following `high`, mechanical `medium`. Do not ship `max`. This CLI rejects `max`. Skills never send `reasoning_effort` on `spawn_subagent`.
 
@@ -264,7 +264,7 @@ Twenty-three short skills, one principle each. `poteto-mode` indexes them inline
 A few things `poteto-mode` referenced in Cursor pstack and does not bundle here:
 
 - `/deslop`, `control-cli`, and `control-ui` lived in `cursor-team-kit`. Use `/unslop`, `/no-comments`, and drive the real app yourself.
-- Independent verify is `spawn_subagent` with `subagent_type` `pstack:independent-verifier`. Send a different `model` when the toml names a detected slug; otherwise omit `model`. Not a Cursor Cloud Agent. See [HARNESS.md](./HARNESS.md).
+- Independent verify is `spawn_subagent` with `subagent_type` `pstack:independent-verifier`. Send a different `model` when the toml names a detected slug; otherwise omit `model`. Not a Cursor Cloud Agent. See [grok-tools.md](./skills/poteto-mode/references/grok-tools.md).
 - Resolve the forge once. GitHub `gh` is the default; use Origin only when its cli resolves the repository. Stacked children target explicit parent branches. Graphite `gt` is not required.
 - Benny Cursor pack under `automations/benny/skills/` is the **upstream reference**. Live grok contract is [`automations/benny-grok/`](./automations/benny-grok/) (`/benny-triage`, `/benny-repro` after enable). Not pstack plugin hooks.
 

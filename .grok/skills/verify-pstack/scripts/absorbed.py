@@ -25,10 +25,10 @@ PRESENT = (
         "Require full static and runtime verification",
     ),
     ("skills/poteto-mode/SKILL.md", "agent.spawn"),
-    ("skills/poteto-mode/SKILL.md", "HARNESS.md"),
-    ("HARNESS.md", "spawn_subagent"),
-    ("HARNESS.md", "scheduler_create"),
-    ("HARNESS.md", "gh pr"),
+    ("skills/poteto-mode/SKILL.md", "grok-tools.md"),
+    ("skills/poteto-mode/references/grok-tools.md", "spawn_subagent"),
+    ("skills/poteto-mode/references/grok-tools.md", "scheduler_create"),
+    ("skills/poteto-mode/references/grok-tools.md", "gh pr"),
     ("plugin.json", "grokbuild"),
 )
 

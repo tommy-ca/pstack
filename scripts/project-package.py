@@ -44,7 +44,7 @@ def generate_grok_manifest(desc: PackageDescriptor) -> Dict[str, Any]:
     return {
         "name": desc.name,
         "version": desc.version,
-        "description": f"{desc.name} for Grok Build: shared skills, HARNESS.md mapping.",
+        "description": f"{desc.name} for Grok Build: shared skills, grok-tools.md mapping.",
         "homepage": "https://github.com/tommy-ca/pstack",
         "repository": "https://github.com/tommy-ca/pstack",
         "license": "MIT",

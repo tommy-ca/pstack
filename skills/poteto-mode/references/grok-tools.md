@@ -101,6 +101,22 @@ Plugin agents must not declare `mcpServers` or `hooks`, and must not set `permis
 
 Workflows are `.grok/workflows/*.rhai`, not a plugin component. grok-build `PluginManifest` has no `workflows` field.
 
+## Install, enable, and sandbox
+
+Install this repo as a Grok Build plugin: `grok --sandbox off plugin install tommy-ca/pstack --trust`. Marketplace add is catalog-only; it does not install pstack. `grok plugin enable pstack` rewrites `~/.grok/config.toml`. If the sandbox returns `EROFS`, run that one host-shell command with `grok --sandbox off`. After enable, `grok inspect --json` `.agents[].name` must include `pstack:swarm-workers`. Inspect `plugins[].path` and `skills[]` `collidesWith` name the install tree and skill overlays. Missing `pstack:swarm-workers` means Grok is not loading this checkout (`tommy-ca/pstack`).
+
+## Herdr integration
+
+Install or update with `herdr integration install grok` from a host shell or `grok --sandbox off`. The built-in `workspace` sandbox (and dev-env `homelab`) permits callback delivery with hook files read-only; the callback writes temporary state and reports through `$HERDR_SOCKET_PATH`. In dev-env, the source-managed Bash/Zsh helper is loaded only when `HERDR_ENV=1` and sets `HERDR_AGENT=grok` before the real binary, so launch plain `grok --sandbox workspace --no-alt-screen`. Herdr should report `herdr:grok` and `agent_status: idle` in both `herdr pane get` and `herdr agent list`. For a standalone pstack checkout, use explicit `env HERDR_AGENT=grok ...` instead. An explicit `command grok ...` bypass is a negative control and may report `agent_status: unknown`; the hint is detection-only, not a sandbox permission or callback-delivery grant. Supported profiles are `workspace`, `devbox`, `read-only`, `strict`, plus dev-env `homelab`; no custom Herdr setup profile is supported. Do not add hook or Herdr-socket write grants.
+
+## Benny automations
+
+The Cursor pack under `automations/benny/skills/` is the upstream reference. The live grok contract is `automations/benny-grok/` (`/benny-triage`, `/benny-repro` via the plugin `skills` list). Enable pstack. No copy. Not plugin `hooks`. Spawn `pstack:<role>` via `spawn_subagent`. `/loop` expands to `scheduler_create`. Slack auto-start is a host gap.
+
+## Forge and PR stack
+
+Resolve once. GitHub CLI (`gh`) is the default. If `command -v origin` succeeds and Origin resolves the repository, use `origin pr` for PR operations; otherwise record the `gh pr` fallback per [github-pr-fallback.md](github-pr-fallback.md). Stacked work uses explicit parent base branches. Never require Graphite `gt`; never use `--auto` on a child PR.
+
 ## Wire aliases
 
 - Wire alias for `spawn_subagent` is `task` or `Task`.
