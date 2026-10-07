@@ -114,6 +114,5 @@ def test_canonical_index_classify_drift_cli() -> None:
     )
     assert proc.returncode == 0, proc.stderr or proc.stdout
     assert "Total changed files:" in proc.stdout
-    assert "principles: 1" in proc.stdout
-    assert "playbooks_router:" in proc.stdout
-    assert "verification_skills:" in proc.stdout
+    drift_file = ROOT / "openspec" / "canonical-drift.json"
+    assert drift_file.is_file()

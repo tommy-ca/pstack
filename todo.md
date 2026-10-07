@@ -57,3 +57,16 @@
 - [ ] Unit 9: Gate #131 Five-harness current-main Swarm + Interrogate acceptance
 - [ ] Unit 10: Stacked PRs creation, Babysit protocol, merge and ship
 
+## Epic #209: Refresh portable pstack to upstream 0.15.15 and reconcile proven semantic defects
+### Sub-epic #207: Reconcile current upstream semantics without reintroducing host coupling
+- [x] Unit 1: Issue #201 Refresh current upstream pstack and classify the 0.15.5 → 0.15.15 delta
+- [ ] Unit 2: Issue #202 Make poteto-agent a delegate-only contract across host projections
+- [ ] Unit 3: Issue #203 Make worktree cleanup loss-aware and remove forceful registered deletion
+- [ ] Unit 4: Issue #204 Correct Test Behavior principle and track the canonical semantic defect
+
+### Sub-epic #208: Prove refreshed current-main portability and semantic safety
+- [ ] Unit 5: Issue #205 Extend existing conformance levers for current upstream semantic invariants
+- [ ] Unit 6: Issue #206 Swarm: prove refreshed pstack across all declared harnesses
+- [ ] Unit 7: Issue #215 Interrogate: adversarially review the refreshed pstack exact-head diff
+- [ ] Unit 8: Issue #216 Reconcile exact-head evidence and close the upstream refresh program
+
