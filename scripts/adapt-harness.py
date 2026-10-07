@@ -23,7 +23,7 @@ import re
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
-from skill_frontmatter import read_scalar, split_frontmatter, validate_skill_name
+from skill_frontmatter import is_scalar_key, read_scalar, split_frontmatter, validate_skill_name
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
@@ -101,9 +101,9 @@ def transform(text: str, *, skill_name: str | None = None) -> str:
         read_scalar(header, "mode")
         adapted = []
         for line in header:
-            if re.match(r"^mode\s*:", line):
+            if is_scalar_key(line, "mode"):
                 continue
-            if re.match(r"^name\s*:", line) and name != normalized:
+            if is_scalar_key(line, "name") and name != normalized:
                 ending = "\r\n" if line.endswith("\r\n") else "\n"
                 line = f"name: {normalized}{ending}"
             adapted.append(line)

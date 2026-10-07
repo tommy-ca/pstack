@@ -18,8 +18,23 @@ def split_frontmatter(text: str) -> tuple[list[str], str]:
     raise ValueError("missing frontmatter closing '---'")
 
 
+def is_scalar_key(line: str, key: str) -> bool:
+    match = re.match(r"^([a-zA-Z0-9_-]+|\"(?:[^\"\\]|\\.)*\"|'(?:[^']|'')*')\s*:", line)
+    if match is None:
+        return False
+    raw = match.group(1)
+    if raw.startswith('"'):
+        try:
+            raw = json.loads(raw)
+        except ValueError as exc:
+            raise ValueError("unsupported quoted frontmatter key") from exc
+    elif raw.startswith("'"):
+        raw = raw[1:-1].replace("''", "'")
+    return raw == key
+
+
 def read_scalar(header: list[str], key: str) -> str | None:
-    matches = [index for index, line in enumerate(header[1:-1], 1) if re.match(rf"^{re.escape(key)}\s*:", line)]
+    matches = [index for index, line in enumerate(header[1:-1], 1) if is_scalar_key(line, key)]
     if len(matches) > 1:
         raise ValueError(f"duplicate frontmatter '{key}'")
     if not matches:
