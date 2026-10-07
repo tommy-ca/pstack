@@ -66,7 +66,7 @@
 
 ### Sub-epic #208: Prove refreshed current-main portability and semantic safety
 - [x] Unit 5: Issue #205 Extend existing conformance levers for current upstream semantic invariants
-- [ ] Unit 6: Issue #206 Swarm: prove refreshed pstack across all declared harnesses
-- [ ] Unit 7: Issue #215 Interrogate: adversarially review the refreshed pstack exact-head diff
-- [ ] Unit 8: Issue #216 Reconcile exact-head evidence and close the upstream refresh program
+- [x] Unit 6: Issue #206 Swarm: prove refreshed pstack across all declared harnesses
+- [x] Unit 7: Issue #215 Interrogate: adversarially review the refreshed pstack exact-head diff
+- [x] Unit 8: Issue #216 Reconcile exact-head evidence and close the upstream refresh program
 
