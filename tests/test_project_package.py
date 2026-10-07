@@ -62,6 +62,21 @@ def test_generate_manifests() -> None:
     assert antigravity_models["singleRoleDefault"] == "pro"
     assert "roles" in antigravity_models
 
+    codex_models = project_package.generate_codex_models(desc)
+    assert codex_models["singleRoleDefault"] == "gpt-6.1-sol"
+    assert "gpt-5.6-terra" not in json.dumps(codex_models)
+    assert len(codex_models["panel"]) == 2
+    assert "gpt-6.1-sol" in codex_models["panel"]
+    assert "gpt-6-luna" in codex_models["panel"]
+    assert "gpt-6-astra" not in codex_models["panel"]
+    assert "roles" in codex_models
+
+    hardest = [r for r in codex_models["roles"] if r["role"] == "hardest-tasks"][0]
+    assert hardest["models"] == ["gpt-6-astra"]
+
+    bug_fix = [r for r in codex_models["roles"] if r["role"] == "bug-fix"][0]
+    assert bug_fix["models"] == ["gpt-6-luna"]
+
 
 def test_check_all_in_sync() -> None:
     desc, _ = project_package.load_package_descriptor()
