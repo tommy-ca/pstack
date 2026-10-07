@@ -25,7 +25,7 @@ https://github.com/tommy-ca/pstack
 version 0.15.5-grokbuild.0
 
 One shared skills/ tree. Host maps:
-- Grok Build: HARNESS.md
+- Grok Build: skills/poteto-mode/references/grok-tools.md
 - Codex: skills/poteto-mode/references/codex-tools.md and provider-dispatch.md
 - Claude Code: .claude-plugin/plugin.json (Agent tool)
 

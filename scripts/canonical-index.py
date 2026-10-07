@@ -63,7 +63,6 @@ ADAPTED_PREFIXES = (
     "skills/arena/",
     "skills/interrogate/",
     "skills/figure-it-out/",
-    "HARNESS.md",
     "README.md",
 )
 

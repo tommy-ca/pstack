@@ -3,8 +3,8 @@
   "hosts": {
     "grok": {
       "receipt": ".audit/evidence/grok-receipt.json",
-      "run_id": "grok-1791305636-b6e89e67",
-      "timestamp": "2026-10-06T16:54:08Z",
+      "run_id": "grok-1791306395-aeeeb3da",
+      "timestamp": "2026-10-06T17:06:44Z",
       "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
@@ -22,13 +22,13 @@
         "manifest_hash": "69b077f9fa8c358316c58633d64ddbe8b52ee63286a669bf40ec38173c416870",
         "driver_revision": "e162b112bf057aa4113ae2d4c03e86f2645b09df6b2b3c127ad8f77f16917d5c",
         "package_driver_revision": "ab8caf095964fed0377aa3dd6acdd2f0c03c94e43c47414a5c66c6bdfa8ef809",
-        "boundary_driver_revision": "d5e00ec96e4b5c35e510702fff7f7ad48bf831077fdedd56e9413fab801e15ea"
+        "boundary_driver_revision": "06fdd26c90a0c4345f7b155730e4e69015dc08b8d47052129867180169e8a9aa"
       }
     },
     "codex": {
       "receipt": ".audit/evidence/codex-receipt.json",
-      "run_id": "codex-1791305648-86636117",
-      "timestamp": "2026-10-06T16:54:23Z",
+      "run_id": "codex-1791306408-d8e9a9f8",
+      "timestamp": "2026-10-06T17:07:01Z",
       "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
@@ -46,13 +46,13 @@
         "manifest_hash": "19f29440f3f70793c3e7a1230c2d3f8e75c794c3626a51afd8eda13e4441a3f6",
         "driver_revision": "e162b112bf057aa4113ae2d4c03e86f2645b09df6b2b3c127ad8f77f16917d5c",
         "package_driver_revision": "ab8caf095964fed0377aa3dd6acdd2f0c03c94e43c47414a5c66c6bdfa8ef809",
-        "boundary_driver_revision": "d5e00ec96e4b5c35e510702fff7f7ad48bf831077fdedd56e9413fab801e15ea"
+        "boundary_driver_revision": "06fdd26c90a0c4345f7b155730e4e69015dc08b8d47052129867180169e8a9aa"
       }
     },
     "omp": {
       "receipt": ".audit/evidence/omp-receipt.json",
-      "run_id": "omp-1791305663-ea2395d7",
-      "timestamp": "2026-10-06T16:54:36Z",
+      "run_id": "omp-1791306424-7b264413",
+      "timestamp": "2026-10-06T17:07:14Z",
       "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
@@ -70,13 +70,13 @@
         "manifest_hash": "319eb25f6dd71985fd8d17813cc77ec00764fa9ea1f5021e1248764aaa8f6aa7",
         "driver_revision": "e162b112bf057aa4113ae2d4c03e86f2645b09df6b2b3c127ad8f77f16917d5c",
         "package_driver_revision": "ab8caf095964fed0377aa3dd6acdd2f0c03c94e43c47414a5c66c6bdfa8ef809",
-        "boundary_driver_revision": "d5e00ec96e4b5c35e510702fff7f7ad48bf831077fdedd56e9413fab801e15ea"
+        "boundary_driver_revision": "06fdd26c90a0c4345f7b155730e4e69015dc08b8d47052129867180169e8a9aa"
       }
     },
     "opencode": {
       "receipt": ".audit/evidence/opencode-receipt.json",
-      "run_id": "opencode-1791305676-6cb8e495",
-      "timestamp": "2026-10-06T16:54:47Z",
+      "run_id": "opencode-1791306437-cbf56c16",
+      "timestamp": "2026-10-06T17:07:28Z",
       "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
@@ -94,13 +94,13 @@
         "manifest_hash": "c16366a649ea17df0d902a48af7831c36dfa5c51afefa9995fddff97b15b41a3",
         "driver_revision": "e162b112bf057aa4113ae2d4c03e86f2645b09df6b2b3c127ad8f77f16917d5c",
         "package_driver_revision": "ab8caf095964fed0377aa3dd6acdd2f0c03c94e43c47414a5c66c6bdfa8ef809",
-        "boundary_driver_revision": "d5e00ec96e4b5c35e510702fff7f7ad48bf831077fdedd56e9413fab801e15ea"
+        "boundary_driver_revision": "06fdd26c90a0c4345f7b155730e4e69015dc08b8d47052129867180169e8a9aa"
       }
     },
     "antigravity": {
       "receipt": ".audit/evidence/antigravity-receipt.json",
-      "run_id": "antigravity-1791305687-59237511",
-      "timestamp": "2026-10-06T16:54:58Z",
+      "run_id": "antigravity-1791306453-a71b13f1",
+      "timestamp": "2026-10-06T17:07:42Z",
       "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
@@ -118,7 +118,7 @@
         "manifest_hash": "4cb5ab68707642076fee12e20b4fa8ea82e6d98bdda758bc634f43a5c31ce9ce",
         "driver_revision": "e162b112bf057aa4113ae2d4c03e86f2645b09df6b2b3c127ad8f77f16917d5c",
         "package_driver_revision": "ab8caf095964fed0377aa3dd6acdd2f0c03c94e43c47414a5c66c6bdfa8ef809",
-        "boundary_driver_revision": "d5e00ec96e4b5c35e510702fff7f7ad48bf831077fdedd56e9413fab801e15ea"
+        "boundary_driver_revision": "06fdd26c90a0c4345f7b155730e4e69015dc08b8d47052129867180169e8a9aa"
       }
     }
   }
