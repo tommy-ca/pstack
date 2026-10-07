@@ -23,6 +23,9 @@ def load_script(name: str):
     "---\nname: demo\nmode: true # Cursor metadata\n---\n",
     "---\nname: demo\nmode: TRUE\n---\n",
     "---\nname: demo\n  suffix\n---\n",
+    '---\nname: demo\n"mode": true\n---\n',
+    '---\nname: demo\n"name": other\n---\n',
+    '---\nname: demo\n"mo\\u0064e": true\n---\n',
 ])
 def test_verifier_rejects_invalid_frontmatter(tmp_path: Path, text: str) -> None:
     skill = tmp_path / "demo"
@@ -62,6 +65,22 @@ def test_adapter_rejects_selected_scalar_continuations(field: str) -> None:
 def test_adapter_preserves_unrelated_nested_metadata() -> None:
     text = "---\nname: demo\ndescription: |\n  Keep this text.\nmetadata:\n  category: tools\n---\n"
     assert load_script("adapt-harness").transform(text, skill_name="demo") == text
+
+
+@pytest.mark.parametrize("key", ['"mode"', "'mode'", '"mo\\u0064e"'])
+def test_adapter_removes_equivalent_quoted_mode_keys(key: str) -> None:
+    text = f"---\nname: demo\n{key}: true\n---\nBody\n"
+    assert load_script("adapt-harness").transform(text, skill_name="demo") == "---\nname: demo\n---\nBody\n"
+
+
+def test_adapter_rejects_duplicate_equivalent_keys() -> None:
+    with pytest.raises(ValueError, match="duplicate"):
+        load_script("adapt-harness").transform('---\nname: demo\n"name": other\n---\n', skill_name="demo")
+
+
+def test_adapter_normalizes_quoted_name_key() -> None:
+    text = '---\n"name": "Demo App"\n---\nBody\n'
+    assert load_script("adapt-harness").transform(text, skill_name="demo-app") == "---\nname: demo-app\n---\nBody\n"
 
 
 @pytest.mark.parametrize("name", ["demo", "'demo'", '"demo" # comment'])
