@@ -82,6 +82,9 @@ def audit_live_plugin() -> dict[str, str]:
     else:
         report["commands_count"] = "0"
 
+    foreign = [d for d in [".codex-plugin", ".claude-plugin"] if (LIVE_PLUGIN_DIR / d).exists()]
+    report["foreign_directories"] = ", ".join(foreign) if foreign else "none"
+
     if shutil.which("agy"):
         proc = subprocess.run(
             ["agy", "plugin", "validate", str(LIVE_PLUGIN_DIR)],
@@ -166,6 +169,12 @@ def check_live_sync() -> bool:
             print(f"FAIL: Command drifted in live plugin: {fname}")
             all_ok = False
 
+    # Check foreign directories
+    for stray in [".codex-plugin", ".claude-plugin"]:
+        if (LIVE_PLUGIN_DIR / stray).exists():
+            print(f"FAIL: Foreign legacy directory present in live plugin: {stray}")
+            all_ok = False
+
     if all_ok:
         print("PASS: Live Antigravity plugin is fully synchronized with canonical repo.")
     return all_ok
@@ -223,6 +232,14 @@ When working with pstack:
         print(f"Removing stale {hooks_file}")
         if not dry_run:
             hooks_file.unlink()
+
+    # Clean up foreign / legacy directories
+    for stray in [".codex-plugin", ".claude-plugin"]:
+        stray_path = LIVE_PLUGIN_DIR / stray
+        if stray_path.exists():
+            print(f"Removing foreign legacy directory {stray_path}")
+            if not dry_run:
+                shutil.rmtree(stray_path)
 
     # 5. Sync skills from ROOT/skills
     src_skills = ROOT / "skills"
