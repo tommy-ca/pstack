@@ -1,0 +1,181 @@
+"""Droid native package and role projection tests (S5)."""
+
+import importlib.util
+import re
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+SCRIPT = ROOT / "scripts" / "project-package.py"
+
+loader = importlib.util.spec_from_file_location("project_package", SCRIPT)
+assert loader is not None and loader.loader is not None
+project_package = importlib.util.module_from_spec(loader)
+sys.modules["project_package"] = project_package
+loader.loader.exec_module(project_package)
+
+DROID_NAME_PATTERN = re.compile(r"^pstack-[a-z0-9-_]+$")
+
+# Grok-native primitives and call-site leftovers that must never reach a
+# generated Droid role body (mirrors scan-host-boundary and verify-harness).
+HOST_PRIMITIVES = (
+    "spawn_subagent",
+    "get_command_or_subagent_output",
+    "kill_command_or_subagent",
+    "scheduler_create",
+    "kill_task",
+    "spawn_agent",
+    "wait_agent",
+    "resume_agent",
+    "pi_spawn",
+    "pi_wait",
+    "pi_resume",
+    "pi_send",
+    "pi_prompt",
+    "task.spawn",
+    "task.wait",
+    "task.resume",
+    "task.cancel",
+    "task.message",
+    "invoke_subagent",
+    "define_subagent",
+    "manage_subagents",
+    "ask_user_question",
+    "MAX_SUBAGENT_DEPTH",
+)
+
+LEFTOVER_CALL_SITES = (
+    "the Task tool",
+    "using the Task ",
+    "via Task ",
+    "TodoWrite",
+    "AskQuestion",
+    "generalPurpose",
+)
+
+
+def _agents_population() -> dict[str, dict[str, str]]:
+    population = {}
+    for agent_path in sorted((ROOT / "agents").glob("*.md")):
+        fm, _ = project_package._split_frontmatter(
+            agent_path.read_text(encoding="utf-8")
+        )
+        population[agent_path.name] = fm
+    return population
+
+
+def _generated_roles() -> dict[str, str]:
+    return project_package.generate_droid_roles()
+
+
+def test_droid_roles_match_enumerated_agent_population() -> None:
+    population = _agents_population()
+    roles = _generated_roles()
+    assert set(roles) == {f"pstack-{Path(name).stem}.md" for name in population}
+
+
+def test_generated_droid_frontmatter_contract() -> None:
+    for fname, content in _generated_roles().items():
+        assert DROID_NAME_PATTERN.match(fname[: -len(".md")]), fname
+        assert DROID_NAME_PATTERN.match(
+            re.search(r"(?m)^name: (.+)$", content).group(1)
+        ), fname
+        assert re.search(r"(?m)^model: inherit$", content), fname
+        assert "reasoningEffort" not in content, fname
+        assert "reasoning_effort" not in content, fname
+        for forbidden in ("tools: all", "ExitSpecMode", "GenerateDroid"):
+            assert forbidden not in content, (fname, forbidden)
+
+
+def test_capability_mode_maps_to_native_tools_restriction() -> None:
+    # Grok's execute capabilityMode grants read + shell. The generated
+    # restriction spells out read + shell explicitly, as a comma-separated
+    # scalar of runtime llmIds (`LS`, not the property spelling `Ls`).
+    # Bracket literals are not stripped by the native frontmatter parser and
+    # file-edit IDs must stay absent from a read+shell posture.
+    EXECUTE_SCALAR = "Read, Grep, Glob, LS, Execute"
+    FILE_EDIT_IDS = ("Edit", "Create")
+    roles = _generated_roles()
+    for fname, fm in _agents_population().items():
+        droid_name = f"pstack-{Path(fname).stem}"
+        content = roles[f"{droid_name}.md"]
+        tools_lines = re.findall(r"(?m)^tools: (.+)$", content)
+        for line in tools_lines:
+            assert "[" not in line and "]" not in line, (droid_name, line)
+            ids = [tid.strip() for tid in line.split(",")]
+            for tid in ids:
+                assert tid not in FILE_EDIT_IDS, (droid_name, tid)
+        if fm.get("capabilityMode") == "execute":
+            assert tools_lines == [EXECUTE_SCALAR], droid_name
+        else:
+            assert not tools_lines, droid_name
+
+
+def test_generated_droids_free_of_host_vocabulary() -> None:
+    for fname, content in _generated_roles().items():
+        assert "grok" not in content.lower(), fname
+        for token in HOST_PRIMITIVES:
+            assert token not in content, (fname, token)
+
+
+def test_generated_droids_avoid_leftover_call_sites() -> None:
+    for fname, content in _generated_roles().items():
+        for pattern in LEFTOVER_CALL_SITES:
+            assert pattern not in content, (fname, pattern)
+
+
+def test_spawn_dispatch_uses_native_subagent_type() -> None:
+    for fname, content in _generated_roles().items():
+        droid_name = fname[: -len(".md")]
+        if "Same posture" in content:
+            assert f"subagent_type: {droid_name}" in content, droid_name
+
+
+def test_generated_descriptions_are_quoted_yaml_scalars() -> None:
+    # The adapted description carries `subagent_type: <name>`-shaped text.
+    # As an unquoted YAML plain scalar that `": "` sequence makes the
+    # frontmatter unparseable ("mapping values are not allowed here"), so
+    # every emitted description must be a quoted scalar that survives a
+    # strict parse round-trip.
+    for fname, content in _generated_roles().items():
+        match = re.search(r"(?m)^description: (.+)$", content)
+        assert match is not None, fname
+        scalar = match.group(1)
+        assert re.fullmatch(r'"(?:[^"\\]|\\.)*"', scalar), (fname, scalar[:80])
+        import json
+
+        assert isinstance(json.loads(scalar), str), fname
+        assert '": ' not in scalar or scalar.startswith('"'), fname
+
+
+def test_description_quoting_preserves_spawn_contract_content() -> None:
+    import json
+
+    for fname, content in _generated_roles().items():
+        droid_name = fname[: -len(".md")]
+        if "Same posture" not in content:
+            continue
+        scalar = re.search(r"(?m)^description: (.+)$", content).group(1)
+        assert f"subagent_type: {droid_name}" in json.loads(scalar), droid_name
+
+
+def test_droid_projection_deterministic() -> None:
+    assert _generated_roles() == _generated_roles()
+
+
+def test_droid_manifest_and_marketplace_shape() -> None:
+    desc, _ = project_package.load_package_descriptor()
+    manifest = project_package.generate_droid_manifest(desc)
+    assert manifest["name"] == "pstack"
+    assert manifest["skills"] == "./skills/"
+    assert manifest["droids"] == "./droids/"
+
+    marketplace = project_package.generate_droid_marketplace(desc)
+    assert marketplace["plugins"][0]["name"] == "pstack"
+    assert marketplace["plugins"][0]["source"] == "./"
+
+
+def test_check_all_covers_droid() -> None:
+    desc, _ = project_package.load_package_descriptor()
+    assert "droid" in project_package.TARGET_MAP
+    assert project_package.check_all(desc) is True
