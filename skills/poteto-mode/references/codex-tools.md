@@ -56,6 +56,16 @@ Playbooks pick **pstack, then user, then bundled and builtin**. Do not add plugi
 | Read-only spawn | `pstack:how-explorer` | none | `explore` |
 | Unslop / comments | `/unslop`, `/no-comments` | none | none |
 
+## Verification skills and tools
+
+Verification on Codex leverages portable pstack levers and scripted harnesses:
+- **Project-local verification skills**: Located under `.codex/skills/verify-<app>/` with `SKILL.md` and `features/` map.
+- **Scaffold lever**: `scripts/scaffold-verification-skill.py --host codex --app <app> --write` (validates with `--check`).
+- **Independent verifier**: `pstack:independent-verifier` running `gpt-6.1-sol` (read-only verification of real surfaces before shipping).
+- **Matrix verification**: `scripts/verify-portable.py run --host codex` generating durable receipts under `.audit/evidence/codex-receipt.json`.
+- **Swarm verification**: `skills/swarm/scripts/verify-refresh-hygiene.py` validating matrix partitions and hygiene sweeps.
+
+
 ## Subagent policy
 
 Subagent dispatch follows the portable `agent.spawn` and `workspace.isolated` capabilities:
@@ -72,9 +82,9 @@ Codex model routing uses detected OpenAI frontier models. Configuration lives at
 
 ### Model tiers
 
-1. **Frontier reasoning (`gpt-6.1-sol`)**: Flagship reasoning model. Default model for Codex. Assigned to architecture, debugging, performance, hillclimbing, and strongest judgment roles.
-2. **Balanced panelist (`gpt-6-astra`)**: Second frontier tier for multi-model diversity. Assigned to arena cross-judge pools, candidate runners, and adversarial review panels.
-3. **High-throughput volume (`gpt-6-luna`)**: Fast execution tier. Assigned to routine feature authoring, refactoring, exploration, synthesis, and swarm workers.
+1. **Frontier reasoning and orchestration (`gpt-6.1-sol`)**: Flagship reasoning model. Default model for Codex. Assigned to orchestrator default, architecture, cross-judge, interrogation, independent verification, and strongest judgment roles.
+2. **Hardest tasks specialist (`gpt-6-astra`)**: High-difficulty specialist model. Kept minimal strictly to hardest tasks (`hardest-tasks`).
+3. **High-throughput volume (`gpt-6-luna`)**: Fast execution tier. Assigned to routine worker roles including feature authoring, refactoring, bug fixes, performance improvements, hillclimbing, exploration, and swarm workers.
 4. **Eliminated models**: `gpt-5.6-terra` is obsolete and strictly eliminated from all panels and candidate lists.
 
 ### Role mappings
@@ -82,18 +92,21 @@ Codex model routing uses detected OpenAI frontier models. Configuration lives at
 | Role | Target Model | Purpose |
 | --- | --- | --- |
 | `feature`, `refactoring` | `gpt-6-luna` | Fast execution and volume authoring |
-| `bug-fix`, `perf-issue`, `hillclimb` | `gpt-6.1-sol` | Deep reasoning and root cause diagnosis |
-| `judgment and prose` | `gpt-6-luna` | Prose drafting and unslop passes |
+| `bug-fix`, `perf-issue`, `hillclimb` | `gpt-6-luna` | Worker fixes, performance, and metric hillclimbing |
+| `judgment and prose` | `gpt-6.1-sol` (judgment), `gpt-6-luna` (prose) | Orchestrated judgment and prose drafting |
 | `strongest judgment` | `gpt-6.1-sol` | Final verdict and architectural gate |
 | `how explorer`, `why investigators` | `gpt-6-luna` | Read-only codebase traversal |
-| `how explainer`, `why synthesizer` | `gpt-6-luna` | Structured documentation and explanation |
+| `how explainer` | `gpt-6-luna` | Structured documentation and explanation |
+| `why synthesizer` | `gpt-6.1-sol` | Orchestration-level architectural synthesis |
 | `reflect tooling` | `gpt-6-luna` | Tooling audit and lint checking |
 | `reflect judgment, divergent, synthesizer` | `gpt-6.1-sol` | Deep structural reflection |
-| `arena runners` | `gpt-6.1-sol`, `gpt-6-astra`, `gpt-6-luna` | Multi-model candidate generation |
-| `arena cross-judge pool` | `gpt-6.1-sol`, `gpt-6-astra`, `gpt-6-luna` | Diverse evaluation panel |
+| `hardest-tasks` | `gpt-6-astra` | High-difficulty reasoning and hardest tasks |
+| `arena runners` | `gpt-6.1-sol`, `gpt-6-luna` | Multi-model candidate generation |
+| `arena cross-judge pool` | `gpt-6.1-sol` | High-rigor evaluation and cross-judging |
 | `swarm workers` | `gpt-6-luna` | Fast parallel matrix execution |
-| `architect runners` | `gpt-6.1-sol`, `gpt-6-astra`, `gpt-6-luna` | Multi-perspective system architecture |
-| `interrogate reviewers` | `gpt-6.1-sol`, `gpt-6-astra`, `gpt-6-luna` | Multi-model adversarial review |
+| `architect runners` | `gpt-6.1-sol` | System architecture sketch authoring |
+| `interrogate reviewers` | `gpt-6.1-sol` | Multi-model adversarial review |
+| `independent-verifier` | `gpt-6.1-sol` | Read-only independent verification |
 
 ## Overnight / babysit / shipping
 

@@ -18,7 +18,7 @@ Do not send Cursor marketplace panel slugs as live spawn models unless `/setup-p
 | --- | --- | --- | --- |
 | Judgment / prose | `grok-4.6` | `gpt-6.1-sol` (judgment), `gpt-6-luna` (prose) | detected Claude slug |
 | Mechanical / fast | `grok-4.5` | `gpt-6-luna` | detected Claude slug |
-| Panel seats | unique detected slugs only; never four copies of one slug | `gpt-6.1-sol`, `gpt-6-astra`, `gpt-6-luna` (no `gpt-5.6-terra`) | unique detected slugs only |
+| Panel seats | unique detected slugs only; never four copies of one slug | `gpt-6.1-sol`, `gpt-6-luna` (astra minimal to hardest tasks) | unique detected slugs only |
 
 Effort on Grok Build is role overlay (`~/.grok/roles/pstack:<key>.toml`) or agent frontmatter. Do not send `reasoning_effort` on Grok `task`. Codex may pass `reasoning_effort` on `spawn_agent` when that host supports it.
 
