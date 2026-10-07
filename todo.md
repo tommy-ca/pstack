@@ -65,7 +65,7 @@
 - [x] Unit 4: Issue #204 Correct Test Behavior principle and track the canonical semantic defect
 
 ### Sub-epic #208: Prove refreshed current-main portability and semantic safety
-- [ ] Unit 5: Issue #205 Extend existing conformance levers for current upstream semantic invariants
+- [x] Unit 5: Issue #205 Extend existing conformance levers for current upstream semantic invariants
 - [ ] Unit 6: Issue #206 Swarm: prove refreshed pstack across all declared harnesses
 - [ ] Unit 7: Issue #215 Interrogate: adversarially review the refreshed pstack exact-head diff
 - [ ] Unit 8: Issue #216 Reconcile exact-head evidence and close the upstream refresh program

@@ -17,14 +17,15 @@ loader.loader.exec_module(project_package)
 def test_load_package_descriptor() -> None:
     desc, raw = project_package.load_package_descriptor()
     assert desc.id == "pstack"
-    assert desc.version == "0.15.5-grokbuild.0"
+    assert desc.version == "0.15.15-grokbuild.0"
     assert "grok" in desc.host_targets
     assert "codex" in desc.host_targets
     assert "omp" in desc.host_targets
     assert "opencode" in desc.host_targets
     assert "antigravity" in desc.host_targets
+    assert "droid" in desc.host_targets
     assert "grok" in desc.host_adapters
-    assert desc.host_adapters["grok"]["version"] == "0.15.5-grokbuild.0"
+    assert desc.host_adapters["grok"]["version"] == "0.15.15-grokbuild.0"
 
 
 def test_generate_manifests() -> None:

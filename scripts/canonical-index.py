@@ -52,6 +52,16 @@ EXCLUSIONS = {
     },
 }
 
+# Known upstream semantic defects with tracked local adaptations (#204, #205)
+KNOWN_DEFECT_EXCEPTIONS = {
+    "cursor-plugins-474": {
+        "surface": "skills/principle-test-behavior-not-implementation/SKILL.md",
+        "upstream_issue": "https://github.com/cursor/plugins/issues/474",
+        "description": "Upstream principle text conflates vacuous assertions with weak truthiness assertions",
+        "reconciliation": "Separated weak assertion fail states from truly vacuous execution-only shapes",
+    }
+}
+
 # Known adaptations where host-neutral intent is preserved with host mapping
 ADAPTED_PREFIXES = (
     "skills/poteto-mode/SKILL.md",
@@ -366,6 +376,7 @@ def compute_inventory(cache: Optional[Path]) -> Dict[str, Any]:
             "excluded": sum(1 for c in classified if c["mode"] == "exclude"),
             "gaps": gaps_count,
         },
+        "known_defect_exceptions": KNOWN_DEFECT_EXCEPTIONS,
         "artifacts": classified,
     }
     return inventory
@@ -429,6 +440,19 @@ def main() -> None:
             if art["mode"] == "gap":
                 print(f"  GAP: {art['path']} - {art.get('reason', '')}", file=sys.stderr)
         sys.exit(1)
+
+    # Validate known defect exceptions
+    exceptions = inventory.get("known_defect_exceptions", {})
+    for exc_id, exc_data in exceptions.items():
+        surf_path = ROOT / exc_data["surface"]
+        if not surf_path.is_file():
+            print(f"FAIL: Defect exception surface missing: {exc_data['surface']}", file=sys.stderr)
+            sys.exit(1)
+        issue_id = exc_data["upstream_issue"].rstrip("/").split("/")[-1]
+        surf_text = surf_path.read_text(encoding="utf-8")
+        if issue_id not in surf_text:
+            print(f"FAIL: Defect exception #{issue_id} not referenced in {exc_data['surface']}", file=sys.stderr)
+            sys.exit(1)
 
     print("PASS: Canonical inventory conforms to pin.")
     sys.exit(0)

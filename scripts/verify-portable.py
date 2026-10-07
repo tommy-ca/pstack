@@ -45,7 +45,24 @@ from scripts.portability_schema import (
 from scripts.drivers import get_driver
 
 SUPPORTED_HOSTS = ("grok", "codex", "omp", "opencode", "antigravity", "droid", "mock")
-FIVE_HARNESSES = ("grok", "codex", "omp", "opencode", "antigravity")
+
+
+def get_declared_hosts() -> List[str]:
+    """Dynamically read declared host targets from package descriptor."""
+    pkg_file = ROOT / "pstack.package.json"
+    if pkg_file.is_file():
+        try:
+            data = json.loads(pkg_file.read_text(encoding="utf-8"))
+            targets = data.get("host_targets", [])
+            if targets and isinstance(targets, list):
+                return [str(t) for t in targets]
+        except Exception:
+            pass
+    return ["grok", "codex", "omp", "opencode", "antigravity", "droid"]
+
+
+DECLARED_HOSTS = get_declared_hosts()
+FIVE_HARNESSES = tuple(DECLARED_HOSTS)
 DEFAULT_EVIDENCE_DIR = ROOT / ".audit" / "evidence"
 
 
@@ -89,7 +106,7 @@ class PortableVerifier:
         self.scenarios.append(result)
         return result
 
-    def doctor(self, check_durability: bool = True) -> bool:
+    def doctor(self, check_durability: bool = True, allow_stale: bool = False) -> bool:
         """Step 2: Doctor static prerequisites, canonical conformance, and schema validity."""
         print(f"[{self.host}] Running Doctor checks...")
 
@@ -175,6 +192,8 @@ class PortableVerifier:
                 "--evidence-dir",
                 str(self.evidence_root),
             ]
+            if allow_stale:
+                chk_cmd.append("--allow-stale")
 
             r7 = self.run_command(
                 f"doctor-evidence-durability-{self.host}",
@@ -417,7 +436,7 @@ class PortableVerifier:
             overall = "FAIL"
 
         # Host version from live driver or package descriptor fallback
-        host_version = "0.15.5-grokbuild.0"
+        host_version = ""
         try:
             driver = get_driver(self.host, ROOT)
             if driver.is_available()[0]:
@@ -427,13 +446,15 @@ class PortableVerifier:
         except Exception:
             pass
 
-        if host_version == "0.15.5-grokbuild.0":
+        if not host_version:
             pkg_file = ROOT / "pstack.package.json"
             if pkg_file.is_file():
                 try:
-                    host_version = json.loads(pkg_file.read_text(encoding="utf-8")).get("version", host_version)
+                    host_version = json.loads(pkg_file.read_text(encoding="utf-8")).get("version", "")
                 except Exception:
                     pass
+            if not host_version:
+                host_version = "0.15.15-grokbuild.0"
 
         surface_revisions = compute_surface_revisions(ROOT, self.host)
 
@@ -495,14 +516,14 @@ class PortableVerifier:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("action", choices=["doctor", "drive", "run", "check-evidence", "check-staleness"], help="Action to execute")
-    parser.add_argument("--host", choices=[*SUPPORTED_HOSTS, "all"], default="grok", help="Target harness (or 'all' for all 5)")
+    parser.add_argument("--host", choices=[*SUPPORTED_HOSTS, "all"], default="grok", help="Target harness (or 'all' for all declared hosts)")
     parser.add_argument("--feature", help="Feature to drive (for 'drive' action)")
     parser.add_argument("--evidence-dir", type=Path, default=DEFAULT_EVIDENCE_DIR, help="Evidence directory")
     parser.add_argument("--allow-stale", action="store_true", help="Allow stale evidence during durability check")
     parser.add_argument("--json", action="store_true", help="Emit JSON output for machine consumption")
     args = parser.parse_args()
 
-    hosts = list(FIVE_HARNESSES) if args.host == "all" else [args.host]
+    hosts = list(get_declared_hosts()) if args.host == "all" else [args.host]
 
     if args.action == "check-evidence":
         all_ok = True
@@ -602,7 +623,7 @@ def main() -> None:
         verifier.launch()
 
         if args.action == "doctor":
-            ok = verifier.doctor(check_durability=not args.allow_stale)
+            ok = verifier.doctor(check_durability=not args.allow_stale, allow_stale=args.allow_stale)
             receipt = verifier.proof_bar()
             verifier.evidence(receipt, update_durable=False)
             receipts.append(receipt)
@@ -643,7 +664,7 @@ def main() -> None:
                 status = r.overall_verdict
             print(f"Host: {r.host:<12} | Canonical: {r.planes.get('canonical', 'N/A'):<4} | Adapter: {r.planes.get('adapter', 'N/A'):<4} | Package: {r.planes.get('package', 'N/A'):<4} | Runtime: {r.planes.get('runtime', 'N/A'):<4} | Status: {status}")
         print(f"======================================================")
-        print(f"5-Harness Matrix Verdict: {'PASS' if all_pass else 'FAIL'}\n")
+        print(f"{len(hosts)}-Harness Matrix Verdict: {'PASS' if all_pass else 'FAIL'}\n")
 
     sys.exit(0 if all_pass else 1)
 

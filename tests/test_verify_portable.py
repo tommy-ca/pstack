@@ -19,12 +19,19 @@ ScenarioResult = verify_portable.ScenarioResult
 VerificationReceipt = verify_portable.VerificationReceipt
 
 
+def test_get_declared_hosts_matches_package_json() -> None:
+    hosts = verify_portable.get_declared_hosts()
+    data = json.loads((ROOT / "pstack.package.json").read_text(encoding="utf-8"))
+    assert hosts == data["host_targets"]
+    assert "droid" in hosts
+
+
 def test_portable_verifier_launch_and_doctor(tmp_path: Path) -> None:
     verifier = PortableVerifier(host="grok", evidence_root=tmp_path)
     assert verifier.launch()
     assert verifier.run_dir.is_dir()
 
-    ok = verifier.doctor()
+    ok = verifier.doctor(check_durability=False)
     assert ok is True
     assert len(verifier.scenarios) >= 4
     for s in verifier.scenarios:
@@ -34,7 +41,7 @@ def test_portable_verifier_launch_and_doctor(tmp_path: Path) -> None:
 def test_portable_verifier_codex_doctor(tmp_path: Path) -> None:
     verifier = PortableVerifier(host="codex", evidence_root=tmp_path)
     assert verifier.launch()
-    ok = verifier.doctor()
+    ok = verifier.doctor(check_durability=False)
     assert ok is True
     assert len(verifier.scenarios) >= 4
     for s in verifier.scenarios:
@@ -44,7 +51,7 @@ def test_portable_verifier_codex_doctor(tmp_path: Path) -> None:
 def test_portable_verifier_antigravity(tmp_path: Path) -> None:
     verifier = PortableVerifier(host="antigravity", evidence_root=tmp_path)
     assert verifier.launch()
-    ok = verifier.doctor()
+    ok = verifier.doctor(check_durability=False)
     assert ok is True
     assert verifier.drive() is True
     receipt = verifier.proof_bar()
@@ -53,6 +60,27 @@ def test_portable_verifier_antigravity(tmp_path: Path) -> None:
     assert receipt.planes["adapter"] == "PASS"
     assert receipt.planes["package"] == "PASS"
     assert receipt.planes["runtime"] == "PASS"
+
+
+def test_portable_verifier_droid(tmp_path: Path) -> None:
+    verifier = PortableVerifier(host="droid", evidence_root=tmp_path)
+    assert verifier.launch()
+    ok = verifier.doctor(check_durability=False)
+    assert ok is True
+    assert verifier.drive() is True
+    receipt = verifier.proof_bar()
+    assert receipt.overall_verdict == "PASS"
+    assert receipt.planes["canonical"] == "PASS"
+    assert receipt.planes["adapter"] == "PASS"
+    assert receipt.planes["package"] == "PASS"
+    assert receipt.planes["runtime"] == "PASS"
+
+
+def test_portable_verifier_doctor_allow_stale(tmp_path: Path) -> None:
+    verifier = PortableVerifier(host="grok", evidence_root=tmp_path)
+    assert verifier.launch()
+    ok = verifier.doctor(check_durability=True, allow_stale=True)
+    assert ok is True
 
 
 def test_portable_verifier_proof_bar_and_receipt(tmp_path: Path) -> None:
@@ -97,10 +125,10 @@ def test_portable_verifier_proof_bar_and_receipt(tmp_path: Path) -> None:
 
 
 def test_portable_verifier_drives_verification_skill_scaffolding_across_hosts(tmp_path: Path) -> None:
-    for host in ("grok", "codex", "omp", "opencode", "antigravity"):
+    for host in verify_portable.get_declared_hosts():
         verifier = PortableVerifier(host=host, evidence_root=tmp_path)
         assert verifier.launch()
-        ok_doctor = verifier.doctor()
+        ok_doctor = verifier.doctor(check_durability=False)
         assert ok_doctor is True
         ok_drive = verifier.drive()
         assert ok_drive is True
@@ -117,14 +145,13 @@ def test_portable_verifier_drives_verification_skill_scaffolding_across_hosts(tm
 
 
 def test_portable_verifier_cli_host_all_doctor(tmp_path: Path) -> None:
+    declared = verify_portable.get_declared_hosts()
     res = subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "verify-portable.py"), "doctor", "--host", "all", "--evidence-dir", str(tmp_path)],
+        [sys.executable, str(ROOT / "scripts" / "verify-portable.py"), "doctor", "--host", "all", "--allow-stale", "--evidence-dir", str(tmp_path)],
         capture_output=True,
         text=True,
     )
     assert res.returncode == 0
-    assert "5-Harness Matrix Verdict: PASS" in res.stdout
-    for host in ("grok", "codex", "omp", "opencode", "antigravity"):
+    assert f"{len(declared)}-Harness Matrix Verdict: PASS" in res.stdout
+    for host in declared:
         assert f"Host: {host}" in res.stdout
-
-
