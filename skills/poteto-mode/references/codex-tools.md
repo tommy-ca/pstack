@@ -1,19 +1,30 @@
 # Codex tool mapping for pstack
 
-This document maps portable pstack capabilities (defined in [`pstack-portability`](../../../openspec/specs/pstack-portability/spec.md)) directly to Codex native primitives and execution conventions. Grok reference mapping is maintained separately in [`grok-tools.md`](grok-tools.md); Codex does not inherit Grok vocabulary as an intermediate specification. Model routing is in [`provider-dispatch.md`](provider-dispatch.md).
+This document maps portable pstack capabilities (defined in [`pstack-portability`](../../../openspec/specs/pstack-portability/spec.md)) directly to Codex native primitives and execution conventions. Structured definitions are formalized in [`profiles/codex.json`](../../../profiles/codex.json). Grok reference mapping is maintained separately in [`grok-tools.md`](grok-tools.md); Codex does not inherit Grok vocabulary as an intermediate specification. Model routing is in [`provider-dispatch.md`](provider-dispatch.md).
 
 ## Tool actions
 
 | Portable Capability | Codex Primitive | Claude Code Equivalent | Grok Reference |
 | --- | --- | --- | --- |
-| Read / edit / shell / search | `shell`, `apply_patch`, `rg` | Read / Edit / Bash | `run_command`, `write_to_file` |
-| Fetch a URL | `shell` with `curl` | WebFetch / Bash | `read_url_content` |
+| Read / edit / shell / search | `read_file`, `apply_patch`, `execute_command` | Read / Edit / Bash | `read_file`, `edit_file`, `run_command` |
+| Fetch a URL / web search | `fetch_web`, `search_web` | WebFetch / WebSearch | `read_url_content`, `search_web` |
 | Invoke a skill | Skills load natively | Skills load natively | Skills load natively |
 | `agent.spawn` | `spawn_agent` | `Agent` | `spawn_subagent` |
 | `agent.fan_out` | N `spawn_agent` in one turn | N `Agent` in one turn | N `spawn_subagent` in one turn |
 | `agent.join` | `wait_agent` | wait on Agent handles | `get_command_or_subagent_output` |
+| `agent.message` | `send_message` | `send_message` | `spawn_subagent (resume)` |
+| `agent.cancel` | No cancel API (named gap) | cancel child handle | `kill_command_or_subagent` |
+| `agent.resume` | `resume_agent` | resume session | `spawn_subagent (resume_from)` |
+| `workspace.shared` | `cwd` (shared repo root) | shared repo root | `isolation: none` |
+| `workspace.isolated` | `git worktree` | git worktree | `isolation: worktree` |
+| `workspace.readonly` | Read-only tools / prompt advisory | read-only subagent | `pstack:how-explorer` |
+| `task.background` | `spawn_agent` (implicit async) | background jobs | `spawn_subagent background: true` |
+| `schedule` | Scheduled task / cadence loop | `loop` | `scheduler_create` |
+| `monitor` | Watch loop / process poll | process watcher | `monitor` |
+| `tool.mcp` | `mcp_client` | MCP tools | session MCP client |
 | `plan.update` | `update_plan` | todolist | `todo_write` |
-| `human.ask` | Ask in plain text | `AskUserQuestion` | `ask_user_question` |
+| `human.ask` | `plain_text_question` / `request_user_input` | `AskUserQuestion` | `ask_user_question` |
+| `human.gate` | Blocking question in plain text | blocking confirm | `ask_user_question (blocking gate)` |
 
 Subagent dispatch on Codex needs `multi_agent` in `~/.codex/config.toml`:
 
@@ -23,6 +34,37 @@ multi_agent = true
 ```
 
 Without it, the native Codex lane is a named dropout. Never collapse a panel into a sequential single-model pass.
+
+## Skill order
+
+Playbooks pick **pstack, then user, then bundled and builtin**. Do not add plugin `commands/` clones.
+
+| Need | 1. pstack | 2. User | 3. Bundled / builtin |
+| --- | --- | --- | --- |
+| TDD | `/tdd` | `/test-driven-development` only if `/tdd` is not loaded | none |
+| Author a SKILL.md | `playbooks/authoring-a-skill.md` | `/writing-skills` | `/create-skill` |
+| Review a diff or PR | `/interrogate` | `/requesting-code-review` | `/review` |
+| Babysit | `playbooks/babysit.md` | none | none |
+| Prove work is done | **prove-it-works**, `pstack:independent-verifier` | `/verification-before-completion` | none |
+| Debug a failure | `playbooks/bug-fix.md` | `/systematic-debugging` | none |
+| Disk prune | `playbooks/worktree-cleanup.md` | none | none |
+| Worktree isolation | none | `/using-git-worktrees` | `isolation: worktree` |
+| Design a playbook | `/figure-it-out` | none | none |
+| Spec then plan | none | `/brainstorming`, `/writing-plans` | `plan` |
+| Execute a written plan | `playbooks/feature.md` spawn | `/executing-plans`, `/subagent-driven-development` | `/implement`, `/execute-plan` |
+| Overnight heartbeat | none | none | cadence loop / scheduled task |
+| Read-only spawn | `pstack:how-explorer` | none | `explore` |
+| Unslop / comments | `/unslop`, `/no-comments` | none | none |
+
+## Verification skills and tools
+
+Verification on Codex leverages portable pstack levers and scripted harnesses:
+- **Project-local verification skills**: Located under `.codex/skills/verify-<app>/` with `SKILL.md` and `features/` map.
+- **Scaffold lever**: `scripts/scaffold-verification-skill.py --host codex --app <app> --write` (validates with `--check`).
+- **Independent verifier**: `pstack:independent-verifier` running `gpt-6.1-sol` (read-only verification of real surfaces before shipping).
+- **Matrix verification**: `scripts/verify-portable.py run --host codex` generating durable receipts under `.audit/evidence/codex-receipt.json`.
+- **Swarm verification**: `skills/swarm/scripts/verify-refresh-hygiene.py` validating matrix partitions and hygiene sweeps.
+
 
 ## Subagent policy
 
@@ -36,7 +78,35 @@ Subagent dispatch follows the portable `agent.spawn` and `workspace.isolated` ca
 
 ## Models
 
-`/setup-pstack` writes **detected** host slugs. On a Codex parent, native `codex:*` uses `spawn_agent`. Other providers are optional outbound runners, not this in-process host. Do not send Cursor marketplace panel slugs as live models.
+Codex model routing uses detected OpenAI frontier models. Configuration lives at `~/.codex/pstack-models.md` and projected plugin configuration `.codex-plugin/models.json`.
+
+### Model tiers
+
+1. **Frontier reasoning and orchestration (`gpt-6.1-sol`)**: Flagship reasoning model. Default model for Codex. Assigned to orchestrator default, architecture, cross-judge, interrogation, independent verification, and strongest judgment roles.
+2. **Hardest tasks specialist (`gpt-6-astra`)**: High-difficulty specialist model. Kept minimal strictly to hardest tasks (`hardest-tasks`).
+3. **High-throughput volume (`gpt-6-luna`)**: Fast execution tier. Assigned to routine worker roles including feature authoring, refactoring, bug fixes, performance improvements, hillclimbing, exploration, and swarm workers.
+4. **Eliminated models**: `gpt-5.6-terra` is obsolete and strictly eliminated from all panels and candidate lists.
+
+### Role mappings
+
+| Role | Target Model | Purpose |
+| --- | --- | --- |
+| `feature`, `refactoring` | `gpt-6-luna` | Fast execution and volume authoring |
+| `bug-fix`, `perf-issue`, `hillclimb` | `gpt-6-luna` | Worker fixes, performance, and metric hillclimbing |
+| `judgment and prose` | `gpt-6.1-sol` (judgment), `gpt-6-luna` (prose) | Orchestrated judgment and prose drafting |
+| `strongest judgment` | `gpt-6.1-sol` | Final verdict and architectural gate |
+| `how explorer`, `why investigators` | `gpt-6-luna` | Read-only codebase traversal |
+| `how explainer` | `gpt-6-luna` | Structured documentation and explanation |
+| `why synthesizer` | `gpt-6.1-sol` | Orchestration-level architectural synthesis |
+| `reflect tooling` | `gpt-6-luna` | Tooling audit and lint checking |
+| `reflect judgment, divergent, synthesizer` | `gpt-6.1-sol` | Deep structural reflection |
+| `hardest-tasks` | `gpt-6-astra` | High-difficulty reasoning and hardest tasks |
+| `arena runners` | `gpt-6.1-sol`, `gpt-6-luna` | Multi-model candidate generation |
+| `arena cross-judge pool` | `gpt-6.1-sol` | High-rigor evaluation and cross-judging |
+| `swarm workers` | `gpt-6-luna` | Fast parallel matrix execution |
+| `architect runners` | `gpt-6.1-sol` | System architecture sketch authoring |
+| `interrogate reviewers` | `gpt-6.1-sol` | Multi-model adversarial review |
+| `independent-verifier` | `gpt-6.1-sol` | Read-only independent verification |
 
 ## Overnight / babysit / shipping
 
