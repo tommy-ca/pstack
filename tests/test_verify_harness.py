@@ -1336,9 +1336,18 @@ def test_harness_grok_tools_restored_scheduler_resume_semantics() -> None:
     assert "`sleep && cmd`" in harness
 
 
+def test_all_skills_have_matching_kebab_case_frontmatter_name() -> None:
+    spec = importlib.util.spec_from_file_location("verify_harness", SCANNER)
+    assert spec is not None and spec.loader is not None
+    scanner = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(scanner)
+    scanner.verify_skills_frontmatter(ROOT / "skills")
+
+
 if __name__ == "__main__":
     test_verify_harness_script_exists()
     test_verify_harness_passes_on_this_tree()
+    test_all_skills_have_matching_kebab_case_frontmatter_name()
     test_babysit_and_shipping_do_not_use_cursor_dynamic_loop()
     test_verify_guide_names_monitor_boundary()
     test_autopilot_is_parent_fanout_and_skips_goal()

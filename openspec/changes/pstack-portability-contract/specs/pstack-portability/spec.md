@@ -14,12 +14,7 @@ Feature: pstack-portability
 
 Principles, skills, router behavior, playbook intent, roles, ordering, and verification rules MUST derive from the pinned official pstack tree. A host adapter MUST NOT become an intermediate source of truth for another host.
 
-A port MUST track two independent states:
-
-- `pin_conformance`: whether the port covers the immutable canonical pin.
-- `upstream_freshness`: whether newer canonical changes remain unclassified.
-
-A port MAY pass pin conformance while reporting upstream drift.
+A port MUST track `pin_conformance` (covering the immutable pin) and `upstream_freshness` (unclassified newer changes). A port MAY pass pin conformance while reporting upstream drift.
 
 #### Scenario: reference port is not canonical
 
@@ -176,26 +171,13 @@ Model diversity is a useful adapter choice, not a portable semantic requirement.
 
 The combination of **Build the Lever**, **Prove It Works**, and `create-verification-skill` defines the portable verification pattern. The port MUST prefer a deterministic lever over hand repetition.
 
-For non-trivial work, the adapter MUST prefer the smallest rerunnable script, codemod, generator, skill, or driver that does or proves the work. When a project lacks a proof surface, the verification skill SHOULD expose:
-
-```text
-Launch
-Doctor
-Drive
-Proof Bar
-Evidence
-Cleanup
-```
-
-with a maintained feature map.
-
-A deterministic lever SHOULD be preferred over subagent fan-out when it can cover the work in one reliable pass.
+For non-trivial work, the adapter MUST prefer the smallest rerunnable script, codemod, generator, skill, or driver that does or proves the work. A deterministic lever SHOULD be preferred over subagent fan-out when it can cover the work in one reliable pass.
 
 #### Scenario: completion claim
 
 - **GIVEN** an implementation is declared done
 - **WHEN** verification is available on the real artifact
-- **THEN** the verifier drives that artifact and records evidence
+- **THEN** the verifier drives that artifact through Launch, Doctor, Drive, Proof Bar, Evidence, and Cleanup
 - **AND** compilation, static checks, or child self-report alone do not substitute for runtime proof
 
 ### Requirement: Supported harness is a proven state
@@ -238,16 +220,7 @@ Runtime: live spawn/join, isolation, scheduling where claimed, independent verif
 
 ### Requirement: Port architecture follows pstack principles
 
-Portability changes MUST apply these design constraints:
-
-- **Laziness Protocol**: smallest adapter and schema that preserve behavior.
-- **Model the Domain**: explicit capability, binding, evidence, adaptation, and gap types.
-- **Boundary Discipline**: host syntax stops at the adapter.
-- **Build the Lever**: automate canonical indexing, drift classification, and conformance.
-- **Prove It Works**: runtime claims require runtime proof.
-- **Separate Before Serializing Shared State**: isolate writers before adding coordination.
-- **Encode Lessons in Structure**: repeated port rules become checks or schemas.
-- SOLID, KISS, DRY, and YAGNI constrain implementation.
+Portability changes MUST apply core design constraints: Laziness Protocol (smallest adapter), Model the Domain (explicit types), Boundary Discipline (host syntax stops at adapter), Build the Lever (automated conformance), Prove It Works (runtime proof for runtime claims), Separate Before Serializing Shared State (isolate writers), and Encode Lessons in Structure (repeated rules become checks).
 
 #### Scenario: boundary enforcement
 

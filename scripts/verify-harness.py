@@ -26,6 +26,7 @@ from effort_ladder import (
     role_effort_map,
     self_check,
 )
+from skill_frontmatter import read_scalar, split_frontmatter, validate_skill_name
 
 NAMED_22 = [
     "investigation",
@@ -184,12 +185,30 @@ def archived_changes_missing_artifacts(archive_root: pathlib.Path) -> list[str]:
 
 
 
+def verify_skills_frontmatter(skills_dir: pathlib.Path) -> None:
+    for skill_dir in sorted(skills_dir.iterdir()):
+        if not skill_dir.is_dir():
+            continue
+        skill_file = skill_dir / "SKILL.md"
+        if not skill_file.is_file():
+            fail(f"skill directory {skill_dir.name} missing SKILL.md")
+
+        try:
+            header, _ = split_frontmatter(skill_file.read_text(encoding="utf-8"))
+            validate_skill_name(read_scalar(header, "name"), skill_dir.name)
+            if read_scalar(header, "mode") is not None:
+                raise ValueError("retains Cursor-only frontmatter 'mode'")
+        except ValueError as exc:
+            fail(f"{skill_dir.name}/SKILL.md {exc}")
+
+
 def fail(msg: str) -> None:
     print(f"FAIL: {msg}", file=sys.stderr)
     raise SystemExit(1)
 
 
 def main() -> None:
+    verify_skills_frontmatter(ROOT / "skills")
     files = {p.stem for p in PLAYBOOKS.glob("*.md")}
     intent_missing = archivable_changes_missing_artifacts(
         ROOT / "openspec" / "changes"
