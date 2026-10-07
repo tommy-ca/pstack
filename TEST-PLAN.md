@@ -334,7 +334,7 @@ If a name collides with a built-in, inspect sets `invocableAs` to the qualified 
 
 Required **skill** names (hyphen-normalized, case-insensitive), source tied to plugin `pstack`:
 
-- `poteto-mode` (frontmatter `name: Poteto Mode`; grok normalizes spaces to hyphens)
+- `poteto-mode` (frontmatter `name: poteto-mode`)
 - `setup-pstack`
 - `how`
 - `unslop`

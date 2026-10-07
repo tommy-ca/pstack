@@ -69,6 +69,13 @@ REPLACEMENTS: list[tuple[str, str]] = [
     ('subagent_type: "Comment Sicko"', 'subagent_type: "pstack:comment-sicko"'),
     ('subagent_type: "comment-sicko"', 'subagent_type: "pstack:comment-sicko"'),
     ("`Comment Sicko`", "`pstack:comment-sicko`"),
+    ("name: Poteto Mode", "name: poteto-mode"),
+    ('name: "Poteto Mode"', "name: poteto-mode"),
+    ("name: 'Poteto Mode'", "name: poteto-mode"),
+    ("name: Make Bot UI", "name: make-bot-ui"),
+    ('name: "Make Bot UI"', "name: make-bot-ui"),
+    ("name: 'Make Bot UI'", "name: make-bot-ui"),
+    ("mode: true\n", ""),
 ]
 
 

@@ -184,12 +184,53 @@ def archived_changes_missing_artifacts(archive_root: pathlib.Path) -> list[str]:
 
 
 
+SKILL_NAME_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+
+
+def verify_skills_frontmatter(skills_dir: pathlib.Path) -> None:
+    for skill_dir in sorted(skills_dir.iterdir()):
+        if not skill_dir.is_dir():
+            continue
+        skill_file = skill_dir / "SKILL.md"
+        if not skill_file.is_file():
+            fail(f"skill directory {skill_dir.name} missing SKILL.md")
+
+        text = skill_file.read_text(encoding="utf-8")
+        if not text.startswith("---"):
+            fail(f"{skill_dir.name}/SKILL.md missing frontmatter start '---'")
+
+        fm_lines = []
+        for line in text.splitlines()[1:]:
+            if line.strip() == "---":
+                break
+            fm_lines.append(line)
+
+        name_val = None
+        for line in fm_lines:
+            if line.startswith("name:"):
+                name_val = line.split(":", 1)[1].strip().strip("'\"")
+            if line.strip() == "mode: true":
+                fail(f"{skill_dir.name}/SKILL.md retains Cursor-only frontmatter 'mode: true'")
+
+        if not name_val:
+            fail(f"{skill_dir.name}/SKILL.md missing frontmatter 'name:' field")
+
+        if not SKILL_NAME_RE.fullmatch(name_val):
+            fail(f"{skill_dir.name}/SKILL.md frontmatter name {name_val!r} is not kebab-case")
+
+        if name_val != skill_dir.name:
+            fail(
+                f"{skill_dir.name}/SKILL.md frontmatter name {name_val!r} does not match directory name {skill_dir.name!r}"
+            )
+
+
 def fail(msg: str) -> None:
     print(f"FAIL: {msg}", file=sys.stderr)
     raise SystemExit(1)
 
 
 def main() -> None:
+    verify_skills_frontmatter(ROOT / "skills")
     files = {p.stem for p in PLAYBOOKS.glob("*.md")}
     intent_missing = archivable_changes_missing_artifacts(
         ROOT / "openspec" / "changes"

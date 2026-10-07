@@ -1336,9 +1336,33 @@ def test_harness_grok_tools_restored_scheduler_resume_semantics() -> None:
     assert "`sleep && cmd`" in harness
 
 
+def test_all_skills_have_matching_kebab_case_frontmatter_name() -> None:
+    skills_dir = ROOT / "skills"
+    name_re = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+    for skill_dir in sorted(skills_dir.iterdir()):
+        if not skill_dir.is_dir():
+            continue
+        skill_md = skill_dir / "SKILL.md"
+        assert skill_md.is_file(), f"Missing SKILL.md in {skill_dir.name}"
+        text = skill_md.read_text(encoding="utf-8")
+        assert text.startswith("---"), f"{skill_dir.name}/SKILL.md missing frontmatter"
+        name_val = None
+        for line in text.splitlines()[1:]:
+            if line.strip() == "---":
+                break
+            if line.startswith("name:"):
+                name_val = line.split(":", 1)[1].strip().strip("'\"")
+                break
+        assert name_val is not None, f"{skill_dir.name}/SKILL.md missing name"
+        assert name_re.fullmatch(name_val), f"{skill_dir.name} has non-kebab-case name {name_val}"
+        assert name_val == skill_dir.name, f"{skill_dir.name} frontmatter name mismatch: {name_val} != {skill_dir.name}"
+        assert "mode: true" not in text, f"{skill_dir.name} contains Cursor-only mode: true"
+
+
 if __name__ == "__main__":
     test_verify_harness_script_exists()
     test_verify_harness_passes_on_this_tree()
+    test_all_skills_have_matching_kebab_case_frontmatter_name()
     test_babysit_and_shipping_do_not_use_cursor_dynamic_loop()
     test_verify_guide_names_monitor_boundary()
     test_autopilot_is_parent_fanout_and_skips_goal()
