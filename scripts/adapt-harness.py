@@ -20,6 +20,10 @@ from __future__ import annotations
 
 import pathlib
 import re
+import sys
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+from skill_frontmatter import read_scalar, split_frontmatter, validate_skill_name
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
@@ -69,13 +73,6 @@ REPLACEMENTS: list[tuple[str, str]] = [
     ('subagent_type: "Comment Sicko"', 'subagent_type: "pstack:comment-sicko"'),
     ('subagent_type: "comment-sicko"', 'subagent_type: "pstack:comment-sicko"'),
     ("`Comment Sicko`", "`pstack:comment-sicko`"),
-    ("name: Poteto Mode", "name: poteto-mode"),
-    ('name: "Poteto Mode"', "name: poteto-mode"),
-    ("name: 'Poteto Mode'", "name: poteto-mode"),
-    ("name: Make Bot UI", "name: make-bot-ui"),
-    ('name: "Make Bot UI"', "name: make-bot-ui"),
-    ("name: 'Make Bot UI'", "name: make-bot-ui"),
-    ("mode: true\n", ""),
 ]
 
 
@@ -93,7 +90,24 @@ def should_skip(path: pathlib.Path) -> bool:
     return path.suffix not in TEXT_SUFFIXES and path.name != "SKILL.md"
 
 
-def transform(text: str) -> str:
+def transform(text: str, *, skill_name: str | None = None) -> str:
+    if skill_name is not None:
+        header, body = split_frontmatter(text)
+        name = read_scalar(header, "name")
+        if name is None:
+            raise ValueError("missing frontmatter 'name'")
+        normalized = re.sub(r"\s+", "-", name.lower())
+        validate_skill_name(normalized, skill_name)
+        read_scalar(header, "mode")
+        adapted = []
+        for line in header:
+            if re.match(r"^mode\s*:", line):
+                continue
+            if re.match(r"^name\s*:", line) and name != normalized:
+                ending = "\r\n" if line.endswith("\r\n") else "\n"
+                line = f"name: {normalized}{ending}"
+            adapted.append(line)
+        text = "".join(adapted) + body
     # Fresh official copy: only the Cursor path is present, so rewrite it.
     # Ported tree: both paths are present on purpose (write grok, never
     # create Cursor). A blind replace inverts that instruction.
@@ -152,24 +166,28 @@ def files_transform_would_change() -> list[str]:
     for path in ROOT.rglob("*"):
         if not path.is_file() or should_skip(path):
             continue
-        original = path.read_text(encoding="utf-8")
-        if transform(original) != original:
+        with path.open(encoding="utf-8", newline="") as stream:
+            original = stream.read()
+        if transform(original, skill_name=path.parent.name if path.name == "SKILL.md" else None) != original:
             hits.append(str(path.relative_to(ROOT)))
     return hits
 
 
 def main() -> None:
-    changed = 0
+    updates = []
     for path in ROOT.rglob("*"):
         if not path.is_file() or should_skip(path):
             continue
-        original = path.read_text(encoding="utf-8")
-        updated = transform(original)
+        with path.open(encoding="utf-8", newline="") as stream:
+            original = stream.read()
+        updated = transform(original, skill_name=path.parent.name if path.name == "SKILL.md" else None)
         if updated != original:
-            path.write_text(updated, encoding="utf-8")
-            changed += 1
-            print(path.relative_to(ROOT))
-    print(f"rewrote {changed} files")
+            updates.append((path, updated))
+    for path, updated in updates:
+        with path.open("w", encoding="utf-8", newline="") as stream:
+            stream.write(updated)
+        print(path.relative_to(ROOT))
+    print(f"rewrote {len(updates)} files")
     leftover = files_transform_would_change()
     if leftover:
         raise SystemExit(
