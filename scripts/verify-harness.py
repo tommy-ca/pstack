@@ -248,10 +248,57 @@ def main() -> None:
     if len(principles) != expected_principles:
         fail(f"expected {expected_principles} principle-* skills per canonical inventory, got {len(principles)}: {principles}")
 
+    canonical_playbooks = [
+        pathlib.Path(a["path"]).stem
+        for a in inv.get("artifacts", [])
+        if a.get("category") == "playbook" and a.get("mode") in ("preserve", "adapt")
+    ]
+    if canonical_playbooks:
+        missing_canonical = [p for p in canonical_playbooks if p not in files]
+        if missing_canonical:
+            fail(f"missing canonical playbooks per inventory: {missing_canonical}")
+
     skill_text = SKILL.read_text(encoding="utf-8")
     for name in NAMED_22:
         if f"playbooks/{name}.md" not in skill_text:
             fail(f"poteto-mode SKILL.md does not route {name}")
+
+    # Enforce poteto-agent is delegate-only across host projections (#202, #205)
+    for agent_target in (
+        ROOT / "agents" / "poteto-agent.md",
+        ROOT / "droids" / "pstack-poteto-agent.md",
+    ):
+        if not agent_target.is_file():
+            fail(f"missing {agent_target.relative_to(ROOT)}")
+        agent_content = agent_target.read_text(encoding="utf-8")
+        if "Routing target for `/poteto-mode`" in agent_content:
+            fail(f"{agent_target.relative_to(ROOT)} retains retired parent-routing text")
+        if "Delegated subagent worker" not in agent_content or "Depth is 1" not in agent_content:
+            fail(f"{agent_target.relative_to(ROOT)} must specify delegated subagent worker with Depth 1")
+
+    # Enforce loss-aware registered worktree cleanup (#203, #205)
+    drop_script = ROOT / "skills" / "poteto-mode" / "scripts" / "worktree-drop.sh"
+    if drop_script.is_file():
+        drop_text = drop_script.read_text(encoding="utf-8")
+        if "--force" in drop_text:
+            fail("worktree-drop.sh must not use --force for registered worktree removal")
+        reg_start = drop_text.find('for wt in "${target_registered[@]}"')
+        reg_end = drop_text.find('git -C "$repo" worktree prune', reg_start)
+        if reg_start != -1 and reg_end != -1:
+            reg_block = drop_text[reg_start:reg_end]
+            if "rm -rf" in reg_block:
+                fail("worktree-drop.sh must not use rm -rf fallback for registered worktree removal")
+        if "stopping without force" not in drop_text:
+            fail("worktree-drop.sh must refuse registered removal without force")
+
+    # Enforce Test Behavior principle semantic correctness (#204, #205)
+    test_behavior_principle = ROOT / "skills" / "principle-test-behavior-not-implementation" / "SKILL.md"
+    if test_behavior_principle.is_file():
+        tb_text = test_behavior_principle.read_text(encoding="utf-8")
+        if "cursor/plugins #474" not in tb_text:
+            fail("principle-test-behavior-not-implementation must document upstream cursor/plugins #474")
+        if "Weak assertions that fail on `undefined`" not in tb_text:
+            fail("principle-test-behavior-not-implementation must distinguish weak assertions from non-discriminating assertions")
 
     plugin = json.loads((ROOT / "plugin.json").read_text(encoding="utf-8"))
     name = plugin.get("name", "")
