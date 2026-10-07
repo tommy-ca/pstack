@@ -76,7 +76,11 @@ def resolve_skill_order(profile: dict, playbook: str, root: Path) -> SkillRoute:
         if query not in candidates:
             continue
         if primary is None:
-            fallback = item.get("fallback_builtin") or item.get("secondary_user")
+            # Declared tier order (portability spec's 3-tier fallback matrix):
+            # secondary_user is tier 2 and wins over fallback_builtin (tier
+            # 3); the builtin is used only when the secondary user skill is
+            # absent.
+            fallback = item.get("secondary_user") or item.get("fallback_builtin")
             return SkillRoute(
                 need=need,
                 kind="declared-fallback",

@@ -5,7 +5,8 @@ Reproduces the route_playbook defects on the real profiles/droid.json rows:
 the canonical prove-it-works identifier, the annotated droid identifier, the
 null-primary declared fallback, native droid-definition and skill-directory
 resolution, and the honest no-route report for unknown queries. Also pins the
-corrected droid-tools.md plan-tool wording for explicit role tool allowlists.
+corrected droid-tools.md plan-tool wording (hidden carrier set unioned after
+the definition's tools allowlist; no always-included or allowlist-only claim).
 """
 
 from __future__ import annotations
@@ -52,7 +53,7 @@ def test_every_skill_order_row_resolves() -> None:
         assert route.kind != "no-route", f"row {row['need']!r} does not match its own need"
         if row["primary_pstack"] is None:
             assert route.kind == "declared-fallback", row["need"]
-            assert route.target == (row["fallback_builtin"] or row["secondary_user"]), row["need"]
+            assert route.target == (row["secondary_user"] or row["fallback_builtin"]), row["need"]
         else:
             assert route.kind in {"skill", "playbook", "droid-definition"}, row["need"]
             assert route.artifact is not None and route.artifact.exists(), row["need"]
@@ -89,9 +90,46 @@ def test_read_only_spawn_row_routes_to_native_droid_definition() -> None:
 def test_null_primary_worktree_row_resolves_declared_fallback() -> None:
     row = _row("Worktree isolation")
     assert row["primary_pstack"] is None
+    assert row["secondary_user"] == "/using-git-worktrees"
     route = resolve_skill_order(_profile(), row["need"], ROOT)
     assert route.kind == "declared-fallback"
-    assert route.target == "session-worktree (droid -w)"
+    # Tier order is declared: secondary_user (tier 2) before fallback_builtin
+    # (tier 3); the builtin is used only when secondary_user is absent.
+    assert route.target == "/using-git-worktrees"
+
+
+def test_null_primary_row_prefers_secondary_user_over_fallback_builtin() -> None:
+    # Round-1 review blocker: the driver inverted the declared tier order and
+    # preferred fallback_builtin (tier 3) over secondary_user (tier 2).
+    profile = _profile()
+    profile["skill_order"] = [
+        dict(
+            _row("Worktree isolation"),
+            need="Synthetic tier order",
+            primary_pstack=None,
+            secondary_user="/some-user-skill",
+            fallback_builtin="some-builtin",
+        )
+    ]
+    route = resolve_skill_order(profile, "Synthetic tier order", ROOT)
+    assert route.kind == "declared-fallback"
+    assert route.target == "/some-user-skill", "tier 2 must win over tier 3"
+
+
+def test_null_primary_row_uses_fallback_builtin_only_when_secondary_absent() -> None:
+    profile = _profile()
+    profile["skill_order"] = [
+        dict(
+            _row("Worktree isolation"),
+            need="Synthetic builtin only",
+            primary_pstack=None,
+            secondary_user=None,
+            fallback_builtin="some-builtin",
+        )
+    ]
+    route = resolve_skill_order(profile, "Synthetic builtin only", ROOT)
+    assert route.kind == "declared-fallback"
+    assert route.target == "some-builtin"
 
 
 def test_identifiers_carry_no_annotation() -> None:
@@ -146,11 +184,23 @@ def test_route_playbook_fails_honestly_for_missing_artifact() -> None:
     assert "no artifact exists" in result.stdout
 
 
-# --- VAL-SHIP-005(e): plan-tool availability follows the tools allowlist ---
+# --- VAL-SHIP-005(e): plan-tool wording states the verified static carrier observation ---
 
 
-def test_droid_tools_md_plan_tool_claim_is_allowlist_scoped() -> None:
+def test_droid_tools_md_plan_tool_claim_matches_native_carrier_observation() -> None:
     text = (ROOT / "skills" / "poteto-mode" / "references" / "droid-tools.md").read_text(encoding="utf-8")
-    assert "Always included in every droid" not in text
-    assert "todo_write" in text
-    assert "allowlist" in text
+    # No always-included claim and no allowlist-only claim: the allowlist does
+    # not solely control availability because a hidden carrier set is unioned
+    # after allowlist resolution.
+    assert "Always included" not in text
+    assert "Included only when" not in text
+    assert "not solely controlled" in text
+    assert "todo_write" in text, "the planning tool is named by its native id"
+    assert "carrier" in text and "allowlist" in text
+    assert "untested" in text, "live load-time availability stays explicitly untested"
+    # No session-filter claim: it was not independently isolated by triage.
+    lowered = text.lower()
+    assert "session filter" not in lowered
+    assert "removed for subagent sessions" not in lowered
+    # The vocabulary rules ban the CamelCase literal in the reference.
+    assert "TodoWrite" not in text and "WaitForScript" not in text
