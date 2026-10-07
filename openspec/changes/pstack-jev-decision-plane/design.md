@@ -58,11 +58,15 @@ A receipt records decision value, optional probability/confidence, provider/mode
 
 ## Verification
 
-1. #183 Arena compares integration seams using a predeclared rubric.
-2. #186 builds the deterministic eval/calibration lever.
-3. #187 Swarm partitions regression coverage by task class, failure mode, and harness.
-4. #188 Interrogate adversarially reviews drift and safety.
-5. #189 may promote only the smallest proven low-risk seam.
+1. #182/#195/#196 settle the typed decision contract, external-context boundary, and canonical playbook vocabulary.
+2. #183 Arena compares integration seams, including the no-change control, using a predeclared rubric.
+3. #197 reconciles PR #194, runs strict OpenSpec validation and a spec-level Interrogate, then accepts the implementation contract.
+4. #184/#185 implement only the optional provider and zero-behavior-change shadow hook.
+5. #186 builds deterministic offline calibration, latency, and cost evidence.
+6. #199 binds evidence to implementation/canonical/provider-model/policy/fixture revisions and demotes stale evidence.
+7. #198 runs the canonical blinded Eval playbook against baseline pstack.
+8. #187 Swarm, #188 Interrogate, and #200 rollback proof run independently at the exact candidate head.
+9. #189 may promote only the smallest proven low-risk seam. No promotion is a valid outcome.
 
 ## Non-goals
 
