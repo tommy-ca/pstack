@@ -170,33 +170,40 @@
     }
   ],
   "tool_mappings": {
-    "file_read": "read_file",
-    "file_edit": "edit_file",
+    "file_read": "read_file / shell",
+    "file_edit": "apply_patch / edit_file",
     "file_write": "write_file",
-    "shell_run": "execute_command",
-    "web_fetch": "fetch_web",
+    "shell_run": "execute_command / shell",
+    "web_fetch": "fetch_web / curl",
     "web_search": "search_web",
     "agent_spawn": "spawn_agent",
     "agent_fanout": "N spawn_agent in one turn",
     "agent_join": "wait_agent",
-    "agent_message": "message_agent",
-    "task_background": "background_job",
+    "agent_message": "send_message",
+    "task_background": "spawn_agent (multi_agent)",
     "tool_mcp": "mcp_client",
-    "plan_update": "todo_write / plan_update",
-    "human_ask": "ask_user"
+    "plan_update": "update_plan",
+    "human_ask": "ask_user / request_user_input"
   },
   "skill_order": [
     {
       "need": "TDD",
       "primary_pstack": "/tdd",
-      "secondary_user": null,
-      "fallback_builtin": null
+      "secondary_user": "/test-driven-development",
+      "fallback_builtin": null,
+      "notes": "User skill only if /tdd is not loaded"
+    },
+    {
+      "need": "Author a SKILL.md",
+      "primary_pstack": "playbooks/authoring-a-skill.md",
+      "secondary_user": "/writing-skills",
+      "fallback_builtin": "/create-skill"
     },
     {
       "need": "Review a diff or PR",
       "primary_pstack": "/interrogate",
-      "secondary_user": null,
-      "fallback_builtin": null
+      "secondary_user": "/requesting-code-review",
+      "fallback_builtin": "/review"
     },
     {
       "need": "Babysit",
@@ -207,14 +214,26 @@
     {
       "need": "Prove work is done",
       "primary_pstack": "prove-it-works",
-      "secondary_user": null,
+      "secondary_user": "/verification-before-completion",
       "fallback_builtin": null
     },
     {
       "need": "Debug a failure",
       "primary_pstack": "playbooks/bug-fix.md",
+      "secondary_user": "/systematic-debugging",
+      "fallback_builtin": null
+    },
+    {
+      "need": "Disk prune",
+      "primary_pstack": "playbooks/worktree-cleanup.md",
       "secondary_user": null,
       "fallback_builtin": null
+    },
+    {
+      "need": "Worktree isolation",
+      "primary_pstack": null,
+      "secondary_user": "/using-git-worktrees",
+      "fallback_builtin": "isolation: worktree"
     },
     {
       "need": "Design a playbook",
@@ -225,12 +244,30 @@
     {
       "need": "Spec then plan",
       "primary_pstack": null,
-      "secondary_user": null,
+      "secondary_user": "/brainstorming, /writing-plans",
       "fallback_builtin": "plan"
     },
     {
       "need": "Execute a written plan",
       "primary_pstack": "playbooks/feature.md",
+      "secondary_user": "/executing-plans, /subagent-driven-development",
+      "fallback_builtin": "/implement, /execute-plan"
+    },
+    {
+      "need": "Overnight heartbeat",
+      "primary_pstack": null,
+      "secondary_user": null,
+      "fallback_builtin": "cadence loop / scheduled task"
+    },
+    {
+      "need": "Read-only spawn",
+      "primary_pstack": "pstack:how-explorer",
+      "secondary_user": null,
+      "fallback_builtin": "explore"
+    },
+    {
+      "need": "Unslop / comments",
+      "primary_pstack": "/unslop, /no-comments",
       "secondary_user": null,
       "fallback_builtin": null
     }
@@ -238,7 +275,7 @@
   "runtime_conventions": {
     "max_subagent_depth": 1,
     "supported_isolation_modes": ["worktree", "shared"],
-    "default_model": "codex",
+    "default_model": "gpt-6.1-sol",
     "allowed_spawn_fields": [
       "prompt",
       "role",
