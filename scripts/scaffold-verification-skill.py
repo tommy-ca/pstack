@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Deterministic scaffolding and validation of portable verification skills.
 
-Supports all 5 agent harnesses: Grok Build, Codex, OMP, OpenCode, Antigravity.
+Supports all 6 agent harnesses: Grok Build, Codex, OMP, OpenCode, Antigravity, Droid.
 """
 
 from __future__ import annotations
@@ -29,9 +29,15 @@ REQUIRED_SECTIONS = [
 ]
 
 
+# Detection order matters: a workspace can carry several host markers, so
+# more specific hosts are probed first. Droid's `.factory` marker is last
+# because the directory also appears in non-skill Droid setups.
+HOST_DETECT_ORDER = ("antigravity", "codex", "omp", "opencode", "grok", "droid")
+
+
 def detect_host(workspace: pathlib.Path) -> str:
     """Auto-detect active harness from workspace markers."""
-    for host in ("antigravity", "codex", "omp", "opencode", "grok"):
+    for host in HOST_DETECT_ORDER:
         skills_rel = DEFAULT_SKILLS_DIRS.get(host)
         if skills_rel and (workspace / skills_rel).exists():
             return host

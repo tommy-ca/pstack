@@ -10,7 +10,8 @@
     "codex",
     "omp",
     "opencode",
-    "antigravity"
+    "antigravity",
+    "droid"
   ],
   "host_adapters": {
     "grok": {
@@ -30,6 +31,10 @@
       "adapter_version": "1.0.0"
     },
     "antigravity": {
+      "version": "0.15.5-grokbuild.0",
+      "adapter_version": "1.0.0"
+    },
+    "droid": {
       "version": "0.15.5-grokbuild.0",
       "adapter_version": "1.0.0"
     }

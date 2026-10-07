@@ -44,7 +44,7 @@ from scripts.portability_schema import (
 )
 from scripts.drivers import get_driver
 
-SUPPORTED_HOSTS = ("grok", "codex", "omp", "opencode", "antigravity", "mock")
+SUPPORTED_HOSTS = ("grok", "codex", "omp", "opencode", "antigravity", "droid", "mock")
 FIVE_HARNESSES = ("grok", "codex", "omp", "opencode", "antigravity")
 DEFAULT_EVIDENCE_DIR = ROOT / ".audit" / "evidence"
 
@@ -620,7 +620,14 @@ def main() -> None:
             verifier.doctor(check_durability=False)
             verifier.drive()
             receipt = verifier.proof_bar()
-            verifier.evidence(receipt, update_durable=True)
+            profile_file = ROOT / "profiles" / f"{h}.json"
+            claimed_state = ""
+            if profile_file.is_file():
+                claimed_state = json.loads(profile_file.read_text(encoding="utf-8")).get("support_state", "")
+            # Candidate hosts carry no durable runtime receipt: model-backed
+            # capabilities are untested, so a durable PASS is never claimed.
+            update_durable = claimed_state != "candidate"
+            verifier.evidence(receipt, update_durable=update_durable)
             verifier.cleanup()
             receipts.append(receipt)
             all_pass = all_pass and (receipt.overall_verdict == "PASS")
