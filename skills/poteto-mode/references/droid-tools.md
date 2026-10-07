@@ -13,7 +13,7 @@ prove skill serving, model selection, or spawn execution.
 | Edit / write | `Edit`, `Create` | |
 | Shell | `Execute` | |
 | Fetch / web search | `FetchUrl`, `WebSearch` | |
-| `plan.update` | `todo_write` | Always included in every droid. |
+| `plan.update` | `todo_write` | Availability is not solely controlled by the droid definition's `tools` allowlist: read-only static inspection of the installed CLI 0.233.0 source shows tool resolution unconditionally unions a hidden carrier set of native primitives (the planning tool `todo_write`, the skill tool, the script tool, and its wait primitive) after applying the allowlist. Live load-time availability is explicitly untested. |
 | `agent.spawn` | `Task` (`subagent_type`, `description`, `prompt`) | Parent-owned. Optional fields come from the live session schema (`await`, `complexity`, `resume`, `image_paths`); check the schema in the running session, not docs. |
 | `agent.join` | `TaskOutput` (`block=true` waits) | Background reports auto-deliver. |
 | `agent.cancel` | `TaskStop` | SIGTERM, then SIGKILL. |

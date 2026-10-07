@@ -8,12 +8,100 @@ spawn/join/cancel) are never invoked here and stay explicitly untested.
 
 from __future__ import annotations
 
+import re
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional, Tuple
 
 from .base import DriverScenarioResult, HarnessDriver, find_executable
 
 REQUIRED_SPAWN_FIELDS = ("subagent_type", "description", "prompt")
+
+# Native generated droid definitions (`droids/pstack-<role>.md`), resolved by
+# their hyphenated native id; never annotated, never alias-guessed.
+_DROID_DEFINITION_ID = re.compile(r"^pstack-[a-z0-9-]+$")
+
+
+@dataclass
+class SkillRoute:
+    """One resolved advisory skill_order route.
+
+    kind is one of "skill" (skills/<name>/ directory), "playbook"
+    (skills/poteto-mode/playbooks/<name>.md), "droid-definition"
+    (droids/pstack-<role>.md), "declared-fallback" (null-primary row resolving
+    its declared fallback as a configuration-routing claim), or "no-route".
+    """
+
+    need: str
+    kind: str
+    target: Optional[str] = None
+    artifact: Optional[Path] = None
+    notes: str = ""
+
+
+def _resolve_primary_artifact(identifier: str, root: Path) -> Path:
+    """Locate the native artifact a primary_pstack identifier declares."""
+    if identifier.startswith("/"):
+        name = identifier.lstrip("/")
+        skill_dir = root / "skills" / name
+        if skill_dir.is_dir():
+            return skill_dir
+        return root / "skills" / "poteto-mode" / "playbooks" / f"{name}.md"
+    if _DROID_DEFINITION_ID.match(identifier):
+        return root / "droids" / f"{identifier}.md"
+    return root / "skills" / "poteto-mode" / identifier
+
+
+def resolve_skill_order(profile: dict, playbook: str, root: Path) -> SkillRoute:
+    """Resolve one advisory skill_order row for a playbook query.
+
+    Matching is exact, never substring: a query matches a row when it equals
+    the row's `need` (case-insensitive), the `primary_pstack` identifier, or
+    the basename stem of a `playbooks/<stem>.md` primary. Substring matching
+    false-matched rows by collision (e.g. "spawn" matching "Read-only spawn"),
+    so an unknown query now reports no route instead of a fake match.
+    """
+    query = playbook.strip().lower()
+    for item in profile.get("skill_order", []):
+        primary = item.get("primary_pstack")
+        need = str(item.get("need", "")).strip().lower()
+        notes = str(item.get("notes", ""))
+        candidates = {need}
+        if primary is not None:
+            identifier = str(primary).strip()
+            candidates.add(identifier.lower())
+            stem = identifier.rsplit("/", 1)[-1]
+            if stem.endswith(".md"):
+                candidates.add(stem[:-3].lower())
+        if query not in candidates:
+            continue
+        if primary is None:
+            # Declared tier order (portability spec's 3-tier fallback matrix):
+            # secondary_user is tier 2 and wins over fallback_builtin (tier
+            # 3); the builtin is used only when the secondary user skill is
+            # absent.
+            fallback = item.get("secondary_user") or item.get("fallback_builtin")
+            return SkillRoute(
+                need=need,
+                kind="declared-fallback",
+                target=str(fallback) if fallback else None,
+                notes=notes,
+            )
+        identifier = str(primary).strip()
+        if identifier.startswith("/"):
+            kind = "skill"
+        elif _DROID_DEFINITION_ID.match(identifier):
+            kind = "droid-definition"
+        else:
+            kind = "playbook"
+        return SkillRoute(
+            need=need,
+            kind=kind,
+            target=identifier,
+            artifact=_resolve_primary_artifact(identifier, root),
+            notes=notes,
+        )
+    return SkillRoute(need="", kind="no-route")
 
 
 class DroidDriver(HarnessDriver):
@@ -74,30 +162,47 @@ class DroidDriver(HarnessDriver):
 
         # Droid skill precedence inverts pstack-first hosts: folder/project and
         # personal skills shadow plugin skills. The profile table is advisory.
-        so = self.profile_data.get("skill_order", [])
-        matched = False
-        target = None
-        for item in so:
-            if playbook in str(item.get("need", "")).lower() or playbook in str(item.get("primary_pstack", "")).lower():
-                matched = True
-                target = item.get("primary_pstack")
-                break
+        route = resolve_skill_order(self.profile_data, playbook, self.root)
 
-        exists = False
-        if target:
-            if target.startswith("/"):
-                skill_name = target.lstrip("/")
-                exists = (self.root / "skills" / skill_name).is_dir() or (self.root / "skills" / "poteto-mode" / "playbooks" / f"{skill_name}.md").is_file()
-            else:
-                exists = (self.root / "skills" / "poteto-mode" / target).is_file() or (self.root / target).is_file()
+        if route.kind == "no-route":
+            # Unknown query: report no route honestly. Never present None/null
+            # as a routed target and never claim success.
+            return DriverScenarioResult(
+                scenario_id="runtime-route-playbook-droid",
+                description=f"Verify Droid advisory skill_order routing for '{playbook}'; no row matches",
+                command=f"offline profile skill_order check (playbook {playbook}; no CLI invocation)",
+                exit_code=1,
+                stdout=f"No skill_order row matches '{playbook}'; advisory routing declares no route",
+                stderr="",
+                verdict="FAIL",
+                duration_s=0.01,
+            )
 
-        verdict = "PASS" if matched and exists else "FAIL"
+        if route.kind == "declared-fallback":
+            # Null-primary row: resolve the declared fallback as an honest
+            # configuration-routing claim (no primary artifact to check).
+            routed = route.target is not None
+            verdict = "PASS" if routed else "FAIL"
+            stdout = (
+                f"Null-primary row '{route.need}' routes to declared fallback '{route.target}' (configuration-routing claim; no primary artifact)"
+                if routed
+                else f"Null-primary row '{route.need}' declares no fallback to route"
+            )
+        else:
+            exists = bool(route.artifact and route.artifact.exists())
+            verdict = "PASS" if exists else "FAIL"
+            stdout = (
+                f"Advisory-routed '{playbook}' to '{route.target}' ({route.artifact}; exists={exists})"
+                if exists
+                else f"Row '{route.need}' declares '{route.target}' but no artifact exists at {route.artifact}"
+            )
+
         return DriverScenarioResult(
             scenario_id="runtime-route-playbook-droid",
-            description=f"Verify Droid advisory skill_order routes '{playbook}' ({target}); native precedence shadows plugin skills",
-            command=f"offline profile skill_order check (playbook {playbook} -> {target}; no CLI invocation)",
+            description=f"Verify Droid advisory skill_order routing for '{playbook}' ({route.target}); native precedence shadows plugin skills",
+            command=f"offline profile skill_order check (playbook {playbook} -> {route.target}; no CLI invocation)",
             exit_code=0 if verdict == "PASS" else 1,
-            stdout=f"Advisory-routed '{playbook}' to primary_pstack '{target}' (exists={exists})",
+            stdout=stdout,
             stderr="",
             verdict=verdict,
             duration_s=0.01,

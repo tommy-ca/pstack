@@ -1306,6 +1306,36 @@ def test_harness_grok_profile_capability_parity() -> None:
     assert ".grok-plugin/plugin.json" in harness
 
 
+def test_harness_grok_tools_restored_scheduler_resume_semantics() -> None:
+    """VAL-SHIP-006: approved historic scheduling/resume facts restored from 6984906:HARNESS.md."""
+    harness = (ROOT / "skills" / "poteto-mode" / "references" / "grok-tools.md").read_text(encoding="utf-8")
+
+    # (a) Per-spawn model is optional, omits to inherit, and never combines with resume_from.
+    assert "optional slug" in harness
+    assert "inherit the parent" in harness
+    assert "together with `resume_from`" in harness
+    assert "TaskModelValidator" in harness
+
+    # (b) Resume uses the prior subagent_id with the same subagent_type.
+    assert "prior `subagent_id`" in harness
+    assert "same `subagent_type`" in harness
+
+    # (c) scheduler_create: interval values with 60s floor, fire_immediately default,
+    # in-place updates, and scheduler_delete cancellation.
+    assert "`5m`/`2h`/`1d`" in harness
+    assert "minimum 60 seconds" in harness
+    assert "fire_immediately" in harness
+    assert "`task_id`" in harness
+    assert "scheduler_delete" in harness
+
+    # (d) recurring is schema-skipped; sending recurring: false is rejected.
+    assert "`recurring: false` is rejected" in harness
+    assert "#[schemars(skip)]" in harness
+
+    # (e) One-shot delayed work is a background shell sleep, not scheduler work.
+    assert "`sleep && cmd`" in harness
+
+
 if __name__ == "__main__":
     test_verify_harness_script_exists()
     test_verify_harness_passes_on_this_tree()
