@@ -4,14 +4,23 @@
 # operated in it. Emits a table sorted by size with a suggested bucket. Never
 # deletes anything; deletion stays a human-gated step in the playbook.
 #
-# Usage: worktree-audit.sh [repo-path]   (defaults to the current repo)
+# Usage: worktree-audit.sh [--fetch] [repo-path]   (defaults to the current repo)
 set -u
 
 here=$(cd "$(dirname "$0")" && pwd)
 # shellcheck source=leftover-clone.sh
 . "$here/leftover-clone.sh"
 
-repo="${1:-$(git rev-parse --show-toplevel 2>/dev/null)}"
+do_fetch=0
+repo=""
+while [ $# -gt 0 ]; do
+	case "$1" in
+		--fetch) do_fetch=1; shift ;;
+		*) repo="$1"; shift ;;
+	esac
+done
+
+[ -z "$repo" ] && repo="$(git rev-parse --show-toplevel 2>/dev/null)"
 [ -z "$repo" ] && { echo "not in a git repo; pass a repo path" >&2; exit 1; }
 cd "$repo" || exit 1
 repo=$(pwd -P)
@@ -21,7 +30,9 @@ main_wt=$(git worktree list --porcelain | sed -n 's/^worktree //p' | sed -n '1p'
 [ -n "$main_wt" ] || { echo "no git worktree found" >&2; exit 1; }
 
 # origin/main drives the merge check. Best-effort; unavailable means unknown.
-git fetch origin main --quiet 2>/dev/null || echo "warn: could not fetch origin/main; merged column may be stale" >&2
+if [ "$do_fetch" -eq 1 ]; then
+	git fetch origin main --quiet 2>/dev/null || echo "warn: could not fetch origin/main; merged column may be stale" >&2
+fi
 base_ref=""
 if git rev-parse --verify --quiet refs/remotes/origin/main >/dev/null 2>&1; then
 	base_ref=origin/main
@@ -126,18 +137,26 @@ emit_row() {
 	if [ "$kind" = clone ]; then
 		case "$dirty" in
 			wip:*) bucket=hold-wip ;;
+			scratch:*) bucket=hold-untracked ;;
 			*) bucket=review ;;
 		esac
 	else
 		case "$dirty" in
 			wip:*) bucket=hold-wip ;;
+			scratch:*) bucket=hold-untracked ;;
 			*)
 				case "$pr" in
 					*OPEN*) bucket=hold-open-pr ;;
+					*CLOSED*) bucket=hold-closed-unmerged ;;
 					*)
-						if [ "$recent" = yes ]; then bucket=verify-recent-chat
-						elif [ "$merged" = YES ] || [ "${pr##*/}" = MERGED ]; then bucket=safe
-						else bucket=review; fi
+						case "$remote" in
+							ahead*|no-remote|detached) bucket=hold-unpushed ;;
+							*)
+								if [ "$recent" = yes ]; then bucket=verify-recent-chat
+								elif [ "$merged" = YES ] || [ "${pr##*/}" = MERGED ]; then bucket=safe
+								else bucket=review; fi
+								;;
+						esac
 						;;
 				esac
 				;;
