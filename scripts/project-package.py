@@ -227,7 +227,7 @@ def generate_antigravity_models(desc: PackageDescriptor) -> Dict[str, Any]:
 def generate_codex_models(desc: PackageDescriptor) -> Dict[str, Any]:
     return {
         "singleRoleDefault": "gpt-6.1-sol",
-        "panel": ["gpt-6.1-sol", "gpt-6-astra", "gpt-6-luna"],
+        "panel": ["gpt-6.1-sol", "gpt-6-luna"],
         "available": [
             {"label": "GPT-6.1 Sol", "slug": "gpt-6.1-sol"},
             {"label": "GPT-6 Astra", "slug": "gpt-6-astra"},
@@ -235,24 +235,27 @@ def generate_codex_models(desc: PackageDescriptor) -> Dict[str, Any]:
         ],
         "roles": [
             {"role": "feature, refactoring", "models": ["gpt-6-luna"], "skill": "poteto-mode"},
-            {"role": "bug-fix", "models": ["gpt-6.1-sol"], "skill": "poteto-mode"},
-            {"role": "perf-issue", "models": ["gpt-6.1-sol"], "skill": "poteto-mode"},
-            {"role": "hillclimb", "models": ["gpt-6.1-sol"], "skill": "poteto-mode"},
-            {"role": "judgment and prose", "models": ["gpt-6-luna"], "skill": "poteto-mode"},
+            {"role": "bug-fix", "models": ["gpt-6-luna"], "skill": "poteto-mode"},
+            {"role": "perf-issue", "models": ["gpt-6-luna"], "skill": "poteto-mode"},
+            {"role": "hillclimb", "models": ["gpt-6-luna"], "skill": "poteto-mode"},
+            {"role": "judgment and prose", "models": ["gpt-6.1-sol", "gpt-6-luna"], "skill": "poteto-mode"},
             {"role": "strongest judgment", "models": ["gpt-6.1-sol"], "skill": "poteto-mode"},
             {"role": "how explorer", "models": ["gpt-6-luna"], "skill": "how"},
             {"role": "how explainer", "models": ["gpt-6-luna"], "skill": "how"},
             {"role": "why investigators", "models": ["gpt-6-luna"], "skill": "why"},
-            {"role": "why synthesizer", "models": ["gpt-6-luna"], "skill": "why"},
+            {"role": "why synthesizer", "models": ["gpt-6.1-sol"], "skill": "why"},
             {"role": "reflect tooling", "models": ["gpt-6-luna"], "skill": "reflect"},
             {"role": "reflect judgment, divergent, synthesizer", "models": ["gpt-6.1-sol"], "skill": "reflect"},
+            {"role": "hardest-tasks", "models": ["gpt-6-astra"], "skill": "poteto-mode"},
             {"role": "arena runners", "models": "panel", "skill": "arena"},
-            {"role": "arena cross-judge pool", "models": "panel", "skill": "arena"},
+            {"role": "arena cross-judge pool", "models": ["gpt-6.1-sol"], "skill": "arena"},
             {"role": "swarm workers", "models": ["gpt-6-luna"], "skill": "swarm"},
-            {"role": "architect runners", "models": "panel", "skill": "architect"},
-            {"role": "interrogate reviewers", "models": "panel", "skill": "interrogate"},
+            {"role": "architect runners", "models": ["gpt-6.1-sol"], "skill": "architect"},
+            {"role": "interrogate reviewers", "models": ["gpt-6.1-sol"], "skill": "interrogate"},
+            {"role": "independent-verifier", "models": ["gpt-6.1-sol"], "skill": "poteto-mode"},
         ],
     }
+
 
 
 def generate_droid_manifest(desc: PackageDescriptor) -> Dict[str, Any]:

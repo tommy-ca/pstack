@@ -2,7 +2,6 @@
   "singleRoleDefault": "gpt-6.1-sol",
   "panel": [
     "gpt-6.1-sol",
-    "gpt-6-astra",
     "gpt-6-luna"
   ],
   "available": [
@@ -30,27 +29,28 @@
     {
       "role": "bug-fix",
       "models": [
-        "gpt-6.1-sol"
+        "gpt-6-luna"
       ],
       "skill": "poteto-mode"
     },
     {
       "role": "perf-issue",
       "models": [
-        "gpt-6.1-sol"
+        "gpt-6-luna"
       ],
       "skill": "poteto-mode"
     },
     {
       "role": "hillclimb",
       "models": [
-        "gpt-6.1-sol"
+        "gpt-6-luna"
       ],
       "skill": "poteto-mode"
     },
     {
       "role": "judgment and prose",
       "models": [
+        "gpt-6.1-sol",
         "gpt-6-luna"
       ],
       "skill": "poteto-mode"
@@ -86,7 +86,7 @@
     {
       "role": "why synthesizer",
       "models": [
-        "gpt-6-luna"
+        "gpt-6.1-sol"
       ],
       "skill": "why"
     },
@@ -105,13 +105,22 @@
       "skill": "reflect"
     },
     {
+      "role": "hardest-tasks",
+      "models": [
+        "gpt-6-astra"
+      ],
+      "skill": "poteto-mode"
+    },
+    {
       "role": "arena runners",
       "models": "panel",
       "skill": "arena"
     },
     {
       "role": "arena cross-judge pool",
-      "models": "panel",
+      "models": [
+        "gpt-6.1-sol"
+      ],
       "skill": "arena"
     },
     {
@@ -123,13 +132,24 @@
     },
     {
       "role": "architect runners",
-      "models": "panel",
+      "models": [
+        "gpt-6.1-sol"
+      ],
       "skill": "architect"
     },
     {
       "role": "interrogate reviewers",
-      "models": "panel",
+      "models": [
+        "gpt-6.1-sol"
+      ],
       "skill": "interrogate"
+    },
+    {
+      "role": "independent-verifier",
+      "models": [
+        "gpt-6.1-sol"
+      ],
+      "skill": "poteto-mode"
     }
   ]
 }
