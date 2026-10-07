@@ -126,26 +126,36 @@ The implementation MUST NOT introduce a generic multi-provider gateway unless in
 - **WHEN** the Jev adapter is removed or replaced by a test/recorded provider
 - **THEN** shared playbooks and skills require no semantic rewrite
 
-### Requirement: The decision result is typed and auditable
+### Requirement: Semantic outcome and integration receipt are separate
 
-A decision result MUST carry enough information to evaluate it without exposing hidden reasoning.
+The provider outcome MUST describe only the bounded semantic judgment. Routing authority and evidence metadata MUST stay outside the provider result.
 
-Minimum shape:
+Minimum provider outcome:
 
 ```yaml
-Decision:
-  kind: string
-  value: scalar | enum
+SemanticDecisionOutcome:
+  status: decided | abstain | unavailable
+  kind: choice | score | boolean
+  value: optional scalar | enum
   confidence: optional number
   probabilities: optional map
-  source: deterministic | semantic_provider | system_two | human | observation
   provider: optional string
   model: optional string
+```
+
+The integration MAY wrap that outcome in an auditable receipt:
+
+```yaml
+DecisionReceipt:
+  source: deterministic | semantic_provider | system_two | human | observation
+  outcome: SemanticDecisionOutcome | scalar | enum
   policy_version: string
   mode: shadow | advisory | controlling
 ```
 
-Evidence MAY additionally record task fixture/revision and provider timing/cost.
+A provider MUST NOT decide or mutate `mode`, authority precedence, acting route, or evidence persistence. Those belong to routing policy and the evidence layer.
+
+Evidence MAY additionally record task fixture/revision, canonical mapping revision, and provider timing/cost.
 
 pstack MUST NOT require or store private chain-of-thought.
 
