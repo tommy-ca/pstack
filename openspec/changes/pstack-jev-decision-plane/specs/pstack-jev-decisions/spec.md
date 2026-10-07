@@ -6,8 +6,6 @@ Define the smallest optional integration of TypeSafe Jev decision models into ps
 
 Jev is a bounded semantic decision primitive. It is not a pstack agent role, coding model, workflow runtime, durable orchestration store, or authority for irreversible actions.
 
-Program tracking: #193.
-
 ## ADDED Requirements
 
 ### Requirement: Existing pstack semantics remain authoritative
@@ -31,14 +29,14 @@ Decision precedence MUST be:
 exact deterministic fact
   > explicit user command
   > hard safety/autonomy policy
-  > Jev bounded semantic decision
+  > bounded semantic-provider decision
   > System-Two LLM judgment
   > human preference/gate when required
 ```
 
 This ordering describes authority, not mandatory execution. A higher layer MAY settle a decision without invoking lower layers.
 
-Jev MUST NOT override deterministic state, an explicit slash command, hard safety policy, or a required human gate.
+A bounded semantic provider MUST NOT override deterministic state, an explicit slash command, hard safety policy, or a required human gate.
 
 #### Scenario: explicit playbook command
 
@@ -77,7 +75,7 @@ The first controlling candidates MUST be limited to:
 
 Before promotion, both MUST run in shadow mode with zero externally observable routing change.
 
-Later candidates MAY include task-complexity/model-tier hints, review-finding triage, or semantic completion checks only after separate evidence.
+Any later use case requires its own evidence and specification change.
 
 #### Scenario: shadow mode
 
@@ -112,9 +110,13 @@ Jev MAY provide advisory narrow predicates around those workflows, but their con
 
 ### Requirement: TypeSafe/Jev is isolated behind one optional provider boundary
 
-Portable/shared pstack surfaces MUST depend only on a small host-neutral decision contract.
+Portable/shared pstack surfaces MUST depend only on a small host-neutral semantic-decision contract.
 
-TypeSafe/Jev SDK, HTTP, authentication, model identifiers, retries, serialization, and provider errors MUST stop at the provider boundary.
+The portable contract MUST NOT name Jev-specific transport, SDK, authentication, model, or wire types. Provider identity belongs in metadata, not in the core decision-source type.
+
+TypeSafe/Jev SDK, HTTP, authentication, model identifiers, bounded retries, serialization, and provider errors MUST stop at the provider boundary.
+
+The provider boundary owns provider I/O only. Routing policy, authority precedence, and evidence persistence remain separate responsibilities.
 
 The implementation MUST NOT introduce a generic multi-provider gateway unless independent evidence later proves that abstraction is necessary.
 
@@ -136,7 +138,8 @@ Decision:
   value: scalar | enum
   confidence: optional number
   probabilities: optional map
-  source: rule | jev | llm | human | observation
+  source: deterministic | semantic_provider | system_two | human | observation
+  provider: optional string
   model: optional string
   policy_version: string
   mode: shadow | advisory | controlling
@@ -224,46 +227,6 @@ The pilot MUST NOT add a workflow DSL, scheduler, task database, new agent hiera
 
 Any larger abstraction requires separate evidence and review.
 
-## Initial decision vocabulary
-
-The pilot MAY define a small vocabulary such as:
-
-```yaml
-playbook_class:
-  choice:
-    - investigation
-    - bug_fix
-    - performance
-    - feature
-    - refactor
-    - prototype
-    - review
-    - shipping
-    - orchestration
-    - other
-
-requires_runtime_evidence:
-  boolean: true
-
-requires_design_exploration:
-  boolean: true
-
-parallelizable:
-  boolean: true
-
-scope_complexity:
-  score:
-    - local
-    - multi_file
-    - cross_subsystem
-    - project_scale
-
-human_preference_required:
-  boolean: true
-```
-
-The vocabulary is illustrative rather than a requirement to ask every question for every task.
-
 ## Minimal control flow
 
 ```text
@@ -281,29 +244,6 @@ existing verification and human gates
 ```
 
 If Jev is disabled, unavailable, abstains, or is below threshold, the Jev node collapses and the pre-existing pstack path continues.
-
-## Program graph
-
-Epic #193 owns delivery.
-
-```text
-#182 decision contract
-   ↓
-#183 Arena seam selection
-   ↓
-#184 optional provider adapter
-   ↓
-#185 shadow routing
-   ↓
-#186 eval/calibration lever
-   ↓
-┌──────────────┬────────────────┐
-↓              ↓
-#187 Swarm     #188 Interrogate
-└──────────────┬────────────────┘
-               ↓
-             #189 selective promotion
-```
 
 ## Principles
 
