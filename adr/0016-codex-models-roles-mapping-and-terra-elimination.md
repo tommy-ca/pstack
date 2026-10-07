@@ -18,10 +18,10 @@ The evaluated options:
 ## Decision
 
 1. Update `profiles/codex.json` to declare `default_model: "gpt-6.1-sol"`, complete tool mappings, and formalize the 3-tier skill order table.
-2. Update `skills/poteto-mode/references/codex-tools.md` with symmetrical tool actions, full skill order table, and comprehensive models documentation.
+2. Update `skills/poteto-mode/references/codex-tools.md` with symmetrical tool actions, full skill order table, comprehensive models documentation (workers on `gpt-6-luna`, orchestrators on `gpt-6.1-sol`, `gpt-6-astra` minimal to `hardest-tasks`), and verification skills/tools.
 3. Update `skills/poteto-mode/references/provider-dispatch.md` stock routes for Codex.
-4. Extend `scripts/project-package.py` to project `.codex-plugin/models.json` with three-tier models (`gpt-6.1-sol`, `gpt-6-astra`, `gpt-6-luna`) and strictly eliminate `gpt-5.6-terra`.
-5. Update `~/.codex/pstack-models.md` to map roles to the latest generation.
+4. Extend `scripts/project-package.py` to project `.codex-plugin/models.json` with three-tier models (`gpt-6.1-sol`, `gpt-6-astra`, `gpt-6-luna`), align worker roles to Luna and orchestrators to Sol, reserve Astra for hardest tasks, and strictly eliminate `gpt-5.6-terra`.
+5. Update `~/.codex/pstack-models.md` to map roles to the latest generation with worker/orchestrator alignment.
 6. Regenerate 5-harness verification receipts to reflect the updated skills tree hash and profile revisions.
 
 ## Status
