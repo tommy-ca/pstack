@@ -1,4 +1,6 @@
+import importlib.util
 import json
+import shutil
 import subprocess
 import sys
 from dataclasses import replace
@@ -251,6 +253,79 @@ def test_hand_authored_support_state_cannot_outrun_evidence() -> None:
 
     with pytest.raises(ValidationError, match="evidence is stale"):
         check_evidence_durability(prof, ROOT, check_freshness=True, current_revisions=tampered_revs)
+
+
+def _disposable_copy(tmp_path: Path) -> Path:
+    """Fresh extraction of the repo as an installed/extracted package: no .git,
+    no pre-existing dependency or bytecode artifacts."""
+    copy_root = tmp_path / "extracted-package"
+    shutil.copytree(
+        ROOT,
+        copy_root,
+        ignore=shutil.ignore_patterns(".git", "__pycache__", "node_modules", ".venv"),
+    )
+    return copy_root
+
+
+def test_dependency_artifacts_do_not_change_skills_tree_hash(tmp_path: Path) -> None:
+    copy_root = _disposable_copy(tmp_path)
+
+    fresh = compute_surface_revisions(copy_root, "grok").skills_tree_hash
+
+    # Dependency install artifacts under skills/
+    pkg = copy_root / "skills" / "poteto-mode" / "scripts" / "node_modules" / "some-pkg"
+    pkg.mkdir(parents=True)
+    (pkg / "index.js").write_text("module.exports = 1;\n", encoding="utf-8")
+    after_deps = compute_surface_revisions(copy_root, "grok").skills_tree_hash
+    assert after_deps == fresh
+
+    # Bytecode artifacts under skills/
+    pyc_dir = copy_root / "skills" / "swarm" / "scripts" / "__pycache__"
+    pyc_dir.mkdir(parents=True)
+    (pyc_dir / "partition.cpython-312.pyc").write_bytes(b"\x00\x01fake-bytecode")
+    # Stray bytecode outside a __pycache__ directory too
+    (copy_root / "skills" / "swarm" / "scripts" / "partition.cpython-312.pyc").write_bytes(b"\x00\x01")
+    after_bytecode = compute_surface_revisions(copy_root, "grok").skills_tree_hash
+    assert after_bytecode == fresh
+
+    assert len(fresh) == 64
+
+
+def test_genuine_skill_source_change_changes_skills_tree_hash(tmp_path: Path) -> None:
+    copy_root = _disposable_copy(tmp_path)
+    skill_file = copy_root / "skills" / "how" / "SKILL.md"
+
+    fresh = compute_surface_revisions(copy_root, "grok").skills_tree_hash
+    original = skill_file.read_text(encoding="utf-8")
+    skill_file.write_text(original + "\nA genuine source edit.\n", encoding="utf-8")
+    edited = compute_surface_revisions(copy_root, "grok").skills_tree_hash
+    assert edited != fresh
+
+    # Reverting the edit restores the original fingerprint.
+    skill_file.write_text(original, encoding="utf-8")
+    reverted = compute_surface_revisions(copy_root, "grok").skills_tree_hash
+    assert reverted == fresh
+
+
+def test_harness_verifier_dynamic_import_does_not_self_invalidate(tmp_path: Path) -> None:
+    copy_root = _disposable_copy(tmp_path)
+    partition_script = copy_root / "skills" / "swarm" / "scripts" / "partition.py"
+    fresh = compute_surface_revisions(copy_root, "grok").skills_tree_hash
+
+    # Reproduce verify-harness.py's dynamic import with bytecode caching enabled
+    # (i.e. run without PYTHONDONTWRITEBYTECODE), as the bare verifier does.
+    saved_dont_write = sys.dont_write_bytecode
+    sys.dont_write_bytecode = False
+    try:
+        spec = importlib.util.spec_from_file_location("swarm_partition", partition_script)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+    finally:
+        sys.dont_write_bytecode = saved_dont_write
+
+    pycache = partition_script.parent / "__pycache__"
+    assert pycache.is_dir(), "verifier import should have produced bytecode artifacts"
+    assert compute_surface_revisions(copy_root, "grok").skills_tree_hash == fresh
 
 
 def test_check_staleness_cli_json_output() -> None:

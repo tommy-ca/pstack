@@ -22,6 +22,11 @@ HOSTS = ("grok", "codex", "omp", "opencode", "antigravity", "claude", "custom")
 
 CONFORMANCE_PLANES = ("canonical", "adapter", "package", "runtime")
 
+# Dependency/cache artifacts that must never perturb skills_tree_hash. Ignored
+# at hash time so extracted non-Git packages stay invariant too; no Git state.
+SKILLS_HASH_IGNORED_DIRS = frozenset({"__pycache__", "node_modules"})
+SKILLS_HASH_IGNORED_SUFFIXES = (".pyc", ".pyo")
+
 MANDATORY_SUPPORT_FLOOR = (
     "agent.spawn",
     "agent.join",
@@ -556,9 +561,13 @@ def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path
     if skills_dir.is_dir():
         hasher = hashlib.sha256()
         for p in sorted(skills_dir.rglob("*")):
+            rel = p.relative_to(skills_dir)
+            if any(part in SKILLS_HASH_IGNORED_DIRS for part in rel.parts):
+                continue
             if p.is_file():
-                rel = p.relative_to(skills_dir).as_posix()
-                hasher.update(rel.encode("utf-8"))
+                if p.suffix in SKILLS_HASH_IGNORED_SUFFIXES:
+                    continue
+                hasher.update(rel.as_posix().encode("utf-8"))
                 hasher.update(p.read_bytes())
         skills_tree_hash = hasher.hexdigest()
     else:
