@@ -213,7 +213,7 @@
     },
     {
       "need": "Prove work is done",
-      "primary_pstack": "prove-it-works",
+      "primary_pstack": "/principle-prove-it-works",
       "secondary_user": "/verification-before-completion",
       "fallback_builtin": null
     },
@@ -267,9 +267,10 @@
     },
     {
       "need": "Unslop / comments",
-      "primary_pstack": "/unslop, /no-comments",
+      "primary_pstack": "/unslop",
       "secondary_user": null,
-      "fallback_builtin": null
+      "fallback_builtin": null,
+      "notes": "/unslop for prose, /no-comments for diffs"
     }
   ],
   "runtime_conventions": {

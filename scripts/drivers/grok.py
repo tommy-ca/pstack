@@ -65,34 +65,26 @@ class GrokDriver(HarnessDriver):
         if not avail:
             return self.blocked_result("runtime-route-playbook-grok", f"Grok playbook routing for '{playbook}'", reason)
 
-        # Check skill_order resolution
-        so = self.profile_data.get("skill_order", [])
-        matched = False
-        target = None
-        for item in so:
-            if playbook in str(item.get("need", "")).lower() or playbook in str(item.get("primary_pstack", "")).lower():
-                matched = True
-                target = item.get("primary_pstack")
-                break
+        from ..route_resolver import resolve_skill_order
 
-        # Check that target playbook or command exists
-        exists = False
-        if target:
-            if target.startswith("/"):
-                # Slash command or skill
-                skill_name = target.lstrip("/")
-                exists = (self.root / "skills" / skill_name).is_dir() or (self.root / "skills" / "poteto-mode" / "playbooks" / f"{skill_name}.md").is_file()
-            else:
-                exists = (self.root / "skills" / "poteto-mode" / target).is_file() or (self.root / target).is_file()
+        route = resolve_skill_order(self.profile_data, playbook, self.root)
+        if route.kind == "declared-fallback":
+            verdict = "PASS" if route.target is not None else "FAIL"
+            stdout = f"Routed '{playbook}' to declared fallback '{route.target}'"
+        elif route.is_matched and route.artifact_exists:
+            verdict = "PASS"
+            stdout = f"Routed '{playbook}' to {route.kind} '{route.target}' ({route.artifact}; exists=True)"
+        else:
+            verdict = "FAIL"
+            stdout = f"No valid route/artifact for '{playbook}' (status={route.status}, target={route.target})"
 
-        verdict = "PASS" if matched and exists else "FAIL"
         return DriverScenarioResult(
             scenario_id="runtime-route-playbook-grok",
-            description=f"Verify Grok routes '{playbook}' via profile skill_order ({target})",
-            command=f"grok route-check --playbook {playbook} -> {target}",
+            description=f"Verify Grok routes '{playbook}' via profile skill_order ({route.target})",
+            command=f"grok route-check --playbook {playbook} -> {route.target}",
             exit_code=0 if verdict == "PASS" else 1,
-            stdout=f"Routed '{playbook}' to primary_pstack '{target}' (exists={exists})",
-            stderr="",
+            stdout=stdout,
+            stderr=route.error_reason,
             verdict=verdict,
             duration_s=0.01,
         )

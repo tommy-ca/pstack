@@ -206,7 +206,7 @@
     },
     {
       "need": "Prove work is done",
-      "primary_pstack": "prove-it-works",
+      "primary_pstack": "/principle-prove-it-works",
       "secondary_user": null,
       "fallback_builtin": null
     },
