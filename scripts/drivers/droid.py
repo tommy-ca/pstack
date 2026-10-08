@@ -17,91 +17,11 @@ from .base import DriverScenarioResult, HarnessDriver, find_executable
 
 REQUIRED_SPAWN_FIELDS = ("subagent_type", "description", "prompt")
 
-# Native generated droid definitions (`droids/pstack-<role>.md`), resolved by
-# their hyphenated native id; never annotated, never alias-guessed.
-_DROID_DEFINITION_ID = re.compile(r"^pstack-[a-z0-9-]+$")
-
-
-@dataclass
-class SkillRoute:
-    """One resolved advisory skill_order route.
-
-    kind is one of "skill" (skills/<name>/ directory), "playbook"
-    (skills/poteto-mode/playbooks/<name>.md), "droid-definition"
-    (droids/pstack-<role>.md), "declared-fallback" (null-primary row resolving
-    its declared fallback as a configuration-routing claim), or "no-route".
-    """
-
-    need: str
-    kind: str
-    target: Optional[str] = None
-    artifact: Optional[Path] = None
-    notes: str = ""
-
-
-def _resolve_primary_artifact(identifier: str, root: Path) -> Path:
-    """Locate the native artifact a primary_pstack identifier declares."""
-    if identifier.startswith("/"):
-        name = identifier.lstrip("/")
-        skill_dir = root / "skills" / name
-        if skill_dir.is_dir():
-            return skill_dir
-        return root / "skills" / "poteto-mode" / "playbooks" / f"{name}.md"
-    if _DROID_DEFINITION_ID.match(identifier):
-        return root / "droids" / f"{identifier}.md"
-    return root / "skills" / "poteto-mode" / identifier
-
-
-def resolve_skill_order(profile: dict, playbook: str, root: Path) -> SkillRoute:
-    """Resolve one advisory skill_order row for a playbook query.
-
-    Matching is exact, never substring: a query matches a row when it equals
-    the row's `need` (case-insensitive), the `primary_pstack` identifier, or
-    the basename stem of a `playbooks/<stem>.md` primary. Substring matching
-    false-matched rows by collision (e.g. "spawn" matching "Read-only spawn"),
-    so an unknown query now reports no route instead of a fake match.
-    """
-    query = playbook.strip().lower()
-    for item in profile.get("skill_order", []):
-        primary = item.get("primary_pstack")
-        need = str(item.get("need", "")).strip().lower()
-        notes = str(item.get("notes", ""))
-        candidates = {need}
-        if primary is not None:
-            identifier = str(primary).strip()
-            candidates.add(identifier.lower())
-            stem = identifier.rsplit("/", 1)[-1]
-            if stem.endswith(".md"):
-                candidates.add(stem[:-3].lower())
-        if query not in candidates:
-            continue
-        if primary is None:
-            # Declared tier order (portability spec's 3-tier fallback matrix):
-            # secondary_user is tier 2 and wins over fallback_builtin (tier
-            # 3); the builtin is used only when the secondary user skill is
-            # absent.
-            fallback = item.get("secondary_user") or item.get("fallback_builtin")
-            return SkillRoute(
-                need=need,
-                kind="declared-fallback",
-                target=str(fallback) if fallback else None,
-                notes=notes,
-            )
-        identifier = str(primary).strip()
-        if identifier.startswith("/"):
-            kind = "skill"
-        elif _DROID_DEFINITION_ID.match(identifier):
-            kind = "droid-definition"
-        else:
-            kind = "playbook"
-        return SkillRoute(
-            need=need,
-            kind=kind,
-            target=identifier,
-            artifact=_resolve_primary_artifact(identifier, root),
-            notes=notes,
-        )
-    return SkillRoute(need="", kind="no-route")
+from ..route_resolver import (
+    SkillRoute,
+    resolve_primary_artifact as _resolve_primary_artifact,
+    resolve_skill_order,
+)
 
 
 class DroidDriver(HarnessDriver):
