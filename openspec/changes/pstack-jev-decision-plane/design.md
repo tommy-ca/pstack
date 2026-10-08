@@ -88,11 +88,9 @@ Evidence stores a fixture identifier, fixture digest, closed labels, and revisio
 
 ## Canonical mapping
 
-One future provider-neutral mapping will own the closed phase-one class vocabulary and its canonical playbook candidates. It will also classify every canonical playbook as semantic-eligible, deterministic, System-Two, or human-gated. The mapping will contain no provider names, model names, confidence thresholds, or execution authority.
+The canonical registry lives at `references/decision-routing.json`. Each row identifies one canonical playbook, its source blob, and one selection: `direct`, `semantic_candidate`, or `system_two`. A semantic candidate also carries one unique class label. Direct routes bypass semantic classification. Human and safety gates remain policy in the formal contract, not mutable registry flags. The registry contains no provider names, model names, confidence thresholds, or execution authority.
 
 Explicit or directly inspectable routes bypass the semantic provider. High-risk, generative, arithmetic, tool-execution, shipping, and preference decisions have no semantic authority. An eligibility result is a classification hint only. It cannot authorize execution. An unknown or `other` class returns the baseline route. Skill suggestion remains unavailable until a separate grounded taxonomy and caller exist.
-
-The mapping is deliberately absent from this contract unit. A later unit must bind it to an official source revision and fail closed on missing, duplicate, renamed, or unclassified entries.
 
 ## Receipt and fallback
 
@@ -121,7 +119,7 @@ No-change remains the acting baseline and is a valid final outcome. This contrac
 ## Non-goals
 
 - No provider runtime or adapter.
-- No runtime schema or canonical mapping.
+- No runtime schema. The canonical mapping is a source registry, not a runtime schema.
 - No shared decision service or generic provider gateway.
 - No skill-suggestion caller.
 - No workflow runtime, durable decision store, or new agent role.
