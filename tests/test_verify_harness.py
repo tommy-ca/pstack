@@ -1072,6 +1072,17 @@ def test_nowrite_agents_use_capability_mode_execute() -> None:
         )
 
 
+def test_agent_and_droid_schema_parity() -> None:
+    agent_files = list((ROOT / "agents").glob("*.md"))
+    droid_files = list((ROOT / "droids").glob("*.md"))
+    assert len(agent_files) == 22, f"expected 22 agents, got {len(agent_files)}"
+    assert len(droid_files) == 22, f"expected 22 droids, got {len(droid_files)}"
+    agent_stems = {p.stem for p in agent_files}
+    droid_stems = {p.stem.removeprefix("pstack-") for p in droid_files}
+    assert agent_stems == droid_stems, f"mismatch: {agent_stems ^ droid_stems}"
+
+
+
 def test_audit_dir_skipped_by_harness_scanners() -> None:
     spec = importlib.util.spec_from_file_location("verify_harness", SCANNER)
     verify = importlib.util.module_from_spec(spec)
@@ -1368,6 +1379,7 @@ if __name__ == "__main__":
     test_effort_frontmatter_matches_ladder()
     test_plugin_manifest_matches_grok_parsed_fields()
     test_nowrite_agents_use_capability_mode_execute()
+    test_agent_and_droid_schema_parity()
     test_audit_dir_skipped_by_harness_scanners()
     test_harness_skill_order_is_pstack_then_user_then_native()
     test_forge_neutral_pr_path_without_graphite()

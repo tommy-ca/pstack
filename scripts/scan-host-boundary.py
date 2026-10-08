@@ -250,7 +250,7 @@ def run_scan(
     scanned_count = 0
 
     if target_dirs is None:
-        target_dirs = [root / "skills", root / "schemas"]
+        target_dirs = [root / "skills", root / "schemas", root / "agents", root / "droids"]
 
     for target in target_dirs:
         if target.is_file():
