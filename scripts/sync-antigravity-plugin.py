@@ -23,6 +23,11 @@ if str(ROOT) not in sys.path:
 
 import importlib.util
 
+from scripts.portability_schema import (
+    SKILLS_HASH_IGNORED_DIRS,
+    SKILLS_HASH_IGNORED_SUFFIXES,
+)
+
 PROJECT_PACKAGE_SCRIPT = ROOT / "scripts" / "project-package.py"
 _loader = importlib.util.spec_from_file_location("project_package", PROJECT_PACKAGE_SCRIPT)
 assert _loader is not None and _loader.loader is not None
@@ -35,6 +40,79 @@ generate_antigravity_models = _pp_mod.generate_antigravity_models
 generate_antigravity_commands = _pp_mod.generate_antigravity_commands
 load_package_descriptor = _pp_mod.load_package_descriptor
 project_all = _pp_mod.project_all
+
+
+def skill_names(directory: Path) -> set[str]:
+    if not directory.is_dir():
+        return set()
+    return {
+        item.name for item in directory.iterdir()
+        if item.is_dir() and item.name not in SKILLS_HASH_IGNORED_DIRS
+    }
+
+
+def skill_files(directory: Path) -> dict[str, bytes]:
+    files: dict[str, bytes] = {}
+    if not directory.is_dir():
+        return files
+
+    base_resolved = directory.resolve()
+    # (current_dir, tuple_of_resolved_ancestors)
+    stack = [(directory, (base_resolved,))]
+    while stack:
+        current_dir, ancestors = stack.pop()
+        try:
+            entries = sorted(current_dir.iterdir(), key=lambda p: p.name)
+        except OSError:
+            continue
+        subdirs = []
+        for entry in entries:
+            if entry.name in SKILLS_HASH_IGNORED_DIRS:
+                continue
+            if entry.is_symlink():
+                try:
+                    resolved = entry.resolve()
+                except OSError:
+                    continue
+                if not resolved.is_relative_to(base_resolved):
+                    continue
+                if resolved.is_dir():
+                    if resolved in ancestors:
+                        continue
+                    subdirs.append((entry, ancestors + (resolved,)))
+                elif resolved.is_file():
+                    if entry.suffix not in SKILLS_HASH_IGNORED_SUFFIXES:
+                        try:
+                            files[str(entry.relative_to(directory))] = resolved.read_bytes()
+                        except OSError:
+                            continue
+            elif entry.is_dir():
+                try:
+                    resolved = entry.resolve()
+                except OSError:
+                    continue
+                if not resolved.is_relative_to(base_resolved) or resolved in ancestors:
+                    continue
+                subdirs.append((entry, ancestors + (resolved,)))
+            elif entry.is_file():
+                if entry.suffix not in SKILLS_HASH_IGNORED_SUFFIXES:
+                    try:
+                        files[str(entry.relative_to(directory))] = entry.read_bytes()
+                    except OSError:
+                        continue
+        for subdir, next_ancestors in reversed(subdirs):
+            stack.append((subdir, next_ancestors))
+    return files
+
+
+def check_files(expected: dict[str, bytes], actual: dict[str, bytes], label: str) -> bool:
+    missing = expected.keys() - actual.keys()
+    extra = actual.keys() - expected.keys()
+    drifted = {name for name in expected.keys() & actual.keys() if expected[name] != actual[name]}
+    for status, names in [("Missing", missing), ("Extra", extra), ("Drifted", drifted)]:
+        if names:
+            print(f"FAIL: {status} {label} in live plugin: {sorted(names)}")
+    return not (missing or extra or drifted)
 
 
 def audit_live_plugin() -> dict[str, str]:
@@ -138,8 +216,8 @@ def check_live_sync() -> bool:
             all_ok = False
 
     # Check skills
-    src_skills = {d.name for d in (ROOT / "skills").iterdir() if d.is_dir()}
-    dest_skills = {d.name for d in (LIVE_PLUGIN_DIR / "skills").iterdir() if d.is_dir()} if (LIVE_PLUGIN_DIR / "skills").is_dir() else set()
+    src_skills = skill_names(ROOT / "skills")
+    dest_skills = skill_names(LIVE_PLUGIN_DIR / "skills")
     missing_skills = src_skills - dest_skills
     extra_skills = dest_skills - src_skills
     if missing_skills:
@@ -148,26 +226,29 @@ def check_live_sync() -> bool:
     if extra_skills:
         print(f"FAIL: Extra untracked skills in live plugin: {sorted(extra_skills)}")
         all_ok = False
+    for name in sorted(src_skills & dest_skills):
+        if not check_files(
+            skill_files(ROOT / "skills" / name),
+            skill_files(LIVE_PLUGIN_DIR / "skills" / name),
+            f"files for skill {name}",
+        ):
+            all_ok = False
 
     # Check agents
-    src_agents = {f.name for f in (ROOT / "agents").glob("*.md")}
-    dest_agents = {f.name for f in (LIVE_PLUGIN_DIR / "agents").glob("*.md")} if (LIVE_PLUGIN_DIR / "agents").is_dir() else set()
-    missing_agents = src_agents - dest_agents
-    if missing_agents:
-        print(f"FAIL: Missing agents in live plugin: {sorted(missing_agents)}")
+    src_agents = {f.name: f.read_bytes() for f in (ROOT / "agents").glob("*.md") if f.is_file()}
+    dest_agents = {f.name: f.read_bytes() for f in (LIVE_PLUGIN_DIR / "agents").glob("*.md") if f.is_file()}
+    if not check_files(src_agents, dest_agents, "agents"):
         all_ok = False
 
     # Check commands
     expected_cmds = generate_antigravity_commands(desc)
-    dest_cmds_dir = LIVE_PLUGIN_DIR / "commands"
-    for fname, expected_content in expected_cmds.items():
-        cmd_file = dest_cmds_dir / fname
-        if not cmd_file.is_file():
-            print(f"FAIL: Missing command in live plugin: {fname}")
-            all_ok = False
-        elif cmd_file.read_text(encoding="utf-8") != expected_content:
-            print(f"FAIL: Command drifted in live plugin: {fname}")
-            all_ok = False
+    dest_cmds = {f.name: f.read_bytes() for f in (LIVE_PLUGIN_DIR / "commands").glob("*.toml") if f.is_file()}
+    if not check_files(
+        {name: content.encode("utf-8") for name, content in expected_cmds.items()},
+        dest_cmds,
+        "commands",
+    ):
+        all_ok = False
 
     # Check foreign directories
     for stray in [".codex-plugin", ".claude-plugin"]:
@@ -244,32 +325,37 @@ When working with pstack:
     # 5. Sync skills from ROOT/skills
     src_skills = ROOT / "skills"
     dest_skills = LIVE_PLUGIN_DIR / "skills"
-    dest_skills.mkdir(parents=True, exist_ok=True)
+    if not dry_run:
+        dest_skills.mkdir(parents=True, exist_ok=True)
 
-    src_skill_names = {item.name for item in src_skills.iterdir() if item.is_dir()}
-    for item_name in src_skill_names:
+    src_skill_names = skill_names(src_skills)
+    for item_name in sorted(src_skill_names):
         item = src_skills / item_name
         target = dest_skills / item_name
         print(f"Syncing skill {item_name} -> {target}")
         if not dry_run:
             if target.exists():
                 shutil.rmtree(target)
-            shutil.copytree(item, target)
+            target.mkdir(parents=True, exist_ok=True)
+            for rel_path, content in skill_files(item).items():
+                dest_file = target / rel_path
+                dest_file.parent.mkdir(parents=True, exist_ok=True)
+                dest_file.write_bytes(content)
 
     # Clean up any removed skills
-    for existing in dest_skills.iterdir():
-        if existing.is_dir() and existing.name not in src_skill_names:
-            print(f"Removing deleted skill {existing.name}")
-            if not dry_run:
-                shutil.rmtree(existing)
+    for name in sorted(skill_names(dest_skills) - src_skill_names):
+        print(f"Removing deleted skill {name}")
+        if not dry_run:
+            shutil.rmtree(dest_skills / name)
 
     # 6. Sync agents from ROOT/agents
     src_agents = ROOT / "agents"
     dest_agents = LIVE_PLUGIN_DIR / "agents"
-    dest_agents.mkdir(parents=True, exist_ok=True)
+    if not dry_run:
+        dest_agents.mkdir(parents=True, exist_ok=True)
 
-    src_agent_files = {f.name for f in src_agents.glob("*.md")}
-    for fname in src_agent_files:
+    src_agent_files = {f.name for f in src_agents.glob("*.md") if f.is_file()}
+    for fname in sorted(src_agent_files):
         src_file = src_agents / fname
         target_file = dest_agents / fname
         print(f"Syncing agent {fname} -> {target_file}")
@@ -277,30 +363,27 @@ When working with pstack:
             shutil.copy2(src_file, target_file)
 
     for existing_f in dest_agents.glob("*.md"):
-        if existing_f.name not in src_agent_files:
+        if existing_f.is_file() and existing_f.name not in src_agent_files:
             print(f"Removing deleted agent {existing_f.name}")
             if not dry_run:
                 existing_f.unlink()
 
-    # 7. Sync commands from ROOT/.antigravity-plugin/commands
-    src_cmds = ROOT / ".antigravity-plugin" / "commands"
+    expected_cmds = generate_antigravity_commands(desc)
     dest_cmds = LIVE_PLUGIN_DIR / "commands"
-    dest_cmds.mkdir(parents=True, exist_ok=True)
+    if not dry_run:
+        dest_cmds.mkdir(parents=True, exist_ok=True)
 
-    if src_cmds.is_dir():
-        src_cmd_files = {f.name for f in src_cmds.glob("*.toml")}
-        for fname in src_cmd_files:
-            src_cmd = src_cmds / fname
-            target_cmd = dest_cmds / fname
-            print(f"Syncing command {fname} -> {target_cmd}")
+    for fname, content in sorted(expected_cmds.items()):
+        target_cmd = dest_cmds / fname
+        print(f"Syncing command {fname} -> {target_cmd}")
+        if not dry_run:
+            target_cmd.write_text(content, encoding="utf-8")
+
+    for existing_cmd in dest_cmds.glob("*.toml"):
+        if existing_cmd.is_file() and existing_cmd.name not in expected_cmds:
+            print(f"Removing deleted command {existing_cmd.name}")
             if not dry_run:
-                shutil.copy2(src_cmd, target_cmd)
-
-        for existing_cmd in dest_cmds.glob("*.toml"):
-            if existing_cmd.name not in src_cmd_files:
-                print(f"Removing deleted command {existing_cmd.name}")
-                if not dry_run:
-                    existing_cmd.unlink()
+                existing_cmd.unlink()
 
     # 8. Run agy plugin validate verification
     if not dry_run and shutil.which("agy"):
