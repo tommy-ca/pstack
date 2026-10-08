@@ -168,3 +168,21 @@
 - [x] Unit 8: Execute 4-lane Swarm verification across canonical, routing, runtime proof, and safety (Issue #264)
 - [x] Unit 9: Conduct adversarial Interrogate review across stacked diffs (Issue #264)
 - [x] Unit 10: Deliver clean stacked PRs on GitHub with passing offline CI (Issue #264)
+
+## Epic #281: Audit, clean up, and reconcile agents and droids across SOLID, DRY, and host-neutral boundaries
+### Step 1: Host-neutral agent definitions and capability boundaries (Task #282)
+- [ ] Unit 1: Host-neutralize descriptions in `agents/*.md` to remove Grok-specific overlay text leaking to Antigravity
+- [ ] Unit 2: Enforce `capabilityMode: execute` on read-only analysis roles (`reflect-judgment`, `reflect-tooling`, `why-investigators`, `why-synthesizer`)
+- [ ] Unit 3: Enumerate all 22 roles in `pstack.package.json` under `roles`
+- [ ] Unit 4: Simplify `scripts/project-package.py` Droid description adaptation and project `droids/` with 100% parity
+
+### Step 2: Agent/droid schema verification and boundary scanner coverage (Task #283)
+- [ ] Unit 5: Extend `scripts/scan-host-boundary.py` to cover `agents/` and `droids/` with zero host vocabulary leaks
+- [ ] Unit 6: Extend `scripts/verify-harness.py` to audit full 22-agent and 22-droid population parity and frontmatter validity
+- [ ] Unit 7: Update and add tests in `tests/test_droid_projection.py` and `tests/test_scan_host_boundary.py`
+
+### Step 3: Swarm, Arena, Interrogate Acceptance & Stacked Delivery (Task #284)
+- [ ] Unit 8: Run Arena evaluation comparing host-neutral vs host-specialized agent architecture
+- [ ] Unit 9: Run Swarm 4-plane matrix across all 6 declared harnesses
+- [ ] Unit 10: Conduct adversarial Interrogate review across stacked diffs
+- [ ] Unit 11: Deliver clean stacked PRs on GitHub, merge bottom-up to main, and close issues

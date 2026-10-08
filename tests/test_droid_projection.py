@@ -74,6 +74,13 @@ def test_droid_roles_match_enumerated_agent_population() -> None:
     assert set(roles) == {f"pstack-{Path(name).stem}.md" for name in population}
 
 
+def test_package_descriptor_roles_match_agents_and_droids() -> None:
+    desc, _ = project_package.load_package_descriptor()
+    desc_roles = {r["id"] for r in desc.roles}
+    population = {Path(name).stem for name in _agents_population()}
+    assert desc_roles == population, f"Package descriptor roles diverged from agents/: {desc_roles ^ population}"
+
+
 def test_generated_droid_frontmatter_contract() -> None:
     for fname, content in _generated_roles().items():
         assert DROID_NAME_PATTERN.match(fname[: -len(".md")]), fname

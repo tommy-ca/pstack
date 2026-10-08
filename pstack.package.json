@@ -41,9 +41,19 @@
   },
   "roles": [
     {
-      "id": "feature",
-      "description": "Feature implementation and refactoring",
-      "default_model_role": "strongest"
+      "id": "architect-runners",
+      "description": "Architect sketch writer and deep module design",
+      "default_model_role": "panel"
+    },
+    {
+      "id": "arena-cross-judge-pool",
+      "description": "Arena cross-judge pool for independent scoring",
+      "default_model_role": "panel"
+    },
+    {
+      "id": "arena-runners",
+      "description": "Parallel candidate generation and cross-judge synthesis",
+      "default_model_role": "panel"
     },
     {
       "id": "bug-fix",
@@ -51,19 +61,94 @@
       "default_model_role": "strong-judgment"
     },
     {
-      "id": "interrogate",
+      "id": "comment-sicko",
+      "description": "Comment hunter and deletion specialist",
+      "default_model_role": "fast-worker"
+    },
+    {
+      "id": "feature",
+      "description": "Feature implementation and refactoring",
+      "default_model_role": "strongest"
+    },
+    {
+      "id": "hardest-tasks",
+      "description": "Complex orchestration and high-reasoning tasks",
+      "default_model_role": "strongest"
+    },
+    {
+      "id": "hillclimb",
+      "description": "Scientific metric hillclimbing and benchmark optimization",
+      "default_model_role": "strong-judgment"
+    },
+    {
+      "id": "how-critics",
+      "description": "Architecture and execution how critics",
+      "default_model_role": "strong-judgment"
+    },
+    {
+      "id": "how-explainer",
+      "description": "Subsystem explainer and concept articulation",
+      "default_model_role": "strong-judgment"
+    },
+    {
+      "id": "how-explorer",
+      "description": "Codebase navigation and subsystem exploration",
+      "default_model_role": "fast-worker"
+    },
+    {
+      "id": "independent-verifier",
+      "description": "Read-only independent diff verifier",
+      "default_model_role": "strongest"
+    },
+    {
+      "id": "interrogate-reviewers",
       "description": "Multi-model adversarial code review",
       "default_model_role": "adversarial-panel"
     },
     {
-      "id": "arena",
-      "description": "Parallel candidate generation and cross-judge synthesis",
-      "default_model_role": "diverse-runners"
+      "id": "judgment-and-prose",
+      "description": "Judgment, technical writing, and prose authoring",
+      "default_model_role": "strongest"
     },
     {
-      "id": "swarm",
+      "id": "perf-issue",
+      "description": "Performance profiling, tracing, and latency improvement",
+      "default_model_role": "strong-judgment"
+    },
+    {
+      "id": "poteto-agent",
+      "description": "Delegated poteto-mode subagent worker",
+      "default_model_role": "strongest"
+    },
+    {
+      "id": "refactoring",
+      "description": "Behavior-preserving structural refactoring",
+      "default_model_role": "strongest"
+    },
+    {
+      "id": "reflect-judgment",
+      "description": "Reflect judgment and design reviewer",
+      "default_model_role": "strongest"
+    },
+    {
+      "id": "reflect-tooling",
+      "description": "Tooling and capability reflection reviewer",
+      "default_model_role": "strong-judgment"
+    },
+    {
+      "id": "swarm-workers",
       "description": "Parallel verification and gauntlet coverage",
       "default_model_role": "fast-verifier"
+    },
+    {
+      "id": "why-investigators",
+      "description": "Historical and architectural intent investigator",
+      "default_model_role": "fast-worker"
+    },
+    {
+      "id": "why-synthesizer",
+      "description": "Architectural rationale and decision synthesizer",
+      "default_model_role": "strongest"
     }
   ],
   "skills_root": "skills",
