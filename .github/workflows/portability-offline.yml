@@ -27,6 +27,7 @@ jobs:
             tests/test_droid_integration.py \
             tests/test_droid_routing.py \
             tests/test_route_resolver.py \
+            tests/test_verdict_reduction.py \
             tests/test_harness_drivers.py \
             tests/test_project_package.py \
             tests/test_skill_frontmatter.py \

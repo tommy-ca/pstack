@@ -31,7 +31,7 @@
     },
     "overall_verdict": {
       "type": "string",
-      "enum": ["PASS", "FAIL", "BLOCKED"]
+      "enum": ["PASS", "FAIL", "BLOCKED", "UNTESTED"]
     },
     "planes": {
       "type": "object",
@@ -84,8 +84,9 @@
           "command": { "type": "string" },
           "exit_code": { "type": "integer" },
           "stdout_snippet": { "type": "string" },
-          "verdict": { "type": "string", "enum": ["PASS", "FAIL", "BLOCKED"] },
-          "duration_s": { "type": "number" }
+          "verdict": { "type": "string", "enum": ["PASS", "FAIL", "BLOCKED", "UNTESTED"] },
+          "duration_s": { "type": "number" },
+          "evidence_level": { "type": "string", "enum": ["static", "offline", "observed_live", "legacy"] }
         },
         "additionalProperties": false
       }

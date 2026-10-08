@@ -462,16 +462,19 @@ class ScenarioResult:
     command: str
     exit_code: int
     stdout_snippet: str
-    verdict: str  # PASS | FAIL | BLOCKED
+    verdict: str  # PASS | FAIL | BLOCKED | UNTESTED
     duration_s: float
+    evidence_level: Optional[str] = "offline"  # static | offline | observed_live | legacy
 
     def validate(self) -> None:
         if not self.id:
             raise ValidationError("ScenarioResult id cannot be empty")
         if self.plane not in CONFORMANCE_PLANES:
             raise ValidationError(f"Invalid plane: {self.plane!r}")
-        if self.verdict not in ("PASS", "FAIL", "BLOCKED"):
+        if self.verdict not in ("PASS", "FAIL", "BLOCKED", "UNTESTED"):
             raise ValidationError(f"Invalid verdict: {self.verdict!r}")
+        if self.evidence_level and self.evidence_level not in ("static", "offline", "observed_live", "legacy"):
+            raise ValidationError(f"Invalid evidence_level: {self.evidence_level!r}")
 
 
 @dataclass
@@ -508,7 +511,7 @@ class VerificationReceipt:
             raise ValidationError(f"Unknown host: {self.host!r}")
         if not self.host_version:
             raise ValidationError("host_version cannot be empty")
-        if self.overall_verdict not in ("PASS", "FAIL", "BLOCKED"):
+        if self.overall_verdict not in ("PASS", "FAIL", "BLOCKED", "UNTESTED"):
             raise ValidationError(f"Invalid overall_verdict: {self.overall_verdict!r}")
         for p, v in self.planes.items():
             if p not in CONFORMANCE_PLANES:
