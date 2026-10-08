@@ -76,7 +76,7 @@ Sendable context MUST NOT exceed 2,048 UTF-8 bytes. A choice request MUST NOT co
 
 ### Requirement: One canonical mapping owns semantic eligibility
 
-A single provider-neutral mapping MUST own phase-one classes and their canonical playbook candidates. It MUST classify every canonical playbook once and MUST fail closed on drift. It MUST contain no provider names, model names, confidence thresholds, or execution authority. Unknown and `other` classes MUST return the baseline route.
+A single provider-neutral mapping at `references/decision-routing.json` MUST own phase-one classes and canonical playbook candidates. Every canonical playbook MUST appear once. The mapping MUST fail closed on inventory drift, contain no provider or model names, confidence thresholds, or execution authority, and return baseline for unknown or `other` classes.
 
 #### Scenario: The canonical inventory drifts
 

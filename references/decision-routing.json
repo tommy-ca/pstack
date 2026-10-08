@@ -1,0 +1,135 @@
+{
+  "schema_version": 1,
+  "source": {
+    "repository": "cursor/plugins",
+    "path_prefix": "pstack/",
+    "revision": "d0ef80d86795816da932a153458c5dbe192d294e",
+    "tree": "ef1c6ab4b7f1016cfbd4fbdb2e25cfa5ceecaa55",
+    "router_blob": "de51c56164ff3da8f958437e207d14cec7d7fe99"
+  },
+  "fallback": "baseline",
+  "routes": [
+    {
+      "playbook": "authoring-a-skill",
+      "canonical_blob": "8c5a55a44f5e95bba92f652da0ac87e941c49538",
+      "selection": "system_two"
+    },
+    {
+      "playbook": "autonomous-run",
+      "canonical_blob": "12c3a7d84effcacf3550cb893be67498d7b28a4a",
+      "selection": "direct"
+    },
+    {
+      "playbook": "autopilot-full",
+      "canonical_blob": "d5a68c339e25ac016ffad9c51d858f0f6c37937a",
+      "selection": "direct"
+    },
+    {
+      "playbook": "autopilot-stack",
+      "canonical_blob": "750a7547235ae8eb340285684b9be7c36dff323a",
+      "selection": "direct"
+    },
+    {
+      "playbook": "babysit",
+      "canonical_blob": "683cf0ba889789cbe2d880fce667c75349f9ed12",
+      "selection": "direct"
+    },
+    {
+      "playbook": "bug-fix",
+      "canonical_blob": "eeebc42b7477d435d8ac61d631d84822f908f59c",
+      "selection": "semantic_candidate",
+      "class": "defect"
+    },
+    {
+      "playbook": "eval",
+      "canonical_blob": "3dae34e2ef0cbdd9bafa5ab372da5ea143d48452",
+      "selection": "system_two"
+    },
+    {
+      "playbook": "feature",
+      "canonical_blob": "79a6bbbe0ce61c3b5ef9af1ee8e3ccdb0557edc6",
+      "selection": "system_two"
+    },
+    {
+      "playbook": "hillclimb",
+      "canonical_blob": "c6441b92d30a71489d88eae5bfa8dc457da55cb1",
+      "selection": "system_two"
+    },
+    {
+      "playbook": "investigation",
+      "canonical_blob": "cd119f04f23e0b7acb3f8cc5ba13ce4ab7aa6c7d",
+      "selection": "semantic_candidate",
+      "class": "explain"
+    },
+    {
+      "playbook": "multi-phase-plan",
+      "canonical_blob": "f8ed78a6533cc5d738d3a3ec106bf2577d3f98ca",
+      "selection": "system_two"
+    },
+    {
+      "playbook": "opening-a-pr",
+      "canonical_blob": "4e25989729174580e48ce36e265f298231c6de7f",
+      "selection": "system_two"
+    },
+    {
+      "playbook": "orchestrate",
+      "canonical_blob": "d5b6d008026ff0177f52e22a6fb4b2edae5c87e2",
+      "selection": "system_two"
+    },
+    {
+      "playbook": "pause-safely",
+      "canonical_blob": "9d1c5f8303976fff40de099f7f28185909430c11",
+      "selection": "direct"
+    },
+    {
+      "playbook": "perf-issue",
+      "canonical_blob": "405c7a4362bedbd4194a5ef234553adf0dff78c9",
+      "selection": "semantic_candidate",
+      "class": "performance"
+    },
+    {
+      "playbook": "prototype",
+      "canonical_blob": "18bedc7e9249d180f9198d5b4b13e3817d41d281",
+      "selection": "semantic_candidate",
+      "class": "prototype"
+    },
+    {
+      "playbook": "refactoring",
+      "canonical_blob": "df2a863b531906c64f92b9f9d8feb62f8c7a8665",
+      "selection": "semantic_candidate",
+      "class": "refactor"
+    },
+    {
+      "playbook": "runtime-forensics",
+      "canonical_blob": "ba659bfe1c4c2f956f3285974bfdc941120f9948",
+      "selection": "semantic_candidate",
+      "class": "runtime_diagnosis"
+    },
+    {
+      "playbook": "session-pickup",
+      "canonical_blob": "9b2ed06e0ff8b01bf03b7a0d6a4cbb8ba3a46720",
+      "selection": "direct"
+    },
+    {
+      "playbook": "shipping",
+      "canonical_blob": "0f1d41f189222b991734015926a3b22607e1b92f",
+      "selection": "system_two"
+    },
+    {
+      "playbook": "trace-forensics",
+      "canonical_blob": "48ed6b2f690215027eda96a1897ed98212bbd07a",
+      "selection": "semantic_candidate",
+      "class": "trace_diagnosis"
+    },
+    {
+      "playbook": "visual-parity",
+      "canonical_blob": "248830ec74a593fc22143a842026388f92f1b9f4",
+      "selection": "system_two"
+    },
+    {
+      "playbook": "worktree-cleanup",
+      "canonical_blob": "39c9ef9f368ac63b0e4245503302a4c174e846d6",
+      "selection": "system_two"
+    }
+  ]
+}
