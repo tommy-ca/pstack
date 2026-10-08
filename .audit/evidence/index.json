@@ -3,8 +3,8 @@
   "hosts": {
     "grok": {
       "receipt": ".audit/evidence/grok-receipt.json",
-      "run_id": "grok-1791481744-163e473f",
-      "timestamp": "2026-10-08T17:49:19Z",
+      "run_id": "grok-1791499458-41b91965",
+      "timestamp": "2026-10-08T22:44:28Z",
       "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
@@ -18,7 +18,7 @@
         "spec_hash": "671f5d465db673df40350dab39fcf45ac14c7f0d178bace536a6dadf8c97e4d8",
         "skills_tree_hash": "c3e264e4d54e01fdb4b17ca28abd90b05014193d938c570cff3abc854e13f19b",
         "profile_hash": "5ffcca460007dae14a130ef032f5827552186fef54024b13451ac19f2661aed5",
-        "package_descriptor_hash": "3d61fca3ab0a80dec4ee1345908ce4432551aa49405277ae052d0e8f70c7c38f",
+        "package_descriptor_hash": "5a4cd6b99f113f422aaf2df0755e53d20227ce12a99acb28cd5075d96e5aaadb",
         "manifest_hash": "ef4f4f8ec6afc7a8c8a33762d2215a7f8d1c2d29434375ebff7ee1549e1a13fd",
         "driver_revision": "41e5633d7dff73ad51c1b84b45c03ab09fb8c0004144f5fe18d0dbb929323cf6",
         "package_driver_revision": "0aa43927a12b8634c5427e5425486b25aabd14efe28f1d9678030dc73788eff1",
@@ -27,8 +27,8 @@
     },
     "codex": {
       "receipt": ".audit/evidence/codex-receipt.json",
-      "run_id": "codex-1791481759-7139eaf1",
-      "timestamp": "2026-10-08T17:49:36Z",
+      "run_id": "codex-1791499468-3f939971",
+      "timestamp": "2026-10-08T22:44:40Z",
       "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
@@ -42,7 +42,7 @@
         "spec_hash": "671f5d465db673df40350dab39fcf45ac14c7f0d178bace536a6dadf8c97e4d8",
         "skills_tree_hash": "c3e264e4d54e01fdb4b17ca28abd90b05014193d938c570cff3abc854e13f19b",
         "profile_hash": "3c7572b5cebaf8dd6c62b7465a88e15a2694291be8fd0c143f5d2ef96a9394af",
-        "package_descriptor_hash": "3d61fca3ab0a80dec4ee1345908ce4432551aa49405277ae052d0e8f70c7c38f",
+        "package_descriptor_hash": "5a4cd6b99f113f422aaf2df0755e53d20227ce12a99acb28cd5075d96e5aaadb",
         "manifest_hash": "0eb233bd0e3b85bdca0d48fa7e8d248ba19994b282cb3d9247606c502764fb57",
         "driver_revision": "41e5633d7dff73ad51c1b84b45c03ab09fb8c0004144f5fe18d0dbb929323cf6",
         "package_driver_revision": "0aa43927a12b8634c5427e5425486b25aabd14efe28f1d9678030dc73788eff1",
@@ -51,8 +51,8 @@
     },
     "omp": {
       "receipt": ".audit/evidence/omp-receipt.json",
-      "run_id": "omp-1791481776-39745f8b",
-      "timestamp": "2026-10-08T17:49:51Z",
+      "run_id": "omp-1791499480-d6f0843b",
+      "timestamp": "2026-10-08T22:44:51Z",
       "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
@@ -66,7 +66,7 @@
         "spec_hash": "671f5d465db673df40350dab39fcf45ac14c7f0d178bace536a6dadf8c97e4d8",
         "skills_tree_hash": "c3e264e4d54e01fdb4b17ca28abd90b05014193d938c570cff3abc854e13f19b",
         "profile_hash": "2446bb7cbebe8ec8a230b03f92df36f2702075fb3775c72707bdfa73481ad581",
-        "package_descriptor_hash": "3d61fca3ab0a80dec4ee1345908ce4432551aa49405277ae052d0e8f70c7c38f",
+        "package_descriptor_hash": "5a4cd6b99f113f422aaf2df0755e53d20227ce12a99acb28cd5075d96e5aaadb",
         "manifest_hash": "4f135b12fecd922681bd693eee89dbd61bb6c3e9239cc06ee09ff28e53b51476",
         "driver_revision": "41e5633d7dff73ad51c1b84b45c03ab09fb8c0004144f5fe18d0dbb929323cf6",
         "package_driver_revision": "0aa43927a12b8634c5427e5425486b25aabd14efe28f1d9678030dc73788eff1",
@@ -75,8 +75,8 @@
     },
     "opencode": {
       "receipt": ".audit/evidence/opencode-receipt.json",
-      "run_id": "opencode-1791481791-70512508",
-      "timestamp": "2026-10-08T17:50:07Z",
+      "run_id": "opencode-1791499491-a00c1bbb",
+      "timestamp": "2026-10-08T22:45:00Z",
       "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
@@ -90,7 +90,7 @@
         "spec_hash": "671f5d465db673df40350dab39fcf45ac14c7f0d178bace536a6dadf8c97e4d8",
         "skills_tree_hash": "c3e264e4d54e01fdb4b17ca28abd90b05014193d938c570cff3abc854e13f19b",
         "profile_hash": "4074fefdbad85a428a20ddf7e6b5ba0727409885cc0f7d9edfd7cf8686fb87fb",
-        "package_descriptor_hash": "3d61fca3ab0a80dec4ee1345908ce4432551aa49405277ae052d0e8f70c7c38f",
+        "package_descriptor_hash": "5a4cd6b99f113f422aaf2df0755e53d20227ce12a99acb28cd5075d96e5aaadb",
         "manifest_hash": "e8752f36aeba13b48ff42552c4f6c2b94978e32ea932504bca31a01dcf4fdf39",
         "driver_revision": "41e5633d7dff73ad51c1b84b45c03ab09fb8c0004144f5fe18d0dbb929323cf6",
         "package_driver_revision": "0aa43927a12b8634c5427e5425486b25aabd14efe28f1d9678030dc73788eff1",
@@ -99,8 +99,8 @@
     },
     "antigravity": {
       "receipt": ".audit/evidence/antigravity-receipt.json",
-      "run_id": "antigravity-1791481807-eebc2364",
-      "timestamp": "2026-10-08T17:50:21Z",
+      "run_id": "antigravity-1791499500-fdf63121",
+      "timestamp": "2026-10-08T22:45:08Z",
       "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
@@ -114,7 +114,7 @@
         "spec_hash": "671f5d465db673df40350dab39fcf45ac14c7f0d178bace536a6dadf8c97e4d8",
         "skills_tree_hash": "c3e264e4d54e01fdb4b17ca28abd90b05014193d938c570cff3abc854e13f19b",
         "profile_hash": "cd2e002f36dd9a08d8efbc284b15c537282445e97f64551b74c584697c04f931",
-        "package_descriptor_hash": "3d61fca3ab0a80dec4ee1345908ce4432551aa49405277ae052d0e8f70c7c38f",
+        "package_descriptor_hash": "5a4cd6b99f113f422aaf2df0755e53d20227ce12a99acb28cd5075d96e5aaadb",
         "manifest_hash": "ae6183e263c8948669f41f7e864b598a05f81c6da4c8ec0908fff8b6ece4db97",
         "driver_revision": "41e5633d7dff73ad51c1b84b45c03ab09fb8c0004144f5fe18d0dbb929323cf6",
         "package_driver_revision": "0aa43927a12b8634c5427e5425486b25aabd14efe28f1d9678030dc73788eff1",
