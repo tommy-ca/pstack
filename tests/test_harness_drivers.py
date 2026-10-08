@@ -3,6 +3,7 @@
 
 import importlib.util
 import json
+import os
 import sys
 from pathlib import Path
 from unittest.mock import patch
@@ -27,6 +28,10 @@ verify_portable = importlib.util.module_from_spec(loader)
 loader.loader.exec_module(verify_portable)
 PortableVerifier = verify_portable.PortableVerifier
 
+# These tests interrogate locally installed host CLIs; they do not prove
+# real model-backed child spawn/join. Keep them opt-in in generic CI.
+HOST_DEPENDENT = os.environ.get("PSTACK_RUN_HOST_DEPENDENT_TESTS") == "1"
+
 
 def test_get_driver_factory() -> None:
     assert isinstance(get_driver("grok", ROOT), GrokDriver)
@@ -39,6 +44,7 @@ def test_get_driver_factory() -> None:
         get_driver("unsupported_host", ROOT)
 
 
+@pytest.mark.skipif(not HOST_DEPENDENT, reason="Opt-in host CLI smoke: set PSTACK_RUN_HOST_DEPENDENT_TESTS=1")
 @pytest.mark.parametrize("host", ["grok", "antigravity", "codex", "omp", "opencode"])
 def test_driver_scenarios(host: str, tmp_path: Path) -> None:
     driver = get_driver(host, ROOT)
@@ -75,7 +81,23 @@ def test_blocked_driver_fallback(tmp_path: Path) -> None:
     verifier = PortableVerifier(host="grok", evidence_root=tmp_path)
     verifier.launch()
 
-    with patch.object(GrokDriver, "is_available", return_value=(False, "simulated missing grok binary")):
+    # Isolate unavailable-native-driver behavior: the other drive scenarios
+    # invoke Bun, shell, and project packaging, none of which is relevant to
+    # determining whether an absent host CLI reports BLOCKED.
+    def fake_contract_check(scenario_id, desc, plane, cmd, cwd=None):
+        result = verify_portable.ScenarioResult(
+            id=scenario_id, description=desc, plane=plane,
+            command="mock-offline-contract", exit_code=0,
+            stdout_snippet="simulated contract PASS",
+            verdict="PASS", duration_s=0.0,
+        )
+        verifier.scenarios.append(result)
+        return result
+
+    with (
+        patch.object(verifier, "run_command", side_effect=fake_contract_check),
+        patch.object(GrokDriver, "is_available", return_value=(False, "simulated missing grok binary")),
+    ):
         ok = verifier.drive()
         assert ok is False
 
@@ -90,6 +112,7 @@ def test_blocked_driver_fallback(tmp_path: Path) -> None:
         assert receipt.overall_verdict == "BLOCKED"
 
 
+@pytest.mark.skipif(not HOST_DEPENDENT, reason="Opt-in host CLI smoke: set PSTACK_RUN_HOST_DEPENDENT_TESTS=1")
 def test_reclassified_smoke_tests_planes(tmp_path: Path) -> None:
     verifier = PortableVerifier(host="grok", evidence_root=tmp_path)
     verifier.launch()

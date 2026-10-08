@@ -1,0 +1,35 @@
+name: Portable offline contracts
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-contracts:
+    name: Python contracts (no host CLIs)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install test dependencies
+        run: python -m pip install --disable-pip-version-check pytest
+      - name: Validate portability and safety contracts
+        run: |
+          python -m pytest -q \
+            tests/test_portability_schemas.py \
+            tests/test_droid_integration.py \
+            tests/test_droid_routing.py \
+            tests/test_harness_drivers.py \
+            tests/test_project_package.py \
+            tests/test_skill_frontmatter.py \
+            tests/test_scan_host_boundary.py \
+            tests/test_package_lifecycle.py
+      # Native host spawn/join/isolation are intentionally NOT covered here.
+      # Their separate live evidence is tracked by issues #238 and #240.
