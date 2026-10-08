@@ -81,7 +81,8 @@ def get_canonical_root(root: Path) -> Path:
 
 
 DECLARED_HOSTS = get_declared_hosts()
-FIVE_HARNESSES = tuple(DECLARED_HOSTS)  # Deprecated alias; points to declared hosts
+SIX_HARNESSES = tuple(DECLARED_HOSTS)
+FIVE_HARNESSES = SIX_HARNESSES  # Deprecated alias preserved for backwards compatibility; points to declared hosts
 DEFAULT_EVIDENCE_DIR = ROOT / ".audit" / "evidence"
 
 

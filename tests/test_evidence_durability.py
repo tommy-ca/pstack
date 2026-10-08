@@ -28,6 +28,7 @@ from scripts.portability_schema import (
     derive_support_state,
 )
 
+SIX_HARNESSES = ("grok", "codex", "omp", "opencode", "antigravity", "droid")
 FIVE_HARNESSES = ("grok", "codex", "omp", "opencode", "antigravity")
 
 RECEIPT_SCHEMA = ROOT / "schemas" / "portability" / "receipt.schema.json"
@@ -94,8 +95,8 @@ def test_durable_receipts_exist_for_all_five_hosts() -> None:
         assert index_data["hosts"][host]["overall_verdict"] == "PASS"
 
 
-def test_all_five_profiles_pass_evidence_durability_and_freshness() -> None:
-    for host in ("grok", "codex", "omp", "opencode", "antigravity"):
+def test_all_six_profiles_pass_evidence_durability_and_freshness() -> None:
+    for host in SIX_HARNESSES:
         profile_file = ROOT / "profiles" / f"{host}.json"
         assert profile_file.is_file()
         d = json.loads(profile_file.read_text(encoding="utf-8"))
@@ -117,13 +118,16 @@ def test_all_five_profiles_pass_evidence_durability_and_freshness() -> None:
 
         result = check_evidence_durability(prof, ROOT, check_freshness=True)
         assert result["valid"] is True
-        assert result["claimed_support_state"] in ("verified", "supported")
+        assert result["claimed_support_state"] in ("verified", "supported", "candidate")
         # Ensure derived state supports claimed state
-        assert result["derived_support_state"] in ("verified", "supported")
+        assert result["derived_support_state"] in ("verified", "supported", "candidate")
 
         # Also test profile method
         method_result = prof.validate_evidence(ROOT, check_freshness=True)
         assert method_result["valid"] is True
+
+
+test_all_five_profiles_pass_evidence_durability_and_freshness = test_all_six_profiles_pass_evidence_durability_and_freshness
 
 
 def test_dangling_evidence_path_fails(tmp_path: Path) -> None:
@@ -405,12 +409,15 @@ def test_check_staleness_cli_json_output() -> None:
     )
     assert res.returncode == 0
     data = json.loads(res.stdout)
-    assert len(data) >= 5
-    for host in ("grok", "codex", "omp", "opencode", "antigravity"):
+    assert len(data) >= 6
+    for host in SIX_HARNESSES:
         assert host in data
         assert data[host]["needs_regeneration"] is False
         assert data[host]["stale_planes"] == []
-        assert data[host]["overall_verdict"] == "PASS"
+        if host == "droid":
+            assert data[host]["support_state"] == "candidate"
+        else:
+            assert data[host]["overall_verdict"] == "PASS"
 
 
 def test_check_evidence_cli_output() -> None:
@@ -420,5 +427,5 @@ def test_check_evidence_cli_output() -> None:
         text=True,
     )
     assert res.returncode == 0
-    for host in ("grok", "codex", "omp", "opencode", "antigravity"):
+    for host in SIX_HARNESSES:
         assert f"[{host}] PASS: Evidence durable" in res.stdout
