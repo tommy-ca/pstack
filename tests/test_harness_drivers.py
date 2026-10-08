@@ -3,6 +3,7 @@
 
 import importlib.util
 import json
+import os
 import sys
 from pathlib import Path
 from unittest.mock import patch
@@ -27,6 +28,10 @@ verify_portable = importlib.util.module_from_spec(loader)
 loader.loader.exec_module(verify_portable)
 PortableVerifier = verify_portable.PortableVerifier
 
+# These tests interrogate locally installed host CLIs; they do not prove
+# real model-backed child spawn/join. Keep them opt-in in generic CI.
+HOST_DEPENDENT = os.environ.get("PSTACK_RUN_HOST_DEPENDENT_TESTS") == "1"
+
 
 def test_get_driver_factory() -> None:
     assert isinstance(get_driver("grok", ROOT), GrokDriver)
@@ -39,6 +44,7 @@ def test_get_driver_factory() -> None:
         get_driver("unsupported_host", ROOT)
 
 
+@pytest.mark.skipif(not HOST_DEPENDENT, reason="Opt-in host CLI smoke: set PSTACK_RUN_HOST_DEPENDENT_TESTS=1")
 @pytest.mark.parametrize("host", ["grok", "antigravity", "codex", "omp", "opencode"])
 def test_driver_scenarios(host: str, tmp_path: Path) -> None:
     driver = get_driver(host, ROOT)
@@ -90,6 +96,7 @@ def test_blocked_driver_fallback(tmp_path: Path) -> None:
         assert receipt.overall_verdict == "BLOCKED"
 
 
+@pytest.mark.skipif(not HOST_DEPENDENT, reason="Opt-in host CLI smoke: set PSTACK_RUN_HOST_DEPENDENT_TESTS=1")
 def test_reclassified_smoke_tests_planes(tmp_path: Path) -> None:
     verifier = PortableVerifier(host="grok", evidence_root=tmp_path)
     verifier.launch()
