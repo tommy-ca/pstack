@@ -9,12 +9,35 @@ skill identifiers, agent definitions, and three-tier fallback resolution.
 
 from __future__ import annotations
 
+import json
+import os
 import re
 from dataclasses import dataclass, field
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
 
+from scripts.decision_adapter import (
+    ChoiceOption,
+    ChoiceRequest,
+    EgressClass,
+    validate_and_create_safe_context,
+)
+from scripts.evidence_receipts import (
+    check_receipt_staleness,
+    create_decision_receipt,
+)
+
 _DROID_DEFINITION_ID = re.compile(r"^pstack-[a-z0-9-]+$")
+DEFAULT_ADVISORY_CONFIDENCE_THRESHOLD = 0.70
+
+
+@lru_cache(maxsize=8)
+def _load_decision_routing(routing_path_str: str) -> Dict[str, Any]:
+    path = Path(routing_path_str)
+    if not path.is_file():
+        return {}
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
 @dataclass
@@ -30,6 +53,7 @@ class RouteResolution:
     matched_rows: List[Dict[str, Any]] = field(default_factory=list)
     error_reason: str = ""
     shadow_observation: Optional[Any] = None
+    advisory_promoted: bool = False
 
     @property
     def is_matched(self) -> bool:
@@ -233,40 +257,53 @@ def resolve_skill_order_with_shadow(
     query_str: str,
     root: Path,
     provider: Optional[Any] = None,
-    mode: str = "shadow",
+    mode: Optional[str] = None,
 ) -> RouteResolution:
-    """Resolve one advisory skill_order row with zero-behavior-change shadow provider hook.
+    """Resolve one skill_order row with shadow or advisory decision hook.
 
-    Always computes the baseline deterministic route first. When a provider is
-    passed and mode is 'shadow', queries the provider in advisory shadow mode over
-    semantic candidates in references/decision-routing.json. Provider failures,
-    timeouts, or errors are caught safely and never alter the resolved baseline route.
+    Always computes the baseline deterministic route first.
+    When mode is 'none' (or PSTACK_JEV_MODE is 'none'/'off'), returns baseline directly.
+    When mode is 'shadow' (default), queries provider for observation without modifying
+    the acting route (zero behavior change).
+    When mode is 'advisory', promotes provider recommendation ONLY when:
+    - Target is a verified low-risk semantic candidate in references/decision-routing.json
+    - Provider outcome is decided with confidence >= 0.70
+    - Fresh evidence receipt check passes (no staleness, known provider/model)
+    - Deterministic baseline route is not an explicit bypass command or System-Two gate.
+    All exceptions, timeouts, and failures fail open safely to the baseline route.
     """
     baseline = resolve_skill_order(profile, query_str, root)
-    if provider is None or mode != "shadow":
+
+    effective_mode = mode
+    if effective_mode is None:
+        effective_mode = os.environ.get("PSTACK_JEV_MODE", "shadow").strip().lower()
+    else:
+        effective_mode = str(effective_mode).strip().lower()
+
+    if provider is None or effective_mode in ("none", "off", "0", "disabled"):
         return baseline
 
     try:
-        import json
-        from scripts.decision_adapter import (
-            ChoiceOption,
-            ChoiceRequest,
-            EgressClass,
-            validate_and_create_safe_context,
-        )
-
         routing_file = root / "references" / "decision-routing.json"
-        if not routing_file.is_file():
+        data = _load_decision_routing(str(routing_file.resolve()))
+        if not data:
             return baseline
+        semantic_candidates: Dict[str, Dict[str, Any]] = {}
+        bypass_playbooks: Set[str] = set()
 
-        data = json.loads(routing_file.read_text(encoding="utf-8"))
-        candidates: List[ChoiceOption] = []
         for route in data.get("routes", []):
-            if route.get("selection") == "semantic_candidate":
-                playbook_id = str(route.get("playbook", "")).strip()
-                label = str(route.get("class_label", playbook_id)).strip()
-                if playbook_id and label:
-                    candidates.append(ChoiceOption(id=playbook_id, label=label))
+            pb = str(route.get("playbook", "")).strip()
+            sel = route.get("selection")
+            if sel == "semantic_candidate":
+                semantic_candidates[pb] = route
+            elif sel in ("direct", "direct_command_bypass", "system_two"):
+                bypass_playbooks.add(pb)
+
+        candidates: List[ChoiceOption] = []
+        for pb, r in semantic_candidates.items():
+            label = str(r.get("class_label", pb)).strip()
+            if pb and label:
+                candidates.append(ChoiceOption(id=pb, label=label))
 
         if not candidates:
             return baseline
@@ -280,6 +317,78 @@ def resolve_skill_order_with_shadow(
         )
         obs = provider.decide(req)
         baseline.shadow_observation = obs
+
+        if effective_mode != "advisory":
+            return baseline
+
+        # --- Advisory Promotion Policy Gate ---
+        # 1. Deterministic baseline safety invariant: explicit direct commands,
+        # system-two playbooks, and slash commands cannot be overridden.
+        if baseline.status == "matched":
+            raw_target = str(baseline.target or "").strip()
+            norm_target = (
+                raw_target.lstrip("/")
+                .replace("playbooks/", "")
+                .removesuffix(".md")
+                .strip()
+            )
+            if (
+                norm_target in bypass_playbooks
+                or raw_target.startswith("/")
+                or baseline.kind in ("agent", "droid-definition")
+            ):
+                return baseline
+
+        # 2. Provider judgment status
+        if not obs.is_decided() or obs.outcome.kind != "choice":
+            return baseline
+
+        # 3. Class-specific confidence threshold (>= 0.70)
+        confidence = obs.confidence if obs.confidence is not None else 0.0
+        if confidence < DEFAULT_ADVISORY_CONFIDENCE_THRESHOLD:
+            return baseline
+
+        # 4. Scope gate: proposed choice must be an eligible semantic candidate
+        recommended_pb = str(obs.outcome.value).strip()
+        if recommended_pb not in semantic_candidates:
+            return baseline
+
+        # 5. Mechanical staleness gate: verify evidence receipt freshness
+        if obs.provider_identity in ("unknown", "none", "") or obs.model_identity in ("unknown", "none", ""):
+            return baseline
+
+        receipt = create_decision_receipt(
+            root=root,
+            source="semantic_provider",
+            mode="advisory",
+            provider_identity=obs.provider_identity,
+            model_identity=obs.model_identity,
+            outcome_status=obs.outcome.status,
+            outcome_value=recommended_pb,
+            confidence=confidence,
+        )
+        is_stale, _ = check_receipt_staleness(
+            receipt,
+            current_root=root,
+            expected_provider=obs.provider_identity,
+            expected_model=obs.model_identity,
+        )
+        if is_stale:
+            return baseline
+
+        # All gates passed: promote candidate
+        promoted_artifact = resolve_primary_artifact(recommended_pb, root)
+        return RouteResolution(
+            status="matched",
+            kind="playbook",
+            need=baseline.need or f"advisory-{recommended_pb}",
+            target=recommended_pb,
+            artifact=promoted_artifact,
+            notes=f"Advisory decision promoted via {obs.provider_identity}:{obs.model_identity} (confidence: {confidence:.2f})",
+            matched_rows=baseline.matched_rows,
+            shadow_observation=obs,
+            advisory_promoted=True,
+        )
     except Exception:
         # Strict fail-open: no provider exception escapes to caller
         pass
