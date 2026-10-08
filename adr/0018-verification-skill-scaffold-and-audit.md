@@ -19,9 +19,9 @@ In Issue #260, an Arena evaluation was conducted to decide among three architect
 
 ## Evaluation & Interrogate Review
 
-- **Candidate A was rejected**: Violates Build the Lever and Prove It Works. Updating documentation without updating the scaffolding tool immediately introduces drift between the generator's output and documented standards.
-- **Candidate C was rejected**: Violates Laziness Protocol, YAGNI, and Foundational Thinking. A heavyweight test harness daemon adds runtime complexity and process friction across diverse agent environments without providing additional behavioral proof.
-- **Candidate B was selected**: Minimizes reader load and maximizes portability. Scaffolding an executable driver script with bounded timeouts directly satisfies the helper mandate. Adding `--audit` to `scripts/scaffold-verification-skill.py` automates the hygiene checks for `/maintain-verification-skill` across all six declared harnesses (`.agents/`, `.codex/`, `.omp/`, `.opencode/`, `.grok/`, `.factory/`) while remaining completely offline-testable.
+- **Candidate A was rejected**. Violates Build the Lever and Prove It Works. Updating documentation without updating the scaffolding tool immediately introduces drift between the generator's output and documented standards.
+- **Candidate C was rejected**. Violates Laziness Protocol, YAGNI, and Foundational Thinking. A heavyweight test harness daemon adds runtime complexity and process friction across diverse agent environments without providing additional behavioral proof.
+- **Candidate B was selected**. Minimizes reader load and maximizes portability. Scaffolding an executable driver script with bounded timeouts directly satisfies the helper mandate. Adding `--audit` to `scripts/scaffold-verification-skill.py` automates the hygiene checks for `/maintain-verification-skill` across all six declared harnesses (`.agents/`, `.codex/`, `.omp/`, `.opencode/`, `.grok/`, `.factory/`) while remaining completely offline-testable.
 
 ## Decision
 

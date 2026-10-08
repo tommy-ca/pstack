@@ -134,5 +134,21 @@
 - [x] Unit 20: Re-run 6-harness verification matrix and refresh durable evidence receipts across all 4 planes (Issue #240)
 - [x] Unit 21: Full clean offline CI suite verified: 180 passed, 6 skipped in 36.8s (Issue #240)
 
+## Epic #259: Harden and synchronize verification skills, scaffolding, and conformance tooling across 6 harnesses
+### Phase 1: Architecture & Skills Contract (Issues #260, #261)
+- [x] Unit 1: Record minimal verification skill scaffolding, driver, and audit decision in ADR-0018 (Issue #260)
+- [x] Unit 2: Update `create-verification-skill` and `maintain-verification-skill` with 3 tiers, evidence levels, and 60s timeout bounds (Issue #261)
 
+### Phase 2: Scaffolding Levers & Maintenance Automation (Issue #262)
+- [x] Unit 3: Add executable driver script scaffolding and `## Helpers` to `scripts/scaffold-verification-skill.py` (Issue #262)
+- [x] Unit 4: Add `--audit` CLI mode to `scripts/scaffold-verification-skill.py` for `/maintain-verification-skill` (Issue #262)
+- [x] Unit 5: Add comprehensive tests in `tests/test_scaffold_verification_skill.py` (Issue #262)
 
+### Phase 3: Verifier & Durability Test Parity (Issue #263)
+- [x] Unit 6: Reconcile `tests/test_evidence_durability.py` with 6-harness census, including Droid (Issue #263)
+- [x] Unit 7: Update `scripts/verify-portable.py` with `SIX_HARNESSES` constant (Issue #263)
+
+### Phase 4: Swarm, Arena & Interrogate Acceptance Gate & Stacked Delivery (Issue #264)
+- [x] Unit 8: Execute 4-lane Swarm verification across canonical, routing, runtime proof, and safety (Issue #264)
+- [x] Unit 9: Conduct adversarial Interrogate review across stacked diffs (Issue #264)
+- [x] Unit 10: Deliver clean stacked PRs on GitHub with passing offline CI (Issue #264)
