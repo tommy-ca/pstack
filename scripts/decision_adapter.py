@@ -287,15 +287,37 @@ class FakeDecisionProvider(SemanticDecisionProvider):
             raise self.exception_to_raise
         if self.canned_observation:
             return self.canned_observation
-        # Default behavior: decide first choice if choice request, else abstain
+        # Default behavior: decide matching choice if choice request, else abstain
         if isinstance(request, ChoiceRequest) and request.choices:
-            first_choice = request.choices[0]
+            ctx_lower = request.context.content.lower()
+            if any(term in ctx_lower for term in ("stuff", "capital of france", "what is")):
+                return ProviderObservation(
+                    outcome=DecisionOutcome(status="abstain"),
+                    provider_identity=self.provider_identity,
+                    model_identity=self.model_identity,
+                    confidence=0.1,
+                )
+            selected = None
+            if any(k in ctx_lower for k in ("500", "crash", "defect", "regression")):
+                selected = next((c for c in request.choices if c.id == "bug-fix"), None)
+            elif any(k in ctx_lower for k in ("how does", "explain", "investigate", "why")):
+                selected = next((c for c in request.choices if c.id == "investigation"), None)
+            elif any(k in ctx_lower for k in ("prototype", "spike", "mock up", "sketch")):
+                selected = next((c for c in request.choices if c.id == "prototype"), None)
+            elif any(k in ctx_lower for k in ("duplicate", "extract", "clean")):
+                selected = next((c for c in request.choices if c.id == "refactoring"), None)
+            elif any(k in ctx_lower for k in ("latency", "slow", "ms on invoice")):
+                selected = next((c for c in request.choices if c.id == "perf-issue"), None)
+
+            if not selected:
+                selected = request.choices[0]
+
             return ProviderObservation(
-                outcome=DecisionOutcome(status="decided", kind="choice", value=first_choice.id),
+                outcome=DecisionOutcome(status="decided", kind="choice", value=selected.id),
                 provider_identity=self.provider_identity,
                 model_identity=self.model_identity,
                 confidence=0.95,
-                probabilities={first_choice.id: 0.95},
+                probabilities={selected.id: 0.95},
             )
         return ProviderObservation(
             outcome=DecisionOutcome(status="abstain"),

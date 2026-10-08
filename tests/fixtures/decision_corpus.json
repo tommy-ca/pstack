@@ -1,0 +1,125 @@
+{
+  "corpus_version": "1.0.0",
+  "fixtures": [
+    {
+      "id": "direct_tdd_command",
+      "category": "direct_command_bypass",
+      "query": "/tdd fix failing test in user service",
+      "expected_baseline": "/tdd",
+      "expected_semantic_suggestion": null,
+      "is_semantic_eligible": false,
+      "expected_authority": "explicit_user_command",
+      "description": "Explicit slash command must bypass semantic provider directly"
+    },
+    {
+      "id": "direct_interrogate_command",
+      "category": "direct_command_bypass",
+      "query": "/interrogate adversarial review of staged changes",
+      "expected_baseline": "/interrogate",
+      "expected_semantic_suggestion": null,
+      "is_semantic_eligible": false,
+      "expected_authority": "explicit_user_command",
+      "description": "Direct review command must bypass semantic provider"
+    },
+    {
+      "id": "direct_babysit_command",
+      "category": "direct_command_bypass",
+      "query": "Babysit",
+      "expected_baseline": "playbooks/babysit.md",
+      "expected_semantic_suggestion": null,
+      "is_semantic_eligible": false,
+      "expected_authority": "explicit_user_command",
+      "description": "Babysit trigger maps directly to babysit playbook without semantic ambiguity"
+    },
+    {
+      "id": "semantic_bug_fix_reported_defect",
+      "category": "semantic_candidate",
+      "query": "The auth endpoint returns 500 when username contains plus sign",
+      "expected_baseline": "no-route",
+      "expected_semantic_suggestion": "bug-fix",
+      "is_semantic_eligible": true,
+      "expected_authority": "calibrated_semantic_decision",
+      "description": "Reported defect with concrete symptoms maps to bug-fix"
+    },
+    {
+      "id": "semantic_investigation_question",
+      "category": "semantic_candidate",
+      "query": "How does the message routing subsystem handle backpressure?",
+      "expected_baseline": "no-route",
+      "expected_semantic_suggestion": "investigation",
+      "is_semantic_eligible": true,
+      "expected_authority": "calibrated_semantic_decision",
+      "description": "Read-only architectural question maps to investigation"
+    },
+    {
+      "id": "semantic_prototype_spike",
+      "category": "semantic_candidate",
+      "query": "Build a quick disposable spike of the web layout to settle visual design",
+      "expected_baseline": "no-route",
+      "expected_semantic_suggestion": "prototype",
+      "is_semantic_eligible": true,
+      "expected_authority": "calibrated_semantic_decision",
+      "description": "Throwaway exploratory spike maps to prototype"
+    },
+    {
+      "id": "semantic_refactoring_cleanup",
+      "category": "semantic_candidate",
+      "query": "Extract duplicate date formatting functions across reports into a shared helper",
+      "expected_baseline": "no-route",
+      "expected_semantic_suggestion": "refactoring",
+      "is_semantic_eligible": true,
+      "expected_authority": "calibrated_semantic_decision",
+      "description": "Behavior-preserving structural cleanup maps to refactoring"
+    },
+    {
+      "id": "semantic_perf_issue_measured",
+      "category": "semantic_candidate",
+      "query": "Database query latency jumped from 20ms to 450ms on invoice search",
+      "expected_baseline": "no-route",
+      "expected_semantic_suggestion": "perf-issue",
+      "is_semantic_eligible": true,
+      "expected_authority": "calibrated_semantic_decision",
+      "description": "Measured latency degradation maps to perf-issue"
+    },
+    {
+      "id": "system_two_complex_orchestration",
+      "category": "system_two",
+      "query": "Coordinate the migration of 40 microservices to new schema across next two weeks",
+      "expected_baseline": "no-route",
+      "expected_semantic_suggestion": null,
+      "is_semantic_eligible": false,
+      "expected_authority": "system_two_judgment",
+      "description": "Multi-day large program must use System-Two Orchestrate playbook"
+    },
+    {
+      "id": "ambiguous_abstain_vague_query",
+      "category": "ambiguous_and_abstention",
+      "query": "Look at the stuff in src/",
+      "expected_baseline": "no-route",
+      "expected_semantic_suggestion": "abstain",
+      "is_semantic_eligible": false,
+      "expected_authority": "abstain",
+      "description": "Under-specified vague prompt should result in abstention rather than confident misrouting"
+    },
+    {
+      "id": "negative_general_knowledge",
+      "category": "negative_non_jev",
+      "query": "What is the capital of France?",
+      "expected_baseline": "no-route",
+      "expected_semantic_suggestion": "abstain",
+      "is_semantic_eligible": false,
+      "expected_authority": "abstain",
+      "description": "Non-coding inquiry must be ignored or abstained by routing"
+    },
+    {
+      "id": "jaggedness_keyword_collision_trap",
+      "category": "jaggedness_trap",
+      "query": "A regression in the feature flag evaluator causes crashes on startup",
+      "expected_baseline": "no-route",
+      "expected_semantic_suggestion": "bug-fix",
+      "is_semantic_eligible": true,
+      "expected_authority": "calibrated_semantic_decision",
+      "description": "Prompt contains word 'feature' but describes a startup crash bug"
+    }
+  ]
+}
