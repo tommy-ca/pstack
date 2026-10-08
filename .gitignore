@@ -11,4 +11,5 @@ __pycache__/
 .grok/agent-memory/
 node_modules/
 .atl/
+.venv/
 
