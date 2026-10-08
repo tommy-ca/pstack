@@ -76,12 +76,28 @@
 - [x] Unit 3: Issue #217 Complete ordered feature map validation and 6-destination proof limits (PR #220)
 - [x] Unit 4: Issues #217 & #214 Verification tool dependency fingerprinting, OpenSpec coverage target alignment, candidate staleness safety, and 6-harness receipt matrix refresh
 
-## Epic #193: Integrate optional Jev decision model with strict bounds and evidence
+## Epic #193: Integrate optional Jev decision models into pstack with minimal semantic change
 ### Sub-epic #190: Formalize the optional Jev decision boundary and baseline eval
-- [ ] Spec: PR #194 docs(spec): formalize optional Jev decision plane (pending scenario completeness and #197 gate)
-- [ ] Tasks: #182 (typed contract), #183 (Arena seam), #195 (context minimization), #196 (playbook vocabulary), #197 (acceptance gate), #198 (baseline eval)
-### Sub-epic #191: Implement Jev shadow routing and fail-open provider adapter (#184-#186)
-### Sub-epic #192: Verify and selectively promote Jev shadow decisions (#187-#189, #199-#200)
+- [x] Unit 1: Issue #182 Typed decision contract, precedence, and fallback semantics (PR #270)
+- [x] Unit 2: Issue #195 Context-minimization and data-egress boundary (PR #270)
+- [x] Unit 3: Issue #196 Canonical playbook decision vocabulary and deterministic mapping in `references/decision-routing.json` (PR #271)
+- [x] Unit 4: Issue #183 Arena seam comparison between no-change baseline and router-local candidate (PR #272)
+- [x] Unit 5: Issue #197 Reconcile, Interrogate, validate, and verify formal spec PR #194 with ADR-0018 tooling (PR #272)
+- [x] Unit 6: Recursive graph and execution program reconciliation (PR #273)
+
+### Sub-epic #191: Implement shadow integration and build evidence
+- [ ] Task #184: Optional Jev provider adapter and explicit default-OFF feature/config gate
+- [ ] Task #185: Shadow playbook and skill-routing decisions with zero behavior change
+- [ ] Task #186: Offline routing corpus, calibration, latency, and cost lever
+- [ ] Task #199: Bind Jev evidence to canonical, provider, model, policy, and fixture revisions
+- [ ] Task #198: Run blinded pstack Eval for baseline vs Jev-assisted behavior
+
+### Sub-epic #192: Verify and selectively promote Jev shadow decisions
+- [ ] Task #187: Swarm: run Jev decision regression matrix across task classes and harnesses
+- [ ] Task #188: Interrogate: adversarial review of Jev semantic drift, safety, and false confidence
+- [ ] Task #200: Prove Jev kill-switch and fail-open rollback equivalence
+- [ ] Task #189: Promote only proven low-risk Jev decisions behind reversible policy (or retain baseline)
+
 
 ## Verification Audit & Stacked Delivery Program (Epic #235, Issues #214, #217, #250)
 - [x] PR #218: `fix(antigravity): make dry-run read-only and detect managed content drift` (Issues #217, #250) - commit `9ae43df`
