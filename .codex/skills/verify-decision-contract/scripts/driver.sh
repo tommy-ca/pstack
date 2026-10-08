@@ -7,7 +7,8 @@ case "$cmd" in
     openspec validate pstack-jev-decisions --type spec --strict
     ;;
   drive)
-    echo "Drive contract verification lever"
+    python3 scripts/eval_decision_routing.py --format json
+    python3 scripts/eval_blinded_pstack.py --format json
     ;;
   cleanup)
     echo "Cleanup completed"

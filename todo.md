@@ -86,11 +86,11 @@
 - [x] Unit 6: Recursive graph and execution program reconciliation (PR #273)
 
 ### Sub-epic #191: Implement shadow integration and build evidence
-- [ ] Task #184: Optional Jev provider adapter and explicit default-OFF feature/config gate
-- [ ] Task #185: Shadow playbook and skill-routing decisions with zero behavior change
-- [ ] Task #186: Offline routing corpus, calibration, latency, and cost lever
-- [ ] Task #199: Bind Jev evidence to canonical, provider, model, policy, and fixture revisions
-- [ ] Task #198: Run blinded pstack Eval for baseline vs Jev-assisted behavior
+- [x] Task #184: Optional Jev provider adapter and explicit default-OFF feature/config gate (PR #274)
+- [x] Task #185: Shadow playbook and skill-routing decisions with zero behavior change (PR #275)
+- [x] Task #186: Offline routing corpus, calibration, latency, and cost lever (PR #276)
+- [x] Task #199: Bind Jev evidence to canonical, provider, model, policy, and fixture revisions (PR #276)
+- [x] Task #198: Run blinded pstack Eval for baseline vs Jev-assisted behavior (PR #277)
 
 ### Sub-epic #192: Verify and selectively promote Jev shadow decisions
 - [ ] Task #187: Swarm: run Jev decision regression matrix across task classes and harnesses
