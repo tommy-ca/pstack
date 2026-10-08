@@ -250,3 +250,49 @@ class TestAdvisoryPromotionPolicy:
         assert res.status == baseline.status
         assert res.target == baseline.target
         assert res.advisory_promoted is False
+
+    def test_prohibited_pattern_fails_open_silently_in_advisory_mode(
+        self, grok_profile: dict
+    ) -> None:
+        # Query with prohibited bearer token must fail SafeContext validation and fail open
+        query = "Fix issue with auth header Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.secret"
+        baseline = resolve_skill_order(grok_profile, query, ROOT)
+
+        obs = ProviderObservation(
+            outcome=DecisionOutcome(status="decided", kind="choice", value="bug-fix"),
+            provider_identity="typesafe-jev",
+            model_identity="jev-pilot-v1",
+            confidence=0.95,
+        )
+        provider = FakeDecisionProvider(canned_observation=obs)
+
+        res = resolve_skill_order_with_shadow(
+            grok_profile, query, ROOT, provider=provider, mode="advisory"
+        )
+
+        assert res.status == baseline.status
+        assert res.target == baseline.target
+        assert res.advisory_promoted is False
+
+    def test_slash_command_query_bypasses_advisory_promotion(
+        self, grok_profile: dict
+    ) -> None:
+        # Query starting with slash command bypasses advisory promotion
+        query = "/custom-command do something"
+        baseline = resolve_skill_order(grok_profile, query, ROOT)
+
+        obs = ProviderObservation(
+            outcome=DecisionOutcome(status="decided", kind="choice", value="bug-fix"),
+            provider_identity="typesafe-jev",
+            model_identity="jev-pilot-v1",
+            confidence=0.95,
+        )
+        provider = FakeDecisionProvider(canned_observation=obs)
+
+        res = resolve_skill_order_with_shadow(
+            grok_profile, query, ROOT, provider=provider, mode="advisory"
+        )
+
+        assert res.status == baseline.status
+        assert res.target == baseline.target
+        assert res.advisory_promoted is False

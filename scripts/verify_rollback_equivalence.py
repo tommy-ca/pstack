@@ -25,6 +25,7 @@ import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -120,7 +121,7 @@ def verify_scenario_provider_unavailable(
         q = f["query"]
         base = resolve_skill_order(profile, q, root)
         t0 = time.perf_counter()
-        shadow = resolve_skill_order_with_shadow(profile, q, root, provider=failing_provider, mode="shadow")
+        shadow = resolve_skill_order_with_shadow(profile, q, root, provider=failing_provider, mode="advisory")
         lat_ms = (time.perf_counter() - t0) * 1000.0
         latencies.append(lat_ms)
 
@@ -130,7 +131,7 @@ def verify_scenario_provider_unavailable(
     max_lat = max(latencies) if latencies else 0.0
     lat_ok = max_lat <= MAX_FALLBACK_LATENCY_MS_BUDGET
     if not lat_ok:
-        failures.append(f"Max latency {max_lat:.2f}ms exceeds budget")
+        failures.append(f"Max latency {max_lat:.2f}ms exceeds budget {MAX_FALLBACK_LATENCY_MS_BUDGET}ms")
 
     return ScenarioVerdict(
         scenario_name="provider_unavailable",
@@ -158,7 +159,7 @@ def verify_scenario_provider_timeout(
         q = f["query"]
         base = resolve_skill_order(profile, q, root)
         t0 = time.perf_counter()
-        shadow = resolve_skill_order_with_shadow(profile, q, root, provider=timeout_provider, mode="shadow")
+        shadow = resolve_skill_order_with_shadow(profile, q, root, provider=timeout_provider, mode="advisory")
         lat_ms = (time.perf_counter() - t0) * 1000.0
         latencies.append(lat_ms)
 
@@ -168,7 +169,7 @@ def verify_scenario_provider_timeout(
     max_lat = max(latencies) if latencies else 0.0
     lat_ok = max_lat <= MAX_FALLBACK_LATENCY_MS_BUDGET
     if not lat_ok:
-        failures.append(f"Max latency {max_lat:.2f}ms exceeds budget")
+        failures.append(f"Max latency {max_lat:.2f}ms exceeds budget {MAX_FALLBACK_LATENCY_MS_BUDGET}ms")
 
     return ScenarioVerdict(
         scenario_name="provider_timeout",
@@ -201,7 +202,7 @@ def verify_scenario_malformed_result(
         q = f["query"]
         base = resolve_skill_order(profile, q, root)
         t0 = time.perf_counter()
-        shadow = resolve_skill_order_with_shadow(profile, q, root, provider=provider, mode="shadow")
+        shadow = resolve_skill_order_with_shadow(profile, q, root, provider=provider, mode="advisory")
         lat_ms = (time.perf_counter() - t0) * 1000.0
         latencies.append(lat_ms)
 
@@ -211,7 +212,7 @@ def verify_scenario_malformed_result(
     max_lat = max(latencies) if latencies else 0.0
     lat_ok = max_lat <= MAX_FALLBACK_LATENCY_MS_BUDGET
     if not lat_ok:
-        failures.append(f"Max latency {max_lat:.2f}ms exceeds budget")
+        failures.append(f"Max latency {max_lat:.2f}ms exceeds budget {MAX_FALLBACK_LATENCY_MS_BUDGET}ms")
 
     return ScenarioVerdict(
         scenario_name="malformed_result",
@@ -245,7 +246,7 @@ def verify_scenario_abstention(
         q = f["query"]
         base = resolve_skill_order(profile, q, root)
         t0 = time.perf_counter()
-        shadow = resolve_skill_order_with_shadow(profile, q, root, provider=provider, mode="shadow")
+        shadow = resolve_skill_order_with_shadow(profile, q, root, provider=provider, mode="advisory")
         lat_ms = (time.perf_counter() - t0) * 1000.0
         latencies.append(lat_ms)
 
@@ -255,7 +256,7 @@ def verify_scenario_abstention(
     max_lat = max(latencies) if latencies else 0.0
     lat_ok = max_lat <= MAX_FALLBACK_LATENCY_MS_BUDGET
     if not lat_ok:
-        failures.append(f"Max latency {max_lat:.2f}ms exceeds budget")
+        failures.append(f"Max latency {max_lat:.2f}ms exceeds budget {MAX_FALLBACK_LATENCY_MS_BUDGET}ms")
 
     return ScenarioVerdict(
         scenario_name="abstention",
@@ -289,7 +290,7 @@ def verify_scenario_below_threshold(
         q = f["query"]
         base = resolve_skill_order(profile, q, root)
         t0 = time.perf_counter()
-        shadow = resolve_skill_order_with_shadow(profile, q, root, provider=provider, mode="shadow")
+        shadow = resolve_skill_order_with_shadow(profile, q, root, provider=provider, mode="advisory")
         lat_ms = (time.perf_counter() - t0) * 1000.0
         latencies.append(lat_ms)
 
@@ -299,7 +300,7 @@ def verify_scenario_below_threshold(
     max_lat = max(latencies) if latencies else 0.0
     lat_ok = max_lat <= MAX_FALLBACK_LATENCY_MS_BUDGET
     if not lat_ok:
-        failures.append(f"Max latency {max_lat:.2f}ms exceeds budget")
+        failures.append(f"Max latency {max_lat:.2f}ms exceeds budget {MAX_FALLBACK_LATENCY_MS_BUDGET}ms")
 
     return ScenarioVerdict(
         scenario_name="below_threshold",
@@ -319,8 +320,32 @@ def verify_scenario_stale_evidence(
     root: Path,
 ) -> ScenarioVerdict:
     """Scenario 7: Stale evidence / drift detection demotes to baseline."""
+    obs = ProviderObservation(
+        outcome=DecisionOutcome(status="decided", kind="choice", value="bug-fix"),
+        provider_identity="typesafe-jev",
+        model_identity="jev-pilot-v1",
+        confidence=0.95,
+    )
+    provider = FakeDecisionProvider(canned_observation=obs)
+    latencies: List[float] = []
     failures: List[str] = []
-    # Test that a stale receipt is refused controlling authorization
+
+    with patch(
+        "scripts.route_resolver.check_receipt_staleness",
+        return_value=(True, ["Simulated canonical mapping drift: tree revision mismatch"]),
+    ):
+        for f in fixtures:
+            q = f["query"]
+            base = resolve_skill_order(profile, q, root)
+            t0 = time.perf_counter()
+            shadow = resolve_skill_order_with_shadow(profile, q, root, provider=provider, mode="advisory")
+            lat_ms = (time.perf_counter() - t0) * 1000.0
+            latencies.append(lat_ms)
+
+            if shadow.target != base.target:
+                failures.append(f"Fixture '{f['id']}': acting route diverged when evidence is stale")
+
+    # Verify that a stale receipt is refused controlling authorization
     stale_receipt = create_decision_receipt(
         root=root,
         source="observation",
@@ -339,13 +364,18 @@ def verify_scenario_stale_evidence(
     if auth_ok:
         failures.append("Stale receipt was incorrectly authorized for controlling mode")
 
+    max_lat = max(latencies) if latencies else 0.0
+    lat_ok = max_lat <= MAX_FALLBACK_LATENCY_MS_BUDGET
+    if not lat_ok:
+        failures.append(f"Max latency {max_lat:.2f}ms exceeds budget {MAX_FALLBACK_LATENCY_MS_BUDGET}ms")
+
     return ScenarioVerdict(
         scenario_name="stale_evidence",
         scenario_description="Material change in model, mapping, or policy triggers mechanical demotion",
         fixtures_tested=len(fixtures),
         equivalent_to_baseline=len(failures) == 0,
-        max_latency_ms=0.5,
-        latency_budget_met=True,
+        max_latency_ms=max_lat,
+        latency_budget_met=lat_ok,
         verdict="PASS" if not failures else "FAIL",
         failure_reasons=failures,
     )
@@ -357,23 +387,35 @@ def verify_scenario_receipt_failure(
     root: Path,
 ) -> ScenarioVerdict:
     """Scenario 8: Evidence receipt failure leaves baseline route intact."""
-    provider = FakeDecisionProvider()
+    obs = ProviderObservation(
+        outcome=DecisionOutcome(status="decided", kind="choice", value="bug-fix"),
+        provider_identity="typesafe-jev",
+        model_identity="jev-pilot-v1",
+        confidence=0.95,
+    )
+    provider = FakeDecisionProvider(canned_observation=obs)
     latencies: List[float] = []
     failures: List[str] = []
 
-    for f in fixtures:
-        q = f["query"]
-        base = resolve_skill_order(profile, q, root)
-        t0 = time.perf_counter()
-        shadow = resolve_skill_order_with_shadow(profile, q, root, provider=provider, mode="shadow")
-        lat_ms = (time.perf_counter() - t0) * 1000.0
-        latencies.append(lat_ms)
+    with patch(
+        "scripts.route_resolver.create_decision_receipt",
+        side_effect=IOError("Simulated disk error creating receipt"),
+    ):
+        for f in fixtures:
+            q = f["query"]
+            base = resolve_skill_order(profile, q, root)
+            t0 = time.perf_counter()
+            shadow = resolve_skill_order_with_shadow(profile, q, root, provider=provider, mode="advisory")
+            lat_ms = (time.perf_counter() - t0) * 1000.0
+            latencies.append(lat_ms)
 
-        if shadow.target != base.target:
-            failures.append(f"Fixture '{f['id']}': acting route diverged when receipt failed")
+            if shadow.target != base.target:
+                failures.append(f"Fixture '{f['id']}': acting route diverged when receipt failed")
 
     max_lat = max(latencies) if latencies else 0.0
     lat_ok = max_lat <= MAX_FALLBACK_LATENCY_MS_BUDGET
+    if not lat_ok:
+        failures.append(f"Max latency {max_lat:.2f}ms exceeds budget {MAX_FALLBACK_LATENCY_MS_BUDGET}ms")
 
     return ScenarioVerdict(
         scenario_name="receipt_failure",

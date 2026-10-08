@@ -28,6 +28,7 @@ case "$cmd" in
   drive)
     run_bounded "eval-decision-routing" python3 scripts/eval_decision_routing.py --format json
     run_bounded "eval-blinded-pstack" python3 scripts/eval_blinded_pstack.py --format json
+    run_bounded "verify-rollback-equivalence" python3 scripts/verify_rollback_equivalence.py --format json
     ;;
   cleanup)
     echo "Cleanup completed"

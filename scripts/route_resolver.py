@@ -322,8 +322,12 @@ def resolve_skill_order_with_shadow(
             return baseline
 
         # --- Advisory Promotion Policy Gate ---
-        # 1. Deterministic baseline safety invariant: explicit direct commands,
-        # system-two playbooks, and slash commands cannot be overridden.
+        # 1. Explicit user commands (e.g. slash commands) cannot be promoted by advisory provider
+        if query_str.strip().startswith("/"):
+            return baseline
+
+        # 2. Deterministic baseline safety invariant: explicit direct commands,
+        # system-two playbooks, and agent targets cannot be overridden.
         if baseline.status == "matched":
             raw_target = str(baseline.target or "").strip()
             norm_target = (

@@ -9,6 +9,7 @@ Mechanically detects drift and prevents stale evidence from authorizing controll
 
 from __future__ import annotations
 
+from functools import lru_cache
 import hashlib
 import json
 import subprocess
@@ -18,8 +19,9 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 
-def compute_file_sha256(path: Path) -> str:
-    """Compute deterministic SHA-256 hex digest of a file."""
+@lru_cache(maxsize=128)
+def _cached_file_sha256(path_str: str) -> str:
+    path = Path(path_str)
     if not path.is_file():
         raise FileNotFoundError(f"File not found: {path}")
     hasher = hashlib.sha256()
@@ -27,12 +29,17 @@ def compute_file_sha256(path: Path) -> str:
     return hasher.hexdigest()
 
 
-def get_git_revision_and_tree(root: Path) -> Tuple[str, str]:
-    """Retrieve current git commit SHA and tree SHA for repository."""
+def compute_file_sha256(path: Path) -> str:
+    """Compute deterministic SHA-256 hex digest of a file."""
+    return _cached_file_sha256(str(path.resolve()))
+
+
+@lru_cache(maxsize=32)
+def _cached_git_revision_and_tree(root_str: str) -> Tuple[str, str]:
     try:
         commit_res = subprocess.run(
             ["git", "rev-parse", "HEAD"],
-            cwd=str(root),
+            cwd=root_str,
             capture_output=True,
             text=True,
             check=True,
@@ -41,7 +48,7 @@ def get_git_revision_and_tree(root: Path) -> Tuple[str, str]:
 
         tree_res = subprocess.run(
             ["git", "rev-parse", "HEAD^{tree}"],
-            cwd=str(root),
+            cwd=root_str,
             capture_output=True,
             text=True,
             check=True,
@@ -50,6 +57,11 @@ def get_git_revision_and_tree(root: Path) -> Tuple[str, str]:
         return commit_sha, tree_sha
     except Exception:
         return "uncommitted-local", "uncommitted-tree"
+
+
+def get_git_revision_and_tree(root: Path) -> Tuple[str, str]:
+    """Retrieve current git commit SHA and tree SHA for repository."""
+    return _cached_git_revision_and_tree(str(root.resolve()))
 
 
 @dataclass(frozen=True)

@@ -93,10 +93,10 @@
 - [x] Task #198: Run blinded pstack Eval for baseline vs Jev-assisted behavior (PR #277)
 
 ### Sub-epic #192: Verify and selectively promote Jev shadow decisions
-- [ ] Task #187: Swarm: run Jev decision regression matrix across task classes and harnesses
-- [ ] Task #188: Interrogate: adversarial review of Jev semantic drift, safety, and false confidence
-- [ ] Task #200: Prove Jev kill-switch and fail-open rollback equivalence
-- [ ] Task #189: Promote only proven low-risk Jev decisions behind reversible policy (or retain baseline)
+- [x] Task #200: Prove Jev kill-switch and fail-open rollback equivalence (PR #278)
+- [x] Task #189: Promote only proven low-risk Jev decisions behind reversible policy (PR #279)
+- [x] Task #187: Swarm: run Jev decision regression matrix across task classes and harnesses (PR #280)
+- [x] Task #188: Interrogate: adversarial review of Jev semantic drift, safety, and false confidence (PR #280)
 
 
 ## Verification Audit & Stacked Delivery Program (Epic #235, Issues #214, #217, #250)
