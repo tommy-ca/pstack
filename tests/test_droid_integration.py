@@ -63,6 +63,7 @@ def test_schema_host_enums_accept_droid() -> None:
         ("package-descriptor", ("host_targets", "items")),
         ("profile", ("host",)),
         ("binding", ("host",)),
+        ("receipt", ("host",)),
     ):
         schema = json.loads(
             (ROOT / "schemas" / "portability" / f"{schema_name}.schema.json").read_text(encoding="utf-8")
@@ -71,6 +72,8 @@ def test_schema_host_enums_accept_droid() -> None:
         for key in enum_path:
             node = node[key]
         assert "droid" in node["enum"], schema_name
+        declared = json.loads((ROOT / "pstack.package.json").read_text(encoding="utf-8"))["host_targets"]
+        assert set(declared) <= set(node["enum"]), schema_name
 
 
 def test_portability_schema_census_includes_droid() -> None:
@@ -84,9 +87,11 @@ def test_package_lifecycle_census_includes_droid() -> None:
     assert "droid" in lifecycle.HOST_PLUGIN_REL_PATHS
 
 
-def test_verify_portable_accepts_droid_but_all_stays_five() -> None:
-    assert "droid" in verify_portable.SUPPORTED_HOSTS
-    assert "droid" not in verify_portable.FIVE_HARNESSES
+def test_verify_portable_all_uses_declared_six_host_census() -> None:
+    declared = json.loads((ROOT / "pstack.package.json").read_text(encoding="utf-8"))["host_targets"]
+    assert "droid" in declared
+    assert set(declared) <= set(verify_portable.SUPPORTED_HOSTS)
+    assert verify_portable.get_declared_hosts() == declared
 
 
 def test_boundary_scanner_census_includes_droid() -> None:
