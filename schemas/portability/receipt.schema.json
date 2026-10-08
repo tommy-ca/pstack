@@ -21,7 +21,7 @@
     },
     "host": {
       "type": "string",
-      "enum": ["grok", "codex", "omp", "opencode", "antigravity", "claude", "custom", "mock"]
+      "enum": ["grok", "codex", "omp", "opencode", "antigravity", "droid", "claude", "custom", "mock"]
     },
     "host_version": {
       "type": "string"
