@@ -26,6 +26,7 @@ jobs:
             tests/test_portability_schemas.py \
             tests/test_droid_integration.py \
             tests/test_droid_routing.py \
+            tests/test_harness_drivers.py \
             tests/test_project_package.py \
             tests/test_skill_frontmatter.py \
             tests/test_scan_host_boundary.py \
