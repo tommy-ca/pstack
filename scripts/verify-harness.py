@@ -462,6 +462,14 @@ def main() -> None:
     if len(agent_files) != 22:
         fail(f"expected 22 agents/*.md, got {len(agent_files)}")
 
+    droid_files = list((ROOT / "droids").glob("*.md"))
+    if len(droid_files) != 22:
+        fail(f"expected 22 droids/*.md, got {len(droid_files)}")
+    agent_stems = {p.stem for p in agent_files}
+    droid_stems = {p.stem.removeprefix("pstack-") for p in droid_files}
+    if agent_stems != droid_stems:
+        fail(f"mismatch between agents and droids stems: {agent_stems ^ droid_stems}")
+
     # Not a TEST-PLAN pass gate. Catches the adapter eating "never create
     # ~/.cursor/rules" or rewriting TEST-PLAN FAIL tokens on a second run.
     adapt_path = ROOT / "scripts" / "adapt-harness.py"

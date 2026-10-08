@@ -26,8 +26,15 @@ def test_clean_tree_passes():
     """The clean repository tree must have zero host boundary leaks."""
     vocab, violations, count = run_scan(ROOT, PROFILES_DIR)
     assert len(vocab) >= 20
-    assert count >= 50
+    assert count >= 130
     assert violations == [], f"Found unexpected violations: {violations}"
+
+
+def test_agents_and_droids_scanned_without_violations():
+    """Agents and droids directories must be scanned with zero violations."""
+    vocab, violations, count = run_scan(ROOT, PROFILES_DIR, target_dirs=[ROOT / "agents", ROOT / "droids"])
+    assert count == 44
+    assert violations == []
 
 
 def test_dynamic_vocabulary_extraction():
