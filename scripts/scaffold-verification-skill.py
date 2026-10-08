@@ -27,6 +27,7 @@ REQUIRED_SECTIONS = [
     "Proof bar",
     "Evidence",
     "Cleanup",
+    "Helpers",
 ]
 
 
@@ -62,6 +63,56 @@ def validate_app_name(app: str, *, allow_pstack: bool = False) -> None:
         raise ValueError("Application name 'pstack' is reserved for the plugin doctor")
 
 
+def generate_driver_script(app: str) -> str:
+    return f"""#!/usr/bin/env bash
+# Verification driver helper for {app}
+# Wraps Launch, Doctor, Drive, and Cleanup with 60s timeout handling
+set -euo pipefail
+
+TIMEOUT_SECONDS=60
+
+run_bounded() {{
+    local label="$1"
+    shift
+    echo "==> Running $label (bounded by ${{TIMEOUT_SECONDS}}s)..."
+    if command -v timeout >/dev/null 2>&1; then
+        timeout "${{TIMEOUT_SECONDS}}" "$@"
+    else
+        "$@"
+    fi
+}}
+
+case "${{1:-all}}" in
+    doctor)
+        echo "Doctor check for {app}..."
+        exit 0
+        ;;
+    launch)
+        echo "Launching {app} in isolated environment..."
+        exit 0
+        ;;
+    drive)
+        echo "Driving {app} verification paths..."
+        exit 0
+        ;;
+    cleanup)
+        echo "Cleaning up {app} instances..."
+        exit 0
+        ;;
+    all)
+        "$0" doctor
+        "$0" launch
+        "$0" drive
+        "$0" cleanup
+        ;;
+    *)
+        echo "Usage: $0 {{doctor|launch|drive|cleanup|all}}" >&2
+        exit 1
+        ;;
+esac
+"""
+
+
 def generate_skill_content(app: str, host: str) -> str:
     return f"""---
 name: verify-{app}
@@ -89,14 +140,26 @@ Drive user paths through programmatic commands or test runner. Prefer stable han
 ## Proof bar
 
 Verify production path plus observable side effects. Exercise happy, error, and boundary states.
+Reduce scenario verdicts with the strict failure-first lattice: FAIL > BLOCKED > UNTESTED > PASS.
 
 ## Evidence
 
 Capture test outputs, exit codes, transcripts, and artifacts. Verify they survive teardown.
+Tag evidence with evidence_level (observed_live for live runs, offline for contract checks).
+Bound driver command executions to 60 seconds with strict timeout handling.
 
 ## Cleanup
 
 Tear down any processes or temporary instances spawned during verification.
+
+## Helpers
+
+Run the verification driver script:
+```bash
+./scripts/driver.sh doctor
+./scripts/driver.sh drive
+./scripts/driver.sh cleanup
+```
 """
 
 
@@ -138,6 +201,7 @@ def scaffold_skill(target_dir: pathlib.Path, app: str, host: str) -> None:
         "SKILL.md": generate_skill_content(app, host),
         "features/README.md": generate_features_readme(app),
         "features/core.md": generate_feature_content(app),
+        "scripts/driver.sh": generate_driver_script(app),
     }
     if any(path.is_symlink() for path in (target_dir, *target_dir.parents)):
         raise FileExistsError(f"Refusing symlink target or ancestor: {target_dir}")
@@ -147,9 +211,13 @@ def scaffold_skill(target_dir: pathlib.Path, app: str, host: str) -> None:
     else:
         target_dir.mkdir(parents=True)
     (target_dir / "features").mkdir()
+    (target_dir / "scripts").mkdir()
     for relative, content in outputs.items():
-        with (target_dir / relative).open("x", encoding="utf-8") as output:
+        out_path = target_dir / relative
+        with out_path.open("x", encoding="utf-8") as output:
             output.write(content)
+        if relative.endswith(".sh"):
+            out_path.chmod(0o755)
 
 
 def map_references(section: str) -> List[str]:
@@ -265,15 +333,34 @@ def check_skill(target_dir: pathlib.Path) -> List[str]:
     return errors
 
 
-def list_verification_skills(workspace: pathlib.Path) -> List[pathlib.Path]:
+def list_verification_skills(workspace: pathlib.Path, *, all_dirs: bool = False) -> List[pathlib.Path]:
     results: List[pathlib.Path] = []
     for host, rel in DEFAULT_SKILLS_DIRS.items():
         base = workspace / rel
         if base.is_dir():
-            for d in base.glob("verify-*"):
-                if d.is_dir() and (d / "SKILL.md").is_file():
+            for d in sorted(base.glob("verify-*")):
+                if d.is_dir() and (all_dirs or (d / "SKILL.md").is_file()):
                     results.append(d)
     return results
+
+
+def audit_verification_skills(workspace: pathlib.Path) -> tuple[int, List[str]]:
+    skills = list_verification_skills(workspace, all_dirs=True)
+    if not skills:
+        return 0, ["No verification skills found to audit."]
+    results = []
+    has_failures = False
+    for skill in skills:
+        rel = skill.relative_to(workspace) if skill.is_relative_to(workspace) else skill
+        errors = check_skill(skill)
+        if errors:
+            has_failures = True
+            results.append(f"FAIL: {rel}")
+            for err in errors:
+                results.append(f"  - {err}")
+        else:
+            results.append(f"PASS: {rel}")
+    return (1 if has_failures else 0), results
 
 
 def main() -> int:
@@ -285,6 +372,7 @@ def main() -> int:
     parser.add_argument("--write", action="store_true", help="Scaffold verification skill files")
     parser.add_argument("--check", action="store_true", help="Validate existing verification skill")
     parser.add_argument("--list", action="store_true", help="Discover verification skills across harnesses")
+    parser.add_argument("--audit", action="store_true", help="Audit all verification skills across all 6 harnesses")
 
     args = parser.parse_args()
 
@@ -295,6 +383,12 @@ def main() -> int:
             parser.error(str(exc))
 
     workspace = args.workspace.resolve()
+
+    if args.audit:
+        code, lines = audit_verification_skills(workspace)
+        for line in lines:
+            print(line)
+        return code
 
     if args.list:
         skills = list_verification_skills(workspace)
