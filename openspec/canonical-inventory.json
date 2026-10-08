@@ -4,7 +4,7 @@
   "pin_conformance": "PASS",
   "upstream_freshness": "DRIFT",
   "upstream_head": "d0ef80d86795816da932a153458c5dbe192d294e",
-  "observation_time": "2026-10-07T19:35:56.058162+00:00",
+  "observation_time": "2026-10-07T19:58:49.834308+00:00",
   "observation_source": "/home/tommyk/projects/pstack/.worktrees/upstream-cursor-plugins",
   "commits_ahead": 4,
   "counts": {
@@ -15,6 +15,14 @@
     "adapted": 64,
     "excluded": 9,
     "gaps": 0
+  },
+  "known_defect_exceptions": {
+    "cursor-plugins-474": {
+      "surface": "skills/principle-test-behavior-not-implementation/SKILL.md",
+      "upstream_issue": "https://github.com/cursor/plugins/issues/474",
+      "description": "Upstream principle text conflates vacuous assertions with weak truthiness assertions",
+      "reconciliation": "Separated weak assertion fail states from truly vacuous execution-only shapes"
+    }
   },
   "artifacts": [
     {

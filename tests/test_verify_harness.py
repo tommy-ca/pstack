@@ -650,7 +650,7 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert "pack.py" in recipe.stdout
     assert "scripts/orch/" in recipe.stdout
     assert "advisor" in recipe.stdout
-    assert "0.15.5-grokbuild.0" in (ROOT / "plugin.json").read_text(
+    assert "0.15.15-grokbuild.0" in (ROOT / "plugin.json").read_text(
         encoding="utf-8"
     )
     default = subprocess.run(
@@ -1181,8 +1181,8 @@ def test_forge_neutral_pr_path_without_graphite() -> None:
 
 def test_upstream_metadata_contract() -> None:
     upstream = (ROOT / "UPSTREAM").read_text(encoding="utf-8")
-    assert "tree 4b4d98e5e3b3c139f63dbc1ce4b538954c8f2f52" in upstream
-    assert "93b00b89ef425a9c1bac0d0b317dfc49c930ac99" in upstream
+    assert "tree df581122cde17e6e27686b5a448bde23e4ad4318" in upstream
+    assert "4b4d98e5e3b3c139f63dbc1ce4b538954c8f2f52" in upstream
     root_manifest = json.loads((ROOT / "plugin.json").read_text(encoding="utf-8"))
     root_version = root_manifest["version"]
     manifest_fields = (
