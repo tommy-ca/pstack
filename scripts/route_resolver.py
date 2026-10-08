@@ -29,6 +29,7 @@ class RouteResolution:
     status: str = "unmatched"  # "matched", "unmatched", "ambiguous"
     matched_rows: List[Dict[str, Any]] = field(default_factory=list)
     error_reason: str = ""
+    shadow_observation: Optional[Any] = None
 
     @property
     def is_matched(self) -> bool:
@@ -216,3 +217,63 @@ def resolve_skill_order(profile: Dict[str, Any], query_str: str, root: Path) -> 
         notes=notes,
         matched_rows=[matched_row],
     )
+
+
+def resolve_skill_order_with_shadow(
+    profile: Dict[str, Any],
+    query_str: str,
+    root: Path,
+    provider: Optional[Any] = None,
+    mode: str = "shadow",
+) -> RouteResolution:
+    """Resolve one advisory skill_order row with zero-behavior-change shadow provider hook.
+
+    Always computes the baseline deterministic route first. When a provider is
+    passed and mode is 'shadow', queries the provider in advisory shadow mode over
+    semantic candidates in references/decision-routing.json. Provider failures,
+    timeouts, or errors are caught safely and never alter the resolved baseline route.
+    """
+    baseline = resolve_skill_order(profile, query_str, root)
+    if provider is None or mode != "shadow":
+        return baseline
+
+    try:
+        import json
+        from scripts.decision_adapter import (
+            ChoiceOption,
+            ChoiceRequest,
+            EgressClass,
+            validate_and_create_safe_context,
+        )
+
+        routing_file = root / "references" / "decision-routing.json"
+        if not routing_file.is_file():
+            return baseline
+
+        data = json.loads(routing_file.read_text(encoding="utf-8"))
+        candidates: List[ChoiceOption] = []
+        for route in data.get("routes", []):
+            if route.get("selection") == "semantic_candidate":
+                playbook_id = str(route.get("playbook", "")).strip()
+                label = str(route.get("class_label", playbook_id)).strip()
+                if playbook_id and label:
+                    candidates.append(ChoiceOption(id=playbook_id, label=label))
+
+        if not candidates:
+            return baseline
+
+        # Attempt to build safe context from query
+        safe_ctx = validate_and_create_safe_context(query_str, EgressClass.SAFE_TO_SEND)
+        req = ChoiceRequest(
+            question_id="route_selection",
+            context=safe_ctx,
+            choices=tuple(candidates[:32]),
+        )
+        obs = provider.decide(req)
+        baseline.shadow_observation = obs
+    except Exception:
+        # Strict fail-open: no provider exception escapes to caller
+        pass
+
+    return baseline
+
