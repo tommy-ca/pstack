@@ -102,4 +102,37 @@
   - Regenerated 6-harness evidence receipts across all 4 planes
   - Full test suite: 455/455 green (100%)
 
+## Epic #235: Harden pstack verification truth, route resolution, and lifecycle safety
+### Phase 1: Test Partitioning & Baseline Census (PR #254, Issues #236, #243, #242)
+- [x] Unit 1: Record minimal routing/proof/lifecycle decision in ADR-0017 (Issue #242)
+- [x] Unit 2: Formalize 3-tier test classification in `docs/verification-test-tiers.md` (Issue #243)
+- [x] Unit 3: Partition offline CI workflow in `.github/workflows/portability-offline.yml` (Issue #243)
+- [x] Unit 4: Reconcile receipt schema census and Droid integration tests (Issue #236)
+- [x] Unit 5: Isolate host-dependent smoke tests in `tests/test_harness_drivers.py` (Issues #236, #243)
+
+### Phase 2: Pure Typed Route Resolver & Profile Alignment (PR #255, Issues #237, #244, #245)
+- [x] Unit 6: Extract pure typed route resolution contract and matcher in `scripts/route_resolver.py` (Issue #244)
+- [x] Unit 7: Eliminate substring routing collisions across all 6 harness drivers (Issue #245)
+- [x] Unit 8: Reconcile profiles (`profiles/*.json`) for missing `prove-it-works`, `Read-only spawn`, and unpacked primaries (Issue #237)
+- [x] Unit 9: Add route resolver test suite covering collision avoidance and precedence in `tests/test_route_resolver.py` (Issues #237, #244)
+
+### Phase 3: Failure-First Verdicts & Bounded Subprocesses (PR #256, Issues #238, #246, #247, #248)
+- [x] Unit 10: Enforce strict failure-first verdict reduction `FAIL > BLOCKED > UNTESTED > PASS` in `scripts/verify-portable.py` (Issue #246)
+- [x] Unit 11: Add bounded 60s timeout handling to all harness driver command runners in `scripts/drivers/base.py` and `scripts/verify-portable.py` (Issue #247)
+- [x] Unit 12: Formalize `evidence_level` (`static`, `offline`, `observed_live`, `legacy`) and `UNTESTED` in portability schemas (Issue #247)
+- [x] Unit 13: Add verdict reduction and timeout test suite in `tests/test_verdict_reduction.py` (Issues #238, #246)
+
+### Phase 4: Lossless Ownership-Aware Package Lifecycle (PR #257, Issues #239, #249)
+- [x] Unit 14: Record `.pstack-managed-files.json` ownership manifest upon install in `scripts/package-lifecycle.py` (Issue #239)
+- [x] Unit 15: Replace destructive `shutil.rmtree` with non-destructive file copying in `copy_skills` (Issue #239)
+- [x] Unit 16: Protect unmanaged user files, custom skills, and symlinks from deletion during uninstall (Issue #249)
+- [x] Unit 17: Add lifecycle safety test suite in `tests/test_package_lifecycle_safety.py` (Issues #239, #249)
+
+### Phase 5: Swarm, Arena & Interrogate Acceptance Gate (PR #258, Issues #240, #251, #252)
+- [x] Unit 18: Execute 4-lane Swarm acceptance across canonical, routing, runtime proof, and lifecycle safety (Issue #251)
+- [x] Unit 19: Conduct adversarial Interrogate review across stacked diffs (Issue #252)
+- [x] Unit 20: Re-run 6-harness verification matrix and refresh durable evidence receipts across all 4 planes (Issue #240)
+- [x] Unit 21: Full clean offline CI suite verified: 180 passed, 6 skipped in 36.8s (Issue #240)
+
+
 

@@ -33,6 +33,7 @@ jobs:
             tests/test_skill_frontmatter.py \
             tests/test_scan_host_boundary.py \
             tests/test_package_lifecycle.py \
-            tests/test_package_lifecycle_safety.py
+            tests/test_package_lifecycle_safety.py \
+            tests/test_evidence_durability.py
       # Native host spawn/join/isolation are intentionally NOT covered here.
       # Their separate live evidence is tracked by issues #238 and #240.
