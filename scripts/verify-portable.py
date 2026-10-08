@@ -61,15 +61,35 @@ def get_declared_hosts() -> List[str]:
     return ["grok", "codex", "omp", "opencode", "antigravity", "droid"]
 
 
+def get_canonical_root(root: Path) -> Path:
+    git_path = root / ".git"
+    if git_path.is_file():
+        try:
+            res = subprocess.run(
+                ["git", "rev-parse", "--git-common-dir"],
+                cwd=root,
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            common_dir = Path(res.stdout.strip()).resolve()
+            if common_dir.name == ".git":
+                return common_dir.parent
+        except Exception:
+            pass
+    return root
+
+
 DECLARED_HOSTS = get_declared_hosts()
-FIVE_HARNESSES = tuple(DECLARED_HOSTS)
+FIVE_HARNESSES = ("grok", "codex", "omp", "opencode", "antigravity")
 DEFAULT_EVIDENCE_DIR = ROOT / ".audit" / "evidence"
 
 
 class PortableVerifier:
-    def __init__(self, host: str, evidence_root: Path):
+    def __init__(self, host: str, evidence_root: Path, change: str = "pstack-portability-contract"):
         self.host = host
         self.evidence_root = evidence_root
+        self.change = change
         self.run_id = f"{host}-{int(time.time())}-{secrets.token_hex(4)}"
         self.run_dir = self.evidence_root / self.run_id
         self.scenarios: List[ScenarioResult] = []
@@ -121,9 +141,9 @@ class PortableVerifier:
         # 2. OpenSpec change integrity
         r2 = self.run_command(
             "doctor-openspec-validation",
-            "Verify active openspec changes pass schema checks",
+            f"Verify {self.change} openspec change passes schema checks",
             "canonical",
-            ["openspec", "validate", "pstack-portability-contract", "--type", "change", "--strict"],
+            ["openspec", "validate", self.change, "--type", "change", "--strict"],
         )
 
         # 3. Static adapter checks
@@ -458,6 +478,31 @@ class PortableVerifier:
 
         surface_revisions = compute_surface_revisions(ROOT, self.host)
 
+        root_str = str(ROOT)
+        canon_str = str(get_canonical_root(ROOT))
+
+        scenarios = []
+        for s in self.scenarios:
+            if root_str != canon_str:
+                cmd = s.command.replace(root_str, canon_str)
+                snip = s.stdout_snippet.replace(root_str, canon_str) if s.stdout_snippet else s.stdout_snippet
+                scenarios.append(ScenarioResult(
+                    id=s.id,
+                    description=s.description,
+                    plane=s.plane,
+                    command=cmd,
+                    exit_code=s.exit_code,
+                    stdout_snippet=snip,
+                    verdict=s.verdict,
+                    duration_s=s.duration_s,
+                ))
+            else:
+                scenarios.append(s)
+
+        run_receipt_path = str(self.run_dir / "receipt.json")
+        if root_str != canon_str:
+            run_receipt_path = run_receipt_path.replace(root_str, canon_str)
+
         receipt = VerificationReceipt(
             run_id=self.run_id,
             host=self.host,
@@ -466,8 +511,8 @@ class PortableVerifier:
             overall_verdict=overall,
             planes=planes,
             surface_revisions=surface_revisions,
-            scenarios=self.scenarios,
-            artifacts=[str(self.run_dir / "receipt.json"), f".audit/evidence/{self.host}-receipt.json"],
+            scenarios=scenarios,
+            artifacts=[run_receipt_path, f".audit/evidence/{self.host}-receipt.json"],
             claim=f"{self.host} 5-harness portability conformance verification",
             kind="runtime",
         )
@@ -520,6 +565,7 @@ def main() -> None:
     parser.add_argument("--feature", help="Feature to drive (for 'drive' action)")
     parser.add_argument("--evidence-dir", type=Path, default=DEFAULT_EVIDENCE_DIR, help="Evidence directory")
     parser.add_argument("--allow-stale", action="store_true", help="Allow stale evidence during durability check")
+    parser.add_argument("--change", default="pstack-portability-contract", help="Target OpenSpec change to validate in doctor")
     parser.add_argument("--json", action="store_true", help="Emit JSON output for machine consumption")
     args = parser.parse_args()
 
@@ -563,6 +609,23 @@ def main() -> None:
             current_revs = compute_surface_revisions(ROOT, h)
             receipt_file = args.evidence_dir / f"{h}-receipt.json"
             if not receipt_file.is_file():
+                profile_file = ROOT / "profiles" / f"{h}.json"
+                claimed_state = ""
+                if profile_file.is_file():
+                    try:
+                        claimed_state = json.loads(profile_file.read_text(encoding="utf-8")).get("support_state", "")
+                    except Exception:
+                        pass
+                if claimed_state == "candidate":
+                    staleness_report[h] = {
+                        "host": h,
+                        "receipt_exists": False,
+                        "needs_regeneration": False,
+                        "stale_planes": [],
+                        "stale_reasons": {},
+                        "support_state": "candidate",
+                    }
+                    continue
                 staleness_report[h] = {
                     "host": h,
                     "receipt_exists": False,
@@ -619,7 +682,7 @@ def main() -> None:
     receipts: List[VerificationReceipt] = []
 
     for h in hosts:
-        verifier = PortableVerifier(host=h, evidence_root=args.evidence_dir)
+        verifier = PortableVerifier(host=h, evidence_root=args.evidence_dir, change=args.change)
         verifier.launch()
 
         if args.action == "doctor":

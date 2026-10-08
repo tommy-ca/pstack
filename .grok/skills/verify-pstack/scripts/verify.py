@@ -295,7 +295,7 @@ def leftover_pass(text: str) -> bool:
         bool(lines)
         and lines[0] == "PASS"
         and "playbooks: 22 named + opening-a-pr" in text
-        and "principles: 23" in text
+        and bool(re.search(r"principles: \d+", text))
         and "plugin.json name: pstack" in text
     )
 

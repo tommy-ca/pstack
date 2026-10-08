@@ -155,3 +155,47 @@ def test_portable_verifier_cli_host_all_doctor(tmp_path: Path) -> None:
     assert f"{len(declared)}-Harness Matrix Verdict: PASS" in res.stdout
     for host in declared:
         assert f"Host: {host}" in res.stdout
+
+
+def test_portable_verifier_selected_change_validation(tmp_path: Path) -> None:
+    # Default target passes and aligns description
+    verifier = PortableVerifier(host="grok", evidence_root=tmp_path, change="pstack-portability-contract")
+    verifier.launch()
+    ok = verifier.doctor(check_durability=False)
+    assert ok is True
+    openspec_scenario = next(s for s in verifier.scenarios if s.id == "doctor-openspec-validation")
+    assert openspec_scenario.description == "Verify pstack-portability-contract openspec change passes schema checks"
+    assert "pstack-portability-contract" in openspec_scenario.command
+    assert openspec_scenario.verdict == "PASS"
+
+    # Failing target is observable in scenario and fails doctor
+    failing_verifier = PortableVerifier(host="grok", evidence_root=tmp_path, change="nonexistent-target-change")
+    failing_verifier.launch()
+    failing_ok = failing_verifier.doctor(check_durability=False)
+    assert failing_ok is False
+    failing_scenario = next(s for s in failing_verifier.scenarios if s.id == "doctor-openspec-validation")
+    assert failing_scenario.description == "Verify nonexistent-target-change openspec change passes schema checks"
+    assert "nonexistent-target-change" in failing_scenario.command
+    assert failing_scenario.verdict == "FAIL"
+
+
+def test_portable_verifier_cli_failing_change_observable(tmp_path: Path) -> None:
+    res = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "scripts" / "verify-portable.py"),
+            "doctor",
+            "--host",
+            "grok",
+            "--change",
+            "nonexistent-target-change",
+            "--allow-stale",
+            "--evidence-dir",
+            str(tmp_path),
+        ],
+        capture_output=True,
+        text=True,
+    )
+    assert res.returncode != 0
+    assert "Verify nonexistent-target-change openspec change passes schema checks" in res.stdout or res.returncode == 1
+

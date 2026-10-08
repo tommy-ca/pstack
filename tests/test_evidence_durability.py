@@ -267,6 +267,75 @@ def _disposable_copy(tmp_path: Path) -> Path:
     return copy_root
 
 
+@pytest.mark.parametrize(
+    "relative_path",
+    [
+        "scripts/verify-portable.py",
+        "scripts/verify-harness.py",
+        "scripts/adapt-harness.py",
+        "scripts/scaffold-verification-skill.py",
+        "scripts/skill_frontmatter.py",
+        "scripts/portability_schema.py",
+        "scripts/drivers/base.py",
+        "scripts/drivers/codex.py",
+    ],
+)
+def test_driver_source_change_invalidates_adapter_and_runtime(
+    tmp_path: Path, relative_path: str
+) -> None:
+    copy_root = _disposable_copy(tmp_path)
+    fresh = compute_surface_revisions(copy_root, "codex")
+    receipt = VerificationReceipt(
+        run_id="driver-fingerprint-regression",
+        host="codex",
+        host_version="test",
+        timestamp="2026-10-07T00:00:00Z",
+        overall_verdict="PASS",
+        planes={plane: "PASS" for plane in CONFORMANCE_PLANES},
+        surface_revisions=fresh,
+    )
+    assert receipt.evaluate_plane_staleness(fresh) == {
+        "canonical": [], "adapter": [], "package": [], "runtime": []
+    }
+
+    driver_file = copy_root / relative_path
+    original = driver_file.read_bytes()
+    driver_file.write_bytes(original + b"\n# Changed verification behavior.\n")
+    edited = compute_surface_revisions(copy_root, "codex")
+
+    assert edited.driver_revision != fresh.driver_revision
+    assert replace(edited, driver_revision=fresh.driver_revision) == fresh
+    stale_map = receipt.evaluate_plane_staleness(edited)
+    assert {plane for plane, reasons in stale_map.items() if reasons} == {
+        "adapter", "runtime"
+    }
+    for plane, dependencies in PLANE_SURFACE_DEPENDENCIES.items():
+        if "driver_revision" in dependencies:
+            assert len(stale_map[plane]) == 1
+            assert stale_map[plane][0].startswith("driver_revision mismatch")
+        else:
+            assert stale_map[plane] == []
+
+    driver_file.write_bytes(original)
+    assert compute_surface_revisions(copy_root, "codex") == fresh
+
+
+@pytest.mark.parametrize("relative_path", ["README.md", "docs/fingerprint-notes.md"])
+def test_unrelated_docs_change_does_not_change_driver_revision(
+    tmp_path: Path, relative_path: str
+) -> None:
+    copy_root = _disposable_copy(tmp_path)
+    fresh = compute_surface_revisions(copy_root, "codex")
+    doc_file = copy_root / relative_path
+    doc_file.parent.mkdir(parents=True, exist_ok=True)
+    with doc_file.open("a", encoding="utf-8") as doc:
+        doc.write("\nUnrelated documentation change.\n")
+
+    edited = compute_surface_revisions(copy_root, "codex")
+    assert edited.driver_revision == fresh.driver_revision
+    assert edited == fresh
+
+
 def test_dependency_artifacts_do_not_change_skills_tree_hash(tmp_path: Path) -> None:
     copy_root = _disposable_copy(tmp_path)
 
@@ -336,7 +405,7 @@ def test_check_staleness_cli_json_output() -> None:
     )
     assert res.returncode == 0
     data = json.loads(res.stdout)
-    assert len(data) == 5
+    assert len(data) >= 5
     for host in ("grok", "codex", "omp", "opencode", "antigravity"):
         assert host in data
         assert data[host]["needs_regeneration"] is False

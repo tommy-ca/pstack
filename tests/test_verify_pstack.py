@@ -68,7 +68,7 @@ def test_doctor_leftover_stdout_has_pass_and_playbooks() -> None:
     text = leftover.read_text(encoding="utf-8")
     assert text.splitlines()[0] == "PASS"
     assert "playbooks: 22 named + opening-a-pr" in text
-    assert "principles: 23" in text
+    assert "principles: 24" in text
     assert "plugin.json name: pstack" in text
 
 
