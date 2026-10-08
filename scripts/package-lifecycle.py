@@ -68,22 +68,95 @@ def get_plugin_dir(host: str, target_base: Optional[Path] = None) -> Path:
     return Path.home() / rel
 
 
-def copy_skills(dest_skills: Path) -> None:
+def copy_skills(dest_skills: Path) -> List[str]:
     src_skills = ROOT / "skills"
     dest_skills.mkdir(parents=True, exist_ok=True)
-    for skill_dir in src_skills.iterdir():
-        if skill_dir.is_dir() and not skill_dir.name.startswith("."):
-            target = dest_skills / skill_dir.name
-            if target.exists():
-                shutil.rmtree(target)
-            shutil.copytree(skill_dir, target)
+    copied_rel = []
+    for src_file in src_skills.rglob("*"):
+        if src_file.is_file():
+            rel = src_file.relative_to(src_skills)
+            if any(part.startswith(".") for part in rel.parts):
+                continue
+            dest_file = dest_skills / rel
+            dest_file.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(src_file, dest_file)
+            copied_rel.append(f"skills/{rel.as_posix()}")
+    return copied_rel
 
 
-def copy_agents(dest_agents: Path) -> None:
+def copy_agents(dest_agents: Path) -> List[str]:
     src_agents = ROOT / "agents"
     dest_agents.mkdir(parents=True, exist_ok=True)
+    copied_rel = []
     for agent_file in src_agents.glob("*.md"):
         shutil.copy2(agent_file, dest_agents / agent_file.name)
+        copied_rel.append(f"agents/{agent_file.name}")
+    return copied_rel
+
+
+def compute_managed_files(host: str, desc: Any) -> Set[str]:
+    """Compute the set of relative paths owned by pstack inside the plugin directory."""
+    managed: Set[str] = set()
+
+    # Manifests
+    if host == "opencode":
+        managed.add("package.json")
+    elif host == "droid":
+        managed.add(".factory-plugin/plugin.json")
+        managed.add(".factory-plugin/marketplace.json")
+        for fname in generate_droid_roles().keys():
+            managed.add(f"droids/{fname}")
+    else:
+        managed.add("plugin.json")
+
+    # Host specific projections
+    if host == "antigravity":
+        managed.add("models.json")
+        managed.add("rules/AGENTS.md")
+        for fname in generate_antigravity_commands(desc).keys():
+            managed.add(f"commands/{fname}")
+
+    if host in ("grok", "antigravity"):
+        for a in (ROOT / "agents").glob("*.md"):
+            managed.add(f"agents/{a.name}")
+
+    # Canonical skills
+    src_skills = ROOT / "skills"
+    for s_file in src_skills.rglob("*"):
+        if s_file.is_file():
+            rel = s_file.relative_to(src_skills)
+            if not any(part.startswith(".") for part in rel.parts):
+                managed.add(f"skills/{rel.as_posix()}")
+
+    managed.add(".pstack-managed-files.json")
+    return managed
+
+
+def safe_scan_plugin_tree(plugin_dir: Path) -> List[str]:
+    """Scan all files and symlinks inside plugin_dir without following symlinks into loops."""
+    rel_paths: List[str] = []
+    if not plugin_dir.exists():
+        return rel_paths
+
+    import os
+    for root, dirs, files in os.walk(plugin_dir, followlinks=False):
+        root_path = Path(root)
+        for f in files:
+            f_path = root_path / f
+            rel = f_path.relative_to(plugin_dir).as_posix()
+            rel_paths.append(rel)
+        for d in dirs:
+            d_path = root_path / d
+            if d_path.is_symlink():
+                rel = d_path.relative_to(plugin_dir).as_posix()
+                rel_paths.append(rel)
+    return rel_paths
+
+
+def get_unmanaged_paths(plugin_dir: Path, managed_files: Set[str]) -> List[str]:
+    """Identify all unexpected or user-authored paths inside plugin_dir."""
+    all_found = safe_scan_plugin_tree(plugin_dir)
+    return [p for p in all_found if p not in managed_files]
 
 
 def install_plugin(host: str, target_base: Optional[Path] = None) -> Path:
@@ -151,6 +224,17 @@ def install_plugin(host: str, target_base: Optional[Path] = None) -> Path:
         droids_dir.mkdir(parents=True, exist_ok=True)
         for fname, content in roles.items():
             (droids_dir / fname).write_text(content, encoding="utf-8")
+
+    # Record ownership manifest
+    managed_set = compute_managed_files(host, desc)
+    manifest_record = {
+        "host": host,
+        "version": desc.version,
+        "managed_files": sorted(list(managed_set)),
+    }
+    (plugin_dir / ".pstack-managed-files.json").write_text(
+        json.dumps(manifest_record, indent=2) + "\n", encoding="utf-8"
+    )
 
     return plugin_dir
 
@@ -281,17 +365,69 @@ def update_plugin(host: str, target_base: Optional[Path] = None) -> Tuple[bool, 
     return True, []
 
 
-def uninstall_plugin(host: str, target_base: Optional[Path] = None) -> Tuple[bool, List[str]]:
-    """Uninstall plugin and verify clean residue state."""
+def uninstall_plugin(host: str, target_base: Optional[Path] = None, force: bool = False) -> Tuple[bool, List[str]]:
+    """Uninstall plugin and verify clean residue state without destroying unmanaged content."""
     plugin_dir = get_plugin_dir(host, target_base)
     errors: List[str] = []
 
-    if plugin_dir.exists():
-        shutil.rmtree(plugin_dir)
+    if not plugin_dir.exists():
+        return True, []
 
-    # Clean residue check: plugin directory must be gone
-    if plugin_dir.exists():
-        errors.append(f"Plugin directory still exists after uninstall: {plugin_dir}")
+    desc, _ = load_package_descriptor()
+
+    # Identify managed files from recorded manifest or derived defaults
+    managed_file = plugin_dir / ".pstack-managed-files.json"
+    managed_set: Set[str] = set()
+    if managed_file.is_file():
+        try:
+            data = json.loads(managed_file.read_text(encoding="utf-8"))
+            managed_set = set(data.get("managed_files", []))
+        except Exception:
+            pass
+    if not managed_set:
+        managed_set = compute_managed_files(host, desc)
+
+    unmanaged_before = get_unmanaged_paths(plugin_dir, managed_set)
+
+    if force:
+        shutil.rmtree(plugin_dir)
+    else:
+        # Delete ONLY managed files and symlinks
+        for rel_str in sorted(managed_set, reverse=True):
+            p = plugin_dir / rel_str
+            if p.is_file() or p.is_symlink():
+                try:
+                    p.unlink()
+                except OSError as e:
+                    errors.append(f"Failed to remove managed file {p}: {e}")
+
+        # Clean up empty directories from bottom up
+        import os
+        for root, dirs, files in os.walk(plugin_dir, topdown=False, followlinks=False):
+            for d in dirs:
+                d_path = Path(root) / d
+                if not d_path.is_symlink() and d_path.is_dir():
+                    try:
+                        d_path.rmdir()
+                    except OSError:
+                        pass  # Directory not empty because contains unmanaged files
+
+        # If plugin_dir is now empty, remove it
+        try:
+            plugin_dir.rmdir()
+        except OSError:
+            pass
+
+    # Clean residue check: if there were NO unmanaged files, plugin directory must be gone
+    if not unmanaged_before and plugin_dir.exists():
+        errors.append(f"Plugin directory still exists after clean uninstall: {plugin_dir}")
+
+    # If unmanaged files were present, ensure they are preserved!
+    if unmanaged_before:
+        for u_rel in unmanaged_before:
+            u_path = plugin_dir / u_rel
+            if not u_path.exists():
+                errors.append(f"Unmanaged file was unexpectedly deleted during uninstall: {u_rel}")
 
     # Clean residue check: parent directory should not be corrupted
     parent = plugin_dir.parent
