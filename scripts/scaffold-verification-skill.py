@@ -10,14 +10,15 @@ import argparse
 import pathlib
 import re
 import sys
-from typing import List, Optional
+from typing import List
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SCRIPTS = pathlib.Path(__file__).resolve().parent
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
-from portability_schema import DEFAULT_SKILLS_DIRS, HOSTS
+from portability_schema import DEFAULT_SKILLS_DIRS
+from skill_frontmatter import SKILL_NAME_RE, read_scalar, split_frontmatter, validate_skill_name
 
 REQUIRED_SECTIONS = [
     "Launch",
@@ -49,8 +50,16 @@ def detect_host(workspace: pathlib.Path) -> str:
 
 
 def get_skill_dir(workspace: pathlib.Path, host: str, app: str) -> pathlib.Path:
+    validate_app_name(app, allow_pstack=True)
     skills_rel = DEFAULT_SKILLS_DIRS.get(host, f".{host}/skills")
     return workspace / skills_rel / f"verify-{app}"
+
+
+def validate_app_name(app: str, *, allow_pstack: bool = False) -> None:
+    if not SKILL_NAME_RE.fullmatch(app):
+        raise ValueError("Application name must be lowercase kebab-case")
+    if app == "pstack" and not allow_pstack:
+        raise ValueError("Application name 'pstack' is reserved for the plugin doctor")
 
 
 def generate_skill_content(app: str, host: str) -> str:
@@ -62,7 +71,8 @@ disable-model-invocation: true
 
 # Verify {app}
 
-Scripted harness to drive, test, and prove behavior for {app}.
+Draft requiring tailoring with concrete app commands and a shipped driver.
+Structural validation does not assess runtime proof.
 
 ## Launch
 
@@ -123,37 +133,54 @@ Ensure working directory and dependencies are initialized.
 
 
 def scaffold_skill(target_dir: pathlib.Path, app: str, host: str) -> None:
-    target_dir.mkdir(parents=True, exist_ok=True)
-    features_dir = target_dir / "features"
-    features_dir.mkdir(parents=True, exist_ok=True)
-
-    skill_md = target_dir / "SKILL.md"
-    skill_md.write_text(generate_skill_content(app, host), encoding="utf-8")
-
-    readme_md = features_dir / "README.md"
-    readme_md.write_text(generate_features_readme(app), encoding="utf-8")
-
-    core_md = features_dir / "core.md"
-    core_md.write_text(generate_feature_content(app), encoding="utf-8")
+    validate_app_name(app)
+    outputs = {
+        "SKILL.md": generate_skill_content(app, host),
+        "features/README.md": generate_features_readme(app),
+        "features/core.md": generate_feature_content(app),
+    }
+    if any(path.is_symlink() for path in (target_dir, *target_dir.parents)):
+        raise FileExistsError(f"Refusing symlink target or ancestor: {target_dir}")
+    if target_dir.exists():
+        if not target_dir.is_dir() or any(target_dir.iterdir()):
+            raise FileExistsError(f"Refusing nonempty or non-directory target: {target_dir}")
+    else:
+        target_dir.mkdir(parents=True)
+    (target_dir / "features").mkdir()
+    for relative, content in outputs.items():
+        with (target_dir / relative).open("x", encoding="utf-8") as output:
+            output.write(content)
 
 
 def check_skill(target_dir: pathlib.Path) -> List[str]:
     errors: List[str] = []
-    if not target_dir.is_dir():
+    if target_dir.is_symlink() or not target_dir.is_dir():
         return [f"Directory does not exist: {target_dir}"]
 
     skill_md = target_dir / "SKILL.md"
-    if not skill_md.is_file():
+    if skill_md.is_symlink() or not skill_md.is_file():
         errors.append(f"Missing SKILL.md in {target_dir}")
     else:
         text = skill_md.read_text(encoding="utf-8")
-        if not text.startswith("---"):
-            errors.append("SKILL.md missing YAML frontmatter opening '---'")
-        if "disable-model-invocation: true" not in text:
-            errors.append("SKILL.md missing 'disable-model-invocation: true'")
+        body = ""
+        try:
+            header, body = split_frontmatter(text)
+            native_parent = target_dir.absolute().parent.as_posix().endswith(
+                tuple("/" + rel for rel in DEFAULT_SKILLS_DIRS.values())
+            )
+            expected = target_dir.name if native_parent else None
+            name = validate_skill_name(read_scalar(header, "name"), expected)
+            if not name.startswith("verify-") or not SKILL_NAME_RE.fullmatch(name[7:]):
+                raise ValueError("frontmatter name must be verify-<app>")
+            if not read_scalar(header, "description"):
+                raise ValueError("frontmatter requires a nonempty description")
+            if read_scalar(header, "disable-model-invocation") != "true":
+                raise ValueError("frontmatter requires 'disable-model-invocation: true'")
+        except ValueError as exc:
+            errors.append(f"SKILL.md {exc}")
         for sec in REQUIRED_SECTIONS:
             pattern = rf"^##\s+{re.escape(sec)}\b"
-            if not re.search(pattern, text, re.MULTILINE | re.IGNORECASE):
+            if not re.search(pattern, body, re.MULTILINE | re.IGNORECASE):
                 errors.append(f"SKILL.md missing required section '## {sec}'")
 
     features_dir = target_dir / "features"
@@ -198,6 +225,12 @@ def main() -> int:
 
     args = parser.parse_args()
 
+    if args.app is not None:
+        try:
+            validate_app_name(args.app, allow_pstack=not args.write)
+        except ValueError as exc:
+            parser.error(str(exc))
+
     workspace = args.workspace.resolve()
 
     if args.list:
@@ -215,8 +248,11 @@ def main() -> int:
             print("Error: --app required when scaffolding with --write", file=sys.stderr)
             return 2
         target = args.target_dir or get_skill_dir(workspace, host, args.app)
-        scaffold_skill(target, args.app, host)
-        print(f"Scaffolded verification skill for '{args.app}' on {host} at {target}")
+        try:
+            scaffold_skill(target, args.app, host)
+        except (ValueError, FileExistsError) as exc:
+            parser.error(str(exc))
+        print(f"Draft scaffold for '{args.app}' on {host} at {target}; requires tailoring and runtime proof.")
         return 0
 
     if args.check:
@@ -228,13 +264,16 @@ def main() -> int:
             print("Error: --target-dir or --app required with --check", file=sys.stderr)
             return 2
 
-        errors = check_skill(target)
+        try:
+            errors = check_skill(target)
+        except (ValueError, FileExistsError) as exc:
+            parser.error(str(exc))
         if errors:
             print(f"FAIL: Verification skill at {target} has errors:")
             for err in errors:
                 print(f"  - {err}")
             return 1
-        print(f"PASS: Verification skill at {target} is valid.")
+        print(f"PASS: Structural validation of verification skill at {target}; runtime proof unassessed.")
         return 0
 
     parser.print_help()
