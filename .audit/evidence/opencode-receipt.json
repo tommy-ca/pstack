@@ -1,8 +1,8 @@
 {
-  "run_id": "opencode-1791499491-a00c1bbb",
+  "run_id": "opencode-1791499582-244a299d",
   "host": "opencode",
   "host_version": "1.18.35",
-  "timestamp": "2026-10-08T22:45:00Z",
+  "timestamp": "2026-10-08T22:46:32Z",
   "overall_verdict": "PASS",
   "planes": {
     "canonical": "PASS",
@@ -18,9 +18,9 @@
     "profile_hash": "4074fefdbad85a428a20ddf7e6b5ba0727409885cc0f7d9edfd7cf8686fb87fb",
     "package_descriptor_hash": "5a4cd6b99f113f422aaf2df0755e53d20227ce12a99acb28cd5075d96e5aaadb",
     "manifest_hash": "e8752f36aeba13b48ff42552c4f6c2b94978e32ea932504bca31a01dcf4fdf39",
-    "driver_revision": "41e5633d7dff73ad51c1b84b45c03ab09fb8c0004144f5fe18d0dbb929323cf6",
+    "driver_revision": "de80e44cfc1e329ab32a4d72811ad096c96a620283093c1d8ea732b0bd33f90f",
     "package_driver_revision": "0aa43927a12b8634c5427e5425486b25aabd14efe28f1d9678030dc73788eff1",
-    "boundary_driver_revision": "ebcd2c554a830b36f6531b00729b74460e684487612c613f89d710e9e6083c42"
+    "boundary_driver_revision": "c7dd52906f6de7a0164ec3dd0e19392ac6f1915a840a952a9fcda6ad4a02fe7a"
   },
   "scenarios": [
     {
@@ -31,7 +31,7 @@
       "exit_code": 0,
       "stdout_snippet": "Conformance: PASS\nFreshness: DRIFT (6 commits ahead)\nPrinciples: 24 | Playbooks: 23\nArtifacts: 164 (preserved=91, adapted=64, excluded=9, gaps=0)\nPASS: Canonical inventory conforms to pin.",
       "verdict": "PASS",
-      "duration_s": 0.083,
+      "duration_s": 0.061,
       "evidence_level": "offline"
     },
     {
@@ -42,7 +42,7 @@
       "exit_code": 0,
       "stdout_snippet": "Change 'pstack-portability-contract' is valid",
       "verdict": "PASS",
-      "duration_s": 0.857,
+      "duration_s": 0.747,
       "evidence_level": "offline"
     },
     {
@@ -53,7 +53,7 @@
       "exit_code": 0,
       "stdout_snippet": "PASS\nplaybooks: 22 named + opening-a-pr\nprinciples: 24\nplugin.json name: pstack",
       "verdict": "PASS",
-      "duration_s": 1.364,
+      "duration_s": 1.53,
       "evidence_level": "offline"
     },
     {
@@ -62,9 +62,9 @@
       "plane": "adapter",
       "command": "/home/tommyk/.local/share/uv/tools/ansible/bin/python3 /home/tommyk/projects/pstack/scripts/scan-host-boundary.py --check",
       "exit_code": 0,
-      "stdout_snippet": "[scan-host-boundary] PASS: Scanned 91 files across portable surfaces. 0 boundary leaks.",
+      "stdout_snippet": "[scan-host-boundary] PASS: Scanned 135 files across portable surfaces. 0 boundary leaks.",
       "verdict": "PASS",
-      "duration_s": 0.434,
+      "duration_s": 0.517,
       "evidence_level": "offline"
     },
     {
@@ -75,7 +75,7 @@
       "exit_code": 0,
       "stdout_snippet": "PASS: grok manifest at .grok-plugin/plugin.json in sync\nPASS: codex manifest at .codex-plugin/plugin.json in sync\nPASS: codex models at .codex-plugin/models.json in sync\nPASS: omp manifest at .omp-plugin/plugin.json in sync\nPASS: opencode manifest at .opencode-plugin/package.json in sync\nPASS: antig",
       "verdict": "PASS",
-      "duration_s": 0.071,
+      "duration_s": 0.076,
       "evidence_level": "offline"
     },
     {
@@ -86,7 +86,7 @@
       "exit_code": 0,
       "stdout_snippet": "[opencode] Executing verify...\nPASS: opencode manifest at .opencode-plugin/package.json in sync\n[opencode] VERIFY PASS",
       "verdict": "PASS",
-      "duration_s": 0.062,
+      "duration_s": 0.07,
       "evidence_level": "offline"
     },
     {
@@ -97,7 +97,7 @@
       "exit_code": 0,
       "stdout_snippet": "",
       "verdict": "PASS",
-      "duration_s": 0.051,
+      "duration_s": 0.055,
       "evidence_level": "offline"
     },
     {
@@ -108,7 +108,7 @@
       "exit_code": 0,
       "stdout_snippet": "",
       "verdict": "PASS",
-      "duration_s": 0.029,
+      "duration_s": 0.031,
       "evidence_level": "offline"
     },
     {
@@ -119,7 +119,7 @@
       "exit_code": 0,
       "stdout_snippet": "bun test v1.4.2 (744846f84)",
       "verdict": "PASS",
-      "duration_s": 1.699,
+      "duration_s": 2.035,
       "evidence_level": "offline"
     },
     {
@@ -130,40 +130,40 @@
       "exit_code": 0,
       "stdout_snippet": "SIZE\tAGE\tMERGED\tDIRTY\tREMOTE\tPR\tLAST_CHAT\tBUCKET\tWORKTREE",
       "verdict": "PASS",
-      "duration_s": 1.325,
+      "duration_s": 1.43,
       "evidence_level": "offline"
     },
     {
       "id": "drive-verification-skill-scaffold",
       "description": "Prove verification skill scaffolding for opencode",
       "plane": "package",
-      "command": "/home/tommyk/.local/share/uv/tools/ansible/bin/python3 /home/tommyk/projects/pstack/scripts/scaffold-verification-skill.py --host opencode --app smoke --write --target-dir /home/tommyk/projects/pstack/.audit/evidence/opencode-1791499491-a00c1bbb/verify-smoke",
+      "command": "/home/tommyk/.local/share/uv/tools/ansible/bin/python3 /home/tommyk/projects/pstack/scripts/scaffold-verification-skill.py --host opencode --app smoke --write --target-dir /home/tommyk/projects/pstack/.audit/evidence/opencode-1791499582-244a299d/verify-smoke",
       "exit_code": 0,
-      "stdout_snippet": "Draft scaffold for 'smoke' on opencode at /home/tommyk/projects/pstack/.audit/evidence/opencode-1791499491-a00c1bbb/verify-smoke; requires tailoring and runtime proof.",
+      "stdout_snippet": "Draft scaffold for 'smoke' on opencode at /home/tommyk/projects/pstack/.audit/evidence/opencode-1791499582-244a299d/verify-smoke; requires tailoring and runtime proof.",
       "verdict": "PASS",
-      "duration_s": 0.066,
+      "duration_s": 0.058,
       "evidence_level": "offline"
     },
     {
       "id": "drive-verification-skill-check",
       "description": "Validate generated verification skill structure for opencode",
       "plane": "package",
-      "command": "/home/tommyk/.local/share/uv/tools/ansible/bin/python3 /home/tommyk/projects/pstack/scripts/scaffold-verification-skill.py --host opencode --check --target-dir /home/tommyk/projects/pstack/.audit/evidence/opencode-1791499491-a00c1bbb/verify-smoke",
+      "command": "/home/tommyk/.local/share/uv/tools/ansible/bin/python3 /home/tommyk/projects/pstack/scripts/scaffold-verification-skill.py --host opencode --check --target-dir /home/tommyk/projects/pstack/.audit/evidence/opencode-1791499582-244a299d/verify-smoke",
       "exit_code": 0,
-      "stdout_snippet": "PASS: Structural validation of verification skill at /home/tommyk/projects/pstack/.audit/evidence/opencode-1791499491-a00c1bbb/verify-smoke; runtime proof unassessed.",
+      "stdout_snippet": "PASS: Structural validation of verification skill at /home/tommyk/projects/pstack/.audit/evidence/opencode-1791499582-244a299d/verify-smoke; runtime proof unassessed.",
       "verdict": "PASS",
-      "duration_s": 0.071,
+      "duration_s": 0.06,
       "evidence_level": "offline"
     },
     {
       "id": "drive-package-lifecycle-proof-opencode",
       "description": "Prove isolated native package lifecycle for opencode",
       "plane": "package",
-      "command": "/home/tommyk/.local/share/uv/tools/ansible/bin/python3 /home/tommyk/projects/pstack/scripts/package-lifecycle.py prove --host opencode --target-dir /home/tommyk/projects/pstack/.audit/evidence/opencode-1791499491-a00c1bbb/lifecycle-opencode",
+      "command": "/home/tommyk/.local/share/uv/tools/ansible/bin/python3 /home/tommyk/projects/pstack/scripts/package-lifecycle.py prove --host opencode --target-dir /home/tommyk/projects/pstack/.audit/evidence/opencode-1791499582-244a299d/lifecycle-opencode",
       "exit_code": 0,
-      "stdout_snippet": "[opencode] Executing prove...\n  [install] PASS (0.436s) - Installed opencode into /home/tommyk/projects/pstack/.audit/evidence/opencode-1791499491-a00c1bbb/lifecycle-opencode/.opencode/plugins/pstack (verified=True)\n  [update] PASS (0.853s) - Idempotent convergence check for opencode (errors=[])\n  [",
+      "stdout_snippet": "[opencode] Executing prove...\n  [install] PASS (0.375s) - Installed opencode into /home/tommyk/projects/pstack/.audit/evidence/opencode-1791499582-244a299d/lifecycle-opencode/.opencode/plugins/pstack (verified=True)\n  [update] PASS (0.874s) - Idempotent convergence check for opencode (errors=[])\n  [",
       "verdict": "PASS",
-      "duration_s": 1.535,
+      "duration_s": 1.444,
       "evidence_level": "offline"
     },
     {
@@ -174,7 +174,7 @@
       "exit_code": 0,
       "stdout_snippet": "home       /home/tommyk\ndata       /home/tommyk/.local/share/opencode\nbin        /home/tommyk/.cache/opencode/bin\nlog        /home/tommyk/.local/share/opencode/log\nrepos      /home/tommyk/.local/share/opencode/repos\ncache      /home/tommyk/.cache/ope",
       "verdict": "PASS",
-      "duration_s": 0.863,
+      "duration_s": 0.9,
       "evidence_level": "offline"
     },
     {
@@ -223,7 +223,7 @@
     }
   ],
   "artifacts": [
-    "/home/tommyk/projects/pstack/.audit/evidence/opencode-1791499491-a00c1bbb/receipt.json",
+    "/home/tommyk/projects/pstack/.audit/evidence/opencode-1791499582-244a299d/receipt.json",
     ".audit/evidence/opencode-receipt.json"
   ],
   "claim": "opencode 5-harness portability conformance verification",
