@@ -185,4 +185,4 @@
 - [x] Unit 8: Run Arena evaluation comparing host-neutral canonical roles vs host-specialized projection architecture (Selected Candidate 1, 38/40)
 - [x] Unit 9: Run Swarm 4-plane matrix across all 6 declared harnesses (6-Harness Matrix Verdict: PASS)
 - [x] Unit 10: Conduct adversarial Interrogate review across stacked diffs (Final Verdict: PASS)
-- [ ] Unit 11: Deliver clean stacked PRs on GitHub, merge bottom-up to main, and close issues
+- [x] Unit 11: Deliver clean stacked PRs on GitHub, merge bottom-up to main, and close issues (PRs #285, #286, #287)
