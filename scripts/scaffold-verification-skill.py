@@ -152,6 +152,83 @@ def scaffold_skill(target_dir: pathlib.Path, app: str, host: str) -> None:
             output.write(content)
 
 
+def map_references(section: str) -> List[str]:
+    references = []
+    for line in section.splitlines():
+        if not re.match(r"^\s*(?:[-*+]|\d+[.)])\s+", line):
+            continue
+        references.extend(re.findall(r"\[[^\]]*\]\(([^)]+)\)", line))
+        without_links = re.sub(r"\[[^\]]*\]\([^)]+\)", "", line)
+        references.extend(re.findall(r"`([^`]*\.md)`", without_links))
+    return references
+
+
+def check_feature_map(features_dir: pathlib.Path) -> List[str]:
+    errors = []
+    if features_dir.is_symlink() or not features_dir.is_dir():
+        return [f"Missing regular features/ directory in {features_dir.parent}"]
+    readme = features_dir / "README.md"
+    if readme.is_symlink() or not readme.is_file():
+        return ["Missing regular features/README.md"]
+
+    text = readme.read_text(encoding="utf-8")
+    parts = re.split(r"^##\s+([^\n]+)\s*$", text, flags=re.MULTILINE)
+    sections = {heading.strip(): body for heading, body in zip(parts[1::2], parts[2::2])}
+    if len(sections) != len(parts[1::2]):
+        errors.append("features/README.md has duplicate sections")
+    if "Full sweep" not in sections:
+        errors.append("features/README.md missing '## Full sweep' section")
+    sweep = map_references(sections.get("Full sweep", ""))
+    index = map_references(sections.get("Features", ""))
+    if not sweep and not index:
+        errors.append("features/README.md requires a nonempty ordered Full sweep or Features list")
+    if not sweep and index and not sections.get("Full sweep", "").strip():
+        errors.append("Full sweep requires ordered references or prose directing the Features order")
+
+    feature_files = {}
+    for path in sorted(features_dir.glob("*.md")):
+        if path.name == "README.md":
+            continue
+        if path.is_symlink() or not path.is_file():
+            errors.append(f"Feature must be a regular sibling markdown file: {path.name}")
+        else:
+            feature_files[path.name] = path
+    if not feature_files:
+        errors.append("features/ must contain at least one feature markdown file")
+
+    normalized_lists = []
+    for label, references in (("Full sweep", sweep), ("Features", index)):
+        normalized = []
+        for reference in references:
+            path = pathlib.PurePosixPath(reference)
+            if path.is_absolute() or len(path.parts) != 1 or path.suffix != ".md" or path.name == "README.md":
+                errors.append(f"{label} reference must stay inside features/ as a sibling: {reference}")
+                continue
+            name = path.name
+            if name in normalized:
+                errors.append(f"Duplicate {label} reference: {name}")
+            normalized.append(name)
+            if name not in feature_files:
+                errors.append(f"Missing regular feature for {label} reference: {reference}")
+        normalized_lists.append(normalized)
+    ordered = normalized_lists[0] if sweep else normalized_lists[1]
+    for name in sorted(feature_files.keys() - set(ordered)):
+        errors.append(f"Unlisted feature in Full sweep: {name}")
+    if sweep and index and set(normalized_lists[0]) != set(normalized_lists[1]):
+        errors.append("Full sweep and Features references disagree")
+
+    for name, path in feature_files.items():
+        headings = re.findall(r"^##\s+([^\n]+?)\s*$", path.read_text(encoding="utf-8"), re.MULTILINE)
+        if (
+            len(headings) != 4
+            or headings[:2] != ["Sub-features", "How to get to it (user POV)"]
+            or not re.fullmatch(r"Driving it with\s+\S.*", headings[2])
+            or headings[3] != "Gotchas"
+        ):
+            errors.append(f"{name} requires the four feature sections in order, including 'Driving it with <harness>'")
+    return errors
+
+
 def check_skill(target_dir: pathlib.Path) -> List[str]:
     errors: List[str] = []
     if target_dir.is_symlink() or not target_dir.is_dir():
@@ -183,21 +260,7 @@ def check_skill(target_dir: pathlib.Path) -> List[str]:
             if not re.search(pattern, body, re.MULTILINE | re.IGNORECASE):
                 errors.append(f"SKILL.md missing required section '## {sec}'")
 
-    features_dir = target_dir / "features"
-    if not features_dir.is_dir():
-        errors.append(f"Missing features/ directory in {target_dir}")
-    else:
-        readme = features_dir / "README.md"
-        if not readme.is_file():
-            errors.append(f"Missing features/README.md in {target_dir}")
-        else:
-            rtext = readme.read_text(encoding="utf-8")
-            if "## Full sweep" not in rtext:
-                errors.append("features/README.md missing '## Full sweep' section")
-
-        feature_files = [f for f in features_dir.glob("*.md") if f.name != "README.md"]
-        if not feature_files:
-            errors.append("features/ must contain at least one feature markdown file")
+    errors.extend(check_feature_map(target_dir / "features"))
 
     return errors
 
