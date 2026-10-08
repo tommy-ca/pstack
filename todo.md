@@ -70,3 +70,23 @@
 - [x] Unit 7: Issue #215 Interrogate: adversarially review the refreshed pstack exact-head diff
 - [x] Unit 8: Issue #216 Reconcile exact-head evidence and close the upstream refresh program
 
+## Verification Audit & Stacked Delivery Program (Epic #235, Issues #214, #217, #250)
+- [x] PR #218: `fix(antigravity): make dry-run read-only and detect managed content drift` (Issues #217, #250) - commit `9ae43df`
+  - Replaced `os.walk(followlinks=True)` with ancestor-tracked safe traversal in `skill_files()`
+  - Prevented symlink cycle infinite loops and external target reads with negative test fixtures
+  - Protected `sync_live_plugin()` with `make_skill_ignore()`
+- [x] PR #219: `fix(verify): validate scaffold inputs and preserve authored targets` (Issue #217) - commit `88e5152`
+  - Kebab-case application naming validation and `pstack` doctor reservation
+  - Occupied directory and symlink target/ancestor write refusal
+- [x] PR #220: `fix(verify): validate ordered feature maps and document proof limits` (Issues #217, #250) - commit `387eb41`
+  - Corrected five-host claim to accurately distinguish six declared host census from Droid unproven native model-backed runtime operations
+  - Strict ordered feature map validation against sibling Markdown files
+- [x] PR #253: `feat(verify): fingerprint tool dependencies and align OpenSpec target` (Issues #214, #217, #250) - commit `3b9291a`
+  - Fingerprinted verifier tool dependencies into driver revision hash
+  - Added `--change` flag to `verify-portable.py` dynamically aligning OpenSpec scenario description with target
+  - Handled candidate host staleness safely in `check-staleness`
+  - Synchronized upstream packaging recipe string to 0.15.15
+  - Regenerated 6-harness evidence receipts across all 4 planes
+  - Full test suite: 455/455 green (100%)
+
+
