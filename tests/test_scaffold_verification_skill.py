@@ -83,7 +83,8 @@ def test_scaffold_check_and_list_across_all_six_hosts(tmp_path, host, relative):
     assert "Draft scaffold" in result.stdout
     assert "requires tailoring and runtime proof" in result.stdout
     target = tmp_path / relative
-    assert set(file_bytes(target)) == {"SKILL.md", "features/README.md", "features/core.md"}
+    assert set(file_bytes(target)) == {"SKILL.md", "features/README.md", "features/core.md", "scripts/driver.sh"}
+    assert (target / "scripts/driver.sh").stat().st_mode & 0o111
     assert "name: verify-demo-app\n" in (target / "SKILL.md").read_text()
     result = cli(tmp_path, "--host", host, "--app", "demo-app", "--check")
     assert result.returncode == 0, result.stdout
@@ -356,3 +357,21 @@ def test_cli_missing_required_arguments(tmp_path, args):
     assert "required" in result.stderr
     assert "Traceback" not in result.stderr
     assert list(tmp_path.iterdir()) == []
+
+
+def test_scaffold_audit_mode(tmp_path):
+    result = cli(tmp_path, "--audit")
+    assert result.returncode == 0
+    assert "No verification skills found" in result.stdout
+
+    cli(tmp_path, "--host", "grok", "--app", "app1", "--write")
+    cli(tmp_path, "--host", "droid", "--app", "app2", "--write")
+    result = cli(tmp_path, "--audit")
+    assert result.returncode == 0
+    assert "PASS: .grok/skills/verify-app1" in result.stdout
+    assert "PASS: .factory/skills/verify-app2" in result.stdout
+
+    (tmp_path / ".grok/skills/verify-app1/SKILL.md").unlink()
+    result = cli(tmp_path, "--audit")
+    assert result.returncode == 1
+    assert "FAIL: .grok/skills/verify-app1" in result.stdout
