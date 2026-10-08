@@ -46,29 +46,42 @@
   - [x] Unit 4a: Issue #143 Move host execution primitives out of shared skills/playbooks
   - [x] Unit 4b: Issue #144 Move model/default and verification-lane policy behind harness profiles
   - [x] Unit 4c: Issue #145 Add forbidden-host-vocabulary scanner
-- [ ] Unit 5: Issue #135 Make support states revision-bound and evidence refs durable
+- [x] Unit 5: Issue #135 Make support states revision-bound and evidence refs durable
 
 ### Phase 3: Native Runtime Proof & Package Lifecycle (Sub-epic #130)
-- [ ] Unit 6: Issue #136 Replace proxy runtime plane with real harness-native drivers
-- [ ] Unit 7: Issue #137 Replace placeholder lifecycle commands with real native install/update/uninstall proof
-- [ ] Unit 8: Issue #139 Re-run five-harness evidence matrix on current main
+- [x] Unit 6: Issue #136 Replace proxy runtime plane with real harness-native drivers
+- [x] Unit 7: Issue #137 Replace placeholder lifecycle commands with real native install/update/uninstall proof
+- [x] Unit 8: Issue #139 Re-run five-harness evidence matrix on current main
 
 ### Phase 4: Final 5-Harness Acceptance, Stacked PRs & Shipping (Gate #131)
-- [ ] Unit 9: Gate #131 Five-harness current-main Swarm + Interrogate acceptance
-- [ ] Unit 10: Stacked PRs creation, Babysit protocol, merge and ship
+- [x] Unit 9: Gate #131 Five-harness current-main Swarm + Interrogate acceptance
+- [x] Unit 10: Stacked PRs creation, Babysit protocol, merge and ship
 
 ## Epic #209: Refresh portable pstack to upstream 0.15.15 and reconcile proven semantic defects
 ### Sub-epic #207: Reconcile current upstream semantics without reintroducing host coupling
-- [x] Unit 1: Issue #201 Refresh current upstream pstack and classify the 0.15.5 → 0.15.15 delta
-- [x] Unit 2: Issue #202 Make poteto-agent a delegate-only contract across host projections
-- [x] Unit 3: Issue #203 Make worktree cleanup loss-aware and remove forceful registered deletion
-- [x] Unit 4: Issue #204 Correct Test Behavior principle and track the canonical semantic defect
+- [x] Unit 1: Issue #201 Refresh current upstream pstack and classify the 0.15.5 → 0.15.15 delta (PR #224)
+- [x] Unit 2: Issue #202 Make poteto-agent a delegate-only contract across host projections (PR #230)
+- [x] Unit 3: Issue #203 Make worktree cleanup loss-aware and remove forceful registered deletion (PR #231)
+- [x] Unit 4: Issue #204 Correct Test Behavior principle and track the canonical semantic defect (PR #232)
 
 ### Sub-epic #208: Prove refreshed current-main portability and semantic safety
-- [x] Unit 5: Issue #205 Extend existing conformance levers for current upstream semantic invariants
-- [x] Unit 6: Issue #206 Swarm: prove refreshed pstack across all declared harnesses
-- [x] Unit 7: Issue #215 Interrogate: adversarially review the refreshed pstack exact-head diff
-- [x] Unit 8: Issue #216 Reconcile exact-head evidence and close the upstream refresh program
+- [x] Unit 5: Issue #205 Extend existing conformance levers for current upstream semantic invariants (PR #233)
+- [x] Unit 6: Issue #206 Swarm: prove refreshed pstack across all declared harnesses (PR #234)
+- [x] Unit 7: Issue #215 Interrogate: adversarially review the refreshed pstack exact-head diff (PR #234)
+- [x] Unit 8: Issue #216 Reconcile exact-head evidence and close the upstream refresh program (PR #234)
+
+## Program: Verification Metadata, Scaffold Safety & OpenSpec Target Alignment (Issues #217 & #214)
+- [x] Unit 1: Issue #217 Antigravity dry-run read-only purity, drift detection, and symlink parity (PR #218)
+- [x] Unit 2: Issue #217 Scaffold verification skill input validation and target safety (PR #219)
+- [x] Unit 3: Issue #217 Complete ordered feature map validation and 6-destination proof limits (PR #220)
+- [x] Unit 4: Issues #217 & #214 Verification tool dependency fingerprinting, OpenSpec coverage target alignment, candidate staleness safety, and 6-harness receipt matrix refresh
+
+## Epic #193: Integrate optional Jev decision model with strict bounds and evidence
+### Sub-epic #190: Formalize the optional Jev decision boundary and baseline eval
+- [ ] Spec: PR #194 docs(spec): formalize optional Jev decision plane (pending scenario completeness and #197 gate)
+- [ ] Tasks: #182 (typed contract), #183 (Arena seam), #195 (context minimization), #196 (playbook vocabulary), #197 (acceptance gate), #198 (baseline eval)
+### Sub-epic #191: Implement Jev shadow routing and fail-open provider adapter (#184-#186)
+### Sub-epic #192: Verify and selectively promote Jev shadow decisions (#187-#189, #199-#200)
 
 ## Verification Audit & Stacked Delivery Program (Epic #235, Issues #214, #217, #250)
 - [x] PR #218: `fix(antigravity): make dry-run read-only and detect managed content drift` (Issues #217, #250) - commit `9ae43df`

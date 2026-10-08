@@ -625,9 +625,19 @@ def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path
 
     # 8. driver revision
     hasher = hashlib.sha256()
-    driver_file = root / "scripts" / "verify-portable.py"
-    if driver_file.is_file():
-        hasher.update(driver_file.read_bytes())
+    for fname in (
+        "canonical-index.py",
+        "verify-portable.py",
+        "verify-harness.py",
+        "adapt-harness.py",
+        "scaffold-verification-skill.py",
+        "skill_frontmatter.py",
+        "portability_schema.py",
+    ):
+        driver_file = root / "scripts" / fname
+        if driver_file.is_file():
+            hasher.update(fname.encode("utf-8"))
+            hasher.update(driver_file.read_bytes())
     drivers_dir = root / "scripts" / "drivers"
     if drivers_dir.is_dir():
         for p in sorted(drivers_dir.rglob("*.py")):

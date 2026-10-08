@@ -73,9 +73,9 @@ def recipe() -> str:
    Canonical table is
    skills/swarm/references/classification.tsv. Pack interrogate reviewer prompts
    with skills/interrogate/scripts/pack.py.
-   The current compare is official pstack packaging 0.15.5 at tree
-   4b4d98e5e3b3c139f63dbc1ce4b538954c8f2f52. This port stays
-   0.15.5-grokbuild.0. Earlier 0.15.1 density, the two principle leaves,
+   The current compare is official pstack packaging 0.15.15 at tree
+   9d9cb20f79203a97c925de402c66183d0fa26c42. This port stays
+   0.15.15-grokbuild.0. Earlier 0.15.1 density, the two principle leaves,
    and the evidence-or-label rule stay absorbed. Skip `make-bot-ui`, `.cursor-plugin/`,
    `assets/logo.png`, and the entire `advisor/` plugin. Do not overwrite
    HARNESS.md, grok-tools.md, plugin.json, README.md, README.zh-CN.md, tests/, or scripts/.
