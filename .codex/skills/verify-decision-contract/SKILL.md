@@ -37,10 +37,14 @@ python3 scripts/verify-decision-contract.py --root . --upstream-commit <commit.j
 ## Proof bar
 
 Assert zero verification errors, 100% route coverage (23/23 playbooks), and strict specification parity between formal spec and change delta.
+Enforce three-tier test classification: Tier 1 fast contract unit tests, Tier 2 offline integration fixtures, and Tier 3 host runtime probes.
+Reduce scenario verdicts with the strict failure-first lattice: FAIL > BLOCKED > UNTESTED > PASS.
 
 ## Evidence
 
 Receipts are persisted as structured JSON in the designated evidence directory.
+Tag evidence with evidence_level (observed_live for live runs, offline for contract checks).
+Bound driver command executions to 60 seconds with strict timeout handling.
 
 ## Cleanup
 
