@@ -130,6 +130,8 @@ def resolve_skill_order(profile: Dict[str, Any], query_str: str, root: Path) -> 
         )
 
     query = raw_query.lower()
+    first_token = query.split()[0] if query.split() else query
+    is_command_prefix = raw_query.startswith("/") or raw_query.startswith("pstack:")
     matches: List[Dict[str, Any]] = []
 
     for item in profile.get("skill_order", []):
@@ -153,7 +155,14 @@ def resolve_skill_order(profile: Dict[str, Any], query_str: str, root: Path) -> 
                 if stem.endswith(".md"):
                     candidates.add(stem[:-3].lower())
 
-        if query in candidates:
+        fallback = item.get("secondary_user") or item.get("fallback_builtin")
+        if fallback is not None:
+            raw_fallback = str(fallback).strip()
+            candidates.add(raw_fallback.lower())
+            if raw_fallback.startswith("/"):
+                candidates.add(raw_fallback.lstrip("/").lower())
+
+        if query in candidates or (is_command_prefix and first_token in candidates):
             matches.append(item)
 
     if not matches:
