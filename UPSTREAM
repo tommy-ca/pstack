@@ -1,15 +1,10 @@
 Official pstack (discipline source)
 https://github.com/cursor/plugins/tree/main/pstack
-tree 4b4d98e5e3b3c139f63dbc1ce4b538954c8f2f52
-Verified against upstream `main`: 2026-09-30; commit timestamp: 2026-09-30.
-Upstream commits after the previous pin `93b00b89ef425a9c1bac0d0b317dfc49c930ac99`:
-- e8d856f density + two new principle leaves (#329)
-- d7cde2b replace semicolons, em dashes, connector colons (#331)
-- 71ed0d1 bump 0.15.0 README/docs counts (#333)
-- f8abedd every claim carries its evidence or its label (#341)
-Cursor plugin version at grokbuild import: see TEST-PLAN.md
-Cursor plugin.json on cursor/plugins main at refresh: 0.15.5. This port stays 0.15.5-grokbuild.0.
-Pstack-specific delta after 93b00b89: 0.15.1 skill/prose/principle refresh (23 principle leaves, density pass, evidence-or-label). Packaging, logo, and the separate Cursor-only `advisor` plugin stay excluded.
+tree df581122cde17e6e27686b5a448bde23e4ad4318
+Verified against upstream `main`: 2026-10-07; commit timestamp: 2026-10-07.
+Upstream tree SHA: 9d9cb20f79203a97c925de402c66183d0fa26c42
+Cursor plugin version on cursor/plugins main at refresh: 0.15.15. This port stays 0.15.15-grokbuild.0.
+Pstack-specific delta after 4b4d98e5: 0.15.15 skill/prose/principle refresh (benchmark-checklist, correct, poteto-help, explain-the-number, design-red-flags). Packaging, logo, and the separate Cursor-only `advisor` plugin stay excluded.
 
 Grok adapter ancestor
 https://github.com/aa2246740/pstack-grokbuild
