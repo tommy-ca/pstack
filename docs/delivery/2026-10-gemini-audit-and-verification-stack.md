@@ -20,9 +20,9 @@ Each behavioral slice keeps its regression tests with its implementation.
 1. Make Antigravity dry-run read-only and check managed skills, agents, commands, manifests, and models for content drift. Copy and check the same directory-symlink contents. Ignore generated dependencies and bytecode.
 2. Refuse unsafe application names and occupied or symlink scaffold targets before writing. Preserve authored drafts on rerun.
 3. Validate complete ordered feature maps and their regular sibling files. Document all six scaffold destinations and distinguish structural validity from runtime proof.
-4. Fingerprint verification dependencies and regenerate the final five-host receipt matrix. Changing verifier logic must invalidate earlier evidence.
+4. Fingerprint verification tool dependencies, align OpenSpec coverage target in doctor (#214), handle candidate host staleness safety, and regenerate the durable 6-harness receipt matrix. Changing verifier logic must invalidate earlier evidence.
 
-The scaffold's six destinations include Droid. The existing portable conformance sweep still covers Grok, Codex, OMP, OpenCode, and Antigravity.
+The scaffold's six destinations include Droid. The portable conformance sweep covers all declared harnesses: Grok, Codex, OMP, OpenCode, Antigravity, and Droid.
 
 ## Verification and landing gates
 
