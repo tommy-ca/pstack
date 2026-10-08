@@ -81,8 +81,26 @@ def get_canonical_root(root: Path) -> Path:
 
 
 DECLARED_HOSTS = get_declared_hosts()
-FIVE_HARNESSES = ("grok", "codex", "omp", "opencode", "antigravity")
+FIVE_HARNESSES = tuple(DECLARED_HOSTS)  # Deprecated alias; points to declared hosts
 DEFAULT_EVIDENCE_DIR = ROOT / ".audit" / "evidence"
+
+
+def reduce_verdicts(verdicts: Iterable[str]) -> str:
+    """Reduce scenario or plane verdicts according to the strict severity lattice:
+    FAIL > BLOCKED > UNTESTED > PASS.
+    """
+    v_set = set(verdicts)
+    if not v_set:
+        return "UNTESTED"
+    if "FAIL" in v_set:
+        return "FAIL"
+    if "BLOCKED" in v_set:
+        return "BLOCKED"
+    if "UNTESTED" in v_set:
+        return "UNTESTED"
+    if v_set == {"PASS"}:
+        return "PASS"
+    return "FAIL"
 
 
 class PortableVerifier:
@@ -99,29 +117,60 @@ class PortableVerifier:
         self.run_dir.mkdir(parents=True, exist_ok=True)
         return True
 
-    def run_command(self, scenario_id: str, desc: str, plane: str, cmd: List[str], cwd: Optional[Path] = None) -> ScenarioResult:
+    def run_command(
+        self,
+        scenario_id: str,
+        desc: str,
+        plane: str,
+        cmd: List[str],
+        cwd: Optional[Path] = None,
+        timeout: float = 60.0,
+        evidence_level: str = "offline",
+    ) -> ScenarioResult:
         start = time.time()
-        proc = subprocess.run(
-            cmd,
-            cwd=cwd or ROOT,
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-        duration = round(time.time() - start, 3)
-        stdout_snip = proc.stdout.strip()[:300]
-        stderr_snip = proc.stderr.strip()[:300]
-        verdict = "PASS" if proc.returncode == 0 else "FAIL"
+        try:
+            proc = subprocess.run(
+                cmd,
+                cwd=cwd or ROOT,
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=timeout,
+            )
+            duration = round(time.time() - start, 3)
+            stdout_snip = proc.stdout.strip()[:300]
+            stderr_snip = proc.stderr.strip()[:300]
+            verdict = "PASS" if proc.returncode == 0 else "FAIL"
+            exit_code = proc.returncode
+        except subprocess.TimeoutExpired:
+            duration = round(time.time() - start, 3)
+            stdout_snip = ""
+            stderr_snip = f"TIMEOUT: Command exceeded {timeout}s limit"
+            verdict = "FAIL"
+            exit_code = 124
+        except FileNotFoundError as exc:
+            duration = round(time.time() - start, 3)
+            stdout_snip = ""
+            stderr_snip = f"NOT_FOUND: Executable not found: {exc}"
+            verdict = "BLOCKED"
+            exit_code = 127
+        except Exception as exc:
+            duration = round(time.time() - start, 3)
+            stdout_snip = ""
+            stderr_snip = f"ERROR: Subprocess execution failed: {exc}"
+            verdict = "FAIL"
+            exit_code = 1
 
         result = ScenarioResult(
             id=scenario_id,
             description=desc,
             plane=plane,
             command=" ".join(cmd),
-            exit_code=proc.returncode,
+            exit_code=exit_code,
             stdout_snippet=stdout_snip or stderr_snip,
             verdict=verdict,
             duration_s=duration,
+            evidence_level=evidence_level,
         )
         self.scenarios.append(result)
         return result
@@ -439,21 +488,9 @@ class PortableVerifier:
         planes = {}
         for plane in ("canonical", "adapter", "package", "runtime"):
             results = [s for s in self.scenarios if s.plane == plane]
-            if not results:
-                planes[plane] = "UNTESTED"
-            elif any(s.verdict == "BLOCKED" for s in results):
-                planes[plane] = "BLOCKED"
-            elif all(s.verdict == "PASS" for s in results):
-                planes[plane] = "PASS"
-            else:
-                planes[plane] = "FAIL"
+            planes[plane] = reduce_verdicts(s.verdict for s in results)
 
-        if any(v == "BLOCKED" for v in planes.values()):
-            overall = "BLOCKED"
-        elif all(v == "PASS" for v in planes.values()):
-            overall = "PASS"
-        else:
-            overall = "FAIL"
+        overall = reduce_verdicts(planes.values())
 
         # Host version from live driver or package descriptor fallback
         host_version = ""
@@ -495,6 +532,7 @@ class PortableVerifier:
                     stdout_snippet=snip,
                     verdict=s.verdict,
                     duration_s=s.duration_s,
+                    evidence_level=getattr(s, "evidence_level", "offline"),
                 ))
             else:
                 scenarios.append(s)

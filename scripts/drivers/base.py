@@ -24,6 +24,7 @@ class DriverScenarioResult:
     stderr: str
     verdict: str  # "PASS", "FAIL", "BLOCKED"
     duration_s: float
+    evidence_level: str = "offline"
 
     @property
     def stdout_snippet(self) -> str:
@@ -103,21 +104,33 @@ class HarnessDriver(ABC):
         cmd: List[str],
         cwd: Optional[Path] = None,
         env: Optional[Dict[str, str]] = None,
+        timeout: float = 60.0,
     ) -> Tuple[int, str, str, float]:
         start = time.time()
         merged_env = os.environ.copy()
         if env:
             merged_env.update(env)
-        proc = subprocess.run(
-            cmd,
-            cwd=cwd or self.root,
-            capture_output=True,
-            text=True,
-            env=merged_env,
-            check=False,
-        )
-        duration = round(time.time() - start, 3)
-        return proc.returncode, proc.stdout, proc.stderr, duration
+        try:
+            proc = subprocess.run(
+                cmd,
+                cwd=cwd or self.root,
+                capture_output=True,
+                text=True,
+                env=merged_env,
+                check=False,
+                timeout=timeout,
+            )
+            duration = round(time.time() - start, 3)
+            return proc.returncode, proc.stdout, proc.stderr, duration
+        except subprocess.TimeoutExpired:
+            duration = round(time.time() - start, 3)
+            return 124, "", f"TIMEOUT: Command exceeded {timeout}s limit", duration
+        except FileNotFoundError as exc:
+            duration = round(time.time() - start, 3)
+            return 127, "", f"NOT_FOUND: {exc}", duration
+        except Exception as exc:
+            duration = round(time.time() - start, 3)
+            return 1, "", f"ERROR: {exc}", duration
 
     def blocked_result(self, scenario_id: str, desc: str, reason: str) -> DriverScenarioResult:
         return DriverScenarioResult(
