@@ -1,6 +1,6 @@
 {
   "name": "pstack",
-  "version": "0.15.5-grokbuild.0",
+  "version": "0.15.15-grokbuild.0",
   "displayName": "pstack",
   "description": "Portable atomic playbooks and principles across agent harnesses. (Google Antigravity port)",
   "author": {
