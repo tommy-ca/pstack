@@ -32,3 +32,18 @@ All source URLs below are pinned under [DeepSeek Harness @ d7432673](https://git
 ## Source artifacts beyond the sixteen SKILL.md files
 
 References exist under `dsh-ci-test-reliability`, `dsh-doc`, `dsh-find-simplifications`, `dsh-prose-standard`, `dsh-trim-cot-leakage`, and an encoder and unittest under `record-browser-gif/scripts/`. These supply rationale and optional fixture ideas; they are **not** evidence that pstack has executed those tests. Exact content mapping and acceptance ledger belong to #308.
+
+## Source-audit strength and qualification status
+
+The source repository is MIT licensed. Each matrix row above links to a *named source skill* under a frozen repository commit; content is advisory material, not trusted execution policy. Current evidence for all sixteen skills is **source documented** only with respect to transfer into pstack. The source tree also contains ancillary references and `record-browser-gif/scripts/test_encode_gif.py`, but that is only an encoder test, not proof of universally correct GUI demos or cross-host effectiveness.
+
+**Most defensible near-term reuse** is the behavior whose failures are externally falsifiable:
+- `dsh-ci-test-reliability`: per-resource atomic allocation, state readiness, controlled overlap, lifecycle settlement (E01/E02).
+- `dsh-pre-push-checks`: exact changed scope, bounded gate selection, head revision checks (E03).
+- `dsh-code-review`: actual patch plus consumers and lifecycle, not PR narrative (E03/E05).
+- `dsh-error-handling`: typed identity, partial/unknown effect handling, recovery authority (E04).
+- `dsh-find-simplifications`: consumer reachability, maintained-obligation reduction, equivalence (E05).
+
+The remaining skills are either already represented in pstack (`agent-experience`, `dsh-prose-standard`, `dsh-speed-up-perf`), narrowly conditional (`dsh-doc`, UI, archives, i18n, upgrade, GIF), or tied to contingent tooling (`dsh-merging-stacked-prs`). They are not rejected as ideas; importing their entire text would create redundant or inappropriate global policy.
+
+Per-skill triggers, source-path links, execution negatives, data models, and claim stages are governed by [atomic-patterns.md](atomic-patterns.md) and [qualification-and-eval.md](qualification-and-eval.md). The dedicated [qualification schema](schemas/skill-pattern-qualification.schema.json) can be used by issue #308 to structure source-specific records. Exact future source inventory MUST be rediscovered from its pin and not hardcoded as a permanent universal count.
