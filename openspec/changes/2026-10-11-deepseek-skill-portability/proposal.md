@@ -36,3 +36,11 @@ Adopt **extend existing pstack owners** (option A). Option B, import 16 DSH skil
 ## Tracking
 
 Epic #305 → sub-epics #306 (spec/eval) and #307 (implementation/acceptance) → leaves #308–#315. Specification is preliminary; all implementation/live claims are untested until the linked work executes.
+
+## Second-pass qualification amendment
+
+A documented upstream technique is a **candidate**, not an already-proven pstack improvement. The source-to-pstack mapping is revised by [atomic-patterns.md](atomic-patterns.md) (20 logical behavior atoms) and [qualification-and-eval.md](qualification-and-eval.md) (claim stages, organic task corpus, negative triggers, repeatability). [schemas/skill-pattern-qualification.schema.json](schemas/skill-pattern-qualification.schema.json) describes the *documentation ledger*, not a new runtime adapter schema.
+
+**Promotion rule:** require an eligible task, a single existing pstack owner, observable improvement or justified parity, negative controls, no safety/evidence regressions, and cross-project evidence scoped to named archetypes. Never claim source-documented guidance alone is proven across project classes. Do not instantiate atomic vocabulary as a new engine.
+
+**Gate dependencies:** #310 collects baseline measurements before #311/#312 and evaluates candidate changes afterward; #315 aggregates completed behavioral evidence and independently reports unavailable native hosts. No duplicate task or new epic is warranted.
