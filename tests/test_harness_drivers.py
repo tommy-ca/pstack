@@ -137,7 +137,8 @@ def test_reclassified_smoke_tests_planes(tmp_path: Path) -> None:
 
 
 @pytest.mark.skipif(not HOST_DEPENDENT, reason="Opt-in host CLI smoke: set PSTACK_RUN_HOST_DEPENDENT_TESTS=1")
-def test_omp_proxy_scenarios_report_static_evidence(tmp_path: Path) -> None:
+def test_omp_proxy_scenarios_report_static_evidence(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("PSTACK_RUN_OMP_LIVE", raising=False)
     driver = get_driver("omp", ROOT)
     sc_spawn = driver.child_spawn(tmp_path)
     assert sc_spawn.evidence_level == "static", "profile-string spawn check must not claim live evidence"
