@@ -15,12 +15,18 @@ without installing proprietary agent harness binaries:
   Droid executable is absent; a skip is **not** a runtime PASS.
 - `tests/test_droid_routing.py`: deterministic advisory route regression cases,
   including unknown/partial-match failures.
+- `tests/test_route_resolver.py`: pure typed route resolution and precedence.
+- `tests/test_verdict_reduction.py`: failure-first verdict lattice and timeouts.
 - `tests/test_harness_drivers.py`: driver factory and mocked unavailable-CLI
   behavior; its native CLI smoke cases are explicitly opted out by default.
 - `tests/test_project_package.py`: package projections and manifests.
 - `tests/test_skill_frontmatter.py`: skill metadata structure.
 - `tests/test_scan_host_boundary.py`: host-neutral shared skill boundary.
 - `tests/test_package_lifecycle.py`: isolated package lifecycle fixtures.
+- `tests/test_package_lifecycle_safety.py`: unmanaged file and symlink safety.
+- `tests/test_evidence_durability.py`: durable evidence/plane staleness.
+- `tests/test_select_checks.py`: change-scoped selection table and exact-head
+  evidence binding.
   
 A green PR job proves **only these selected contract scenarios**.
 `tests/test_package_lifecycle.py` currently does not prove preservation of
@@ -46,6 +52,46 @@ offline PR job until the relevant dependencies and proof semantics are isolated.
 Other repository tests not listed in the offline gate remain unassessed by that
 gate. A full suite pass from a prepared developer machine is not a substitute
 for explicit isolated runtime receipts.
+
+## Change-scoped selection (which gate a patch actually needs)
+
+Running the whole matrix for a docs edit wastes the tiers. Select the minimal gate
+that can fail for the changed paths:
+
+```sh
+python scripts/verify-portable.py select-checks --base <base-ref> [--head <sha>] [--json]
+```
+
+It resolves the real merge base, collects the changed paths (`git diff --name-only`
+against the merge base, plus staged/unstaged/untracked context when the head is
+`HEAD`), and maps them through one table of path pattern → checks. The table draws
+only on the tiers above: the offline contract modules (read out of
+`.github/workflows/portability-offline.yml`, never re-listed), the other
+`tests/*.py` modules, and the standalone verifier scripts. Each planned check is
+labelled `offline` (in the PR gate), `host_dependent` (needs the documented
+opt-in), or `outside_gate` (not proven by the PR gate — run it, but a skip is not
+a pass). A path with no mapping defaults to the full offline set and is reported
+as unmapped; selection never silently returns nothing.
+
+The plan is a *selection*, not a new verdict source: the forge's own check state
+stays authoritative, and `fix-ci`/`babysit` own the loop that consumes the plan.
+
+### Exact-head evidence binding
+
+A selection result is bound to the head SHA and the `git patch-id` of the
+merge-base..head diff:
+
+```sh
+python scripts/verify-portable.py select-checks --base <base-ref> --record <path> \
+  --outcome 'pytest:tests/test_x.py=PASS'
+python scripts/verify-portable.py select-checks --base <base-ref> --receipt <path>
+```
+
+Retargeting, rebasing onto a changed base, or reworking the patch changes the
+patch-id, which invalidates the receipt: its `FAIL`/`BLOCKED`/`PASS` may not be
+quoted as current CI. A pure rebase keeps the patch-id, so the recorded verdict
+still describes the patch and only mergeability and the checks at the new head
+need re-running. This is the same patch-id rule the shipping playbooks use.
 
 ## Acceptance matrix (not yet complete)
 

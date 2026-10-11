@@ -28,6 +28,7 @@ Inside poteto-mode, the **Babysit** playbook ([`../poteto-mode/playbooks/babysit
 2. **Triage in priority order.**
    - Merge conflicts (`mergeStateStatus == DIRTY`): run the **fix-merge-conflicts** skill. Force-push only if the branch is yours and not shared.
    - Failing checks (`statusCheckRollup` entries with `conclusion: FAILURE`): run the **fix-ci** skill. Root-cause the failure; fix the underlying code or test; commit; push.
+   - Before you trust any failing or passing check, scope the gate to the patch instead of the whole matrix: `python scripts/verify-portable.py select-checks --base <base-ref> [--head <sha>]` names the minimal checks that can fail for the changed paths (docs-only changes do not select the runtime matrix). The PR's forge commands still own the overall check state; `gh` is the default and `origin` the fallback when `command -v origin` resolves. Do not assume a universal forge CLI or package manager.
    - Review comments: run the **get-pr-comments** skill for the summary, then act only on feedback you actually agree with. When a comment has a single mechanical answer — a rename, a guard clause, a formatting nit — make the edit and quote the comment in the commit message. When it hinges on a judgement call, or you can't tell what's being asked, don't guess: leave it and reply with what you would have done.
    - Review-bot comments (Bugbot and similar automation): classify fix/dismiss/ask before acting, per [`bugbot-triage.md`](../poteto-mode/references/bugbot-triage.md). Ask by default on security, data, and high-severity findings.
 
@@ -47,6 +48,8 @@ Inside poteto-mode, the **Babysit** playbook ([`../poteto-mode/playbooks/babysit
 
 - Don't rewrite history on a branch others may have pulled. If a rebase or force-push looks necessary, clear it with the user first.
 - Don't tweak a test's expected values just to get a pass. Only change an assertion when the behaviour genuinely changed and the assertion was pinned to the old behaviour.
+- Never quote an old result as current CI. A verdict is bound to the head SHA and the `git patch-id` of the base..head diff; re-check freshness with `select-checks --base <base-ref> --receipt <path>` after any rebase, retarget, or new commit. A changed patch-id invalidates it; a pure rebase with an identical patch-id keeps it.
+- Report `FAIL` and `BLOCKED` as they are. A skip is not a pass.
 - Never skip hooks (`--no-verify`).
 - Never bypass a failing check by marking it as not required.
 - `gh pr ready` only when all checks are green and no unresolved review comments remain.
