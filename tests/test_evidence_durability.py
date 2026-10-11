@@ -519,13 +519,13 @@ def test_observed_live_scenario_still_derives_verified(tmp_path: Path) -> None:
 
 
 def test_bare_live_label_without_settlement_stays_packaged(tmp_path: Path) -> None:
-    root, prof = _synthetic_evidence_root(tmp_path, ["offline", "observed_live"])
+    root, prof = _synthetic_evidence_root(tmp_path, ["offline", "observed_live"], force_verified=True)
     assert derive_support_state(prof, root) == "packaged"
 
 
 def test_non_runtime_live_does_not_prove_runtime(tmp_path: Path) -> None:
     root, prof = _synthetic_evidence_root(
-        tmp_path, ["observed_live", "offline"], planes=["canonical", "runtime"]
+        tmp_path, ["observed_live", "offline"], planes=["canonical", "runtime"], force_verified=True
     )
     assert derive_support_state(prof, root) == "packaged"
 
