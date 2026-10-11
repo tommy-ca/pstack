@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/tommy-ca/pstack/blob/main/openspec/changes/2026-10-11-deepseek-skill-portability/schemas/skill-pattern-qualification.schema.json",
+  "title": "Spec-only external skill pattern qualification ledger",
+  "description": "Documentation/evaluation evidence record; not a runtime capability profile or replacement for portability receipts.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "source",
+    "decision",
+    "owner",
+    "eligibility",
+    "claims"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repository",
+        "commit",
+        "path",
+        "license"
+      ],
+      "properties": {
+        "repository": {
+          "type": "string",
+          "minLength": 1
+        },
+        "commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "license": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_blob_sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        }
+      }
+    },
+    "decision": {
+      "enum": [
+        "refine-existing",
+        "optional-overlay",
+        "defer",
+        "reject"
+      ]
+    },
+    "owner": {
+      "type": "string",
+      "minLength": 1
+    },
+    "eligibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "positive_tasks",
+        "excluded_tasks"
+      ],
+      "properties": {
+        "positive_tasks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "excluded_tasks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "required_capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "claims": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "claim",
+          "evidence_stage",
+          "observed_postcondition",
+          "test_cases"
+        ],
+        "properties": {
+          "claim": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence_stage": {
+            "enum": [
+              "source-documented",
+              "source-partial-implementation",
+              "pstack-baseline-measured",
+              "candidate-observed",
+              "qualified-scoped",
+              "host-native-observed"
+            ]
+          },
+          "observed_postcondition": {
+            "type": "string",
+            "minLength": 1
+          },
+          "test_cases": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "evidence_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "limits": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "notes": {
+      "type": "string"
+    }
+  }
+}
