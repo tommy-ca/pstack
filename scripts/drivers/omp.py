@@ -103,15 +103,15 @@ class OMPDriver(HarnessDriver):
         verdict = "PASS" if has_task and has_alias and depth_ok else "FAIL"
         return DriverScenarioResult(
             scenario_id="runtime-child-spawn-omp",
-            description="Verify OMP native 'task' subagent tool capability binding and wire alias",
+            description="Verify OMP native 'task' subagent tool capability binding and wire alias (static contract only, no observed child)",
             command="omp subagent-contract-check",
             exit_code=0 if verdict == "PASS" else 1,
             stdout=f"OMP subagent primitive verified (spawn={tm.get('agent_spawn')}, alias={rc.get('wire_aliases')}, depth={rc.get('max_subagent_depth')})",
             stderr="",
             verdict=verdict,
             duration_s=0.01,
+            evidence_level="static",
         )
-
     def isolation(self, run_dir: Path) -> DriverScenarioResult:
         avail, reason = self.is_available()
         if not avail:
@@ -124,13 +124,14 @@ class OMPDriver(HarnessDriver):
         verdict = "PASS" if code == 0 and has_worktree else "FAIL"
         return DriverScenarioResult(
             scenario_id="runtime-isolation-omp",
-            description="Verify OMP native git worktree workspace isolation command",
+            description="Verify OMP native git worktree workspace isolation command (static CLI probe only, no observed isolation)",
             command=f"{bin_path} --help (check worktree)",
             exit_code=0 if verdict == "PASS" else 1,
             stdout=f"OMP CLI supports git worktree management (found={has_worktree})",
             stderr=err,
             verdict=verdict,
             duration_s=dur,
+            evidence_level="static",
         )
 
     def evidence_capture(self, run_dir: Path) -> DriverScenarioResult:

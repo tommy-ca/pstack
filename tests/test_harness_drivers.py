@@ -134,3 +134,15 @@ def test_reclassified_smoke_tests_planes(tmp_path: Path) -> None:
     assert scenarios_by_id["runtime-child-spawn-grok"].plane == "runtime"
     assert scenarios_by_id["runtime-isolation-grok"].plane == "runtime"
     assert scenarios_by_id["runtime-evidence-capture-grok"].plane == "runtime"
+
+
+@pytest.mark.skipif(not HOST_DEPENDENT, reason="Opt-in host CLI smoke: set PSTACK_RUN_HOST_DEPENDENT_TESTS=1")
+def test_omp_proxy_scenarios_report_static_evidence(tmp_path: Path) -> None:
+    driver = get_driver("omp", ROOT)
+    sc_spawn = driver.child_spawn(tmp_path)
+    assert sc_spawn.evidence_level == "static", "profile-string spawn check must not claim live evidence"
+    assert "static" in sc_spawn.description
+    assert sc_spawn.settlement is None
+    sc_iso = driver.isolation(tmp_path)
+    assert sc_iso.evidence_level == "static", "help-grep isolation check must not claim live evidence"
+    assert "static" in sc_iso.description
