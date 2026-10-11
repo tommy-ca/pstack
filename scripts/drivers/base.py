@@ -25,6 +25,7 @@ class DriverScenarioResult:
     verdict: str  # "PASS", "FAIL", "BLOCKED"
     duration_s: float
     evidence_level: str = "offline"
+    settlement: Optional[Dict[str, str]] = None
 
     @property
     def stdout_snippet(self) -> str:

@@ -3,7 +3,7 @@ import json
 import shutil
 import subprocess
 import sys
-from dataclasses import replace
+from dataclasses import asdict, replace
 from pathlib import Path
 import pytest
 
@@ -13,6 +13,7 @@ if str(ROOT) not in sys.path:
 
 from scripts.portability_schema import (
     Binding,
+    ChildSettlement,
     CONFORMANCE_PLANES,
     Evidence,
     HarnessProfile,
@@ -429,3 +430,158 @@ def test_check_evidence_cli_output() -> None:
     assert res.returncode == 0
     for host in SIX_HARNESSES:
         assert f"[{host}] PASS: Evidence durable" in res.stdout
+
+
+def _synthetic_evidence_root(tmp_path: Path, evidence_levels: list, planes: list | None = None, host: str = "omp", snippets: list | None = None, settlements: list | None = None, force_verified: bool = False) -> tuple:
+    """Self-consistent minimal root: every OMP binding points at one synthetic receipt
+    whose scenario (evidence_level, plane) pairs are exactly zipped `evidence_levels`."""
+    tmp_path.mkdir(parents=True, exist_ok=True)
+    (tmp_path / "pstack.package.json").write_text("{}", encoding="utf-8")
+    manifest = tmp_path / ".omp-plugin" / "plugin.json"
+    manifest.parent.mkdir(parents=True, exist_ok=True)
+    manifest.write_text("{}", encoding="utf-8")
+
+    revisions = compute_surface_revisions(tmp_path, host)
+    ref = ".audit/evidence/synthetic-receipt.json"
+    receipt = VerificationReceipt(
+        run_id="evidence-level-gate",
+        host=host,
+        host_version="test",
+        timestamp="2026-10-11T00:00:00Z",
+        overall_verdict="PASS",
+        planes={plane: "PASS" for plane in CONFORMANCE_PLANES},
+        surface_revisions=revisions,
+        scenarios=[
+            ScenarioResult(
+                id=f"synthetic-{i}",
+                description="synthetic scenario",
+                plane=(planes[i] if planes else "runtime"),
+                command="true",
+                exit_code=0,
+                stdout_snippet=(snippets[i] if snippets else ""),
+                verdict="PASS",
+                duration_s=0.01,
+                evidence_level=level,
+                settlement=(settlements[i] if settlements else None),
+            )
+            for i, level in enumerate(evidence_levels)
+        ],
+    )
+    receipt_path = tmp_path / ref
+    receipt_path.parent.mkdir(parents=True, exist_ok=True)
+    receipt_path.write_text(json.dumps(asdict(receipt)), encoding="utf-8")
+
+    d = json.loads((ROOT / "profiles" / f"{host}.json").read_text(encoding="utf-8"))
+    for binding in d["bindings"]:
+        binding["evidence_ref"] = ref
+        if force_verified:
+            binding["verification_status"] = "verified"
+    prof = HarnessProfile(
+        host=d["host"],
+        support_state="verified",
+        bindings=[Binding(**x) for x in d["bindings"]],
+        skills_dir=d.get("skills_dir"),
+        plugins_dir=d.get("plugins_dir"),
+        plugin_manifest=d.get("plugin_manifest"),
+        tool_mappings=d.get("tool_mappings"),
+        skill_order=d.get("skill_order"),
+        runtime_conventions=d.get("runtime_conventions"),
+    )
+    return tmp_path, prof
+
+
+def test_offline_only_receipt_derives_packaged_not_verified(tmp_path: Path) -> None:
+    root, prof = _synthetic_evidence_root(tmp_path, ["offline", "offline"])
+    assert prof.support_state == "verified"
+    assert derive_support_state(prof, root) == "packaged"
+    with pytest.raises(ValidationError, match="exceeds evidence-derived support state 'packaged'"):
+        check_evidence_durability(prof, root)
+
+
+def test_observed_live_scenario_still_derives_verified(tmp_path: Path) -> None:
+    root, prof = _synthetic_evidence_root(
+        tmp_path,
+        ["offline", "observed_live"],
+        settlements=[
+            None,
+            ChildSettlement(
+                child_id="subagent-7",
+                terminal_outcome="success",
+                model="test-model",
+                transport="rpc",
+                effective_rpc="rpc-v2:profile=disposable:depth=1",
+            ),
+        ],
+        force_verified=True,
+    )
+    assert derive_support_state(prof, root) == "supported"
+    assert check_evidence_durability(prof, root)["derived_support_state"] == "supported"
+
+
+def test_bare_live_label_without_settlement_stays_packaged(tmp_path: Path) -> None:
+    root, prof = _synthetic_evidence_root(tmp_path, ["offline", "observed_live"], force_verified=True)
+    assert derive_support_state(prof, root) == "packaged"
+
+
+def test_non_runtime_live_does_not_prove_runtime(tmp_path: Path) -> None:
+    root, prof = _synthetic_evidence_root(
+        tmp_path, ["observed_live", "offline"], planes=["canonical", "runtime"], force_verified=True
+    )
+    assert derive_support_state(prof, root) == "packaged"
+
+
+def test_legacy_or_missing_evidence_level_never_proves_live(tmp_path: Path) -> None:
+    # 'legacy' stays a valid enum member (no rename) but proves at most 'packaged'
+    ScenarioResult(
+        id="legacy", description="legacy", plane="runtime", command="true", exit_code=0,
+        stdout_snippet="", verdict="PASS", duration_s=0.01, evidence_level="legacy",
+    ).validate()
+
+    for levels in (["legacy"], ["observed_live", None], []):
+        root, prof = _synthetic_evidence_root(tmp_path / "_".join(str(l) for l in levels), list(levels))
+        assert derive_support_state(prof, root) == "packaged"
+
+def test_driver_settlement_survives_receipt_serialization(tmp_path: Path) -> None:
+    from scripts.drivers.base import DriverScenarioResult
+
+    settlement = {
+        "child_id": "subagent-9",
+        "terminal_outcome": "success",
+        "model": "test-model",
+        "transport": "rpc",
+        "effective_rpc": "rpc-v2:profile=disposable:depth=1",
+    }
+    driver_result = DriverScenarioResult(
+        scenario_id="runtime-child-spawn-omp",
+        description="driver settlement propagation",
+        command="omp task spawn",
+        exit_code=0,
+        stdout="child joined",
+        stderr="",
+        verdict="PASS",
+        duration_s=0.05,
+        evidence_level="observed_live",
+        settlement=settlement,
+    )
+    scenario = ScenarioResult(
+        id=driver_result.scenario_id,
+        description=driver_result.description,
+        plane="runtime",
+        command=driver_result.command,
+        exit_code=driver_result.exit_code,
+        stdout_snippet=driver_result.stdout_snippet,
+        verdict=driver_result.verdict,
+        duration_s=driver_result.duration_s,
+        evidence_level=driver_result.evidence_level,
+        settlement=driver_result.settlement,
+    )
+    scenario.validate()
+    blob = json.dumps(asdict(scenario))
+    assert '"effective_rpc"' in blob
+    assert "credential" not in blob.lower() and "api_key" not in blob.lower()
+    schema = json.loads(RECEIPT_SCHEMA.read_text(encoding="utf-8"))
+    props = schema["properties"]["scenarios"]["items"]["properties"]["settlement"]
+    assert set(props["required"]) == {"child_id", "terminal_outcome", "model", "transport", "effective_rpc"}
+    parsed = json.loads(blob)
+    for key in props["required"]:
+        assert parsed["settlement"][key]

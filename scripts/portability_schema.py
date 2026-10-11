@@ -455,6 +455,28 @@ PLANE_SURFACE_DEPENDENCIES: Dict[str, Tuple[str, ...]] = {
 
 
 @dataclass
+class ChildSettlement:
+    """Typed child spawn/join proof. All fields required; no free-text inference."""
+    child_id: str
+    terminal_outcome: str  # success | error | timeout | cancelled
+    model: str
+    transport: str  # rpc | sdk | cli
+    effective_rpc: str = ""  # effective RPC/profile config observed at spawn
+
+    def validate(self) -> None:
+        if not self.child_id:
+            raise ValidationError("ChildSettlement child_id cannot be empty")
+        if self.terminal_outcome not in ("success", "error", "timeout", "cancelled"):
+            raise ValidationError(f"Invalid terminal_outcome: {self.terminal_outcome!r}")
+        if not self.model:
+            raise ValidationError("ChildSettlement model cannot be empty")
+        if self.transport not in ("rpc", "sdk", "cli"):
+            raise ValidationError(f"Invalid transport: {self.transport!r}")
+        if not self.effective_rpc:
+            raise ValidationError("ChildSettlement effective_rpc cannot be empty")
+
+
+@dataclass
 class ScenarioResult:
     id: str
     description: str
@@ -465,6 +487,7 @@ class ScenarioResult:
     verdict: str  # PASS | FAIL | BLOCKED | UNTESTED
     duration_s: float
     evidence_level: Optional[str] = "offline"  # static | offline | observed_live | legacy
+    settlement: Optional[ChildSettlement | Dict[str, Any]] = None
 
     def validate(self) -> None:
         if not self.id:
@@ -475,6 +498,12 @@ class ScenarioResult:
             raise ValidationError(f"Invalid verdict: {self.verdict!r}")
         if self.evidence_level and self.evidence_level not in ("static", "offline", "observed_live", "legacy"):
             raise ValidationError(f"Invalid evidence_level: {self.evidence_level!r}")
+        if isinstance(self.settlement, dict):
+            self.settlement = ChildSettlement(**self.settlement)
+        if self.settlement is not None:
+            if not isinstance(self.settlement, ChildSettlement):
+                raise ValidationError(f"Invalid settlement: {self.settlement!r}")
+            self.settlement.validate()
 
 
 @dataclass
@@ -673,7 +702,13 @@ def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path
         package_driver_revision=package_driver_revision,
         boundary_driver_revision=boundary_driver_revision,
     )
-
+def _is_observed_settlement(scenario) -> bool:
+    """True only for a runtime observed_live scenario with validated settlement."""
+    return (
+        scenario.plane == "runtime"
+        and scenario.evidence_level == "observed_live"
+        and isinstance(scenario.settlement, ChildSettlement)
+    )
 
 def derive_support_state(
     profile: HarnessProfile,
@@ -705,6 +740,14 @@ def derive_support_state(
     # 2. Every mandatory capability has evidence_ref pointing to an existing file
     # 3. The referenced receipt has canonical, adapter, and runtime PASS
     # 4. None of canonical, adapter, runtime planes is STALE against current_revisions
+    # 5. OMP only: the receipt carries evidence_level on every scenario and at
+    #    least one runtime-plane scenario observed_live carrying structured
+    #    settlement evidence (child identity plus terminal outcome). OMP
+    #    offline-only receipts prove at most 'packaged': the OMP driver never
+    #    observed a child spawn/join, a live canonical check cannot stand in
+    #    for it, and a bare observed_live label without settlement markers is
+    #    relabel fraud, not proof. Other hosts keep their existing contract
+    #    until their own leaf proves the same bar.
     has_mandatory_runtime_proof = True
     for cap_id in MANDATORY_SUPPORT_FLOOR:
         binding = bound_caps[cap_id]
@@ -732,6 +775,11 @@ def derive_support_state(
             if stale_map.get("canonical") or stale_map.get("adapter") or stale_map.get("runtime"):
                 has_mandatory_runtime_proof = False
                 break
+            if profile.host == "omp":
+                live_runtime = [s for s in receipt.scenarios if _is_observed_settlement(s)]
+                if any(not s.evidence_level for s in receipt.scenarios) or not live_runtime:
+                    has_mandatory_runtime_proof = False
+                    break
         except Exception:
             has_mandatory_runtime_proof = False
             break
