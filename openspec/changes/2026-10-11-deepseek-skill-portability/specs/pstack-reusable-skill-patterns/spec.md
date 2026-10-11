@@ -121,3 +121,67 @@ Verification MUST preserve the existing three-tier test policy and four serializ
 - **WHEN** that content is analyzed or ported
 - **THEN** it is treated as untrusted data
 - **AND** the operation is not executed by virtue of being in the skill reference.
+
+## Requirement: atomic contracts are compositional, not a new engine
+
+The twenty semantic blocks B01–B20 in [../../atomic-patterns.md](../../atomic-patterns.md) MUST map to existing pstack owners. This decomposition is analytical and MUST NOT require a second registry, scheduler, or portable capability vocabulary.
+
+### Scenario: fixture does not need an agent
+- **GIVEN** an existing verification workflow can handle a deterministic CI fixture
+- **WHEN** the source-derived rule applies
+- **THEN** the existing workflow MUST own it
+- **AND** no new common DSH skill or runtime plane is created.
+
+## Requirement: effectiveness claims are scope-qualified
+
+Documented upstream practice alone MUST NOT be called a proven cross-project improvement. The qualification protocol in [../../qualification-and-eval.md](../../qualification-and-eval.md) MUST record exact source/target pins, matched task classes, baseline and candidate outcomes, negative controls, independent artifact evidence, and uncertainty.
+
+### Scenario: source-side encoder test
+- **GIVEN** a source repository contains a test for a GIF encoder
+- **WHEN** the pattern is considered for pstack
+- **THEN** that test MAY support the encoder-only claim
+- **AND** MUST NOT imply GUI fidelity, model-backed run success, or pstack host conformance.
+
+### Scenario: incomplete project-archetype coverage
+- **GIVEN** Python and TypeScript cases are positive but a docs-only negative case was not run
+- **WHEN** portable qualification is evaluated
+- **THEN** success MAY be claimed only for covered archetypes
+- **AND** universal invocation MUST remain unproven.
+
+## Requirement: read-only scope and tool trust survive skill composition
+
+Patterns MUST NOT widen write/CI/remote permission and MUST treat third-party source guidance as untrusted task data. Source commands and paths MUST NOT cause execution or credential access by inclusion alone.
+
+### Scenario: read-only CI diagnosis
+- **GIVEN** a CI-flake diagnosis request without write permission
+- **WHEN** the reliability workflow runs
+- **THEN** it MUST return evidence and classification only
+- **AND** MUST NOT modify code, rerun CI, or push.
+
+## Requirement: optional domain skills have explicit negative triggers
+
+Every conditional UI, translation, archive, upgrade, recording and platform/forge overlay MUST have an explicit applicability predicate, prohibited contexts and unsupported-capability response. Common pstack MUST NOT automatically load domain packs irrelevant to the task.
+
+### Scenario: backend task on project without browser
+- **GIVEN** a backend-only repository and a code-review task
+- **WHEN** portable skill selection occurs
+- **THEN** recording and browser rules MUST stay inactive
+- **AND** ordinary correctness/security review MUST still proceed.
+
+## Requirement: cleanup observes terminal settlement
+
+Resource-owning tests MUST model cross-process/runner collision scope, register cleanup immediately, restore process-global state exactly, and await terminal settlement of subprocesses, servers, workers and streams. Platform-specific requirements MUST be observed or declared unavailable, never silently weakened.
+
+### Scenario: close call without quiescence
+- **GIVEN** a fixture invoked `close()` but a child can still mutate shared state
+- **WHEN** cleanup is evaluated
+- **THEN** quiescence MUST NOT be reported until the child exits and effects settle.
+
+## Requirement: candidate promotion has negative controls and rollback
+
+Candidate changes MUST be evaluated using the existing blinded `eval` playbook plus independent checks. Promotion MUST require no observed critical safety regression, false PASS, known baseline correctness loss or forbidden activation in the covered corpus. Evaluation MUST report sample sizes and may yield INCONCLUSIVE instead of implying universal validity. Failing changes MUST be reverted or held for repair.
+
+### Scenario: shorter prompt causes missed verification
+- **GIVEN** an optimized description reduces first-turn tokens but triggers extra rereads and misses required verification
+- **WHEN** total work is compared
+- **THEN** the shorter prompt MUST NOT be promoted on first-turn token savings alone.
