@@ -92,7 +92,7 @@
             "description": "How the scenario evidence was obtained. Only observed_live records a host runtime actually being observed, so only observed_live can prove the derived 'verified' support state; static/offline/legacy evidence proves at most 'packaged'. Receipts predating this field are read as legacy."
           },
           "settlement": {
-            "type": "object",
+            "type": ["object", "null"],
             "required": ["child_id", "terminal_outcome", "model", "transport", "effective_rpc"],
             "properties": {
               "child_id": { "type": "string", "minLength": 1 },

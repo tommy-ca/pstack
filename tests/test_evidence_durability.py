@@ -491,7 +491,7 @@ def _synthetic_evidence_root(tmp_path: Path, evidence_levels: list, planes: list
 
 
 def test_offline_only_receipt_derives_packaged_not_verified(tmp_path: Path) -> None:
-    root, prof = _synthetic_evidence_root(tmp_path, ["offline", "offline"])
+    root, prof = _synthetic_evidence_root(tmp_path, ["offline", "offline"], force_verified=True)
     assert prof.support_state == "verified"
     assert derive_support_state(prof, root) == "packaged"
     with pytest.raises(ValidationError, match="exceeds evidence-derived support state 'packaged'"):
@@ -538,7 +538,7 @@ def test_legacy_or_missing_evidence_level_never_proves_live(tmp_path: Path) -> N
     ).validate()
 
     for levels in (["legacy"], ["observed_live", None], []):
-        root, prof = _synthetic_evidence_root(tmp_path / "_".join(str(l) for l in levels), list(levels))
+        root, prof = _synthetic_evidence_root(tmp_path / "_".join(str(l) for l in levels), list(levels), force_verified=True)
         assert derive_support_state(prof, root) == "packaged"
 
 def test_driver_settlement_survives_receipt_serialization(tmp_path: Path) -> None:
