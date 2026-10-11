@@ -211,7 +211,8 @@
 - [x] Unit 12: Independent per-PR verdicts: escape hunt, real-consumer regression, live proof reproduction, selection re-verification, spec claim audit, hardened-predicate attack
 - [x] Unit 13: Multi-model interrogate over PR #319's diff, two arms driven through the local binary on other providers; their consensus findings were folded into PR #323, and the reviewers themselves flagged that the packed diff did not include the other changes in the run
 - [x] Unit 14: Merge bottom-up with a patch-id recheck per PR, receipts regenerated per host, and the live plugin reconciled to trunk
+- [x] Unit 15: Close the four evidence gaps an aggregated external review found in the shipped machinery: a digest that read through untracked symlinks, a settlement that could rest on an uncorrelated frame, host IO failures escaping the driver, and a prompt comment claiming a literal the predicate never checked (PR #326)
 
 ### Follow-ups opened by this run
-- [ ] Unit 15: Guard `sync-antigravity-plugin --sync` against uncommitted or non-primary worktree sources (Issue #320)
-- [ ] Unit 16: Stop a default `verify-portable.py run --host omp` from overwriting the durable live settlement (Issue #322)
+- [ ] Unit 16: Guard `sync-antigravity-plugin --sync` against uncommitted or non-primary worktree sources (Issue #320)
+- [ ] Unit 17: Stop a default `verify-portable.py run --host omp` from overwriting the durable live settlement (Issue #322)
