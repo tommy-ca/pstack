@@ -476,3 +476,47 @@ def test_wait_settled_rejects_a_non_completed_prompt_result(tmp_path: Path) -> N
     )
 
     assert session.wait_settled(prompt_id="q1", timeout=0.2) is False
+
+
+def test_wait_settled_fails_closed_without_a_prompt_id(tmp_path: Path) -> None:
+    """Without a prompt to correlate against there is nothing to prove."""
+    session = _session(
+        tmp_path,
+        [
+            READY,
+            {"type": "session_settled"},
+            {"type": "prompt_result", "id": "q1", "agentInvoked": True, "status": "completed"},
+            {"type": "session_settled"},
+        ],
+    )
+
+    assert session.wait_settled(timeout=0.2) is False
+    assert session.wait_settled(prompt_id="q1", timeout=0.2) is True
+
+
+def test_live_spawn_reports_blocked_when_the_host_cannot_start(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """A spawn or log-open failure is an unavailable host, not a traceback."""
+    from scripts.drivers import omp as omp_driver
+
+    monkeypatch.setenv(omp_driver.LIVE_GATE_ENV, "1")
+
+    class _Unstartable:
+        def __init__(self, *args: object, **_kwargs: object) -> None:
+            pass
+
+        def start(self, timeout: float = 30.0) -> dict:
+            raise OSError("omp binary vanished")
+
+        def close(self, grace: float = 10.0) -> int:
+            return 1
+
+    monkeypatch.setattr(omp_driver, "OmpRpcSession", _Unstartable)
+    driver = get_driver("omp", ROOT)
+    monkeypatch.setattr(type(driver), "get_binary_path", lambda self: ROOT / "scripts" / "drivers" / "omp.py")
+
+    result = driver.child_spawn(tmp_path)
+
+    assert result.verdict == "BLOCKED"
+    assert "omp binary vanished" in result.stderr

@@ -312,19 +312,22 @@ class OmpRpcSession:
         A ``session_settled`` frame that predates the prompt's own result describes an
         earlier stretch of activity, so only a frame at a later index counts as join.
         A prompt whose result reports anything but ``completed`` is not a settled join.
+        Without a prompt id there is nothing to correlate against, so the answer is no.
         """
+        if prompt_id is None:
+            return False
         deadline = time.monotonic() + (self.max_seconds if timeout is None else timeout)
-        result: Optional[Dict[str, Any]] = None
-        if prompt_id is not None:
-            remaining = deadline - time.monotonic()
-            result = self._wait_for(
-                lambda f: f.get("type") == "prompt_result" and f.get("id") == prompt_id, remaining
-            )
-            if result is None or result.get("status") != "completed":
-                return False
-        after = self._index_of(result) + 1 if result is not None else 0
+        result = self._wait_for(
+            lambda f: f.get("type") == "prompt_result" and f.get("id") == prompt_id,
+            deadline - time.monotonic(),
+        )
+        if result is None or result.get("status") != "completed":
+            return False
+        index = self._index_of(result)
+        if index < 0:
+            return False
         settled = self._wait_for(
-            lambda f: f.get("type") == "session_settled", deadline - time.monotonic(), start=after
+            lambda f: f.get("type") == "session_settled", deadline - time.monotonic(), start=index + 1
         )
         return settled is not None
 

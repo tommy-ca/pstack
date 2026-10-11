@@ -36,6 +36,7 @@ jobs:
             tests/test_package_lifecycle.py \
             tests/test_package_lifecycle_safety.py \
             tests/test_evidence_durability.py \
+            tests/test_evidence_receipts.py \
             tests/test_select_checks.py
       # Native host spawn/join/isolation are intentionally NOT covered here.
       # Their separate live evidence is tracked by issues #238 and #240.

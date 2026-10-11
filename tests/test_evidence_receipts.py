@@ -9,6 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from scripts import evidence_receipts
 from scripts.evidence_receipts import (
     can_authorize_controlling_mode,
     check_receipt_staleness,
@@ -121,3 +122,31 @@ class TestEvidenceReceipts:
         )
         assert not auth_ok
         assert "decided" in reason.lower()
+
+
+def test_worktree_digest_hashes_symlink_text_without_following_it(tmp_path: Path) -> None:
+    """An untracked symlink contributes its target text, never the target's contents."""
+    import subprocess
+
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
+    subprocess.run(["git", "config", "user.email", "t@example.com"], cwd=repo, check=True)
+    subprocess.run(["git", "config", "user.name", "t"], cwd=repo, check=True)
+    (repo / "tracked.txt").write_text("base\n", encoding="utf-8")
+    subprocess.run(["git", "add", "-A"], cwd=repo, check=True)
+    subprocess.run(["git", "commit", "-qm", "base"], cwd=repo, check=True)
+
+    outside = tmp_path / "outside.txt"
+    outside.write_text("secret\n", encoding="utf-8")
+    link = repo / "link.txt"
+    link.symlink_to(outside)
+
+    with_link = evidence_receipts.compute_worktree_digest(repo)
+
+    outside.write_text("rotated\n", encoding="utf-8")
+    assert evidence_receipts.compute_worktree_digest(repo) == with_link
+
+    link.unlink()
+    link.symlink_to(tmp_path / "other.txt")
+    assert evidence_receipts.compute_worktree_digest(repo) != with_link
