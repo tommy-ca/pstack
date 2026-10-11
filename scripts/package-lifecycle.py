@@ -116,7 +116,7 @@ def compute_managed_files(host: str, desc: Any) -> Set[str]:
         for fname in generate_antigravity_commands(desc).keys():
             managed.add(f"commands/{fname}")
 
-    if host in ("grok", "antigravity"):
+    if host in ("grok", "antigravity", "omp"):
         for a in (ROOT / "agents").glob("*.md"):
             managed.add(f"agents/{a.name}")
 
@@ -180,6 +180,8 @@ def install_plugin(host: str, target_base: Optional[Path] = None) -> Path:
     elif host == "omp":
         manifest = generate_omp_manifest(desc)
         (plugin_dir / "plugin.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+        agents_dir = plugin_dir / "agents"
+        copy_agents(agents_dir)
 
     elif host == "opencode":
         manifest = generate_opencode_manifest(desc)
@@ -325,7 +327,7 @@ def verify_plugin_at_dir(host: str, plugin_dir: Path, desc: Any) -> Tuple[bool, 
             errors.append(f"Missing canonical skill {c_skill} in {skills_dir}")
 
     # 3. Host-specific component verification
-    if host in ("grok", "antigravity"):
+    if host in ("grok", "antigravity", "omp"):
         agents_dir = plugin_dir / "agents"
         if not agents_dir.is_dir() or len(list(agents_dir.glob("*.md"))) == 0:
             errors.append(f"Missing or empty agents directory: {agents_dir}")
