@@ -16,6 +16,7 @@ Verifies:
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 import pytest
@@ -167,12 +168,39 @@ def test_ambiguous_query_detection() -> None:
     assert len(res.matched_rows) == 2
 
 
-def test_path_traversal_defense() -> None:
+def test_path_traversal_defense(tmp_path: Path) -> None:
+    """An identifier escaping the root never resolves to a file outside it."""
+    # The sentinel really exists outside the repository checkout.
+    outside = tmp_path / "sentinel-outside-root.txt"
+    outside.write_text("sentinel\n", encoding="utf-8")
+    escape = os.path.relpath(outside, ROOT)
+
+    # Proof the escape is reachable: the naively joined path is the sentinel.
+    assert (ROOT / escape).resolve() == outside.resolve()
+
+    # Every join branch that embeds the identifier must refuse it.
+    assert resolve_primary_artifact(escape, ROOT) is None
+    assert resolve_primary_artifact(f"/{escape}", ROOT) is None
+    assert resolve_primary_artifact(f"{escape}.md", ROOT) is None
+
     profile = load_profile("grok")
-    res = resolve_skill_order(profile, "../../etc/passwd", ROOT)
+    res = resolve_skill_order(profile, escape, ROOT)
     assert not res.is_matched
     assert res.kind == "no-route"
 
-    # Direct helper defense
-    art = resolve_primary_artifact("../../etc/passwd", ROOT)
-    assert art is None or not art.is_file() or not str(art.resolve()).startswith("/etc")
+
+def test_in_root_artifact_still_resolves() -> None:
+    """Containment must not reject legitimate identifiers inside the root."""
+    assert resolve_primary_artifact("/architect", ROOT) == ROOT / "skills" / "architect"
+    assert (
+        resolve_primary_artifact("pstack:how-explorer", ROOT)
+        == ROOT / "agents" / "how-explorer.md"
+    )
+    assert (
+        resolve_primary_artifact("pstack-how-explorer", ROOT)
+        == ROOT / "droids" / "pstack-how-explorer.md"
+    )
+    assert (
+        resolve_primary_artifact("autopilot-full", ROOT)
+        == ROOT / "skills" / "poteto-mode" / "playbooks" / "autopilot-full.md"
+    )
