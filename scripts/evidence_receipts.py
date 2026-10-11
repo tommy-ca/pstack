@@ -5,6 +5,10 @@ Implements Task #199 and openspec/specs/pstack-jev-decisions/spec.md requirement
 Binds decision receipts to exact pstack implementation revision, canonical tree,
 canonical mapping revision, provider/model identity, policy version, and fixture digest.
 Mechanically detects drift and prevents stale evidence from authorizing controlling mode.
+
+Also binds change-scoped check selections (head SHA + `git patch-id` of the
+merge-base..head diff + selected check outcomes) so a retargeted or reworked
+patch cannot quote its previous result as current CI (#312).
 """
 
 from __future__ import annotations
@@ -208,3 +212,181 @@ def can_authorize_controlling_mode(
         return False, f"Receipt outcome status is '{receipt.outcome_status}', not 'decided'"
 
     return True, "Authorized"
+
+
+def _git(root: Path, args: List[str], input_text: Optional[str] = None) -> str:
+    res = subprocess.run(
+        ["git", *args],
+        cwd=str(root),
+        capture_output=True,
+        text=True,
+        input=input_text,
+        check=True,
+    )
+    return res.stdout
+
+
+def resolve_merge_base(root: Path, base: str, head: str = "HEAD") -> str:
+    """Resolve the real merge base of `base` and `head`."""
+    return _git(root, ["merge-base", base, head]).strip()
+
+
+def resolve_revision(root: Path, ref: str = "HEAD") -> str:
+    return _git(root, ["rev-parse", ref]).strip()
+
+
+def compute_patch_id(root: Path, base_sha: str, head: str = "HEAD") -> str:
+    """Stable `git patch-id` of the base..head diff, rebase-invariant."""
+    diff = _git(root, ["diff", base_sha, head])
+    out = _git(root, ["patch-id", "--stable"], input_text=diff).strip()
+    if not out:
+        return "empty-patch"
+    return out.split()[0]
+
+
+def compute_worktree_digest(root: Path) -> str:
+    """Digest of the working tree: status, staged/unstaged diff, untracked content.
+
+    The patch-id cannot see a dirty edit or a new untracked file, so a receipt
+    that binds only SHAs and patch-id would fail open on exactly the state a
+    selection run is recorded from. Record from a clean tree when the verdict
+    should survive; any later dirty state invalidates it.
+    """
+    hasher = hashlib.sha256()
+    status = _git(root, ["status", "--porcelain=v1", "-z", "-uall"])
+    hasher.update(status.encode())
+    hasher.update(_git(root, ["diff", "HEAD"]).encode())
+
+    entries = status.split("\0")
+    index = 0
+    while index < len(entries):
+        entry = entries[index]
+        index += 1
+        if len(entry) < 4:
+            continue
+        code, rel = entry[:2], entry[3:]
+        if code[0] in ("R", "C"):
+            index += 1  # the following entry is the rename/copy source
+        if code == "??":
+            target = root / rel
+            hasher.update(rel.encode())
+            hasher.update(target.read_bytes() if target.is_file() else b"<missing>")
+    return hasher.hexdigest()
+
+
+@dataclass(frozen=True)
+class CheckEvidenceReceipt:
+    """Binds a selected check set and its outcomes to one exact head revision.
+
+    `patch_id` is the stable id of the merge-base..head diff, so a pure rebase
+    keeps the verdict while a retarget or a rework invalidates it. `worktree_digest`
+    covers the dirty state the patch-id cannot see.
+    """
+
+    base: str
+    base_sha: str
+    head_sha: str
+    patch_id: str
+    worktree_digest: str
+    check_ids: List[str]
+    outcomes: Dict[str, str]
+    verdict: str
+    created_at: str = field(
+        default_factory=lambda: datetime.now(timezone.utc).isoformat()
+    )
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+    def to_json(self, indent: int = 2) -> str:
+        return json.dumps(self.to_dict(), indent=indent, sort_keys=True)
+
+
+def _reduce_outcomes(outcomes: Dict[str, str]) -> str:
+    """Failure-first reduction: FAIL > BLOCKED > UNTESTED > PASS."""
+    values = set(outcomes.values())
+    if not values:
+        return "UNTESTED"
+    if "FAIL" in values:
+        return "FAIL"
+    if "BLOCKED" in values:
+        return "BLOCKED"
+    if values != {"PASS"}:
+        return "UNTESTED"
+    return "PASS"
+
+
+def create_check_evidence_receipt(
+    root: Path,
+    base: str,
+    check_ids: List[str],
+    outcomes: Optional[Dict[str, str]] = None,
+    head: str = "HEAD",
+) -> CheckEvidenceReceipt:
+    """Record the selected check set and its outcomes at the current head."""
+    base_sha = resolve_merge_base(root, base, head)
+    head_sha = resolve_revision(root, head)
+    resolved_outcomes = {cid: outcomes.get(cid, "UNTESTED") for cid in check_ids} if outcomes else {}
+    return CheckEvidenceReceipt(
+        base=base,
+        base_sha=base_sha,
+        head_sha=head_sha,
+        patch_id=compute_patch_id(root, base_sha, head),
+        worktree_digest=compute_worktree_digest(root),
+        check_ids=list(check_ids),
+        outcomes=resolved_outcomes,
+        verdict=_reduce_outcomes(resolved_outcomes),
+    )
+
+
+def load_check_evidence_receipt(path: Path) -> CheckEvidenceReceipt:
+    return CheckEvidenceReceipt(**json.loads(path.read_text(encoding="utf-8")))
+
+
+def check_check_evidence_staleness(
+    receipt: CheckEvidenceReceipt,
+    root: Path,
+    base: Optional[str] = None,
+    head: str = "HEAD",
+) -> Tuple[bool, List[str]]:
+    """Is the recorded check verdict still bound to the current patch?
+
+    A moved head with an identical patch-id (pure rebase) stays valid. A changed
+    patch-id — a retarget, a rework, or a reverted commit — invalidates it.
+    """
+    reasons: List[str] = []
+    current_base_sha = resolve_merge_base(root, base or receipt.base, head)
+    current_head_sha = resolve_revision(root, head)
+    current_patch_id = compute_patch_id(root, current_base_sha, head)
+
+    if receipt.patch_id != current_patch_id:
+        reasons.append(
+            f"Patch drift: receipt {receipt.patch_id[:8]} != current {current_patch_id[:8]}"
+        )
+    if receipt.head_sha != current_head_sha:
+        reasons.append(
+            f"Head moved: receipt {receipt.head_sha[:8]} != current {current_head_sha[:8]}"
+        )
+    if receipt.head_sha != current_head_sha and receipt.patch_id == current_patch_id:
+        # Documented rebase case: SHAs are rewritten, the patch is identical.
+        reasons = [r for r in reasons if not r.startswith("Head moved")]
+
+    if receipt.worktree_digest != compute_worktree_digest(root):
+        reasons.append("Worktree changed since recording")
+
+    return bool(reasons), reasons
+
+
+def can_claim_current_ci(
+    receipt: CheckEvidenceReceipt,
+    root: Path,
+    base: Optional[str] = None,
+    head: str = "HEAD",
+) -> Tuple[bool, str]:
+    """May the recorded result be quoted as the *current* CI/check state?"""
+    is_stale, reasons = check_check_evidence_staleness(receipt, root, base=base, head=head)
+    if is_stale:
+        return False, f"Recorded evidence is stale: {'; '.join(reasons)}"
+    if receipt.verdict != "PASS":
+        return False, f"Recorded verdict at {receipt.head_sha[:8]} is {receipt.verdict}"
+    return True, f"Current at {receipt.head_sha[:8]} (patch-id {receipt.patch_id[:8]})"

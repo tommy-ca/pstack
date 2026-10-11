@@ -1,8 +1,8 @@
 {
-  "run_id": "grok-1791754857-7f4abbee",
+  "run_id": "grok-1791756017-fc0c2c30",
   "host": "grok",
   "host_version": "grok 1.0.46 (2765805b9442)",
-  "timestamp": "2026-10-11T21:41:10Z",
+  "timestamp": "2026-10-11T22:00:37Z",
   "overall_verdict": "PASS",
   "planes": {
     "canonical": "PASS",
@@ -14,11 +14,11 @@
     "canonical_pin": "df581122cde17e6e27686b5a448bde23e4ad4318",
     "upstream_head": "d0ef80d86795816da932a153458c5dbe192d294e",
     "spec_hash": "671f5d465db673df40350dab39fcf45ac14c7f0d178bace536a6dadf8c97e4d8",
-    "skills_tree_hash": "c3e264e4d54e01fdb4b17ca28abd90b05014193d938c570cff3abc854e13f19b",
+    "skills_tree_hash": "d4892b083ce7e1dc6d79fae9806d143c6959fa21a0410c7bbe7bbf924819b41d",
     "profile_hash": "5ffcca460007dae14a130ef032f5827552186fef54024b13451ac19f2661aed5",
     "package_descriptor_hash": "5a4cd6b99f113f422aaf2df0755e53d20227ce12a99acb28cd5075d96e5aaadb",
     "manifest_hash": "ef4f4f8ec6afc7a8c8a33762d2215a7f8d1c2d29434375ebff7ee1549e1a13fd",
-    "driver_revision": "f6a5d40db66e739a0e4547d5095cb66fdc21180eee89424d2385540f375477f2",
+    "driver_revision": "2ea7bf0eae5074e31f6d8b9c87774541ec7870d443be864776fe93fbfb53108b",
     "package_driver_revision": "7a93f82dcd19e547beee1f318a1e12da2091abcc4acf03ccbd577403c2719756",
     "boundary_driver_revision": "c7dd52906f6de7a0164ec3dd0e19392ac6f1915a840a952a9fcda6ad4a02fe7a"
   },
@@ -31,7 +31,7 @@
       "exit_code": 0,
       "stdout_snippet": "Conformance: PASS\nFreshness: DRIFT (30 commits ahead)\nPrinciples: 24 | Playbooks: 23\nArtifacts: 164 (preserved=91, adapted=64, excluded=9, gaps=0)\nPASS: Canonical inventory conforms to pin.",
       "verdict": "PASS",
-      "duration_s": 0.09,
+      "duration_s": 0.097,
       "evidence_level": "offline",
       "settlement": null
     },
@@ -43,7 +43,7 @@
       "exit_code": 0,
       "stdout_snippet": "Change 'pstack-portability-contract' is valid",
       "verdict": "PASS",
-      "duration_s": 0.376,
+      "duration_s": 0.395,
       "evidence_level": "offline",
       "settlement": null
     },
@@ -55,7 +55,7 @@
       "exit_code": 0,
       "stdout_snippet": "PASS\nplaybooks: 22 named + opening-a-pr\nprinciples: 24\nplugin.json name: pstack",
       "verdict": "PASS",
-      "duration_s": 0.658,
+      "duration_s": 0.587,
       "evidence_level": "offline",
       "settlement": null
     },
@@ -67,7 +67,7 @@
       "exit_code": 0,
       "stdout_snippet": "[scan-host-boundary] PASS: Scanned 135 files across portable surfaces. 0 boundary leaks.",
       "verdict": "PASS",
-      "duration_s": 0.43,
+      "duration_s": 0.382,
       "evidence_level": "offline",
       "settlement": null
     },
@@ -79,7 +79,7 @@
       "exit_code": 0,
       "stdout_snippet": "PASS: grok manifest at .grok-plugin/plugin.json in sync\nPASS: codex manifest at .codex-plugin/plugin.json in sync\nPASS: codex models at .codex-plugin/models.json in sync\nPASS: omp manifest at .omp-plugin/plugin.json in sync\nPASS: opencode manifest at .opencode-plugin/package.json in sync\nPASS: antig",
       "verdict": "PASS",
-      "duration_s": 0.081,
+      "duration_s": 0.083,
       "evidence_level": "offline",
       "settlement": null
     },
@@ -91,7 +91,7 @@
       "exit_code": 0,
       "stdout_snippet": "[grok] Executing verify...\nPASS: grok manifest at .grok-plugin/plugin.json in sync\n[grok] VERIFY PASS",
       "verdict": "PASS",
-      "duration_s": 0.083,
+      "duration_s": 0.081,
       "evidence_level": "offline",
       "settlement": null
     },
@@ -103,7 +103,7 @@
       "exit_code": 0,
       "stdout_snippet": "",
       "verdict": "PASS",
-      "duration_s": 0.055,
+      "duration_s": 0.054,
       "evidence_level": "offline",
       "settlement": null
     },
@@ -115,7 +115,7 @@
       "exit_code": 0,
       "stdout_snippet": "",
       "verdict": "PASS",
-      "duration_s": 0.028,
+      "duration_s": 0.031,
       "evidence_level": "offline",
       "settlement": null
     },
@@ -127,7 +127,7 @@
       "exit_code": 0,
       "stdout_snippet": "bun test v1.4.3 (c6da4a4d3)",
       "verdict": "PASS",
-      "duration_s": 2.611,
+      "duration_s": 1.854,
       "evidence_level": "offline",
       "settlement": null
     },
@@ -137,9 +137,9 @@
       "plane": "adapter",
       "command": "bash /home/tommyk/projects/pstack/skills/poteto-mode/scripts/worktree-audit.sh .",
       "exit_code": 0,
-      "stdout_snippet": "SIZE\tAGE\tMERGED\tDIRTY\tREMOTE\tPR\tLAST_CHAT\tBUCKET\tWORKTREE\n51M\t0d\tno\tclean\tahead3\t#319/OPEN\t2026-10-11\thold-open-pr\t/home/tommyk/projects/pstack\n46M\t0d\tno\twip:1\tno-remote\t-\t2026-10-11\thold-wip\t/home/tommyk/projects/pstack-wt/p3-scoped-checks\n46M\t0d\tno\tclean\tpushed\t#318/OPEN\t2026-10-11\th",
+      "stdout_snippet": "SIZE\tAGE\tMERGED\tDIRTY\tREMOTE\tPR\tLAST_CHAT\tBUCKET\tWORKTREE\n52M\t0d\tno\tclean\tpushed\t#319/MERGED\t2026-10-11\tverify-recent-chat\t/home/tommyk/projects/pstack-wt/p2-omp-rpc\n49M\t0d\tno\twip:6\tahead2\t#321/OPEN\t2026-10-11\thold-wip\t/home/tommyk/projects/pstack\n46M\t0d\tno\tclean\tpushed\t#318/MERG",
       "verdict": "PASS",
-      "duration_s": 6.681,
+      "duration_s": 13.206,
       "evidence_level": "offline",
       "settlement": null
     },
@@ -147,11 +147,11 @@
       "id": "drive-verification-skill-scaffold",
       "description": "Prove verification skill scaffolding for grok",
       "plane": "package",
-      "command": "/home/tommyk/projects/pstack/.venv/bin/python /home/tommyk/projects/pstack/scripts/scaffold-verification-skill.py --host grok --app smoke --write --target-dir /home/tommyk/projects/pstack/.audit/evidence/grok-1791754857-7f4abbee/verify-smoke",
+      "command": "/home/tommyk/projects/pstack/.venv/bin/python /home/tommyk/projects/pstack/scripts/scaffold-verification-skill.py --host grok --app smoke --write --target-dir /home/tommyk/projects/pstack/.audit/evidence/grok-1791756017-fc0c2c30/verify-smoke",
       "exit_code": 0,
-      "stdout_snippet": "Draft scaffold for 'smoke' on grok at /home/tommyk/projects/pstack/.audit/evidence/grok-1791754857-7f4abbee/verify-smoke; requires tailoring and runtime proof.",
+      "stdout_snippet": "Draft scaffold for 'smoke' on grok at /home/tommyk/projects/pstack/.audit/evidence/grok-1791756017-fc0c2c30/verify-smoke; requires tailoring and runtime proof.",
       "verdict": "PASS",
-      "duration_s": 0.072,
+      "duration_s": 0.136,
       "evidence_level": "offline",
       "settlement": null
     },
@@ -159,11 +159,11 @@
       "id": "drive-verification-skill-check",
       "description": "Validate generated verification skill structure for grok",
       "plane": "package",
-      "command": "/home/tommyk/projects/pstack/.venv/bin/python /home/tommyk/projects/pstack/scripts/scaffold-verification-skill.py --host grok --check --target-dir /home/tommyk/projects/pstack/.audit/evidence/grok-1791754857-7f4abbee/verify-smoke",
+      "command": "/home/tommyk/projects/pstack/.venv/bin/python /home/tommyk/projects/pstack/scripts/scaffold-verification-skill.py --host grok --check --target-dir /home/tommyk/projects/pstack/.audit/evidence/grok-1791756017-fc0c2c30/verify-smoke",
       "exit_code": 0,
-      "stdout_snippet": "PASS: Structural validation of verification skill at /home/tommyk/projects/pstack/.audit/evidence/grok-1791754857-7f4abbee/verify-smoke; runtime proof unassessed.",
+      "stdout_snippet": "PASS: Structural validation of verification skill at /home/tommyk/projects/pstack/.audit/evidence/grok-1791756017-fc0c2c30/verify-smoke; runtime proof unassessed.",
       "verdict": "PASS",
-      "duration_s": 0.071,
+      "duration_s": 0.087,
       "evidence_level": "offline",
       "settlement": null
     },
@@ -171,11 +171,11 @@
       "id": "drive-package-lifecycle-proof-grok",
       "description": "Prove isolated native package lifecycle for grok",
       "plane": "package",
-      "command": "/home/tommyk/projects/pstack/.venv/bin/python /home/tommyk/projects/pstack/scripts/package-lifecycle.py prove --host grok --target-dir /home/tommyk/projects/pstack/.audit/evidence/grok-1791754857-7f4abbee/lifecycle-grok",
+      "command": "/home/tommyk/projects/pstack/.venv/bin/python /home/tommyk/projects/pstack/scripts/package-lifecycle.py prove --host grok --target-dir /home/tommyk/projects/pstack/.audit/evidence/grok-1791756017-fc0c2c30/lifecycle-grok",
       "exit_code": 0,
-      "stdout_snippet": "[grok] Executing prove...\n  [install] PASS (0.275s) - Installed grok into /home/tommyk/projects/pstack/.audit/evidence/grok-1791754857-7f4abbee/lifecycle-grok/.grok/plugins/pstack (verified=True)\n  [update] PASS (0.640s) - Idempotent convergence check for grok (errors=[])\n  [uninstall]",
+      "stdout_snippet": "[grok] Executing prove...\n  [install] PASS (0.770s) - Installed grok into /home/tommyk/projects/pstack/.audit/evidence/grok-1791756017-fc0c2c30/lifecycle-grok/.grok/plugins/pstack (verified=True)\n  [update] PASS (0.723s) - Idempotent convergence check for grok (errors=[])\n  [unin",
       "verdict": "PASS",
-      "duration_s": 1.069,
+      "duration_s": 1.684,
       "evidence_level": "offline",
       "settlement": null
     },
@@ -185,9 +185,9 @@
       "plane": "runtime",
       "command": "/home/tommyk/.grok/bin/grok inspect",
       "exit_code": 0,
-      "stdout_snippet": "Environment\n  \u2514 Version: 1.0.46 [unknown]\n  \u2514 CWD: /home/tommyk/projects/pstack\n  \u2514 Git root: /home/tommyk/projects/pstack/\n  \u2514 Project trusted: yes\n\n  Project Instructions (3)\n  \u2514 /home/tommyk/.grok/AGENTS.md (global, ~1215 tokens)\n  \u2514 /home/tommyk/.claude/CLAUDE.md (glo",
+      "stdout_snippet": "Environment\n  \u2514 Version: 1.0.46 [unknown]\n  \u2514 CWD: /home/tommyk/projects/pstack\n  \u2514 Git root: /home/tommyk/projects/pstack/\n  \u2514 Project trusted: yes\n\n  Project Instructions (3)\n  \u2514 /home/tommyk/.grok/AGENTS.md (global, ~1215 tokens)\n  \u2514 /home/tommyk/.claude/CL",
       "verdict": "PASS",
-      "duration_s": 0.258,
+      "duration_s": 0.417,
       "evidence_level": "offline",
       "settlement": null
     },
@@ -211,7 +211,7 @@
       "exit_code": 0,
       "stdout_snippet": "Grok subagents discovered (depth=1, subagents_verified=True)",
       "verdict": "PASS",
-      "duration_s": 0.169,
+      "duration_s": 0.18,
       "evidence_level": "offline",
       "settlement": null
     },
@@ -223,7 +223,7 @@
       "exit_code": 0,
       "stdout_snippet": "Manage git worktrees\n\nUsage: grok worktree [OPTIONS] <COMMAND>\n\nCommands:\n  create           Create a worktree the way `grok -w` does, without starting a session\n  list             List tracked worktr",
       "verdict": "PASS",
-      "duration_s": 0.029,
+      "duration_s": 0.04,
       "evidence_level": "offline",
       "settlement": null
     },
@@ -241,7 +241,7 @@
     }
   ],
   "artifacts": [
-    "/home/tommyk/projects/pstack/.audit/evidence/grok-1791754857-7f4abbee/receipt.json",
+    "/home/tommyk/projects/pstack/.audit/evidence/grok-1791756017-fc0c2c30/receipt.json",
     ".audit/evidence/grok-receipt.json"
   ],
   "claim": "grok 5-harness portability conformance verification",
