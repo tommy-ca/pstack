@@ -124,3 +124,38 @@ Security invariants: isolate untrusted source instructions; sanitize all untrust
 Three test tiers: offline contracts, host-dependent smoke, observed-live conformance. Four serialized receipt planes: canonical, adapter, package, runtime. Not all planes are available for every host. Missing native proof stays BLOCKED/UNTESTED, especially OMP #288. Failure precedence stays `FAIL > BLOCKED > UNTESTED > PASS`.
 
 Roll out behind ordinary skill/playbook changes; no global automatic task selector or host defaults. For any degradation, revert changed skill prose and preserve pre-change behavior/receipts. Compare both false activations and unnecessary context work, not only happy-path success.
+
+## Decomposition and qualification companion
+
+The canonical 20-block breakdown, triggers/non-triggers, owners, and six compositional paths are in [atomic-patterns.md](atomic-patterns.md). These blocks refine the 11 conceptual atoms above into externally observable decisions and checks; they DO NOT enlarge the portable capability universe or instantiate 20 new classes.
+
+Use [qualification-and-eval.md](qualification-and-eval.md) to distinguish documented practices, measured baseline, candidate behavior, scoped qualification, and host-native execution. The [spec-only qualification JSON Schema](schemas/skill-pattern-qualification.schema.json) can validate curatorial records without changing pstack's package descriptor, router or four-plane receipt schema.
+
+### Qualification and runtime boundary
+
+```text
+external source @ immutable revision
+  -> curate candidate rule + explicit not-applicable examples
+  -> map to one existing pstack owner / task eligibility
+  -> freeze baseline project + model + version + artifact
+  -> run existing playbook / deterministic negative control
+  -> compare under blinded task eval + independent artifact check
+  -> stage qualified pattern only for the tested task classes
+  -> run portable offline static matrix + optional native checks
+  -> publish explicitly scoped evidence; preserve unknown/blocked states
+```
+
+Three representative project archetypes form the **minimum portability study**: a Python backend, a TypeScript backend or web package, and a docs-only/non-UI task. Not every feature is relevant to all three. Within each, test both cases where a pattern must apply and where it MUST NOT. More evidence is needed before extrapolating to additional domains.
+
+### Decision table for resource tests
+
+| Suspected cause | Deterministic experiment | What does not prove a fix |
+|---|---|---|
+| Shared port/path collision | Independent processes allocate OS-assigned ports/private temporary roots concurrently | Retries or suite-wide sequential mode |
+| Async setup race | Wait for actual ready/handshake under bounded deadline | Sleep before assertion |
+| Teardown contamination | Await child exit/server close and verify no late mutation | `abort()`, `kill()`, `close()` call alone |
+| Global state leak | Capture missing vs present and restore exactly in `finally` | Blind resetting to a default value |
+| Windows/POSIX difference | Observe platform behavior or explicitly skip unsupported semantics | Weakening every platform assertion |
+| Wrong CI tier | Select test by impacted contract, report skipped/unavailable correctly | Renaming an offline PASS to live proof |
+
+The existing `eval` playbook controls blinding; the existing verification scripts control real evidence. Host-native settlement remains under #288, not this spec.
