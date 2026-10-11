@@ -20,7 +20,9 @@ LIVE_GATE_ENV = "PSTACK_RUN_OMP_LIVE"
 LIVE_MAX_SECONDS = 240
 
 # The parent is told to spawn exactly one `task` child that emits a literal
-# token, then to stop. Both replies are literals so success is unambiguous.
+# token, then to stop. The parent's own reply is asserted before a PASS; the
+# child's token is requested but not asserted, because the child transcript is
+# not part of the reduced evidence.
 LIVE_PROMPT = (
     "Use the task tool exactly once to spawn a subagent whose assignment is: "
     "Reply with exactly CHILD_OK and nothing else. "
@@ -214,7 +216,9 @@ class OMPDriver(HarnessDriver):
             admission = session.prompt(LIVE_PROMPT)
             settled = session.wait_settled(prompt_id=admission.get("id"))
             frames = session.frames
-        except OmpRpcError as exc:
+        except (OmpRpcError, OSError) as exc:
+            # A missing binary, an unwritable run directory or a failed spawn is an
+            # unavailable host, not a failed child, and must not abort the matrix run.
             failure = str(exc)
         finally:
             exit_code = session.close()

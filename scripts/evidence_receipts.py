@@ -16,6 +16,8 @@ from __future__ import annotations
 from functools import lru_cache
 import hashlib
 import json
+import os
+import stat
 import subprocess
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
@@ -270,7 +272,20 @@ def compute_worktree_digest(root: Path) -> str:
         if code == "??":
             target = root / rel
             hasher.update(rel.encode())
-            hasher.update(target.read_bytes() if target.is_file() else b"<missing>")
+            # lstat, never stat: an untracked symlink must contribute its target text,
+            # not the contents of whatever it points at outside the tree.
+            try:
+                info = target.lstat()
+            except OSError:
+                hasher.update(b"<missing>")
+                continue
+            if stat.S_ISLNK(info.st_mode):
+                hasher.update(b"<symlink>")
+                hasher.update(os.readlink(target).encode())
+            elif stat.S_ISREG(info.st_mode):
+                hasher.update(target.read_bytes())
+            else:
+                hasher.update(b"<special>")
     return hasher.hexdigest()
 
 

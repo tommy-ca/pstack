@@ -134,12 +134,15 @@ class TestCheckSelectionTable:
     def test_references_change_selects_contract_tests_and_inventory_check(self) -> None:
         result = vp.select_checks(["references/decision-routing.json"])
 
+        # test_evidence_receipts.py entered the offline gate, so it sorts with the
+        # offline pytest checks instead of trailing as an outside_gate module.
         assert _ids(result) == [
             "pytest:tests/test_droid_routing.py",
+            "pytest:tests/test_evidence_receipts.py",
             "pytest:tests/test_route_resolver.py",
             "script:canonical-index.py",
-            "pytest:tests/test_evidence_receipts.py",
         ]
+        assert all(check["tier"] == "offline" for check in result["checks"])
         by_id = {check["id"]: check for check in result["checks"]}
         assert by_id["script:canonical-index.py"]["command"] == [
             PY,
