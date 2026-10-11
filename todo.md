@@ -186,3 +186,32 @@
 - [x] Unit 9: Run Swarm 4-plane matrix across all 6 declared harnesses (6-Harness Matrix Verdict: PASS)
 - [x] Unit 10: Conduct adversarial Interrogate review across stacked diffs (Final Verdict: PASS)
 - [x] Unit 11: Deliver clean stacked PRs on GitHub, merge bottom-up to main, and close issues (PRs #285, #286, #287)
+
+## Epic #288: OMP current-head reconciliation (audit, live proof, spec reconcile)
+### Phase 1: Audit and containment (Issue #303, #288)
+- [x] Unit 1: Reproduce the route resolver containment escape and record that the named test passed vacuously because its sentinel cannot exist (Issue #303)
+- [x] Unit 2: Contain every identifier-derived path with one helper and rewrite the traversal test against a real outside sentinel (PR #318)
+
+### Phase 2: Native runtime proof (Issues #297, #291, #289, #296)
+- [x] Unit 3: Bounded OMP RPC v2 session runner with frame reduction into the typed settlement (PR #319)
+- [x] Unit 4: Opt-in live child spawn/join proof, durable `observed_live` receipt, spawn and join bindings verified with a deliberate underclaim on support state (PR #319)
+- [x] Unit 5: Offline gate covers the new reducer and false-PASS regression tests (PR #319)
+- [x] Unit 6: Harden the live predicate and the promotion gate after the multi-model interrogate: one child, post-prompt settlement, negotiated v2, the parent literal, and a gate that refuses a failed settlement (PR #323)
+
+### Phase 3: Packaging arena and spec reconcile (Issues #290, #298, #295)
+- [x] Unit 7: Arena over native project skills, a bare root `plugin.json`, a hybrid package and a `package.json` with an `omp` key, run as a probe with the real binary under isolated config roots; the observations are recorded in PR #295 and issue #288, not as shipped code
+- [x] Unit 8: Reconcile the OMP adapter change with the merged stack, the arena observations and the live proof, twice, after the merged runtime work inverted its premises (PR #295)
+
+### Phase 4: Verification tooling (Issue #312 core)
+- [x] Unit 9: Changed-path check selection inside the existing portable verifier, with the offline gate list read from the workflow (PR #321)
+- [x] Unit 10: Exact-head and working-tree evidence binding with invalidation on a dirty tree, an untracked change or a changed patch-id (PR #321)
+- [x] Unit 11: `fix-ci`, `babysit` and the tier doc own the contract; issue #312 stays open pending its #309, #311 and #310 prerequisites (PR #321)
+
+### Phase 5: Verification and delivery
+- [x] Unit 12: Independent per-PR verdicts: escape hunt, real-consumer regression, live proof reproduction, selection re-verification, spec claim audit, hardened-predicate attack
+- [x] Unit 13: Multi-model interrogate over the stack through the local binary on two other providers, with consensus findings folded into PR #323
+- [x] Unit 14: Merge bottom-up with a patch-id recheck per PR, receipts regenerated per host, and the live plugin reconciled to trunk
+
+### Follow-ups opened by this run
+- [ ] Unit 15: Guard `sync-antigravity-plugin --sync` against uncommitted or non-primary worktree sources (Issue #320)
+- [ ] Unit 16: Stop a default `verify-portable.py run --host omp` from overwriting the durable live settlement (Issue #322)
