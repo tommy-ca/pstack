@@ -51,6 +51,13 @@ def test_install_and_verify(host: str, tmp_path: Path) -> None:
     router = plugin_dir / "skills" / "poteto-mode" / "SKILL.md"
     assert router.is_file()
 
+    # Hosts that project native subagents must copy agents/*.md
+    if host in ("grok", "antigravity", "omp"):
+        agents_dir = plugin_dir / "agents"
+        assert agents_dir.is_dir(), f"agents/ not projected for {host}"
+        assert (agents_dir / "poteto-agent.md").is_file(), f"agents/poteto-agent.md missing for {host}"
+        assert len(list(agents_dir.glob("*.md"))) == len(list((ROOT / "agents").glob("*.md")))
+
     # Manifest must exist and match version 0.16.0
     manifest_name = "package.json" if host == "opencode" else "plugin.json"
     manifest_path = plugin_dir / manifest_name
