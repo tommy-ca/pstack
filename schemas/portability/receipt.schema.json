@@ -76,7 +76,7 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "description", "plane", "command", "exit_code", "stdout_snippet", "verdict", "duration_s"],
+        "required": ["id", "description", "plane", "command", "exit_code", "stdout_snippet", "verdict", "duration_s", "evidence_level"],
         "properties": {
           "id": { "type": "string" },
           "description": { "type": "string" },
@@ -86,7 +86,24 @@
           "stdout_snippet": { "type": "string" },
           "verdict": { "type": "string", "enum": ["PASS", "FAIL", "BLOCKED", "UNTESTED"] },
           "duration_s": { "type": "number" },
-          "evidence_level": { "type": "string", "enum": ["static", "offline", "observed_live", "legacy"] }
+          "evidence_level": {
+            "type": "string",
+            "enum": ["static", "offline", "observed_live", "legacy"],
+            "description": "How the scenario evidence was obtained. Only observed_live records a host runtime actually being observed, so only observed_live can prove the derived 'verified' support state; static/offline/legacy evidence proves at most 'packaged'. Receipts predating this field are read as legacy."
+          },
+          "settlement": {
+            "type": "object",
+            "required": ["child_id", "terminal_outcome", "model", "transport", "effective_rpc"],
+            "properties": {
+              "child_id": { "type": "string", "minLength": 1 },
+              "terminal_outcome": { "type": "string", "enum": ["success", "error", "timeout", "cancelled"] },
+              "model": { "type": "string", "minLength": 1 },
+              "transport": { "type": "string", "enum": ["rpc", "sdk", "cli"] },
+              "effective_rpc": { "type": "string", "minLength": 1 }
+            },
+            "additionalProperties": false,
+            "description": "Typed child spawn/join proof. Required on runtime observed_live scenarios before they count toward derived verified; free-text stdout alone never promotes."
+          }
         },
         "additionalProperties": false
       }
