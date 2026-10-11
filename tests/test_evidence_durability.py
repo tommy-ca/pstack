@@ -118,9 +118,9 @@ def test_all_six_profiles_pass_evidence_durability_and_freshness() -> None:
 
         result = check_evidence_durability(prof, ROOT, check_freshness=True)
         assert result["valid"] is True
-        assert result["claimed_support_state"] in ("verified", "supported", "candidate")
+        assert result["claimed_support_state"] in ("verified", "supported", "packaged", "mapped", "candidate")
         # Ensure derived state supports claimed state
-        assert result["derived_support_state"] in ("verified", "supported", "candidate")
+        assert result["derived_support_state"] in ("verified", "supported", "packaged", "mapped", "candidate")
 
         # Also test profile method
         method_result = prof.validate_evidence(ROOT, check_freshness=True)

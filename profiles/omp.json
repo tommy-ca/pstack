@@ -1,6 +1,6 @@
 {
   "host": "omp",
-  "support_state": "verified",
+  "support_state": "packaged",
   "skills_dir": ".omp/skills",
   "plugins_dir": "~/.omp/plugins",
   "plugin_manifest": ".omp-plugin/plugin.json",
@@ -11,8 +11,9 @@
       "implementation_status": "native",
       "primitive": "task",
       "enforcement": "hard",
-      "verification_status": "verified",
-      "evidence_ref": ".audit/evidence/omp-receipt.json"
+      "verification_status": "static-only",
+      "evidence_ref": ".audit/evidence/omp-receipt.json",
+      "notes": "Statically mapped only. The committed receipt is offline-only: no observed child spawn settlement exists, so runtime verification is not claimed at packaged level."
     },
     {
       "host": "omp",
@@ -20,8 +21,9 @@
       "implementation_status": "native",
       "primitive": "task (completion / wait)",
       "enforcement": "hard",
-      "verification_status": "verified",
-      "evidence_ref": ".audit/evidence/omp-receipt.json"
+      "verification_status": "static-only",
+      "evidence_ref": ".audit/evidence/omp-receipt.json",
+      "notes": "Statically mapped only. Join is observed via the same task primitive; no typed child settlement was ever observed, so runtime verification is not claimed at packaged level."
     },
     {
       "host": "omp",
@@ -162,8 +164,8 @@
   ],
   "evidence_ledger": [
     {
-      "claim": "OMP implements required capabilities with verified runtime proof bar",
-      "kind": "runtime",
+      "claim": "OMP projection is packaged: canonical, adapter, and package planes conform offline and mandatory-floor capabilities are statically mapped; the committed receipt is offline-only with no observed child spawn/join settlement, so no runtime proof bar is claimed",
+      "kind": "static",
       "artifact": ".audit/evidence/omp-receipt.json",
       "command": "python3 scripts/verify-portable.py run --host omp",
       "timestamp": "2026-10-05T17:01:00Z"
