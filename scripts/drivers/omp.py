@@ -3,10 +3,58 @@
 
 from __future__ import annotations
 
+import os
+import shutil
+import tempfile
+import time
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Any, Dict, Optional, Sequence, Tuple
 
 from .base import DriverScenarioResult, HarnessDriver, find_executable
+from .omp_rpc import OmpRpcError, OmpRpcSession, reduce_child_settlement
+
+# Opt-in gate: the live path spawns a real model-backed child and needs a model
+# route, so the offline path (and generic CI) never requires one.
+LIVE_GATE_ENV = "PSTACK_RUN_OMP_LIVE"
+LIVE_MAX_SECONDS = 240
+
+# The parent is told to spawn exactly one `task` child that emits a literal
+# token, then to stop. Both replies are literals so success is unambiguous.
+LIVE_PROMPT = (
+    "Use the task tool exactly once to spawn a subagent whose assignment is: "
+    "Reply with exactly CHILD_OK and nothing else. "
+    "Wait for that subagent result, then reply with exactly PARENT_DONE"
+)
+
+# A failed provider turn is not a failed child: these markers mean the model
+# route itself was unavailable, which is BLOCKED rather than FAIL.
+_MODEL_ROUTE_MARKERS = (
+    "provider",
+    "model",
+    "auth",
+    "api key",
+    "api_key",
+    "credential",
+    "no route",
+    "rate limit",
+    "quota",
+    "connection",
+)
+
+
+def _model_route_error(frames: Sequence[Dict[str, Any]]) -> str:
+    """Return the provider/model error text when a live failure is a missing model route."""
+    for frame in frames:
+        if frame.get("type") == "prompt_result" and frame.get("status") == "error":
+            message = (frame.get("error") or {}).get("message", "")
+        elif frame.get("type") == "response" and frame.get("success") is False:
+            error = frame.get("error")
+            message = error if isinstance(error, str) else (error or {}).get("message", "")
+        else:
+            continue
+        if message and any(marker in message.lower() for marker in _MODEL_ROUTE_MARKERS):
+            return message
+    return ""
 
 
 class OMPDriver(HarnessDriver):
@@ -94,6 +142,9 @@ class OMPDriver(HarnessDriver):
         if not avail:
             return self.blocked_result("runtime-child-spawn-omp", "OMP child subagent spawn contract", reason)
 
+        if os.environ.get(LIVE_GATE_ENV) == "1":
+            return self._child_spawn_live(run_dir)
+
         # OMP native subagent tool is 'task'
         tm = self.profile_data.get("tool_mappings", {})
         has_task = tm.get("agent_spawn") == "task"
@@ -112,6 +163,91 @@ class OMPDriver(HarnessDriver):
             duration_s=0.01,
             evidence_level="static",
         )
+
+    def _child_spawn_live(self, run_dir: Path) -> DriverScenarioResult:
+        """Spawn a real RPC session, prompt one `task` child, and reduce its settlement."""
+        bin_path = self.get_binary_path()
+        assert bin_path is not None
+        start = time.time()
+        work_dir = Path(tempfile.mkdtemp(prefix="omp-rpc-live-"))
+        log_path = run_dir / "omp-rpc-live.jsonl"
+        command = (
+            f"{bin_path} --mode rpc --no-session --no-title --no-ui --max-time {LIVE_MAX_SECONDS}"
+            " (prompt -> 1 task child)"
+        )
+        session = OmpRpcSession(str(bin_path), cwd=work_dir, max_seconds=LIVE_MAX_SECONDS, log_path=log_path)
+        frames: list = []
+        settled = False
+        failure = ""
+        try:
+            session.start()
+            descriptor = session.negotiate()
+            session.subscribe_subagents("events")
+            admission = session.prompt(LIVE_PROMPT)
+            settled = session.wait_settled(prompt_id=admission.get("id"))
+            frames = session.frames
+        except OmpRpcError as exc:
+            failure = str(exc)
+        finally:
+            exit_code = session.close()
+            shutil.rmtree(work_dir, ignore_errors=True)
+        duration = round(time.time() - start, 3)
+
+        if failure:
+            return DriverScenarioResult(
+                scenario_id="runtime-child-spawn-omp",
+                description="Observed OMP RPC v2 session failed before a child settlement",
+                command=command,
+                exit_code=1,
+                stdout=f"BLOCKED: {failure} (log={log_path})",
+                stderr=failure,
+                verdict="BLOCKED",
+                duration_s=duration,
+                evidence_level="offline",
+            )
+
+        settlement = reduce_child_settlement(frames, timed_out=not settled)
+        route_error = _model_route_error(frames)
+        observed = (
+            f"child={settlement['child_id']} outcome={settlement['terminal_outcome']} "
+            f"model={settlement['model']} effective_rpc={settlement['effective_rpc']}"
+            if settlement
+            else "no terminal child lifecycle observed"
+        )
+        summary = f"RPC v{descriptor['protocol_version']} exit={exit_code} settled={settled} {observed}"
+
+        if (
+            settlement is not None
+            and settlement["terminal_outcome"] == "success"
+            and settled
+            and exit_code == 0
+        ):
+            return DriverScenarioResult(
+                scenario_id="runtime-child-spawn-omp",
+                description="Observed live OMP RPC v2 'task' child spawn/join with typed settlement",
+                command=command,
+                exit_code=0,
+                stdout=summary,
+                stderr="",
+                verdict="PASS",
+                duration_s=duration,
+                evidence_level="observed_live",
+                settlement=settlement,
+            )
+
+        verdict = "BLOCKED" if route_error else "FAIL"
+        return DriverScenarioResult(
+            scenario_id="runtime-child-spawn-omp",
+            description="Observed live OMP RPC v2 'task' child spawn/join did not settle successfully",
+            command=command,
+            exit_code=1,
+            stdout=summary,
+            stderr=route_error or failure,
+            verdict=verdict,
+            duration_s=duration,
+            evidence_level="offline",
+        )
+
     def isolation(self, run_dir: Path) -> DriverScenarioResult:
         avail, reason = self.is_available()
         if not avail:
