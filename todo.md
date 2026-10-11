@@ -209,7 +209,7 @@
 
 ### Phase 5: Verification and delivery
 - [x] Unit 12: Independent per-PR verdicts: escape hunt, real-consumer regression, live proof reproduction, selection re-verification, spec claim audit, hardened-predicate attack
-- [x] Unit 13: Multi-model interrogate over the stack through the local binary on two other providers, with consensus findings folded into PR #323
+- [x] Unit 13: Multi-model interrogate over PR #319's diff, two arms driven through the local binary on other providers; their consensus findings were folded into PR #323, and the reviewers themselves flagged that the packed diff did not include the other changes in the run
 - [x] Unit 14: Merge bottom-up with a patch-id recheck per PR, receipts regenerated per host, and the live plugin reconciled to trunk
 
 ### Follow-ups opened by this run
