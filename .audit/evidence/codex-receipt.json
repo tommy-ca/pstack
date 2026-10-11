@@ -1,8 +1,8 @@
 {
-  "run_id": "codex-1791499560-9561fdfb",
+  "run_id": "codex-1791743346-dba9ac46",
   "host": "codex",
-  "host_version": "codex-cli 0.161.0",
-  "timestamp": "2026-10-08T22:46:12Z",
+  "host_version": "codex-cli 0.162.1",
+  "timestamp": "2026-10-11T18:29:17Z",
   "overall_verdict": "PASS",
   "planes": {
     "canonical": "PASS",
@@ -19,7 +19,7 @@
     "package_descriptor_hash": "5a4cd6b99f113f422aaf2df0755e53d20227ce12a99acb28cd5075d96e5aaadb",
     "manifest_hash": "0eb233bd0e3b85bdca0d48fa7e8d248ba19994b282cb3d9247606c502764fb57",
     "driver_revision": "de80e44cfc1e329ab32a4d72811ad096c96a620283093c1d8ea732b0bd33f90f",
-    "package_driver_revision": "0aa43927a12b8634c5427e5425486b25aabd14efe28f1d9678030dc73788eff1",
+    "package_driver_revision": "7a93f82dcd19e547beee1f318a1e12da2091abcc4acf03ccbd577403c2719756",
     "boundary_driver_revision": "c7dd52906f6de7a0164ec3dd0e19392ac6f1915a840a952a9fcda6ad4a02fe7a"
   },
   "scenarios": [
@@ -29,9 +29,9 @@
       "plane": "canonical",
       "command": "/home/tommyk/.local/share/uv/tools/ansible/bin/python3 /home/tommyk/projects/pstack/scripts/canonical-index.py --check",
       "exit_code": 0,
-      "stdout_snippet": "Conformance: PASS\nFreshness: DRIFT (6 commits ahead)\nPrinciples: 24 | Playbooks: 23\nArtifacts: 164 (preserved=91, adapted=64, excluded=9, gaps=0)\nPASS: Canonical inventory conforms to pin.",
+      "stdout_snippet": "Conformance: PASS\nFreshness: DRIFT (30 commits ahead)\nPrinciples: 24 | Playbooks: 23\nArtifacts: 164 (preserved=91, adapted=64, excluded=9, gaps=0)\nPASS: Canonical inventory conforms to pin.",
       "verdict": "PASS",
-      "duration_s": 0.059,
+      "duration_s": 0.066,
       "evidence_level": "offline"
     },
     {
@@ -42,7 +42,7 @@
       "exit_code": 0,
       "stdout_snippet": "Change 'pstack-portability-contract' is valid",
       "verdict": "PASS",
-      "duration_s": 0.746,
+      "duration_s": 0.379,
       "evidence_level": "offline"
     },
     {
@@ -53,7 +53,7 @@
       "exit_code": 0,
       "stdout_snippet": "PASS\nplaybooks: 22 named + opening-a-pr\nprinciples: 24\nplugin.json name: pstack",
       "verdict": "PASS",
-      "duration_s": 1.425,
+      "duration_s": 0.663,
       "evidence_level": "offline"
     },
     {
@@ -64,7 +64,7 @@
       "exit_code": 0,
       "stdout_snippet": "[scan-host-boundary] PASS: Scanned 135 files across portable surfaces. 0 boundary leaks.",
       "verdict": "PASS",
-      "duration_s": 0.558,
+      "duration_s": 0.48,
       "evidence_level": "offline"
     },
     {
@@ -75,7 +75,7 @@
       "exit_code": 0,
       "stdout_snippet": "PASS: grok manifest at .grok-plugin/plugin.json in sync\nPASS: codex manifest at .codex-plugin/plugin.json in sync\nPASS: codex models at .codex-plugin/models.json in sync\nPASS: omp manifest at .omp-plugin/plugin.json in sync\nPASS: opencode manifest at .opencode-plugin/package.json in sync\nPASS: antig",
       "verdict": "PASS",
-      "duration_s": 0.071,
+      "duration_s": 0.076,
       "evidence_level": "offline"
     },
     {
@@ -86,7 +86,7 @@
       "exit_code": 0,
       "stdout_snippet": "[codex] Executing verify...\nPASS: codex manifest at .codex-plugin/plugin.json in sync\nPASS: codex models at .codex-plugin/models.json in sync\n[codex] VERIFY PASS",
       "verdict": "PASS",
-      "duration_s": 0.073,
+      "duration_s": 0.084,
       "evidence_level": "offline"
     },
     {
@@ -97,7 +97,7 @@
       "exit_code": 0,
       "stdout_snippet": "",
       "verdict": "PASS",
-      "duration_s": 0.052,
+      "duration_s": 0.081,
       "evidence_level": "offline"
     },
     {
@@ -108,7 +108,7 @@
       "exit_code": 0,
       "stdout_snippet": "",
       "verdict": "PASS",
-      "duration_s": 0.028,
+      "duration_s": 0.032,
       "evidence_level": "offline"
     },
     {
@@ -117,9 +117,9 @@
       "plane": "adapter",
       "command": "bun test /home/tommyk/projects/pstack/skills/poteto-mode/scripts/check-plan.test.mjs",
       "exit_code": 0,
-      "stdout_snippet": "bun test v1.4.2 (744846f84)",
+      "stdout_snippet": "bun test v1.4.3 (c6da4a4d3)",
       "verdict": "PASS",
-      "duration_s": 1.887,
+      "duration_s": 1.661,
       "evidence_level": "offline"
     },
     {
@@ -128,42 +128,42 @@
       "plane": "adapter",
       "command": "bash /home/tommyk/projects/pstack/skills/poteto-mode/scripts/worktree-audit.sh .",
       "exit_code": 0,
-      "stdout_snippet": "SIZE\tAGE\tMERGED\tDIRTY\tREMOTE\tPR\tLAST_CHAT\tBUCKET\tWORKTREE",
+      "stdout_snippet": "SIZE\tAGE\tMERGED\tDIRTY\tREMOTE\tPR\tLAST_CHAT\tBUCKET\tWORKTREE\n45M\t0d\tno\twip:2\tahead4\t#299/OPEN\t2026-10-11\thold-wip\t/home/tommyk/projects/pstack\n44M\t0d\tno\tclean\tpushed\t#300/OPEN\t2026-10-11\thold-open-pr\t/tmp/wt-omp-receipt\n5.0M\t0d\tno\tclean\tpushed\t-\t-\treview\t/tmp/wt-omp-profile",
       "verdict": "PASS",
-      "duration_s": 1.471,
+      "duration_s": 2.915,
       "evidence_level": "offline"
     },
     {
       "id": "drive-verification-skill-scaffold",
       "description": "Prove verification skill scaffolding for codex",
       "plane": "package",
-      "command": "/home/tommyk/.local/share/uv/tools/ansible/bin/python3 /home/tommyk/projects/pstack/scripts/scaffold-verification-skill.py --host codex --app smoke --write --target-dir /home/tommyk/projects/pstack/.audit/evidence/codex-1791499560-9561fdfb/verify-smoke",
+      "command": "/home/tommyk/.local/share/uv/tools/ansible/bin/python3 /home/tommyk/projects/pstack/scripts/scaffold-verification-skill.py --host codex --app smoke --write --target-dir /home/tommyk/projects/pstack/.audit/evidence/codex-1791743346-dba9ac46/verify-smoke",
       "exit_code": 0,
-      "stdout_snippet": "Draft scaffold for 'smoke' on codex at /home/tommyk/projects/pstack/.audit/evidence/codex-1791499560-9561fdfb/verify-smoke; requires tailoring and runtime proof.",
+      "stdout_snippet": "Draft scaffold for 'smoke' on codex at /home/tommyk/projects/pstack/.audit/evidence/codex-1791743346-dba9ac46/verify-smoke; requires tailoring and runtime proof.",
       "verdict": "PASS",
-      "duration_s": 0.056,
+      "duration_s": 0.062,
       "evidence_level": "offline"
     },
     {
       "id": "drive-verification-skill-check",
       "description": "Validate generated verification skill structure for codex",
       "plane": "package",
-      "command": "/home/tommyk/.local/share/uv/tools/ansible/bin/python3 /home/tommyk/projects/pstack/scripts/scaffold-verification-skill.py --host codex --check --target-dir /home/tommyk/projects/pstack/.audit/evidence/codex-1791499560-9561fdfb/verify-smoke",
+      "command": "/home/tommyk/.local/share/uv/tools/ansible/bin/python3 /home/tommyk/projects/pstack/scripts/scaffold-verification-skill.py --host codex --check --target-dir /home/tommyk/projects/pstack/.audit/evidence/codex-1791743346-dba9ac46/verify-smoke",
       "exit_code": 0,
-      "stdout_snippet": "PASS: Structural validation of verification skill at /home/tommyk/projects/pstack/.audit/evidence/codex-1791499560-9561fdfb/verify-smoke; runtime proof unassessed.",
+      "stdout_snippet": "PASS: Structural validation of verification skill at /home/tommyk/projects/pstack/.audit/evidence/codex-1791743346-dba9ac46/verify-smoke; runtime proof unassessed.",
       "verdict": "PASS",
-      "duration_s": 0.054,
+      "duration_s": 0.063,
       "evidence_level": "offline"
     },
     {
       "id": "drive-package-lifecycle-proof-codex",
       "description": "Prove isolated native package lifecycle for codex",
       "plane": "package",
-      "command": "/home/tommyk/.local/share/uv/tools/ansible/bin/python3 /home/tommyk/projects/pstack/scripts/package-lifecycle.py prove --host codex --target-dir /home/tommyk/projects/pstack/.audit/evidence/codex-1791499560-9561fdfb/lifecycle-codex",
+      "command": "/home/tommyk/.local/share/uv/tools/ansible/bin/python3 /home/tommyk/projects/pstack/scripts/package-lifecycle.py prove --host codex --target-dir /home/tommyk/projects/pstack/.audit/evidence/codex-1791743346-dba9ac46/lifecycle-codex",
       "exit_code": 0,
-      "stdout_snippet": "[codex] Executing prove...\n  [install] PASS (0.399s) - Installed codex into /home/tommyk/projects/pstack/.audit/evidence/codex-1791499560-9561fdfb/lifecycle-codex/.codex/plugins/pstack (verified=True)\n  [update] PASS (0.733s) - Idempotent convergence check for codex (errors=[])\n  [uninstall] PASS (0",
+      "stdout_snippet": "[codex] Executing prove...\n  [install] PASS (0.310s) - Installed codex into /home/tommyk/projects/pstack/.audit/evidence/codex-1791743346-dba9ac46/lifecycle-codex/.codex/plugins/pstack (verified=True)\n  [update] PASS (0.733s) - Idempotent convergence check for codex (errors=[])\n  [uninstall] PASS (0.177s) - C",
       "verdict": "PASS",
-      "duration_s": 1.362,
+      "duration_s": 1.289,
       "evidence_level": "offline"
     },
     {
@@ -172,9 +172,9 @@
       "plane": "adapter",
       "command": "bun test ./skills/poteto-mode/scripts/orch/orch.test.ts",
       "exit_code": 0,
-      "stdout_snippet": "bun test v1.4.2 (744846f84)",
+      "stdout_snippet": "bun test v1.4.3 (c6da4a4d3)",
       "verdict": "PASS",
-      "duration_s": 0.654,
+      "duration_s": 0.716,
       "evidence_level": "offline"
     },
     {
@@ -183,20 +183,20 @@
       "plane": "adapter",
       "command": "bun test ./skills/poteto-mode/scripts/watch-pr/cli.test.ts ./skills/poteto-mode/scripts/watch-pr/policy.test.ts",
       "exit_code": 0,
-      "stdout_snippet": "bun test v1.4.2 (744846f84)",
+      "stdout_snippet": "bun test v1.4.3 (c6da4a4d3)",
       "verdict": "PASS",
-      "duration_s": 0.038,
+      "duration_s": 0.046,
       "evidence_level": "offline"
     },
     {
       "id": "runtime-discover-codex",
       "description": "Verify Codex installation health, thread inventory, and config via codex doctor",
       "plane": "runtime",
-      "command": "/home/tommyk/.local/share/mise/shims/codex doctor",
+      "command": "/home/tommyk/.local/share/mise/installs/npm-openai-codex/0.162.1~aube~38d293d159626e8b/node_modules/.bin/codex doctor",
       "exit_code": 0,
-      "stdout_snippet": "Codex Doctor v0.161.0 \u00b7 linux-x86_64\n\nNotes\n   \u2191 updates      0.162.0 available (current 0.161.0, dismissed 0.161.0)\n   \u26a0 rollouts     1,249 active files \u00b7 617.01 MB on disk\n   \u26a0 mcp          MCP configuration has optional issues - Set the missing MC",
+      "stdout_snippet": "Codex Doctor v0.162.1 \u00b7 linux-x86_64\n\nNotes\n   \u26a0 rollouts     1,308 active files \u00b7 702.97 MB on disk\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\nEnvironment\n  \u2713 system       C\n      os                       Ubuntu 26.4.0 (resolute)",
       "verdict": "PASS",
-      "duration_s": 2.559,
+      "duration_s": 1.795,
       "evidence_level": "offline"
     },
     {
@@ -225,11 +225,11 @@
       "id": "runtime-isolation-codex",
       "description": "Verify Codex native git worktree workspace isolation flag (--worktree)",
       "plane": "runtime",
-      "command": "/home/tommyk/.local/share/mise/shims/codex --help (check --worktree)",
+      "command": "/home/tommyk/.local/share/mise/installs/npm-openai-codex/0.162.1~aube~38d293d159626e8b/node_modules/.bin/codex --help (check --worktree)",
       "exit_code": 0,
       "stdout_snippet": "Codex CLI supports managed git worktrees (found=True)",
       "verdict": "PASS",
-      "duration_s": 0.615,
+      "duration_s": 0.061,
       "evidence_level": "offline"
     },
     {
@@ -245,7 +245,7 @@
     }
   ],
   "artifacts": [
-    "/home/tommyk/projects/pstack/.audit/evidence/codex-1791499560-9561fdfb/receipt.json",
+    "/home/tommyk/projects/pstack/.audit/evidence/codex-1791743346-dba9ac46/receipt.json",
     ".audit/evidence/codex-receipt.json"
   ],
   "claim": "codex 5-harness portability conformance verification",
