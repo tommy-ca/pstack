@@ -8,20 +8,25 @@ Usage:
     python3 scripts/verify-portable.py doctor [--host <host>]
     python3 scripts/verify-portable.py drive --feature <feature> [--host <host>]
     python3 scripts/verify-portable.py run [--host <host>] [--evidence-dir <dir>]
+    python3 scripts/verify-portable.py select-checks --base <ref> [--head <ref>] [--json]
+        [--record <path>] [--receipt <path>] [--outcome <check-id>=<verdict>]
 """
 
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import json
 import os
+import re
 import secrets
+import shlex
 import subprocess
 import sys
 import time
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterable, List, Optional
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -43,6 +48,15 @@ from scripts.portability_schema import (
     derive_support_state,
 )
 from scripts.drivers import get_driver
+from scripts.evidence_receipts import (
+    can_claim_current_ci,
+    check_check_evidence_staleness,
+    compute_patch_id,
+    create_check_evidence_receipt,
+    load_check_evidence_receipt,
+    resolve_merge_base,
+    resolve_revision,
+)
 
 SUPPORTED_HOSTS = ("grok", "codex", "omp", "opencode", "antigravity", "droid", "mock")
 
@@ -102,6 +116,264 @@ def reduce_verdicts(verdicts: Iterable[str]) -> str:
     if v_set == {"PASS"}:
         return "PASS"
     return "FAIL"
+
+
+# --- Change-scoped check selection (#312) ------------------------------------
+#
+# Ownership: the tier inventory stays with its owners — the offline PR gate list
+# is read from .github/workflows/portability-offline.yml, never re-typed here,
+# and docs/verification-test-tiers.md remains the 3-tier classification. This
+# table only maps a changed path to the minimal gate that can fail for it.
+
+OFFLINE_WORKFLOW = Path(".github/workflows/portability-offline.yml")
+# Standalone verifiers selected where they gate the changed surface directly and
+# run offline: the boundary scanner and the canonical-inventory check.
+SCAN_HOST_BOUNDARY = (sys.executable, "scripts/scan-host-boundary.py")
+CANONICAL_INDEX_CHECK = (sys.executable, "scripts/canonical-index.py", "--check")
+
+
+def offline_contract_tests(root: Path = ROOT) -> List[str]:
+    """The offline PR gate's pytest file list, read from the workflow itself."""
+    workflow = root / OFFLINE_WORKFLOW
+    if not workflow.is_file():
+        raise RuntimeError(f"Offline gate workflow not found: {workflow}")
+    found: List[str] = []
+    for match in re.findall(r"tests/[\w./-]+\.py", workflow.read_text(encoding="utf-8")):
+        if match not in found:
+            found.append(match)
+    if not found:
+        raise RuntimeError(f"No pytest files found in {workflow}")
+    return found
+
+
+# (path pattern, pytest module tokens, standalone verifier commands). First match
+# wins, so specific rows must precede their general fallbacks.
+# Tokens: "{changed}" = the changed path itself, "{offline}" = the full offline
+# gate set, "!<module>" = needs the documented host-dependent opt-in env var.
+CHECK_SELECTION_TABLE: List[tuple] = [
+    ("tests/*.py", ("{changed}",), ()),
+    ("docs/**", ("tests/test_verify_docs_sync.py",), ()),
+    (
+        "skills/**",
+        ("tests/test_skill_frontmatter.py", "tests/test_scan_host_boundary.py"),
+        (SCAN_HOST_BOUNDARY,),
+    ),
+    (
+        "agents/**",
+        (
+            "tests/test_plugin_agents.py",
+            "tests/test_scan_host_boundary.py",
+            "tests/test_droid_projection.py",
+            "tests/test_verify_harness.py",
+        ),
+        (SCAN_HOST_BOUNDARY,),
+    ),
+    (
+        "droids/**",
+        (
+            "tests/test_plugin_agents.py",
+            "tests/test_scan_host_boundary.py",
+            "tests/test_droid_projection.py",
+            "tests/test_verify_harness.py",
+        ),
+        (SCAN_HOST_BOUNDARY,),
+    ),
+    # Remaining markdown (root docs, ADRs, openspec prose): the docs-sync gate.
+    # fnmatch needs the explicit root pattern, because `**/*.md` matches only paths
+    # containing a slash and would send todo.md and README.md to the full-set default.
+    ("*.md", ("tests/test_verify_docs_sync.py",), ()),
+    ("**/*.md", ("tests/test_verify_docs_sync.py",), ()),
+    # OpenSpec change/spec artifacts, including .openspec.yaml: prose, not code.
+    ("openspec/**", ("tests/test_verify_docs_sync.py",), ()),
+    ("LICENSE", ("tests/test_verify_docs_sync.py",), ()),
+    (".github/**", ("{offline}",), ()),  # the gate definition itself
+    ("schemas/**", ("tests/test_portability_schemas.py",), ()),
+    ("profiles/**", ("tests/test_portability_schemas.py", "tests/test_evidence_durability.py"), ()),
+    (
+        "scripts/portability_schema.py",
+        (
+            "tests/test_portability_schemas.py",
+            "tests/test_verdict_reduction.py",
+            "tests/test_evidence_durability.py",
+        ),
+        (),
+    ),
+    (
+        "scripts/evidence_receipts.py",
+        ("tests/test_evidence_receipts.py", "tests/test_evidence_durability.py"),
+        (),
+    ),
+    ("scripts/drivers/**", ("!tests/test_harness_drivers.py", "tests/test_route_resolver.py"), ()),
+    ("scripts/route_resolver.py", ("tests/test_route_resolver.py", "tests/test_droid_routing.py"), ()),
+    (
+        "scripts/verify-portable.py",
+        ("tests/test_verify_portable.py", "tests/test_verdict_reduction.py"),
+        (),
+    ),
+    ("scripts/verify-harness.py", ("tests/test_verify_harness.py",), ()),
+    ("scripts/verify-decision-contract.py", ("tests/test_verify_decision_contract.py",), ()),
+    ("scripts/verify_rollback_equivalence.py", ("tests/test_rollback_equivalence.py",), ()),
+    ("scripts/scan-host-boundary.py", ("tests/test_scan_host_boundary.py",), ()),
+    ("scripts/skill_frontmatter.py", ("tests/test_skill_frontmatter.py",), ()),
+    ("scripts/project-package.py", ("tests/test_project_package.py", "tests/test_droid_projection.py"), ()),
+    (
+        "scripts/package-lifecycle.py",
+        ("tests/test_package_lifecycle.py", "tests/test_package_lifecycle_safety.py"),
+        (),
+    ),
+    ("scripts/canonical-index.py", ("tests/test_canonical_index.py",), ()),
+    ("scripts/scaffold-verification-skill.py", ("tests/test_scaffold_verification_skill.py",), ()),
+    ("scripts/sync-antigravity-plugin.py", ("tests/test_sync_antigravity_plugin.py",), ()),
+    (
+        "references/**",
+        (
+            "tests/test_route_resolver.py",
+            "tests/test_evidence_receipts.py",
+            "tests/test_droid_routing.py",
+        ),
+        (CANONICAL_INDEX_CHECK,),
+    ),
+    (
+        "pstack.package.json",
+        (
+            "tests/test_project_package.py",
+            "tests/test_verify_harness.py",
+            "tests/test_portability_schemas.py",
+        ),
+        (),
+    ),
+    ("scripts/**", ("{offline}",), ()),  # any other script: the full offline set
+]
+
+
+def pattern_matches(path: str, pattern: str) -> bool:
+    if pattern.endswith("/**"):
+        return path == pattern[:-3] or path.startswith(pattern[:-2])
+    return fnmatch.fnmatch(path, pattern)
+
+
+def _check_id(command: List[str]) -> str:
+    if "pytest" in command:
+        return f"pytest:{command[-1]}"
+    script = next((token for token in command if token.endswith(".py")), command[-1])
+    return f"script:{Path(script).name}"
+
+
+def _tier(token: str, offline_tests: List[str]) -> str:
+    if token.startswith("!"):
+        return "host_dependent"  # native smoke behind the documented opt-in
+    return "offline" if token in offline_tests else "outside_gate"
+
+
+def _expand(tokens: Iterable[str], path: str, offline_tests: List[str]) -> List[str]:
+    expanded: List[str] = []
+    for token in tokens:
+        if token == "{changed}":
+            expanded.append(path)
+        elif token == "{offline}":
+            expanded.extend(offline_tests)
+        else:
+            expanded.append(token)
+    return expanded
+
+
+def _command_for(token: str) -> List[str]:
+    run = [sys.executable, "-m", "pytest", "-q", token.lstrip("!")]
+    if token.startswith("!"):
+        return ["env", "PSTACK_RUN_HOST_DEPENDENT_TESTS=1", *run]
+    return run
+
+
+def select_checks(
+    changed: Iterable[str], offline_tests: Optional[List[str]] = None
+) -> Dict[str, Any]:
+    """Minimal check set for the changed paths, plus the unmapped path list.
+
+    Unmapped paths default to the full offline contract set — never to nothing.
+    """
+    offline = offline_tests if offline_tests is not None else offline_contract_tests()
+    checks: Dict[str, Dict[str, Any]] = {}
+    unmapped: List[str] = []
+
+    def add(command: List[str], tier: str, path: str) -> None:
+        check = checks.get(_check_id(command))
+        if check is None:
+            check = {"id": _check_id(command), "tier": tier, "command": command, "paths": []}
+            checks[check["id"]] = check
+        if path not in check["paths"]:
+            check["paths"].append(path)
+
+    for path in changed:
+        rule = next((r for r in CHECK_SELECTION_TABLE if pattern_matches(path, r[0])), None)
+        if rule is None:
+            unmapped.append(path)
+            rule = ("(unmapped)", ("{offline}",), ())
+        _, module_tokens, verifier_commands = rule
+        for token in _expand(module_tokens, path, offline):
+            add(_command_for(token), _tier(token, offline), path)
+        for command in verifier_commands:
+            add(list(command), "offline", path)  # standalone verifier: offline/static evidence
+
+    ordered = sorted(checks.values(), key=lambda c: (c["tier"], c["id"]))
+    return {"checks": ordered, "unmapped_paths": unmapped}
+
+
+def changed_paths(root: Path, base: str, head: str = "HEAD") -> Dict[str, Any]:
+    """Real merge base, committed diff, plus staged/unstaged/untracked context at HEAD."""
+    merge_base = resolve_merge_base(root, base, head)
+    head_sha = resolve_revision(root, head)
+    paths = [p for p in _git_lines(root, ["diff", "--name-only", merge_base, head]) if p]
+    if head == "HEAD":
+        for line in _git_lines(root, ["status", "--porcelain", "-uall"]):
+            entry = line[3:].strip().strip('"')
+            if " -> " in entry:
+                entry = entry.split(" -> ")[-1]
+            if entry and entry not in paths:
+                paths.append(entry)
+    return {"merge_base": merge_base, "head_sha": head_sha, "changed_paths": paths}
+
+
+def _git_lines(root: Path, args: List[str]) -> List[str]:
+    res = subprocess.run(["git", *args], cwd=str(root), capture_output=True, text=True, check=True)
+    return res.stdout.splitlines()
+
+
+def select_checks_plan(
+    base: str, head: str = "HEAD", root: Path = ROOT, offline_tests: Optional[List[str]] = None
+) -> Dict[str, Any]:
+    """Full selection plan: merge base, patch id, changed paths, minimal checks."""
+    offline = offline_tests if offline_tests is not None else offline_contract_tests(root)
+    diff = changed_paths(root, base, head)
+    selection = select_checks(diff["changed_paths"], offline)
+    return {
+        "base": base,
+        "head": head,
+        "merge_base": diff["merge_base"],
+        "head_sha": diff["head_sha"],
+        "patch_id": compute_patch_id(root, diff["merge_base"], head),
+        "changed_paths": diff["changed_paths"],
+        "unmapped_paths": selection["unmapped_paths"],
+        "defaulted_to_offline": bool(selection["unmapped_paths"]),
+        "checks": selection["checks"],
+    }
+
+
+def _print_selection_plan(plan: Dict[str, Any]) -> None:
+    print(
+        f"Change scope: {plan['base']}..{plan['head']} "
+        f"(merge-base {plan['merge_base'][:8]}, head {plan['head_sha'][:8]}, patch-id {plan['patch_id'][:8]})"
+    )
+    print(f"Changed paths: {len(plan['changed_paths'])}")
+    for path in plan["changed_paths"]:
+        print(f"  {path}")
+    if plan["unmapped_paths"]:
+        print(f"Unmapped paths defaulted to the full offline set: {', '.join(plan['unmapped_paths'])}")
+    else:
+        print("Unmapped paths: none")
+    print(f"Selected checks: {len(plan['checks'])}")
+    for check in plan["checks"]:
+        print(f"  [{check['tier']}] {shlex.join(check['command'])}")
+        print(f"      for: {', '.join(check['paths'])}")
 
 
 class PortableVerifier:
@@ -602,13 +874,18 @@ class PortableVerifier:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=["doctor", "drive", "run", "check-evidence", "check-staleness"], help="Action to execute")
+    parser.add_argument("action", choices=["doctor", "drive", "run", "check-evidence", "check-staleness", "select-checks"], help="Action to execute")
     parser.add_argument("--host", choices=[*SUPPORTED_HOSTS, "all"], default="grok", help="Target harness (or 'all' for all declared hosts)")
     parser.add_argument("--feature", help="Feature to drive (for 'drive' action)")
     parser.add_argument("--evidence-dir", type=Path, default=DEFAULT_EVIDENCE_DIR, help="Evidence directory")
     parser.add_argument("--allow-stale", action="store_true", help="Allow stale evidence during durability check")
     parser.add_argument("--change", default="pstack-portability-contract", help="Target OpenSpec change to validate in doctor")
     parser.add_argument("--json", action="store_true", help="Emit JSON output for machine consumption")
+    parser.add_argument("--base", help="Base ref to diff against (select-checks)")
+    parser.add_argument("--head", default="HEAD", help="Head ref to scope (select-checks)")
+    parser.add_argument("--record", type=Path, help="Write the check evidence receipt for this selection to a path")
+    parser.add_argument("--receipt", type=Path, help="Evaluate a recorded check evidence receipt against the current patch")
+    parser.add_argument("--outcome", action="append", default=[], metavar="CHECK_ID=VERDICT", help="Recorded outcome per selected check id, repeatable")
     args = parser.parse_args()
 
     hosts = list(get_declared_hosts()) if args.host == "all" else [args.host]
@@ -719,6 +996,69 @@ def main() -> None:
             print("===========================================================")
             print(f"Overall Matrix Evidence: {'ALL FRESH' if all_fresh else 'REGENERATION NEEDED'}\n")
         sys.exit(0 if all_fresh else 1)
+
+    if args.action == "select-checks":
+        if not args.base:
+            parser.error("select-checks requires --base <ref>")
+        plan = select_checks_plan(args.base, args.head, ROOT)
+
+        if args.record:
+            outcomes = {}
+            for item in args.outcome:
+                check_id, _, verdict = item.partition("=")
+                outcomes[check_id.strip()] = verdict.strip().upper() or "UNTESTED"
+            receipt = create_check_evidence_receipt(
+                ROOT, args.base, [c["id"] for c in plan["checks"]], outcomes, args.head
+            )
+            args.record.parent.mkdir(parents=True, exist_ok=True)
+            args.record.write_text(receipt.to_json() + "\n", encoding="utf-8")
+            print(
+                f"Recorded check evidence: {args.record} "
+                f"(head {receipt.head_sha[:8]}, patch-id {receipt.patch_id[:8]}, verdict {receipt.verdict})"
+            )
+
+        if args.receipt:
+            if not args.receipt.is_file():
+                print(f"No recorded evidence at {args.receipt}: run the selected checks, then record them.")
+                sys.exit(2)
+            receipt = load_check_evidence_receipt(args.receipt)
+            stale, reasons = check_check_evidence_staleness(receipt, ROOT, args.base, args.head)
+            claimable, claim_reason = can_claim_current_ci(receipt, ROOT, args.base, args.head)
+            if args.json:
+                print(
+                    json.dumps(
+                        {
+                            **plan,
+                            "receipt_path": str(args.receipt),
+                            "receipt": receipt.to_dict(),
+                            "stale": stale,
+                            "stale_reasons": reasons,
+                            "claimable": claimable,
+                            "claim_reason": claim_reason,
+                        },
+                        indent=2,
+                    )
+                )
+            else:
+                _print_selection_plan(plan)
+                print(f"Recorded evidence: {args.receipt}")
+                print(
+                    f"  head {receipt.head_sha[:8]} patch-id {receipt.patch_id[:8]} "
+                    f"verdict {receipt.verdict} recorded {receipt.created_at}"
+                )
+                if receipt.outcomes:
+                    for check_id, verdict in sorted(receipt.outcomes.items()):
+                        print(f"  outcome {verdict:<10} {check_id}")
+                state = "STALE" if stale else "FRESH"
+                print(f"  {state}: {'; '.join(reasons) if reasons else 'bound to the current patch'}")
+                print(f"  may be quoted as current CI: {'yes' if claimable else 'no'} — {claim_reason}")
+            sys.exit(1 if stale else 0)
+
+        if args.json:
+            print(json.dumps(plan, indent=2))
+        else:
+            _print_selection_plan(plan)
+        sys.exit(0)
 
     all_pass = True
     receipts: List[VerificationReceipt] = []
