@@ -536,6 +536,7 @@ class PortableVerifier:
                     verdict=s.verdict,
                     duration_s=s.duration_s,
                     evidence_level=getattr(s, "evidence_level", "offline"),
+                    settlement=getattr(s, "settlement", None),
                 ))
             else:
                 scenarios.append(s)
