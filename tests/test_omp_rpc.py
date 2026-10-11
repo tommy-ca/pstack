@@ -171,7 +171,8 @@ def test_reduce_falls_back_to_resolved_model() -> None:
     assert reduce_child_settlement(frames) == _expected(model="model-b")
 
 
-def test_reduce_selects_the_named_child() -> None:
+def test_reduce_refuses_ambiguous_children() -> None:
+    """With more than one child the settlement cannot be attributed, so it is refused."""
     frames = [
         READY,
         NEGOTIATED,
@@ -180,7 +181,9 @@ def test_reduce_selects_the_named_child() -> None:
         _lifecycle("ChildB", "error"),
         _progress("ChildB", "model-b"),
     ]
-    assert reduce_child_settlement(frames) == _expected(child_id="ChildA")
+    assert reduce_child_settlement(frames) is None
+    assert reduce_child_settlement(frames, timed_out=True) is None
+    assert reduce_child_settlement(frames, child_id="ChildA") == _expected(child_id="ChildA")
     assert reduce_child_settlement(frames, child_id="ChildB") == _expected(
         child_id="ChildB", model="model-b", outcome="error"
     )
@@ -315,19 +318,37 @@ class _StubSession:
         return self._exit_code
 
 
-def _successful_child_frames() -> list[dict]:
-    return [
-        READY,
-        NEGOTIATED,
-        {"type": "subagent_lifecycle", "payload": {"id": "ChildX", "agent": "task", "status": "started"}},
-        {
-            "type": "subagent_progress",
-            "payload": {"id": "ChildX", "progress": {"id": "ChildX", "resolvedModelIdentity": "model-a"}},
-        },
-        {"type": "subagent_lifecycle", "payload": {"id": "ChildX", "agent": "task", "status": "completed"}},
-        {"type": "prompt_result", "id": "q1", "agentInvoked": True, "status": "completed", "sessionSettled": True},
+def _assistant_reply(text: str) -> dict:
+    return {
+        "type": "message_end",
+        "message": {"role": "assistant", "content": [{"type": "text", "text": text}]},
+    }
+
+
+def _successful_child_frames(
+    children: tuple[str, ...] = ("ChildX",),
+    protocol_version: int = 2,
+    reply: str = "PARENT_DONE",
+    status: str = "completed",
+) -> list[dict]:
+    negotiation = dict(NEGOTIATED)
+    negotiation["data"] = {"protocolVersion": protocol_version}
+    frames: list[dict] = [READY, negotiation]
+    for child in children:
+        frames += [
+            {"type": "subagent_lifecycle", "payload": {"id": child, "agent": "task", "status": "started"}},
+            {
+                "type": "subagent_progress",
+                "payload": {"id": child, "progress": {"id": child, "resolvedModelIdentity": "model-a"}},
+            },
+            {"type": "subagent_lifecycle", "payload": {"id": child, "agent": "task", "status": "completed"}},
+        ]
+    frames += [
+        {"type": "prompt_result", "id": "q1", "agentInvoked": True, "status": status, "sessionSettled": True},
+        _assistant_reply(reply),
         {"type": "session_settled"},
     ]
+    return frames
 
 
 @pytest.mark.parametrize(
@@ -359,3 +380,99 @@ def test_live_verdict_requires_session_settlement_and_clean_exit(
     else:
         assert result.evidence_level == "offline"
         assert "settled=" in result.stdout
+
+
+def _live_result(monkeypatch: pytest.MonkeyPatch, tmp_path: Path, **kwargs: object):
+    """Run the live driver path against a stub session built from the given frame shape."""
+    from scripts.drivers import omp as omp_driver
+
+    monkeypatch.setenv(omp_driver.LIVE_GATE_ENV, "1")
+    frames = _successful_child_frames(**kwargs)
+    monkeypatch.setattr(
+        omp_driver,
+        "OmpRpcSession",
+        lambda *args, **_kw: _StubSession(frames, settled=True, exit_code=0),
+    )
+    driver = get_driver("omp", ROOT)
+    monkeypatch.setattr(type(driver), "get_binary_path", lambda self: ROOT / "scripts" / "drivers" / "omp.py")
+    return driver.child_spawn(tmp_path)
+
+
+def test_live_pass_requires_negotiated_protocol_v2(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """A v1 session must not be recorded as an rpc-v2 proof."""
+    result = _live_result(monkeypatch, tmp_path, protocol_version=1)
+
+    assert result.verdict == "FAIL"
+    assert result.evidence_level == "offline"
+    assert "negotiated protocol v1" in result.stderr
+
+
+def test_live_pass_requires_the_parent_literal(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """The prompt's literal reply is part of the proof, not decoration."""
+    result = _live_result(monkeypatch, tmp_path, reply="I did something else")
+
+    assert result.verdict == "FAIL"
+    assert "PARENT_DONE" in result.stderr
+
+
+def test_live_pass_requires_exactly_one_child(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """Two children make the settlement unattributable, so it must not pass."""
+    result = _live_result(monkeypatch, tmp_path, children=("ChildX", "ChildY"))
+
+    assert result.verdict == "FAIL"
+    assert "no single terminal child lifecycle" in result.stderr
+
+
+def test_live_pass_control_still_passes(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    result = _live_result(monkeypatch, tmp_path)
+
+    assert result.verdict == "PASS"
+    assert result.evidence_level == "observed_live"
+    assert result.settlement == _expected(model="model-a", child_id="ChildX")
+
+
+def test_route_error_classification_is_route_specific() -> None:
+    """A child or turn defect that mentions a model is a FAIL, not a missing route."""
+    from scripts.drivers.omp import _model_route_error
+
+    defect = [{"type": "prompt_result", "status": "error", "error": {"message": "child model failed: invalid tool call"}}]
+    route = [{"type": "prompt_result", "status": "error", "error": {"message": "no route to provider for model x"}}]
+
+    assert _model_route_error(defect) == ""
+    assert _model_route_error(route) == "no route to provider for model x"
+
+
+def test_wait_settled_ignores_pre_prompt_quiescence(tmp_path: Path) -> None:
+    """A session_settled frame emitted before the prompt is not evidence of join."""
+    early = _session(
+        tmp_path,
+        [
+            READY,
+            {"type": "session_settled"},
+            {"type": "prompt_result", "id": "q1", "agentInvoked": True, "status": "completed", "sessionSettled": True},
+        ],
+    )
+    late = _session(
+        tmp_path,
+        [
+            READY,
+            {"type": "prompt_result", "id": "q1", "agentInvoked": True, "status": "completed", "sessionSettled": True},
+            {"type": "session_settled"},
+        ],
+    )
+
+    assert early.wait_settled(prompt_id="q1", timeout=0.2) is False
+    assert late.wait_settled(prompt_id="q1", timeout=0.2) is True
+
+
+def test_wait_settled_rejects_a_non_completed_prompt_result(tmp_path: Path) -> None:
+    session = _session(
+        tmp_path,
+        [
+            READY,
+            {"type": "prompt_result", "id": "q1", "agentInvoked": True, "status": "error"},
+            {"type": "session_settled"},
+        ],
+    )
+
+    assert session.wait_settled(prompt_id="q1", timeout=0.2) is False
