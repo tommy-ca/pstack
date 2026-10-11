@@ -703,11 +703,17 @@ def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path
         boundary_driver_revision=boundary_driver_revision,
     )
 def _is_observed_settlement(scenario) -> bool:
-    """True only for a runtime observed_live scenario with validated settlement."""
+    """True only for a passing runtime observed_live scenario with a successful settlement.
+
+    A settlement that records an error, timeout or cancellation proves the child did not
+    spawn and join successfully, so it must never satisfy the promotion gate.
+    """
     return (
         scenario.plane == "runtime"
         and scenario.evidence_level == "observed_live"
         and isinstance(scenario.settlement, ChildSettlement)
+        and scenario.verdict == "PASS"
+        and scenario.settlement.terminal_outcome == "success"
     )
 
 def derive_support_state(

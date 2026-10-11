@@ -585,3 +585,44 @@ def test_driver_settlement_survives_receipt_serialization(tmp_path: Path) -> Non
     parsed = json.loads(blob)
     for key in props["required"]:
         assert parsed["settlement"][key]
+
+
+def test_observed_settlement_requires_a_passing_successful_scenario() -> None:
+    """A settlement that records failure must never satisfy the promotion gate."""
+    from scripts.portability_schema import _is_observed_settlement
+
+    success = ChildSettlement(
+        child_id="child-1",
+        terminal_outcome="success",
+        model="test-model",
+        transport="rpc",
+        effective_rpc="rpc-v2:maxFrameBytes=1048576",
+    )
+    live = ScenarioResult(
+        id="runtime-child-spawn-omp",
+        description="observed live spawn",
+        plane="runtime",
+        command="omp --mode rpc",
+        exit_code=0,
+        stdout_snippet="child=child-1 outcome=success",
+        verdict="PASS",
+        duration_s=1.0,
+        evidence_level="observed_live",
+        settlement=success,
+    )
+
+    assert _is_observed_settlement(live) is True
+    assert _is_observed_settlement(replace(live, verdict="FAIL")) is False
+    assert _is_observed_settlement(replace(live, evidence_level="static")) is False
+    assert (
+        _is_observed_settlement(
+            replace(live, settlement=replace(success, terminal_outcome="timeout"))
+        )
+        is False
+    )
+    assert (
+        _is_observed_settlement(
+            replace(live, settlement=replace(success, terminal_outcome="cancelled"))
+        )
+        is False
+    )

@@ -104,12 +104,14 @@ def reduce_child_settlement(
             if identity:
                 models[cid] = identity
 
-    target = child_id if child_id is not None else None
-    if target is None:
-        if timed_out:
-            target = order[0] if order else None
-        else:
-            target = next((c for c in order if children[c]), None)
+    if child_id is not None:
+        target = child_id
+    elif len(order) != 1:
+        # More than one child means the settlement cannot be attributed to the prompted
+        # one, and a settlement on the wrong child is worse than no settlement at all.
+        return None
+    else:
+        target = order[0]
     if target is None or target not in children:
         return None
 
@@ -209,17 +211,30 @@ class OmpRpcSession:
             raise OmpRpcError(f"RPC stdin write failed: {exc}") from exc
 
     def _wait_for(
-        self, predicate: Callable[[Dict[str, Any]], bool], timeout: float
+        self,
+        predicate: Callable[[Dict[str, Any]], bool],
+        timeout: float,
+        start: int = 0,
     ) -> Optional[Dict[str, Any]]:
         deadline = time.monotonic() + max(0.0, timeout)
         while True:
             with self._lock:
-                for frame in self._frames:
+                for frame in self._frames[start:]:
                     if predicate(frame):
                         return frame
             if time.monotonic() >= deadline:
                 return None
             time.sleep(POLL_INTERVAL_S)
+
+    def _index_of(self, frame: Optional[Dict[str, Any]]) -> int:
+        """Position of a frame in the stream, or -1 when it is not present."""
+        if frame is None:
+            return -1
+        with self._lock:
+            for index, candidate in enumerate(self._frames):
+                if candidate is frame:
+                    return index
+        return -1
 
     def _request(
         self, command: Dict[str, Any], prefix: str, timeout: float = RESPONSE_TIMEOUT_S
@@ -292,17 +307,24 @@ class OmpRpcSession:
         return response
 
     def wait_settled(self, prompt_id: Optional[str] = None, timeout: Optional[float] = None) -> bool:
-        """Wait for the prompt result and session quiescence; False on deadline."""
+        """Wait for this prompt's completion and post-prompt quiescence.
+
+        A ``session_settled`` frame that predates the prompt's own result describes an
+        earlier stretch of activity, so only a frame at a later index counts as join.
+        A prompt whose result reports anything but ``completed`` is not a settled join.
+        """
         deadline = time.monotonic() + (self.max_seconds if timeout is None else timeout)
+        result: Optional[Dict[str, Any]] = None
         if prompt_id is not None:
             remaining = deadline - time.monotonic()
             result = self._wait_for(
                 lambda f: f.get("type") == "prompt_result" and f.get("id") == prompt_id, remaining
             )
-            if result is None:
+            if result is None or result.get("status") != "completed":
                 return False
+        after = self._index_of(result) + 1 if result is not None else 0
         settled = self._wait_for(
-            lambda f: f.get("type") == "session_settled", deadline - time.monotonic()
+            lambda f: f.get("type") == "session_settled", deadline - time.monotonic(), start=after
         )
         return settled is not None
 

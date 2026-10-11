@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import os
+import re
 import shutil
 import tempfile
 import time
@@ -26,19 +27,23 @@ LIVE_PROMPT = (
     "Wait for that subagent result, then reply with exactly PARENT_DONE"
 )
 
-# A failed provider turn is not a failed child: these markers mean the model
-# route itself was unavailable, which is BLOCKED rather than FAIL.
+# A failed provider turn is not a failed child: these route-specific phrases mean the
+# model route itself was unavailable, which is BLOCKED rather than FAIL. Bare words such
+# as "model" or "provider" are deliberately absent: a genuine child or turn defect can
+# mention them, and downgrading a defect to BLOCKED corrupts triage.
 _MODEL_ROUTE_MARKERS = (
-    "provider",
-    "model",
-    "auth",
+    "no route",
+    "no provider",
+    "rate limit",
+    "quota",
+    "insufficient balance",
+    "unauthorized",
+    "invalid api key",
     "api key",
     "api_key",
     "credential",
-    "no route",
-    "rate limit",
-    "quota",
-    "connection",
+    "not authenticated",
+    "auth token",
 )
 
 
@@ -55,6 +60,29 @@ def _model_route_error(frames: Sequence[Dict[str, Any]]) -> str:
         if message and any(marker in message.lower() for marker in _MODEL_ROUTE_MARKERS):
             return message
     return ""
+
+
+_LITERAL_PATTERN = re.compile(r"PARENT[\s_]*DONE", re.IGNORECASE)
+
+
+def _assistant_text(frames: Sequence[Dict[str, Any]]) -> str:
+    """Text of the last assistant message, which is where the parent's own reply lands."""
+    text = ""
+    for frame in frames:
+        if frame.get("type") != "message_end":
+            continue
+        message = frame.get("message") or {}
+        if message.get("role") != "assistant":
+            continue
+        content = message.get("content")
+        if not isinstance(content, list):
+            continue
+        text = "".join(
+            part.get("text", "")
+            for part in content
+            if isinstance(part, dict) and part.get("type") == "text"
+        )
+    return text
 
 
 class OMPDriver(HarnessDriver):
@@ -208,19 +236,26 @@ class OMPDriver(HarnessDriver):
 
         settlement = reduce_child_settlement(frames, timed_out=not settled)
         route_error = _model_route_error(frames)
+        literal_seen = bool(_LITERAL_PATTERN.search(_assistant_text(frames)))
+        protocol_v2 = descriptor.get("protocol_version") == 2
         observed = (
             f"child={settlement['child_id']} outcome={settlement['terminal_outcome']} "
             f"model={settlement['model']} effective_rpc={settlement['effective_rpc']}"
             if settlement
-            else "no terminal child lifecycle observed"
+            else "no single terminal child lifecycle observed"
         )
-        summary = f"RPC v{descriptor['protocol_version']} exit={exit_code} settled={settled} {observed}"
+        summary = (
+            f"RPC v{descriptor['protocol_version']} exit={exit_code} settled={settled} "
+            f"literal={literal_seen} {observed}"
+        )
 
         if (
             settlement is not None
             and settlement["terminal_outcome"] == "success"
             and settled
             and exit_code == 0
+            and protocol_v2
+            and literal_seen
         ):
             return DriverScenarioResult(
                 scenario_id="runtime-child-spawn-omp",
@@ -235,14 +270,28 @@ class OMPDriver(HarnessDriver):
                 settlement=settlement,
             )
 
+        unmet: List[str] = []
+        if settlement is None:
+            unmet.append("no single terminal child lifecycle")
+        elif settlement["terminal_outcome"] != "success":
+            unmet.append(f"child outcome {settlement['terminal_outcome']}")
+        if not settled:
+            unmet.append("session did not settle after the prompt")
+        if exit_code != 0:
+            unmet.append(f"process exit {exit_code}")
+        if not protocol_v2:
+            unmet.append(f"negotiated protocol v{descriptor.get('protocol_version')}")
+        if not literal_seen:
+            unmet.append("parent reply did not carry PARENT_DONE")
+
         verdict = "BLOCKED" if route_error else "FAIL"
         return DriverScenarioResult(
             scenario_id="runtime-child-spawn-omp",
             description="Observed live OMP RPC v2 'task' child spawn/join did not settle successfully",
             command=command,
-            exit_code=1,
+            exit_code=exit_code if exit_code is not None else 1,
             stdout=summary,
-            stderr=route_error or failure,
+            stderr=route_error or failure or "; ".join(unmet),
             verdict=verdict,
             duration_s=duration,
             evidence_level="offline",
