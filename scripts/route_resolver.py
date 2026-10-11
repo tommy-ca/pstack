@@ -68,6 +68,19 @@ class RouteResolution:
 SkillRoute = RouteResolution
 
 
+def _contained_artifact(root: Path, candidate: Path) -> Optional[Path]:
+    """Return candidate only when its resolved path stays inside resolved root.
+
+    Identifiers are caller-supplied, so every join must be re-anchored: a
+    ``..`` segment or an absolute identifier otherwise escapes the repository.
+    """
+    resolved_root = root.resolve()
+    resolved = candidate.resolve()
+    if resolved == resolved_root or resolved_root in resolved.parents:
+        return candidate
+    return None
+
+
 def resolve_primary_artifact(target: str, root: Path) -> Optional[Path]:
     """Resolve an identifier to its canonical filesystem artifact path if present."""
     identifier = target.strip()
@@ -75,57 +88,63 @@ def resolve_primary_artifact(target: str, root: Path) -> Optional[Path]:
     # Slash command or skill prefix
     if identifier.startswith("/"):
         skill_name = identifier.lstrip("/")
-        skill_dir = root / "skills" / skill_name
-        if skill_dir.is_dir():
+        skill_dir = _contained_artifact(root, root / "skills" / skill_name)
+        if skill_dir is not None and skill_dir.is_dir():
             return skill_dir
-        skill_file = root / "skills" / "poteto-mode" / "playbooks" / f"{skill_name}.md"
-        if skill_file.is_file():
+        skill_file = _contained_artifact(
+            root, root / "skills" / "poteto-mode" / "playbooks" / f"{skill_name}.md"
+        )
+        if skill_file is not None and skill_file.is_file():
             return skill_file
         return None
 
     # Agent role identifier
     if identifier.startswith("pstack:"):
         agent_name = identifier.split(":", 1)[1]
-        agent_file = root / "agents" / f"{agent_name}.md"
-        if agent_file.is_file():
+        agent_file = _contained_artifact(root, root / "agents" / f"{agent_name}.md")
+        if agent_file is not None and agent_file.is_file():
             return agent_file
         return None
 
     # Droid definition identifier
     if _DROID_DEFINITION_ID.match(identifier):
-        droid_file = root / "droids" / f"{identifier}.md"
-        if droid_file.is_file():
+        droid_file = _contained_artifact(root, root / "droids" / f"{identifier}.md")
+        if droid_file is not None and droid_file.is_file():
             return droid_file
         # Check agents fallback for pstack-<name> -> agents/<name>.md
         agent_name = identifier.removeprefix("pstack-")
-        agent_file = root / "agents" / f"{agent_name}.md"
-        if agent_file.is_file():
+        agent_file = _contained_artifact(root, root / "agents" / f"{agent_name}.md")
+        if agent_file is not None and agent_file.is_file():
             return agent_file
         return None
 
     # Playbook path or stem
     if identifier.endswith(".md"):
-        playbook_path = root / "skills" / "poteto-mode" / identifier
-        if playbook_path.is_file():
+        playbook_path = _contained_artifact(root, root / "skills" / "poteto-mode" / identifier)
+        if playbook_path is not None and playbook_path.is_file():
             return playbook_path
-        playbook_nested = root / "skills" / "poteto-mode" / "playbooks" / identifier
-        if playbook_nested.is_file():
+        playbook_nested = _contained_artifact(
+            root, root / "skills" / "poteto-mode" / "playbooks" / identifier
+        )
+        if playbook_nested is not None and playbook_nested.is_file():
             return playbook_nested
         return None
 
     # Playbook bare stem
-    stem_file = root / "skills" / "poteto-mode" / "playbooks" / f"{identifier}.md"
-    if stem_file.is_file():
+    stem_file = _contained_artifact(
+        root, root / "skills" / "poteto-mode" / "playbooks" / f"{identifier}.md"
+    )
+    if stem_file is not None and stem_file.is_file():
         return stem_file
 
     # Canonical skill without slash prefix
-    canon_skill = root / "skills" / identifier
-    if canon_skill.is_dir():
+    canon_skill = _contained_artifact(root, root / "skills" / identifier)
+    if canon_skill is not None and canon_skill.is_dir():
         return canon_skill
 
     # Direct relative file
-    direct_file = root / identifier
-    if direct_file.exists():
+    direct_file = _contained_artifact(root, root / identifier)
+    if direct_file is not None and direct_file.exists():
         return direct_file
 
     return None
