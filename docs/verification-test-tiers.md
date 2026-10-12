@@ -206,14 +206,13 @@ python scripts/verify-portable.py check-staleness --host all --json
 | droid | present | no (by design) | n/a | candidate | BLOCKED (ineligible host) |
 
 Offline pytest gate at that head: **526 passed, 10 skipped**. Every skip is a
-tier-limited live case or the cache-absent canonical-index arm, never a pass:
-seven opt-in host CLI smoke cases in
+measured opt-out, never a pass: seven opt-in host CLI smoke cases in
 `tests/test_harness_drivers.py` (`PSTACK_RUN_HOST_DEPENDENT_TESTS=1`), the live
 model-backed case in `tests/test_omp_rpc.py`, and the two live-arm cases in
 `tests/test_omp_native_package.py` — the last three need
-`PSTACK_RUN_OMP_LIVE=1` and a model route. The canonical-index classify-drift arm
-skips as contract BLOCKED without the upstream cache. On a host without `node`,
-`droid` or the `omp` binary the corresponding cases skip instead of passing.
+`PSTACK_RUN_OMP_LIVE=1` and a model route. Where the upstream cache is absent
+(as in CI), the canonical-index classify-drift arm skips instead as contract
+BLOCKED.
 
 The durable receipts bound here carry OMP's three `observed_live` settlements
 (spawn, cancel, isolation); the other hosts rest on offline evidence and droid
