@@ -51,6 +51,13 @@ without installing proprietary agent harness binaries:
   bounded-output owners. It pins the two-owner prose contracts, and validates the
   recorded task-work traces by recomputing their byte components from the
   repository and refuses a gated arm that does more work than its baseline.
+- `tests/test_eval_blinded_pstack_dsh_candidate.py`: the candidate phase of the
+  #310 E01-E07/N01-N07 corpus. It re-runs the frozen cases on the current tree
+  with the controls re-derived in `tests/fixtures/eval_corpus_dsh/candidate_phase.json`
+  and asserts that E05 resolves, that no case fails and that every control still
+  separates. The frozen baseline record stays frozen: `scripts/eval_blinded_pstack.py
+  --dsh-phase baseline` reports it as revision-bound and names the cases the tree
+  has moved past instead of re-publishing it as a current measurement.
 
 Two suites in this list are tier-limited and a green job is not a pass for them.
 `tests/test_omp_native_package.py` skips without an `omp` binary, so the offline
