@@ -17,7 +17,7 @@ Adopt the Arena Candidate 1 architecture with Candidate 2 native schema grafts:
 3. Build a deterministic projection lever `scripts/project-package.py`. The lever projects `pstack.package.json` into harness native configurations:
    - `.grok-plugin/plugin.json` for Grok Build.
    - `.codex-plugin/plugin.json` for Codex.
-   - `.omp-plugin/plugin.json` for Oh-My-Pi.
+   - `.omp-plugin/package.json` for Oh-My-Pi.
    - `.opencode-plugin/package.json` for OpenCode.
 4. Gate manifest synchronization in CI via `scripts/project-package.py --check` inside `scripts/verify-portable.py doctor`.
 

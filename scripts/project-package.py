@@ -5,7 +5,7 @@ Implements the projection lever per Build the Lever + Model the Domain + Zero Dr
     pstack.package.json (canonical source of truth)
         ├── .grok-plugin/plugin.json
         ├── .codex-plugin/plugin.json
-        ├── .omp-plugin/plugin.json
+        ├── .omp-plugin/package.json
         └── .opencode-plugin/package.json
 
 Usage:
@@ -140,15 +140,23 @@ def generate_codex_manifest(desc: PackageDescriptor) -> Dict[str, Any]:
 
 
 def generate_omp_manifest(desc: PackageDescriptor) -> Dict[str, Any]:
+    """Native OMP package descriptor.
+
+    OMP enrolls a package when `package.json` carries an `omp` (or legacy `pi`)
+    key, and only a package whose manifest survives that read is listed by
+    `omp plugin list`; the conventional `skills/<name>/SKILL.md` and
+    `agents/*.md` siblings are what the runtime then discovers
+    (discovery/omp-plugins.ts and task/discovery.ts at the pinned OMP head).
+    """
+    description = f"{desc.name} for Oh-My-Pi (OMP): portable principles, playbooks, skills, and role agents."
     return {
         "name": desc.name,
         "version": desc.version,
-        "description": f"{desc.name} for Oh-My-Pi (OMP): portable principles and playbooks.",
-        "skills_root": f"./{desc.skills_root}/",
-        "entrypoint": desc.entrypoints.get("router", "skills/poteto-mode/SKILL.md"),
-        "lifecycle": {
-            "install": desc.lifecycle.get("install", ""),
-            "verify": desc.lifecycle.get("verify", ""),
+        "description": description,
+        "omp": {
+            "name": desc.name,
+            "version": desc.version,
+            "description": description,
         },
     }
 
@@ -376,7 +384,7 @@ def generate_droid_roles() -> Dict[str, str]:
 TARGET_MAP = {
     "grok": (ROOT / ".grok-plugin" / "plugin.json", generate_grok_manifest),
     "codex": (ROOT / ".codex-plugin" / "plugin.json", generate_codex_manifest),
-    "omp": (ROOT / ".omp-plugin" / "plugin.json", generate_omp_manifest),
+    "omp": (ROOT / ".omp-plugin" / "package.json", generate_omp_manifest),
     "opencode": (ROOT / ".opencode-plugin" / "package.json", generate_opencode_manifest),
     "antigravity": (ROOT / ".antigravity-plugin" / "plugin.json", generate_antigravity_manifest),
     "droid": (FACTORY_PLUGIN_DIR / "plugin.json", generate_droid_manifest),

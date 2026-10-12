@@ -194,7 +194,7 @@ def test_all_harness_profiles_conform_to_layout_and_model() -> None:
     expected_hosts = {
         "grok": (".grok/skills", ".grok-plugin/plugin.json"),
         "codex": (".codex/skills", ".codex-plugin/plugin.json"),
-        "omp": (".omp/skills", ".omp-plugin/plugin.json"),
+        "omp": (".omp/skills", ".omp-plugin/package.json"),
         "opencode": (".opencode/skills", ".opencode-plugin/package.json"),
         "antigravity": (".agents/skills", ".antigravity-plugin/plugin.json"),
     }

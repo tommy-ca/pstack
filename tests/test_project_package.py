@@ -41,7 +41,7 @@ def test_generate_manifests() -> None:
 
     omp_m = project_package.generate_omp_manifest(desc)
     assert omp_m["name"] == "pstack"
-    assert "skills_root" in omp_m
+    assert isinstance(omp_m["omp"], dict), "OMP enrolls a package only through package.json#omp"
 
     opencode_m = project_package.generate_opencode_manifest(desc)
     assert opencode_m["id"] == "pstack"

@@ -99,7 +99,7 @@ def compute_managed_files(host: str, desc: Any) -> Set[str]:
     managed: Set[str] = set()
 
     # Manifests
-    if host == "opencode":
+    if host in ("opencode", "omp"):
         managed.add("package.json")
     elif host == "droid":
         managed.add(".factory-plugin/plugin.json")
@@ -178,8 +178,20 @@ def install_plugin(host: str, target_base: Optional[Path] = None) -> Path:
         (plugin_dir / "plugin.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
 
     elif host == "omp":
+        # The pre-native projection wrote a generated plugin.json that OMP never
+        # reads. Remove it only when it is that generated shape, so a tree
+        # installed before the cutover does not keep a dead manifest forever and
+        # a user-authored file is never touched.
+        legacy = plugin_dir / "plugin.json"
+        if legacy.is_file():
+            try:
+                legacy_data = json.loads(legacy.read_text(encoding="utf-8"))
+            except Exception:
+                legacy_data = {}
+            if isinstance(legacy_data, dict) and {"skills_root", "entrypoint"} <= set(legacy_data):
+                legacy.unlink()
         manifest = generate_omp_manifest(desc)
-        (plugin_dir / "plugin.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+        (plugin_dir / "package.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
         agents_dir = plugin_dir / "agents"
         copy_agents(agents_dir)
 
@@ -287,7 +299,7 @@ def verify_plugin_at_dir(host: str, plugin_dir: Path, desc: Any) -> Tuple[bool, 
         if not droids_dir.is_dir() or len(list(droids_dir.glob("*.md"))) == 0:
             errors.append(f"Missing or empty droids directory: {droids_dir}")
     else:
-        manifest_name = "package.json" if host == "opencode" else "plugin.json"
+        manifest_name = "package.json" if host in ("opencode", "omp") else "plugin.json"
         manifest_path = plugin_dir / manifest_name
     if not manifest_path.is_file():
         errors.append(f"Missing manifest file: {manifest_path}")
@@ -300,6 +312,8 @@ def verify_plugin_at_dir(host: str, plugin_dir: Path, desc: Any) -> Tuple[bool, 
             else:
                 if m_data.get("name") != desc.name:
                     errors.append(f"Manifest name mismatch: {m_data.get('name')} != {desc.name}")
+                if host == "omp" and not isinstance(m_data.get("omp"), dict):
+                    errors.append("OMP manifest is missing the package.json#omp key OMP enrolls packages with")
             if m_data.get("version") != desc.version:
                 errors.append(f"Manifest version mismatch: {m_data.get('version')} != {desc.version}")
         except Exception as e:
