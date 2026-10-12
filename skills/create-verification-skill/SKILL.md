@@ -57,6 +57,19 @@ Without frontmatter the skill never registers. Then write these sections, each g
 - **Cleanup:** how to tear down instances the run created. Never kill by process name. Kill what you started. Cleanup removes instances and scratch state, never the evidence. Proof artifacts survive the teardown, in a location the skill names.
 - **Helpers:** ship the driver at `scripts/driver.sh` (or `driver.py`). Make it executable. Include the exact invocation in the skill body. The driver wraps Launch, Doctor, Drive, and Cleanup with 60 second timeout bounds and exit code checking. A helper the reader has to reverse-engineer is not a helper. The verification-skill-example omits its driver on purpose (usage-only sample). Generated skills do not copy that omission.
 
+## Isolate the resources the driver touches
+
+A driver that two concurrent runs can execute owns every port, path, marker, and child process it uses. Do not answer a collision by serialising the whole suite; isolate instead. In this repository the worked example is `tests/fixtures/resource-isolation/`. It holds a colliding and an isolated implementation of one two-worker shape in Python and Node, driven by `tests/test_ci_resource_isolation.py`. The colliding half is the negative control: it fails as soon as these rules are broken, so keep it failing.
+
+- **Owner.** Name the run that owns each acquired resource. Two runs that could claim the same port or the same directory are already broken.
+- **Atomic allocation.** Reserve by keeping whatever wins the race: bind port `0` and hold the socket, `mktemp` a fresh root. Never probe free-then-use; the gap between the check and the claim is the bug.
+- **Observed readiness.** Start work only after the peer publishes a marker or accepts a connection, and bound that wait so a missing peer fails loudly instead of hanging. A sleep is not readiness, and a longer timeout is not a fix.
+- **Cross-process topology.** Say which processes run at once and exactly where they meet (the fixture's rendezvous directory). Put the acquired port and root in the marker so the peer acts on the real values.
+- **Global state.** Write only under your own private root, and restore anything you change, including environment, files, and shared names, on the failure path as well as the success path.
+- **Cancellation.** Cancel by signalling the child you started, never by process name, and only while it is still yours to stop.
+- **Quiescent teardown.** Await the child's exit, close the listener, remove the private root, then assert the settled state: no listener, no leftover files, peers past the barrier. `kill`, `abort`, or a bare `close` is not settled state.
+- **Platform.** Port reuse, file locking, and termination signals differ between POSIX and Windows. Keep the driver's sequence portable, or declare the host it is proven on and treat the rest as untested.
+
 ## 3. Seed the feature map
 
 Create `features/README.md` plus one file per user-facing feature you can identify (aim for the top 3-5 to start, from routes, commands, menus, or docs). Put the map at skill-root `features/`, next to `SKILL.md`. Do not nest it under `references/features/` (that layout is the sample app). Do not write it under `openspec/`.
