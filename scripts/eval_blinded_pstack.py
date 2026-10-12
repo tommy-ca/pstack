@@ -255,8 +255,11 @@ def _sha256(path: Path) -> str:
 
 def _probe_scope_hash(root: Path) -> str:
     h = hashlib.sha256()
-    for path in sorted(root.glob("skills/*/SKILL.md")) + sorted(root.glob("skills/*/playbooks/*.md")):
-        h.update(path.read_bytes())
+    scope = sorted(root.glob("skills/**/SKILL.md")) + sorted(root.glob("skills/**/playbooks/*.md"))
+    scope += sorted(root.glob("agents/*.md")) + [root / "profiles" / "grok.json"]
+    for path in scope:
+        if path.is_file() and "node_modules" not in path.parts:
+            h.update(str(path.relative_to(root)).encode() + b"\0" + path.read_bytes() + b"\0")
     return h.hexdigest()
 
 

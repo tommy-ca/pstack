@@ -56,7 +56,7 @@
       "primitive": "omp --resume (cold parent) / child handle revival",
       "enforcement": "hard",
       "verification_status": "static-only",
-      "notes": "Cold parent resume observed 2026-10-12: session 2026-10-12T19-06-32 continued via --resume, marker file carries both markers, context preserved. Child handle revival still never observed. Row stays static-only: no receipt scenario settles resume."
+      "notes": "Cold parent resume observed 2026-10-12: session file 2026-10-12T19-06-32-010Z_01a13182-66ca-7487-a3c7-7705d939bb3a.jsonl continued via --resume (sha256 e2cad864cefa3023), marker file carries RESUME-MARKER-1 and RESUME-MARKER-2, context preserved. Child handle revival still never observed. Row stays static-only: no receipt scenario settles resume."
     },
     {
       "host": "omp",
