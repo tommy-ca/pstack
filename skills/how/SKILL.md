@@ -86,7 +86,29 @@ Read `references/critic-prompt.md` for the prompt template. Each critic gets:
 2. The relevant file paths (so they can read the actual code)
 3. The architectural critique rubric from `references/critique-rubric.md`
 
-### Step 3. Lead Judgment
+### Step 3. Critique Contracts
+
+A critique is advisory, so it owes the reader the evidence behind each finding:
+
+- **Authority, not hearsay.** Name the resolved base and the head commit you read, and cite
+  the immutable commit SHA and path the answer rests on. A stale document, an unmerged
+  branch description, or another skill's summary is a lead, not authority.
+- **Consumers before deletion or moves.** Before recommending that a seam be deleted, moved,
+  or collapsed, name the consumers you searched — in-repo call sites, tests, docs, registry
+  or dynamic lookup by name, published API, plugin, config, and route seams — and which ones
+  you could not rule out. No in-repo reference is not evidence of deletability, and
+  `Nothing references it` is not consumer reachability.
+- **A behavior pin, not a compile.** State the observable behavior the move preserves and
+  the evidence for it. A typecheck or a green suite that never exercised the path is not a
+  behavior pin; where behavior changes, name the delta and who it affects.
+- **Net maintained obligation.** Say what the change removes as an obligation — a concept,
+  branch, mode, wrapper, config knob, or error path nobody has to maintain — rather than how
+  many lines it moves.
+- **Order findings by observable impact** — what a user or operator can observe:
+  correctness, data and security effects, lifecycle and consumer breakage, then structure,
+  then style. Each finding gets a disposition and the recheck that would settle it.
+
+### Step 4. Lead Judgment
 
 Same framework as the interrogate skill. You're a pragmatic lead, not an aggregator.
 
