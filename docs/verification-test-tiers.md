@@ -182,11 +182,13 @@ python scripts/verify-portable.py check-staleness --host all --json
 | antigravity | present | yes | none | supported | PASS |
 | droid | present | no (by design) | n/a | candidate | BLOCKED (ineligible host) |
 
-Offline pytest gate at that head: **381 passed, 10 skipped**. The skips are the
-tier-limited cases, never passes: `tests/test_omp_native_package.py` (needs the
-`omp` binary and, for the live arm, `PSTACK_RUN_OMP_LIVE=1` with a model route),
-the Node half of `tests/test_ci_resource_isolation.py`, the opt-in host CLI smoke
-in `tests/test_harness_drivers.py`, and the optional CLI-backed Droid scenarios.
+Offline pytest gate at that head: **381 passed, 10 skipped**. Every skip is a
+tier-limited live case, never a pass: seven opt-in host CLI smoke cases in
+`tests/test_harness_drivers.py` (`PSTACK_RUN_HOST_DEPENDENT_TESTS=1`), the live
+model-backed case in `tests/test_omp_rpc.py`, and the two live-arm cases in
+`tests/test_omp_native_package.py` — the last three need
+`PSTACK_RUN_OMP_LIVE=1` and a model route. On a host without `node`, `droid` or
+the `omp` binary the corresponding cases skip instead of passing.
 
 The model-backed live tier was **not** executed and no receipt was regenerated,
 so the runtime plane stays `UNTESTED` for every host in this record; OMP's derived
