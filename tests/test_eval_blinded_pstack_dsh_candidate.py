@@ -38,12 +38,7 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def _probe_scope_hash(root: Path) -> str:
-    import hashlib
-    h = hashlib.sha256()
-    for path in sorted(root.glob("skills/*/SKILL.md")) + sorted(root.glob("skills/*/playbooks/*.md")):
-        h.update(path.read_bytes())
-    return h.hexdigest()
+from scripts.eval_blinded_pstack import _probe_scope_hash
 
 
 @pytest.fixture(scope="module")
@@ -135,14 +130,12 @@ class TestDshCandidatePhase:
         assert result.false_passes == 0
 
     def test_e04_status_is_recorded_per_the_candidate_tree(self, result) -> None:
-        # E04's frozen probe reads skills/poteto-mode/playbooks/bug-fix.md, which still does
-        # not carry the typed partial/unknown outcome: the gap is recorded, not failed.
+        # E04's frozen probe reads skills/poteto-mode/playbooks/bug-fix.md for the
+        # typed partial/unknown outcome; E04 resolves PASS once that contract lands.
         case = next(c for c in result.cases if c.id == "E04")
-        assert case.status in ("PASS", "UNTESTED"), case.forbidden_activated
-        if case.status == "UNTESTED":
-            assert case.kind == "positive"
-            assert case.missed_required, "an absent probe must name the evidence it missed"
-        assert result.verdict in ("PASS", "UNTESTED")
+        assert case.status == "PASS", (case.missed_required, case.insensitive_controls)
+        assert case.missed_required == []
+        assert result.verdict == "PASS"
 
     def test_candidate_table_matches_the_live_run(self, result, recorded) -> None:
         live = asdict(result)
