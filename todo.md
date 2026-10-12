@@ -214,5 +214,24 @@
 - [x] Unit 15: Close the four evidence gaps an aggregated external review found in the shipped machinery: a digest that read through untracked symlinks, a settlement that could rest on an uncorrelated frame, host IO failures escaping the driver, and a prompt comment claiming a literal the predicate never checked (PR #326)
 
 ### Follow-ups opened by this run
-- [ ] Unit 16: Guard `sync-antigravity-plugin --sync` against uncommitted or non-primary worktree sources (Issue #320)
-- [ ] Unit 17: Stop a default `verify-portable.py run --host omp` from overwriting the durable live settlement (Issue #322)
+- [x] Unit 16: Guard `sync-antigravity-plugin --sync` against uncommitted or non-primary worktree sources (Issue #320)
+- [x] Unit 17: Stop a default `verify-portable.py run --host omp` from overwriting the durable live settlement (Issue #322)
+
+## Epic #288 and #305 reconciliation (2026-10-12)
+### Verification tooling
+- [x] Unit 1: Preserve a matching `observed_live` settlement across a durable refresh, mark it `preserved_from`, and drop it when the runtime surface moves (Issue #322, PR #328)
+- [x] Unit 2: Refuse `sync-antigravity-plugin --sync` from a dirty, linked-worktree or non-repository source without `--force` (Issue #320, PR #329)
+- [x] Unit 3: Keep `canonical-index --classify-drift` out of the tracked working tree with `--out`, leaving the recorded classification to a deliberate refresh (Issue #312 core, PR #332)
+
+### OMP native packaging (Issues #298, #290)
+- [x] Unit 4: Emit the native `package.json#omp` descriptor instead of a generated `plugin.json` OMP never reads, and verify the enrollment key on install (PR #330)
+- [x] Unit 5: `scripts/prove-omp-native-package.py` proves enrollment, the skills tree through a sentinel delta, and, with `--live`, a packaged role agent spawned with `agentSource=user`, against an isolated config root with the ambient root snapshotted and uninstalled (PR #330)
+- [x] Unit 6: Arena with the real binary: `omp plugin link` refuses a root `plugin.json` package (no `package.json`), and the Agent Plugins standard's closed frontmatter set rejects `disable-model-invocation`, which 49 of 58 canonical skills carry; arm B stays the shipped projection (PR #330)
+
+### Portable quality workflows (Issue #311)
+- [x] Unit 7: Resource-isolation rules in `create-verification-skill` and the matching audit item in `maintain-verification-skill`, with a Python and Node fixture pair whose colliding half is the negative control (PR #331)
+
+### Delivery
+- [x] Unit 8: Offline gate runs the three new suites; the tiers doc lists them and names the two that are tier-limited, since the OMP suite skips without the binary (PR #333)
+- [x] Unit 9: Stacked PRs #328 to #334, per-PR independent verdicts, swarm lanes at each head, arena over the packaging candidates, three-model interrogate over the stack diff
+- [ ] Unit 10: OMP cancellation and steering over RPC with negative receipts (Issue #297 remainder)

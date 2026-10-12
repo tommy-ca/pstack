@@ -27,6 +27,22 @@ without installing proprietary agent harness binaries:
 - `tests/test_evidence_durability.py`: durable evidence/plane staleness.
 - `tests/test_select_checks.py`: change-scoped selection table and exact-head
   evidence binding.
+- `tests/test_sync_antigravity_plugin.py`: the sync source guard (dirty tree,
+  linked worktree, non-repository, and the `--force` override).
+- `tests/test_omp_native_package.py`: the OMP native package proof against the
+  real binary. It skips when `omp` is not on PATH, and a skip is not a pass.
+- `tests/test_ci_resource_isolation.py`: concurrent-process resource isolation,
+  with the colliding fixture as the negative control. The Node half skips when
+  `node` is absent.
+- `tests/test_evidence_receipts.py`: check-evidence receipt binding.
+- `tests/test_omp_rpc.py`: the RPC reducer and its offline frames. Its live case
+  is gated by `PSTACK_RUN_OMP_LIVE=1`.
+
+Two suites in this list are tier-limited and a green job is not a pass for them.
+`tests/test_omp_native_package.py` skips without an `omp` binary, so the offline
+job proves nothing about native enrollment; that proof lives in the live tier
+tracked by issues #238 and #240. `tests/test_ci_resource_isolation.py` proves
+only its Python half when `node` is absent.
   
 A green PR job proves **only these selected contract scenarios**.
 `tests/test_package_lifecycle.py` currently does not prove preservation of
