@@ -41,6 +41,41 @@ def test_isolated_lifecycle_proof(host: str, tmp_path: Path) -> None:
     assert not plugin_dir.exists()
 
 
+def test_omp_install_replaces_a_stale_generated_plugin_json(tmp_path: Path) -> None:
+    target = tmp_path / "stale-omp"
+    plugin_dir = package_lifecycle.get_plugin_dir("omp", target)
+    plugin_dir.mkdir(parents=True)
+    (plugin_dir / "plugin.json").write_text(
+        json.dumps(
+            {
+                "name": "pstack",
+                "version": "0.0.1",
+                "skills_root": "./skills/",
+                "entrypoint": "skills/poteto-mode/SKILL.md",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    package_lifecycle.install_plugin("omp", target)
+
+    assert not (plugin_dir / "plugin.json").exists()
+    assert (plugin_dir / "package.json").is_file()
+
+
+def test_omp_install_preserves_a_user_authored_plugin_json(tmp_path: Path) -> None:
+    target = tmp_path / "user-omp"
+    plugin_dir = package_lifecycle.get_plugin_dir("omp", target)
+    plugin_dir.mkdir(parents=True)
+    (plugin_dir / "plugin.json").write_text(json.dumps({"name": "somebody-elses-plugin"}), encoding="utf-8")
+
+    package_lifecycle.install_plugin("omp", target)
+
+    assert json.loads((plugin_dir / "plugin.json").read_text(encoding="utf-8")) == {
+        "name": "somebody-elses-plugin"
+    }
+
+
 @pytest.mark.parametrize("host", ["grok", "codex", "omp", "opencode", "antigravity"])
 def test_install_and_verify(host: str, tmp_path: Path) -> None:
     target = tmp_path / f"inst-{host}"
@@ -59,11 +94,13 @@ def test_install_and_verify(host: str, tmp_path: Path) -> None:
         assert len(list(agents_dir.glob("*.md"))) == len(list((ROOT / "agents").glob("*.md")))
 
     # Manifest must exist and match version 0.16.0
-    manifest_name = "package.json" if host == "opencode" else "plugin.json"
+    manifest_name = "package.json" if host in ("opencode", "omp") else "plugin.json"
     manifest_path = plugin_dir / manifest_name
     assert manifest_path.is_file()
     m_data = json.loads(manifest_path.read_text(encoding="utf-8"))
     assert m_data.get("version") == "0.15.15-grokbuild.0"
+    if host == "omp":
+        assert isinstance(m_data.get("omp"), dict), "OMP enrolls a package only through package.json#omp"
 
     ok, errors = package_lifecycle.verify_plugin(host, target)
     assert ok is True, f"Verify failed for {host}: {errors}"

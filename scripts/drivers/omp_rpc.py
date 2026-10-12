@@ -9,6 +9,7 @@ session can stall a caller for at most its own deadline, never forever.
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import threading
 import time
@@ -145,11 +146,18 @@ class OmpRpcSession:
         cwd: Path | str,
         max_seconds: float = DEFAULT_MAX_SECONDS,
         log_path: Optional[Path | str] = None,
+        env: Optional[Dict[str, str]] = None,
+        extra_args: Optional[Sequence[str]] = None,
     ):
         self.omp_bin = str(omp_bin)
         self.cwd = Path(cwd)
         self.max_seconds = float(max_seconds)
         self.log_path = Path(log_path) if log_path else None
+        # Extra environment for the child (e.g. an isolated PI_CONFIG_DIR); the
+        # ambient environment stays in place for the model route and PATH.
+        self.env = dict(env) if env else None
+        # Extra argv (e.g. "-e <package dir>") appended after the base flags.
+        self.extra_args = list(extra_args) if extra_args else None
         self._proc: Optional[subprocess.Popen] = None
         self._reader: Optional[threading.Thread] = None
         self._log_fh = None
@@ -267,6 +275,7 @@ class OmpRpcSession:
             "--no-ui",
             "--max-time",
             str(int(self.max_seconds)),
+            *(self.extra_args or []),
         ]
         self._proc = subprocess.Popen(
             cmd,
@@ -274,6 +283,7 @@ class OmpRpcSession:
             stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL,
             cwd=str(self.cwd),
+            env={**os.environ, **self.env} if self.env else None,
         )
         self._reader = threading.Thread(target=self._read_stdout, daemon=True)
         self._reader.start()

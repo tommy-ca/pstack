@@ -437,7 +437,7 @@ def _synthetic_evidence_root(tmp_path: Path, evidence_levels: list, planes: list
     whose scenario (evidence_level, plane) pairs are exactly zipped `evidence_levels`."""
     tmp_path.mkdir(parents=True, exist_ok=True)
     (tmp_path / "pstack.package.json").write_text("{}", encoding="utf-8")
-    manifest = tmp_path / ".omp-plugin" / "plugin.json"
+    manifest = tmp_path / ".omp-plugin" / "package.json"
     manifest.parent.mkdir(parents=True, exist_ok=True)
     manifest.write_text("{}", encoding="utf-8")
 
@@ -607,7 +607,7 @@ def _omp_live_root(tmp_path: Path) -> tuple:
     root = tmp_path / "repo"
     (root / ".omp-plugin").mkdir(parents=True)
     (root / "pstack.package.json").write_text("{}", encoding="utf-8")
-    (root / ".omp-plugin" / "plugin.json").write_text("{}", encoding="utf-8")
+    (root / ".omp-plugin" / "package.json").write_text("{}", encoding="utf-8")
     evidence_root = root / ".audit" / "evidence"
     evidence_root.mkdir(parents=True)
     revisions = compute_surface_revisions(root, "omp")

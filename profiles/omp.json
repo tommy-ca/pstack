@@ -3,7 +3,7 @@
   "support_state": "verified",
   "skills_dir": ".omp/skills",
   "plugins_dir": "~/.omp/plugins",
-  "plugin_manifest": ".omp-plugin/plugin.json",
+  "plugin_manifest": ".omp-plugin/package.json",
   "bindings": [
     {
       "host": "omp",
@@ -239,7 +239,10 @@
   ],
   "runtime_conventions": {
     "max_subagent_depth": 1,
-    "supported_isolation_modes": ["worktree", "shared"],
+    "supported_isolation_modes": [
+      "worktree",
+      "shared"
+    ],
     "default_model": "pi",
     "allowed_spawn_fields": [
       "prompt",
