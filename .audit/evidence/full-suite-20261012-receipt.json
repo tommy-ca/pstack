@@ -1,0 +1,1 @@
+{"command":"uv run python -m pytest tests/ -q","duration_s":413.61,"head":"7b2040abee4b546c7293d2d2ed560996a49e5c3c","result":"879 passed, 10 skipped","timestamp":"2026-10-12T21:11:59Z"}

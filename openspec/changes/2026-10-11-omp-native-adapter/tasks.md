@@ -1,6 +1,6 @@
 # OMP Native Adapter — Recursive Execution Graph and Verification Plan
 
-This file is the depth-first implementation contract for [epic #288](https://github.com/tommy-ca/pstack/issues/288). All nine leaf issues (#289-#294, #296-#298) are CLOSED as COMPLETED on 2026-10-12 via merged PRs #337 and #339-#347. The status below records what was believed when the change was written; the implementation status section at the end records what landed. Historical closed work #62/#66/#67/#68 and #235/#238/#247/#248 remains context only. This change merged as [PR #295](https://github.com/tommy-ca/pstack/pull/295).
+This file is the depth-first implementation contract for [epic #288](https://github.com/tommy-ca/pstack/issues/288). All nine leaf issues (#289-#294, #296-#298) are CLOSED as COMPLETED on 2026-10-12 via merged PRs #330, #337, and #339-#347. The status below records what was believed when the change was written; the implementation status section at the end records what landed. Historical closed work #62/#66/#67/#68 and #235/#238/#247/#248 remains context only. This change merged as [PR #295](https://github.com/tommy-ca/pstack/pull/295).
 
 ## Inputs and authority
 - Canonical: Cursor `cursor/plugins/pstack`, immutable portable `UPSTREAM` pin `df581122cde17e6e27686b5a448bde23e4ad4318`; compare with current Cursor head independently.

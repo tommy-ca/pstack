@@ -3,8 +3,8 @@
 Pilot unit of program `pstack-poteto-audit-20261012`. This was the depth-first execution
 contract for the two programs at head `40382c9516e7b4a19838eb29a2d9629b90d3df2e`.
 Both programs are now CLOSED as COMPLETED on 2026-10-12:
-- OMP native adapter epic **#288** (children #289–#294, #296–#298), closed via merged PRs #337 and #339–#347.
-- DSH skill portability program **#305** (sub-epics #306/#307, leaves #308–#315), closed via merged PRs #348–#364.
+- OMP native adapter epic **#288** (children #289–#294, #296–#298), closed via merged PRs #330, #337, and #339–#347.
+- DSH skill portability program **#305** (sub-epics #306/#307, leaves #308–#315), closed via merged PRs #321, #331, #332, and #348–#364.
 The per-section boxes below record what was believed when the change was written. Thirty
 commits landed after the baseline (`40382c9..b6551fb`), and the verdict table in section 17
 is reconciled to that merged state at the end of this file.
@@ -410,10 +410,12 @@ Note for the next unit (settled via #354, see section 19): `tests/test_canonical
 is now in `.github/workflows/portability-offline.yml`'s gate list. The note above records
 what was believed at `40382c9` and stays as history.
 
-## 19. Residual register (reconciled to merged state at `0816316`)
+## 19. Residual register (reconciled to merged state at `7b2040a`)
 
 Snapshot rows above recorded what was owed at `40382c9`. Each row below names the
 merged PR that settled it, or labels it an accepted residual carried with owner consent.
+`7b2040a` is this file's own reconciliation commit on `main`; the verification rerun
+in section 20 ran at its parent `b6551fb` before the doc-only amend.
 
 | Residual | Settled by | Resolution |
 | --- | --- | --- |
@@ -465,11 +467,11 @@ Cleanup tally: ten merged worktrees removed; `p14b-context` intentionally retain
 its pushed ref `origin/spec/p14-context-owners` (review bucket, clean tree, no live owner
 found in this session's transcript scan).
 
-Verification rerun in this session at head `b6551fb`: `verify-portable.py run --host omp`
-PASS on all four planes (canonical, adapter, package, runtime) with receipt at
+Verification rerun in this session: `verify-portable.py run --host omp` PASS on all four
+planes (canonical, adapter, package, runtime) with receipt at
 `/tmp/omp-evidence-20261012/omp-receipt.json`; vertical slice PASS with `observed_live`
-child settlement; full suite `879 passed, 10 skipped in 342.45s` with terminal output
-observed in the transcript. Scoped honestly: `doctor --host omp` reports UNTESTED
-overall with no runtime plane (offline checks only), and `drive --feature smoke` FAILs
-on `runtime-route-playbook-omp` because `smoke` is a synthetic feature with no route,
-not a product surface.
+child settlement; full suite `879 passed, 10 skipped`, run at head `7b2040a` and recorded
+in `.audit/evidence/full-suite-20261012-receipt.json`. Scoped honestly: `doctor --host omp`
+reports UNTESTED overall with no runtime plane (offline checks only), and
+`drive --feature smoke` FAILs on `runtime-route-playbook-omp` because `smoke` is a
+synthetic feature with no route, not a product surface.
