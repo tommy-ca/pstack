@@ -55,11 +55,11 @@ without installing proprietary agent harness binaries:
   #310 E01-E07/N01-N07 corpus. It re-runs the frozen cases on the current tree
   with the controls re-derived in `tests/fixtures/eval_corpus_dsh/candidate_phase.json`
   and asserts that E05 resolves, that no case fails and that every control still
-  separates. The frozen baseline record stays frozen: `scripts/eval_blinded_pstack.py
-  --dsh-phase baseline` reports it as revision-bound and names the cases the tree
-- `tests/test_eval_blinded_pstack_dsh.py`: the frozen #310 baseline record. It runs
-  revision-bound: on a tree past its pinned revision it reports drift as
-  BLOCKED/UNTESTED history, never a current PASS or FAIL.
+  separates.
+- `tests/test_eval_blinded_pstack_dsh.py`: the frozen #310 baseline record. Run it as
+  `scripts/eval_blinded_pstack.py --dsh-corpus tests/fixtures/eval_corpus_dsh
+  --dsh-phase baseline`. It reports the record as revision-bound drift
+  (BLOCKED/UNTESTED history), never a current PASS or FAIL.
 - `tests/test_canonical_index.py`: canonical inventory conformance. Its
   classify-drift arm skips as contract BLOCKED when no upstream cache exists;
   the rest runs cache-free.
