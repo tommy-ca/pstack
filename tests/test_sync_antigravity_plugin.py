@@ -1,12 +1,19 @@
 from __future__ import annotations
 
 import importlib.util
+import subprocess
 from pathlib import Path
 
 import pytest
 
 
 SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "sync-antigravity-plugin.py"
+
+
+def git(root: Path, *args: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        ["git", "-C", str(root), *args], capture_output=True, text=True, check=False
+    )
 
 
 def write(root: Path, name: str, content: bytes = b"canonical\n") -> Path:
@@ -37,6 +44,11 @@ def plugin(tmp_path, monkeypatch):
     write(repo, "skills/example/SKILL.md", b"# Example skill\n")
     write(repo, "skills/example/references/details.md", b"Skill reference\n")
     write(repo, "agents/example.md", b"# Example agent\n")
+    git(repo, "init", "-q")
+    git(repo, "config", "user.email", "test@example.com")
+    git(repo, "config", "user.name", "Test User")
+    git(repo, "add", "-A")
+    git(repo, "commit", "-qm", "canonical")
     monkeypatch.setattr(module, "ROOT", repo)
     monkeypatch.setattr(module, "LIVE_PLUGIN_DIR", tmp_path / "missing-parent" / "live")
     monkeypatch.setattr(module, "load_package_descriptor", lambda: (desc, raw))
@@ -90,7 +102,7 @@ def test_sync_creates_missing_destination_and_is_idempotent(plugin):
 def test_directory_symlink_contents_match_copied_files(plugin):
     references = plugin.ROOT / "skills/example/references"
     (plugin.ROOT / "skills/example/alias").symlink_to(references, target_is_directory=True)
-    plugin.sync_live_plugin()
+    plugin.sync_live_plugin(force=True)  # untracked source edit bypasses the tree guard
     copied = plugin.LIVE_PLUGIN_DIR / "skills/example/alias/details.md"
     assert copied.read_bytes() == b"Skill reference\n"
     assert plugin.check_live_sync() is True
@@ -177,7 +189,7 @@ def test_generated_dependencies_and_bytecode_are_excluded(plugin):
     write(plugin.ROOT, "skills/example/scripts/run.py", b"print('example')\n")
     write(plugin.ROOT, "skills/example/references/archive.pyc/details.md", b"Reference\n")
 
-    plugin.sync_live_plugin()
+    plugin.sync_live_plugin(force=True)  # untracked source edits bypass the tree guard
 
     assert (plugin.LIVE_PLUGIN_DIR / "skills/example/scripts/run.py").read_bytes() == b"print('example')\n"
     assert (plugin.LIVE_PLUGIN_DIR / "skills/example/references/archive.pyc/details.md").read_bytes() == b"Reference\n"
@@ -236,6 +248,91 @@ def test_check_cli_exit_status(plugin, monkeypatch, drifted):
     assert result.value.code == (1 if drifted else 0)
 
 
+def test_sync_refuses_dirty_source_tree_without_touching_live_plugin(plugin, monkeypatch, capsys):
+    plugin.sync_live_plugin()
+    write(plugin.ROOT, "skills/example/SKILL.md", b"uncommitted worktree edit\n")
+    before = snapshot(plugin.LIVE_PLUGIN_DIR)
+    capsys.readouterr()
+
+    monkeypatch.setattr(plugin.sys, "argv", [str(SCRIPT), "--sync"])
+    with pytest.raises(SystemExit) as result:
+        plugin.main()
+
+    assert result.value.code == 2
+    err = capsys.readouterr().err
+    assert "skills/example/SKILL.md" in err
+    assert "--force" in err
+    assert snapshot(plugin.LIVE_PLUGIN_DIR) == before
+
+
+def test_dry_run_sync_still_refuses_dirty_source_tree(plugin, monkeypatch, capsys):
+    write(plugin.ROOT, "skills/example/SKILL.md", b"uncommitted worktree edit\n")
+    capsys.readouterr()
+
+    monkeypatch.setattr(plugin.sys, "argv", [str(SCRIPT), "--sync", "--dry-run"])
+    with pytest.raises(SystemExit) as result:
+        plugin.main()
+
+    assert result.value.code == 2
+    assert "Refusing to sync" in capsys.readouterr().err
+
+
+def test_guard_refuses_linked_worktree_source(plugin, tmp_path):
+    primary = tmp_path / "primary"
+    write(primary, "skills/example/SKILL.md")
+    git(primary, "init", "-q")
+    git(primary, "config", "user.email", "test@example.com")
+    git(primary, "config", "user.name", "Test User")
+    git(primary, "add", "-A")
+    git(primary, "commit", "-qm", "canonical")
+    linked = tmp_path / "linked"
+    assert git(
+        primary, "worktree", "add", "-q", "-b", "feature", str(linked)
+    ).returncode == 0, "linked worktree fixture setup failed"
+
+    refusal = plugin.source_tree_guard(linked)
+
+    assert "linked git worktree" in refusal
+    assert str(primary) in refusal
+    assert plugin.source_tree_guard(primary) == ""
+
+
+def test_guard_refuses_non_git_source(plugin, tmp_path):
+    plain = tmp_path / "plain"
+    plain.mkdir()
+
+    refusal = plugin.source_tree_guard(plain)
+
+    assert "not a git repository" in refusal
+
+
+def test_force_dry_run_syncs_dirty_source_tree_without_writing(plugin, tmp_path, monkeypatch, capsys):
+    write(plugin.ROOT, "skills/example/SKILL.md", b"uncommitted worktree edit\n")
+    before = snapshot(tmp_path)
+    capsys.readouterr()
+
+    monkeypatch.setattr(plugin.sys, "argv", [str(SCRIPT), "--sync", "--dry-run", "--force"])
+    plugin.main()
+
+    assert "Syncing skill example" in capsys.readouterr().out
+    assert snapshot(tmp_path) == before
+
+
+def test_check_compares_dirty_source_tree_without_guard_refusal(plugin, monkeypatch, capsys):
+    plugin.sync_live_plugin()
+    write(plugin.ROOT, "skills/example/scripts/cache.pyc")
+    capsys.readouterr()
+
+    monkeypatch.setattr(plugin.sys, "argv", [str(SCRIPT), "--check"])
+    with pytest.raises(SystemExit) as result:
+        plugin.main()
+
+    captured = capsys.readouterr()
+    assert result.value.code == 0
+    assert "Refusing to sync" not in captured.err
+    assert "PASS" in captured.out
+
+
 def test_skill_files_rejects_symlink_cycles_without_looping(plugin):
     skill_dir = plugin.ROOT / "skills" / "example"
     cycle_dir = skill_dir / "cycle"
@@ -283,7 +380,7 @@ def test_sync_rejects_symlink_cycles_and_external_targets(plugin, tmp_path):
     external_file.chmod(0o000)
     (skill_dir / "escape.txt").symlink_to(external_file)
 
-    plugin.sync_live_plugin()
+    plugin.sync_live_plugin(force=True)  # untracked source edits bypass the tree guard
 
     live_skill = plugin.LIVE_PLUGIN_DIR / "skills" / "example"
     assert (live_skill / "SKILL.md").exists()
@@ -304,7 +401,7 @@ def test_sync_rejects_mutual_symlink_cycles(plugin):
     files = plugin.skill_files(skill_dir)
     assert "SKILL.md" in files
 
-    plugin.sync_live_plugin()
+    plugin.sync_live_plugin(force=True)  # untracked source edits bypass the tree guard
     assert plugin.check_live_sync() is True
     live_skill = plugin.LIVE_PLUGIN_DIR / "skills" / "example"
     assert (live_skill / "SKILL.md").exists()
