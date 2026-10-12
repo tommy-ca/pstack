@@ -67,6 +67,40 @@ Apply the baseline prompt above, plus these explicit review rules:
    - If related updates can leave state half-applied, push for a more atomic structure.
    - Do not over-index on micro-optimizations, but do flag avoidable orchestration complexity that makes the implementation more brittle.
 
+## Reachability, Behavior Pin and Evidence Standards
+
+Structural ambition does not license an unsupported deletion. Every finding that asks for a
+seam to be removed, moved, or collapsed carries the following, and a finding missing them is
+returned to its author rather than counted:
+
+- **Pin the base and head revision.** Name the resolved base, the head commit you reviewed,
+  and the diff between them. Each finding cites the revision it rests on. A finding against a
+  stale checkout, an old PR description, or an unmerged branch is not a finding against this
+  change, and it MUST be re-derived after any retarget or rebase that changes the patch.
+- **Consumer reachability.** Enumerate the seam's actual consumers before proposing its
+  removal: in-repo call sites, tests, docs and examples, generated or registry lookup,
+  published or external API surface, plugin, config and route seams, and any dynamic
+  dispatch by name. No in-repo reference is not evidence of deletability — the identifier may
+  still be reachable by name, by entry point, or by contract. State which consumers you
+  searched and which ones you could not rule out. A protected seam is removed only as an
+  explicit breaking change with a migration; never as cleanup.
+- **Behavior pin.** Name the observable behavior the change must preserve and the evidence
+  that it still holds — a test that exercises the path, a recorded before/after output, or a
+  measured number. A typecheck, a compile, or a green suite that never exercised the path is
+  not a behavior pin. When behavior intentionally changes, state the delta and who
+  it affects.
+- **Net maintained obligation.** Describe what the change removes as an obligation: the
+  concept, branch, mode, wrapper, config knob, error path, or duplicated contract that no
+  longer has to be maintained, and what it cost to keep. Removed line count is not the
+  measure, and neither is a refactor that relocates the same complexity.
+- **Ranking and recheck.** Order findings by observable impact — correctness, data or
+  security effects, lifecycle and consumer breakage, then structure — and give each one a
+  disposition and the recheck that would settle it. A list of style, naming, or formatting
+  nits MUST NOT stand in for the lifecycle, consumer, and security review.
+- **Unresolved partial effect.** When the change can leave partial state, do not report the
+  outcome as success and do not recommend a blind retry. Name the effect status, the state
+  owner who may declare recovery, and the safe next step for the author.
+
 ## Primary Review Questions
 
 For every meaningful change, ask:

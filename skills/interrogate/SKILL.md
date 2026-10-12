@@ -82,6 +82,33 @@ For each finding, include:
 
 The verdict binds to evidence: every finding cites the receipt scenario id, file hash, or PR head SHA it rests on. A prose-only verdict fails and is re-run, not shipped. When the verdict claims host parity, name the declared census read from `pstack.package.json#host_targets` via `get_declared_hosts` in `scripts/verify-portable.py`, with each host's evidence tier; a missing host is a stated gap, not silence.
 
+## Effect Ownership and Finding Contract
+
+The verdict is a review artifact, and these hold for every finding in it:
+
+- **Exact revision.** Name the resolved base and the head commit the verdict reviewed, and
+  cite the revision (commit SHA, file hash, or receipt scenario id) each finding rests on.
+  A verdict bound only to a patch title, an old PR description, or a stale checkout is not a
+  verdict on this change, and a retarget or a rebase that changes the patch identity makes
+  the affected findings re-derive rather than re-date.
+- **Typed failure identity and effect status.** An expected operational error keeps its
+  typed identity and cause, and its effect is stated as one of
+  `none | partial | committed | unknown`. Only the state owner declares recovery, rollback,
+  or retry safety. While an effect is `partial` or `unknown`, a blind retry is forbidden,
+  and the review MUST NOT report success or a completed rollback.
+- **Order findings by observable impact** — what a user or operator can observe:
+  correctness, data and security effects, lifecycle and consumer breakage, then structure.
+  Give each finding a disposition and the recheck that would settle it; structure comes
+  before style. A list of style, naming, or formatting nits MUST NOT stand in for the
+  lifecycle, consumer, and security review.
+- **Consumers and lifecycle.** A finding that asks for code to be deleted, moved, or
+  collapsed names the consumers it searched (in-repo call sites, tests, docs, registry or
+  dynamic lookup, published API, plugin and config seams) and the behavior pin that says the
+  observable behavior survives. Absence of in-repo references is not evidence of
+  deletability, and it is not consumer reachability.
+- **User-safe report.** The verdict states impact, uncertainty, the current disposition, and
+  the safe next step, with no credential or secret values in the text.
+
 ## Output Format
 
 Present the verdict in this structure:
