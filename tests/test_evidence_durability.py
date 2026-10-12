@@ -155,6 +155,75 @@ def test_dangling_evidence_path_fails(tmp_path: Path) -> None:
         check_evidence_durability(prof, ROOT)
 
 
+def _omp_profile(data: dict | None = None) -> HarnessProfile:
+    d = data if data is not None else json.loads((ROOT / "profiles" / "omp.json").read_text(encoding="utf-8"))
+    return HarnessProfile(
+        host=d["host"],
+        support_state=d["support_state"],
+        bindings=[Binding(**x) for x in d["bindings"]],
+        skills_dir=d.get("skills_dir"),
+        plugins_dir=d.get("plugins_dir"),
+        plugin_manifest=d.get("plugin_manifest"),
+        evidence_ledger=[Evidence(**x) for x in d.get("evidence_ledger", [])],
+        tool_mappings=d.get("tool_mappings"),
+        skill_order=d.get("skill_order"),
+        runtime_conventions=d.get("runtime_conventions"),
+    )
+
+
+def test_omp_profile_claims_only_what_its_receipt_settles() -> None:
+    """#289: omp claims packaged, and only rows pinning the live settlement claim verified."""
+    prof = _omp_profile()
+    assert prof.support_state == "packaged"
+    assert check_evidence_durability(prof, ROOT, check_freshness=False)["derived_support_state"] == "packaged"
+
+    receipt = VerificationReceipt(
+        **json.loads((EVIDENCE_DIR / "omp-receipt.json").read_text(encoding="utf-8"))
+    )
+    recorded = {s.id for s in receipt.scenarios}
+    live = {s.id for s in receipt.scenarios if s.evidence_level == "observed_live" and s.verdict == "PASS"}
+    assert live, "the durable omp receipt must still carry its live scenario"
+
+    assert {b.capability for b in prof.bindings if b.verification_status == "verified"} == {
+        "agent.spawn",
+        "agent.join",
+    }
+    for b in prof.bindings:
+        if b.scenario_id:
+            assert b.scenario_id in recorded, f"{b.capability} pins an unrecorded scenario"
+        if b.verification_status == "verified":
+            assert b.scenario_id in live, f"{b.capability} claims verified without a live scenario"
+
+
+def test_scenario_pin_naming_an_unrecorded_scenario_fails() -> None:
+    """A pin that names no scenario in the cited receipt is a dangling reference."""
+    d = json.loads((ROOT / "profiles" / "omp.json").read_text(encoding="utf-8"))
+    pinned = [b for b in d["bindings"] if isinstance(b.get("evidence_ref"), dict)]
+    assert pinned, "the omp profile must pin scenarios"
+    for binding in pinned:
+        binding["evidence_ref"] = {
+            "receipt": ".audit/evidence/omp-receipt.json",
+            "scenario": "invented-scenario",
+        }
+
+    with pytest.raises(ValidationError, match="cites scenario 'invented-scenario'"):
+        check_evidence_durability(_omp_profile(d), ROOT, check_freshness=False)
+
+
+def test_verified_binding_cannot_pin_a_non_live_scenario() -> None:
+    """`verified` is a live-behavior claim; an offline or static pin belongs to static-only."""
+    d = json.loads((ROOT / "profiles" / "omp.json").read_text(encoding="utf-8"))
+    for binding in d["bindings"]:
+        if binding["capability"] in ("agent.spawn", "agent.join"):
+            binding["evidence_ref"] = {
+                "receipt": ".audit/evidence/omp-receipt.json",
+                "scenario": "runtime-evidence-capture-omp",
+            }
+
+    with pytest.raises(ValidationError, match="carries no observed_live settlement"):
+        check_evidence_durability(_omp_profile(d), ROOT, check_freshness=False)
+
+
 def test_stale_skills_tree_hash_invalidates_runtime() -> None:
     current_revs = compute_surface_revisions(ROOT, "codex")
     receipt_data = json.loads((EVIDENCE_DIR / "codex-receipt.json").read_text(encoding="utf-8"))
@@ -672,6 +741,9 @@ def _omp_live_root(tmp_path: Path) -> tuple:
     profile_data = json.loads((ROOT / "profiles" / "omp.json").read_text(encoding="utf-8"))
     for binding in profile_data["bindings"]:
         binding["evidence_ref"] = ".audit/evidence/omp-receipt.json"
+        # The fixture re-asserts verified on every row so the promotion gate itself is
+        # measured; the committed profile deliberately underclaims (see #289).
+        binding["verification_status"] = "verified"
     prof = HarnessProfile(
         host="omp",
         support_state="verified",
@@ -780,7 +852,12 @@ def test_repeated_refreshes_keep_the_run_that_observed(tmp_path: Path) -> None:
 
 
 def test_check_evidence_names_the_omp_live_remedy(tmp_path: Path) -> None:
-    """The gate that fails must say how to restore the proof it wants."""
+    """The gate that fails when the live proof is gone must say how to restore it.
+
+    The committed profile claims packaged and pins agent.spawn/agent.join to
+    runtime-child-spawn-omp, so stripping the live level from the runtime scenarios
+    trips the scenario-pin gate: a `verified` row may not pin a non-live scenario.
+    """
     copy_root = _disposable_copy(tmp_path)
     receipt_path = copy_root / ".audit" / "evidence" / "omp-receipt.json"
     receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
@@ -797,7 +874,7 @@ def test_check_evidence_names_the_omp_live_remedy(tmp_path: Path) -> None:
         cwd=copy_root,
     )
     assert proc.returncode == 1, proc.stdout + proc.stderr
-    assert "exceeds evidence-derived support state 'packaged'" in proc.stdout
+    assert "carries no observed_live settlement" in proc.stdout
     assert "PSTACK_RUN_OMP_LIVE=1" in proc.stdout
 
 
