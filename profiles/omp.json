@@ -16,7 +16,7 @@
         "receipt": ".audit/evidence/omp-receipt.json",
         "scenario": "runtime-child-spawn-omp"
       },
-      "notes": "Observed live: a bounded omp --mode rpc v2 session negotiated protocol v2, prompted one `task` child, and reduced its terminal subagent_lifecycle plus resolvedModelIdentity into the typed settlement on runtime-child-spawn-omp (evidence_level observed_live)."
+      "notes": "Observed live: a bounded omp --mode rpc v2 session negotiated protocol v2, prompted one `task` child, and reduced its terminal subagent_lifecycle plus resolvedModelIdentity into the typed settlement on runtime-child-spawn-omp (evidence_level observed_live). Depth: single-child spawn only; no nested grandchild spawn or refusal probe has run, so max_subagent_depth 1 stays a pstack policy claim, never an observed host control."
     },
     {
       "host": "omp",
@@ -56,7 +56,7 @@
       "primitive": "omp --resume (cold parent) / child handle revival",
       "enforcement": "hard",
       "verification_status": "static-only",
-      "notes": "GAP: no receipt scenario settles resume. Split: cold parent resume is documented (can1357/oh-my-pi@0affc77 docs/session.md, SessionManager.continueRecent/open, `--resume`); child handle revival applies only to kept-alive or budget-stopped runs (can1357/oh-my-pi@0affc77 docs/tools/task.md) and was never observed, so no live resume is claimed."
+      "notes": "Cold parent resume observed 2026-10-12: session 2026-10-12T19-06-32 continued via --resume, marker file carries both markers, context preserved. Child handle revival still never observed. Row stays static-only: no receipt scenario settles resume."
     },
     {
       "host": "omp",
