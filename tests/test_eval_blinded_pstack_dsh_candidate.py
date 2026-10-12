@@ -35,6 +35,9 @@ FROZEN_CORPUS_SHA256 = "90285f0f28e9337c56380fbe932a2fa1796b212d9c43f5397ad0ce27
 
 
 def _sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
 def _is_ancestor_or_self(recorded_rev: str, live_rev: str) -> bool:
     import subprocess
     if recorded_rev == live_rev:
