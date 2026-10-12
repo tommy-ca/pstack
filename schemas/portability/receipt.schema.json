@@ -103,6 +103,10 @@
             },
             "additionalProperties": false,
             "description": "Typed child spawn/join proof. Required on runtime observed_live scenarios before they count toward derived verified; free-text stdout alone never promotes."
+          },
+          "preserved_from": {
+            "type": "string",
+            "description": "run_id whose observed_live scenario was carried into a later refresh because the runtime surface it proved had not moved. Empty on a scenario this run observed itself."
           }
         },
         "additionalProperties": false
