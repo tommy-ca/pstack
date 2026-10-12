@@ -455,7 +455,7 @@ COMPLETED with a landed-via comment naming its merged PR.
 | #307 sub-epic | #349 plus #351 plus #352 plus #353 plus #354–#364 | prose via #349; review via #351; currency via #352; candidate via #353; gate matrix via #354–#364 |
 | #308 inventory | #348 | carrier with validator-clean spec and 16 pinned rows; reference line-audit residual deferred to #310 |
 | #309 contracts | #348 | contracts and structure; schema fixtures owned by #310/#313 |
-| #310 eval corpus | #350 plus #353 | baseline frozen via #350; candidate phase via #353 |
+| #310 eval corpus | #350 (closure comment); #353 merged after close | baseline frozen via #350 per closure comment at close 15:48:45Z; candidate phase via #353 merged 16:50:02Z, PR title names (#310) but issue carries no naming comment |
 | #311 isolation | #331 per #311 comment | merged pilot satisfies acceptance; byte-identical tree noted in comment |
 | #312 selection | #321 plus #332 plus #352 | select-checks stack plus rebase-currency fix; comment names #312 satisfied by landed stack plus #352 |
 | #313 review | #351 | four owners extended, 33 contract tests, read-only audit proven |
