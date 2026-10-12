@@ -38,12 +38,12 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def _is_ancestor_or_self(recorded_rev: str, live_rev: str) -> bool:
-    import subprocess
-    if recorded_rev == live_rev:
-        return True
-    proc = subprocess.run(["git", "merge-base", "--is-ancestor", recorded_rev, live_rev], capture_output=True)
-    return proc.returncode == 0
+def _probe_scope_hash(root: Path) -> str:
+    import hashlib
+    h = hashlib.sha256()
+    for path in sorted(root.glob("skills/*/SKILL.md")) + sorted(root.glob("skills/*/playbooks/*.md")):
+        h.update(path.read_bytes())
+    return h.hexdigest()
 
 
 @pytest.fixture(scope="module")
@@ -149,7 +149,7 @@ class TestDshCandidatePhase:
         assert recorded["corpus_version"] == live["corpus_version"]
         assert recorded["phase"] == live["phase"]
         assert recorded["verdict"] == live["verdict"]
-        assert _is_ancestor_or_self(recorded["pstack_revision"], live["pstack_revision"]), "recorded table must name an ancestor of the live run"
+        assert recorded["provenance"]["probe_scope_hash"] == live["provenance"]["probe_scope_hash"] == _probe_scope_hash(ROOT), "recorded table must match the probe scope it reproduces"
         assert recorded["provenance"] == live["provenance"]
         keys = (
             "total_cases",
