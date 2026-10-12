@@ -6,6 +6,7 @@ from __future__ import annotations
 import os
 import re
 import shutil
+import subprocess
 import tempfile
 import time
 from pathlib import Path
@@ -75,7 +76,121 @@ def _model_route_error(frames: Sequence[Dict[str, Any]]) -> str:
     return ""
 
 
+# Isolation probe: one isolated `task` child writes this token into a fresh file in
+# its own workspace while `task.isolation.apply=false` forbids the merge. The parent
+# checkout sentinel is committed before the run, so a byte-identical sentinel plus a
+# captured-but-unapplied patch is the whole filesystem boundary proof.
+ISOLATION_TOKEN = "CHILD_ISO_OK"
+ISOLATION_CHILD_FILE = "ISO_CHILD.txt"
+ISOLATION_SENTINEL_FILE = "PARENT_SENTINEL.txt"
+ISOLATION_SENTINEL_BODY = "PARENT-SENTINEL-UNTOUCHED\n"
+ISOLATION_PROMPT = (
+    "Use the task tool exactly once with isolated: true (an isolated worktree) to spawn a subagent "
+    f"whose assignment is: run exactly `printf '{ISOLATION_TOKEN}' > {ISOLATION_CHILD_FILE}` in your "
+    "working directory, then run `pwd` and reply with the absolute path pwd printed and nothing else. "
+    "Do not create, edit or delete any other file yourself. "
+    "When that subagent result arrives, reply with exactly PARENT_DONE"
+)
+ISOLATION_CONFIG = """task:
+  isolation:
+    enabled: true
+    apply: false
+    merge: patch
+isolation:
+  backend: auto
+worktree:
+  base: {base}
+"""
+
 _LITERAL_PATTERN = re.compile(r"PARENT[\s_]*DONE", re.IGNORECASE)
+_ABSOLUTE_PATH_PATTERN = re.compile(r"(?:^|\s)(/[^\s`\"']+)")
+
+
+def _git(cwd: Path, *args: str) -> Tuple[int, str]:
+    """Run one git command with a hard floor on output size."""
+    try:
+        proc = subprocess.run(
+            ["git", *args], cwd=str(cwd), capture_output=True, text=True, check=False, timeout=60
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        return 127, str(exc)
+    return proc.returncode, (proc.stdout or "") + (proc.stderr or "")
+
+
+def _prepare_isolation_repo(repo: Path, worktree_base: Path) -> str:
+    """Create the parent checkout, its committed sentinel and the isolation overlay."""
+    repo.mkdir(parents=True)
+    worktree_base.mkdir(parents=True)
+    (repo / ISOLATION_SENTINEL_FILE).write_text(ISOLATION_SENTINEL_BODY, encoding="utf-8")
+    for args in (
+        ("init", "-q", "-b", "main"),
+        ("config", "user.email", "probe@pstack.local"),
+        ("config", "user.name", "pstack isolation probe"),
+        ("add", ISOLATION_SENTINEL_FILE),
+        ("commit", "-q", "-m", "sentinel"),
+    ):
+        code, out = _git(repo, *args)
+        if code != 0:
+            return f"git {' '.join(args)} failed: {out.strip()}"
+    return ""
+
+
+def _isolation_residue(repo: Path, worktree_base: Path) -> Dict[str, Any]:
+    """Post-run parent-checkout invariants: sentinel, unapplied delta, cleanup."""
+    sentinel = repo / ISOLATION_SENTINEL_FILE
+    sentinel_intact = sentinel.is_file() and sentinel.read_text(encoding="utf-8") == ISOLATION_SENTINEL_BODY
+    child_file_absent = not (repo / ISOLATION_CHILD_FILE).exists()
+    status_code, status_out = _git(repo, "status", "--porcelain")
+    tree_clean = status_code == 0 and not status_out.strip()
+    _, worktrees_out = _git(repo, "worktree", "list", "--porcelain")
+    worktree_count = len([ln for ln in worktrees_out.splitlines() if ln.startswith("worktree ")])
+    leftover = sorted(p.name for p in worktree_base.iterdir()) if worktree_base.is_dir() else []
+    return {
+        "sentinel_intact": sentinel_intact,
+        "child_file_absent": child_file_absent,
+        "tree_clean": tree_clean,
+        "worktree_count": worktree_count,
+        "worktree_leftovers": leftover,
+    }
+
+
+def _isolated_child_patch(frames: Sequence[Dict[str, Any]]) -> Tuple[str, str]:
+    """Child id and captured patch path of the isolated child, derived from the stream.
+
+    The isolation runner writes the captured delta to `<artifacts>/<child>.patch`, beside
+    the child session file the lifecycle frame names, and only the isolation path writes
+    it. A patch that holds the probe token is therefore the observation that this child ran
+    in its own workspace and that its write never reached the parent checkout.
+    """
+    child_id = ""
+    session_file = ""
+    for frame in frames:
+        if frame.get("type") != "subagent_lifecycle":
+            continue
+        payload = frame.get("payload") or {}
+        if not payload.get("id"):
+            continue
+        child_id = str(payload["id"])
+        if payload.get("sessionFile"):
+            session_file = str(payload["sessionFile"])
+    if not child_id or not session_file:
+        return "", ""
+    return child_id, str(Path(session_file).with_name(f"{child_id}.patch"))
+
+
+def _patch_excerpt(patch_path: str, limit: int = 65536) -> str:
+    """Bounded read of the captured patch, which is the only copy of the child's write."""
+    try:
+        with open(patch_path, "rb") as handle:
+            return handle.read(limit).decode("utf-8", "replace")
+    except OSError:
+        return ""
+
+
+def _reported_workspace(frames: Sequence[Dict[str, Any]]) -> str:
+    """Last absolute path the parent named, used only to contradict a false isolation claim."""
+    matches = _ABSOLUTE_PATH_PATTERN.findall(_assistant_text(frames))
+    return matches[-1] if matches else ""
 
 
 def _assistant_text(frames: Sequence[Dict[str, Any]]) -> str:
@@ -506,6 +621,9 @@ class OMPDriver(HarnessDriver):
         if not avail:
             return self.blocked_result("runtime-isolation-omp", "OMP worktree isolation check", reason)
 
+        if os.environ.get(LIVE_GATE_ENV) == "1":
+            return self._isolation_live(run_dir)
+
         bin_path = self.get_binary_path()
         assert bin_path is not None
         code, out, err, dur = self.run_command([str(bin_path), "--help"], cwd=self.root)
@@ -513,7 +631,10 @@ class OMPDriver(HarnessDriver):
         verdict = "PASS" if code == 0 and has_worktree else "FAIL"
         return DriverScenarioResult(
             scenario_id="runtime-isolation-omp",
-            description="Verify OMP native git worktree workspace isolation command (static CLI probe only, no observed isolation)",
+            description=(
+                "Verify OMP native git worktree isolation CLI surface "
+                f"(static contract only; observed live only under {LIVE_GATE_ENV}=1)"
+            ),
             command=f"{bin_path} --help (check worktree)",
             exit_code=0 if verdict == "PASS" else 1,
             stdout=f"OMP CLI supports git worktree management (found={has_worktree})",
@@ -521,6 +642,170 @@ class OMPDriver(HarnessDriver):
             verdict=verdict,
             duration_s=dur,
             evidence_level="static",
+        )
+
+    def _isolation_live(self, run_dir: Path) -> DriverScenarioResult:
+        """Observe one isolated child: sentinel untouched, delta captured, nothing applied."""
+        bin_path = self.get_binary_path()
+        assert bin_path is not None
+        start = time.time()
+        work_dir = Path(tempfile.mkdtemp(prefix="omp-iso-live-"))
+        repo = work_dir / "parent-checkout"
+        worktree_base = work_dir / "worktrees"
+        config_path = work_dir / "isolation.yml"
+        log_path = run_dir / "omp-isolation-live.jsonl"
+        command = (
+            f"{bin_path} --mode rpc --config {config_path} (isolated:true child, apply:false)"
+        )
+        failure = _prepare_isolation_repo(repo, worktree_base)
+        config_path.write_text(
+            ISOLATION_CONFIG.format(base=worktree_base.as_posix()), encoding="utf-8"
+        )
+
+        frames: list = []
+        settled = False
+        child_id = ""
+        patch_path = ""
+        patch_excerpt = ""
+        reported = ""
+        exit_code: Optional[int] = None
+        if not failure:
+            session = OmpRpcSession(
+                str(bin_path),
+                cwd=repo,
+                max_seconds=LIVE_MAX_SECONDS,
+                log_path=log_path,
+                # The overlay is what turns task isolation on with apply=false; without it
+                # the child runs in the parent checkout and the probe must fail, not pass.
+                extra_args=["--config", str(config_path)],
+                # The isolation workspace must live inside this run's temp root so the
+                # residue check can prove the probe left no worktree behind.
+                env={"OMP_WORKTREE_DIR": str(worktree_base)},
+            )
+            try:
+                session.start()
+                descriptor = session.negotiate()
+                session.subscribe_subagents("events")
+                admission = session.prompt(ISOLATION_PROMPT)
+                settled = session.wait_settled(prompt_id=admission.get("id"))
+                frames = session.frames
+                child_id, patch_path = _isolated_child_patch(frames)
+                patch_excerpt = _patch_excerpt(patch_path) if patch_path else ""
+                reported = _reported_workspace(frames)
+            except (OmpRpcError, OSError) as exc:
+                failure = str(exc)
+            finally:
+                exit_code = session.close()
+
+        residue = _isolation_residue(repo, worktree_base)
+        shutil.rmtree(work_dir, ignore_errors=True)
+        duration = round(time.time() - start, 3)
+
+        if failure:
+            return DriverScenarioResult(
+                scenario_id="runtime-isolation-omp",
+                description="Observed OMP isolation run failed before a settled isolated child",
+                command=command,
+                exit_code=1,
+                stdout=f"BLOCKED: {failure} (log={log_path})",
+                stderr=failure,
+                verdict="BLOCKED",
+                duration_s=duration,
+                evidence_level="offline",
+            )
+
+        settlement = reduce_child_settlement(frames, timed_out=not settled)
+        route_error = _model_route_error(frames)
+        literal_seen = bool(_LITERAL_PATTERN.search(_assistant_text(frames)))
+        protocol_v2 = descriptor.get("protocol_version") == 2
+        token_in_patch = ISOLATION_TOKEN in patch_excerpt
+        # A parent naming its own checkout as the child's workspace contradicts isolation.
+        reported_elsewhere = not reported or (
+            not reported.startswith(str(repo)) and str(repo) not in reported
+        )
+        summary = (
+            f"RPC v{descriptor['protocol_version']} exit={exit_code} settled={settled} "
+            f"literal={literal_seen} child={child_id or 'none'} patch={patch_path or 'none'} "
+            f"token_in_patch={token_in_patch} reported={reported or 'none'} "
+            f"sentinel_intact={residue['sentinel_intact']} child_file_absent={residue['child_file_absent']} "
+            f"tree_clean={residue['tree_clean']} worktrees={residue['worktree_count']} "
+            f"worktree_leftovers={residue['worktree_leftovers'] or 'none'}"
+        )
+
+        isolation_observed = (
+            bool(patch_path)
+            and bool(patch_excerpt)
+            and token_in_patch
+            and residue["sentinel_intact"]
+            and residue["child_file_absent"]
+            and residue["tree_clean"]
+            and residue["worktree_count"] == 1
+            and not residue["worktree_leftovers"]
+        )
+
+        if (
+            settlement is not None
+            and settlement["terminal_outcome"] == "success"
+            and settled
+            and exit_code == 0
+            and protocol_v2
+            and literal_seen
+            and reported_elsewhere
+            and isolation_observed
+        ):
+            return DriverScenarioResult(
+                scenario_id="runtime-isolation-omp",
+                description=(
+                    "Observed live OMP isolated `task` child: parent sentinel untouched, "
+                    "delta captured under apply=false, no worktree residue"
+                ),
+                command=command,
+                exit_code=0,
+                stdout=summary,
+                stderr="",
+                verdict="PASS",
+                duration_s=duration,
+                evidence_level="observed_live",
+                settlement=settlement,
+            )
+
+        unmet: List[str] = []
+        if settlement is None:
+            unmet.append("no single terminal child lifecycle")
+        elif settlement["terminal_outcome"] != "success":
+            unmet.append(f"child outcome {settlement['terminal_outcome']}")
+        if not settled:
+            unmet.append("session did not settle after the prompt")
+        if exit_code != 0:
+            unmet.append(f"process exit {exit_code}")
+        if not protocol_v2:
+            unmet.append(f"negotiated protocol v{descriptor.get('protocol_version')}")
+        if not literal_seen:
+            unmet.append("parent reply did not carry PARENT_DONE")
+        if not reported_elsewhere:
+            unmet.append(f"parent named its own checkout as the child workspace ({reported})")
+        if not patch_path:
+            unmet.append("no captured isolation patch (child was not observed isolated)")
+        elif not patch_excerpt or not token_in_patch:
+            unmet.append(f"captured patch did not hold the {ISOLATION_TOKEN} write")
+        if not residue["sentinel_intact"]:
+            unmet.append("parent sentinel changed")
+        if not residue["child_file_absent"] or not residue["tree_clean"]:
+            unmet.append("isolated delta reached the parent checkout")
+        if residue["worktree_count"] != 1 or residue["worktree_leftovers"]:
+            unmet.append(f"worktree residue left behind: {residue['worktree_leftovers']}")
+
+        verdict = "BLOCKED" if route_error else "FAIL"
+        return DriverScenarioResult(
+            scenario_id="runtime-isolation-omp",
+            description="Observed live OMP isolation run did not prove the workspace boundary",
+            command=command,
+            exit_code=exit_code if exit_code is not None else 1,
+            stdout=summary,
+            stderr=route_error or "; ".join(unmet),
+            verdict=verdict,
+            duration_s=duration,
+            evidence_level="offline",
         )
 
     def evidence_capture(self, run_dir: Path) -> DriverScenarioResult:
