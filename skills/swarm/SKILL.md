@@ -24,6 +24,7 @@ Open a todolist with one entry per phase before launching anything.
 3. Set N from the user or derive it from the shape. N is total workers.
 4. Pick the worker model from toml key `swarm-workers` per `../setup-pstack/references/resolve-model.md`. Absent file: send the host default model resolved from the active profile (omit if rejected). Missing key, `inherit-parent`, or `auto`: omit `model`. For a model race, name each arm from this session's detected slugs only.
 5. Give each worker its own writable output when it writes. Use a worktree, branch, or `/tmp/swarm-<slug>/worker-<n>/`. When workers verify or measure commits, each brief names the exact SHAs. A measurement brief also names the method: sample count, what one sample is, and order. The worker records both in its result.
+6. Freeze each brief before dispatch: the brief a lane receives is the brief it reports against, a rewritten brief is a new lane, and follow-up work is a fresh spawn rather than a resume with different scope. Dispatch through the fan-out route the active harness profile binds (its host reference names the concrete mechanism); a lane that reuses a warm or keep-alive worker context is not a fresh lane, and the run reports that reuse as an adaptation or a gap.
 
 When the work is an upstream refresh, `port` and `new-skill-lever` are shared-intent labels, not a write permit. Seed with `scripts/partition.py seed --cache .worktrees/upstream-cursor-plugins --out /tmp/pstack-refresh/overlay.tsv`. Seed pin and tip are the UPSTREAM tree and cache `origin/main`, not the prior table comments. `apply-check ok` plus dry-run copy=0 is not overlay-seeded. Overlay identity is skip `idempotent-equal`. Dest-adapted is copy-bucket rows refused `already-remapped` or `host-keep`. Relative `--cache` is resolved on the primary checkout. Coverage is name-status only (`print --coverage` on that overlay). Workers fill unclassified fragments and do not rewrite the canonical TSV. Skip, host-owned, and audit stay fences. Reopen audit rows whose notes only record skipped density. After classify, copy with `scripts/apply.py` on that overlay. Remap proof is apply refuse (`already-remapped`, `host-keep` via `dest_looks_raw_cursor`), not dest-equals-source. Prove dest with `apply-check`. Pass the same `--cache` primary-checkout path to seed, coverage, apply, and apply-check. Nested overlay caches under linked worktrees are leftovers. `python3 skills/swarm/scripts/refresh-hygiene.py` reports them. `--apply` deletes only those clones. Coverage CLI uses `resolve_cache`.
 
@@ -33,13 +34,13 @@ When the work is an upstream refresh, `port` and `new-skill-lever` are shared-in
 
 Every brief stands alone. Include the goal, scope, exact slice or race arm, how to verify, and what to report. Reports use `PASS`, `ISSUES`, or `BLOCKED` with evidence bound to an artifact: a receipt scenario id, a file hash, or a commit SHA. A prose-only verdict is not a result. A worker that can prove a defect reports `ISSUES` and lists every issue it can prove, not only the first.
 
-If a worker drops out, proceed with N-1 and note it. The report names the deadline it enforced and which lanes it dropped.
+If a worker drops out, proceed with N-1 and note it. The report names the deadline it enforced and which lanes it dropped. A lane you cancel, or that the host kills while it is in flight, is the same reported dropout: it never becomes a pass and is never silently omitted.
 
 ## Phase C: Aggregate
 
 Read the terminal results. Drop a result that does not record the SHAs and method its brief names, and rerun that worker once. After a second miss, record a gap. A gap does not count as a pass. For coverage, every required slice needs a result. For a race, apply the selection rule declared up front. Use first pass, rank all, or best-of. Do not paste raw worker dumps.
 
-Keep a compact result table, one-line evidenced issues, and explicit gaps or dropouts.
+Keep a compact result table, one-line evidenced issues, and explicit gaps or dropouts. Synthesis preserves gaps: a dropped or cancelled lane keeps its gap in the table and in the report, and the parent never backfills its slice or counts it as covered.
 
 ## Phase D: Report
 

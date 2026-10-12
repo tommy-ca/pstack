@@ -17,7 +17,44 @@ This document maps portable pstack capabilities (defined in [`pstack-portability
 
 ## Subagent policy
 
-- Subagent dispatch uses native OMP concurrency pools.
+- Subagent dispatch uses native OMP concurrency limits (`task.maxConcurrency`, `async.maxJobs`); the keep-alive `workpool()` is a reuse optimization, never an independence guarantee.
 - Writers isolate with git worktrees (`workspace.isolated`).
 - Depth is capped at 1; parent owns every spawn.
 - File pointers are passed instead of inlined dumps.
+
+## Compositional dispatch (swarm, arena, interrogate)
+
+Two native dispatch routes satisfy `agent.spawn` / `agent.join`. They are separate
+host paths, not interchangeable, so a run records which route it used.
+
+| Step | `task` route | eval `agent()` route |
+| --- | --- | --- |
+| Fan-out | one call with a `tasks[]` batch (`task.batch`, default on); `context` carries the shared brief | one `agent(prompt, {...})` per lane, handles collected in one cell |
+| Isolation | `isolated: true` per item (`task.isolation.enabled`); plan mode off | `isolated: true` per call; plan mode off |
+| Join | background-job completion, or the `wait` tool | `wait(handles, timeout)`; `raise_errors=False` returns a failed or cancelled handle in its slot |
+| Cancel | `write proc://<id>/kill` (job id or agent id) | `handle.cancel()` |
+| Inspect | `agent://<id>` / `history://<id>` | `handle.output()` / `history://<id>` |
+
+Rules both routes share:
+
+- **Frozen briefs.** A lane's brief is fixed before dispatch and is the brief it
+  reports against. A rewritten brief is a new lane; follow-up work is a fresh
+  spawn, never a resume with different scope.
+- **One writer per target.** Writers run `isolated` with one target each; the
+  backend may be a worktree, an overlay or a copy. Two lanes never share a
+  writable path.
+- **Bounded join.** The join deadline is named before spawn. A lane still running
+  at the deadline is a dropout: `wait(handles, timeout)` raises `TimeoutError`
+  there, and a cancelled lane settles as `cancelled` in the typed settlement.
+  Aborting a wait cancels the handles it was waiting on and waits for them to
+  settle, so aborting is not a nudge. A dropout is never a pass.
+- **Keep-alive reuse is not independence.** `workpool()` keeps workers alive and
+  hands the next item to the idle worker with the lowest context usage, so a
+  reused worker carries the previous item's context. It MUST NOT be presented as
+  a blinded independent context unless `eval.workpool.freshAgents=true` was
+  observed in the run's effective settings, which instead gives every item a
+  fresh agent and no follow-up batching. Absent that observation the run reports
+  reused contexts as an adaptation or a gap. `task` items and `agent()` handles
+  are unaffected: each child gets its own session and never inherits the parent's
+  eval kernel state. Explicitly passed kernel-defined `tools` are the one bridge
+  back into the parent kernel, and they run there.

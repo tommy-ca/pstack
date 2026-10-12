@@ -45,7 +45,9 @@ If the host rejects a slug, omit `model` or retry only with a slug the error tex
 
 Fill the reviewer prompt with `scripts/pack.py --intent` plus exactly one of `--range` or `--diff-file` (`references/rubric.md`, `references/code-quality-review.md`). Do not hand-fill the template. Point reviewers at the packed `prompt.md` rather than inlining dumps. The same packed prompt goes to all reviewers, so every model applies the code-quality lens.
 
-Join the reviewers under a bounded join deadline named before spawn (e.g. `join deadline: 10m`). A reviewer that has not returned by the deadline is a reported dropout, not a pass.
+Join the reviewers under a bounded join deadline named before spawn (e.g. `join deadline: 10m`). A reviewer that has not returned by the deadline is a reported dropout, not a pass. A reviewer you cancel, or that the host kills in flight, is the same reported dropout, never a pass and never silently omitted.
+
+The pack is frozen before spawn: every reviewer receives the identical packed prompt, and a pack rebuilt mid-run is a new review. Dispatch the reviewers through the fan-out route the active harness profile binds (its host reference names the concrete mechanism). Each reviewer runs in a fresh, independent context: a warm or keep-alive worker reused across reviewers carries the previous arm's context, so a run that reuses one reports an adaptation or a gap, never a blinded multi-model review. Reviewers are read-only: the prompt forbids edits, and the run states whether the host enforced that boundary or the restriction stayed advisory.
 
 Each reviewer produces structured findings as described in the prompt template.
 
@@ -58,6 +60,7 @@ As results come back, build a unified picture:
 3. **Identify lone-model findings**. Still worth reading, but weight accordingly.
 4. **Deduplicate**. Different models may describe the same issue differently. Merge these and note which models raised it.
 5. **Note disagreements**. If one model flags something and another explicitly says the opposite, that's useful context for the verdict.
+6. **Keep the gaps**. A dropped or cancelled reviewer keeps its gap: the verdict names the arm as absent, its missing findings are never inferred or backfilled, and the Agreement Map states which arms actually reported.
 
 ## Step 5, Lead Judgment
 
