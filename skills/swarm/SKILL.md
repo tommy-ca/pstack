@@ -29,11 +29,11 @@ When the work is an upstream refresh, `port` and `new-skill-lever` are shared-in
 
 ## Phase B: Fan out
 
-`mkdir` each worker output dir before spawn `cwd`. Spawn all N workers in one parent turn using the host's `agent.spawn` primitive (per active harness profile and host references): role/type `pstack:swarm-workers` ([`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md)), isolated workspace (`workspace.isolated`), background/async execution, and the configured `model`. Use shared workspace (`workspace.shared`) only when the worker needs this machine's cwd. Do not send `reasoning_effort` unless supported. Join with the host's `agent.join` primitive (per active harness profile).
+`mkdir` each worker output dir before spawn `cwd`. Spawn all N workers in one parent turn using the host's `agent.spawn` primitive (per active harness profile and host references): role/type `pstack:swarm-workers` ([`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md)), isolated workspace (`workspace.isolated`), background/async execution, and the configured `model`. Use shared workspace (`workspace.shared`) only when the worker needs this machine's cwd. Do not send `reasoning_effort` unless supported. Join with the host's `agent.join` primitive (per active harness profile) under a bounded join deadline named before spawn (e.g. `join deadline: 10m`). A lane that has not returned by the deadline is a reported dropout, never a pass.
 
-Every brief stands alone. Include the goal, scope, exact slice or race arm, how to verify, and what to report. Reports use `PASS`, `ISSUES`, or `BLOCKED` with evidence. A worker that can prove a defect reports `ISSUES` and lists every issue it can prove, not only the first.
+Every brief stands alone. Include the goal, scope, exact slice or race arm, how to verify, and what to report. Reports use `PASS`, `ISSUES`, or `BLOCKED` with evidence bound to an artifact: a receipt scenario id, a file hash, or a commit SHA. A prose-only verdict is not a result. A worker that can prove a defect reports `ISSUES` and lists every issue it can prove, not only the first.
 
-If a worker drops out, proceed with N-1 and note it.
+If a worker drops out, proceed with N-1 and note it. The report names the deadline it enforced and which lanes it dropped.
 
 ## Phase C: Aggregate
 
@@ -43,4 +43,4 @@ Keep a compact result table, one-line evidenced issues, and explicit gaps or dro
 
 ## Phase D: Report
 
-Return one consolidated in-chat report with the table, issue one-liners, gaps or dropouts, and the race rule when used.
+Return one consolidated in-chat report with the table, issue one-liners, gaps or dropouts, and the race rule when used. When the report claims host parity, name the declared census read from `pstack.package.json#host_targets` via `get_declared_hosts` in `scripts/verify-portable.py`, with each host's evidence tier. A missing host is a stated gap, not silence.
