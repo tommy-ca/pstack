@@ -2,7 +2,7 @@
   "phase": "candidate",
   "corpus_version": "1.0.0-dsh-candidate",
   "source": "openspec/changes/2026-10-11-deepseek-skill-portability/qualification-and-eval.md#corpus-positive-and-negative-examples",
-  "notes": "Candidate phase of the #310 corpus. The cases, probes and budgets are the frozen baseline in cases.json, pinned here by sha256 and re-read, not restated: this file carries only the phase metadata and the controls re-derived because the candidate tree changed the artifact the probe reads. Every re-derivation must be justified by a frozen control that stopped separating; the runner refuses an override that is not, so the controls cannot be shaped to produce a pass. Measured outcome: E05 resolves (P13 landed the consumer-reachability contract) and controls are 29/29 sensitive - E05's frozen control is the one re-derivation. The candidate verdict stays UNTESTED for the remaining gap: E04's frozen probe reads skills/poteto-mode/playbooks/bug-fix.md, which still carries no typed partial/unknown outcome, so that required evidence is recorded as missing rather than failed. The frozen baseline phase stays a revision-bound record of 52333df, which is no longer reachable from main: it reports the record and names the cases the tree moved (see scoring_table_candidate.json provenance), so this phase is the only live measurement.",
+  "notes": "Candidate phase of the #310 corpus. The cases, probes and budgets are the frozen baseline in cases.json, pinned here by sha256 and re-read, not restated: this file carries only the phase metadata and the controls re-derived because the candidate tree changed the artifact the probe reads. Every re-derivation must be justified by a frozen control that stopped separating; the runner refuses an override that is not, so the controls cannot be shaped to produce a pass. Measured outcome: E05 resolves (P13 landed the consumer-reachability contract) and controls are 29/29 sensitive - E05's frozen control is the one re-derivation. The candidate verdict stays UNTESTED for the remaining gap: E04's frozen probe reads skills/poteto-mode/playbooks/bug-fix.md, which still carries no typed partial/unknown outcome, so that required evidence is recorded as missing rather than failed. The frozen baseline phase stays a revision-bound record of 52333df, which is no longer reachable from main: it reports the record and names the cases the tree moved (see scoring_table_candidate.json provenance), so this phase is the only live measurement. E04's frozen control is the second re-derivation for the same reason.",
   "baseline_corpus": {
     "file": "cases.json",
     "phase": "baseline",
@@ -21,6 +21,16 @@
         "expect_match": false
       },
       "reason": "P13 landed the consumer-reachability contract in the probe's scope, so the probe predicate now fires on the artifact and the frozen control text ('the caller in another package still uses it') fires with it, leaving the control insensitive. The re-derived control is the near-miss reasoning the contract exists to reject - a deletion decided without searching for external users - and it does not match the probe predicate, so it separates."
+    },
+    {
+      "case_id": "E04",
+      "probe_index": 1,
+      "probe_token": "partial|unknown",
+      "control": {
+        "text": "the write finished cleanly",
+        "expect_match": false
+      },
+      "reason": "This fix lands the typed-effect contract in the probe scope, so the probe predicate now fires on the artifact and the frozen control text ('the write is left in an unknown state') fires with it, leaving the control insensitive. The re-derived control is the clean-slate assumption the contract exists to reject, and it does not match the probe predicate, so it separates."
     }
   ]
 }

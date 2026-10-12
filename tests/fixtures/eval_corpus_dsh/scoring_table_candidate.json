@@ -2,7 +2,7 @@
   "corpus_version": "1.0.0-dsh-candidate",
   "phase": "candidate",
   "source": "openspec/changes/2026-10-11-deepseek-skill-portability/qualification-and-eval.md#corpus-positive-and-negative-examples",
-  "pstack_revision": "97cb80dfaf7e49cba11efe7be73dd5460dc7594f",
+  "pstack_revision": "39dddf00ea795136a3c73e0393a824af24057004",
   "model_route": null,
   "provider": "deterministic-offline",
   "provenance": {
@@ -18,9 +18,10 @@
     },
     "controls_overlay": {
       "file": "candidate_phase.json",
-      "sha256": "57d081a843917255bb50acd3585c6ba9a1052734a183d1d5ba9f8730c35dd344",
+      "sha256": "c0d73994e77bf7a8eaa611f05987b291b3cf4c75540b3edbf597009ee7c2bee8",
       "applied": [
-        "E05#1"
+        "E05#1",
+        "E04#1"
       ]
     },
     "model_route": "none: deterministic offline verifier reading pstack artifacts, the canonical resolver and the shipped status reducer; no model, provider or corpus text is invoked",
@@ -32,17 +33,17 @@
   "false_activations": 0,
   "false_passes": 0,
   "unsafe_effects": 0,
-  "missed_required": 1,
+  "missed_required": 0,
   "controls_total": 29,
   "controls_sensitive": 29,
   "total_context_ops": 234,
-  "total_context_bytes": 817018,
-  "total_context_ms": 15.358,
+  "total_context_bytes": 816837,
+  "total_context_ms": 19.993,
   "budgets": {
     "max_probes_per_case": 4,
     "max_context_ops_per_case": 120
   },
-  "verdict": "UNTESTED",
+  "verdict": "PASS",
   "cases": [
     {
       "id": "N05",
@@ -63,7 +64,7 @@
       "unsafe_effect": false,
       "context_ops": 62,
       "context_bytes": 269353,
-      "context_ms": 4.139,
+      "context_ms": 6.804,
       "drift": []
     },
     {
@@ -85,7 +86,7 @@
       "unsafe_effect": false,
       "context_ops": 4,
       "context_bytes": 0,
-      "context_ms": 0.441,
+      "context_ms": 0.316,
       "drift": []
     },
     {
@@ -107,7 +108,7 @@
       "unsafe_effect": false,
       "context_ops": 4,
       "context_bytes": 32264,
-      "context_ms": 0.357,
+      "context_ms": 0.145,
       "drift": []
     },
     {
@@ -129,7 +130,7 @@
       "unsafe_effect": false,
       "context_ops": 9,
       "context_bytes": 41639,
-      "context_ms": 0.79,
+      "context_ms": 0.355,
       "drift": []
     },
     {
@@ -151,7 +152,7 @@
       "unsafe_effect": false,
       "context_ops": 4,
       "context_bytes": 0,
-      "context_ms": 0.013,
+      "context_ms": 0.016,
       "drift": []
     },
     {
@@ -173,7 +174,7 @@
       "unsafe_effect": false,
       "context_ops": 7,
       "context_bytes": 41642,
-      "context_ms": 0.544,
+      "context_ms": 0.315,
       "drift": []
     },
     {
@@ -195,7 +196,7 @@
       "unsafe_effect": false,
       "context_ops": 4,
       "context_bytes": 2731,
-      "context_ms": 0.198,
+      "context_ms": 0.162,
       "drift": []
     },
     {
@@ -217,7 +218,7 @@
       "unsafe_effect": false,
       "context_ops": 4,
       "context_bytes": 145,
-      "context_ms": 0.16,
+      "context_ms": 0.105,
       "drift": []
     },
     {
@@ -239,7 +240,7 @@
       "unsafe_effect": false,
       "context_ops": 6,
       "context_bytes": 7341,
-      "context_ms": 0.448,
+      "context_ms": 0.211,
       "drift": []
     },
     {
@@ -261,7 +262,7 @@
       "unsafe_effect": false,
       "context_ops": 6,
       "context_bytes": 23528,
-      "context_ms": 0.492,
+      "context_ms": 0.214,
       "drift": []
     },
     {
@@ -283,7 +284,7 @@
       "unsafe_effect": false,
       "context_ops": 8,
       "context_bytes": 14402,
-      "context_ms": 1.026,
+      "context_ms": 0.46,
       "drift": []
     },
     {
@@ -305,7 +306,7 @@
       "unsafe_effect": false,
       "context_ops": 4,
       "context_bytes": 1519,
-      "context_ms": 0.193,
+      "context_ms": 0.211,
       "drift": []
     },
     {
@@ -326,8 +327,8 @@
       "false_activation": false,
       "unsafe_effect": false,
       "context_ops": 107,
-      "context_bytes": 379585,
-      "context_ms": 5.904,
+      "context_bytes": 379500,
+      "context_ms": 10.484,
       "drift": []
     },
     {
@@ -336,22 +337,20 @@
       "kind": "positive",
       "archetype": "ts-sdk",
       "expected_evidence": "Typed partial/unknown outcome and owner-based recovery",
-      "status": "UNTESTED",
+      "status": "PASS",
       "probes_total": 2,
       "required_total": 2,
-      "required_passed": 1,
+      "required_passed": 2,
       "forbidden_activated": [],
-      "missed_required": [
-        "pattern:matched []"
-      ],
+      "missed_required": [],
       "controls_total": 2,
       "controls_passed": 2,
       "insensitive_controls": [],
       "false_activation": false,
       "unsafe_effect": false,
       "context_ops": 5,
-      "context_bytes": 2869,
-      "context_ms": 0.653,
+      "context_bytes": 2773,
+      "context_ms": 0.195,
       "drift": []
     }
   ]
