@@ -1,6 +1,6 @@
 {
   "host": "omp",
-  "support_state": "verified",
+  "support_state": "packaged",
   "skills_dir": ".omp/skills",
   "plugins_dir": "~/.omp/plugins",
   "plugin_manifest": ".omp-plugin/package.json",
@@ -12,7 +12,10 @@
       "primitive": "task",
       "enforcement": "hard",
       "verification_status": "verified",
-      "evidence_ref": ".audit/evidence/omp-receipt.json",
+      "evidence_ref": {
+        "receipt": ".audit/evidence/omp-receipt.json",
+        "scenario": "runtime-child-spawn-omp"
+      },
       "notes": "Observed live: a bounded omp --mode rpc v2 session negotiated protocol v2, prompted one `task` child, and reduced its terminal subagent_lifecycle plus resolvedModelIdentity into the typed settlement on runtime-child-spawn-omp (evidence_level observed_live)."
     },
     {
@@ -22,62 +25,69 @@
       "primitive": "task (completion / wait)",
       "enforcement": "hard",
       "verification_status": "verified",
-      "evidence_ref": ".audit/evidence/omp-receipt.json",
+      "evidence_ref": {
+        "receipt": ".audit/evidence/omp-receipt.json",
+        "scenario": "runtime-child-spawn-omp"
+      },
       "notes": "Observed live: the same RPC v2 session joined the child through prompt_result and session_settled and recorded the child's terminal subagent_lifecycle; join is the task primitive's completion path."
     },
     {
       "host": "omp",
       "capability": "agent.message",
       "implementation_status": "native",
-      "primitive": "task (session message)",
+      "primitive": "task (session continuation) / agent:// peer write",
       "enforcement": "hard",
-      "verification_status": "verified",
-      "evidence_ref": ".audit/evidence/omp-receipt.json"
+      "verification_status": "static-only",
+      "notes": "GAP: no receipt scenario settles messaging; statically mapped from can1357/oh-my-pi@0affc77 docs/tools/task.md (`write agent://<id>` peer messaging) and docs/rpc.md (`steer_subagent`). No live run has steered a child."
     },
     {
       "host": "omp",
       "capability": "agent.cancel",
       "implementation_status": "native",
-      "primitive": "task cancel / ps stop",
+      "primitive": "proc://<id>/kill / cancel_subagent",
       "enforcement": "hard",
-      "verification_status": "verified",
-      "evidence_ref": ".audit/evidence/omp-receipt.json"
+      "verification_status": "static-only",
+      "notes": "GAP: no receipt scenario settles cancellation; statically mapped from can1357/oh-my-pi@0affc77 docs/tools/task.md (`write proc://<jobId>/kill`, `proc://<agentId>/kill`) and docs/rpc.md (`cancel_subagent`, `get_subagents`). Issue #297 owes the observed cancellation."
     },
     {
       "host": "omp",
       "capability": "agent.resume",
       "implementation_status": "native",
-      "primitive": "omp session / --resume",
+      "primitive": "omp --resume (cold parent) / child handle revival",
       "enforcement": "hard",
-      "verification_status": "verified",
-      "evidence_ref": ".audit/evidence/omp-receipt.json"
+      "verification_status": "static-only",
+      "notes": "GAP: no receipt scenario settles resume. Split: cold parent resume is documented (can1357/oh-my-pi@0affc77 docs/session.md, SessionManager.continueRecent/open, `--resume`); child handle revival applies only to kept-alive or budget-stopped runs (can1357/oh-my-pi@0affc77 docs/tools/task.md) and was never observed, so no live resume is claimed."
     },
     {
       "host": "omp",
       "capability": "workspace.shared",
       "implementation_status": "native",
-      "primitive": "working directory (cwd) / single repo",
+      "primitive": "parent cwd / single repo",
       "enforcement": "hard",
-      "verification_status": "verified",
-      "evidence_ref": ".audit/evidence/omp-receipt.json"
+      "verification_status": "static-only",
+      "notes": "GAP: no receipt scenario settles shared workspace; statically mapped from can1357/oh-my-pi@0affc77 docs/tools/task.md (non-isolated spawns run with the parent cwd)."
     },
     {
       "host": "omp",
       "capability": "workspace.isolated",
       "implementation_status": "native",
-      "primitive": "git worktree",
+      "primitive": "git worktree / overlay (task.isolation.backend)",
       "enforcement": "hard",
-      "verification_status": "verified",
-      "evidence_ref": ".audit/evidence/omp-receipt.json"
+      "verification_status": "static-only",
+      "evidence_ref": {
+        "receipt": ".audit/evidence/omp-receipt.json",
+        "scenario": "runtime-isolation-omp"
+      },
+      "notes": "Statically mapped and probe-only: runtime-isolation-omp records a CLI surface check, not an observed isolation. Backends (can1357/oh-my-pi@0affc77 docs/tools/task.md, task.isolation.enabled + isolation.backend) are setting-gated."
     },
     {
       "host": "omp",
       "capability": "workspace.readonly",
       "implementation_status": "native",
-      "primitive": "read_only_mount",
+      "primitive": "plan mode read-only tool set",
       "enforcement": "advisory",
-      "verification_status": "verified",
-      "evidence_ref": ".audit/evidence/omp-receipt.json"
+      "verification_status": "static-only",
+      "notes": "GAP: no receipt scenario, and no per-spawn read-only field exists; can1357/oh-my-pi@0affc77 docs/tools/task.md gives plan mode the read-only tool set (read/grep/glob/web_search) and rejects isolation/apply controls. Advisory, never hard."
     },
     {
       "host": "omp",
@@ -85,8 +95,8 @@
       "implementation_status": "native",
       "primitive": "ask",
       "enforcement": "advisory",
-      "verification_status": "verified",
-      "evidence_ref": ".audit/evidence/omp-receipt.json"
+      "verification_status": "static-only",
+      "notes": "GAP: no receipt scenario settles asking; statically mapped from can1357/oh-my-pi@0affc77 docs/tools/ask.md."
     },
     {
       "host": "omp",
@@ -94,8 +104,8 @@
       "implementation_status": "native",
       "primitive": "ask (blocking confirmation)",
       "enforcement": "advisory",
-      "verification_status": "verified",
-      "evidence_ref": ".audit/evidence/omp-receipt.json"
+      "verification_status": "static-only",
+      "notes": "GAP: no receipt scenario settles the confirmation gate; statically mapped from can1357/oh-my-pi@0affc77 docs/approval-mode.md (prompt tier before write/exec, fails closed when no UI can confirm)."
     },
     {
       "host": "omp",
@@ -103,8 +113,8 @@
       "implementation_status": "native",
       "primitive": "todo",
       "enforcement": "advisory",
-      "verification_status": "verified",
-      "evidence_ref": ".audit/evidence/omp-receipt.json"
+      "verification_status": "static-only",
+      "notes": "GAP: no receipt scenario settles progress-state updates; statically mapped from can1357/oh-my-pi@0affc77 docs/tools/todo.md."
     },
     {
       "host": "omp",
@@ -112,36 +122,35 @@
       "implementation_status": "gap",
       "primitive": null,
       "enforcement": "advisory",
-      "verification_status": "verified",
-      "evidence_ref": ".audit/evidence/omp-receipt.json",
-      "notes": "No native scheduler in OMP"
+      "verification_status": "unverified",
+      "notes": "GAP: no scheduler exists to verify. OMP at can1357/oh-my-pi@0affc77 exposes no cron or scheduled-run surface, so no scenario can settle this row."
     },
     {
       "host": "omp",
       "capability": "monitor",
       "implementation_status": "shim",
-      "primitive": "ps / background tasks",
+      "primitive": "read proc://<id> / get_subagents",
       "enforcement": "soft",
-      "verification_status": "verified",
-      "evidence_ref": ".audit/evidence/omp-receipt.json"
+      "verification_status": "static-only",
+      "notes": "GAP: no receipt scenario settles monitoring; statically mapped shim from can1357/oh-my-pi@0affc77 docs/tools/task.md (read proc://<id> for non-consuming inspection, onUpdate progress) and docs/rpc.md (`get_subagents`)."
     },
     {
       "host": "omp",
       "capability": "session.persist",
       "implementation_status": "native",
-      "primitive": "omp session state",
+      "primitive": "file-backed SessionManager (.jsonl)",
       "enforcement": "hard",
-      "verification_status": "verified",
-      "evidence_ref": ".audit/evidence/omp-receipt.json"
+      "verification_status": "static-only",
+      "notes": "GAP: no receipt scenario settles session persistence; statically mapped from can1357/oh-my-pi@0affc77 docs/sdk.md (SessionManager.create persists to session files)."
     },
     {
       "host": "omp",
       "capability": "session.resume",
       "implementation_status": "native",
-      "primitive": "omp resume",
+      "primitive": "SessionManager.continueRecent/open/list + --resume",
       "enforcement": "hard",
-      "verification_status": "verified",
-      "evidence_ref": ".audit/evidence/omp-receipt.json"
+      "verification_status": "static-only",
+      "notes": "GAP: no receipt scenario settles session resume; statically mapped from can1357/oh-my-pi@0affc77 docs/sdk.md and docs/session-operations-export-share-fork-resume.md."
     },
     {
       "host": "omp",
@@ -149,8 +158,12 @@
       "implementation_status": "native",
       "primitive": "receipts under .audit/evidence/",
       "enforcement": "hard",
-      "verification_status": "verified",
-      "evidence_ref": ".audit/evidence/omp-receipt.json"
+      "verification_status": "static-only",
+      "evidence_ref": {
+        "receipt": ".audit/evidence/omp-receipt.json",
+        "scenario": "runtime-evidence-capture-omp"
+      },
+      "notes": "Offline scenario only: runtime-evidence-capture-omp checks that the durable receipt exists; no live capture was observed."
     },
     {
       "host": "omp",
@@ -158,13 +171,17 @@
       "implementation_status": "native",
       "primitive": "scripts/verify-portable.py",
       "enforcement": "hard",
-      "verification_status": "verified",
-      "evidence_ref": ".audit/evidence/omp-receipt.json"
+      "verification_status": "static-only",
+      "evidence_ref": {
+        "receipt": ".audit/evidence/omp-receipt.json",
+        "scenario": "doctor-profile-omp"
+      },
+      "notes": "Offline scenario only: doctor-profile-omp validates this typed profile through scripts/portability_schema.py; no live verification run is recorded."
     }
   ],
   "evidence_ledger": [
     {
-      "claim": "OMP runtime plane observed live: a bounded omp --mode rpc v2 session negotiated protocol v2, spawned and joined one real model-backed `task` child, and reduced it to a typed settlement on runtime-child-spawn-omp. The package plane is an offline lifecycle fixture only, while the native installed-package load is proven by scripts/prove-omp-native-package.py against the real binary; this profile deliberately underclaims what the reducer currently derives.",
+      "claim": "OMP runtime plane observed live: a bounded omp --mode rpc v2 session negotiated protocol v2, spawned and joined one real model-backed `task` child, and reduced it to a typed settlement on runtime-child-spawn-omp. Only agent.spawn and agent.join claim verified, each pinning that observed_live scenario; the other rows are static-only (pinned to the scenario that exists where one does, otherwise carrying no scenario pin) or, for schedule, unverified. The package plane is an offline lifecycle fixture only, while the native installed-package load is proven by scripts/prove-omp-native-package.py against the real binary; this profile deliberately underclaims what the reducer currently derives, so it claims packaged, not verified.",
       "kind": "runtime",
       "artifact": ".audit/evidence/omp-receipt.json",
       "command": "PSTACK_RUN_OMP_LIVE=1 python3 scripts/verify-portable.py run --host omp",

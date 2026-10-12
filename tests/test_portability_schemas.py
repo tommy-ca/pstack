@@ -86,6 +86,45 @@ def test_binding_requires_evidence_when_claimed_verified() -> None:
     binding.validate()
 
 
+def test_binding_evidence_ref_pins_a_scenario_or_stays_receipt_only() -> None:
+    schema = json.loads((SCHEMAS_DIR / "binding.schema.json").read_text(encoding="utf-8"))
+    forms = schema["properties"]["evidence_ref"]["oneOf"]
+    assert [form["type"] for form in forms] == ["string", "object"]
+    assert forms[1]["required"] == ["receipt", "scenario"]
+    assert forms[1]["additionalProperties"] is False
+
+    binding = Binding(
+        host="omp",
+        capability="agent.spawn",
+        implementation_status="native",
+        enforcement="hard",
+        verification_status="verified",
+        primitive="task",
+        evidence_ref={"receipt": ".audit/evidence/omp-receipt.json", "scenario": "runtime-child-spawn-omp"},
+    )
+    binding.validate()
+    assert binding.receipt_ref == ".audit/evidence/omp-receipt.json"
+    assert binding.scenario_id == "runtime-child-spawn-omp"
+
+    binding.evidence_ref = {"receipt": ".audit/evidence/omp-receipt.json"}
+    with pytest.raises(ValidationError, match="must pin a non-empty receipt and scenario"):
+        binding.validate()
+
+    binding.evidence_ref = {
+        "receipt": ".audit/evidence/omp-receipt.json",
+        "scenario": "runtime-child-spawn-omp",
+        "evidence_level": "observed_live",
+    }
+    with pytest.raises(ValidationError, match="must pin a non-empty receipt and scenario"):
+        binding.validate()
+
+    # The bare path form stays valid: it proves the receipt exists and pins no scenario.
+    binding.evidence_ref = ".audit/evidence/omp-receipt.json"
+    binding.validate()
+    assert binding.receipt_ref == ".audit/evidence/omp-receipt.json"
+    assert binding.scenario_id is None
+
+
 def test_package_descriptor_rejects_runtime_orchestration_fields() -> None:
     desc = PackageDescriptor(
         id="pstack",

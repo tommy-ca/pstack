@@ -107,8 +107,22 @@ class Binding:
     enforcement: str
     verification_status: str
     primitive: Optional[str] = None
-    evidence_ref: Optional[str] = None
+    evidence_ref: Optional[str | Dict[str, str]] = None
     notes: Optional[str] = None
+
+    @property
+    def receipt_ref(self) -> Optional[str]:
+        """Receipt this binding points at, whether pinned to a scenario or receipt-only."""
+        if isinstance(self.evidence_ref, dict):
+            return self.evidence_ref.get("receipt")
+        return self.evidence_ref
+
+    @property
+    def scenario_id(self) -> Optional[str]:
+        """Scenario this binding pins, or None for a receipt-only reference."""
+        if isinstance(self.evidence_ref, dict):
+            return self.evidence_ref.get("scenario")
+        return None
 
     def validate(self) -> None:
         if self.host not in HOSTS:
@@ -130,8 +144,16 @@ class Binding:
                     f"Prompt-only posture ({self.primitive}) cannot be validated as hard enforcement for {self.capability}"
                 )
 
+        if isinstance(self.evidence_ref, dict):
+            if set(self.evidence_ref) != {"receipt", "scenario"} or not all(
+                isinstance(value, str) and value for value in self.evidence_ref.values()
+            ):
+                raise ValidationError(
+                    f"Binding for {self.capability} on {self.host} must pin a non-empty receipt and scenario"
+                )
+
         # Domain Rule: Runtime claims cannot validate as verified without evidence reference
-        if self.verification_status == "verified" and not self.evidence_ref:
+        if self.verification_status == "verified" and not self.receipt_ref:
             raise ValidationError(
                 f"Binding for {self.capability} on {self.host} claimed verified without evidence_ref"
             )
@@ -792,11 +814,11 @@ def derive_support_state(
         if binding.verification_status != "verified":
             has_mandatory_runtime_proof = False
             break
-        if not binding.evidence_ref or not (root / binding.evidence_ref).is_file():
+        if not binding.receipt_ref or not (root / binding.receipt_ref).is_file():
             has_mandatory_runtime_proof = False
             break
         try:
-            rdata = json.loads((root / binding.evidence_ref).read_text(encoding="utf-8"))
+            rdata = json.loads((root / binding.receipt_ref).read_text(encoding="utf-8"))
             receipt = VerificationReceipt(**rdata)
             receipt.validate()
             if receipt.host != profile.host:
@@ -835,11 +857,11 @@ def derive_support_state(
         if binding.verification_status != "verified":
             is_supported = False
             break
-        if not binding.evidence_ref or not (root / binding.evidence_ref).is_file():
+        if not binding.receipt_ref or not (root / binding.receipt_ref).is_file():
             is_supported = False
             break
         try:
-            rdata = json.loads((root / binding.evidence_ref).read_text(encoding="utf-8"))
+            rdata = json.loads((root / binding.receipt_ref).read_text(encoding="utf-8"))
             receipt = VerificationReceipt(**rdata)
             if receipt.planes.get("package") != "PASS":
                 is_supported = False
@@ -855,6 +877,41 @@ def derive_support_state(
     return "supported" if is_supported else "verified"
 
 
+def check_scenario_pins(
+    profile: HarnessProfile, receipts_by_ref: Dict[str, VerificationReceipt]
+) -> None:
+    """Resolve every scenario-pinned binding against the receipt it cites.
+
+    A pin naming a scenario its receipt does not record is a dangling reference. A
+    `verified` row must pin the observed_live settlement the spec requires before a
+    live behavior may be claimed; a weaker scenario belongs to a `static-only` row.
+    Receipt-only (bare path) references keep their existing contract and resolve by
+    path alone.
+    """
+    for binding in profile.bindings:
+        scenario_id = binding.scenario_id
+        if not scenario_id:
+            continue
+        receipt = receipts_by_ref.get(binding.receipt_ref or "")
+        if receipt is None:
+            raise ValidationError(
+                f"Dangling evidence path for {profile.host}: {binding.receipt_ref}"
+            )
+        scenario = next((s for s in receipt.scenarios if s.id == scenario_id), None)
+        if scenario is None:
+            raise ValidationError(
+                f"Binding for {binding.capability} on {binding.host} cites scenario {scenario_id!r}, "
+                f"which {binding.receipt_ref} does not record"
+            )
+        if binding.verification_status == "verified" and not _is_observed_settlement(scenario):
+            raise ValidationError(
+                f"Binding for {binding.capability} on {binding.host} claims verified but scenario "
+                f"{scenario_id!r} carries no observed_live settlement (evidence_level="
+                f"{scenario.evidence_level!r}, verdict={scenario.verdict!r}); restore the live proof "
+                "(omp: PSTACK_RUN_OMP_LIVE=1) or record the row as static-only"
+            )
+
+
 def check_evidence_durability(
     profile: HarnessProfile,
     root: Path,
@@ -862,7 +919,7 @@ def check_evidence_durability(
     current_revisions: Optional[SurfaceRevisions] = None,
 ) -> Dict[str, Any]:
     """Check that all evidence references exist, receipts are valid, and support state is derived."""
-    refs = {b.evidence_ref for b in profile.bindings if b.evidence_ref}
+    refs = {b.receipt_ref for b in profile.bindings if b.receipt_ref}
     refs.update(e.artifact for e in profile.evidence_ledger if e.artifact)
 
     if profile.support_state in ("verified", "supported") and not refs:
@@ -907,15 +964,15 @@ def check_evidence_durability(
             stale_details: List[str] = []
             for b in profile.bindings:
                 if b.capability in MANDATORY_SUPPORT_FLOOR:
-                    if b.evidence_ref and b.evidence_ref in staleness_by_ref:
-                        s_map = staleness_by_ref[b.evidence_ref]
+                    if b.receipt_ref and b.receipt_ref in staleness_by_ref:
+                        s_map = staleness_by_ref[b.receipt_ref]
                         for plane in ("canonical", "adapter", "runtime"):
                             if s_map.get(plane):
                                 stale_details.append(f"{b.capability} ({plane}): {', '.join(s_map[plane])}")
             if profile.support_state == "supported":
                 for b in profile.bindings:
-                    if b.evidence_ref and b.evidence_ref in staleness_by_ref:
-                        s_map = staleness_by_ref[b.evidence_ref]
+                    if b.receipt_ref and b.receipt_ref in staleness_by_ref:
+                        s_map = staleness_by_ref[b.receipt_ref]
                         if s_map.get("package"):
                             stale_details.append(f"{b.capability} (package): {', '.join(s_map['package'])}")
 
@@ -931,6 +988,8 @@ def check_evidence_durability(
                 f"Hand-authored support state {profile.support_state!r} for {profile.host} exceeds "
                 f"evidence-derived support state {derived_state!r}."
             )
+
+    check_scenario_pins(profile, receipts_by_ref)
 
     return {
         "valid": True,
