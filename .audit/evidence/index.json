@@ -3,8 +3,8 @@
   "hosts": {
     "grok": {
       "receipt": ".audit/evidence/grok-receipt.json",
-      "run_id": "grok-1791799245-788b5580",
-      "timestamp": "2026-10-12T10:00:59Z",
+      "run_id": "grok-1791799766-bd9cb574",
+      "timestamp": "2026-10-12T10:09:41Z",
       "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
@@ -27,8 +27,8 @@
     },
     "codex": {
       "receipt": ".audit/evidence/codex-receipt.json",
-      "run_id": "codex-1791799259-266a9ef8",
-      "timestamp": "2026-10-12T10:01:20Z",
+      "run_id": "codex-1791799781-b89d5316",
+      "timestamp": "2026-10-12T10:10:03Z",
       "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
@@ -51,8 +51,8 @@
     },
     "omp": {
       "receipt": ".audit/evidence/omp-receipt.json",
-      "run_id": "omp-1791799280-3b1a703f",
-      "timestamp": "2026-10-12T10:01:50Z",
+      "run_id": "omp-1791799803-aa427d51",
+      "timestamp": "2026-10-12T10:10:40Z",
       "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
@@ -65,7 +65,7 @@
         "upstream_head": "d0ef80d86795816da932a153458c5dbe192d294e",
         "spec_hash": "671f5d465db673df40350dab39fcf45ac14c7f0d178bace536a6dadf8c97e4d8",
         "skills_tree_hash": "9a07a7c86d535e6e014a780369ba607589174810cc4e28a2a9259cb0b1ed41b6",
-        "profile_hash": "01e8507d9b85eba5535aa8ece651618da20ab121c0be025e63da193746757e63",
+        "profile_hash": "830011e61af59cd8a5371f6477412dac616d29e7531d69b07b8369a33bdb9400",
         "package_descriptor_hash": "5a4cd6b99f113f422aaf2df0755e53d20227ce12a99acb28cd5075d96e5aaadb",
         "manifest_hash": "355cc6cf3e8a8cd9c7cf151d7147269101d3cbc53591d09ae6a9ca41fc6b0560",
         "driver_revision": "82d70a7d1829f42f7b63622b007b2996d6b94aa14028123217794f9e293c2273",
@@ -75,8 +75,8 @@
     },
     "opencode": {
       "receipt": ".audit/evidence/opencode-receipt.json",
-      "run_id": "opencode-1791799310-4d41d52e",
-      "timestamp": "2026-10-12T10:02:04Z",
+      "run_id": "opencode-1791799840-1f4979fe",
+      "timestamp": "2026-10-12T10:10:57Z",
       "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
@@ -99,8 +99,8 @@
     },
     "antigravity": {
       "receipt": ".audit/evidence/antigravity-receipt.json",
-      "run_id": "antigravity-1791799324-e27c60ba",
-      "timestamp": "2026-10-12T10:02:17Z",
+      "run_id": "antigravity-1791799857-950ae3f2",
+      "timestamp": "2026-10-12T10:11:12Z",
       "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
