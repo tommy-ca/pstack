@@ -1,0 +1,78 @@
+{
+  "source": "openspec/changes/2026-10-11-deepseek-skill-portability/atomic-patterns.md#B20",
+  "note": "Candidate agent-facing domain overlay packs (B20 DomainOverlay / B03 SkillEligibility). Each pack declares a positive applicability predicate, prohibited contexts and a typed unsupported-capability response. Prose is the agent-facing text an in-project pack would load; it is measured, not executed.",
+  "overlays": [
+    {
+      "id": "perf-baseline",
+      "title": "Performance baseline overlay",
+      "domain": "performance",
+      "required_capability": "perf_baseline",
+      "prohibited_contexts": ["docs_only", "read_only"],
+      "unsupported_response": "BLOCKED",
+      "prose": "### Performance baseline overlay\nApplies only when the project ships a `perf_baseline` workload (benchmark script or production trace) and the task concerns a user-visible latency or throughput change.\n- Compare the change against the committed baseline workload, not a microbenchmark.\n- Report the workload identifier, the pinned command, and both distributions.\n- If no matching baseline exists, record `perf_baseline` as absent and stop; do not invent a synthetic workload.\n"
+    },
+    {
+      "id": "ui-feedback",
+      "title": "UI feedback overlay",
+      "domain": "ui",
+      "required_capability": "web_ui",
+      "prohibited_contexts": ["docs_only", "backend_only", "non_ui"],
+      "unsupported_response": "BLOCKED",
+      "prose": "### UI feedback overlay\nApplies only when the project declares a `web_ui` capability and the change alters a rendered surface.\n- Observe the rendered state before and after; assert the visible outcome, not the internal setter.\n- Keep color and contrast rules project-local; pstack ships no universal theme tokens.\n- When the project has no UI, this overlay stays inactive.\n"
+    },
+    {
+      "id": "browser-evidence",
+      "title": "Browser evidence overlay",
+      "domain": "ui",
+      "required_capability": "browser_driver",
+      "prohibited_contexts": ["docs_only", "backend_only", "no_browser", "read_only"],
+      "unsupported_response": "BLOCKED",
+      "prose": "### Browser evidence overlay\nApplies only when a `browser_driver` exists in the project (Playwright/Cypress/CDP or an equivalent harness) and the task asks for demo evidence.\n- Capture the interaction and the resulting state; a recording GIF is evidence, not a substitute for an assertion.\n- Without a driver, record `browser_driver` as absent and return `BLOCKED`; never fabricate a recording.\n- Credentialed flows stay inactive unless the project grants them explicitly.\n"
+    },
+    {
+      "id": "bilingual-docs",
+      "title": "Bilingual docs overlay",
+      "domain": "docs",
+      "required_capability": "i18n",
+      "prohibited_contexts": ["backend_only", "single_locale"],
+      "unsupported_response": "UNTESTED",
+      "prose": "### Bilingual docs overlay\nApplies only when the project maintains more than one locale (`i18n`) and the change touches user-facing documentation.\n- Keep every locale in step; a translated page that lags the source is a defect, not a partial success.\n- Do not pair locales for a project that ships a single language.\n- Term and glossary choices stay project-owned; pstack ships no universal term triplets.\n"
+    },
+    {
+      "id": "upgrade-guide",
+      "title": "Upgrade guide overlay",
+      "domain": "release",
+      "required_capability": "release_tags",
+      "prohibited_contexts": ["non_versioned"],
+      "unsupported_response": "BLOCKED",
+      "prose": "### Upgrade guide overlay\nApplies only when the project publishes versioned artifacts (`release_tags`) and the change alters a public contract.\n- Write the migration from the previous supported version, naming removed and renamed surfaces.\n- Link the exact release note; never promise a version that is not tagged.\n- Internal-only changes on an unversioned project stay inactive.\n"
+    },
+    {
+      "id": "archival-notes",
+      "title": "Archival notes overlay",
+      "domain": "release",
+      "required_capability": "archival_records",
+      "prohibited_contexts": ["non_versioned"],
+      "unsupported_response": "BLOCKED",
+      "prose": "### Archival notes overlay\nApplies only when the project keeps `archival_records` (superseded designs, retired endpoints) that a reader must still be able to follow.\n- State what was retired, when, and what replaced it; link the durable record.\n- Never archive a surface that is still current.\n"
+    },
+    {
+      "id": "forge-stacked-pr",
+      "title": "Stacked-PR overlay",
+      "domain": "shipping",
+      "required_capability": "forge_stack_api",
+      "prohibited_contexts": ["read_only"],
+      "unsupported_response": "BLOCKED",
+      "prose": "### Stacked-PR overlay\nApplies only when the forge exposes a supported `forge_stack_api`.\n- Use the forge's own stack command and record the CLI plus version.\n- On a forge without that feature, land the chain with the supported branch/PR path and record the limitation; never emit a stack command the host cannot answer.\n"
+    },
+    {
+      "id": "dsh-theme-tokens",
+      "title": "DSH theme tokens overlay (project-owned pack)",
+      "domain": "ui",
+      "required_capability": "dsh_theme_tokens",
+      "prohibited_contexts": ["docs_only", "backend_only", "non_ui"],
+      "unsupported_response": "BLOCKED",
+      "prose": "### DSH theme tokens overlay (project-owned pack)\nApplies only when the project declares `dsh_theme_tokens`; it is never a common pstack requirement.\n- Read the project's token table before styling; do not assume DSH names.\n- Absent the capability, this pack MUST stay unloaded.\n"
+    }
+  ]
+}

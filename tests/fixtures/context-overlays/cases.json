@@ -1,0 +1,171 @@
+{
+  "source": "openspec/changes/2026-10-11-deepseek-skill-portability/qualification-and-eval.md",
+  "baseline_definition": "ungated_bytes sums every registered overlay pack, i.e. the naive no-gating behavior where all agent-facing overlay prose loads for every task.",
+  "cases": [
+    {
+      "id": "E06",
+      "archetype": "Web UI",
+      "task": "Investigate real user-path performance regression",
+      "capabilities": ["web_ui", "perf_baseline"],
+      "domain": "performance",
+      "contexts": [],
+      "requested": [],
+      "expect_activated": ["perf-baseline"],
+      "expect_blocked": []
+    },
+    {
+      "id": "E07",
+      "archetype": "Docs-only repo",
+      "task": "Improve dense CLI guide",
+      "capabilities": [],
+      "domain": "docs",
+      "contexts": ["docs_only"],
+      "requested": [],
+      "expect_activated": [],
+      "expect_blocked": []
+    },
+    {
+      "id": "N01",
+      "archetype": "Docs-only repo",
+      "task": "Fix broken navigation link",
+      "capabilities": [],
+      "domain": "docs",
+      "contexts": ["docs_only"],
+      "requested": [],
+      "expect_activated": [],
+      "expect_blocked": []
+    },
+    {
+      "id": "N02",
+      "archetype": "Backend Python repo",
+      "task": "Correct failing pytest assertion",
+      "capabilities": [],
+      "domain": "backend",
+      "contexts": ["backend_only"],
+      "requested": [],
+      "expect_activated": [],
+      "expect_blocked": []
+    },
+    {
+      "id": "N03",
+      "archetype": "Git host without official stack feature",
+      "task": "Land a verified PR chain",
+      "capabilities": [],
+      "domain": "shipping",
+      "contexts": [],
+      "requested": ["forge-stacked-pr"],
+      "expect_activated": [],
+      "expect_blocked": [["forge-stacked-pr", "BLOCKED"]]
+    },
+    {
+      "id": "N04",
+      "archetype": "Read-only code review",
+      "task": "Audit risky upgrade",
+      "capabilities": ["web_ui"],
+      "domain": "review",
+      "contexts": ["read_only"],
+      "requested": [],
+      "expect_activated": [],
+      "expect_blocked": []
+    },
+    {
+      "id": "N05",
+      "archetype": "Source-skill snippet with malicious command",
+      "task": "Evaluate rule applicability",
+      "capabilities": [],
+      "domain": "review",
+      "contexts": ["read_only"],
+      "requested": [],
+      "expect_activated": [],
+      "expect_blocked": []
+    },
+    {
+      "id": "N07",
+      "archetype": "Plain technical prose",
+      "task": "Remove session-specific narration",
+      "capabilities": [],
+      "domain": "docs",
+      "contexts": ["docs_only"],
+      "requested": [],
+      "expect_activated": [],
+      "expect_blocked": []
+    },
+    {
+      "id": "P01",
+      "archetype": "Bilingual docs project",
+      "task": "Update a user-facing guide in every locale",
+      "capabilities": ["i18n"],
+      "domain": "docs",
+      "contexts": [],
+      "requested": [],
+      "expect_activated": ["bilingual-docs"],
+      "expect_blocked": []
+    },
+    {
+      "id": "P02",
+      "archetype": "Web UI project with a browser driver",
+      "task": "Record demo evidence for a rendered change",
+      "capabilities": ["web_ui", "browser_driver"],
+      "domain": "ui",
+      "contexts": [],
+      "requested": ["ui-feedback", "browser-evidence"],
+      "expect_activated": ["ui-feedback", "browser-evidence"],
+      "expect_blocked": []
+    },
+    {
+      "id": "P03",
+      "archetype": "Versioned release project",
+      "task": "Document a public contract change",
+      "capabilities": ["release_tags"],
+      "domain": "release",
+      "contexts": [],
+      "requested": [],
+      "expect_activated": ["upgrade-guide"],
+      "expect_blocked": []
+    },
+    {
+      "id": "P04",
+      "archetype": "Forge with a supported stack API",
+      "task": "Land a verified stacked chain",
+      "capabilities": ["forge_stack_api"],
+      "domain": "shipping",
+      "contexts": [],
+      "requested": ["forge-stacked-pr"],
+      "expect_activated": ["forge-stacked-pr"],
+      "expect_blocked": []
+    },
+    {
+      "id": "P05",
+      "archetype": "Project with archival records",
+      "task": "Retire a superseded endpoint",
+      "capabilities": ["archival_records"],
+      "domain": "release",
+      "contexts": [],
+      "requested": [],
+      "expect_activated": ["archival-notes"],
+      "expect_blocked": []
+    },
+    {
+      "id": "P06",
+      "archetype": "Project declaring DSH theme tokens",
+      "task": "Style a component against the project token table",
+      "capabilities": ["web_ui", "dsh_theme_tokens"],
+      "domain": "ui",
+      "contexts": [],
+      "requested": [],
+      "expect_activated": ["ui-feedback", "dsh-theme-tokens"],
+      "expect_blocked": []
+    },
+    {
+      "id": "P07",
+      "archetype": "Performance task without a committed baseline",
+      "task": "Claim a latency improvement",
+      "capabilities": [],
+      "domain": "performance",
+      "contexts": [],
+      "requested": ["perf-baseline"],
+      "expect_activated": [],
+      "expect_blocked": [["perf-baseline", "BLOCKED"]]
+    }
+  ]
+}

@@ -40,6 +40,17 @@ without installing proprietary agent harness binaries:
 - `tests/test_evidence_receipts.py`: check-evidence receipt binding.
 - `tests/test_omp_rpc.py`: the RPC reducer and its offline frames. Its live case
   is gated by `PSTACK_RUN_OMP_LIVE=1`.
+- `tests/test_playbook_parity.py`: playbook contract parity across the shipped
+  playbooks and their named hosts.
+- `tests/test_review_effect_contracts.py`: the review owners' effect, reachability
+  and read-only-audit contracts, with negative controls.
+- `tests/test_context_overlays.py`: capability-gated domain overlay packs.
+  An overlay loads only when the project declares its capability and the task
+  domain matches, and a non-trigger archetype loads no overlay prose at all.
+- `tests/test_context_budget_contracts.py`: the measured-context and
+  bounded-output owners. It pins the two-owner prose contracts, and validates the
+  recorded task-work traces by recomputing their byte components from the
+  repository and refuses a gated arm that does more work than its baseline.
 
 Two suites in this list are tier-limited and a green job is not a pass for them.
 `tests/test_omp_native_package.py` skips without an `omp` binary, so the offline

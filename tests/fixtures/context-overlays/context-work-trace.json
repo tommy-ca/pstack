@@ -1,0 +1,383 @@
+{
+  "source": "tests/fixtures/context-overlays/cases.json",
+  "baseline_definition": "ungated_bytes sums every registered overlay pack, i.e. the naive no-gating behavior where all agent-facing overlay prose loads for every task.",
+  "token_estimate": "bytes // 4",
+  "measured": [
+    "overlay_prose_bytes",
+    "activated_packs",
+    "inactive_packs",
+    "typed_unsupported_response"
+  ],
+  "not_measured_offline": [
+    "tool_call_tokens",
+    "re_reads",
+    "search_retries",
+    "wall_clock",
+    "missed_verification"
+  ],
+  "not_measured_note": "Total task work beyond overlay prose (tool tokens, re-reads, search retries, wall clock, missed verification) needs the blinded candidate phase of #310; this trace MUST NOT be reported as observed-live evidence.",
+  "overlay_count": 8,
+  "case_count": 15,
+  "overlay_costs": {
+    "perf-baseline": {
+      "bytes": 477,
+      "estimated_tokens": 119
+    },
+    "ui-feedback": {
+      "bytes": 373,
+      "estimated_tokens": 93
+    },
+    "browser-evidence": {
+      "bytes": 473,
+      "estimated_tokens": 118
+    },
+    "bilingual-docs": {
+      "bytes": 406,
+      "estimated_tokens": 101
+    },
+    "upgrade-guide": {
+      "bytes": 380,
+      "estimated_tokens": 95
+    },
+    "archival-notes": {
+      "bytes": 294,
+      "estimated_tokens": 73
+    },
+    "forge-stacked-pr": {
+      "bytes": 321,
+      "estimated_tokens": 80
+    },
+    "dsh-theme-tokens": {
+      "bytes": 279,
+      "estimated_tokens": 69
+    }
+  },
+  "ungated_bytes": 3003,
+  "ungated_total_bytes": 45045,
+  "gated_total_bytes": 3376,
+  "saved_total_bytes": 41669,
+  "cases": [
+    {
+      "id": "E06",
+      "archetype": "Web UI",
+      "domain": "performance",
+      "capabilities": [
+        "perf_baseline",
+        "web_ui"
+      ],
+      "contexts": [],
+      "requested": [],
+      "activated": [
+        "perf-baseline"
+      ],
+      "blocked": [],
+      "inactive_count": 7,
+      "loaded_artifacts": [
+        "perf-baseline"
+      ],
+      "measured_bytes": 477,
+      "estimated_tokens": 119,
+      "ungated_bytes": 3003,
+      "saved_bytes": 2526
+    },
+    {
+      "id": "E07",
+      "archetype": "Docs-only repo",
+      "domain": "docs",
+      "capabilities": [],
+      "contexts": [
+        "docs_only"
+      ],
+      "requested": [],
+      "activated": [],
+      "blocked": [],
+      "inactive_count": 8,
+      "loaded_artifacts": [],
+      "measured_bytes": 0,
+      "estimated_tokens": 0,
+      "ungated_bytes": 3003,
+      "saved_bytes": 3003
+    },
+    {
+      "id": "N01",
+      "archetype": "Docs-only repo",
+      "domain": "docs",
+      "capabilities": [],
+      "contexts": [
+        "docs_only"
+      ],
+      "requested": [],
+      "activated": [],
+      "blocked": [],
+      "inactive_count": 8,
+      "loaded_artifacts": [],
+      "measured_bytes": 0,
+      "estimated_tokens": 0,
+      "ungated_bytes": 3003,
+      "saved_bytes": 3003
+    },
+    {
+      "id": "N02",
+      "archetype": "Backend Python repo",
+      "domain": "backend",
+      "capabilities": [],
+      "contexts": [
+        "backend_only"
+      ],
+      "requested": [],
+      "activated": [],
+      "blocked": [],
+      "inactive_count": 8,
+      "loaded_artifacts": [],
+      "measured_bytes": 0,
+      "estimated_tokens": 0,
+      "ungated_bytes": 3003,
+      "saved_bytes": 3003
+    },
+    {
+      "id": "N03",
+      "archetype": "Git host without official stack feature",
+      "domain": "shipping",
+      "capabilities": [],
+      "contexts": [],
+      "requested": [
+        "forge-stacked-pr"
+      ],
+      "activated": [],
+      "blocked": [
+        [
+          "forge-stacked-pr",
+          "BLOCKED"
+        ]
+      ],
+      "inactive_count": 7,
+      "loaded_artifacts": [],
+      "measured_bytes": 0,
+      "estimated_tokens": 0,
+      "ungated_bytes": 3003,
+      "saved_bytes": 3003
+    },
+    {
+      "id": "N04",
+      "archetype": "Read-only code review",
+      "domain": "review",
+      "capabilities": [
+        "web_ui"
+      ],
+      "contexts": [
+        "read_only"
+      ],
+      "requested": [],
+      "activated": [],
+      "blocked": [],
+      "inactive_count": 8,
+      "loaded_artifacts": [],
+      "measured_bytes": 0,
+      "estimated_tokens": 0,
+      "ungated_bytes": 3003,
+      "saved_bytes": 3003
+    },
+    {
+      "id": "N05",
+      "archetype": "Source-skill snippet with malicious command",
+      "domain": "review",
+      "capabilities": [],
+      "contexts": [
+        "read_only"
+      ],
+      "requested": [],
+      "activated": [],
+      "blocked": [],
+      "inactive_count": 8,
+      "loaded_artifacts": [],
+      "measured_bytes": 0,
+      "estimated_tokens": 0,
+      "ungated_bytes": 3003,
+      "saved_bytes": 3003
+    },
+    {
+      "id": "N07",
+      "archetype": "Plain technical prose",
+      "domain": "docs",
+      "capabilities": [],
+      "contexts": [
+        "docs_only"
+      ],
+      "requested": [],
+      "activated": [],
+      "blocked": [],
+      "inactive_count": 8,
+      "loaded_artifacts": [],
+      "measured_bytes": 0,
+      "estimated_tokens": 0,
+      "ungated_bytes": 3003,
+      "saved_bytes": 3003
+    },
+    {
+      "id": "P01",
+      "archetype": "Bilingual docs project",
+      "domain": "docs",
+      "capabilities": [
+        "i18n"
+      ],
+      "contexts": [],
+      "requested": [],
+      "activated": [
+        "bilingual-docs"
+      ],
+      "blocked": [],
+      "inactive_count": 7,
+      "loaded_artifacts": [
+        "bilingual-docs"
+      ],
+      "measured_bytes": 406,
+      "estimated_tokens": 101,
+      "ungated_bytes": 3003,
+      "saved_bytes": 2597
+    },
+    {
+      "id": "P02",
+      "archetype": "Web UI project with a browser driver",
+      "domain": "ui",
+      "capabilities": [
+        "browser_driver",
+        "web_ui"
+      ],
+      "contexts": [],
+      "requested": [
+        "browser-evidence",
+        "ui-feedback"
+      ],
+      "activated": [
+        "ui-feedback",
+        "browser-evidence"
+      ],
+      "blocked": [],
+      "inactive_count": 6,
+      "loaded_artifacts": [
+        "ui-feedback",
+        "browser-evidence"
+      ],
+      "measured_bytes": 846,
+      "estimated_tokens": 211,
+      "ungated_bytes": 3003,
+      "saved_bytes": 2157
+    },
+    {
+      "id": "P03",
+      "archetype": "Versioned release project",
+      "domain": "release",
+      "capabilities": [
+        "release_tags"
+      ],
+      "contexts": [],
+      "requested": [],
+      "activated": [
+        "upgrade-guide"
+      ],
+      "blocked": [],
+      "inactive_count": 7,
+      "loaded_artifacts": [
+        "upgrade-guide"
+      ],
+      "measured_bytes": 380,
+      "estimated_tokens": 95,
+      "ungated_bytes": 3003,
+      "saved_bytes": 2623
+    },
+    {
+      "id": "P04",
+      "archetype": "Forge with a supported stack API",
+      "domain": "shipping",
+      "capabilities": [
+        "forge_stack_api"
+      ],
+      "contexts": [],
+      "requested": [
+        "forge-stacked-pr"
+      ],
+      "activated": [
+        "forge-stacked-pr"
+      ],
+      "blocked": [],
+      "inactive_count": 7,
+      "loaded_artifacts": [
+        "forge-stacked-pr"
+      ],
+      "measured_bytes": 321,
+      "estimated_tokens": 80,
+      "ungated_bytes": 3003,
+      "saved_bytes": 2682
+    },
+    {
+      "id": "P05",
+      "archetype": "Project with archival records",
+      "domain": "release",
+      "capabilities": [
+        "archival_records"
+      ],
+      "contexts": [],
+      "requested": [],
+      "activated": [
+        "archival-notes"
+      ],
+      "blocked": [],
+      "inactive_count": 7,
+      "loaded_artifacts": [
+        "archival-notes"
+      ],
+      "measured_bytes": 294,
+      "estimated_tokens": 73,
+      "ungated_bytes": 3003,
+      "saved_bytes": 2709
+    },
+    {
+      "id": "P06",
+      "archetype": "Project declaring DSH theme tokens",
+      "domain": "ui",
+      "capabilities": [
+        "dsh_theme_tokens",
+        "web_ui"
+      ],
+      "contexts": [],
+      "requested": [],
+      "activated": [
+        "ui-feedback",
+        "dsh-theme-tokens"
+      ],
+      "blocked": [],
+      "inactive_count": 6,
+      "loaded_artifacts": [
+        "ui-feedback",
+        "dsh-theme-tokens"
+      ],
+      "measured_bytes": 652,
+      "estimated_tokens": 163,
+      "ungated_bytes": 3003,
+      "saved_bytes": 2351
+    },
+    {
+      "id": "P07",
+      "archetype": "Performance task without a committed baseline",
+      "domain": "performance",
+      "capabilities": [],
+      "contexts": [],
+      "requested": [
+        "perf-baseline"
+      ],
+      "activated": [],
+      "blocked": [
+        [
+          "perf-baseline",
+          "BLOCKED"
+        ]
+      ],
+      "inactive_count": 7,
+      "loaded_artifacts": [],
+      "measured_bytes": 0,
+      "estimated_tokens": 0,
+      "ungated_bytes": 3003,
+      "saved_bytes": 3003
+    }
+  ]
+}
