@@ -178,9 +178,21 @@ def archived_changes_missing_artifacts(archive_root: pathlib.Path) -> list[str]:
         for artifact in required:
             if not (change / artifact).is_file():
                 missing.append(f"{change.name}/{artifact}")
-        if not any((change / "specs").rglob("*.md")):
-            missing.append(f"{change.name}/specs/**/*.md")
+        if not skip_specs_declared(change / ".openspec.yaml"):
+            if not any((change / "specs").rglob("*.md")):
+                missing.append(f"{change.name}/specs/**/*.md")
     return missing
+
+
+def skip_specs_declared(manifest: pathlib.Path) -> bool:
+    """True when an archived change's .openspec.yaml declares skip_specs: true."""
+    if not manifest.is_file():
+        return False
+    for line in manifest.read_text(encoding="utf-8").splitlines():
+        key, _, value = line.partition(":")
+        if key.strip() == "skip_specs" and value.strip().strip("\"'").lower() == "true":
+            return True
+    return False
 
 
 
