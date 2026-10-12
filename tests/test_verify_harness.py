@@ -150,6 +150,27 @@ def test_archived_intent_chains_are_complete() -> None:
     assert not missing, missing
 
 
+def test_archived_change_missing_adr_artifact_is_flagged() -> None:
+    loader = importlib.util.spec_from_file_location("verify_harness", SCANNER)
+    assert loader is not None
+    scanner = importlib.util.module_from_spec(loader)
+    assert loader.loader is not None
+    loader.loader.exec_module(scanner)
+    with tempfile.TemporaryDirectory() as tmp:
+        archive = Path(tmp)
+        change = archive / "2026-10-13-pstack-fixture"
+        (change / "specs" / "capability").mkdir(parents=True)
+        (change / "specs" / "capability" / "spec.md").write_text(
+            "## Purpose\nfixture\n", encoding="utf-8"
+        )
+        for artifact in ("proposal.md", "design.md", "tasks.md", ".openspec.yaml"):
+            (change / artifact).write_text("x\n", encoding="utf-8")
+        assert scanner.archived_changes_missing_artifacts(archive) == [
+            "2026-10-13-pstack-fixture/adr.md"
+        ]
+        (change / "adr.md").write_text("x\n", encoding="utf-8")
+        assert scanner.archived_changes_missing_artifacts(archive) == []
+
 
 def test_durable_specs_have_non_placeholder_purposes() -> None:
     for spec in sorted((ROOT / "openspec/specs").glob("*/spec.md")):
