@@ -141,10 +141,11 @@ class TestDshBaselineCorpus:
         record = json.loads(table_path.read_text(encoding="utf-8"))
         # Same revision as the evaluated tree: any disagreement is a defect, not drift.
         record["pstack_revision"] = result.provenance["evaluated_revision"]
-        e05 = next(case for case in record["cases"] if case["id"] == "E05")
-        e05["status"] = "PASS"
+        for drift_id in ("E05", "E04"):
+            case = next(case for case in record["cases"] if case["id"] == drift_id)
+            case["status"] = "PASS"
         table_path.write_text(json.dumps(record), encoding="utf-8")
         rerun = run_dsh_blinded_eval(corpus_dir, ROOT)
         assert rerun.provenance["drifted"] is False
-        assert rerun.provenance["drift_cases"] == ["E05"]
+        assert rerun.provenance["drift_cases"] == ["E05", "E04"]
         assert rerun.verdict == "FAIL"
