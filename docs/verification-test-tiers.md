@@ -189,7 +189,7 @@ Attacks refused by a suite this unit does not own, with where the refusal lives:
 
 ### Six-host offline matrix
 
-Recorded at `6b0a0e9` (P15 gate head; receipts bound by surface hash, not commit):
+Recorded at `6b0a0e9` and re-verified at the land head (receipts bound by surface hash, not commit):
 
 ```sh
 python scripts/verify-portable.py check-evidence --host all
@@ -205,14 +205,16 @@ python scripts/verify-portable.py check-staleness --host all --json
 | antigravity | present | yes | none | supported | PASS |
 | droid | present | no (by design) | n/a | candidate | BLOCKED (ineligible host) |
 
-Offline pytest gate at that head: **526 passed, 10 skipped**. Every skip is a
-measured opt-out, never a pass: seven opt-in host CLI smoke cases in
-`tests/test_harness_drivers.py` (`PSTACK_RUN_HOST_DEPENDENT_TESTS=1`), the live
-model-backed case in `tests/test_omp_rpc.py`, and the two live-arm cases in
+Offline pytest gate on a host with all six binaries present: **526 passed, 10
+skipped**. Every skip is a measured opt-out, never a pass: seven opt-in host CLI
+smoke cases in `tests/test_harness_drivers.py`
+(`PSTACK_RUN_HOST_DEPENDENT_TESTS=1`), the live model-backed case in
+`tests/test_omp_rpc.py`, and the two live-arm cases in
 `tests/test_omp_native_package.py` — the last three need
-`PSTACK_RUN_OMP_LIVE=1` and a model route. Where the upstream cache is absent
-(as in CI), the canonical-index classify-drift arm skips instead as contract
-BLOCKED.
+`PSTACK_RUN_OMP_LIVE=1` and a model route. On a host without `node`, `droid` or
+the `omp` binary further cases skip instead of passing. Where the upstream cache
+is absent (as in CI), the canonical-index classify-drift arm skips instead as
+contract BLOCKED.
 
 The durable receipts bound here carry OMP's three `observed_live` settlements
 (spawn, cancel, isolation); the other hosts rest on offline evidence and droid
