@@ -141,6 +141,7 @@ class TestDshCandidatePhase:
         assert recorded["corpus_version"] == live["corpus_version"]
         assert recorded["phase"] == live["phase"]
         assert recorded["verdict"] == live["verdict"]
+        assert recorded["pstack_revision"] == live["pstack_revision"], "recorded table must name the revision it reproduces at"
         assert recorded["provenance"] == live["provenance"]
         keys = (
             "total_cases",
