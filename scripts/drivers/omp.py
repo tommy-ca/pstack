@@ -9,7 +9,7 @@ import shutil
 import tempfile
 import time
 from pathlib import Path
-from typing import Any, Dict, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from .base import DriverScenarioResult, HarnessDriver, find_executable
 from .omp_rpc import OmpRpcError, OmpRpcSession, reduce_child_settlement
@@ -28,6 +28,17 @@ LIVE_PROMPT = (
     "Reply with exactly CHILD_OK and nothing else. "
     "Wait for that subagent result, then reply with exactly PARENT_DONE"
 )
+
+# A cancel run needs a child that outlives the runner's cancel request, so the child is
+# told to hold a shell for two minutes. The parent's own reply is not part of the proof:
+# the evidence is the cancelled child's terminal lifecycle frame.
+CANCEL_PROMPT = (
+    "Use the task tool exactly once to spawn a subagent whose assignment is: "
+    "Run the shell command `sleep 120` with the bash tool, then reply with exactly CHILD_OK. "
+    "Do not reply before that command returns."
+)
+CHILD_START_TIMEOUT_S = 60.0
+CANCEL_SETTLE_TIMEOUT_S = 30.0
 
 # A failed provider turn is not a failed child: these route-specific phrases mean the
 # model route itself was unavailable, which is BLOCKED rather than FAIL. Bare words such
@@ -299,6 +310,195 @@ class OMPDriver(HarnessDriver):
             verdict=verdict,
             duration_s=duration,
             evidence_level="offline",
+        )
+
+    def child_cancel(self, run_dir: Path) -> DriverScenarioResult:
+        """Prove OMP cancels one in-flight child over RPC, or record the bounded negative."""
+        avail, reason = self.is_available()
+        if not avail:
+            return self.blocked_result("runtime-child-cancel-omp", "OMP in-flight child cancellation over RPC", reason)
+
+        if os.environ.get(LIVE_GATE_ENV) == "1":
+            return self._child_cancel_live(run_dir)
+
+        binding = next(
+            (b for b in self.profile_data.get("bindings", []) if b.get("capability") == "agent.cancel"),
+            {},
+        )
+        declared = (
+            binding.get("implementation_status") == "native"
+            and binding.get("enforcement") == "hard"
+            and "cancel" in str(binding.get("primitive", "")).lower()
+        )
+        surface = all(
+            hasattr(OmpRpcSession, name)
+            for name in ("subagents", "cancel_subagent", "wait_child_started", "wait_child_terminal")
+        )
+        verdict = "PASS" if declared and surface else "FAIL"
+        return DriverScenarioResult(
+            scenario_id="runtime-child-cancel-omp",
+            description=(
+                "Verify OMP cancellation is a declared native hard capability with a bounded RPC "
+                "surface (static contract only, no observed cancellation)"
+            ),
+            command="omp cancel-contract-check",
+            exit_code=0 if verdict == "PASS" else 1,
+            stdout=(
+                f"OMP cancel contract (declared={declared}, primitive={binding.get('primitive')!r}, "
+                f"bounded_surface={surface})"
+            ),
+            stderr="" if verdict == "PASS" else "cancel contract or bounded RPC surface missing",
+            verdict=verdict,
+            duration_s=0.01,
+            evidence_level="static",
+        )
+
+    def _child_cancel_live(self, run_dir: Path) -> DriverScenarioResult:
+        """Drive a bounded session, cancel one in-flight child, reduce the settlement."""
+        bin_path = self.get_binary_path()
+        assert bin_path is not None
+        start = time.time()
+        work_dir = Path(tempfile.mkdtemp(prefix="omp-rpc-cancel-"))
+        log_path = run_dir / "omp-rpc-cancel.jsonl"
+        command = (
+            f"{bin_path} --mode rpc --no-session --no-title --no-ui --max-time {LIVE_MAX_SECONDS}"
+            " (prompt -> 1 task child -> cancel_subagent)"
+        )
+        session = OmpRpcSession(str(bin_path), cwd=work_dir, max_seconds=LIVE_MAX_SECONDS, log_path=log_path)
+        descriptor: Dict[str, Any] = {"protocol_version": 0}
+        frames: List[Dict[str, Any]] = []
+        child_id: Optional[str] = None
+        listed: Optional[List[str]] = None
+        cancel_ack = False
+        cancel_success = False
+        cancel_killed = False
+        cancel_error = ""
+        terminal: Optional[Dict[str, Any]] = None
+        cancel_latency: Optional[float] = None
+        failure = ""
+        try:
+            session.start()
+            descriptor = session.negotiate()
+            session.subscribe_subagents("events")
+            session.prompt(CANCEL_PROMPT)
+            child_id = session.wait_child_started(timeout=CHILD_START_TIMEOUT_S)
+            if child_id is not None:
+                listed = [str(s.get("id")) for s in session.subagents()]
+                cancel_started = time.monotonic()
+                cancel_response = session.cancel_subagent(child_id)
+                # Upstream answers `data.cancelled=false` for an id that is not a running
+                # subagent of this session (finished, unknown, already cancelled), so the
+                # success flag alone would read an idempotent no-op as a kill.
+                cancel_success = bool(cancel_response.get("success"))
+                cancel_killed = bool((cancel_response.get("data") or {}).get("cancelled"))
+                cancel_ack = cancel_success and cancel_killed
+                if not cancel_success:
+                    error = cancel_response.get("error")
+                    cancel_error = error if isinstance(error, str) else str((error or {}).get("message", ""))
+                terminal = session.wait_child_terminal(child_id, timeout=CANCEL_SETTLE_TIMEOUT_S)
+                cancel_latency = round(time.monotonic() - cancel_started, 3)
+        except (OmpRpcError, OSError) as exc:
+            failure = str(exc)
+        finally:
+            # Frames collected before a failure are still evidence of what the host did.
+            frames = session.frames
+            exit_code = session.close()
+            shutil.rmtree(work_dir, ignore_errors=True)
+        duration = round(time.time() - start, 3)
+
+        if failure and not frames:
+            # A missing binary, an unwritable run directory or a session that died before
+            # emitting anything is an unavailable host, not a failed cancellation.
+            return DriverScenarioResult(
+                scenario_id="runtime-child-cancel-omp",
+                description="Observed OMP RPC v2 cancel session failed before any frame arrived",
+                command=command,
+                exit_code=1,
+                stdout=f"BLOCKED: {failure} (log={log_path})",
+                stderr=failure,
+                verdict="BLOCKED",
+                duration_s=duration,
+                evidence_level="offline",
+            )
+
+        settlement = (
+            reduce_child_settlement(frames, child_id=child_id, timed_out=terminal is None)
+            if child_id is not None
+            else None
+        )
+        route_error = _model_route_error(frames)
+        in_flight = child_id is not None and listed is not None and child_id in listed
+        protocol_v2 = descriptor.get("protocol_version") == 2
+        observed = (
+            f"child={settlement['child_id']} outcome={settlement['terminal_outcome']} "
+            f"model={settlement['model']} effective_rpc={settlement['effective_rpc']}"
+            if settlement
+            else "no terminal child lifecycle observed"
+        )
+        summary = (
+            f"RPC v{descriptor['protocol_version']} exit={exit_code} ack={cancel_success} "
+            f"killed={cancel_killed} listed={len(listed) if listed is not None else 'none'} "
+            f"in_flight={in_flight} latency={cancel_latency if cancel_latency is not None else 'n/a'}s "
+            f"{observed}" + (f" error={cancel_error}" if cancel_error else "")
+        )
+
+        if (
+            settlement is not None
+            and settlement["terminal_outcome"] == "cancelled"
+            and cancel_ack
+            and terminal is not None
+            and protocol_v2
+            and exit_code is not None
+        ):
+            return DriverScenarioResult(
+                scenario_id="runtime-child-cancel-omp",
+                description=(
+                    "Observed live OMP RPC v2 in-flight child cancellation: the accepted "
+                    "cancel_subagent request reduced to a typed cancelled settlement"
+                ),
+                command=command,
+                exit_code=0,
+                stdout=summary,
+                stderr="",
+                verdict="PASS",
+                duration_s=duration,
+                evidence_level="observed_live",
+                settlement=settlement,
+            )
+
+        unmet: List[str] = []
+        if child_id is None:
+            unmet.append(f"no child lifecycle within {CHILD_START_TIMEOUT_S}s")
+        if not cancel_ack:
+            if cancel_success:
+                unmet.append("cancel_subagent found no running subagent to cancel (cancelled=false)")
+            else:
+                unmet.append(
+                    f"cancel_subagent was rejected ({cancel_error})" if cancel_error else "cancel_subagent was rejected"
+                )
+        if child_id is not None and terminal is None:
+            unmet.append(f"no terminal child lifecycle within {CANCEL_SETTLE_TIMEOUT_S}s after the cancel")
+        if settlement is None:
+            unmet.append("no typed settlement")
+        elif settlement["terminal_outcome"] != "cancelled":
+            unmet.append(f"child outcome {settlement['terminal_outcome']}")
+        if not protocol_v2:
+            unmet.append(f"negotiated protocol v{descriptor.get('protocol_version')}")
+        if exit_code is None:
+            unmet.append("RPC process did not exit")
+
+        verdict = "BLOCKED" if route_error else "FAIL"
+        return DriverScenarioResult(
+            scenario_id="runtime-child-cancel-omp",
+            description="Observed live OMP RPC v2 cancellation did not record a typed cancelled settlement",
+            command=command,
+            exit_code=exit_code if exit_code is not None else 1,
+            stdout=summary,
+            stderr=route_error or failure or "; ".join(unmet),
+            verdict=verdict,
+            duration_s=duration,
+            evidence_level="offline",
+            settlement=settlement,
         )
 
     def isolation(self, run_dir: Path) -> DriverScenarioResult:

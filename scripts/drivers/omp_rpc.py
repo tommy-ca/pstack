@@ -350,6 +350,32 @@ class OmpRpcSession:
             {"type": "cancel_subagent", "subagentId": subagent_id}, "c", timeout
         )
 
+    def wait_child_started(self, timeout: float = RESPONSE_TIMEOUT_S) -> Optional[str]:
+        """Bounded wait for the first child lifecycle frame; returns its child id.
+
+        A caller that needs an in-flight child to cancel has nothing to cancel when no
+        lifecycle frame carries an id before the deadline, so the answer is None rather
+        than a wait the caller's own deadline does not bound.
+        """
+        frame = self._wait_for(
+            lambda f: f.get("type") == "subagent_lifecycle" and (f.get("payload") or {}).get("id"),
+            timeout,
+        )
+        return (frame.get("payload") or {}).get("id") if frame else None
+
+    def wait_child_terminal(self, child_id: str, timeout: float = RESPONSE_TIMEOUT_S) -> Optional[Dict[str, Any]]:
+        """Bounded wait for this child's terminal lifecycle frame, or None on deadline.
+
+        Only a terminal status counts: a cancel acknowledgement, a progress frame or an
+        earlier `started` frame is not evidence that the child stopped.
+        """
+        return self._wait_for(
+            lambda f: f.get("type") == "subagent_lifecycle"
+            and (f.get("payload") or {}).get("id") == child_id
+            and (f.get("payload") or {}).get("status") in TERMINAL_LIFECYCLE_STATUS,
+            timeout,
+        )
+
     def close(self, grace: float = 10.0) -> Optional[int]:
         """Close stdin, wait for exit, kill after the grace period, report exit code."""
         proc = self._proc
