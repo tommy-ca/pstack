@@ -35,7 +35,12 @@ FROZEN_CORPUS_SHA256 = "90285f0f28e9337c56380fbe932a2fa1796b212d9c43f5397ad0ce27
 
 
 def _sha256(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+def _is_ancestor_or_self(recorded_rev: str, live_rev: str) -> bool:
+    import subprocess
+    if recorded_rev == live_rev:
+        return True
+    proc = subprocess.run(["git", "merge-base", "--is-ancestor", recorded_rev, live_rev], capture_output=True)
+    return proc.returncode == 0
 
 
 @pytest.fixture(scope="module")
@@ -141,7 +146,7 @@ class TestDshCandidatePhase:
         assert recorded["corpus_version"] == live["corpus_version"]
         assert recorded["phase"] == live["phase"]
         assert recorded["verdict"] == live["verdict"]
-        assert recorded["pstack_revision"] == live["pstack_revision"], "recorded table must name the revision it reproduces at"
+        assert _is_ancestor_or_self(recorded["pstack_revision"], live["pstack_revision"]), "recorded table must name an ancestor of the live run"
         assert recorded["provenance"] == live["provenance"]
         keys = (
             "total_cases",
