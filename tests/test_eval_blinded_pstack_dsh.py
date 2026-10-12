@@ -6,11 +6,25 @@ required evidence is not yet present in pstack is recorded UNTESTED (a baseline
 gap), never FAIL and never a false PASS. Negatives must never activate, and every
 probe's injected control must separate from the real input, so a green negative
 is shown to be non-vacuous rather than tautological.
+
+**Revision bound.** These cases were frozen and measured at pstack revision
+`52333df` - the revision recorded in `scoring_table.json`, which is not reachable from
+`main` because the branch was re-based on merge. A re-measurement at that revision is
+therefore impossible, and the tree has moved since (P13 landed the consumer-reachability
+contract E05 probes). The runner handles that mechanically: `phase="baseline"` reports the
+frozen record and names every case the evaluated tree no longer reproduces in the case's
+`drift` notes and in `result.provenance["drift_cases"]`, so staleness is reported as drift
+rather than as a failed baseline. This module stays the historical record check, not the
+live gate - the live measurement is `tests/test_eval_blinded_pstack_dsh_candidate.py`,
+which re-runs the same frozen cases with the re-derived controls and records them in
+`scoring_table_candidate.json`. The frozen JSON is never edited by either phase.
 """
 
 import sys
 from dataclasses import asdict
+import json
 from pathlib import Path
+import shutil
 
 import pytest
 
@@ -96,3 +110,41 @@ class TestDshBaselineCorpus:
         for case in result.cases:
             assert case.blind_label.startswith("candidate-")
             assert case.id.lower() not in case.blind_label.lower()
+
+    def test_a_moved_tree_is_reported_as_drift_not_as_a_failed_baseline(self, result) -> None:
+        provenance = result.provenance
+        assert provenance["drifted"] == (
+            provenance["frozen_record"]["pinned_revision"] != provenance["evaluated_revision"]
+        )
+        # The record is reported as measured, so its own revision is what the run names.
+        assert result.pstack_revision == provenance["frozen_record"]["pinned_revision"]
+        assert provenance["drifted"] is True, "main has moved past the pinned baseline revision"
+
+    def test_the_drifted_case_names_its_divergence(self, result) -> None:
+        recorded = json.loads(
+            (DSH_CORPUS_DIR / "scoring_table.json").read_text(encoding="utf-8")
+        )
+        by_id = {case["id"]: case for case in recorded["cases"]}
+        drifted = {case.id: case for case in result.cases if case.drift}
+        assert set(drifted) == set(result.provenance["drift_cases"])
+        for case_id, case in drifted.items():
+            assert case.status == by_id[case_id]["status"], case_id
+            assert case.status != "FAIL", (case_id, case.drift)
+            assert case_id in case.drift[0]
+
+    def test_a_record_that_does_not_reproduce_at_its_own_revision_fails(self, result, tmp_path) -> None:
+        corpus_dir = tmp_path / "eval_corpus_dsh"
+        corpus_dir.mkdir()
+        for name in ("cases.json", "scoring_table.json"):
+            shutil.copyfile(DSH_CORPUS_DIR / name, corpus_dir / name)
+        table_path = corpus_dir / "scoring_table.json"
+        record = json.loads(table_path.read_text(encoding="utf-8"))
+        # Same revision as the evaluated tree: any disagreement is a defect, not drift.
+        record["pstack_revision"] = result.provenance["evaluated_revision"]
+        e05 = next(case for case in record["cases"] if case["id"] == "E05")
+        e05["status"] = "PASS"
+        table_path.write_text(json.dumps(record), encoding="utf-8")
+        rerun = run_dsh_blinded_eval(corpus_dir, ROOT)
+        assert rerun.provenance["drifted"] is False
+        assert rerun.provenance["drift_cases"] == ["E05"]
+        assert rerun.verdict == "FAIL"

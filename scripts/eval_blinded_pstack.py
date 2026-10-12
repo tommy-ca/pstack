@@ -183,6 +183,7 @@ class DshCaseResult:
     context_ops: int
     context_bytes: int
     context_ms: float
+    drift: List[str]
 
 
 @dataclass
@@ -195,6 +196,7 @@ class DshEvalResult:
     pstack_revision: Any
     model_route: Any
     provider: str
+    provenance: Any
     total_cases: int
     positives: int
     negatives: int
@@ -221,6 +223,7 @@ class DshEvalResult:
 # reducer. Nothing here invokes a model, executes corpus text, or writes a
 # file, so the recorded result carries no live/native claim.
 
+import copy
 import hashlib
 import importlib.util
 import re
@@ -242,6 +245,58 @@ _vp = _load_sibling_module("verify_portable", "scripts/verify-portable.py")
 reduce_verdicts = _vp.reduce_verdicts
 
 DSH_CORPUS_DIR = ROOT / "tests" / "fixtures" / "eval_corpus_dsh"
+CANDIDATE_PHASE_FILE = "candidate_phase.json"
+BASELINE_TABLE_FILE = "scoring_table.json"
+
+
+def _sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _probe_token(probe: Dict[str, Any]) -> str:
+    """The input a probe reads; binds a control override to exactly one frozen probe."""
+    return probe.get("pattern") or probe.get("query") or probe.get("path") or probe.get("owner")
+
+
+def _apply_candidate_controls(
+    cases: List[Dict[str, Any]],
+    overlay: Dict[str, Any],
+    profile: Dict[str, Any],
+    root: Path,
+) -> Tuple[List[Dict[str, Any]], List[str]]:
+    """Return the candidate cases plus the applied override ids.
+
+    A frozen control MAY be re-derived only where it stopped separating on the candidate
+    tree: the candidate phase owns a different artifact text, so a control that no longer
+    distinguishes the probe input is repaired. An override on a control that still
+    separates is corpus shaping, not repair, and raises instead of applying.
+    """
+    candidate_cases = copy.deepcopy(cases)
+    by_id = {case["id"]: case for case in candidate_cases}
+    applied: List[str] = []
+    for entry in overlay["controls"]:
+        case = by_id.get(entry["case_id"])
+        index = entry["probe_index"]
+        if case is None or index >= len(case["probes"]):
+            raise ValueError(
+                f"candidate control override targets no probe: {entry['case_id']}#{index}"
+            )
+        probe = case["probes"][index]
+        if _probe_token(probe) != entry["probe_token"]:
+            raise ValueError(
+                f"{entry['case_id']}#{index}: override names {entry['probe_token']!r} but the "
+                f"frozen probe reads {_probe_token(probe)!r}"
+            )
+        ctx = {"ops": 0, "bytes": 0}
+        activated, _ = _eval_probe(probe, case, profile, root, ctx)
+        if _eval_control(probe, probe["control"], profile, root, ctx) != activated:
+            raise ValueError(
+                f"{entry['case_id']}#{index}: the frozen control still separates in the "
+                "candidate phase; an override here would shape the corpus, not repair it"
+            )
+        probe["control"] = entry["control"]
+        applied.append(f"{entry['case_id']}#{index}")
+    return candidate_cases, applied
 
 
 def _blind_label(phase: str, case_id: str) -> str:
@@ -365,14 +420,152 @@ def _repo_revision(root: Path) -> Any:
         return None
 
 
-def run_dsh_blinded_eval(corpus_dir: Path, root: Path) -> "DshEvalResult":
-    """Score the E01-E07/N01-N07 archetype corpus deterministically, offline."""
-    corpus = json.loads((corpus_dir / "cases.json").read_text(encoding="utf-8"))
-    phase = corpus.get("phase", "baseline")
+# The frozen baseline is revision-bound evidence: it is only a claim about the tree it was
+# measured on. The runner therefore reports the record and names any case that the evaluated
+# tree no longer reproduces, instead of publishing a drifted re-measurement as the baseline.
+OFFLINE_MODEL_ROUTE = (
+    "none: deterministic offline verifier reading pstack artifacts, the canonical resolver "
+    "and the shipped status reducer; no model, provider or corpus text is invoked"
+)
+
+
+def _load_baseline_record(corpus_dir: Path) -> Any:
+    """The frozen baseline measurement, when the corpus ships one."""
+    path = corpus_dir / BASELINE_TABLE_FILE
+    return json.loads(path.read_text(encoding="utf-8")) if path.is_file() else None
+
+
+def _case_signature(case: Any) -> Tuple[Any, ...]:
+    """The recorded fields a re-measurement must reproduce for a case to be in agreement."""
+    return (
+        case.status if isinstance(case, DshCaseResult) else case["status"],
+        case.controls_passed if isinstance(case, DshCaseResult) else case["controls_passed"],
+        case.controls_total if isinstance(case, DshCaseResult) else case["controls_total"],
+        case.required_passed if isinstance(case, DshCaseResult) else case["required_passed"],
+        tuple(case.missed_required) if isinstance(case, DshCaseResult) else tuple(case["missed_required"]),
+        bool(case.false_activation) if isinstance(case, DshCaseResult) else bool(case["false_activation"]),
+        bool(case.unsafe_effect) if isinstance(case, DshCaseResult) else bool(case["unsafe_effect"]),
+    )
+
+
+def _case_drift(recorded: Dict[str, Any], live: "DshCaseResult") -> str:
+    """One line naming how the evaluated tree diverges from the frozen record for a case."""
+    detail = f" ({', '.join(live.insensitive_controls)})" if live.insensitive_controls else ""
+    return (
+        f"{recorded['id']}: recorded {recorded['status']} at "
+        f"{recorded['controls_passed']}/{recorded['controls_total']} controls is "
+        f"{live.status} at {live.controls_passed}/{live.controls_total} on the evaluated tree{detail}"
+    )
+
+
+def _recorded_case(recorded: Dict[str, Any], drift: List[str]) -> "DshCaseResult":
+    """The frozen case as reported: the measurement stands, the drift is named beside it."""
+    return DshCaseResult(
+        id=recorded["id"],
+        blind_label=recorded["blind_label"],
+        kind=recorded["kind"],
+        archetype=recorded["archetype"],
+        expected_evidence=recorded["expected_evidence"],
+        status=recorded["status"],
+        probes_total=recorded["probes_total"],
+        required_total=recorded["required_total"],
+        required_passed=recorded["required_passed"],
+        forbidden_activated=list(recorded["forbidden_activated"]),
+        missed_required=list(recorded["missed_required"]),
+        controls_total=recorded["controls_total"],
+        controls_passed=recorded["controls_passed"],
+        insensitive_controls=list(recorded["insensitive_controls"]),
+        false_activation=bool(recorded["false_activation"]),
+        unsafe_effect=bool(recorded["unsafe_effect"]),
+        context_ops=recorded["context_ops"],
+        context_bytes=recorded["context_bytes"],
+        context_ms=recorded["context_ms"],
+        drift=drift,
+    )
+
+
+def run_dsh_blinded_eval(
+    corpus_dir: Path, root: Path, phase: str = "baseline"
+) -> "DshEvalResult":
+    """Score the E01-E07/N01-N07 archetype corpus deterministically, offline.
+
+    ``phase="baseline"`` is the revision-bound record: it reports the frozen measurement in
+    ``scoring_table.json`` and names every case the evaluated tree no longer reproduces, so a
+    moved tree is reported as drift rather than as a failed baseline. ``phase="candidate"``
+    re-runs the *same* frozen cases against the current tree with the re-derived controls from
+    ``candidate_phase.json``; the baseline record is never rewritten by either phase.
+    """
+    corpus_path = corpus_dir / "cases.json"
+    corpus = json.loads(corpus_path.read_text(encoding="utf-8"))
     profile = json.loads((root / "profiles" / "grok.json").read_text(encoding="utf-8"))
+    evaluated_revision = _repo_revision(root)
+
+    cases = corpus["cases"]
+    corpus_version = corpus["corpus_version"]
+    source = corpus["source"]
+    provenance: Any = None
+    record = _load_baseline_record(corpus_dir) if phase == "baseline" else None
+    drifted = False
+
+    if phase != "baseline":
+        if phase != "candidate":
+            raise ValueError(f"unknown DSH eval phase {phase!r}")
+        overlay_path = corpus_dir / CANDIDATE_PHASE_FILE
+        overlay = json.loads(overlay_path.read_text(encoding="utf-8"))
+        if overlay.get("phase") != phase:
+            raise ValueError(
+                f"{overlay_path.name} declares phase {overlay.get('phase')!r}, not {phase!r}"
+            )
+        measured = _sha256(corpus_path)
+        pinned = overlay["baseline_corpus"]["sha256"]
+        if measured != pinned:
+            raise ValueError(
+                f"frozen baseline corpus changed: {corpus_path.name} is {measured}, pinned {pinned}"
+            )
+        cases, applied = _apply_candidate_controls(cases, overlay, profile, root)
+        corpus_version = overlay["corpus_version"]
+        source = overlay["source"]
+        provenance = {
+            "phase": phase,
+            "baseline_corpus": {
+                "file": corpus_path.name,
+                "phase": corpus.get("phase", "baseline"),
+                "sha256": measured,
+            },
+            "baseline_table": {
+                "file": overlay["baseline_table"]["file"],
+                "sha256": _sha256(corpus_dir / overlay["baseline_table"]["file"]),
+            },
+            "controls_overlay": {
+                "file": overlay_path.name,
+                "sha256": _sha256(overlay_path),
+                "applied": applied,
+            },
+            "model_route": OFFLINE_MODEL_ROUTE,
+            "provider": "deterministic-offline",
+        }
+    elif record is not None:
+        pinned_revision = record.get("pstack_revision")
+        drifted = bool(
+            pinned_revision and evaluated_revision and pinned_revision != evaluated_revision
+        )
+        provenance = {
+            "phase": phase,
+            "frozen_record": {
+                "file": BASELINE_TABLE_FILE,
+                "sha256": _sha256(corpus_dir / BASELINE_TABLE_FILE),
+                "pinned_revision": pinned_revision,
+                "verdict": record.get("verdict"),
+            },
+            "evaluated_revision": evaluated_revision,
+            "drifted": drifted,
+            "drift_cases": [],
+            "model_route": OFFLINE_MODEL_ROUTE,
+            "provider": "deterministic-offline",
+        }
 
     case_results: List[DshCaseResult] = []
-    for case in corpus["cases"]:
+    for case in cases:
         ctx = {"ops": 0, "bytes": 0}
         started = time.perf_counter()
         forbidden_hits: List[str] = []
@@ -435,11 +628,35 @@ def run_dsh_blinded_eval(corpus_dir: Path, root: Path) -> "DshEvalResult":
                 context_ops=ctx["ops"],
                 context_bytes=ctx["bytes"],
                 context_ms=round(elapsed_ms, 3),
+                drift=[],
             )
         )
 
     case_results.sort(key=lambda c: c.blind_label)
+
+    if phase == "baseline" and record is not None:
+        # The baseline is reported as the revision-bound record it is; the evaluated tree is
+        # only allowed to add drift notes and, at the record's own revision, to fail it.
+        live_by_id = {c.id: c for c in case_results}
+        reported: List[DshCaseResult] = []
+        for recorded in record["cases"]:
+            live = live_by_id.get(recorded["id"])
+            notes: List[str] = []
+            if live is not None and _case_signature(recorded) != _case_signature(live):
+                notes = [_case_drift(recorded, live)]
+                provenance["drift_cases"].append(recorded["id"])
+            reported.append(_recorded_case(recorded, notes))
+        case_results = reported
+
     verdict = reduce_verdicts(c.status for c in case_results)
+    if (
+        phase == "baseline"
+        and record is not None
+        and provenance["drift_cases"]
+        and not drifted
+    ):
+        # The record did not reproduce at its own revision: that is a defect, not drift.
+        verdict = "FAIL"
     false_passes = sum(
         1
         for c in case_results
@@ -447,12 +664,17 @@ def run_dsh_blinded_eval(corpus_dir: Path, root: Path) -> "DshEvalResult":
     )
 
     return DshEvalResult(
-        corpus_version=corpus["corpus_version"],
+        corpus_version=corpus_version,
         phase=phase,
-        source=corpus["source"],
-        pstack_revision=_repo_revision(root),
+        source=source,
+        pstack_revision=(
+            provenance["frozen_record"]["pinned_revision"]
+            if phase == "baseline" and record is not None
+            else evaluated_revision
+        ),
         model_route=None,
         provider="deterministic-offline",
+        provenance=provenance,
         total_cases=len(case_results),
         positives=sum(1 for c in case_results if c.kind == "positive"),
         negatives=sum(1 for c in case_results if c.kind == "negative"),
@@ -492,6 +714,14 @@ def _render_dsh_table(result: "DshEvalResult") -> str:
         f"context_ops={result.total_context_ops} bytes={result.total_context_bytes} "
         f"ms={result.total_context_ms} verdict={result.verdict}"
     )
+    provenance = result.provenance or {}
+    if provenance.get("drifted"):
+        record = provenance["frozen_record"]
+        lines.append(
+            f"drift: record measured at {record['pinned_revision']} "
+            f"(verdict {record['verdict']}), evaluated tree {provenance['evaluated_revision']}, "
+            f"no longer reproduced by {provenance['drift_cases']} - reported as the record"
+        )
     return "\n".join(lines)
 
 
@@ -510,6 +740,12 @@ def main() -> int:
         help="Directory holding the DSH E01-E07/N01-N07 cases.json (issue #310)",
     )
     parser.add_argument(
+        "--dsh-phase",
+        choices=["baseline", "candidate"],
+        default="baseline",
+        help="DSH phase: baseline (frozen record) or candidate (current tree, re-derived controls)",
+    )
+    parser.add_argument(
         "--format",
         choices=["text", "json"],
         default="text",
@@ -525,7 +761,7 @@ def main() -> int:
     args = parser.parse_args()
 
     if args.dsh_corpus:
-        dsh_result = run_dsh_blinded_eval(args.dsh_corpus, ROOT)
+        dsh_result = run_dsh_blinded_eval(args.dsh_corpus, ROOT, args.dsh_phase)
         payload = asdict(dsh_result)
         if args.output:
             args.output.parent.mkdir(parents=True, exist_ok=True)
