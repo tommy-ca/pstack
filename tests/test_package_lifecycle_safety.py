@@ -77,25 +77,41 @@ def test_custom_user_skill_survives_lifecycle(host: str, tmp_path: Path) -> None
     assert custom_file.read_text(encoding="utf-8") == "# My Custom Team Skill"
 
 
-def test_file_inside_managed_skill_survives(tmp_path: Path) -> None:
-    target = tmp_path / "inside-managed"
-    plugin_dir = package_lifecycle.install_plugin("grok", target)
+@pytest.mark.parametrize("host", ["grok", "omp"])
+def test_file_inside_managed_skill_survives(host: str, tmp_path: Path) -> None:
+    target = tmp_path / f"inside-managed-{host}"
+    plugin_dir = package_lifecycle.install_plugin(host, target)
 
     # Place an extra file inside poteto-mode
     extra_file = plugin_dir / "skills" / "poteto-mode" / "extra_notes.txt"
     extra_file.write_text("poteto notes", encoding="utf-8")
 
     # Update must preserve extra file
-    ok_up, _ = package_lifecycle.update_plugin("grok", target)
+    ok_up, _ = package_lifecycle.update_plugin(host, target)
     assert ok_up is True
     assert extra_file.is_file()
     assert extra_file.read_text(encoding="utf-8") == "poteto notes"
 
     # Uninstall must preserve extra file
-    ok_un, _ = package_lifecycle.uninstall_plugin("grok", target)
+    ok_un, _ = package_lifecycle.uninstall_plugin(host, target)
     assert ok_un is True
     assert extra_file.is_file()
     assert extra_file.read_text(encoding="utf-8") == "poteto notes"
+
+
+def test_omp_projection_ships_every_skill_one_level_deep(tmp_path: Path) -> None:
+    """OMP discovers skills exactly one level deep, so a nested SKILL.md is a silent loss.
+
+    The native OMP scan is `skills/<name>/SKILL.md`; the projection must therefore
+    ship every repo skill there and nothing deeper, or the package would carry a
+    skill the binary never advertises (the deeply nested negative of #298).
+    """
+    plugin_dir = package_lifecycle.install_plugin("omp", tmp_path / "depth-omp")
+    repo_skills = sorted(p.relative_to(ROOT / "skills").as_posix() for p in (ROOT / "skills").glob("*/SKILL.md"))
+    shipped = sorted(p.relative_to(plugin_dir / "skills").as_posix() for p in (plugin_dir / "skills").rglob("SKILL.md"))
+
+    assert repo_skills, "the repo must ship skills for this guard to mean anything"
+    assert shipped == repo_skills
 
 
 def test_outside_symlink_target_never_deleted(tmp_path: Path) -> None:
