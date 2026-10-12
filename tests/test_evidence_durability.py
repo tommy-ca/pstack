@@ -541,6 +541,41 @@ def test_legacy_or_missing_evidence_level_never_proves_live(tmp_path: Path) -> N
         root, prof = _synthetic_evidence_root(tmp_path / "_".join(str(l) for l in levels), list(levels), force_verified=True)
         assert derive_support_state(prof, root) == "packaged"
 
+
+def _receipt_evidence_levels() -> set:
+    """The closed enum the durable receipt schema serves; the source of truth for the fixtures."""
+    schema = json.loads(RECEIPT_SCHEMA.read_text(encoding="utf-8"))
+    return set(schema["properties"]["scenarios"]["items"]["properties"]["evidence_level"]["enum"])
+
+
+@pytest.mark.parametrize("evidence_level", ["live", "documented"])
+def test_invented_evidence_level_rejects_an_omp_receipt_shaped_scenario(evidence_level: str) -> None:
+    """#296: `live` (the pre-serialization draft name) and `documented` (a source-provenance tag,
+    not receipt evidence) never became receipt evidence levels. Both must fail validation."""
+    enum = _receipt_evidence_levels()
+    assert enum == {"static", "offline", "observed_live", "legacy"}
+    assert evidence_level not in enum
+
+    live_receipt = json.loads((EVIDENCE_DIR / "omp-receipt.json").read_text(encoding="utf-8"))
+    tampered = json.loads(json.dumps(live_receipt))
+    target = next(s for s in tampered["scenarios"] if s["id"] == "runtime-child-spawn-omp")
+    assert target["evidence_level"] == "observed_live"
+    target["evidence_level"] = evidence_level
+
+    with pytest.raises(ValidationError):
+        ScenarioResult(**target).validate()
+    with pytest.raises(ValidationError):
+        VerificationReceipt(**tampered).validate()
+
+
+def test_omp_live_receipt_keeps_observed_live_after_the_run() -> None:
+    """The durable OMP receipt must still carry its observed_live scenario, and only enum members."""
+    receipt = json.loads((EVIDENCE_DIR / "omp-receipt.json").read_text(encoding="utf-8"))
+    levels = {s["id"]: s["evidence_level"] for s in receipt["scenarios"]}
+    assert levels["runtime-child-spawn-omp"] == "observed_live"
+    assert set(levels.values()) <= _receipt_evidence_levels()
+
+
 def test_driver_settlement_survives_receipt_serialization(tmp_path: Path) -> None:
     from scripts.drivers.base import DriverScenarioResult
 
