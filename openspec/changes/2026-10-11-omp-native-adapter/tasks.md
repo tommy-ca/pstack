@@ -84,8 +84,8 @@ Appended, not back-edited: the plan above records what was believed when the cha
   snapshotted before and after. The project/user precedence matrix and `omp plugin
   disable` are not yet covered.
 - **#297 RPC proof: spawn/join satisfied, cancellation open.** The live receipt carries a
-  typed settlement from a real child. `cancel_subagent`, `steer_subagent` and
-  `get_subagents` have session methods but no observed scenario.
+  typed settlement from a real child. `get_subagents` and `cancel_subagent` have session
+  methods but no observed scenario, and `steer_subagent` has no session method at all.
 - **#291 runtime aggregate: satisfied for the driver's own claim.** The runtime plane's
   spawn scenario is `observed_live`; the isolation scenario is recorded `static` and its
   description says it is a CLI probe with no observed isolation.
