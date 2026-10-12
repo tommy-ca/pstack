@@ -215,7 +215,7 @@ model-backed case in `tests/test_omp_rpc.py`, and the two live-arm cases in
 skips as contract BLOCKED without the upstream cache. On a host without `node`,
 `droid` or the `omp` binary the corresponding cases skip instead of passing.
 
-The model-backed live tier was **not** executed and no receipt was regenerated,
-so the runtime plane stays `UNTESTED` for every host in this record; OMP's derived
-state remains `packaged` for exactly that reason. A host without a receipt is
-`candidate`, never an invented PASS.
+The durable receipts bound here carry OMP's three `observed_live` settlements
+(spawn, cancel, isolation); the other hosts rest on offline evidence and droid
+has no receipt by design. OMP's derived state remains `packaged`, and a host
+without a receipt is `candidate`, never an invented PASS.
