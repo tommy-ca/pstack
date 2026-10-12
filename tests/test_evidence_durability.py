@@ -589,6 +589,46 @@ def test_observed_live_scenario_still_derives_verified(tmp_path: Path) -> None:
     assert check_evidence_durability(prof, root)["derived_support_state"] == "supported"
 
 
+def test_adapter_pass_with_package_fail_is_never_an_accepted_package_pass(tmp_path: Path) -> None:
+    """#296 second fixture: adapter PASS does not carry a failed package plane.
+
+    The package check is a separate native projection/lifecycle row, so the receipt tops
+    out at `verified` (canonical + adapter + runtime) and never becomes the `supported`
+    state that accepts the package plane; `check-evidence` names that gap for a claim.
+    """
+    root, prof = _synthetic_evidence_root(
+        tmp_path,
+        ["offline", "observed_live"],
+        settlements=[
+            None,
+            ChildSettlement(
+                child_id="subagent-7",
+                terminal_outcome="success",
+                model="test-model",
+                transport="rpc",
+                effective_rpc="rpc-v2:profile=disposable:depth=1",
+            ),
+        ],
+        force_verified=True,
+    )
+
+    receipt_path = root / ".audit" / "evidence" / "synthetic-receipt.json"
+    data = json.loads(receipt_path.read_text(encoding="utf-8"))
+    assert data["planes"] == {
+        "canonical": "PASS",
+        "adapter": "PASS",
+        "package": "PASS",
+        "runtime": "PASS",
+    }
+    data["planes"]["package"] = "FAIL"
+    receipt_path.write_text(json.dumps(data), encoding="utf-8")
+
+    # The adapter PASS and the settled runtime scenario prove their own planes only.
+    assert derive_support_state(prof, root) == "verified"
+    with pytest.raises(ValidationError, match="exceeds evidence-derived support state 'verified'"):
+        check_evidence_durability(replace(prof, support_state="supported"), root)
+
+
 def test_bare_live_label_without_settlement_stays_packaged(tmp_path: Path) -> None:
     root, prof = _synthetic_evidence_root(tmp_path, ["offline", "observed_live"], force_verified=True)
     assert derive_support_state(prof, root) == "packaged"
