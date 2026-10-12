@@ -33,6 +33,18 @@ No second skill registry/router, agent graph engine, scheduler, invented capabil
 
 Adopt **extend existing pstack owners** (option A). Option B, import 16 DSH skills under a parallel namespace, duplicates contracts and inflates routing ambiguity. Option C, rebuild skill runtime and verification infrastructure, violates KISS/YAGNI. Reassess an extra leaf skill only after evaluation proves an existing owner cannot express a behavior.
 
+## What Changes
+
+Spec-only: this change adds planning artifacts and one intent-driven delta spec. It ships no runtime, skill, profile or package behavior.
+
+- **Source-pinned 16-skill inventory** — [evidence-matrix.md](evidence-matrix.md) crosswalks all sixteen DSH `SKILL.md` entries at `deepseek-ai/deepseek-harness@d7432673`, each with extracted invariant, one existing pstack owner and an explicit adopt/refine/defer decision.
+- **Atomic patterns** — [atomic-patterns.md](atomic-patterns.md) decomposes the mapping into 20 observable behavior atoms (B01–B20) with positive/negative triggers, a single owner each and six compositional paths. Atomization is analytical; it instantiates no new classes.
+- **Qualification schema** — [schemas/skill-pattern-qualification.schema.json](schemas/skill-pattern-qualification.schema.json) validates curatorial ledger records only. It does not change the router, package descriptor or four-plane receipt schema.
+- **Baseline corpus** — [qualification-and-eval.md](qualification-and-eval.md) fixes the six-stage claim taxonomy, entry/recomposition/promotion gates, and the E01–E07 positive plus N01–N07 negative archetype corpus that must be measured before any candidate is compared.
+- **Spec delta** — [specs/pstack-reusable-skill-patterns/spec.md](specs/pstack-reusable-skill-patterns/spec.md) adds requirements for source provenance, one route and one owner, deferred discovery, test-resource lifecycle, changed-head currency, typed failure, simplification and honest evidence.
+- **Follow-ups** — review and prose refinements (#313) and conditional domain packs (#314) stay deferred until the resource-lifecycle (#311) and changed-head currency (#312) pilots hold; candidate improvements count only against the frozen baseline corpus.
+- **Gate matrix** — the seven-dimension qualification matrix (task correctness, selection precision, safety and effect integrity, evidence honesty, context economy, maintenance economy, host applicability) with the three-tier / four-plane evidence gates defines promotion, block and rollback conditions.
+
 ## Tracking
 
 Epic #305 → sub-epics #306 (spec/eval) and #307 (implementation/acceptance) → leaves #308–#315. Specification is preliminary; all implementation/live claims are untested until the linked work executes.
