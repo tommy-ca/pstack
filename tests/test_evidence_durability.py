@@ -25,6 +25,7 @@ from scripts.portability_schema import (
     ValidationError,
     VerificationReceipt,
     check_evidence_durability,
+    check_scenario_pins,
     compute_surface_revisions,
     derive_support_state,
 )
@@ -590,6 +591,60 @@ def test_observed_live_scenario_still_derives_verified(tmp_path: Path) -> None:
 def test_bare_live_label_without_settlement_stays_packaged(tmp_path: Path) -> None:
     root, prof = _synthetic_evidence_root(tmp_path, ["offline", "observed_live"], force_verified=True)
     assert derive_support_state(prof, root) == "packaged"
+
+
+def test_static_isolation_row_cannot_satisfy_the_runtime_plane_on_its_own() -> None:
+    """#291 negative direction: the runtime plane reduces on verdicts alone, so a runtime
+    `PASS` can contain a static row. A static isolation row must not stand in for observed
+    isolation — it is not an observed settlement, so a `verified` pin to it is rejected
+    until the live isolation run replaces the row."""
+    data = json.loads((EVIDENCE_DIR / "omp-receipt.json").read_text(encoding="utf-8"))
+    isolation = next(s for s in data["scenarios"] if s["id"] == "runtime-isolation-omp")
+    # Downgrade the row to the static CLI surface probe the isolation scenario used to be.
+    isolation["evidence_level"] = "static"
+    isolation.pop("settlement", None)
+    assert isolation["verdict"] == "PASS"
+
+    receipt = VerificationReceipt(**data)
+    receipt.validate()
+    assert receipt.planes["runtime"] == "PASS", "the plane reduces on verdicts alone"
+
+    ref = ".audit/evidence/omp-receipt.json"
+    profile_data = json.loads((ROOT / "profiles" / "omp.json").read_text(encoding="utf-8"))
+    for binding in profile_data["bindings"]:
+        binding["evidence_ref"] = ref
+        if binding["capability"] == "workspace.isolated":
+            binding["verification_status"] = "verified"
+            binding["evidence_ref"] = {"receipt": ref, "scenario": "runtime-isolation-omp"}
+    profile = HarnessProfile(
+        host=profile_data["host"],
+        support_state="packaged",
+        bindings=[Binding(**x) for x in profile_data["bindings"]],
+        skills_dir=profile_data.get("skills_dir"),
+        plugins_dir=profile_data.get("plugins_dir"),
+        plugin_manifest=profile_data.get("plugin_manifest"),
+        tool_mappings=profile_data.get("tool_mappings"),
+        skill_order=profile_data.get("skill_order"),
+        runtime_conventions=profile_data.get("runtime_conventions"),
+    )
+    with pytest.raises(ValidationError, match="carries no observed_live settlement"):
+        check_scenario_pins(profile, {ref: receipt})
+
+    # Positive control (gate mechanics only): the same pin holds once the row carries an
+    # observed_live settlement, which is exactly what the live isolation run produces.
+    isolation["evidence_level"] = "observed_live"
+    isolation["settlement"] = asdict(
+        ChildSettlement(
+            child_id="IsoChild",
+            terminal_outcome="success",
+            model="test-model",
+            transport="rpc",
+            effective_rpc="rpc-v2",
+        )
+    )
+    live_receipt = VerificationReceipt(**data)
+    live_receipt.validate()
+    check_scenario_pins(profile, {ref: live_receipt})
 
 
 def test_non_runtime_live_does_not_prove_runtime(tmp_path: Path) -> None:
