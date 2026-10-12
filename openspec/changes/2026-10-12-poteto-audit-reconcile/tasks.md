@@ -94,7 +94,7 @@ Stop rules, unchanged from both programs and enforced by this plan:
       not one per capability; record `verify-portable.py doctor --host omp` wall clock
       before and after against the same baseline.
 
-## 3. P2 — #296 residual: negative enum fixture, then close (reopened)
+## 3. P2 — #296 residual: negative enum fixture (issue stays open for P8)
 
 - **Files**: `tests/test_portability_schemas.py` or `tests/test_evidence_durability.py`
   (whichever already imports `receipt.schema.json` most directly), reference
@@ -104,8 +104,7 @@ Stop rules, unchanged from both programs and enforced by this plan:
   (`…/2026-10-11-omp-native-adapter/design.md:52`,
   `specs/pstack-omp-native-adapter/spec.md:76`), but nothing asserts the rejection. Add the
   two negative fixtures; assert the OMP live receipt keeps `observed_live` after the run.
-- **Observable result**: a receipt-shaped scenario with `evidence_level: "live"` and one with `"documented"` both fail schema validation; #296 was closed prematurely and
-reopened 2026-10-12, and it closes again only when this fixture lands with a comment naming the observation.
+- **Observable result**: a receipt-shaped scenario with `evidence_level: "live"` and one with `"documented"` both fail schema validation; #296 stays open when this lands, because the package-precedence fixture (P8) is still owed.
 - [ ] 3.1 unit: the two negative fixtures raise `ValidationError`; suite green.
 - [ ] 3.2 live: `.audit/evidence/omp-receipt.json` still validates and still carries
       `runtime-child-spawn-omp` as `observed_live` after a live refresh.
@@ -212,10 +211,15 @@ reopened 2026-10-12, and it closes again only when this fixture lands with a com
   shadowed `poteto-mode`, ambient extension trust, WorkPool reviewer contamination,
   unapproved apply/merge, timeout/cancel/missing model, stale receipt, cleanup and data
   loss, session-versus-child resume. Then the six-harness offline matrix, with any host
-  lacking a binary or provider reported `BLOCKED`/`UNTESTED`. Reviewers fix nothing.
+- **Also owned here (#296 item)**: a regression proving adapter PASS plus package FAIL
+never becomes accepted package or runtime PASS. `derive_support_state` gates `verified`
+on canonical plus adapter plus runtime and package only on the `supported` leg, so add
+the negative case (adapter PASS with package FAIL stays rejected) to
+`tests/test_verdict_reduction.py` or `tests/test_evidence_durability.py`. #296 stays
+open until P2 and this case both land with observations.
 - **Observable result**: published dispositions (act-on/consider/noted/dismissed) plus a
   per-host receipt at exact SHAs, and an explicit statement of any host left blocked.
-- [ ] 9.1 unit: verdict lattice and evidence durability suites green at the reviewed head.
+- [ ] 9.1 unit: verdict lattice and evidence durability suites green at the reviewed head, including the adapter-PASS-plus-package-FAIL rejection.
 - [ ] 9.2 live: independent reviewer contexts, two models where available, disagreement
       published rather than averaged.
 - [ ] 9.3 perf: six-host offline matrix wall clock recorded; a failure budget, not a vanity
@@ -359,7 +363,7 @@ re-derive the verdict rather than trust it.
 | #292 | NEEDS-WORK (blocked) | no slice artifact in `scripts/`; merged `tasks.md` marks #292–#294 gated on the slice | P6 |
 | #293 | NEEDS-WORK (blocked) | `skills/swarm`, `skills/arena`, `skills/interrogate` carry no native-dispatch or parity fixture | P7, P9 |
 | #294 | NEEDS-WORK (blocked) | gate depends on #293; six-host offline receipts exist via `verify-portable.py check-evidence --host all` | P8 |
-| #296 | NEEDS-WORK (reopened 2026-10-12) | `schemas/portability/receipt.schema.json` closed enum; `…/omp-native-adapter/design.md:52` and `specs/pstack-omp-native-adapter/spec.md:76`; `tests/test_evidence_durability.py::test_legacy_or_missing_evidence_level_never_proves_live`; `tests/test_verdict_reduction.py::test_lattice_fail_beats_blocked`; staleness tests; premature closure reversed by reopen 2026-10-12 | One negative fixture (`live`/`documented` rejected) → P2; close only on landing |
+| #296 | NEEDS-WORK (reopened 2026-10-12) | closed enum in `schemas/portability/receipt.schema.json`; premature closure reversed by reopen 2026-10-12; package-precedence regression unowned until P8 | Two fixtures owed: the `live`/`documented` rejection (P2) plus the adapter-PASS-plus-package-FAIL rejection (P8); close only when both land |
 | #297 | OPEN-correct | `runtime-child-spawn-omp` `observed_live` (PR #319/#323); `scripts/drivers/omp_rpc.py` exposes no `steer_subagent` session method | P3 (`todo.md` Unit 10) |
 | #298 | NEEDS-WORK | `scripts/prove-omp-native-package.py` + `tests/test_omp_native_package.py` cover enrollment, sentinel skill load, namespaced collision, live agent resolution, root-`plugin.json` negative | Disabled plugin, deeply nested skill, missing/invalid `omp` key, precedence → P4 (kept open) |
 | #305 epic | OPEN-correct | PR #317 draft carrier; `openspec/changes/2026-10-11-deepseek-skill-portability/` | P10–P15 |
@@ -375,9 +379,10 @@ re-derive the verdict rather than trust it.
 | #315 | NEEDS-WORK (blocked) | depends on #310–#314 | P15 |
 
 Closure actions taken by this pilot, corrected 2026-10-12: **#296 reopened** after a
-premature closure, because its named acceptance fixture (schema rejects
-`live`/`documented`) has no recorded observation yet. It closes again only when P2
-lands. **#298 kept open** — three acceptance items have no
+premature closure and stays open: two named acceptance fixtures have no recorded
+observation yet, the `live`/`documented` rejection (P2) and the adapter-PASS-plus-
+package-FAIL rejection (P8). It closes only when both land. **#298 kept open** — four
+acceptance items have no
 observation. **#290, #311, #312 not closed**, per the standing gate.
 
 ## 18. Offline gate receipt

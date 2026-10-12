@@ -238,7 +238,7 @@
 
 ### Poteto audit program (2026-10-12)
 - [x] Unit 11: Pilot of program `pstack-poteto-audit-20261012`: the recursive plan and issue-graph reconciliation for epic #288 and program #305, with one section per future PR (P1–P15), a verdict table over all 21 open issues, and the offline gate subset recorded (`openspec/changes/2026-10-12-poteto-audit-reconcile/`)
-- [x] Unit 12: Closed #296 with an evidence comment naming its single residual (a negative fixture for `live`/`documented`), kept #298 open as NEEDS-WORK with three named negative tests owed, and left the gated #290/#311/#312 untouched
+- [x] Unit 12: Reopened #296 after a premature closure (two acceptance fixtures owed: the `live`/`documented` rejection in P2 and the adapter-PASS-plus-package-FAIL rejection in P8), kept #298 open as NEEDS-WORK with four named negative tests owed, and left the gated #290/#311/#312 untouched
 - [ ] Unit 13: P1 — OMP source matrix and honest bindings; the `agent.cancel`/`agent.resume`/`session.resume`/`monitor`/`schedule` rows claim `verified` with no scenario behind them (Issue #289)
 - [ ] Unit 14: P4 — package precedence, disabled plugin, nested skill and invalid-`omp`-key negatives (Issues #290, #298)
 - [ ] Unit 15: P9 — verification parity: join deadline, evidence binding and declared-host census in `swarm`, `arena` and `interrogate`
