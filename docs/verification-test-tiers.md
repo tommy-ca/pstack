@@ -30,7 +30,10 @@ without installing proprietary agent harness binaries:
 - `tests/test_sync_antigravity_plugin.py`: the sync source guard (dirty tree,
   linked worktree, non-repository, and the `--force` override).
 - `tests/test_omp_native_package.py`: the OMP native package proof against the
-  real binary. It skips when `omp` is not on PATH, and a skip is not a pass.
+  real binary. It skips when `omp` is not on PATH, and a skip is not a pass. Its
+  vertical-slice half (#292) keeps an ungated offline arm — package projection,
+  manifest shape, uninstall plan and the four-plane receipt with a BLOCKED
+  runtime plane — so the job still runs something real without a binary.
 - `tests/test_ci_resource_isolation.py`: concurrent-process resource isolation,
   with the colliding fixture as the negative control. The Node half skips when
   `node` is absent.
