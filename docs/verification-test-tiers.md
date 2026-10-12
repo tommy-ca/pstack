@@ -57,7 +57,12 @@ without installing proprietary agent harness binaries:
   and asserts that E05 resolves, that no case fails and that every control still
   separates. The frozen baseline record stays frozen: `scripts/eval_blinded_pstack.py
   --dsh-phase baseline` reports it as revision-bound and names the cases the tree
-  has moved past instead of re-publishing it as a current measurement.
+- `tests/test_eval_blinded_pstack_dsh.py`: the frozen #310 baseline record. It runs
+  revision-bound: on a tree past its pinned revision it reports drift as
+  BLOCKED/UNTESTED history, never a current PASS or FAIL.
+- `tests/test_canonical_index.py`: canonical inventory conformance. Its
+  classify-drift arm skips as contract BLOCKED when no upstream cache exists;
+  the rest runs cache-free.
 
 Two suites in this list are tier-limited and a green job is not a pass for them.
 `tests/test_omp_native_package.py` skips without an `omp` binary, so the offline
