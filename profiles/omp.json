@@ -73,12 +73,12 @@
       "implementation_status": "native",
       "primitive": "git worktree / overlay (task.isolation.backend)",
       "enforcement": "hard",
-      "verification_status": "static-only",
+      "verification_status": "verified",
       "evidence_ref": {
         "receipt": ".audit/evidence/omp-receipt.json",
         "scenario": "runtime-isolation-omp"
       },
-      "notes": "Statically mapped and probe-only: runtime-isolation-omp records a CLI surface check, not an observed isolation. Backends (can1357/oh-my-pi@0affc77 docs/tools/task.md, task.isolation.enabled + isolation.backend) are setting-gated."
+      "notes": "Observed live: isolated task child writes captured-but-unapplied patch under apply=false, parent sentinel byte-identical, no worktree residue (runtime-isolation-omp observed_live)."
     },
     {
       "host": "omp",

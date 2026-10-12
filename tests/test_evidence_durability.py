@@ -188,6 +188,7 @@ def test_omp_profile_claims_only_what_its_receipt_settles() -> None:
     assert {b.capability for b in prof.bindings if b.verification_status == "verified"} == {
         "agent.spawn",
         "agent.join",
+        "workspace.isolated",
     }
     for b in prof.bindings:
         if b.scenario_id:
