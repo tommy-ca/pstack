@@ -3,8 +3,8 @@
   "hosts": {
     "grok": {
       "receipt": ".audit/evidence/grok-receipt.json",
-      "run_id": "grok-1791816627-2356bef4",
-      "timestamp": "2026-10-12T14:51:26Z",
+      "run_id": "grok-1791820310-87fa80ac",
+      "timestamp": "2026-10-12T15:52:11Z",
       "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
@@ -16,7 +16,7 @@
         "canonical_pin": "df581122cde17e6e27686b5a448bde23e4ad4318",
         "upstream_head": "d0ef80d86795816da932a153458c5dbe192d294e",
         "spec_hash": "671f5d465db673df40350dab39fcf45ac14c7f0d178bace536a6dadf8c97e4d8",
-        "skills_tree_hash": "e09c15bcc9a9102aa8b8da64e4d847f17d8b3fc4cf9a248d0d4516236471dec3",
+        "skills_tree_hash": "249113842cec1471dfc7bc7e7e5bab45de6897683fad24a82380ae53d87f822d",
         "profile_hash": "5ffcca460007dae14a130ef032f5827552186fef54024b13451ac19f2661aed5",
         "package_descriptor_hash": "5a4cd6b99f113f422aaf2df0755e53d20227ce12a99acb28cd5075d96e5aaadb",
         "manifest_hash": "ef4f4f8ec6afc7a8c8a33762d2215a7f8d1c2d29434375ebff7ee1549e1a13fd",
@@ -27,8 +27,8 @@
     },
     "codex": {
       "receipt": ".audit/evidence/codex-receipt.json",
-      "run_id": "codex-1791816687-ef77f270",
-      "timestamp": "2026-10-12T14:52:22Z",
+      "run_id": "codex-1791820331-648d1e00",
+      "timestamp": "2026-10-12T15:52:31Z",
       "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
@@ -40,7 +40,7 @@
         "canonical_pin": "df581122cde17e6e27686b5a448bde23e4ad4318",
         "upstream_head": "d0ef80d86795816da932a153458c5dbe192d294e",
         "spec_hash": "671f5d465db673df40350dab39fcf45ac14c7f0d178bace536a6dadf8c97e4d8",
-        "skills_tree_hash": "e09c15bcc9a9102aa8b8da64e4d847f17d8b3fc4cf9a248d0d4516236471dec3",
+        "skills_tree_hash": "249113842cec1471dfc7bc7e7e5bab45de6897683fad24a82380ae53d87f822d",
         "profile_hash": "3c7572b5cebaf8dd6c62b7465a88e15a2694291be8fd0c143f5d2ef96a9394af",
         "package_descriptor_hash": "5a4cd6b99f113f422aaf2df0755e53d20227ce12a99acb28cd5075d96e5aaadb",
         "manifest_hash": "0eb233bd0e3b85bdca0d48fa7e8d248ba19994b282cb3d9247606c502764fb57",
@@ -51,8 +51,8 @@
     },
     "omp": {
       "receipt": ".audit/evidence/omp-receipt.json",
-      "run_id": "omp-1791817154-15b415d0",
-      "timestamp": "2026-10-12T15:01:02Z",
+      "run_id": "omp-1791820390-56b452fe",
+      "timestamp": "2026-10-12T15:54:22Z",
       "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
@@ -64,7 +64,7 @@
         "canonical_pin": "df581122cde17e6e27686b5a448bde23e4ad4318",
         "upstream_head": "d0ef80d86795816da932a153458c5dbe192d294e",
         "spec_hash": "671f5d465db673df40350dab39fcf45ac14c7f0d178bace536a6dadf8c97e4d8",
-        "skills_tree_hash": "e09c15bcc9a9102aa8b8da64e4d847f17d8b3fc4cf9a248d0d4516236471dec3",
+        "skills_tree_hash": "249113842cec1471dfc7bc7e7e5bab45de6897683fad24a82380ae53d87f822d",
         "profile_hash": "40eed68892ad92ac85d47f2f2049f19ce1d80c94408bf7b36ff9cc8bda09663b",
         "package_descriptor_hash": "5a4cd6b99f113f422aaf2df0755e53d20227ce12a99acb28cd5075d96e5aaadb",
         "manifest_hash": "355cc6cf3e8a8cd9c7cf151d7147269101d3cbc53591d09ae6a9ca41fc6b0560",
@@ -75,8 +75,8 @@
     },
     "opencode": {
       "receipt": ".audit/evidence/opencode-receipt.json",
-      "run_id": "opencode-1791816742-d14a6d06",
-      "timestamp": "2026-10-12T14:53:13Z",
+      "run_id": "opencode-1791820351-afda626a",
+      "timestamp": "2026-10-12T15:52:46Z",
       "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
@@ -88,7 +88,7 @@
         "canonical_pin": "df581122cde17e6e27686b5a448bde23e4ad4318",
         "upstream_head": "d0ef80d86795816da932a153458c5dbe192d294e",
         "spec_hash": "671f5d465db673df40350dab39fcf45ac14c7f0d178bace536a6dadf8c97e4d8",
-        "skills_tree_hash": "e09c15bcc9a9102aa8b8da64e4d847f17d8b3fc4cf9a248d0d4516236471dec3",
+        "skills_tree_hash": "249113842cec1471dfc7bc7e7e5bab45de6897683fad24a82380ae53d87f822d",
         "profile_hash": "4074fefdbad85a428a20ddf7e6b5ba0727409885cc0f7d9edfd7cf8686fb87fb",
         "package_descriptor_hash": "5a4cd6b99f113f422aaf2df0755e53d20227ce12a99acb28cd5075d96e5aaadb",
         "manifest_hash": "e8752f36aeba13b48ff42552c4f6c2b94978e32ea932504bca31a01dcf4fdf39",
@@ -99,8 +99,8 @@
     },
     "antigravity": {
       "receipt": ".audit/evidence/antigravity-receipt.json",
-      "run_id": "antigravity-1791817081-a7dfe461",
-      "timestamp": "2026-10-12T14:59:09Z",
+      "run_id": "antigravity-1791820366-b7545574",
+      "timestamp": "2026-10-12T15:53:05Z",
       "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
@@ -112,7 +112,7 @@
         "canonical_pin": "df581122cde17e6e27686b5a448bde23e4ad4318",
         "upstream_head": "d0ef80d86795816da932a153458c5dbe192d294e",
         "spec_hash": "671f5d465db673df40350dab39fcf45ac14c7f0d178bace536a6dadf8c97e4d8",
-        "skills_tree_hash": "e09c15bcc9a9102aa8b8da64e4d847f17d8b3fc4cf9a248d0d4516236471dec3",
+        "skills_tree_hash": "249113842cec1471dfc7bc7e7e5bab45de6897683fad24a82380ae53d87f822d",
         "profile_hash": "cd2e002f36dd9a08d8efbc284b15c537282445e97f64551b74c584697c04f931",
         "package_descriptor_hash": "5a4cd6b99f113f422aaf2df0755e53d20227ce12a99acb28cd5075d96e5aaadb",
         "manifest_hash": "ae6183e263c8948669f41f7e864b598a05f81c6da4c8ec0908fff8b6ece4db97",
