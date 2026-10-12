@@ -20,6 +20,8 @@ Open a todolist with the steps below copied in verbatim. A step you skip stays l
 
 Depth stays at this coordinator chat, then workers and verifiers. Tracks are host-state partitions, not nested agents. Hard-coded swarm trees were tried and parked as too rigid.
 
+**Parity.** That flat depth is an adaptation of the canonical nested playbook, not an equivalent, so it is classified `adapted` for a single-level coordinator whose tracks live in host state, and `gap` for nested track sub-coordinator ownership, cancellation and terminal joins, which no run here has observed. Nested parity is claimable only from observed multi-level child ownership, cancellation and joins.
+
 #### Durable state boundary
 
 The coordinator MUST NOT create a playbook-local store or invoke an unshipped orchestration CLI. Keep transient prompt context in the current session. Publish durable units, claims, frontier, verification, gates, and decisions through the host's canonical task and agent state. For Gas City adapters, use Gas City formulas and Beads for routing, retries, persistence, and fanout/fanin. If the host lacks a field, record a gate or reported gap instead of adding a parallel store.
