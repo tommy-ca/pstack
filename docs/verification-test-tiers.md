@@ -189,7 +189,7 @@ Attacks refused by a suite this unit does not own, with where the refusal lives:
 
 ### Six-host offline matrix
 
-Recorded at the P8 head `716bca5` with no receipts rewritten:
+Recorded at `6b0a0e9` (P15 gate head; receipts bound by surface hash, not commit):
 
 ```sh
 python scripts/verify-portable.py check-evidence --host all
@@ -205,15 +205,17 @@ python scripts/verify-portable.py check-staleness --host all --json
 | antigravity | present | yes | none | supported | PASS |
 | droid | present | no (by design) | n/a | candidate | BLOCKED (ineligible host) |
 
-Offline pytest gate at that head: **381 passed, 10 skipped**. Every skip is a
-tier-limited live case, never a pass: seven opt-in host CLI smoke cases in
+Offline pytest gate at that head: **526 passed, 10 skipped**. Every skip is a
+tier-limited live case or the cache-absent canonical-index arm, never a pass:
+seven opt-in host CLI smoke cases in
 `tests/test_harness_drivers.py` (`PSTACK_RUN_HOST_DEPENDENT_TESTS=1`), the live
 model-backed case in `tests/test_omp_rpc.py`, and the two live-arm cases in
 `tests/test_omp_native_package.py` — the last three need
-`PSTACK_RUN_OMP_LIVE=1` and a model route. On a host without `node`, `droid` or
-the `omp` binary the corresponding cases skip instead of passing.
+`PSTACK_RUN_OMP_LIVE=1` and a model route. The canonical-index classify-drift arm
+skips as contract BLOCKED without the upstream cache. On a host without `node`,
+`droid` or the `omp` binary the corresponding cases skip instead of passing.
 
-The model-backed live tier was **not** executed and no receipt was regenerated,
-so the runtime plane stays `UNTESTED` for every host in this record; OMP's derived
-state remains `packaged` for exactly that reason. A host without a receipt is
-`candidate`, never an invented PASS.
+The durable receipts bound here carry OMP's three `observed_live` settlements
+(spawn, cancel, isolation); the other hosts rest on offline evidence and droid
+has no receipt by design. OMP's derived state remains `packaged`, and a host
+without a receipt is `candidate`, never an invented PASS.
