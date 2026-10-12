@@ -45,6 +45,8 @@ If the host rejects a slug, omit `model` or retry only with a slug the error tex
 
 Fill the reviewer prompt with `scripts/pack.py --intent` plus exactly one of `--range` or `--diff-file` (`references/rubric.md`, `references/code-quality-review.md`). Do not hand-fill the template. Point reviewers at the packed `prompt.md` rather than inlining dumps. The same packed prompt goes to all reviewers, so every model applies the code-quality lens.
 
+Join the reviewers under a bounded join deadline named before spawn (e.g. `join deadline: 10m`). A reviewer that has not returned by the deadline is a reported dropout, not a pass.
+
 Each reviewer produces structured findings as described in the prompt template.
 
 ## Step 4, Synthesize
@@ -74,6 +76,8 @@ For each finding, include:
 - Which model(s) raised it
 - The category (act on / consider / noted / dismissed)
 - A one-line rationale for the categorization
+
+The verdict binds to evidence: every finding cites the receipt scenario id, file hash, or PR head SHA it rests on. A prose-only verdict fails and is re-run, not shipped. When the verdict claims host parity, name the declared census read from `pstack.package.json#host_targets` via `get_declared_hosts` in `scripts/verify-portable.py`, with each host's evidence tier; a missing host is a stated gap, not silence.
 
 ## Output Format
 

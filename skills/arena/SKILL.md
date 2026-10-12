@@ -34,7 +34,7 @@ Spawn all N subagents in one message using the host's `agent.spawn` primitive (p
 
 The rationale is mandatory. Without it, the parent cannot tell whether a candidate's structure is principled or accidental, which makes Phase E grafting unreliable. Each rationale names the alternatives the candidate considered and what it rejected.
 
-If a candidate fails to produce output, proceed with N-1 and note the dropout in the synthesis record.
+If a candidate fails to produce output, proceed with N-1 and note the dropout in the synthesis record. Join under a bounded join deadline named before spawn (e.g. `join deadline: 10m`); a candidate that has not returned by the deadline is a reported dropout, not silence.
 
 ## Phase C: Cross-judge
 
@@ -68,4 +68,4 @@ If verification surfaces a problem the arena did not catch, either Phase A was w
 
 ## Outputs
 
-One synthesized artifact. One short synthesis note alongside, naming the base, the grafts (with source candidate), the rejections, the dropouts if any, and the verification result.
+One synthesized artifact. One short synthesis note alongside, naming the base, the grafts (with source candidate), the rejections, the dropouts if any, and the verification result. The note binds to evidence: the receipt scenario id, file hash, or PR head SHA the artifact was verified against. A prose-only verdict fails. When the arena claims host parity, name the declared census read from `pstack.package.json#host_targets` via `get_declared_hosts` in `scripts/verify-portable.py`, with each host's evidence tier; a missing host is a stated gap, not silence.
