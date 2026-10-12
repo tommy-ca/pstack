@@ -12,9 +12,10 @@ all authority, routing, and safety semantics stay with canonical pstack.
 
 ## In-Force ADRs Reviewed
 
-- `adr/0005-playbooks-not-rhai.md` - playbooks remain plain markdown intent.
+- `adr/0005-playbooks-are-not-rhai-workflows.md` - playbooks remain plain markdown intent.
 - `adr/0007-openspec-archive-chain-gate.md` - OpenSpec archive chain requirements.
 - `adr/0018-verification-skill-scaffold-and-audit.md` - verification skill contracts.
+- `adr/0019-post-archive-completeness.md` - post-archive completeness gate; the artifact gate cited below is its contract, not ADR-0007's.
 
 ## New Durable ADRs Created
 
