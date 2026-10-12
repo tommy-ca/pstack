@@ -729,7 +729,26 @@ class PortableVerifier:
             )
         )
 
-        # 4. Native workspace isolation contract
+        # 4. Native in-flight child cancellation (omp only: the other drivers declare no
+        # cancel surface, so a scenario here would record a host with nothing to drive)
+        if self.host == "omp":
+            sc_cancel = driver.child_cancel(self.run_dir)
+            self.scenarios.append(
+                ScenarioResult(
+                    id=sc_cancel.scenario_id,
+                    description=sc_cancel.description,
+                    plane="runtime",
+                    command=sc_cancel.command,
+                    exit_code=sc_cancel.exit_code,
+                    stdout_snippet=sc_cancel.stdout_snippet,
+                    verdict=sc_cancel.verdict,
+                    duration_s=sc_cancel.duration_s,
+                    evidence_level=sc_cancel.evidence_level,
+                    settlement=sc_cancel.settlement,
+                )
+            )
+
+        # 5. Native workspace isolation contract
         sc_iso = driver.isolation(self.run_dir)
         self.scenarios.append(
             ScenarioResult(
@@ -746,7 +765,7 @@ class PortableVerifier:
             )
         )
 
-        # 5. Native evidence capture contract
+        # 6. Native evidence capture contract
         sc_ev = driver.evidence_capture(self.run_dir)
         self.scenarios.append(
             ScenarioResult(

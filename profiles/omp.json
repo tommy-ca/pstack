@@ -38,7 +38,7 @@
       "primitive": "task (session continuation) / agent:// peer write",
       "enforcement": "hard",
       "verification_status": "static-only",
-      "notes": "GAP: no receipt scenario settles messaging; statically mapped from can1357/oh-my-pi@0affc77 docs/tools/task.md (`write agent://<id>` peer messaging) and docs/rpc.md (`steer_subagent`). No live run has steered a child."
+      "notes": "GAP: no receipt scenario settles messaging, and the bounded session exposes no steer_subagent method, so no scenario can steer a child; steering is unsupported by the runner as shipped and upstream lists `steer_subagent` only as an untried surface (can1357/oh-my-pi@0affc77 docs/rpc.md). Statically mapped from docs/tools/task.md (`write agent://<id>` peer messaging). Recorded as a gap, never as a claim."
     },
     {
       "host": "omp",
@@ -47,7 +47,7 @@
       "primitive": "proc://<id>/kill / cancel_subagent",
       "enforcement": "hard",
       "verification_status": "static-only",
-      "notes": "GAP: no receipt scenario settles cancellation; statically mapped from can1357/oh-my-pi@0affc77 docs/tools/task.md (`write proc://<jobId>/kill`, `proc://<agentId>/kill`) and docs/rpc.md (`cancel_subagent`, `get_subagents`). Issue #297 owes the observed cancellation."
+      "notes": "GAP: no receipt scenario settles cancellation yet. The runner now drives it: scripts/drivers/omp.py child_cancel emits runtime-child-cancel-omp, dispatched from verify-portable.py drive() for this host, driving a bounded --mode rpc session that prompts one child, confirms it in flight through get_subagents, cancels it through cancel_subagent, and reduces the child's terminal subagent_lifecycle into a typed cancelled settlement (the missing-child, unaccepted-cancel and dropped-terminal-frame paths are recorded as bounded negatives instead). The row stays static-only because the promotion gate accepts only a successful spawn/join settlement (scripts/portability_schema.py _is_observed_settlement), so an observed cancellation cannot promote it; the gated live run (PSTACK_RUN_OMP_LIVE=1) writes the observation into .audit/evidence/omp-receipt.json and the scenario pin follows that refresh. Statically mapped from can1357/oh-my-pi@0affc77 docs/tools/task.md (`write proc://<jobId>/kill`, `proc://<agentId>/kill`) and docs/rpc.md (`cancel_subagent`, `get_subagents`)."
     },
     {
       "host": "omp",
