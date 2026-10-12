@@ -160,6 +160,341 @@ def run_blinded_eval(corpus_path: Path, root: Path) -> BlindedEvalResult:
     )
 
 
+@dataclass
+class DshCaseResult:
+    """Per-case deterministic verifier record for one E0x/N0x archetype."""
+
+    id: str
+    blind_label: str
+    kind: str  # "positive" | "negative"
+    archetype: str
+    expected_evidence: str
+    status: str  # "PASS" | "FAIL" | "UNTESTED"
+    probes_total: int
+    required_total: int
+    required_passed: int
+    forbidden_activated: List[str]
+    missed_required: List[str]
+    controls_total: int
+    controls_passed: int
+    insensitive_controls: List[str]
+    false_activation: bool
+    unsafe_effect: bool
+    context_ops: int
+    context_bytes: int
+    context_ms: float
+
+
+@dataclass
+class DshEvalResult:
+    """Aggregate raw counts across the frozen DSH archetype corpus."""
+
+    corpus_version: str
+    phase: str
+    source: str
+    pstack_revision: Any
+    model_route: Any
+    provider: str
+    total_cases: int
+    positives: int
+    negatives: int
+    false_activations: int
+    false_passes: int
+    unsafe_effects: int
+    missed_required: int
+    controls_total: int
+    controls_sensitive: int
+    total_context_ops: int
+    total_context_bytes: int
+    total_context_ms: float
+    budgets: Dict[str, Any]
+    verdict: str
+    cases: List[DshCaseResult]
+
+
+# --- DSH archetype corpus (issue #310) -------------------------------------
+#
+# The decision corpus above scores routing against synthetic criteria. This
+# second corpus scores the qualification-and-eval.md E01-E07 / N01-N07
+# archetypes with a *deterministic verifier*: every probe reads pstack
+# artifacts, runs the canonical resolver, or reuses the shipped status
+# reducer. Nothing here invokes a model, executes corpus text, or writes a
+# file, so the recorded result carries no live/native claim.
+
+import hashlib
+import importlib.util
+import re
+import time
+
+
+def _load_sibling_module(name: str, rel: str) -> Any:
+    spec = importlib.util.spec_from_file_location(name, ROOT / rel)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+# The shipped reducer owns FAIL > BLOCKED > UNTESTED > PASS; reuse it instead of
+# restating the precedence in a second place.
+_vp = _load_sibling_module("verify_portable", "scripts/verify-portable.py")
+reduce_verdicts = _vp.reduce_verdicts
+
+DSH_CORPUS_DIR = ROOT / "tests" / "fixtures" / "eval_corpus_dsh"
+
+
+def _blind_label(phase: str, case_id: str) -> str:
+    return "candidate-" + hashlib.sha256(f"{phase}:{case_id}".encode()).hexdigest()[:10]
+
+
+def _scope_files(root: Path, globs: List[str]) -> List[Path]:
+    """Expand corpus scope globs, skipping vendored node_modules."""
+    found: List[Path] = []
+    for pattern in globs:
+        for path in sorted(root.glob(pattern)):
+            if not path.is_file() or "node_modules" in path.parts:
+                continue
+            if path not in found:
+                found.append(path)
+    return found
+
+
+def _route_target(profile: Dict[str, Any], query: str, root: Path) -> str:
+    res = resolve_skill_order(profile, query, root)
+    return res.target if res.is_matched else "no-route"
+
+
+def _eval_probe(
+    probe: Dict[str, Any],
+    case: Dict[str, Any],
+    profile: Dict[str, Any],
+    root: Path,
+    ctx: Dict[str, int],
+) -> Tuple[bool, str]:
+    """Deterministic activation of one probe. Returns (activated, detail)."""
+    kind = probe["kind"]
+    ctx["ops"] += 1
+
+    if kind == "artifact":
+        path = root / probe["path"]
+        if path.is_file():
+            ctx["bytes"] += path.stat().st_size
+        return path.is_file(), f"artifact {probe['path']}"
+
+    if kind == "pattern":
+        compiled = re.compile(probe["pattern"])
+        if "text" in probe:
+            text = probe["text"]
+            ctx["bytes"] += len(text)
+            return bool(compiled.search(text)), "literal text"
+        hits = []
+        for path in _scope_files(root, probe["scope"]):
+            body = path.read_text(encoding="utf-8", errors="ignore")
+            ctx["ops"] += 1
+            ctx["bytes"] += len(body)
+            if compiled.search(body):
+                hits.append(str(path.relative_to(root)))
+        return bool(hits), f"matched {hits}"
+
+    if kind == "route":
+        target = _route_target(profile, probe["query"], root)
+        if "forbid" in probe:
+            return target == probe["forbid"], f"route({probe['query']}) -> {target}"
+        return target == probe["expect"], f"route({probe['query']}) -> {target}"
+
+    if kind == "trigger":
+        owner = root / probe["owner"]
+        body = owner.read_text(encoding="utf-8", errors="ignore") if owner.is_file() else ""
+        ctx["bytes"] += len(body)
+        ungrounded = [t for t in probe["terms"] if t.lower() not in body.lower()]
+        if ungrounded:
+            raise ValueError(
+                f"{case['id']}: trigger terms {ungrounded} are not declared by {probe['owner']}"
+            )
+        task = case[probe.get("task_key", "organic_task")].lower()
+        hits = [t for t in probe["terms"] if t.lower() in task]
+        return bool(hits), f"trigger hits {hits}"
+
+    if kind == "reduce":
+        reduced = reduce_verdicts(probe["statuses"])
+        return reduced == probe["expect"], f"reduce -> {reduced}"
+
+    raise ValueError(f"{case['id']}: unknown probe kind {kind!r}")
+
+
+def _eval_control(
+    probe: Dict[str, Any],
+    control: Dict[str, Any],
+    profile: Dict[str, Any],
+    root: Path,
+    ctx: Dict[str, int],
+) -> bool:
+    """Return whether the probe predicate fires on the injected control input."""
+    ctx["ops"] += 1
+    if "query" in control:
+        return _route_target(profile, control["query"], root) == control["expect"]
+    if "statuses" in control:
+        return reduce_verdicts(control["statuses"]) == control["expect"]
+    text = control["text"]
+    ctx["bytes"] += len(text)
+    if probe["kind"] == "trigger":
+        fired = any(t.lower() in text.lower() for t in probe["terms"])
+    else:
+        fired = bool(re.compile(probe["pattern"]).search(text))
+    if "expect_match" in control and fired != control["expect_match"]:
+        raise ValueError(f"control/expect_match mismatch on {probe['pattern']!r}")
+    return fired
+
+
+def _repo_revision(root: Path) -> Any:
+    """Exact pstack revision the baseline was measured on, when git is present."""
+    try:
+        import subprocess
+
+        proc = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=root,
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        sha = proc.stdout.strip()
+        return sha if proc.returncode == 0 and len(sha) == 40 else None
+    except Exception:
+        return None
+
+
+def run_dsh_blinded_eval(corpus_dir: Path, root: Path) -> "DshEvalResult":
+    """Score the E01-E07/N01-N07 archetype corpus deterministically, offline."""
+    corpus = json.loads((corpus_dir / "cases.json").read_text(encoding="utf-8"))
+    phase = corpus.get("phase", "baseline")
+    profile = json.loads((root / "profiles" / "grok.json").read_text(encoding="utf-8"))
+
+    case_results: List[DshCaseResult] = []
+    for case in corpus["cases"]:
+        ctx = {"ops": 0, "bytes": 0}
+        started = time.perf_counter()
+        forbidden_hits: List[str] = []
+        missed_required: List[str] = []
+        insensitive: List[str] = []
+        unsafe = 0
+        required_total = required_passed = 0
+        controls_total = controls_passed = 0
+
+        for probe in case["probes"]:
+            activated, detail = _eval_probe(probe, case, profile, root, ctx)
+            role = probe["role"]
+            if role == "required":
+                required_total += 1
+                if activated:
+                    required_passed += 1
+                else:
+                    missed_required.append(f"{probe['kind']}:{detail}")
+            elif activated:
+                forbidden_hits.append(f"{probe['kind']}:{detail}")
+                if probe.get("unsafe"):
+                    unsafe += 1
+
+            control = probe.get("control")
+            if control:
+                controls_total += 1
+                # A control is sensitive only when it separates from the real probe.
+                if _eval_control(probe, control, profile, root, ctx) != activated:
+                    controls_passed += 1
+                else:
+                    insensitive.append(f"{probe['kind']}:{detail}")
+
+        elapsed_ms = (time.perf_counter() - started) * 1000.0
+        false_activation = bool(forbidden_hits)
+        if false_activation or unsafe or insensitive:
+            status = "FAIL"
+        elif missed_required:
+            status = "PASS" if case["kind"] == "negative" else "UNTESTED"
+        else:
+            status = "PASS"
+
+        case_results.append(
+            DshCaseResult(
+                id=case["id"],
+                blind_label=_blind_label(phase, case["id"]),
+                kind=case["kind"],
+                archetype=case["archetype"],
+                expected_evidence=case["expected_evidence"],
+                status=status,
+                probes_total=len(case["probes"]),
+                required_total=required_total,
+                required_passed=required_passed,
+                forbidden_activated=forbidden_hits,
+                missed_required=missed_required,
+                controls_total=controls_total,
+                controls_passed=controls_passed,
+                insensitive_controls=insensitive,
+                false_activation=false_activation,
+                unsafe_effect=bool(unsafe),
+                context_ops=ctx["ops"],
+                context_bytes=ctx["bytes"],
+                context_ms=round(elapsed_ms, 3),
+            )
+        )
+
+    case_results.sort(key=lambda c: c.blind_label)
+    verdict = reduce_verdicts(c.status for c in case_results)
+    false_passes = sum(
+        1
+        for c in case_results
+        if c.status == "PASS" and (c.missed_required or c.forbidden_activated)
+    )
+
+    return DshEvalResult(
+        corpus_version=corpus["corpus_version"],
+        phase=phase,
+        source=corpus["source"],
+        pstack_revision=_repo_revision(root),
+        model_route=None,
+        provider="deterministic-offline",
+        total_cases=len(case_results),
+        positives=sum(1 for c in case_results if c.kind == "positive"),
+        negatives=sum(1 for c in case_results if c.kind == "negative"),
+        false_activations=sum(1 for c in case_results if c.false_activation),
+        false_passes=false_passes,
+        unsafe_effects=sum(1 for c in case_results if c.unsafe_effect),
+        missed_required=sum(1 for c in case_results if c.missed_required),
+        controls_total=sum(c.controls_total for c in case_results),
+        controls_sensitive=sum(c.controls_passed for c in case_results),
+        total_context_ops=sum(c.context_ops for c in case_results),
+        total_context_bytes=sum(c.context_bytes for c in case_results),
+        total_context_ms=round(sum(c.context_ms for c in case_results), 3),
+        budgets=corpus["budgets"],
+        verdict=verdict,
+        cases=case_results,
+    )
+
+
+def _render_dsh_table(result: "DshEvalResult") -> str:
+    lines = [
+        f"{'case':<10} {'kind':<9} {'status':<9} {'probes':>6} {'false_act':>9} "
+        f"{'unsafe':>6} {'controls':>8} {'ops':>4} {'bytes':>6} {'ms':>7}",
+        "-" * 84,
+    ]
+    for c in result.cases:
+        lines.append(
+            f"{c.id:<10} {c.kind:<9} {c.status:<9} {c.probes_total:>6} "
+            f"{str(c.false_activation):>9} {str(c.unsafe_effect):>6} "
+            f"{f'{c.controls_passed}/{c.controls_total}':>8} "
+            f"{c.context_ops:>4} {c.context_bytes:>6} {c.context_ms:>7.3f}"
+        )
+    lines.append(
+        f"totals: cases={result.total_cases} false_activation={result.false_activations} "
+        f"false_pass={result.false_passes} unsafe_effect={result.unsafe_effects} "
+        f"missed_required={result.missed_required} "
+        f"controls={result.controls_sensitive}/{result.controls_total} "
+        f"context_ops={result.total_context_ops} bytes={result.total_context_bytes} "
+        f"ms={result.total_context_ms} verdict={result.verdict}"
+    )
+    return "\n".join(lines)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run blinded pstack behavioral eval")
     parser.add_argument(
@@ -167,6 +502,12 @@ def main() -> int:
         type=Path,
         default=ROOT / "tests" / "fixtures" / "decision_corpus.json",
         help="Path to fixture corpus JSON",
+    )
+    parser.add_argument(
+        "--dsh-corpus",
+        type=Path,
+        default=None,
+        help="Directory holding the DSH E01-E07/N01-N07 cases.json (issue #310)",
     )
     parser.add_argument(
         "--format",
@@ -182,6 +523,20 @@ def main() -> int:
     )
 
     args = parser.parse_args()
+
+    if args.dsh_corpus:
+        dsh_result = run_dsh_blinded_eval(args.dsh_corpus, ROOT)
+        payload = asdict(dsh_result)
+        if args.output:
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            args.output.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        if args.format == "json":
+            print(json.dumps(payload, indent=2))
+        else:
+            print(f"=== DSH Archetype Corpus Verdict ({dsh_result.phase}): {dsh_result.verdict} ===")
+            print(_render_dsh_table(dsh_result))
+        return 0 if dsh_result.verdict in ("PASS", "UNTESTED") else 1
+
     result = run_blinded_eval(args.corpus, ROOT)
 
     payload = asdict(result)
