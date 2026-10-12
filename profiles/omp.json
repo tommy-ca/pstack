@@ -164,7 +164,7 @@
   ],
   "evidence_ledger": [
     {
-      "claim": "OMP runtime plane observed live: a bounded omp --mode rpc v2 session negotiated protocol v2, spawned and joined one real model-backed `task` child, and reduced it to a typed settlement on runtime-child-spawn-omp. The package plane is an offline lifecycle fixture only, a native installed-package load remains open under #290, and this profile deliberately underclaims what the reducer currently derives.",
+      "claim": "OMP runtime plane observed live: a bounded omp --mode rpc v2 session negotiated protocol v2, spawned and joined one real model-backed `task` child, and reduced it to a typed settlement on runtime-child-spawn-omp. The package plane is an offline lifecycle fixture only, while the native installed-package load is proven by scripts/prove-omp-native-package.py against the real binary; this profile deliberately underclaims what the reducer currently derives.",
       "kind": "runtime",
       "artifact": ".audit/evidence/omp-receipt.json",
       "command": "PSTACK_RUN_OMP_LIVE=1 python3 scripts/verify-portable.py run --host omp",
