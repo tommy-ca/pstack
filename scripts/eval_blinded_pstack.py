@@ -257,6 +257,8 @@ def _probe_scope_hash(root: Path) -> str:
     h = hashlib.sha256()
     scope = sorted(root.glob("skills/**/SKILL.md")) + sorted(root.glob("skills/**/playbooks/*.md"))
     scope += sorted(root.glob("agents/*.md")) + [root / "profiles" / "grok.json"]
+    scope += [root / "scripts" / "verify-portable.py", root / "scripts" / "route_resolver.py",
+              root / "scripts" / "decision_adapter.py", root / "scripts" / "eval_blinded_pstack.py"]
     for path in scope:
         if path.is_file() and "node_modules" not in path.parts:
             h.update(str(path.relative_to(root)).encode() + b"\0" + path.read_bytes() + b"\0")
