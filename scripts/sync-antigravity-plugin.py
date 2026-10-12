@@ -18,6 +18,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 LIVE_PLUGIN_DIR = Path.home() / ".gemini" / "config" / "plugins" / "pstack"
 
+# Source paths whose content sync_live_plugin publishes into the live plugin.
+SYNCED_PATHS = ("skills", "agents", "pstack.package.json")
+
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
@@ -261,7 +264,67 @@ def check_live_sync() -> bool:
     return all_ok
 
 
-def sync_live_plugin(dry_run: bool = False) -> None:
+def _git(source: Path, *args: str) -> subprocess.CompletedProcess[str]:
+    # --no-optional-locks: the guard must never write the source repo's index or locks.
+    return subprocess.run(
+        ["git", "--no-optional-locks", "-C", str(source), *args],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+
+def source_tree_guard(source: Path | None = None) -> str:
+    """Return "" when the source tree is safe to publish, else the refusal message."""
+    source = ROOT if source is None else source
+
+    if _git(source, "rev-parse", "--git-dir").returncode != 0:
+        return (
+            f"Refusing to sync: {source} is not a git repository, so pstack cannot tell "
+            "whether the published content is committed. Pass --force to sync anyway."
+        )
+
+    status = _git(source, "status", "--porcelain", "--", *SYNCED_PATHS)
+    if status.returncode != 0:
+        return (
+            f"Refusing to sync: git status failed in {source}: {status.stderr.strip()}\n"
+            "Pass --force to sync anyway."
+        )
+    dirty = [line for line in status.stdout.splitlines() if line.strip()]
+    if dirty:
+        listed = "\n".join(f"  {line}" for line in dirty)
+        return (
+            f"Refusing to sync: {source} has uncommitted changes in published paths:\n"
+            f"{listed}\n"
+            "Commit or stash them, or pass --force to publish them anyway."
+        )
+
+    git_dir = _git(source, "rev-parse", "--git-dir").stdout.strip()
+    common_dir = _git(source, "rev-parse", "--git-common-dir").stdout.strip()
+    if (source / git_dir).resolve() != (source / common_dir).resolve():
+        primary = next(
+            (
+                line.removeprefix("worktree ").strip()
+                for line in _git(source, "worktree", "list", "--porcelain").stdout.splitlines()
+                if line.startswith("worktree ")
+            ),
+            "unknown",
+        )
+        return (
+            f"Refusing to sync: {source} is a linked git worktree, not the primary checkout "
+            f"({primary}). Publish from the primary checkout, or pass --force to publish "
+            "this worktree anyway."
+        )
+
+    return ""
+
+
+def sync_live_plugin(dry_run: bool = False, force: bool = False) -> bool:
+    refusal = "" if force else source_tree_guard()
+    if refusal:
+        print(refusal, file=sys.stderr)
+        return False
+
     desc, _ = load_package_descriptor()
     print(f"Syncing canonical pstack ({desc.version}) -> {LIVE_PLUGIN_DIR}")
 
@@ -391,6 +454,7 @@ When working with pstack:
         subprocess.run(["agy", "plugin", "validate", str(LIVE_PLUGIN_DIR)], check=False)
 
     print("Live Antigravity plugin synchronization complete.")
+    return True
 
 
 def main() -> None:
@@ -399,6 +463,11 @@ def main() -> None:
     parser.add_argument("--sync", action="store_true", help="Synchronize live plugin from repository")
     parser.add_argument("--check", action="store_true", help="Check synchronization and exit with code")
     parser.add_argument("--dry-run", action="store_true", help="Dry run for sync")
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Sync even when the source tree has uncommitted changes or is a linked worktree",
+    )
     args = parser.parse_args()
 
     if args.check:
@@ -412,7 +481,8 @@ def main() -> None:
             print(f"  {k}: {v}")
 
     if args.sync:
-        sync_live_plugin(dry_run=args.dry_run)
+        if not sync_live_plugin(dry_run=args.dry_run, force=args.force):
+            sys.exit(2)
 
 
 if __name__ == "__main__":
