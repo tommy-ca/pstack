@@ -398,10 +398,25 @@ def can_claim_current_ci(
     base: Optional[str] = None,
     head: str = "HEAD",
 ) -> Tuple[bool, str]:
-    """May the recorded result be quoted as the *current* CI/check state?"""
+    """May the recorded result be quoted as the *current* CI/check state?
+
+    A yes names the head it is current *at*, and only that head. A pure rebase
+    rewrites the receipt's SHA while keeping the patch, so the receipt SHA alone
+    would name a head that no longer exists; the claim then carries the recheck
+    the operator still owes: the checks re-run at the current head against the
+    current base.
+    """
     is_stale, reasons = check_check_evidence_staleness(receipt, root, base=base, head=head)
     if is_stale:
         return False, f"Recorded evidence is stale: {'; '.join(reasons)}"
     if receipt.verdict != "PASS":
         return False, f"Recorded verdict at {receipt.head_sha[:8]} is {receipt.verdict}"
-    return True, f"Current at {receipt.head_sha[:8]} (patch-id {receipt.patch_id[:8]})"
+    current_head_sha = resolve_revision(root, head)
+    claim = f"Current at {current_head_sha[:8]} (patch-id {receipt.patch_id[:8]})"
+    if current_head_sha != receipt.head_sha:
+        current_base_sha = resolve_merge_base(root, base or receipt.base, head)
+        claim += (
+            f"; rebased from {receipt.head_sha[:8]}, so re-run the checks at "
+            f"{current_head_sha[:8]} against base {current_base_sha[:8]}"
+        )
+    return True, claim
