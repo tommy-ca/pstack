@@ -297,6 +297,7 @@ class _StubSession:
         exit_code: int = 0,
         child_id: str | None = "ChildX",
         cancel_ack: bool = True,
+        cancel_killed: bool = True,
         terminal: bool = True,
         **_kwargs: object,
     ):
@@ -305,6 +306,7 @@ class _StubSession:
         self._exit_code = exit_code
         self._child_id = child_id
         self._cancel_ack = cancel_ack
+        self._cancel_killed = cancel_killed
         self._terminal = terminal
         self.cancelled: list[str] = []
         self.listed = 0
@@ -338,7 +340,8 @@ class _StubSession:
             "type": "response",
             "command": "cancel_subagent",
             "success": self._cancel_ack,
-            "data": {},
+            # Upstream: data.cancelled is false for an id that is not a running subagent.
+            "data": {"cancelled": self._cancel_ack and self._cancel_killed},
             **({} if self._cancel_ack else {"error": {"message": "no such subagent"}}),
         }
 
@@ -670,18 +673,28 @@ def test_live_cancel_records_a_typed_cancelled_settlement(
     assert result.evidence_level == "observed_live"
     assert result.settlement == _expected(model="model-a", child_id="ChildX", outcome="cancelled")
     assert session.cancelled == ["ChildX"] and session.listed == 1
-    assert "in_flight=True" in result.stdout and "latency=" in result.stdout
+    assert "killed=True" in result.stdout and "in_flight=True" in result.stdout
+    assert "latency=" in result.stdout
 
 
 def test_live_cancel_requires_an_accepted_cancel_request(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    """A child that ends by itself is not evidence that the session cancelled it."""
+    """A rejected cancel request is a failure, and the host's reason must survive."""
     result, _ = _cancel_result(monkeypatch, tmp_path, cancel_ack=False)
 
     assert result.verdict == "FAIL"
-    assert "cancel_subagent was not accepted" in result.stderr
+    assert "cancel_subagent was rejected" in result.stderr
     assert "no such subagent" in result.stderr, "the host's own rejection text must survive"
+
+
+def test_live_cancel_rejects_an_idempotent_no_op(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """Upstream answers success with `cancelled: false` for a child that was not running."""
+    result, _ = _cancel_result(monkeypatch, tmp_path, cancel_killed=False)
+
+    assert result.verdict == "FAIL"
+    assert "found no running subagent to cancel" in result.stderr
+    assert "killed=False" in result.stdout
 
 
 def test_live_cancel_records_a_timeout_settlement_when_the_terminal_frame_is_dropped(

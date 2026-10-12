@@ -370,6 +370,8 @@ class OMPDriver(HarnessDriver):
         child_id: Optional[str] = None
         listed: Optional[List[str]] = None
         cancel_ack = False
+        cancel_success = False
+        cancel_killed = False
         cancel_error = ""
         terminal: Optional[Dict[str, Any]] = None
         cancel_latency: Optional[float] = None
@@ -384,10 +386,13 @@ class OMPDriver(HarnessDriver):
                 listed = [str(s.get("id")) for s in session.subagents()]
                 cancel_started = time.monotonic()
                 cancel_response = session.cancel_subagent(child_id)
-                cancel_ack = bool(cancel_response.get("success"))
-                if not cancel_ack:
-                    # The host's own words are the only way to tell a wrong wire shape
-                    # from a child that had already finished.
+                # Upstream answers `data.cancelled=false` for an id that is not a running
+                # subagent of this session (finished, unknown, already cancelled), so the
+                # success flag alone would read an idempotent no-op as a kill.
+                cancel_success = bool(cancel_response.get("success"))
+                cancel_killed = bool((cancel_response.get("data") or {}).get("cancelled"))
+                cancel_ack = cancel_success and cancel_killed
+                if not cancel_success:
                     error = cancel_response.get("error")
                     cancel_error = error if isinstance(error, str) else str((error or {}).get("message", ""))
                 terminal = session.wait_child_terminal(child_id, timeout=CANCEL_SETTLE_TIMEOUT_S)
@@ -431,10 +436,10 @@ class OMPDriver(HarnessDriver):
             else "no terminal child lifecycle observed"
         )
         summary = (
-            f"RPC v{descriptor['protocol_version']} exit={exit_code} cancelled={cancel_ack} "
-            f"listed={len(listed) if listed is not None else 'none'} in_flight={in_flight} "
-            f"latency={cancel_latency if cancel_latency is not None else 'n/a'}s {observed}"
-            + (f" error={cancel_error}" if cancel_error else "")
+            f"RPC v{descriptor['protocol_version']} exit={exit_code} ack={cancel_success} "
+            f"killed={cancel_killed} listed={len(listed) if listed is not None else 'none'} "
+            f"in_flight={in_flight} latency={cancel_latency if cancel_latency is not None else 'n/a'}s "
+            f"{observed}" + (f" error={cancel_error}" if cancel_error else "")
         )
 
         if (
@@ -465,11 +470,12 @@ class OMPDriver(HarnessDriver):
         if child_id is None:
             unmet.append(f"no child lifecycle within {CHILD_START_TIMEOUT_S}s")
         if not cancel_ack:
-            unmet.append(
-                f"cancel_subagent was not accepted ({cancel_error})"
-                if cancel_error
-                else "cancel_subagent was not accepted"
-            )
+            if cancel_success:
+                unmet.append("cancel_subagent found no running subagent to cancel (cancelled=false)")
+            else:
+                unmet.append(
+                    f"cancel_subagent was rejected ({cancel_error})" if cancel_error else "cancel_subagent was rejected"
+                )
         if child_id is not None and terminal is None:
             unmet.append(f"no terminal child lifecycle within {CANCEL_SETTLE_TIMEOUT_S}s after the cancel")
         if settlement is None:
