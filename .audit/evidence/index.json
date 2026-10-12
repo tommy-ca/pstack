@@ -99,13 +99,13 @@
     },
     "antigravity": {
       "receipt": ".audit/evidence/antigravity-receipt.json",
-      "run_id": "antigravity-1791830140-d01fa8d2",
-      "timestamp": "2026-10-12T18:36:01Z",
-      "overall_verdict": "FAIL",
+      "run_id": "antigravity-1791830324-f42f2712",
+      "timestamp": "2026-10-12T18:39:02Z",
+      "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
         "adapter": "PASS",
-        "package": "FAIL",
+        "package": "PASS",
         "runtime": "PASS"
       },
       "surface_revisions": {
