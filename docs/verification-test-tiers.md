@@ -126,3 +126,71 @@ but its current runtime PASS semantics are being corrected in #238/#247/#248.
 Never promote historical profile/CLI checks to live evidence during migration.
 
 Program: #235. Foundation #236/#243. Native-proof work #238/#248. Acceptance #240.
+
+## Adversarial acceptance and the six-host matrix (#294)
+
+P8 attacks the shipped artefacts and asserts the refusal instead of assuming the
+guardrails hold. Each negative lives beside the machinery it attacks, inside the
+offline gate above:
+
+| Attack | Guardrail exercised |
+| --- | --- |
+| Fake wire alias (a real host primitive declared as the `task` wire) | `tests/test_verdict_reduction.py::test_fake_wire_alias_fails_the_native_subagent_contract` (OMP + OpenCode, honest-alias control), `::test_a_missing_wire_alias_never_passes_by_default` |
+| An alias meant to legitimize a host primitive in a shared skill | `tests/test_verdict_reduction.py::test_an_aliased_host_primitive_stays_forbidden_in_shared_surfaces` |
+| A shadowed `poteto-mode` / duplicate route row | `tests/test_verdict_reduction.py::test_shadowed_poteto_mode_never_wins_the_canonical_route` |
+| An invented verdict token | `tests/test_verdict_reduction.py::test_an_invented_verdict_token_never_reduces_to_pass` |
+| A child defect masked as a missing model route | `tests/test_verdict_reduction.py::test_a_missing_model_route_is_blocked_while_a_child_defect_is_not_masked` |
+| An ambient-defined agent credited to the package | `tests/test_verdict_reduction.py::test_an_ambient_defined_agent_is_flagged_so_the_package_cannot_claim_it` |
+| A session pickup standing in for a child resume | `tests/test_evidence_durability.py::test_a_session_pickup_never_satisfies_a_child_resume_pin` |
+| A cancelled / timed-out / errored child settlement | `tests/test_evidence_durability.py::test_a_non_success_child_settlement_never_satisfies_a_verified_pin` |
+| A `verified` pin naming an unrecorded scenario | `tests/test_evidence_durability.py::test_a_verified_pin_naming_an_unrecorded_scenario_is_a_dangling_reference` |
+
+Attacks refused by a suite this unit does not own, with where the refusal lives:
+
+- WorkPool reviewer contamination and a cancelled lane reported as a pass:
+  `tests/test_playbook_parity.py`. There is **no executable freshness API** — the
+  gate is the prose contract `eval.workpool.freshAgents=true` observed in the
+  run's effective settings, locked by that suite. Treat it as a contract gate, not
+  runtime enforcement.
+- Unapproved apply/merge: `tests/test_swarm_apply.py` (dry-run refuses a fenced
+  copy and writes nothing) and `tests/test_swarm_partition.py` (`apply_check`
+  raises `SystemExit(2)` on a leftover/fence/missing destination).
+- Stale receipts: the staleness cases in `tests/test_evidence_durability.py` plus
+  the patch-id binding in `tests/test_select_checks.py`.
+- Cleanup and data loss: `tests/test_worktree_cleanup.py` (WIP worktrees classify
+  as hold buckets) and `tests/test_package_lifecycle_safety.py` (unmanaged user
+  files survive every lifecycle step). `PortableVerifier.cleanup` is a no-op, so
+  it cannot lose evidence.
+- Timeout / cancel: `tests/test_omp_rpc.py` reducer cases plus the bounded
+  `run_command` timeout in `tests/test_verdict_reduction.py`.
+
+### Six-host offline matrix
+
+Recorded at the P8 head `716bca5` with no receipts rewritten:
+
+```sh
+python scripts/verify-portable.py check-evidence --host all
+python scripts/verify-portable.py check-staleness --host all --json
+```
+
+| Host | Binary on PATH | Durable receipt | Stale planes | Derived support state | Offline verdict |
+| --- | --- | --- | --- | --- | --- |
+| grok | present | yes | none | supported | PASS |
+| codex | present | yes | none | supported | PASS |
+| omp | present | yes | none | packaged | PASS |
+| opencode | present | yes | none | supported | PASS |
+| antigravity | present | yes | none | supported | PASS |
+| droid | present | no (by design) | n/a | candidate | BLOCKED (ineligible host) |
+
+Offline pytest gate at that head: **381 passed, 10 skipped**. Every skip is a
+tier-limited live case, never a pass: seven opt-in host CLI smoke cases in
+`tests/test_harness_drivers.py` (`PSTACK_RUN_HOST_DEPENDENT_TESTS=1`), the live
+model-backed case in `tests/test_omp_rpc.py`, and the two live-arm cases in
+`tests/test_omp_native_package.py` — the last three need
+`PSTACK_RUN_OMP_LIVE=1` and a model route. On a host without `node`, `droid` or
+the `omp` binary the corresponding cases skip instead of passing.
+
+The model-backed live tier was **not** executed and no receipt was regenerated,
+so the runtime plane stays `UNTESTED` for every host in this record; OMP's derived
+state remains `packaged` for exactly that reason. A host without a receipt is
+`candidate`, never an invented PASS.
