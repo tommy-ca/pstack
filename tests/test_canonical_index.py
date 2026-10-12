@@ -104,15 +104,24 @@ def test_canonical_index_drift_observation_metadata() -> None:
     assert "Observation Time:" in proc.stdout
 
 
-def test_canonical_index_classify_drift_cli() -> None:
+def test_canonical_index_classify_drift_cli(tmp_path: Path) -> None:
+    """The classifier writes where it is told and leaves the tracked record alone."""
+    tracked = ROOT / "openspec" / "canonical-drift.json"
+    tracked_before = tracked.read_bytes() if tracked.is_file() else None
+    out = tmp_path / "drift.json"
+
     proc = subprocess.run(
-        [sys.executable, str(SCRIPT), "--classify-drift"],
+        [sys.executable, str(SCRIPT), "--classify-drift", "--out", str(out)],
         cwd=ROOT,
         capture_output=True,
         text=True,
         check=False,
     )
+
     assert proc.returncode == 0, proc.stderr or proc.stdout
     assert "Total changed files:" in proc.stdout
-    drift_file = ROOT / "openspec" / "canonical-drift.json"
-    assert drift_file.is_file()
+    report = json.loads(out.read_text(encoding="utf-8"))
+    assert sum(report["buckets"].values()) == report["total_changed_files"]
+    assert report["entries"], "a classified report lists its entries"
+    assert all({"path", "status", "bucket", "mode"} <= set(entry) for entry in report["entries"])
+    assert (tracked.read_bytes() if tracked.is_file() else None) == tracked_before

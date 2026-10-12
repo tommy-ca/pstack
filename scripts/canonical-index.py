@@ -388,6 +388,7 @@ def main() -> None:
     parser.add_argument("--check", action="store_true", help="Check canonical conformance and inventory")
     parser.add_argument("--drift", action="store_true", help="Report upstream drift status")
     parser.add_argument("--classify-drift", action="store_true", help="Generate canonical-drift.json partition classification")
+    parser.add_argument("--out", type=Path, help="Write the drift report here instead of openspec/canonical-drift.json")
     parser.add_argument("--json", action="store_true", help="Output raw JSON")
     args = parser.parse_args()
 
@@ -405,9 +406,10 @@ def main() -> None:
             print("FAIL: Upstream cache not found for drift classification", file=sys.stderr)
             sys.exit(1)
         report = classify_drift_report(cache, inventory["pin"], inventory["upstream_head"])
-        DRIFT_FILE.parent.mkdir(parents=True, exist_ok=True)
-        DRIFT_FILE.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
-        print(f"Generated {DRIFT_FILE}")
+        out_file = args.out or DRIFT_FILE
+        out_file.parent.mkdir(parents=True, exist_ok=True)
+        out_file.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+        print(f"Generated {out_file}")
         print(f"Total changed files: {report['total_changed_files']}")
         for bucket, count in report["buckets"].items():
             print(f"  {bucket}: {count}")
