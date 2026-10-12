@@ -587,6 +587,185 @@ def test_driver_settlement_survives_receipt_serialization(tmp_path: Path) -> Non
         assert parsed["settlement"][key]
 
 
+def _omp_spawn_scenario(evidence_level: str, verdict: str = "PASS", settlement=None) -> ScenarioResult:
+    return ScenarioResult(
+        id="runtime-child-spawn-omp",
+        description="bounded omp rpc v2 child spawn and join",
+        plane="runtime",
+        command="PSTACK_RUN_OMP_LIVE=1 python -m pytest tests/test_omp_rpc.py",
+        exit_code=0 if verdict == "PASS" else 1,
+        stdout_snippet="child=subagent-1 outcome=success" if settlement else "static evidence",
+        verdict=verdict,
+        duration_s=19.1,
+        evidence_level=evidence_level,
+        settlement=settlement,
+    )
+
+
+def _omp_live_root(tmp_path: Path) -> tuple:
+    """Minimal omp root whose durable receipt already carries a live settlement."""
+    root = tmp_path / "repo"
+    (root / ".omp-plugin").mkdir(parents=True)
+    (root / "pstack.package.json").write_text("{}", encoding="utf-8")
+    (root / ".omp-plugin" / "plugin.json").write_text("{}", encoding="utf-8")
+    evidence_root = root / ".audit" / "evidence"
+    evidence_root.mkdir(parents=True)
+    revisions = compute_surface_revisions(root, "omp")
+    live = VerificationReceipt(
+        run_id="previous-live-run",
+        host="omp",
+        host_version="18.8.9",
+        timestamp="2026-10-11T20:00:00Z",
+        overall_verdict="PASS",
+        planes={plane: "PASS" for plane in CONFORMANCE_PLANES},
+        surface_revisions=revisions,
+        scenarios=[
+            _omp_spawn_scenario(
+                "observed_live",
+                settlement=ChildSettlement(
+                    child_id="subagent-1",
+                    terminal_outcome="success",
+                    model="deepseek-v4-pro",
+                    transport="rpc",
+                    effective_rpc="rpc-v2:profile=disposable:depth=1",
+                ),
+            )
+        ],
+    )
+    (evidence_root / "omp-receipt.json").write_text(json.dumps(asdict(live)), encoding="utf-8")
+
+    profile_data = json.loads((ROOT / "profiles" / "omp.json").read_text(encoding="utf-8"))
+    for binding in profile_data["bindings"]:
+        binding["evidence_ref"] = ".audit/evidence/omp-receipt.json"
+    prof = HarnessProfile(
+        host="omp",
+        support_state="verified",
+        bindings=[Binding(**x) for x in profile_data["bindings"]],
+        skills_dir=profile_data.get("skills_dir"),
+        plugins_dir=profile_data.get("plugins_dir"),
+        plugin_manifest=profile_data.get("plugin_manifest"),
+        tool_mappings=profile_data.get("tool_mappings"),
+        skill_order=profile_data.get("skill_order"),
+        runtime_conventions=profile_data.get("runtime_conventions"),
+    )
+    return root, prof, evidence_root, revisions
+
+
+def _portable_verifier(evidence_root: Path):
+    loader = importlib.util.spec_from_file_location("verify_portable_preserve", ROOT / "scripts" / "verify-portable.py")
+    module = importlib.util.module_from_spec(loader)
+    loader.loader.exec_module(module)
+    verifier = module.PortableVerifier(host="omp", evidence_root=evidence_root)
+    verifier.launch()
+    return verifier
+
+
+def _static_refresh_receipt(revisions: SurfaceRevisions, *, verdict: str = "PASS") -> VerificationReceipt:
+    return VerificationReceipt(
+        run_id="refresh-without-a-model-route",
+        host="omp",
+        host_version="18.8.9",
+        timestamp="2026-10-12T00:00:00Z",
+        overall_verdict=verdict,
+        planes={plane: ("FAIL" if verdict != "PASS" and plane == "runtime" else "PASS") for plane in CONFORMANCE_PLANES},
+        surface_revisions=revisions,
+        scenarios=[_omp_spawn_scenario("static", verdict=verdict)],
+    )
+
+
+def test_durable_refresh_preserves_an_unchanged_observed_settlement(tmp_path: Path) -> None:
+    """A model-route-free refresh must not delete the live proof its own gate reads."""
+    root, prof, evidence_root, revisions = _omp_live_root(tmp_path)
+    verifier = _portable_verifier(evidence_root)
+    verifier.evidence(_static_refresh_receipt(revisions), update_durable=True)
+
+    durable = json.loads((evidence_root / "omp-receipt.json").read_text(encoding="utf-8"))
+    scenario = next(s for s in durable["scenarios"] if s["id"] == "runtime-child-spawn-omp")
+    assert scenario["evidence_level"] == "observed_live"
+    assert scenario["settlement"]["child_id"] == "subagent-1"
+    assert scenario["settlement"]["terminal_outcome"] == "success"
+    assert scenario["preserved_from"] == "previous-live-run"
+    assert check_evidence_durability(prof, root)["derived_support_state"] == "supported"
+
+
+def test_durable_refresh_drops_a_settlement_once_the_runtime_surface_moved(tmp_path: Path) -> None:
+    root, prof, evidence_root, revisions = _omp_live_root(tmp_path)
+    moved = replace(revisions, driver_revision="moved-driver-revision")
+
+    verifier = _portable_verifier(evidence_root)
+    verifier.evidence(_static_refresh_receipt(moved), update_durable=True)
+
+    durable = json.loads((evidence_root / "omp-receipt.json").read_text(encoding="utf-8"))
+    scenario = next(s for s in durable["scenarios"] if s["id"] == "runtime-child-spawn-omp")
+    assert scenario["evidence_level"] == "static"
+    assert scenario["settlement"] is None
+    assert scenario["preserved_from"] == ""
+    assert derive_support_state(prof, root) == "packaged"
+
+
+def test_durable_refresh_does_not_paper_over_a_failing_run(tmp_path: Path) -> None:
+    root, prof, evidence_root, revisions = _omp_live_root(tmp_path)
+    verifier = _portable_verifier(evidence_root)
+    verifier.evidence(_static_refresh_receipt(revisions, verdict="FAIL"), update_durable=True)
+
+    durable = json.loads((evidence_root / "omp-receipt.json").read_text(encoding="utf-8"))
+    scenario = next(s for s in durable["scenarios"] if s["id"] == "runtime-child-spawn-omp")
+    assert scenario["verdict"] == "FAIL"
+    assert scenario["evidence_level"] == "static"
+    assert scenario["preserved_from"] == ""
+    assert derive_support_state(prof, root) == "packaged"
+
+
+def test_an_unreadable_durable_receipt_is_not_overwritten(tmp_path: Path) -> None:
+    """The one place a prior observation lives must survive a run that cannot read it."""
+    root, prof, evidence_root, revisions = _omp_live_root(tmp_path)
+    durable = evidence_root / "omp-receipt.json"
+    durable.write_text("{ not json at all", encoding="utf-8")
+
+    verifier = _portable_verifier(evidence_root)
+    verifier.evidence(_static_refresh_receipt(revisions), update_durable=True)
+
+    assert durable.read_text(encoding="utf-8") == "{ not json at all"
+    assert (verifier.run_dir / "receipt.json").is_file()
+
+
+def test_repeated_refreshes_keep_the_run_that_observed(tmp_path: Path) -> None:
+    """A second model-route-free refresh must not rewrite the provenance chain."""
+    root, prof, evidence_root, revisions = _omp_live_root(tmp_path)
+
+    first = _portable_verifier(evidence_root)
+    first.evidence(_static_refresh_receipt(revisions), update_durable=True)
+    second = _portable_verifier(evidence_root)
+    second.evidence(_static_refresh_receipt(revisions), update_durable=True)
+
+    durable = json.loads((evidence_root / "omp-receipt.json").read_text(encoding="utf-8"))
+    scenario = next(s for s in durable["scenarios"] if s["id"] == "runtime-child-spawn-omp")
+    assert scenario["preserved_from"] == "previous-live-run"
+    assert scenario["settlement"]["child_id"] == "subagent-1"
+
+
+def test_check_evidence_names_the_omp_live_remedy(tmp_path: Path) -> None:
+    """The gate that fails must say how to restore the proof it wants."""
+    copy_root = _disposable_copy(tmp_path)
+    receipt_path = copy_root / ".audit" / "evidence" / "omp-receipt.json"
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    for scenario in receipt["scenarios"]:
+        if scenario["plane"] == "runtime":
+            scenario["evidence_level"] = "static"
+            scenario["settlement"] = None
+    receipt_path.write_text(json.dumps(receipt), encoding="utf-8")
+
+    proc = subprocess.run(
+        [sys.executable, str(copy_root / "scripts" / "verify-portable.py"), "check-evidence", "--host", "omp"],
+        capture_output=True,
+        text=True,
+        cwd=copy_root,
+    )
+    assert proc.returncode == 1, proc.stdout + proc.stderr
+    assert "exceeds evidence-derived support state 'packaged'" in proc.stdout
+    assert "PSTACK_RUN_OMP_LIVE=1" in proc.stdout
+
+
 def test_observed_settlement_requires_a_passing_successful_scenario() -> None:
     """A settlement that records failure must never satisfy the promotion gate."""
     from scripts.portability_schema import _is_observed_settlement

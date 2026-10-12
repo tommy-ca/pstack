@@ -46,6 +46,7 @@ from scripts.portability_schema import (
     check_evidence_durability,
     compute_surface_revisions,
     derive_support_state,
+    preserve_observed_settlements,
 )
 from scripts.drivers import get_driver
 from scripts.evidence_receipts import (
@@ -690,6 +691,7 @@ class PortableVerifier:
                 stdout_snippet=sc_disc.stdout_snippet,
                 verdict=sc_disc.verdict,
                 duration_s=sc_disc.duration_s,
+                evidence_level=sc_disc.evidence_level,
             )
         )
 
@@ -706,6 +708,7 @@ class PortableVerifier:
                 stdout_snippet=sc_route.stdout_snippet,
                 verdict=sc_route.verdict,
                 duration_s=sc_route.duration_s,
+                evidence_level=sc_route.evidence_level,
             )
         )
 
@@ -738,6 +741,8 @@ class PortableVerifier:
                 stdout_snippet=sc_iso.stdout_snippet,
                 verdict=sc_iso.verdict,
                 duration_s=sc_iso.duration_s,
+                evidence_level=sc_iso.evidence_level,
+                settlement=sc_iso.settlement,
             )
         )
 
@@ -753,6 +758,8 @@ class PortableVerifier:
                 stdout_snippet=sc_ev.stdout_snippet,
                 verdict=sc_ev.verdict,
                 duration_s=sc_ev.duration_s,
+                evidence_level=sc_ev.evidence_level,
+                settlement=sc_ev.settlement,
             )
         )
 
@@ -842,7 +849,30 @@ class PortableVerifier:
         if update_durable:
             # Stable durable receipt copy
             durable_file = self.evidence_root / f"{self.host}-receipt.json"
-            durable_file.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+            durable_data = data
+            reusable = True
+            if durable_file.is_file():
+                try:
+                    previous = VerificationReceipt(**json.loads(durable_file.read_text(encoding="utf-8")))
+                    preserved = preserve_observed_settlements(previous, receipt)
+                except Exception as err:
+                    # The durable receipt is the only place a prior observation lives. A
+                    # file this run cannot read is exactly when it is worth the most, so
+                    # refuse to replace it and let the durability check report the gap.
+                    reusable = False
+                    print(
+                        f"REFUSING to overwrite the durable receipt at {durable_file}: "
+                        f"{type(err).__name__}: {err}. This run's receipt is at {receipt_file}."
+                    )
+                else:
+                    if preserved:
+                        durable_data = asdict(receipt)
+                        print(
+                            f"Preserved prior observed_live settlement(s) from {previous.run_id}: "
+                            f"{', '.join(preserved)}"
+                        )
+            if reusable:
+                durable_file.write_text(json.dumps(durable_data, indent=2) + "\n", encoding="utf-8")
 
             # Update durable index.json
             index_file = self.evidence_root / "index.json"
@@ -918,6 +948,11 @@ def main() -> None:
                 print(f"[{h}] PASS: Evidence durable, derived support state: {res['derived_support_state']} (claimed: {res['claimed_support_state']})")
             except Exception as err:
                 print(f"[{h}] FAIL: {err}")
+                if h == "omp" and "exceeds evidence-derived support state" in str(err):
+                    print(
+                        "       OMP runtime evidence is only observed by a model-backed run: "
+                        "regenerate the durable receipt with PSTACK_RUN_OMP_LIVE=1, then re-check."
+                    )
                 all_ok = False
         sys.exit(0 if all_ok else 1)
 

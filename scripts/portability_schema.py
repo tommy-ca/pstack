@@ -9,7 +9,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional, Tuple
 
@@ -298,7 +298,7 @@ DEFAULT_SKILLS_DIRS = {
 DEFAULT_PLUGIN_MANIFESTS = {
     "grok": ".grok-plugin/plugin.json",
     "codex": ".codex-plugin/plugin.json",
-    "omp": ".omp-plugin/plugin.json",
+    "omp": ".omp-plugin/package.json",
     "opencode": ".opencode-plugin/package.json",
     "antigravity": ".antigravity-plugin/plugin.json",
     "droid": ".factory-plugin/plugin.json",
@@ -488,6 +488,7 @@ class ScenarioResult:
     duration_s: float
     evidence_level: Optional[str] = "offline"  # static | offline | observed_live | legacy
     settlement: Optional[ChildSettlement | Dict[str, Any]] = None
+    preserved_from: str = ""  # run_id whose observed_live evidence this scenario carries
 
     def validate(self) -> None:
         if not self.id:
@@ -715,6 +716,37 @@ def _is_observed_settlement(scenario) -> bool:
         and scenario.verdict == "PASS"
         and scenario.settlement.terminal_outcome == "success"
     )
+
+def preserve_observed_settlements(
+    previous: VerificationReceipt,
+    current: VerificationReceipt,
+) -> List[str]:
+    """Carry a prior observed_live settlement into a run that could not observe one.
+
+    A model-route-free refresh restates every scenario as static evidence. Writing that
+    over the durable receipt deletes the only settlement the OMP promotion gate reads,
+    demoting the host for a reason unrelated to the change being made (#322). Carry the
+    prior scenario forward while the runtime surface it proved is unchanged, mark the run
+    it came from, and drop it the moment that surface moves so the demotion stays honest.
+    """
+    if previous.host != current.host:
+        return []
+    # validate() types a JSON round-tripped settlement; _is_observed_settlement
+    # requires a ChildSettlement instance, not the raw dict.
+    previous.validate()
+    current.validate()
+    if previous.evaluate_plane_staleness(current.surface_revisions).get("runtime"):
+        return []
+    prior = {s.id: s for s in previous.scenarios if _is_observed_settlement(s)}
+    preserved: List[str] = []
+    for i, scenario in enumerate(current.scenarios):
+        candidate = prior.get(scenario.id)
+        if candidate is None or _is_observed_settlement(scenario) or scenario.verdict != "PASS":
+            continue
+        current.scenarios[i] = replace(candidate, preserved_from=candidate.preserved_from or previous.run_id)
+        preserved.append(scenario.id)
+    return preserved
+
 
 def derive_support_state(
     profile: HarnessProfile,
