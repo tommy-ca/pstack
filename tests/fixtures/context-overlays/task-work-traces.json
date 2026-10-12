@@ -1,0 +1,259 @@
+{
+  "source": "observed lane runs against the capability-gated overlay registry; the gated arm carries the shipped owner contract",
+  "run_commit": "2b445ca2440ef1a0b2faea3114daba090106ab9e",
+  "recorded_at": "2026-10-12",
+  "method": {
+    "arm_before": "ungated baseline: every registered domain overlay pack is loaded for the task; no context-budgeting contract is in force",
+    "arm_after": "capability-gated: the project declares no optional domain capability, so the gate loads zero overlay packs and only the owner contract the task's domain uses",
+    "task_identity": "the two arms of a task receive identical task text; task_sha256 pins it",
+    "charge_measure": "charged_bytes recomputed from the repository by tests/test_context_budget_contracts.py, never self-reported: the ungated arm is charged the whole overlay registry, the gated arm the whole owner contract it carried (the four sections this unit adds: guard 1457 B + technical-writing 1529 B = 2986 B)",
+    "work_measure": "tool calls per arm, counted by the recorder from each lane transcript's tool-call lines, cross-checked against the lane's self-report",
+    "shared_framing_excluded": "both arms carry the same task text and measurement instructions; those bytes are charged to neither arm",
+    "failure_note": "failed_calls are tool-protocol retries (a stale edit anchor hash) and lane-local counter attempts, not search or read work; they are recorded per arm and excluded from the work categories",
+    "not_measured": [
+      "tool-call token metering",
+      "model latency apart from the lane wall clock",
+      "blind-judge quality scoring",
+      "tasks longer than one bounded work unit"
+    ],
+    "re_read_note": "re_reads and retried_searches are recorded for every arm; the observed value was 0 in both arms of both tasks, so they did not separate the arms on these two runs",
+    "pack_separator_note": "the ungated prompt joins the registry packs with 7 separator newlines; the charge records the recomputed registry prose, which is what actually loads",
+    "payload_note": "as_run_payload_bytes is the literal preamble payload each lane received, as the lane declared it: the ungated arm joins the registry packs with separator newlines, the gated arm carries the owner contract",
+    "saving_note": "Honest restatement: on these two bounded tasks the gated arm saves 17 B of prose per task (3003 -> 2986) and one extra tool call on T1, not thousands of bytes. The gate's value is that a task never loads a pack its project cannot use, and that this contract costs less than the registry it displaces; that is a reduced-or-equal result, not a large one."
+  },
+  "tasks": [
+    {
+      "id": "T1",
+      "archetype": "docs-only repository",
+      "domain": "docs",
+      "contexts": [
+        "docs_only"
+      ],
+      "capabilities": [],
+      "goal": "Add the missing rows to the \"Required pull-request gate (offline)\" list in docs/verification-test-tiers.md so it names every pytest module .github/workflows/portability-offline.yml runs.",
+      "task_sha256": "ad694b643e9df3ad9d3010ac2e8bd25ab97fa50aa65943bb21f21cbb0053ad63",
+      "acceptance": {
+        "command": "python - <<'EOF'  (scoped to the 'Required pull-request gate (offline)' section)\nimport re, pathlib\ndoc = pathlib.Path('docs/verification-test-tiers.md').read_text()\nsec = doc.split('## Required pull-request gate (offline)',1)[1].split('\\n## ',1)[0]\nwf = pathlib.Path('.github/workflows/portability-offline.yml').read_text()\nwf_mods = sorted(set(re.findall(r'tests/[A-Za-z0-9_]+\\.py', wf)))\nsec_mods = sorted(set(re.findall(r'tests/[A-Za-z0-9_]+\\.py', sec)))\nprint('EQUAL', int(set(wf_mods) == set(sec_mods)))  # EOF",
+        "expects": "EQUAL 1"
+      },
+      "arms": {
+        "before": {
+          "lane": "PrincipalSloth.Lane2T1Before",
+          "charge_kind": "overlay_packs",
+          "charged_bytes": 3003,
+          "work": {
+            "total_tool_calls": 12,
+            "file_reads": 6,
+            "distinct_paths_read": 6,
+            "re_reads": 0,
+            "search_calls": 1,
+            "retried_searches": 0,
+            "commands": 2,
+            "writes": 3
+          },
+          "failed_calls": 2,
+          "capability_probes": [],
+          "work_source": {
+            "counted_from": "history://PrincipalSloth.Lane2T1Before tool-call lines, counted by the recorder",
+            "cross_check": "lane self-report: file_reads=3 distinct=2 re_reads=1 search_calls=1 retried=0 commands=2 writes=1",
+            "divergence": "the lane self-report undercounts its own reads and writes; the transcript count is the instrument of record, and the self-report is kept as the cross-check it is"
+          },
+          "acceptance": {
+            "command": "python - <<'EOF'  (scoped to the 'Required pull-request gate (offline)' section)\nimport re, pathlib\ndoc = pathlib.Path('docs/verification-test-tiers.md').read_text()\nsec = doc.split('## Required pull-request gate (offline)',1)[1].split('\\n## ',1)[0]\nwf = pathlib.Path('.github/workflows/portability-offline.yml').read_text()\nwf_mods = sorted(set(re.findall(r'tests/[A-Za-z0-9_]+\\.py', wf)))\nsec_mods = sorted(set(re.findall(r'tests/[A-Za-z0-9_]+\\.py', sec)))\nprint('EQUAL', int(set(wf_mods) == set(sec_mods)))  # EOF",
+            "output": "workflow 20 section 20\nmissing from section: []\nextra in section: []\nEQUAL 1",
+            "passed": true
+          },
+          "quality": {
+            "acceptance_passed": true,
+            "artifacts_unchanged_elsewhere": true,
+            "evidence": "recorder re-ran the scoped acceptance in both copies: EQUAL 1; in both copies the diff is confined to the 'Required pull-request gate (offline)' section (2 rows added, no line outside it changed)"
+          },
+          "as_run_payload_bytes": 3010,
+          "charge_detail": "registry prose: all 8 overlay packs (3003 B)"
+        },
+        "after": {
+          "lane": "PrincipalSloth.Lane2T1After",
+          "charge_kind": "owner_contract",
+          "charged_bytes": 2986,
+          "work": {
+            "total_tool_calls": 10,
+            "file_reads": 5,
+            "distinct_paths_read": 5,
+            "re_reads": 0,
+            "search_calls": 0,
+            "retried_searches": 0,
+            "commands": 2,
+            "writes": 3
+          },
+          "failed_calls": 1,
+          "capability_probes": [],
+          "work_source": {
+            "counted_from": "history://PrincipalSloth.Lane2T1After tool-call lines, counted by the recorder",
+            "cross_check": "lane self-report: file_reads=3 distinct=2 re_reads=1 search_calls=0 retried=0 commands=2 writes=1",
+            "divergence": "the lane self-report undercounts its own reads and writes; the transcript count is the instrument of record, and the self-report is kept as the cross-check it is"
+          },
+          "acceptance": {
+            "command": "python - <<'EOF'  (scoped to the 'Required pull-request gate (offline)' section)\nimport re, pathlib\ndoc = pathlib.Path('docs/verification-test-tiers.md').read_text()\nsec = doc.split('## Required pull-request gate (offline)',1)[1].split('\\n## ',1)[0]\nwf = pathlib.Path('.github/workflows/portability-offline.yml').read_text()\nwf_mods = sorted(set(re.findall(r'tests/[A-Za-z0-9_]+\\.py', wf)))\nsec_mods = sorted(set(re.findall(r'tests/[A-Za-z0-9_]+\\.py', sec)))\nprint('EQUAL', int(set(wf_mods) == set(sec_mods)))  # EOF",
+            "output": "workflow 20 section 20\nmissing from section: []\nextra in section: []\nEQUAL 1",
+            "passed": true
+          },
+          "quality": {
+            "acceptance_passed": true,
+            "artifacts_unchanged_elsewhere": true,
+            "evidence": "recorder re-ran the scoped acceptance in both copies: EQUAL 1; in both copies the diff is confined to the 'Required pull-request gate (offline)' section (2 rows added, no line outside it changed)"
+          },
+          "as_run_payload_bytes": 2987,
+          "charge_detail": "owner contract carried in full: guard 1457 B + technical-writing 1529 B = 2986 B"
+        }
+      },
+      "comparison": {
+        "charged_bytes": {
+          "before": 3003,
+          "after": 2986
+        },
+        "work_no_worse": true,
+        "quality_parity": true,
+        "quality_evidence": "recorder re-ran the scoped acceptance in both copies: EQUAL 1; in both copies the diff is confined to the 'Required pull-request gate (offline)' section (2 rows added, no line outside it changed)",
+        "payload_bytes": {
+          "before": 3010,
+          "after": 2987
+        },
+        "saving_bytes": 17
+      }
+    },
+    {
+      "id": "T2",
+      "archetype": "backend-only repository",
+      "domain": "backend",
+      "contexts": [
+        "backend_only"
+      ],
+      "capabilities": [],
+      "goal": "Prove the recorded context-overlay trace reproduces byte-identically across two regenerations and that tests/test_context_overlays.py is green.",
+      "task_sha256": "cf3e13ddc36cf4787e4651ab29335f870ec55745731469f8778eab4492a5e49f",
+      "acceptance": {
+        "command": "python tests/test_context_overlays.py --write-trace; sha256sum tests/fixtures/context-overlays/context-work-trace.json; repeat; python -m pytest -q tests/test_context_overlays.py",
+        "expects": "one digest across two regenerations, and a green suite"
+      },
+      "arms": {
+        "before": {
+          "lane": "PrincipalSloth.LaneT2Before",
+          "charge_kind": "overlay_packs",
+          "charged_bytes": 3003,
+          "work": {
+            "total_tool_calls": 2,
+            "file_reads": 1,
+            "distinct_paths_read": 1,
+            "re_reads": 0,
+            "search_calls": 0,
+            "retried_searches": 0,
+            "commands": 1,
+            "writes": 0
+          },
+          "failed_calls": 0,
+          "capability_probes": [],
+          "work_source": {
+            "counted_from": "history://PrincipalSloth.LaneT2Before tool-call lines, counted by the recorder",
+            "cross_check": "lane self-report: file_reads=1 distinct=1 re_reads=0 search_calls=0 retried=0 commands=1 writes=0",
+            "divergence": "the lane self-report undercounts its own reads and writes; the transcript count is the instrument of record, and the self-report is kept as the cross-check it is"
+          },
+          "acceptance": {
+            "command": "python tests/test_context_overlays.py --write-trace; sha256sum tests/fixtures/context-overlays/context-work-trace.json; repeat; python -m pytest -q tests/test_context_overlays.py",
+            "output": "wrote tests/fixtures/context-overlays/context-work-trace.json\n56367273877def6c424e51060d0102a52d907df3a80e7854351014cdce539b22  tests/fixtures/context-overlays/context-work-trace.json\nwrote tests/fixtures/context-overlays/context-work-trace.json\n56367273877def6c424e51060d0102a52d907df3a80e7854351014cdce539b22  tests/fixtures/context-overlays/context-work-trace.json\n......................................................                   [100%]\n54 passed in 0.21s",
+            "passed": true
+          },
+          "quality": {
+            "acceptance_passed": true,
+            "artifacts_unchanged_elsewhere": true,
+            "evidence": "recorder re-ran both regenerations and the suite in both copies: one digest (56367273877def6c...) and 54 passed in each arm, so the artifact is identical across arms"
+          },
+          "as_run_payload_bytes": 3010,
+          "charge_detail": "registry prose: all 8 overlay packs (3003 B)"
+        },
+        "after": {
+          "lane": "PrincipalSloth.LaneT2After",
+          "charge_kind": "owner_contract",
+          "charged_bytes": 2986,
+          "work": {
+            "total_tool_calls": 2,
+            "file_reads": 1,
+            "distinct_paths_read": 1,
+            "re_reads": 0,
+            "search_calls": 0,
+            "retried_searches": 0,
+            "commands": 1,
+            "writes": 0
+          },
+          "failed_calls": 1,
+          "capability_probes": [],
+          "work_source": {
+            "counted_from": "history://PrincipalSloth.LaneT2After tool-call lines, counted by the recorder",
+            "cross_check": "lane self-report: file_reads=1 distinct=1 re_reads=0 search_calls=0 retried=0 commands=1 writes=2",
+            "divergence": "the lane self-report undercounts its own reads and writes; the transcript count is the instrument of record, and the self-report is kept as the cross-check it is"
+          },
+          "acceptance": {
+            "command": "python tests/test_context_overlays.py --write-trace; sha256sum tests/fixtures/context-overlays/context-work-trace.json; repeat; python -m pytest -q tests/test_context_overlays.py",
+            "output": "wrote tests/fixtures/context-overlays/context-work-trace.json\n56367273877def6c424e51060d0102a52d907df3a80e7854351014cdce539b22  tests/fixtures/context-overlays/context-work-trace.json\nwrote tests/fixtures/context-overlays/context-work-trace.json\n56367273877def6c424e51060d0102a52d907df3a80e7854351014cdce539b22  tests/fixtures/context-overlays/context-work-trace.json\n......................................................                   [100%]\n54 passed in 0.21s",
+            "passed": true
+          },
+          "quality": {
+            "acceptance_passed": true,
+            "artifacts_unchanged_elsewhere": true,
+            "evidence": "recorder re-ran both regenerations and the suite in both copies: one digest (56367273877def6c...) and 54 passed in each arm, so the artifact is identical across arms"
+          },
+          "as_run_payload_bytes": 2987,
+          "charge_detail": "owner contract carried in full: guard 1457 B + technical-writing 1529 B = 2986 B"
+        }
+      },
+      "comparison": {
+        "charged_bytes": {
+          "before": 3003,
+          "after": 2986
+        },
+        "work_no_worse": true,
+        "quality_parity": true,
+        "quality_evidence": "recorder re-ran both regenerations and the suite in both copies: one digest (56367273877def6c...) and 54 passed in each arm, so the artifact is identical across arms",
+        "payload_bytes": {
+          "before": 3010,
+          "after": 2987
+        },
+        "saving_bytes": 17
+      }
+    }
+  ],
+  "totals": {
+    "work": {
+      "before": {
+        "total_tool_calls": 14,
+        "file_reads": 7,
+        "distinct_paths_read": 7,
+        "re_reads": 0,
+        "search_calls": 1,
+        "retried_searches": 0,
+        "commands": 3,
+        "writes": 3
+      },
+      "after": {
+        "total_tool_calls": 12,
+        "file_reads": 6,
+        "distinct_paths_read": 6,
+        "re_reads": 0,
+        "search_calls": 0,
+        "retried_searches": 0,
+        "commands": 3,
+        "writes": 3
+      }
+    },
+    "charged_bytes": {
+      "before": 6006,
+      "after": 5972
+    },
+    "work_no_worse": true,
+    "quality_parity": true,
+    "as_run_payload_bytes": {
+      "before": 6020,
+      "after": 5974
+    },
+    "saving_bytes": 34
+  }
+}

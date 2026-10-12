@@ -103,6 +103,34 @@ Source: Kohl, The Global English Style Guide (SAS Press). Guideline text fetched
 - Product UI strings are not documentation. Use your product's copy guidelines for those.
 - Indent code snippets with tabs. Write real paths and real symbols. Make every count or tree claim true at the commit that lands it, and include the command that regenerates it.
 
+## Bound the output, and state its condition
+
+Text an agent reads is context someone pays for.
+
+- Lead with the answer and the condition it applies under ("Applies only when ...").
+- Keep the retrieval identifier: the path, symbol, or command that restores the full text. A
+  summary without it costs the reader the search and the re-read.
+- Disclose truncation: what was left out and where it lives.
+- Cut prose nobody acts on.
+
+## Domain guidance is project-owned, never universal
+
+Write the condition into the guidance; never state it as a common requirement.
+
+- **UI copy, layout, colour.** Follow the project's design system or token table. No universal
+  theme, colour rule, or assumed token name.
+- **Bilingual documentation.** Every locale the project maintains moves in the same change as
+  the source; a translation that lags the source is a defect, not a partial success.
+- **Upgrade guides.** Write the migration from the previous supported version when the project
+  publishes versioned artifacts and the change alters a public contract.
+- **Archival notes.** State what was retired, when, and what replaced it.
+- **Recorded demonstrations.** A recording is evidence only where a driver can capture it; it
+  supplements an assertion, never replaces one.
+- **Forge and stack commands.** Name the tool and version the project's forge exposes; where it
+  has no stack command, say so and use the supported branch-and-PR path.
+
+An absent facility is a stated gap: report that guidance `BLOCKED` or `UNTESTED` and stop.
+
 ## Worked example
 
 Before:
