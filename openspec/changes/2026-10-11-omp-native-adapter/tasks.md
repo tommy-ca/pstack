@@ -63,3 +63,39 @@ graph TD
 - [x] GitHub epic and nine issue nodes updated with dependency/acceptance requirements.
 - [ ] Native model-backed OMP worker executed — **not performed by this spec-only audit**.
 - [ ] Native independent multi-model Swarm/Arena/Interrogate — **not performed by this spec-only audit**.
+
+## Implementation status (2026-10-12 stack)
+
+Appended, not back-edited: the plan above records what was believed when the change was written.
+
+- **#298 native packaging probe: satisfied.** The OMP install now emits `package.json#omp`
+  with conventional `skills/` and `agents/` siblings, and
+  `scripts/prove-omp-native-package.py` reads the discovery back from the real binary. The
+  loadability evidence is the sentinel skill injected into the temp copy, which appears
+  only after the link, plus the package's skills displacing same-named ambient ones into
+  their namespaced form; a listing alone is not loadability, because OMP lists a package
+  whose `package.json` lacks the `omp` key and then loads nothing from it. With `--live` a
+  packaged role agent spawns with `agentSource=user` and no ambient directory defines that
+  name. A root `plugin.json` package with no `package.json` is not enrolled, which is the
+  negative control in `tests/test_omp_native_package.py`. Remaining: the disabled-plugin
+  case.
+- **#290 package aggregate: partially satisfied.** The manifest is native and the lifecycle
+  is exercised by the proof lever (link, list, uninstall) with the ambient plugin root
+  snapshotted before and after. The project/user precedence matrix and `omp plugin
+  disable` are not yet covered.
+- **#297 RPC proof: spawn/join satisfied, cancellation open.** The live receipt carries a
+  typed settlement from a real child. `cancel_subagent`, `steer_subagent` and
+  `get_subagents` have session methods but no observed scenario.
+- **#291 runtime aggregate: satisfied for the driver's own claim.** The runtime plane's
+  spawn scenario is `observed_live`; the isolation scenario is recorded `static` and its
+  description says it is a CLI probe with no observed isolation.
+- **Arena, observed with the real binary on 2026-10-12.** Arm A (project `.omp/skills` and
+  `.omp/agents`) has no package, no lifecycle and no distribution. Arm B (`package.json#omp`
+  with conventional `skills/` and `agents/`) links, enrolls, and loads both surfaces; it is
+  the shipped projection. Arm C (Agent Plugins 1.0.0 root `plugin.json` with the canonical
+  `$schema`) also loads skills and agents when wired through `extensions:` or `-e`, but
+  `omp plugin link` refuses it outright without a `package.json`, and the standard's closed
+  skill-frontmatter set rejects `disable-model-invocation`, which 49 of the 58 canonical
+  skills carry: a probe skill carrying that field was not advertised at all. Arm B stays the
+  contract, and a future portable projection needs the frontmatter work first.
+- **#292 to #294 remain gated** on the vertical slice and on #293's playbook recomposition.
