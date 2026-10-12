@@ -38,6 +38,14 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def _probe_scope_hash(root: Path) -> str:
+    import hashlib
+    h = hashlib.sha256()
+    for path in sorted(root.glob("skills/*/SKILL.md")) + sorted(root.glob("skills/*/playbooks/*.md")):
+        h.update(path.read_bytes())
+    return h.hexdigest()
+
+
 @pytest.fixture(scope="module")
 def result():
     return run_dsh_blinded_eval(DSH_CORPUS_DIR, ROOT, phase="candidate")
@@ -141,6 +149,7 @@ class TestDshCandidatePhase:
         assert recorded["corpus_version"] == live["corpus_version"]
         assert recorded["phase"] == live["phase"]
         assert recorded["verdict"] == live["verdict"]
+        assert recorded["provenance"]["probe_scope_hash"] == live["provenance"]["probe_scope_hash"] == _probe_scope_hash(ROOT), "recorded table must match the probe scope it reproduces"
         assert recorded["provenance"] == live["provenance"]
         keys = (
             "total_cases",

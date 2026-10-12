@@ -253,6 +253,13 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def _probe_scope_hash(root: Path) -> str:
+    h = hashlib.sha256()
+    for path in sorted(root.glob("skills/*/SKILL.md")) + sorted(root.glob("skills/*/playbooks/*.md")):
+        h.update(path.read_bytes())
+    return h.hexdigest()
+
+
 def _probe_token(probe: Dict[str, Any]) -> str:
     """The input a probe reads; binds a control override to exactly one frozen probe."""
     return probe.get("pattern") or probe.get("query") or probe.get("path") or probe.get("owner")
@@ -541,7 +548,7 @@ def run_dsh_blinded_eval(
                 "sha256": _sha256(overlay_path),
                 "applied": applied,
             },
-            "model_route": OFFLINE_MODEL_ROUTE,
+            "probe_scope_hash": _probe_scope_hash(root),
             "provider": "deterministic-offline",
         }
     elif record is not None:
