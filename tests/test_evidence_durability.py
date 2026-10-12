@@ -15,6 +15,7 @@ from scripts.portability_schema import (
     Binding,
     ChildSettlement,
     CONFORMANCE_PLANES,
+    CONDITIONAL_CAPABILITIES,
     Evidence,
     HarnessProfile,
     MANDATORY_SUPPORT_FLOOR,
@@ -1013,3 +1014,114 @@ def test_observed_settlement_requires_a_passing_successful_scenario() -> None:
         )
         is False
     )
+
+
+# --- Adversarial negatives: child resume, cancelled settlements, dangling pins ---
+#
+# The promotion gate reads one typed settlement. These cases attack it with the
+# near-misses: an observed_live runtime PASS row that carries no child, a child
+# that ended cancelled/timed-out/errored, and a pin naming a scenario the receipt
+# never recorded.
+
+
+def _observed_scenario(
+    scenario_id: str, settlement: ChildSettlement | None = None
+) -> ScenarioResult:
+    return ScenarioResult(
+        id=scenario_id,
+        description="adversarial observed_live runtime row",
+        plane="runtime",
+        command="omp --mode rpc",
+        exit_code=0,
+        stdout_snippet="observed_live row",
+        verdict="PASS",
+        duration_s=0.01,
+        evidence_level="observed_live",
+        settlement=settlement,
+    )
+
+
+def _success_settlement() -> ChildSettlement:
+    return ChildSettlement(
+        child_id="subagent-7",
+        terminal_outcome="success",
+        model="test-model",
+        transport="rpc",
+        effective_rpc="rpc-v2:profile=disposable:depth=1",
+    )
+
+
+def _adversarial_receipt(scenario: ScenarioResult) -> VerificationReceipt:
+    receipt = VerificationReceipt(
+        run_id="p8-adversarial",
+        host="omp",
+        host_version="test",
+        timestamp="2026-10-12T00:00:00Z",
+        overall_verdict="PASS",
+        planes={plane: "PASS" for plane in CONFORMANCE_PLANES},
+        surface_revisions=compute_surface_revisions(ROOT, "omp"),
+        scenarios=[scenario],
+    )
+    receipt.validate()
+    return receipt
+
+
+def _profile_pinning(
+    receipt_ref: str, scenario_id: str, capability: str = "agent.resume"
+) -> HarnessProfile:
+    d = json.loads((ROOT / "profiles" / "omp.json").read_text(encoding="utf-8"))
+    for binding in d["bindings"]:
+        binding["evidence_ref"] = receipt_ref
+        if binding["capability"] == capability:
+            binding["verification_status"] = "verified"
+            binding["evidence_ref"] = {"receipt": receipt_ref, "scenario": scenario_id}
+    return HarnessProfile(
+        host=d["host"],
+        support_state=d["support_state"],
+        bindings=[Binding(**x) for x in d["bindings"]],
+        skills_dir=d.get("skills_dir"),
+        plugins_dir=d.get("plugins_dir"),
+        plugin_manifest=d.get("plugin_manifest"),
+        tool_mappings=d.get("tool_mappings"),
+        skill_order=d.get("skill_order"),
+        runtime_conventions=d.get("runtime_conventions"),
+    )
+
+
+def test_a_session_pickup_never_satisfies_a_child_resume_pin() -> None:
+    """A session pickup carries no spawned child, so an observed_live runtime PASS row
+    without a ChildSettlement cannot stand in for a `verified` child-resume binding."""
+    assert CONDITIONAL_CAPABILITIES["session.resume"] != CONDITIONAL_CAPABILITIES["agent.resume"]
+
+    ref = ".audit/evidence/omp-receipt.json"
+    pickup = _adversarial_receipt(_observed_scenario("session-pickup", settlement=None))
+    with pytest.raises(ValidationError, match="carries no observed_live settlement"):
+        check_scenario_pins(_profile_pinning(ref, "session-pickup"), {ref: pickup})
+
+    # Control: the same pin holds once the row is a settled child.
+    child = _adversarial_receipt(
+        _observed_scenario("child-resume", settlement=_success_settlement())
+    )
+    check_scenario_pins(_profile_pinning(ref, "child-resume"), {ref: child})
+
+
+@pytest.mark.parametrize("outcome", ["cancelled", "timeout", "error"])
+def test_a_non_success_child_settlement_never_satisfies_a_verified_pin(outcome: str) -> None:
+    ref = ".audit/evidence/omp-receipt.json"
+    scenario_id = f"child-{outcome}"
+    failed = _adversarial_receipt(
+        _observed_scenario(
+            scenario_id, settlement=replace(_success_settlement(), terminal_outcome=outcome)
+        )
+    )
+    with pytest.raises(ValidationError, match="carries no observed_live settlement"):
+        check_scenario_pins(_profile_pinning(ref, scenario_id), {ref: failed})
+
+
+def test_a_verified_pin_naming_an_unrecorded_scenario_is_a_dangling_reference() -> None:
+    ref = ".audit/evidence/omp-receipt.json"
+    receipt = _adversarial_receipt(
+        _observed_scenario("child-resume", settlement=_success_settlement())
+    )
+    with pytest.raises(ValidationError, match="does not record"):
+        check_scenario_pins(_profile_pinning(ref, "child-resume-typo"), {ref: receipt})

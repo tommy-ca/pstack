@@ -8,10 +8,16 @@ Verifies:
 - Bounded subprocess execution and timeout handling
 - Missing executable handling (BLOCKED, not crash)
 - Evidence level preservation
+- Adversarial negatives over the shipped stack: fake wire aliases, a shadowed
+  `poteto-mode` route, an invented verdict token, a missing model route versus a
+  genuine child defect, and an ambient-defined agent that a package may not claim
 """
 
 from __future__ import annotations
 
+import importlib.util
+import inspect
+import json
 import sys
 from pathlib import Path
 import pytest
@@ -20,10 +26,34 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-import importlib.util
 loader = importlib.util.spec_from_file_location("verify_portable", ROOT / "scripts" / "verify-portable.py")
 verify_portable = importlib.util.module_from_spec(loader)
 loader.loader.exec_module(verify_portable)
+
+_scan_spec = importlib.util.spec_from_file_location(
+    "p8_scan_host_boundary", ROOT / "scripts" / "scan-host-boundary.py"
+)
+scan_host_boundary = importlib.util.module_from_spec(_scan_spec)
+sys.modules["p8_scan_host_boundary"] = scan_host_boundary
+_scan_spec.loader.exec_module(scan_host_boundary)
+
+_slice_spec = importlib.util.spec_from_file_location(
+    "p8_vertical_slice", ROOT / "scripts" / "prove-omp-vertical-slice.py"
+)
+vertical_slice = importlib.util.module_from_spec(_slice_spec)
+sys.modules["p8_vertical_slice"] = vertical_slice
+_slice_spec.loader.exec_module(vertical_slice)
+
+_native_spec = importlib.util.spec_from_file_location(
+    "p8_prove_omp_native_package", ROOT / "scripts" / "prove-omp-native-package.py"
+)
+native_package = importlib.util.module_from_spec(_native_spec)
+sys.modules["p8_prove_omp_native_package"] = native_package
+_native_spec.loader.exec_module(native_package)
+
+from scripts.drivers.omp import OMPDriver, _model_route_error  # noqa: E402
+from scripts.drivers.opencode import OpenCodeDriver  # noqa: E402
+from scripts.route_resolver import resolve_primary_artifact, resolve_skill_order  # noqa: E402
 
 reduce_verdicts = verify_portable.reduce_verdicts
 ScenarioResult = verify_portable.ScenarioResult
@@ -154,3 +184,156 @@ def test_evidence_level_preservation(tmp_path: Path) -> None:
     receipt = verifier.proof_bar()
     scenario = next(s for s in receipt.scenarios if s.id == "test-level")
     assert scenario.evidence_level == "static"
+
+
+# --- 4. Adversarial Negatives Over the Shipped Stack ---
+#
+# Each case attacks a shipped guardrail and asserts the refusal. The failure mode
+# is a fake PASS: an alias that was never the wire, a shadowed route, an invented
+# verdict token, a defect masked as BLOCKED, or an ambient-provided name the
+# package credits to itself.
+
+
+def _driver_with_contract(driver_cls, wire_alias: str):
+    """A driver carrying a synthetic subagent contract, with availability forced on.
+
+    The alias check is the shipped static contract; forcing availability keeps the
+    negative offline-deterministic instead of skipping on a missing host binary.
+    """
+    driver = driver_cls(root=ROOT)
+    driver._profile_data = {
+        "tool_mappings": {"agent_spawn": "task"},
+        "runtime_conventions": {
+            "wire_aliases": {"task": wire_alias},
+            "max_subagent_depth": 1,
+        },
+    }
+    driver.is_available = lambda: (True, "static contract double")
+    return driver
+
+
+@pytest.mark.parametrize("driver_cls", [OMPDriver, OpenCodeDriver])
+def test_fake_wire_alias_fails_the_native_subagent_contract(driver_cls, tmp_path: Path) -> None:
+    honest = _driver_with_contract(driver_cls, "spawn_subagent").child_spawn(tmp_path)
+    assert honest.verdict == "PASS", "the honest alias must pass or the negative is vacuous"
+
+    # A real host primitive is not the portable wire name; the alias is fake.
+    faked = _driver_with_contract(driver_cls, "pi_spawn").child_spawn(tmp_path)
+    assert faked.verdict == "FAIL"
+    assert faked.exit_code == 1
+
+
+@pytest.mark.parametrize("driver_cls", [OMPDriver, OpenCodeDriver])
+def test_a_missing_wire_alias_never_passes_by_default(driver_cls, tmp_path: Path) -> None:
+    result = _driver_with_contract(driver_cls, "").child_spawn(tmp_path)
+    assert result.verdict == "FAIL"
+
+
+def test_an_aliased_host_primitive_stays_forbidden_in_shared_surfaces(tmp_path: Path) -> None:
+    """A profile cannot legitimize a host primitive by aliasing it: the alias target
+    still enters the forbidden vocabulary and is caught in a shared skill."""
+    profiles = tmp_path / "profiles"
+    profiles.mkdir()
+    (profiles / "omp.json").write_text(
+        json.dumps({"host": "omp", "runtime_conventions": {"wire_aliases": {"task": "pi_spawn"}}}),
+        encoding="utf-8",
+    )
+    vocab = scan_host_boundary.extract_forbidden_vocabulary(profiles)
+    assert vocab["pi_spawn"] == "omp wire target", "the alias target must enter the vocabulary"
+
+    shared = tmp_path / "skills" / "swarm" / "SKILL.md"
+    shared.parent.mkdir(parents=True)
+    shared.write_text("Start each lane with pi_spawn.\n", encoding="utf-8")
+    _, violations, scanned = scan_host_boundary.run_scan(
+        tmp_path, profiles, target_dirs=[tmp_path / "skills"]
+    )
+    assert scanned == 1
+    assert [v.token for v in violations] == ["pi_spawn"]
+
+
+def test_shadowed_poteto_mode_never_wins_the_canonical_route(tmp_path: Path) -> None:
+    canonical = tmp_path / "skills" / "poteto-mode"
+    (canonical / "playbooks").mkdir(parents=True)
+    (canonical / "SKILL.md").write_text("canonical skill\n", encoding="utf-8")
+    (canonical / "playbooks" / "orchestrate.md").write_text("canonical\n", encoding="utf-8")
+    # Decoys a shadowing artifact could occupy at non-canonical locations.
+    (tmp_path / "poteto-mode").mkdir()
+    (tmp_path / "poteto-mode" / "SKILL.md").write_text("decoy\n", encoding="utf-8")
+    (tmp_path / "orchestrate.md").write_text("decoy\n", encoding="utf-8")
+    (tmp_path / "agents").mkdir()
+    (tmp_path / "agents" / "orchestrate.md").write_text("decoy\n", encoding="utf-8")
+
+    assert resolve_primary_artifact("/poteto-mode", tmp_path) == canonical
+    assert resolve_primary_artifact("poteto-mode", tmp_path) == canonical
+    assert resolve_primary_artifact("orchestrate", tmp_path) == canonical / "playbooks" / "orchestrate.md"
+
+    # A single row resolves; a second row claiming the same query is ambiguous,
+    # so a shadow row cannot silently take the route.
+    single = {"skill_order": [{"need": "/poteto-mode", "primary_pstack": "/poteto-mode"}]}
+    matched = resolve_skill_order(single, "/poteto-mode", tmp_path)
+    assert matched.status == "matched"
+    assert matched.artifact == canonical
+
+    shadowed = {
+        "skill_order": [
+            {"need": "/poteto-mode", "primary_pstack": "/poteto-mode"},
+            {"need": "/poteto-mode", "primary_pstack": "/deslop"},
+        ]
+    }
+    result = resolve_skill_order(shadowed, "/poteto-mode", tmp_path)
+    assert result.status == "ambiguous"
+    assert result.kind == "no-route"
+    assert result.artifact is None
+
+    # An identifier escaping the repository is refused outright.
+    assert resolve_primary_artifact("/../../etc/passwd", tmp_path) is None
+    assert resolve_primary_artifact("pstack:../../etc/passwd", tmp_path) is None
+
+
+def test_an_invented_verdict_token_never_reduces_to_pass() -> None:
+    assert reduce_verdicts(["PASS", "LGTM"]) == "FAIL"
+    assert reduce_verdicts(["LGTM"]) == "FAIL"
+    assert reduce_verdicts(["PASS", "PASS"]) == "PASS"
+
+
+def test_a_missing_model_route_is_blocked_while_a_child_defect_is_not_masked() -> None:
+    route_error = [
+        {"type": "prompt_result", "status": "error", "error": {"message": "no route to provider"}}
+    ]
+    defect = [
+        {
+            "type": "prompt_result",
+            "status": "error",
+            "error": {"message": "model returned malformed JSON while running the tool"},
+        }
+    ]
+    assert _model_route_error(route_error) != ""
+    assert _model_route_error(defect) == "", "a genuine child defect must not become BLOCKED"
+
+    blocked = vertical_slice.runtime_row(
+        {"settlement": None, "failure": "", "route_error": "no model route", "exit_code": 1},
+        "@review",
+        0,
+    )
+    assert blocked.verdict == "BLOCKED"
+    failed = vertical_slice.runtime_row(
+        {"settlement": None, "failure": "", "route_error": "", "exit_code": 1}, "@review", 0
+    )
+    assert failed.verdict == "FAIL"
+
+
+def test_an_ambient_defined_agent_is_flagged_so_the_package_cannot_claim_it(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    ambient = tmp_path / "ambient-agents"
+    ambient.mkdir()
+    (ambient / "independent-verifier.md").write_text("ambient definition\n", encoding="utf-8")
+    monkeypatch.setattr(native_package, "AMBIENT_AGENT_DIRS", (ambient,))
+
+    assert native_package.ambient_defines_agent("independent-verifier") is True
+    assert native_package.ambient_defines_agent("packaged-only") is False
+
+    # The package proof credits a user-sourced start only when the ambient tree does
+    # not already define the name; the two facts cannot be separated.
+    source = inspect.getsource(native_package.spawn_named_agent)
+    assert 'and not observation["ambient_defines_it"]' in source
