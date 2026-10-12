@@ -65,16 +65,17 @@ unmet). A binary open/closed call forces either premature closure or a stale bac
 *Alternative rejected:* leaving every issue open until its epic closes — that is what
 produced the current "cannot tell finished from unfinished" problem.
 
-**D3 — Closure policy for #296 and #298 is evidence-driven and asymmetric.** #296 is
-closed with an evidence comment: the enum is already closed at
+**D3 — Closure policy for #296 and #298 is evidence-driven and asymmetric.** #296 was
+closed prematurely and is reopened: it stays open until two named fixtures land with
+observations, the `live`/`documented` rejection (P2) and the adapter-PASS-plus-
+package-FAIL rejection (P8). The enum is already closed at
 `schemas/portability/receipt.schema.json`, the merged spec forbids invented `live`/
-`documented` values (`design.md:52`, `specs/pstack-omp-native-adapter/spec.md:76`), and
-`tests/test_evidence_durability.py` plus `tests/test_verdict_reduction.py` cover legacy
-non-promotion, FAIL-over-BLOCKED and staleness. The one residual is a negative fixture
-asserting the schema rejects `live` and `documented` — a guard over an enum that already
-rejects them. #298 is **kept open**: its acceptance names a disabled-plugin case, a
-deeply-nested-skill case and a missing/invalid `omp`-key case, none of which has a
-recorded observation. Those are named negative tests, not cosmetic leftovers.
+`documented` values, and `tests/test_evidence_durability.py` plus
+`tests/test_verdict_reduction.py` cover legacy non-promotion, FAIL-over-BLOCKED and
+staleness. #298 is **kept open**: its acceptance names a disabled-plugin case, a
+deeply-nested-skill case, a missing/invalid `omp`-key case and precedence, none of
+which has a recorded observation. Those are named negative tests, not cosmetic
+leftovers.
 
 **D4 — Verify boxes are three-tiered per PR: unit, live, perf.** The repo already
 separates offline contract checks, host-dependent smoke and observed model-backed runtime
@@ -95,8 +96,9 @@ only host-neutral playbooks.
   every verdict row names a file plus an id (receipt scenario, test name, profile row), not
   a narrative; a reader re-runs `python scripts/verify-portable.py check-evidence --host
   all` and `python -m pytest -q tests/test_evidence_durability.py` to re-derive them.
-- **Closing #296 with a residual hides work.** *Mitigation:* the residual is named in the
-  close comment and carried as a task in P2; the verdict table records the same pointer.
+- **Closing #296 before both fixtures land hides work.** *Mitigation:* both residuals are
+  named in the issue thread and carried as tasks in P2 and P8; the verdict table records
+  the same pointers, and the issue stays open until both land.
 - **A plan that duplicates the OMP spec's own tasks.md.** *Mitigation:* this file is the
   cross-program sequence and verdict layer only. Where OMP already has a graph (merged
   `tasks.md`), the section references it instead of restating its checklists.
@@ -106,8 +108,8 @@ only host-neutral playbooks.
 ## Migration Plan
 
 Docs only, and reversible: revert the merge commit. No rollback strategy beyond that,
-because no runtime artifact changes. The only external state change is one issue closure
-(#296), which a reopen reverses.
+because no runtime artifact changes. The only external state change was a premature
+issue closure (#296), which a reopen reversed; no further closure happens in this change.
 
 ## Open Questions
 

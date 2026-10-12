@@ -30,13 +30,13 @@ graph TD
   PILOT --> P9
   P1["P1 #289 source matrix + honest bindings"] --> P3
   P1 --> P4
-  P2["P2 #296 negative enum fixture, then close (reopened 2026-10-12)"] --> P3
+  P2["P2 #296 negative enum fixture (stays open for P8)"] --> P3
   P3["P3 #297 cancel/steer negative receipts (#297 remainder)"] --> P5
   P4["P4 #290/#298 precedence + disabled plugin"] --> P6
   P5["P5 #291 isolation observed_live"] --> P6
   P6["P6 #292 vertical slice"] --> P7
   P7["P7 #293 native swarm/arena/interrogate"] --> P8
-  P8["P8 #294 adversarial acceptance + six-host regression"]
+  P8["P8 #294 adversarial acceptance + six-host regression + #296 package-precedence fixture"]
   P9["P9 verification parity: join deadline + evidence + census"]
   P10["P10 DSH carrier: merge #317, settle #308/#309"] --> P11
   P10 --> P12
@@ -211,12 +211,13 @@ Stop rules, unchanged from both programs and enforced by this plan:
   shadowed `poteto-mode`, ambient extension trust, WorkPool reviewer contamination,
   unapproved apply/merge, timeout/cancel/missing model, stale receipt, cleanup and data
   loss, session-versus-child resume. Then the six-harness offline matrix, with any host
+  lacking a binary or provider reported `BLOCKED`/`UNTESTED`. Reviewers fix nothing.
 - **Also owned here (#296 item)**: a regression proving adapter PASS plus package FAIL
-never becomes accepted package or runtime PASS. `derive_support_state` gates `verified`
-on canonical plus adapter plus runtime and package only on the `supported` leg, so add
-the negative case (adapter PASS with package FAIL stays rejected) to
-`tests/test_verdict_reduction.py` or `tests/test_evidence_durability.py`. #296 stays
-open until P2 and this case both land with observations.
+  never becomes accepted package or runtime PASS. `derive_support_state` gates `verified`
+  on canonical plus adapter plus runtime and package only on the `supported` leg, so add
+  the negative case (adapter PASS with package FAIL stays rejected) to
+  `tests/test_verdict_reduction.py` or `tests/test_evidence_durability.py`. #296 stays
+  open until P2 and this case both land with observations.
 - **Observable result**: published dispositions (act-on/consider/noted/dismissed) plus a
   per-host receipt at exact SHAs, and an explicit statement of any host left blocked.
 - [ ] 9.1 unit: verdict lattice and evidence durability suites green at the reviewed head, including the adapter-PASS-plus-package-FAIL rejection.
@@ -413,6 +414,7 @@ one-line follow-up owned by whoever next touches the offline gate, not by this p
 | Residual | Owner section | Settled by |
 | --- | --- | --- |
 | Negative fixture: schema rejects `live`/`documented` | P2 | new fixture in `tests/test_portability_schemas.py` or `tests/test_evidence_durability.py` |
+| Adapter PASS plus package FAIL never accepted as package/runtime PASS | P8 | negative case in `tests/test_verdict_reduction.py` or `tests/test_evidence_durability.py`; #296 closes only with this plus P2 |
 | `agent.cancel`/`agent.resume`/`session.resume`/`monitor`/`schedule` claim `verified` without a scenario | P1 | rewritten `profiles/omp.json` rows + rejection case |
 | Binding cannot cite the scenario that proves it | P1 | typed `evidence_ref` + scenario resolution check |
 | Isolation row is `static` inside a runtime `PASS` | P5 | `runtime-isolation-omp` promoted to `observed_live` |

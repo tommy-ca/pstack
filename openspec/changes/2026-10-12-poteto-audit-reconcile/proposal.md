@@ -41,7 +41,7 @@ deltas (OMP: `openspec/changes/2026-10-11-omp-native-adapter/specs/`; DSH: PR #3
 ## Impact
 
 - Docs only: this change directory and the reconciliation section of `todo.md`.
-- Issue tracker: a verdict and, for #296, a closure; no code path changes.
+- Issue tracker: a verdict per issue; #296 stays open until the P2 and P8 fixtures both land; no code path changes.
 - Baselines read, not written: pstack `main` `40382c9516e7b4a19838eb29a2d9629b90d3df2e`;
   canonical `UPSTREAM` pin `df581122cde17e6e27686b5a448bde23e4ad4318`; OMP doc pin
   `can1357/oh-my-pi@0affc77e41c357bb33f8bf056c3ea3cf50fd408b`; DSH source pin
