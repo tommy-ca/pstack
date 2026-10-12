@@ -1,6 +1,6 @@
 # OMP Native Adapter — Recursive Execution Graph and Verification Plan
 
-This file is the depth-first implementation contract for [epic #288](https://github.com/tommy-ca/pstack/issues/288). All issues below are OPEN. Historical closed work #62/#66/#67/#68 and #235/#238/#247/#248 remains context only. This change is a **spec-only draft** ([PR #295](https://github.com/tommy-ca/pstack/pull/295)).
+This file is the depth-first implementation contract for [epic #288](https://github.com/tommy-ca/pstack/issues/288). All nine leaf issues (#289-#294, #296-#298) are CLOSED as COMPLETED on 2026-10-12 via merged PRs #337 and #339-#347. The status below records what was believed when the change was written; the implementation status section at the end records what landed. Historical closed work #62/#66/#67/#68 and #235/#238/#247/#248 remains context only. This change merged as [PR #295](https://github.com/tommy-ca/pstack/pull/295).
 
 ## Inputs and authority
 - Canonical: Cursor `cursor/plugins/pstack`, immutable portable `UPSTREAM` pin `df581122cde17e6e27686b5a448bde23e4ad4318`; compare with current Cursor head independently.
@@ -98,4 +98,12 @@ Appended, not back-edited: the plan above records what was believed when the cha
   skill-frontmatter set rejects `disable-model-invocation`, which 49 of the 58 canonical
   skills carry: a probe skill carrying that field was not advertised at all. Arm B stays the
   contract, and a future portable projection needs the frontmatter work first.
-- **#292 to #294 remain gated** on the vertical slice and on #293's playbook recomposition.
+- **#289 source matrix: closed via #340.** Every OMP binding pins the scenario that settles it with honest statuses and a typed `evidence_ref` gate.
+- **#296 receipt truth: closed via #337 plus #344.** The `live`/`documented` rejection fixture and the adapter-PASS-plus-package-FAIL refusal both landed with independent verdicts.
+- **#298 native packaging probe: closed via #330 plus #341.** Enrollment, load, collision, precedence, disable, key variants and nesting negatives all recorded.
+- **#297 RPC proof: closed via #342.** Live cancel settlement with typed negatives; the steering gap stays recorded, unobserved by design.
+- **#290 package aggregate: closed via #330 plus #341.** Native `package.json#omp` proof plus precedence, disable, key and nesting negatives.
+- **#291 runtime aggregate: closed via #343.** Isolation observed live with settlement and `workspace.isolated` verified.
+- **#292 vertical slice: closed via #345.** End-to-end slice observed live with head-bound receipt. Residual cold-resume and depth boxes observed later at #362 and current head; depth stays a pstack policy claim, not a host ceiling.
+- **#293 playbook recomposition: closed via #339 plus #346.** Parity gap closed, skills recomposed over native dispatch with live runs on both routes.
+- **#294 adversarial gate: closed via #344 plus #347.** Package-precedence fixture plus adversarial negatives and matrix; standing live two-model review ran at the E04 head with findings addressed in #361 and #363.

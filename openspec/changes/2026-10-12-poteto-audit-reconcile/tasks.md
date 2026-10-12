@@ -1,11 +1,13 @@
 # Poteto audit program — recursive plan and issue-graph reconciliation
 
-Pilot unit of program `pstack-poteto-audit-20261012`. This is the depth-first execution
-contract for the two open programs at head `40382c9516e7b4a19838eb29a2d9629b90d3df2e`:
-
-- OMP native adapter epic **#288** (children #289–#294, #296–#298).
-- DSH skill portability program **#305** (sub-epics #306/#307, leaves #308–#315), carried by
-  draft PR #317 (`spec/deepseek-portable-skill-patterns-20261011`).
+Pilot unit of program `pstack-poteto-audit-20261012`. This was the depth-first execution
+contract for the two programs at head `40382c9516e7b4a19838eb29a2d9629b90d3df2e`.
+Both programs are now CLOSED as COMPLETED on 2026-10-12:
+- OMP native adapter epic **#288** (children #289–#294, #296–#298), closed via merged PRs #337 and #339–#347.
+- DSH skill portability program **#305** (sub-epics #306/#307, leaves #308–#315), closed via merged PRs #348–#364.
+The per-section boxes below record what was believed when the change was written. Thirty
+commits landed after the baseline (`40382c9..b6551fb`), and the verdict table in section 17
+is reconciled to that merged state at the end of this file.
 
 Read as an inventory of what remains, not as a second source of truth: where a program
 already has a graph (OMP: merged `openspec/changes/2026-10-11-omp-native-adapter/tasks.md`;
@@ -404,22 +406,70 @@ Output at `main` `40382c9516e7b4a19838eb29a2d9629b90d3df2e`:
 
 Exit code: **0**.
 
-Note for the next unit: `tests/test_canonical_index.py` is not yet in
-`.github/workflows/portability-offline.yml`'s gate list, which selects 18 suites;
-`tests/test_route_resolver.py` is. Adding the canonical-index suite to the workflow is a
-one-line follow-up owned by whoever next touches the offline gate, not by this plan.
+Note for the next unit (settled via #354, see section 19): `tests/test_canonical_index.py`
+is now in `.github/workflows/portability-offline.yml`'s gate list. The note above records
+what was believed at `40382c9` and stays as history.
 
-## 19. Residual register
+## 19. Residual register (reconciled to merged state at `0816316`)
 
-| Residual | Owner section | Settled by |
+Snapshot rows above recorded what was owed at `40382c9`. Each row below names the
+merged PR that settled it, or labels it an accepted residual carried with owner consent.
+
+| Residual | Settled by | Resolution |
 | --- | --- | --- |
-| Negative fixture: schema rejects `live`/`documented` | P2 | new fixture in `tests/test_portability_schemas.py` or `tests/test_evidence_durability.py` |
-| Adapter PASS plus package FAIL never accepted as package/runtime PASS | P8 | negative case in `tests/test_verdict_reduction.py` or `tests/test_evidence_durability.py`; #296 closes only with this plus P2 |
-| `agent.cancel`/`agent.resume`/`session.resume`/`monitor`/`schedule` claim `verified` without a scenario | P1 | rewritten `profiles/omp.json` rows + rejection case |
-| Binding cannot cite the scenario that proves it | P1 | typed `evidence_ref` + scenario resolution check |
-| Isolation row is `static` inside a runtime `PASS` | P5 | `runtime-isolation-omp` promoted to `observed_live` |
-| Cancellation and steering over RPC (`todo.md` Unit 10) | P3 | `runtime-child-cancel-omp` receipt + gap note |
-| Disabled plugin, nested skill, invalid `omp` key, precedence | P4 | four recorded observations in the native package lever |
-| Swarm/arena/interrogate have no join deadline, evidence binding or census | P9 | three skill edits + parity test |
-| DSH carrier has no `adr` artifact | P10 | validator run decides; manifest added only if required |
-| `tests/test_canonical_index.py` absent from the offline workflow | follow-up | workflow edit (not this change) |
+| Negative fixture: schema rejects `live`/`documented` | P2 via #337 | `tests/test_evidence_durability.py:717` parametrizes both invented levels as rejection cases |
+| Adapter PASS plus package FAIL never accepted as package/runtime PASS | P8 via #344 | precedence refusal fixture landed; #296 closed on both fixtures |
+| `agent.cancel`/`agent.resume`/`session.resume`/`monitor`/`schedule` claim `verified` without a scenario | P1 via #340 | every binding pinned to its settling scenario with honest statuses |
+| Binding cannot cite the scenario that proves it | P1 via #340 | typed `evidence_ref` gate; dangling and invented-scenario refs rejected at `test_evidence_durability.py:156,212` |
+| Isolation row is `static` inside a runtime `PASS` | P5 via #343 | isolation observed live with settlement; `workspace.isolated` verified |
+| Cancellation over RPC | P3 via #342 | live cancel settlement with typed negatives landed |
+| Steering over RPC (`steer_subagent` has no session method) | accepted residual | no observed scenario by design; #297 closed with the gap recorded, no steering claim made anywhere |
+| Disabled plugin, nested skill, invalid `omp` key, precedence | P4 via #341 | four recorded observations in the native package lever |
+| Swarm/arena/interrogate have no join deadline, evidence binding or census | P9 via #339 plus #346 | parity test plus native recomposition with live runs on both routes |
+| DSH reference line-audit deferred to #310 | accepted residual | #308 closed via #348 with the catalogued-but-unaudited references named; owner deferred to baseline evaluation, not silently dropped |
+| DSH schema sample-record and ownership-review evidence | accepted residual | #309 closed via #348 with both items owned by #310/#313; #313 later landed via #351 |
+| DSH carrier has no `adr` artifact | accepted residual | validator run decides; spec-only carrier stayed ADR-free by owner decision in #348 |
+| `tests/test_canonical_index.py` absent from the offline workflow | settled via #354 | workflow now lists the suite at `.github/workflows/portability-offline.yml:50`; #354 also forbids reviewer edits in pack |
+
+## 20. Reconciliation to merged state (2026-10-12, head `b6551fb`)
+
+Appended, not back-edited: the boxes above record what was believed at `40382c9`.
+Thirty commits landed after that baseline, and every issue named below is CLOSED as
+COMPLETED with a landed-via comment naming its merged PR.
+
+| Issue | Closed via | Evidence |
+| --- | --- | --- |
+| #289 source matrix | #340 | all 17 bindings pinned to settling scenarios, typed `evidence_ref` gate |
+| #296 receipt truth | #337 plus #344 | `live`/`documented` rejection plus adapter-PASS-plus-package-FAIL refusal |
+| #298 native packaging | #330 plus #341 | enrollment, load, collision, precedence, disable, key variants, nesting |
+| #297 RPC proof | #342 | live cancel settlement with typed negatives; steering gap recorded |
+| #290 package aggregate | #330 plus #341 | native manifest proof plus four negatives |
+| #291 runtime aggregate | #343 | isolation observed live with settlement, `workspace.isolated` verified |
+| #292 vertical slice | #345 | end-to-end slice observed live; cold-resume and depth residuals observed at #362 and current head |
+| #293 playbook parity | #339 plus #346 | parity gap closed, native recomposition with live runs on both routes |
+| #294 adversarial gate | #344 plus #347 | precedence fixture plus adversarial negatives; live two-model review at E04 head addressed in #361/#363 |
+| #305 DSH epic | #348–#353 plus #354–#364 | carrier through gate PRs merged; gate satisfied at `b6551fb` per #315 comment |
+| #306 sub-epic | #348 plus #350 plus #353 | inventory and contracts via #348; baseline corpus via #350; candidate phase via #353 |
+| #307 sub-epic | #349 plus #351 plus #352 plus #353 plus #354–#364 | prose via #349; review via #351; currency via #352; candidate via #353; gate matrix via #354–#364 |
+| #308 inventory | #348 | carrier with validator-clean spec and 16 pinned rows; reference line-audit residual deferred to #310 |
+| #309 contracts | #348 | contracts and structure; schema fixtures owned by #310/#313 |
+| #310 eval corpus | #350 plus #353 | baseline frozen via #350; candidate phase via #353 |
+| #311 isolation | #331 per #311 comment | merged pilot satisfies acceptance; byte-identical tree noted in comment |
+| #312 selection | #321 plus #332 plus #352 | select-checks stack plus rebase-currency fix; comment names #312 satisfied by landed stack plus #352 |
+| #313 review | #351 | four owners extended, 33 contract tests, read-only audit proven |
+| #314 prose | #349 | overlay gating with non-trigger controls, owner contracts, measured traces |
+| #315 gate | #354–#364 | linked PRs with verdicts, runnable matrix ALL FRESH, gate satisfied at `b6551fb` |
+| #288 epic | all above | zero open leaves; graph reconciled with the four accepted residuals in section 19 |
+
+Cleanup tally: ten merged worktrees removed; `p14b-context` intentionally retained on
+its pushed ref `origin/spec/p14-context-owners` (review bucket, clean tree, no live owner
+found in this session's transcript scan).
+
+Verification rerun in this session at head `b6551fb`: `verify-portable.py run --host omp`
+PASS on all four planes (canonical, adapter, package, runtime) with receipt at
+`/tmp/omp-evidence-20261012/omp-receipt.json`; vertical slice PASS with `observed_live`
+child settlement; full suite `879 passed, 10 skipped in 342.45s` with terminal output
+observed in the transcript. Scoped honestly: `doctor --host omp` reports UNTESTED
+overall with no runtime plane (offline checks only), and `drive --feature smoke` FAILs
+on `runtime-route-playbook-omp` because `smoke` is a synthetic feature with no route,
+not a product surface.
