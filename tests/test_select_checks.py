@@ -300,8 +300,17 @@ class TestCheckEvidenceBinding:
         ) != original_patch_id  # recomputed against the stale base
         stale, reasons = evidence_receipts.check_check_evidence_staleness(receipt, repo, "main")
         assert (stale, reasons) == (False, [])
-        claimable, _ = evidence_receipts.can_claim_current_ci(receipt, repo, "main")
+        current_head_sha = evidence_receipts.resolve_revision(repo)
+        current_base_sha = evidence_receipts.resolve_merge_base(repo, "main", "HEAD")
+        claimable, claim = evidence_receipts.can_claim_current_ci(receipt, repo, "main")
         assert claimable is True
+        # The claim is currency for the rewritten head, not the receipt's stale one,
+        # and it names the recheck it still owes: the checks at that head, that base.
+        assert (
+            claim.startswith(f"Current at {current_head_sha[:8]}")
+            and "re-run the checks" in claim
+            and current_base_sha[:8] in claim
+        ), claim
 
     def test_failed_or_blocked_outcomes_are_reported_not_promoted(self, tmp_path: Path) -> None:
         repo = self._branch_with_patch(tmp_path)
