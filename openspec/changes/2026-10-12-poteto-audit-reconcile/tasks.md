@@ -30,7 +30,7 @@ graph TD
   PILOT --> P9
   P1["P1 #289 source matrix + honest bindings"] --> P3
   P1 --> P4
-  P2["P2 #296 negative enum fixture + close"] --> P3
+  P2["P2 #296 negative enum fixture, then close (reopened 2026-10-12)"] --> P3
   P3["P3 #297 cancel/steer negative receipts (#297 remainder)"] --> P5
   P4["P4 #290/#298 precedence + disabled plugin"] --> P6
   P5["P5 #291 isolation observed_live"] --> P6
@@ -94,7 +94,7 @@ Stop rules, unchanged from both programs and enforced by this plan:
       not one per capability; record `verify-portable.py doctor --host omp` wall clock
       before and after against the same baseline.
 
-## 3. P2 — #296 residual: negative enum fixture, then close
+## 3. P2 — #296 residual: negative enum fixture, then close (reopened)
 
 - **Files**: `tests/test_portability_schemas.py` or `tests/test_evidence_durability.py`
   (whichever already imports `receipt.schema.json` most directly), reference
@@ -104,9 +104,8 @@ Stop rules, unchanged from both programs and enforced by this plan:
   (`…/2026-10-11-omp-native-adapter/design.md:52`,
   `specs/pstack-omp-native-adapter/spec.md:76`), but nothing asserts the rejection. Add the
   two negative fixtures; assert the OMP live receipt keeps `observed_live` after the run.
-- **Observable result**: a receipt-shaped scenario with `evidence_level: "live"` and one
-  with `"documented"` both fail schema validation; #296 is closed with a comment naming
-  this fixture as the only residual.
+- **Observable result**: a receipt-shaped scenario with `evidence_level: "live"` and one with `"documented"` both fail schema validation; #296 was closed prematurely and
+reopened 2026-10-12, and it closes again only when this fixture lands with a comment naming the observation.
 - [ ] 3.1 unit: the two negative fixtures raise `ValidationError`; suite green.
 - [ ] 3.2 live: `.audit/evidence/omp-receipt.json` still validates and still carries
       `runtime-child-spawn-omp` as `observed_live` after a live refresh.
@@ -360,7 +359,7 @@ re-derive the verdict rather than trust it.
 | #292 | NEEDS-WORK (blocked) | no slice artifact in `scripts/`; merged `tasks.md` marks #292–#294 gated on the slice | P6 |
 | #293 | NEEDS-WORK (blocked) | `skills/swarm`, `skills/arena`, `skills/interrogate` carry no native-dispatch or parity fixture | P7, P9 |
 | #294 | NEEDS-WORK (blocked) | gate depends on #293; six-host offline receipts exist via `verify-portable.py check-evidence --host all` | P8 |
-| #296 | SHOULD-CLOSE | `schemas/portability/receipt.schema.json` closed enum; `…/omp-native-adapter/design.md:52` and `specs/pstack-omp-native-adapter/spec.md:76`; `tests/test_evidence_durability.py::test_legacy_or_missing_evidence_level_never_proves_live`; `tests/test_verdict_reduction.py::test_lattice_fail_beats_blocked`; staleness tests | One negative fixture (`live`/`documented` rejected) → P2; closed with comment |
+| #296 | NEEDS-WORK (reopened 2026-10-12) | `schemas/portability/receipt.schema.json` closed enum; `…/omp-native-adapter/design.md:52` and `specs/pstack-omp-native-adapter/spec.md:76`; `tests/test_evidence_durability.py::test_legacy_or_missing_evidence_level_never_proves_live`; `tests/test_verdict_reduction.py::test_lattice_fail_beats_blocked`; staleness tests; premature closure reversed by reopen 2026-10-12 | One negative fixture (`live`/`documented` rejected) → P2; close only on landing |
 | #297 | OPEN-correct | `runtime-child-spawn-omp` `observed_live` (PR #319/#323); `scripts/drivers/omp_rpc.py` exposes no `steer_subagent` session method | P3 (`todo.md` Unit 10) |
 | #298 | NEEDS-WORK | `scripts/prove-omp-native-package.py` + `tests/test_omp_native_package.py` cover enrollment, sentinel skill load, namespaced collision, live agent resolution, root-`plugin.json` negative | Disabled plugin, deeply nested skill, missing/invalid `omp` key, precedence → P4 (kept open) |
 | #305 epic | OPEN-correct | PR #317 draft carrier; `openspec/changes/2026-10-11-deepseek-skill-portability/` | P10–P15 |
@@ -375,8 +374,10 @@ re-derive the verdict rather than trust it.
 | #314 | NEEDS-WORK | no measured context trace or overlay non-trigger tests | P14 |
 | #315 | NEEDS-WORK (blocked) | depends on #310–#314 | P15 |
 
-Closure actions taken by this pilot: **#296 closed** with an evidence comment that names the
-one residual fixture and points at P2. **#298 kept open** — three acceptance items have no
+Closure actions taken by this pilot, corrected 2026-10-12: **#296 reopened** after a
+premature closure, because its named acceptance fixture (schema rejects
+`live`/`documented`) has no recorded observation yet. It closes again only when P2
+lands. **#298 kept open** — three acceptance items have no
 observation. **#290, #311, #312 not closed**, per the standing gate.
 
 ## 18. Offline gate receipt
