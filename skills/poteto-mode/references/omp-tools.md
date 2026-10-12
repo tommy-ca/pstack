@@ -39,7 +39,8 @@ Rules both routes share:
 
 - **Frozen briefs.** A lane's brief is fixed before dispatch and is the brief it
   reports against. A rewritten brief is a new lane; follow-up work is a fresh
-  spawn, never a resume with different scope.
+  spawn, never a resume with different scope. A child session starts without the
+  parent's conversation history, so the brief carries the context the lane needs.
 - **One writer per target.** Writers run `isolated` with one target each; the
   backend may be a worktree, an overlay or a copy. Two lanes never share a
   writable path.
@@ -47,7 +48,9 @@ Rules both routes share:
   at the deadline is a dropout: `wait(handles, timeout)` raises `TimeoutError`
   there, and a cancelled lane settles as `cancelled` in the typed settlement.
   Aborting a wait cancels the handles it was waiting on and waits for them to
-  settle, so aborting is not a nudge. A dropout is never a pass.
+  settle, so aborting is not a nudge. A timeout leaves that lane running, so a
+  lane past the deadline is cancelled explicitly rather than assumed ended. A
+  dropout is never a pass.
 - **Keep-alive reuse is not independence.** `workpool()` keeps workers alive and
   hands the next item to the idle worker with the lowest context usage, so a
   reused worker carries the previous item's context. It MUST NOT be presented as
