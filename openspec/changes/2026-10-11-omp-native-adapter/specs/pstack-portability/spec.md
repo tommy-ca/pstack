@@ -96,6 +96,12 @@ A conformance report MUST distinguish: (1) coverage against the immutable `UPSTR
 ### Requirement: Verification has three planes
 The port MUST separate three **conceptual** conformance concerns: canonical pin/inventory/drift, adapter/native projection, and runtime observed behavior. For the existing serialized verification receipt, these concerns MUST map to the **four required and separately verdict-bearing** `canonical`, `adapter`, `package`, `runtime` planes in `schemas/portability/receipt.schema.json`. The `package` plane audits host-native manifest generation, install/link/discovery and lifecycle independently of adapter binding validation and runtime child execution. A positive result in one serialized plane MUST NOT substitute for an absent mandatory result in another. The distinction MUST be documented in the verifier without changing the existing receipt schema or creating a fifth plane.
 
+#### Scenario: three plane separation
+- **GIVEN** canonical, adapter, and runtime verification checks
+- **WHEN** adapter static checks pass but runtime checks fail
+- **THEN** runtime conformance reports FAIL
+- **AND** static adapter PASS cannot be used to declare the harness supported
+
 #### Scenario: three concerns, four receipt fields
 - **GIVEN** a mapped OMP profile with passing static adapter checks and a missing installed `agents/` projection
 - **WHEN** the four-plane receipt is computed
