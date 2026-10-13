@@ -59,6 +59,12 @@ KNOWN_DEFECT_EXCEPTIONS = {
         "upstream_issue": "https://github.com/cursor/plugins/issues/474",
         "description": "Upstream principle text conflates vacuous assertions with weak truthiness assertions",
         "reconciliation": "Separated weak assertion fail states from truly vacuous execution-only shapes",
+    },
+    "cursor-plugins-571": {
+        "surface": "skills/principle-exhaust-the-design-space/SKILL.md",
+        "upstream_issue": "https://github.com/cursor/plugins/issues/571",
+        "description": "Upstream section cut removed the antecedent sentence, leaving the product-design clause orphaned with no governing statement",
+        "reconciliation": "Re-anchored the body with the interaction/architectural-decision sentence ahead of the product-design clause",
     }
 }
 
