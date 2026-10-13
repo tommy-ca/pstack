@@ -19,7 +19,7 @@ Two modes:
 
 If the scope is ambiguous, state your interpretation and explore. The user can redirect.
 
-- **Simple** (a single module, a small utility, a narrow question such as "how does function X work"): no explorers. One explainer explores and explains in a single pass. Go to Step 2b.
+- **Simple** (a single module, a small utility, a narrow question such as "how does function X work"): no explorers. One explainer explores and explains in a single pass, built from `references/explainer-prompt.md` without the explorer-findings section. Go to Step 2b.
 - **Complex** (a subsystem spanning multiple files or services, a cross-cutting feature, a full architectural overview): spawn parallel explorers first, then hand off to the explainer. Go to Step 2a.
 
 When in doubt, take the simple path.
@@ -28,12 +28,12 @@ For enforcement or runtime questions (sandbox, hooks, multiplexer, kernel policy
 
 ### Step 2a. Explore (complex questions only)
 
-Decompose the question into 2 to 4 exploration angles, each a distinct slice of the subsystem. Spawn all explorers in a single parent turn using the current host's agent spawn capability (`agent.spawn`). Join with the host's join capability (`agent.join`).
+Decompose the question into 2 to 4 angles, each a distinct slice of the subsystem. Spawn all explorers in a single parent turn using the current host's agent spawn capability (`agent.spawn`), each with `references/explorer-prompt.md` and its angle filled in. Join with the host's join capability (`agent.join`).
 
 - `subagent_type` / `Role`: `pstack:how-explorer` ([`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md)). Builtin `explore` is the later fallback when this plugin agent is unknown (HARNESS Skill order).
 - `model`: toml key `how-explorer` per `../setup-pstack/references/resolve-model.md` (or host configuration). Missing key omits; absent config resolves the host default model from the active profile. Do not send `reasoning_effort`.
 
-Each explorer gets the prompt in `references/explorer-prompt.md` with its angle filled in. Then go to Step 3.
+Then go to Step 3.
 
 ### Step 2b. Direct Explain (simple questions)
 
@@ -55,7 +55,7 @@ Build its prompt from `references/explainer-prompt.md` with every explorer's fin
 
 ### Step 4. Present
 
-Present the explainer's output to the user. Light edits for clarity or context from the conversation are fine. Do not substantially rewrite it.
+Present the explainer's output. Light edits for clarity or context from the conversation are fine. Do not substantially rewrite it.
 
 ### Output Format
 

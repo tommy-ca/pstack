@@ -10,7 +10,7 @@ First principles only. Do not treat community pstack ports as the spec.
 
 | Source | Pin | Role |
 |---|---|---|
-| Official pstack | [cursor/plugins `pstack/`](https://github.com/cursor/plugins/tree/main/pstack) tree `df581122cde17e6e27686b5a448bde23e4ad4318` | 22 named playbooks, `opening-a-pr.md`, 24 `principle-*` skills, `/poteto-mode` router; current upstream packaging `0.15.15`. This port stays `0.15.15-grokbuild.0`. |
+| Official pstack | [cursor/plugins `pstack/`](https://github.com/cursor/plugins/tree/main/pstack) tree `1dcc2bacde73ddd284803b7af28164d0436198fc` | 22 named playbooks, `opening-a-pr.md`, 24 `principle-*` skills, `/poteto-mode` router; current upstream packaging `0.15.21`. This port stays `0.15.21-grokbuild.0`. |
 | Official grok-build | [xai-org/grok-build](https://github.com/xai-org/grok-build) commit `c2ad97f87aea4303b6000a2c22128bc91ee76c9b` | Plugin install, inspect JSON, headless flags, live tool ids |
 | This port | [grok-tools.md](./skills/poteto-mode/references/grok-tools.md) | Call-site mapping onto those grok-build tools |
 

@@ -55,6 +55,54 @@ describe("worktree-audit", () => {
       await rm(directory, { recursive: true, force: true });
     }
   });
+  it("honours -b as the merge base and rejects flags it does not know", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "worktree-audit-base-"));
+    try {
+      const repo = join(directory, "repo");
+      await mkdir(repo);
+      git(repo, ["init", "--initial-branch=main"]);
+      git(repo, ["config", "user.name", "Audit Test"]);
+      git(repo, ["config", "user.email", "audit@example.com"]);
+      await writeFile(join(repo, "main.txt"), "main\n");
+      git(repo, ["add", "."]);
+      git(repo, ["commit", "-m", "main"]);
+
+      const worktree = join(directory, "feature");
+      git(repo, ["worktree", "add", "-b", "feature", worktree]);
+      await writeFile(join(worktree, "feature.txt"), "feature\n");
+      git(worktree, ["add", "."]);
+      git(worktree, ["commit", "-m", "feature"]);
+
+      const transcripts = join(directory, "transcripts");
+      await mkdir(transcripts);
+      const env = { ...process.env, PSTACK_TRANSCRIPTS_DIR: transcripts };
+      const row = (stdout: string): string[] =>
+        stdout
+          .trim()
+          .split("\n")
+          .find((candidate) => candidate.endsWith(`\t${worktree}`))
+          ?.split("\t") ?? [];
+
+      const based = Bun.spawnSync(["bash", SCRIPT, "-b", "main", repo], { env });
+      expect(based.exitCode).toBe(0);
+      expect(based.stdout.toString()).toContain("# base: main\n");
+      expect(row(based.stdout.toString())[2]).toBe("no");
+
+      const missing = Bun.spawnSync(["bash", SCRIPT, "-b", "nope", repo], { env });
+      expect(missing.exitCode).toBe(0);
+      expect(row(missing.stdout.toString())[2]).toBe("unknown");
+
+      const needsRef = Bun.spawnSync(["bash", SCRIPT, "--base"], { env });
+      expect(needsRef.exitCode).toBe(2);
+
+      const help = Bun.spawnSync(["bash", SCRIPT, "-h"], { env });
+      expect(help.exitCode).toBe(0);
+      expect(help.stdout.toString()).toContain("Usage: worktree-audit.sh");
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
   it("does not treat a closed PR as safe when the base is unknown", async () => {
     const directory = await mkdtemp(join(tmpdir(), "worktree-audit-"));
     try {
@@ -97,7 +145,7 @@ describe("worktree-audit", () => {
       const fields = row?.split("\t") ?? [];
       expect(fields[2]).toBe("unknown");
       expect(fields[5]).toBe("#123/CLOSED");
-      expect(fields[7]).toBe("review");
+      expect(fields[7]).toBe("hold-closed-unmerged");
     } finally {
       await rm(directory, { recursive: true, force: true });
     }

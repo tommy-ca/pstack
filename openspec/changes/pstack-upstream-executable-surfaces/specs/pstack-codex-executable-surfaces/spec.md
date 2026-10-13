@@ -40,7 +40,14 @@ The real `watch-pr` GitHub reader MUST convert a missing `gh` executable into `W
 
 Feature: pstack-codex-executable-surfaces
 
-`worktree-audit.sh` MUST preserve worktree paths containing spaces, use GNU or BSD `stat` when available, and accept `PSTACK_TRANSCRIPTS_DIR` as the transcript root. If the best-effort fetch does not produce `origin/main`, the audit MUST report merge status as `unknown` rather than `no`. The script remains a Codex/GitHub compatibility utility and MUST NOT pretend that missing forge or transcript data proves safety.
+`worktree-audit.sh` MUST preserve worktree paths containing spaces, use GNU or BSD `stat` when available, and accept `PSTACK_TRANSCRIPTS_DIR` as the transcript root. The `MERGED` column MUST check the base ref named by `-b`/`--base`, or else the first of `origin/HEAD`, `origin/main`, `origin/master` that resolves. If no base ref resolves, the audit MUST report merge status as `unknown` rather than `no` and MUST still classify the worktree. Buckets are `safe`, `review`, `verify-recent-chat`, and the `hold-*` family (`hold-untracked`, `hold-wip`, `hold-unpushed`, `hold-open-pr`, `hold-closed-unmerged`). The script remains a Codex/GitHub compatibility utility and MUST NOT pretend that missing forge or transcript data proves safety.
+
+#### Scenario: explicit base ref
+
+- **GIVEN** PRs target a branch other than the default branch
+- **WHEN** `worktree-audit.sh -b origin/<branch>` runs
+- **THEN** the `MERGED` column checks that ref
+- **AND** the header reports it as `# base: origin/<branch>`
 
 #### Scenario: path-safe audit on Linux
 
@@ -51,16 +58,16 @@ Feature: pstack-codex-executable-surfaces
 
 #### Scenario: missing base is not a negative merge result
 
-- **GIVEN** `git fetch origin main` cannot establish `refs/remotes/origin/main`
+- **GIVEN** no base ref resolves (`origin/HEAD`, `origin/main`, `origin/master` all missing)
 - **WHEN** `worktree-audit.sh` classifies a worktree
 - **THEN** its merge field is `unknown`
 - **AND** it does not label the worktree `no` solely because the ref is unavailable
 
 #### Scenario: closed PR does not prove a merge
 
-- **GIVEN** `origin/main` is unavailable and the forge reports a `CLOSED` PR
+- **GIVEN** no base ref resolves and the forge reports a `CLOSED` PR
 - **WHEN** `worktree-audit.sh` classifies a clean worktree
-- **THEN** its bucket is `review`
+- **THEN** its bucket is `hold-closed-unmerged`
 - **AND** it does not label the worktree safe without a merge proof
 
 #### Scenario: transcript root is explicit
