@@ -26,7 +26,7 @@ The principles that matter most during a port are **Laziness Protocol**, **Model
 
 ## Discover, do not count
 
-Enumerate the canonical principle, playbook, and relevant skill inventory from the recorded pin. The reference canonical pin establishes 23 principles as leaf skills and 23 `principle-*` skills. Do not use a literal number as the permanent source of truth for future pins.
+Enumerate the canonical principle, playbook, and relevant skill inventory from the recorded pin. The reference canonical pin establishes 24 principles as leaf skills and 24 `principle-*` skills. Do not use a literal number as the permanent source of truth for future pins.
 
 For every relevant canonical artifact record one state:
 
