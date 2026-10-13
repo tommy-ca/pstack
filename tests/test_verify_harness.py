@@ -172,6 +172,34 @@ def test_archived_change_missing_adr_artifact_is_flagged() -> None:
         assert scanner.archived_changes_missing_artifacts(archive) == []
 
 
+def test_archived_change_skip_specs_exempts_specs_only() -> None:
+    loader = importlib.util.spec_from_file_location("verify_harness", SCANNER)
+    assert loader is not None
+    scanner = importlib.util.module_from_spec(loader)
+    assert loader.loader is not None
+    loader.loader.exec_module(scanner)
+    with tempfile.TemporaryDirectory() as tmp:
+        archive = Path(tmp)
+        for name, manifest in (
+            ("skipped", "schema: intent-driven\nskip_specs: true\n"),
+            ("enforced", "schema: intent-driven\n"),
+        ):
+            change = archive / f"2026-10-13-{name}"
+            change.mkdir(parents=True)
+            for artifact in ("proposal.md", "design.md", "adr.md", "tasks.md"):
+                (change / artifact).write_text("x\n", encoding="utf-8")
+            (change / ".openspec.yaml").write_text(manifest, encoding="utf-8")
+        assert scanner.archived_changes_missing_artifacts(archive) == [
+            "2026-10-13-enforced/specs/**/*.md"
+        ]
+        # skip_specs exempts specs only; other required artifacts stay enforced.
+        (archive / "2026-10-13-skipped" / "adr.md").unlink()
+        assert scanner.archived_changes_missing_artifacts(archive) == [
+            "2026-10-13-enforced/specs/**/*.md",
+            "2026-10-13-skipped/adr.md",
+        ]
+
+
 def test_durable_specs_have_non_placeholder_purposes() -> None:
     for spec in sorted((ROOT / "openspec/specs").glob("*/spec.md")):
         text = spec.read_text(encoding="utf-8")
