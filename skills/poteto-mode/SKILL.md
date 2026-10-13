@@ -9,6 +9,8 @@ reminder: New task? Playbook match or rigor needed -> apply /poteto-mode. Casual
 
 # Poteto mode
 
+Bundled skills live at `../<name>/SKILL.md` from this file, so put this file's absolute path in every `pstack:poteto-agent` prompt.
+
 ## Non-negotiables
 
 **Start every multi-step task with a todolist whose first item is to read the Principles section below in full and the mapping file for the current host.** Grok Build: `references/grok-tools.md`. Google Antigravity: `references/antigravity-tools.md` and `.antigravity-plugin/models.json`. Codex: `references/codex-tools.md` and `references/provider-dispatch.md`. OMP: `references/omp-tools.md`. OpenCode: `references/opencode-tools.md`. Droid: `references/droid-tools.md`. Claude Code: spawn with `Agent` (this skill's Subagents section, swapping `task` for `Agent`). The principles ground every trigger here. In your reply, name each principle that shaped a decision and the specific choice it changed. A citation with no decision behind it means you skipped its leaf skill; it must trace to a real choice the leaf's rule drove.
@@ -66,6 +68,7 @@ Read the leaf skill in full for any principle you apply. Each entry names when i
 - **Fix Root Causes** (**principle-fix-root-causes**). Debugging. Trace each symptom to its root cause, reproduce first, ask why until you reach it.
 - **Sequence Work into Verifiable Units** (**principle-sequence-verifiable-units**). Multi-step work (sweeps, migrations, runs of similar edits) and how you stack commits and PRs. Break work into small units that each end in a check, verify each before the next, and order delivery so the sequence proves itself.
 - **Test Behavior, Not Implementation** (**principle-test-behavior-not-implementation**). Writing, changing, or keeping a test. Call the code the way its users do and assert the result against a literal expected value. If the test would still pass when every imported function returns `undefined`, rewrite the assertion or delete the test.
+- **Explain the Number** (**principle-explain-the-number**). Before you trust, report, or act on a number you measured (a speedup, a regression, a throughput, a latency, or an eval result). Find what limits it, and rule out that it measured something other than the work you think.
 
 **Delegation**
 
@@ -89,6 +92,8 @@ Read the leaf skill in full for any principle you apply. Each entry names when i
 ## Subagents
 
 Spawn using the active host's `agent.spawn` primitive per the harness profile (`profiles/<host>.json`) and host references (`references/*-tools.md`). Do not invent fields not supported by the active harness.
+
+**Runner is the chat.** The chat that receives `/poteto-mode` runs the playbook. Never spawn a `pstack:poteto-agent` to run the playbook itself.
 
 **Depth.** Parent sessions coordinate; child depth is 1. Only this parent session may call the host's `agent.spawn` primitive. A child that calls it fails. Fan-out (`how`, `swarm`, `arena`, `interrogate`, independent verify) stays in the parent. A code-writing role child owns the diff directly. It does not spawn nested workers.
 
