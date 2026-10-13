@@ -26,7 +26,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-CHANGE = ROOT / "openspec" / "changes" / "2026-10-11-deepseek-skill-portability"
+CHANGE = ROOT / "openspec" / "changes" / "archive" / "2026-10-11-deepseek-skill-portability"
 ATOM_TABLE = CHANGE / "atomic-patterns.md"
 SPEC = CHANGE / "specs" / "pstack-reusable-skill-patterns" / "spec.md"
 

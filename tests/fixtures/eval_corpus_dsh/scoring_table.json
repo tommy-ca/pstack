@@ -1,7 +1,7 @@
 {
   "corpus_version": "1.0.0-dsh-baseline",
   "phase": "baseline",
-  "source": "openspec/changes/2026-10-11-deepseek-skill-portability/qualification-and-eval.md#corpus-positive-and-negative-examples",
+  "source": "openspec/changes/archive/2026-10-11-deepseek-skill-portability/qualification-and-eval.md#corpus-positive-and-negative-examples",
   "pstack_revision": "52333df82fb9b3a4b1e4554cf0b6cd07585f4477",
   "model_route": null,
   "provider": "deterministic-offline",

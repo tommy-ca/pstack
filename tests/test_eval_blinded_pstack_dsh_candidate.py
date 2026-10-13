@@ -31,7 +31,7 @@ from scripts.eval_blinded_pstack import (
 BASELINE_CORPUS = DSH_CORPUS_DIR / "cases.json"
 BASELINE_TABLE = DSH_CORPUS_DIR / "scoring_table.json"
 CANDIDATE_TABLE = DSH_CORPUS_DIR / "scoring_table_candidate.json"
-FROZEN_CORPUS_SHA256 = "90285f0f28e9337c56380fbe932a2fa1796b212d9c43f5397ad0ce273a38ed45"
+FROZEN_CORPUS_SHA256 = "8040f91550a00c50cd4788c9719023d116c53c9eb44249e3ce98b15a8355d47a"
 
 
 def _sha256(path: Path) -> str:
