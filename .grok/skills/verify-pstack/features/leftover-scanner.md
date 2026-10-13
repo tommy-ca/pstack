@@ -6,7 +6,7 @@ Leftover scan walks this plugin tree for live Cursor harness call sites and chec
 
 - `leftover-tree-walk` fails on live Cursor harness call sites in walked `.md`, `.toml`, `.json`, and `.mjs` files, including `docs/`, plugin `skills/`, and project-local `.grok/skills/`.
 - `leftover-playbooks` requires 22 named playbooks plus `opening-a-pr.md`.
-- `leftover-principles` requires 23 `principle-*` skill directories.
+- `leftover-principles` requires 24 `principle-*` skill directories.
 - `leftover-plugin-json` requires `plugin.json` name `pstack` and skills paths `./skills/` plus `./automations/benny-grok/skills/`. It must not list `.grok/skills`.
 - `leftover-pass-line` prints `PASS` and exits 0. That PASS is checkout token cleanliness, not catalog identity.
 
