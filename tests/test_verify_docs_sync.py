@@ -43,16 +43,16 @@ def _load_scanner():
     return mod
 
 
-def test_live_specs_count_twenty_three_principles() -> None:
+def test_live_specs_count_twenty_four_principles() -> None:
     principles = (
         ROOT / "openspec" / "specs" / "pstack-principles" / "spec.md"
     ).read_text(encoding="utf-8")
     port = (
         ROOT / "openspec" / "specs" / "pstack-reference-port" / "spec.md"
     ).read_text(encoding="utf-8")
-    assert "Twenty-three principle skills" in principles
-    assert "MUST ship 23" in principles
-    assert "principles: 23" in principles
+    assert "Twenty-four principle skills" in principles
+    assert "MUST ship 24" in principles
+    assert "principles: 24" in principles
     assert "Twenty-one principle skills" not in principles
     assert "principles: 21" not in principles
     assert "steer with 23 principle names" in port
