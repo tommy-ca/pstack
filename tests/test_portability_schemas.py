@@ -1,6 +1,7 @@
 import json
 import sys
 from pathlib import Path
+from typing import Dict
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -431,6 +432,51 @@ def test_harness_profiles_skill_order_and_runtime_conventions_json_schemas() -> 
             assert rf in rc_data, f"Host {host} runtime_conventions missing {rf}"
         for k in rc_data:
             assert k in rc_allowed, f"Host {host} runtime_conventions has unknown key {k}"
+
+
+def _source_parity_rows(doc: str) -> Dict[str, list]:
+    """Rows of the #289 matrix: capability -> [implementation, enforcement, verification]."""
+    rows: Dict[str, list] = {}
+    for line in doc.splitlines():
+        if not line.startswith("|"):
+            continue
+        cells = [cell.strip().strip("`").strip() for cell in line.split("|")[1:-1]]
+        if len(cells) == 6 and cells[0] in PORTABLE_CAPABILITY_UNIVERSE:
+            rows[cells[0]] = cells[2:5]
+    return rows
+
+
+def test_omp_source_parity_matrix_mirrors_profile_and_receipt() -> None:
+    """#289: docs/omp-source-parity.md is the source-anchored matrix for profiles/omp.json.
+
+    It must carry one row per profile capability with the profile's own statuses, and
+    every `verified` binding must cite a scenario the OMP receipt actually records.
+    """
+    profile = json.loads((ROOT / "profiles" / "omp.json").read_text(encoding="utf-8"))
+    receipt = json.loads((ROOT / ".audit" / "evidence" / "omp-receipt.json").read_text(encoding="utf-8"))
+    scenario_ids = {scenario["id"] for scenario in receipt["scenarios"]}
+    assert receipt["host"] == "omp" and receipt["scenarios"]
+
+    doc_path = ROOT / "docs" / "omp-source-parity.md"
+    assert doc_path.is_file(), "docs/omp-source-parity.md is missing"
+    rows = _source_parity_rows(doc_path.read_text(encoding="utf-8"))
+
+    expected = {
+        b["capability"]: [b["implementation_status"], b["enforcement"], b["verification_status"]]
+        for b in profile["bindings"]
+    }
+    assert rows == expected, "matrix rows must mirror profiles/omp.json capability set and statuses"
+
+    verified = [b for b in profile["bindings"] if b["verification_status"] == "verified"]
+    assert verified, "the OMP profile must carry at least one verified binding"
+    for binding in verified:
+        ref = binding.get("evidence_ref")
+        assert isinstance(ref, dict), f"verified binding {binding['capability']} needs a receipt+scenario pin"
+        assert ref["receipt"] == ".audit/evidence/omp-receipt.json"
+        assert ref["scenario"] in scenario_ids, (
+            f"verified binding {binding['capability']} cites scenario {ref['scenario']!r}, "
+            "which the OMP receipt does not record"
+        )
 
 
 
