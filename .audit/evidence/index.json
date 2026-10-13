@@ -3,8 +3,8 @@
   "hosts": {
     "grok": {
       "receipt": ".audit/evidence/grok-receipt.json",
-      "run_id": "grok-1791917080-5369155d",
-      "timestamp": "2026-10-13T18:45:05Z",
+      "run_id": "grok-1791922508-365ece88",
+      "timestamp": "2026-10-13T20:15:23Z",
       "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
@@ -15,7 +15,7 @@
       "surface_revisions": {
         "canonical_pin": "1dcc2bacde73ddd284803b7af28164d0436198fc",
         "upstream_head": "1dcc2bacde73ddd284803b7af28164d0436198fc",
-        "spec_hash": "671f5d465db673df40350dab39fcf45ac14c7f0d178bace536a6dadf8c97e4d8",
+        "spec_hash": "f403a35e9ce91413047544cd3cbfc1bba3baf9d56bd90a2e3863432d3fc5bf63",
         "skills_tree_hash": "22f75afe094a8ee2de16c9a0fc2596855fb2afbca1ebad42ec4f90498738b74b",
         "profile_hash": "5ffcca460007dae14a130ef032f5827552186fef54024b13451ac19f2661aed5",
         "package_descriptor_hash": "52cc6b3ce9b87a80f783362b109cb7b5a6190e7f26d25687b6b2a16f3651a647",
@@ -27,8 +27,8 @@
     },
     "codex": {
       "receipt": ".audit/evidence/codex-receipt.json",
-      "run_id": "codex-1791917105-8718a3c7",
-      "timestamp": "2026-10-13T18:45:26Z",
+      "run_id": "codex-1791922523-a39bdc7a",
+      "timestamp": "2026-10-13T20:15:46Z",
       "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
@@ -39,7 +39,7 @@
       "surface_revisions": {
         "canonical_pin": "1dcc2bacde73ddd284803b7af28164d0436198fc",
         "upstream_head": "1dcc2bacde73ddd284803b7af28164d0436198fc",
-        "spec_hash": "671f5d465db673df40350dab39fcf45ac14c7f0d178bace536a6dadf8c97e4d8",
+        "spec_hash": "f403a35e9ce91413047544cd3cbfc1bba3baf9d56bd90a2e3863432d3fc5bf63",
         "skills_tree_hash": "22f75afe094a8ee2de16c9a0fc2596855fb2afbca1ebad42ec4f90498738b74b",
         "profile_hash": "3c7572b5cebaf8dd6c62b7465a88e15a2694291be8fd0c143f5d2ef96a9394af",
         "package_descriptor_hash": "52cc6b3ce9b87a80f783362b109cb7b5a6190e7f26d25687b6b2a16f3651a647",
@@ -51,8 +51,8 @@
     },
     "omp": {
       "receipt": ".audit/evidence/omp-receipt.json",
-      "run_id": "omp-1791917126-e3897f5a",
-      "timestamp": "2026-10-13T18:46:51Z",
+      "run_id": "omp-1791922546-d6a5fe54",
+      "timestamp": "2026-10-13T20:16:00Z",
       "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
@@ -63,7 +63,7 @@
       "surface_revisions": {
         "canonical_pin": "1dcc2bacde73ddd284803b7af28164d0436198fc",
         "upstream_head": "1dcc2bacde73ddd284803b7af28164d0436198fc",
-        "spec_hash": "671f5d465db673df40350dab39fcf45ac14c7f0d178bace536a6dadf8c97e4d8",
+        "spec_hash": "f403a35e9ce91413047544cd3cbfc1bba3baf9d56bd90a2e3863432d3fc5bf63",
         "skills_tree_hash": "22f75afe094a8ee2de16c9a0fc2596855fb2afbca1ebad42ec4f90498738b74b",
         "profile_hash": "458f825dc6dfd381d5388f7812e0e49a6d543d99610f6b4413ebdf692cf32cc5",
         "package_descriptor_hash": "52cc6b3ce9b87a80f783362b109cb7b5a6190e7f26d25687b6b2a16f3651a647",
@@ -75,8 +75,8 @@
     },
     "opencode": {
       "receipt": ".audit/evidence/opencode-receipt.json",
-      "run_id": "opencode-1791917211-4cd8c1e4",
-      "timestamp": "2026-10-13T18:47:08Z",
+      "run_id": "opencode-1791922560-d7f1fa3b",
+      "timestamp": "2026-10-13T20:16:14Z",
       "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
@@ -87,7 +87,7 @@
       "surface_revisions": {
         "canonical_pin": "1dcc2bacde73ddd284803b7af28164d0436198fc",
         "upstream_head": "1dcc2bacde73ddd284803b7af28164d0436198fc",
-        "spec_hash": "671f5d465db673df40350dab39fcf45ac14c7f0d178bace536a6dadf8c97e4d8",
+        "spec_hash": "f403a35e9ce91413047544cd3cbfc1bba3baf9d56bd90a2e3863432d3fc5bf63",
         "skills_tree_hash": "22f75afe094a8ee2de16c9a0fc2596855fb2afbca1ebad42ec4f90498738b74b",
         "profile_hash": "4074fefdbad85a428a20ddf7e6b5ba0727409885cc0f7d9edfd7cf8686fb87fb",
         "package_descriptor_hash": "52cc6b3ce9b87a80f783362b109cb7b5a6190e7f26d25687b6b2a16f3651a647",
@@ -99,8 +99,8 @@
     },
     "antigravity": {
       "receipt": ".audit/evidence/antigravity-receipt.json",
-      "run_id": "antigravity-1791917228-f37f58cb",
-      "timestamp": "2026-10-13T18:47:25Z",
+      "run_id": "antigravity-1791922574-e49e5809",
+      "timestamp": "2026-10-13T20:16:28Z",
       "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
@@ -111,7 +111,7 @@
       "surface_revisions": {
         "canonical_pin": "1dcc2bacde73ddd284803b7af28164d0436198fc",
         "upstream_head": "1dcc2bacde73ddd284803b7af28164d0436198fc",
-        "spec_hash": "671f5d465db673df40350dab39fcf45ac14c7f0d178bace536a6dadf8c97e4d8",
+        "spec_hash": "f403a35e9ce91413047544cd3cbfc1bba3baf9d56bd90a2e3863432d3fc5bf63",
         "skills_tree_hash": "22f75afe094a8ee2de16c9a0fc2596855fb2afbca1ebad42ec4f90498738b74b",
         "profile_hash": "cd2e002f36dd9a08d8efbc284b15c537282445e97f64551b74c584697c04f931",
         "package_descriptor_hash": "52cc6b3ce9b87a80f783362b109cb7b5a6190e7f26d25687b6b2a16f3651a647",
