@@ -24,7 +24,7 @@ Preconditions:
 - `python3` is on `PATH`.
 - Doctor for this run has not yet been skipped.
 
-- **Required doctor.** Run leftover scanner before any other feature. Run `python3 .grok/skills/verify-pstack/scripts/verify.py doctor --root .`. Exit code `0`. Evidence `doctor/leftover-scanner/stdout.txt` contains a line `PASS`, `playbooks: 22 named + opening-a-pr`, `principles: 23`, and `plugin.json name: pstack`. Evidence `doctor/plugin-validate/stdout.txt` contains `Plugin manifest is valid.`
+- **Required doctor.** Run leftover scanner before any other feature. Run `python3 .grok/skills/verify-pstack/scripts/verify.py doctor --root .`. Exit code `0`. Evidence `doctor/leftover-scanner/stdout.txt` contains a line `PASS`, `playbooks: 22 named + opening-a-pr`, `principles: 24`, and `plugin.json name: pstack`. Evidence `doctor/plugin-validate/stdout.txt` contains `Plugin manifest is valid.`
 - **Operator entry.** Drive the same scanner as a mapped feature. Run `python3 .grok/skills/verify-pstack/scripts/verify.py drive --root . --feature leftover-scanner`. Exit code `0`. Feature evidence repeats leftover `PASS`.
 - **Direct CLI.** Run the operator command itself. Run `python3 scripts/verify-harness.py`. Exit code `0`. First stdout line is `PASS`.
 - **Proof.** Read `doctor/leftover-scanner/stdout.txt` and `doctor/leftover-scanner/exit.txt`. The exit file is `0`. The stdout file is not pytest `-q` output and is not `grok inspect` JSON.

@@ -30,7 +30,7 @@ Leftover scanner is required doctor. Run it. No substitutes. leftover-scanner is
 python3 .grok/skills/verify-pstack/scripts/verify.py doctor --root .
 ```
 
-That runs `python3 scripts/verify-harness.py`, then `grok plugin validate .`. Leftover stdout must start with `PASS` and include `playbooks: 22 named + opening-a-pr`, `principles: 23`, and `plugin.json name: pstack`. Leftover exit 0. Validate stdout contains `Plugin manifest is valid.` Exit 0.
+That runs `python3 scripts/verify-harness.py`, then `grok plugin validate .`. Leftover stdout must start with `PASS` and include `playbooks: 22 named + opening-a-pr`, `principles: 24`, and `plugin.json name: pstack`. Leftover exit 0. Validate stdout contains `Plugin manifest is valid.` Exit 0.
 
 `python3 scripts/check-plugin-agents.py` is not leftover scanner. It is the enable check for workflow `agent_type` `pstack:swarm-workers`. It reads inspect `plugins[].path` and `skills[]` `collidesWith`. `[compat.claude] skills=false` does not hide `~/.grok/skills`. If inspect lacks `pstack:swarm-workers`, Grok is not loading https://github.com/tommy-ca/pstack. `grok plugin marketplace add` is catalog-only. Do not treat it as plugin install.
 
