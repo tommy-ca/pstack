@@ -17,7 +17,6 @@ In-force ADRs: 0005, 0007, 0008. PR 12 already ships `refresh-hygiene.py`. Inter
 - Do not `git worktree remove`.
 - Do not leftover-scanner phrase work.
 - Do not add `mise.toml`.
-- Do not archive `pstack-upstream-executable-surfaces`.
 
 ## Decisions
 
