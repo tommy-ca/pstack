@@ -1,7 +1,7 @@
 {
   "corpus_version": "1.0.0-dsh-baseline",
   "phase": "baseline",
-  "source": "openspec/changes/2026-10-11-deepseek-skill-portability/qualification-and-eval.md#corpus-positive-and-negative-examples",
+  "source": "openspec/changes/archive/2026-10-11-deepseek-skill-portability/qualification-and-eval.md#corpus-positive-and-negative-examples",
   "notes": "Frozen on current pstack BEFORE the P12-P14 candidate changes. Every probe is deterministic and offline: it reads pstack artifacts, runs the canonical route resolver, or reuses the shipped status reducer. No model route is invoked, no corpus text is executed and nothing is written, so this record carries no live/native claim. Each probe carries an injected sensitivity control that must separate from the real input, which is how a 'no forbidden activation' result is shown to be non-vacuous.",
   "budgets": {
     "max_probes_per_case": 4,

@@ -1,7 +1,7 @@
 {
   "corpus_version": "1.0.0-dsh-candidate",
   "phase": "candidate",
-  "source": "openspec/changes/2026-10-11-deepseek-skill-portability/qualification-and-eval.md#corpus-positive-and-negative-examples",
+  "source": "openspec/changes/archive/2026-10-11-deepseek-skill-portability/qualification-and-eval.md#corpus-positive-and-negative-examples",
   "pstack_revision": "4c230f7a96ee10739592833426f9bd8d7b39ab6e",
   "model_route": null,
   "provider": "deterministic-offline",
@@ -10,15 +10,15 @@
     "baseline_corpus": {
       "file": "cases.json",
       "phase": "baseline",
-      "sha256": "90285f0f28e9337c56380fbe932a2fa1796b212d9c43f5397ad0ce273a38ed45"
+      "sha256": "8040f91550a00c50cd4788c9719023d116c53c9eb44249e3ce98b15a8355d47a"
     },
     "baseline_table": {
       "file": "scoring_table.json",
-      "sha256": "fd1045308f66e8e25748f0b541b8e132ff756ccfbe7cf87504fefaf49d954b94"
+      "sha256": "b78427c182674a85b9dcd7b33d25480c0c22746628424eb852a415f003f93d71"
     },
     "controls_overlay": {
       "file": "candidate_phase.json",
-      "sha256": "ff33eb1f6157ef4ad37f54d818c4cb91668fe8330cb237b0bdd0de475c2f15a5",
+      "sha256": "6544c0c13d2964733e31d3eaea872998724b64ef0d122aa6ae9129753431800b",
       "applied": [
         "E05#1",
         "E04#1"

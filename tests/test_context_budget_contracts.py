@@ -34,7 +34,7 @@ FIXTURES = Path(__file__).resolve().parent / "fixtures" / "context-overlays"
 REGISTRY_PATH = FIXTURES / "domain-overlays.json"
 CASES_PATH = FIXTURES / "cases.json"
 TRACES_PATH = FIXTURES / "task-work-traces.json"
-CHANGE = ROOT / "openspec" / "changes" / "2026-10-11-deepseek-skill-portability"
+CHANGE = ROOT / "openspec" / "changes" / "archive" / "2026-10-11-deepseek-skill-portability"
 ATOM_TABLE = CHANGE / "atomic-patterns.md"
 
 GUARD = ROOT / "skills" / "principle-guard-the-context-window" / "SKILL.md"

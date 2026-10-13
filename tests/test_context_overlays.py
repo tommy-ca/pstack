@@ -2,7 +2,7 @@
 """Offline gating harness for agent-facing domain overlays (#314, B03/B04/B20).
 
 Enforces the committed contract from
-``openspec/changes/2026-10-11-deepseek-skill-portability/spec.md``:
+``openspec/changes/archive/2026-10-11-deepseek-skill-portability/specs/pstack-reusable-skill-patterns/spec.md``:
 
 - every conditional domain overlay declares a positive applicability predicate,
   prohibited contexts and a typed unsupported-capability response;
@@ -38,7 +38,7 @@ CASES_PATH = FIXTURES / "cases.json"
 TRACE_PATH = FIXTURES / "context-work-trace.json"
 QUALIFICATION_DOC = (
     ROOT
-    / "openspec/changes/2026-10-11-deepseek-skill-portability/qualification-and-eval.md"
+    / "openspec/changes/archive/2026-10-11-deepseek-skill-portability/qualification-and-eval.md"
 )
 
 # Typed responses allowed for an overlay whose capability is absent.

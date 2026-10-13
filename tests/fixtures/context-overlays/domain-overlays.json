@@ -1,5 +1,5 @@
 {
-  "source": "openspec/changes/2026-10-11-deepseek-skill-portability/atomic-patterns.md#B20",
+  "source": "openspec/changes/archive/2026-10-11-deepseek-skill-portability/atomic-patterns.md#B20",
   "note": "Candidate agent-facing domain overlay packs (B20 DomainOverlay / B03 SkillEligibility). Each pack declares a positive applicability predicate, prohibited contexts and a typed unsupported-capability response. Prose is the agent-facing text an in-project pack would load; it is measured, not executed.",
   "overlays": [
     {

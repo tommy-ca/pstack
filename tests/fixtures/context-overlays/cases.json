@@ -1,5 +1,5 @@
 {
-  "source": "openspec/changes/2026-10-11-deepseek-skill-portability/qualification-and-eval.md",
+  "source": "openspec/changes/archive/2026-10-11-deepseek-skill-portability/qualification-and-eval.md",
   "baseline_definition": "ungated_bytes sums every registered overlay pack, i.e. the naive no-gating behavior where all agent-facing overlay prose loads for every task.",
   "cases": [
     {
