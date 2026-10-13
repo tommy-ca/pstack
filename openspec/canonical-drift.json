@@ -1,4 +1,5 @@
 {
+  "scope": "upstream-pin-to-upstream-HEAD (not local-checkout-vs-upstream)",
   "pin": "1dcc2bacde73ddd284803b7af28164d0436198fc",
   "upstream_head": "1dcc2bacde73ddd284803b7af28164d0436198fc",
   "total_changed_files": 0,

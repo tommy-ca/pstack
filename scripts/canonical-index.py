@@ -308,6 +308,7 @@ def classify_drift_report(cache: Path, pin_sha: str, upstream_head: str) -> Dict
         buckets.setdefault(item["bucket"], []).append(item)
 
     return {
+        "scope": "upstream-pin-to-upstream-HEAD (not local-checkout-vs-upstream)",
         "pin": pin_sha,
         "upstream_head": upstream_head,
         "total_changed_files": len(items),
@@ -397,7 +398,7 @@ def main() -> None:
     parser.add_argument("--generate", action="store_true", help="Generate canonical-inventory.json")
     parser.add_argument("--check", action="store_true", help="Check canonical conformance and inventory")
     parser.add_argument("--drift", action="store_true", help="Report upstream drift status")
-    parser.add_argument("--classify-drift", action="store_true", help="Generate canonical-drift.json partition classification")
+    parser.add_argument("--classify-drift", action="store_true", help="Generate canonical-drift.json partition classification (scope: upstream-pin-to-upstream-HEAD movement only, not local-checkout-vs-upstream drift)")
     parser.add_argument("--out", type=Path, help="Write the drift report here instead of openspec/canonical-drift.json")
     parser.add_argument("--json", action="store_true", help="Output raw JSON")
     args = parser.parse_args()
