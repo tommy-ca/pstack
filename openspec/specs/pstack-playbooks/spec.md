@@ -25,6 +25,21 @@ Playbooks remain Markdown workflow intent. They MUST NOT be reimplemented as a p
 
 The `swarm`, `arena`, and `interrogate` skills remain compositions over playbook/agent capabilities rather than new harness primitives. Their independence, evidence, aggregation, synthesis, and verification rules MUST be preserved according to `pstack-portability`.
 
+#### Scenario: composed skills remain compositions over playbooks
+
+- **GIVEN** the `swarm`, `arena`, and `interrogate` skills in a host port
+- **WHEN** each skill is inspected for how it is built
+- **THEN** each is a composition over playbook and agent capabilities
+- **AND** independence, evidence, aggregation, synthesis, and verification rules hold per `pstack-portability`
+- **AND** no new harness primitive replaces the composition
+
 ### Requirement: Domain skills are explicit scope decisions
 
 A canonical skill that is intentionally not shipped by a host port, such as a host- or domain-specific skill, MUST be represented as an explicit exclusion with a reason. Omission alone is not coverage.
+
+#### Scenario: excluded canonical skills carry a reason
+
+- **GIVEN** a canonical skill a host port intentionally does not ship
+- **WHEN** the port's coverage is recorded
+- **THEN** the skill appears as an explicit exclusion with a reason
+- **AND** silent omission of the skill does not count as coverage
