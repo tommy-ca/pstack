@@ -27,13 +27,25 @@ This document maps portable pstack capabilities (defined in [`pstack-portability
 Two native dispatch routes satisfy `agent.spawn` / `agent.join`. They are separate
 host paths, not interchangeable, so a run records which route it used.
 
-| Step | `task` route | eval `agent()` route |
+Only the `task` route is **driven**, and only for the single-child lane: the driver
+starts one RPC session, prompts a single `task` child, reduces that child's
+settlement and cancels it through the RPC `cancel_subagent` call
+(`scripts/drivers/omp.py:323` spawn/settlement, `scripts/drivers/omp.py:503`
+cancel, `scripts/drivers/omp_rpc.py:348`). The eval `agent()` route is
+**undriven** — no `agent()`, `handle.cancel()` or handle-join path exists in the
+driver — so it is recorded here as documented aspiration, not as behavior a run
+can observe. Within the `task` column, cells and fragments marked **undriven**
+name a mechanism outside that lane, which no driver path exercises: the lane the
+driver does exercise is the spawn, isolation, settlement and RPC cancel of one
+child.
+
+| Step | `task` route | eval `agent()` route (undriven) |
 | --- | --- | --- |
-| Fan-out | one call with a `tasks[]` batch (`task.batch`, default on); `context` carries the shared brief | one `agent(prompt, {...})` per lane, handles collected in one cell |
+| Fan-out | one call with a `tasks[]` batch (`task.batch`, default on) — **undriven**: the driver prompts a single child, there is no batch path; `context` carries the shared brief — **undriven**: the driver passes no shared context | one `agent(prompt, {...})` per lane, handles collected in one cell |
 | Isolation | `isolated: true` per item (`task.isolation.enabled`); plan mode off | `isolated: true` per call; plan mode off |
-| Join | background-job completion, or the `wait` tool | `wait(handles, timeout)`; `raise_errors=False` returns a failed or cancelled handle in its slot |
-| Cancel | `write proc://<id>/kill` (job id or agent id) | `handle.cancel()` |
-| Inspect | `agent://<id>` / `history://<id>` | `handle.output()` / `history://<id>` |
+| Join | background-job completion, or the `wait` tool — **undriven**: the driver reduces the prompt settlement (`wait_settled`), it never waits on a background job or a handle | `wait(handles, timeout)`; `raise_errors=False` returns a failed or cancelled handle in its slot |
+| Cancel | `write proc://<id>/kill` (job id or agent id) — **undriven**: the driver cancels via RPC `cancel_subagent` | `handle.cancel()` |
+| Inspect | `agent://<id>` / `history://<id>` — **undriven**: the driver reduces the session frame log, it never reads an agent or history URL | `handle.output()` / `history://<id>` |
 
 Rules both routes share:
 
