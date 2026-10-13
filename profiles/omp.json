@@ -34,11 +34,11 @@
     {
       "host": "omp",
       "capability": "agent.message",
-      "implementation_status": "native",
-      "primitive": "task (session continuation) / agent:// peer write",
-      "enforcement": "hard",
+      "implementation_status": "gap",
+      "primitive": null,
+      "enforcement": "soft",
       "verification_status": "static-only",
-      "notes": "GAP: no receipt scenario settles messaging, and no scenario can steer a child: the bounded session exposes no steer_subagent method, so steering is unsupported by the runner as shipped even though upstream documents `steer_subagent` for a running subagent (mid-turn steering at its next step boundary, can1357/oh-my-pi@0affc77 docs/rpc.md). Statically mapped from docs/tools/task.md (`write agent://<id>` peer messaging). Recorded as a gap, never as a claim."
+      "notes": "GAP (downgraded from native/hard by #389): steering a running child is unsupported as shipped. The runner's bounded RPC v2 surface (scripts/drivers/omp_rpc.py:306-352: subscribe_subagents, prompt, wait_settled, subagents, cancel_subagent) exposes no steer_subagent method and no peer-write API, and `grep -rn steer scripts/` returns nothing, even though upstream documents `steer_subagent` for a running subagent (mid-turn steering at its next step boundary, can1357/oh-my-pi@0affc77 docs/rpc.md). The sibling-host channel `write agent://<id>` (docs/tools/task.md peer messaging) moves messages between registered agents; it is not a steering primitive on a child handle and no receipt scenario settles messaging, so the row carries no evidence_ref and claims no primitive. Recorded as a gap, never as a claim."
     },
     {
       "host": "omp",
