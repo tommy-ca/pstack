@@ -253,7 +253,7 @@ Stop rules, unchanged from both programs and enforced by this plan:
 ## 11. P10 — DSH carrier: merge #317
 
 - **Files** (all on branch `spec/deepseek-portable-skill-patterns-20261011`):
-  `openspec/changes/2026-10-11-deepseek-skill-portability/{proposal.md,design.md,tasks.md,evidence-matrix.md,atomic-patterns.md,qualification-and-eval.md,.openspec.yaml,specs/pstack-reusable-skill-patterns/spec.md,schemas/skill-pattern-qualification.schema.json}`.
+  `openspec/changes/archive/2026-10-11-deepseek-skill-portability/{proposal.md,design.md,tasks.md,evidence-matrix.md,atomic-patterns.md,qualification-and-eval.md,.openspec.yaml,specs/pstack-reusable-skill-patterns/spec.md,schemas/skill-pattern-qualification.schema.json}`.
 - **Build step**: rebase the carrier on `main`, run
   `openspec validate 2026-10-11-deepseek-skill-portability --type change --strict`, mark the
   draft ready and merge. The PR review is the #308/#309 gate: close them on the review
@@ -269,7 +269,7 @@ Stop rules, unchanged from both programs and enforced by this plan:
 ## 12. P11 — #310 baseline and candidate eval corpus
 
 - **Files**: eval corpus fixtures (new), `scripts/eval_blinded_pstack.py`,
-  `openspec/changes/2026-10-11-deepseek-skill-portability/qualification-and-eval.md`
+  `openspec/changes/archive/2026-10-11-deepseek-skill-portability/qualification-and-eval.md`
   (corpus E01–E07, N01–N07).
 - **Build step**: the issue has two non-circular phases — freeze the baseline and negative
   cases on current pstack **before** implementation, then run the candidate after P12–P14.
@@ -369,7 +369,7 @@ re-derive the verdict rather than trust it.
 | #296 | NEEDS-WORK (reopened 2026-10-12) | closed enum in `schemas/portability/receipt.schema.json`; premature closure reversed by reopen 2026-10-12; package-precedence regression unowned until P8 | Two fixtures owed: the `live`/`documented` rejection (P2) plus the adapter-PASS-plus-package-FAIL rejection (P8); close only when both land |
 | #297 | OPEN-correct | `runtime-child-spawn-omp` `observed_live` (PR #319/#323); `scripts/drivers/omp_rpc.py` exposes no `steer_subagent` session method | P3 (`todo.md` Unit 10) |
 | #298 | NEEDS-WORK | `scripts/prove-omp-native-package.py` + `tests/test_omp_native_package.py` cover enrollment, sentinel skill load, namespaced collision, live agent resolution, root-`plugin.json` negative | Disabled plugin, deeply nested skill, missing/invalid `omp` key, precedence → P4 (kept open) |
-| #305 epic | OPEN-correct | PR #317 draft carrier; `openspec/changes/2026-10-11-deepseek-skill-portability/` | P10–P15 |
+| #305 epic | OPEN-correct | PR #317 draft carrier; `openspec/changes/archive/2026-10-11-deepseek-skill-portability/` | P10–P15 |
 | #306 sub-epic | OPEN-correct | #308/#309/#310 leaves; carrier carries their artifacts | P10, P11 |
 | #307 sub-epic | OPEN-correct | #311/#312 merged in part (#331, #321/#332); #313–#315 open | P12–P15 |
 | #308 | OPEN-correct | `evidence-matrix.md` (16 pinned links) on the carrier branch | Review gate runs in P10 |
