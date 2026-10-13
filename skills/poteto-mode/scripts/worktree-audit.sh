@@ -4,18 +4,28 @@
 # operated in it. Emits a table sorted by size with a suggested bucket. Never
 # deletes anything; deletion stays a human-gated step in the playbook.
 #
-# Usage: worktree-audit.sh [--fetch] [repo-path]   (defaults to the current repo)
+# Usage: worktree-audit.sh [-b|--base <ref>] [--fetch] [repo-path]
+#   repo-path defaults to the current repo.
+#   -b sets the ref the MERGED column checks against (e.g. origin/integration).
+#   Without it the base is origin/HEAD, then origin/main, then origin/master.
+#   origin/HEAD is the remote's default branch, not necessarily the branch PRs
+#   merge into; pass -b when they differ.
+#   --fetch refreshes the base first (opt-in, best-effort).
 set -u
 
 here=$(cd "$(dirname "$0")" && pwd)
 # shellcheck source=leftover-clone.sh
 . "$here/leftover-clone.sh"
 
+base=""
 do_fetch=0
 repo=""
 while [ $# -gt 0 ]; do
 	case "$1" in
+		-b|--base) [ $# -ge 2 ] || { echo "error: $1 needs a ref" >&2; exit 2; }; base="$2"; shift 2 ;;
 		--fetch) do_fetch=1; shift ;;
+		-h|--help) sed -n '2,/^set -u/p' "$0" | sed '$d; s/^# \{0,1\}//'; exit 0 ;;
+		-*) echo "error: unknown option: $1" >&2; exit 2 ;;
 		*) repo="$1"; shift ;;
 	esac
 done
@@ -24,21 +34,38 @@ done
 [ -z "$repo" ] && { echo "not in a git repo; pass a repo path" >&2; exit 1; }
 cd "$repo" || exit 1
 repo=$(pwd -P)
+git rev-parse --git-dir >/dev/null 2>&1 || { echo "error: not a git repo: $repo" >&2; exit 1; }
 
 # Main worktree is the first entry; everything else is a candidate.
 main_wt=$(git worktree list --porcelain | sed -n 's/^worktree //p' | sed -n '1p')
 [ -n "$main_wt" ] || { echo "no git worktree found" >&2; exit 1; }
 
-# origin/main drives the merge check. Best-effort; unavailable means unknown.
-if [ "$do_fetch" -eq 1 ]; then
-	git fetch origin main --quiet 2>/dev/null || echo "warn: could not fetch origin/main; merged column may be stale" >&2
+# The base drives the merge check. Without -b, try the remote default branch
+# then main then master. No base is not a negative merge result: the column
+# stays unknown and the rest of the audit runs.
+if [ -z "$base" ]; then
+	for cand in "$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null)" origin/main origin/master; do
+		[ -n "$cand" ] && git rev-parse --verify --quiet "$cand^{commit}" >/dev/null && { base="$cand"; break; }
+	done
+	[ -n "$base" ] && echo "warn: no -b given; MERGED checks against $base" >&2
 fi
-base_ref=""
-if git rev-parse --verify --quiet refs/remotes/origin/main >/dev/null 2>&1; then
-	base_ref=origin/main
+
+if [ -n "$base" ]; then
+	# Opt-in, best-effort, and before the existence check: -b may name a branch
+	# not fetched yet. The explicit refspec creates it even in a single-branch
+	# clone, which a plain `git fetch origin <b>` does not.
+	if [ "$do_fetch" -eq 1 ]; then
+		case "$base" in
+			origin/*) git fetch origin "+refs/heads/${base#origin/}:refs/remotes/$base" --quiet 2>/dev/null \
+				|| echo "warn: could not fetch $base; merged column may be stale" >&2 ;;
+		esac
+	fi
+	git rev-parse --verify --quiet "$base^{commit}" >/dev/null 2>&1 \
+		|| { echo "warn: base ref not found: $base; merged column is unknown" >&2; base=""; }
 else
-	echo "warn: origin/main is unavailable; merged column is unknown" >&2
+	echo "warn: no base ref (origin/HEAD, origin/main, origin/master all missing); merged column is unknown" >&2
 fi
+base_ref="$base"
 
 # PR state by branch, fetched once. Empty if gh is unavailable.
 prs=$(mktemp)
@@ -86,7 +113,7 @@ emit_row() {
 	head_ts=$(git -C "$wt" log -1 --format='%ct' HEAD 2>/dev/null || echo 0)
 	age=$([ "$head_ts" -gt 0 ] 2>/dev/null && echo "$(( (now - head_ts) / 86400 ))d" || echo "?")
 
-	# Squash-merged branches are not ancestors of main, so PR state is the
+	# Squash-merged branches are not ancestors of the base, so PR state is the
 	# real signal; merge-base only catches fast-forward/rebase merges.
 	if [ -n "$base_ref" ]; then
 		git merge-base --is-ancestor "$head" "$base_ref" 2>/dev/null && merged=YES || merged=no
@@ -167,6 +194,7 @@ emit_row() {
 		"$size" "$age" "$merged" "$dirty" "$remote" "$pr" "$last" "$bucket" "$wt"
 }
 
+echo "# base: ${base_ref:-unknown}"
 printf "SIZE\tAGE\tMERGED\tDIRTY\tREMOTE\tPR\tLAST_CHAT\tBUCKET\tWORKTREE\n"
 
 {
