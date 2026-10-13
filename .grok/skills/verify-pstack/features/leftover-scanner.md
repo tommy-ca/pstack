@@ -1,6 +1,6 @@
 # Leftover Cursor harness scan
 
-Leftover scan walks this plugin tree for live Cursor harness call sites and checks that the grok port still has 22 named playbooks, `opening-a-pr`, 23 principle skills, and a kebab `plugin.json` name.
+Leftover scan walks this plugin tree for live Cursor harness call sites and checks that the grok port still has 22 named playbooks, `opening-a-pr`, 24 principle skills, and a kebab `plugin.json` name.
 
 ## Sub-features
 
