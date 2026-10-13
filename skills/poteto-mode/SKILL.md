@@ -26,6 +26,7 @@ Remaining triggers:
 - Contested design → the **interrogate** skill (multi-model adversarial) before shipping.
 - Nontrivial multi-step → write the throughput checkpoint (Feature step 3).
 - Any prose surface → the **unslop** skill. Your reply is a prose surface; write it per **Writing the reply**. Agent-facing prose also follows Grok Build's `/create-skill` for authoring SKILL.md files.
+- Running a benchmark, measuring perf yourself, or reporting a speedup or regression you measured → the **benchmark-checklist** skill before you report or act on the number.
 - Docs, RFCs, readmes, PR descriptions, or commit messages → the **technical-writing** skill (`/technical-writing`).
 - Before commit → `/unslop` on prose and `/no-comments` on the diff. There is no `cursor-team-kit` here. There is no `/deslop` here.
 - Before review → the **no-comments** skill (`/no-comments`).
