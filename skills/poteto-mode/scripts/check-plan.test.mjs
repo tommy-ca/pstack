@@ -220,3 +220,73 @@ describe("recursive dependency graph", () => {
   });
 
 });
+
+describe("fenced code blocks", () => {
+  const withExample = (example) => plan([section("Root (root)", "None.")]) + example;
+
+  it("accepts ordinary, indented, and longer closing fences", async () => {
+    for (const indent of ["", " ", "  ", "   "]) {
+      const result = await runChecker(
+        withExample(`${indent}\`\`\`markdown\n## Example only\n${indent}\`\`\`\n`)
+      );
+      expect(result.code).toBe(0);
+    }
+    const longer = await runChecker(
+      withExample("```markdown\n## Example only\n````\n")
+    );
+    expect(longer.code).toBe(0);
+  });
+
+  it("accepts nested backticks and tilde info strings", async () => {
+    const nested = await runChecker(
+      withExample("````markdown\n```markdown\n## Example only\n```\n````\n")
+    );
+    expect(nested.code).toBe(0);
+
+    const tilde = await runChecker(
+      withExample("~~~markdown `info`\n## Example only\n ~~~\n")
+    );
+    expect(tilde.code).toBe(0);
+  });
+
+  it("keeps mismatched, shorter, and suffixed closers inside the fence", async () => {
+    for (const example of [
+      "````markdown\n~~~\n## Example only\n````\n",
+      "````markdown\n```\n## Example only\n````\n",
+      "````markdown\n``` info\n## Example only\n````\n",
+    ]) {
+      const result = await runChecker(withExample(example));
+      expect(result.code).toBe(0);
+    }
+  });
+
+  it("rejects headings and prose outside a proper close", async () => {
+    for (const suffix of ["  ", "\t"]) {
+      const heading = await runChecker(
+        withExample(`\`\`\`markdown\n## Example only\n\`\`\`${suffix}\n## Example only\n`)
+      );
+      expect(heading.code).toBe(1);
+      expect(heading.stderr).toContain(
+        '"## Example only" after Close the program is not an appendix'
+      );
+    }
+
+    const prose = await runChecker(
+      withExample(
+        "```markdown\nThis prose has a mid-sentence colon: inside code\n```\nThis prose has a mid-sentence colon: bad.\n"
+      )
+    );
+    expect(prose.code).toBe(1);
+    expect(prose.stderr).toContain("mid-sentence colon");
+  });
+
+  it("rejects backtick info strings containing a backtick", async () => {
+    const result = await runChecker(
+      withExample("```markdown `invalid`\n## Example only\n```\n")
+    );
+    expect(result.code).toBe(1);
+    expect(result.stderr).toContain(
+      '"## Example only" after Close the program is not an appendix'
+    );
+  });
+});
