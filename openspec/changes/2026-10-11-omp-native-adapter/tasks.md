@@ -61,8 +61,8 @@ graph TD
 - [x] Deep source/doc review and duplicate-issue audit; existing historical work preserved.
 - [x] Formal change created as draft PR #295, with OpenSpec proposal, Gherkin scenarios, design, ADR manifest and this graph.
 - [x] GitHub epic and nine issue nodes updated with dependency/acceptance requirements.
-- [ ] Native model-backed OMP worker executed — **not performed by this spec-only audit**.
-- [ ] Native independent multi-model Swarm/Arena/Interrogate — **not performed by this spec-only audit**.
+- [x] Native model-backed OMP worker executed — performed after the spec-only audit: `.audit/evidence/omp-receipt.json` run `omp-1791892165` carries `runtime-child-spawn-omp`, `runtime-child-cancel-omp`, `runtime-isolation-omp` at `observed_live` PASS against pin `1dcc2ba`.
+- [x] Native independent multi-model Swarm/Arena/Interrogate — recomposed over native dispatch with live runs on both routes (closed via #339 plus #346); adversarial gate via #344 plus #347 with live two-model review at the E04 head.
 
 ## Implementation status (2026-10-12 stack)
 
