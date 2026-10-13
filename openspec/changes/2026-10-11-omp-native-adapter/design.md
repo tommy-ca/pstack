@@ -43,6 +43,18 @@ OMP defaults described in reference docs (e.g. `task.maxRecursionDepth=2`, `task
 ### Depth and Orchestrate parity exception
 Upstream Cursor pstack `skills/poteto-mode/playbooks/orchestrate.md` (observed at its 2026-10-11 revision) allows coordinator → sub-coordinator → worker nesting (depth 3). The existing portable port's `orchestrate.md` instead deliberately uses one coordinator and flat workers, and `profiles/omp.json` advertises depth 1. These are **not equivalent behavioral contracts**. Preserve the portable flat coordinator as the default (one writer, no nested state manager) while explicitly classifying canonical nested-coordinator parity as **adapted / not-proven**; do not advertise full upstream Orchestrate depth parity. If the user requests nested tracks, the adapter MUST either demonstrate native task/eval depth, ownership, and safe join with live evidence or explicitly report the host-port feature gap. A pstack policy depth guard MUST not be mislabeled as OMP host default depth. OMP native task/eval depth checks share `resolveEffectiveSubagentPolicy()` and must be tested with forbidden child spawn and permitted root worker paths.
 
+## Model/role resolution precedence (as implemented)
+
+The adapter pins no provider model; every path below is host-resolved and only the receipt observes the outcome. Highest first, for an OMP task child:
+
+1. **Explicit spawn selector** — `model` is an allowed spawn field (`profiles/omp.json:268-272`, `runtime_conventions.allowed_spawn_fields`), so a caller-supplied selector bypasses every default below. `capability_mode` and `environment` are forbidden (`profiles/omp.json:273-276`).
+2. **Agent frontmatter `model:`** — a named agent may bind a role, e.g. `model: "@review"`. **Not shipped:** every `agents/*.md` declares only `effort` (e.g. `agents/bug-fix.md:4`) and no `model:`, so this rung is unused in-tree; `scripts/prove-omp-vertical-slice.py:174-193` binds the role on a temp copy because the shipped frontmatter omits it (`:177`).
+3. **OMP `modelRoles` mapping** — a `@role` selector resolves through the user's `~/.omp/agent/config.yml` `modelRoles` block to a concrete selector (`scripts/prove-omp-vertical-slice.py:135-152`, `:156-171`); the adapter copies no credentials and writes only a run-local overlay (`:167-171`).
+4. **Parent-session inheritance (`model: inherit`)** — all 22 `droids/pstack-*.md` carry `model: inherit` (e.g. `droids/pstack-bug-fix.md:4`) with no effort field, so a spawned droid child resolves to the parent session's active model; the portable `effort` ladder in `agents/*.md` (medium/high/xhigh) does **not** flow to droids.
+5. **Profile default `pi`** — when no selector resolves, the adapter's declared default is `pi` (`profiles/omp.json:267`, `runtime_conventions.default_model`).
+
+**Gap:** no `.omp-plugin/models.json` exists — `.omp-plugin/` holds only `package.json` — so there is no packaged model table. The `model: "@role"` binding above (`design.md:16,34`, `spec.md:26`) is a projection target, not a shipped artifact; `agents/*.md` carry effort only and droids carry `inherit` only.
+
 ## Verification plane reconciliation
 
 The existing `pstack-portability` specification describes **three conceptual concerns** (canonical, adapter, runtime) but the authoritative `receipt.schema.json` has **four actual planes** (`canonical`, `adapter`, `package`, `runtime`). The package plane is adapter-derived and independently verifies native plugin projection and lifecycle. The accompanying [formal portability delta](./specs/pstack-portability/spec.md) MODIFIES the old three-plane requirement to make this mapping explicit while preserving the current four-key receipt. Do not collapse package into adapter or create a fifth plane.
