@@ -46,8 +46,12 @@
       "implementation_status": "native",
       "primitive": "proc://<id>/kill / cancel_subagent",
       "enforcement": "hard",
-      "verification_status": "static-only",
-      "notes": "GAP: no receipt scenario settles cancellation yet. The runner now drives it: scripts/drivers/omp.py child_cancel emits runtime-child-cancel-omp, dispatched from verify-portable.py drive() for this host, driving a bounded --mode rpc session that prompts one child, confirms it in flight through get_subagents, cancels it through cancel_subagent (requiring the acceptance flag `data.cancelled: true`, because upstream answers `cancelled: false` for an id that was not running), and reduces the terminal `subagent_lifecycle` (`status: aborted`) into a typed cancelled settlement; the missing-child, rejected-or-idempotent cancel and dropped-terminal-frame paths are recorded as bounded negatives instead. The row stays static-only because the promotion gate accepts only a successful spawn/join settlement (scripts/portability_schema.py _is_observed_settlement), so an observed cancellation cannot promote it; the gated live run (PSTACK_RUN_OMP_LIVE=1) writes the observation into .audit/evidence/omp-receipt.json and the scenario pin follows that refresh. Statically mapped from can1357/oh-my-pi@0affc77 docs/tools/task.md (`write proc://<jobId>/kill`, `proc://<agentId>/kill`) and docs/rpc.md (`cancel_subagent`, `get_subagents`)."
+      "verification_status": "verified",
+      "evidence_ref": {
+        "receipt": ".audit/evidence/omp-receipt.json",
+        "scenario": "runtime-child-cancel-omp"
+      },
+      "notes": "Observed live 2026-10-13 (receipt run omp-1791892165-cbc0cc6e), promoted from static-only on that observation: scripts/drivers/omp.py child_cancel emits runtime-child-cancel-omp, dispatched from verify-portable.py drive() for this host, driving a bounded --mode rpc session that prompts one child, confirms it in flight through get_subagents, cancels it through cancel_subagent (requiring the acceptance flag `data.cancelled: true`, because upstream answers `cancelled: false` for an id that was not running), and reduces the terminal `subagent_lifecycle` (`status: aborted`) into a typed cancelled settlement (child UpperHorse, outcome cancelled, latency 0.051s, rpc-v2). The bounded negatives stay negatives and promote nothing: the missing-child, rejected-or-idempotent cancel and dropped-terminal-frame paths carry no settlement, so they are recorded as negatives only. Promotion gate note: a cancellation settles agent.cancel but is never a spawn/join settlement, so scripts/portability_schema.py gates the pinned scenario by capability (_is_observed_settlement(scenario, capability)). Statically mapped from can1357/oh-my-pi@0affc77 docs/tools/task.md (`write proc://<jobId>/kill`, `proc://<agentId>/kill`) and docs/rpc.md (`cancel_subagent`, `get_subagents`)."
     },
     {
       "host": "omp",
