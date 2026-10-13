@@ -6,20 +6,24 @@
   ],
   "available": [
     {
-      "label": "Gemini Pro",
-      "slug": "pro"
+      "label": "Gemini Pro 3.1",
+      "slug": "pro",
+      "family": "gemini-pro-3.1"
     },
     {
-      "label": "Gemini Flash",
-      "slug": "flash"
+      "label": "Gemini Flash 3.8",
+      "slug": "flash",
+      "family": "gemini-flash-3.8"
     },
     {
-      "label": "Gemini Flash Lite",
-      "slug": "flash_lite"
+      "label": "Gemini Flash 3.8 Lite",
+      "slug": "flash_lite",
+      "family": "gemini-flash-3.8-lite"
     },
     {
       "label": "Inherited Model",
-      "slug": "inherit"
+      "slug": "inherit",
+      "family": "inherit"
     }
   ],
   "roles": [
