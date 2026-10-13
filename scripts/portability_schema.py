@@ -52,6 +52,14 @@ CONDITIONAL_CAPABILITIES: Dict[str, str] = {
 
 PORTABLE_CAPABILITY_UNIVERSE = MANDATORY_SUPPORT_FLOOR + tuple(sorted(CONDITIONAL_CAPABILITIES.keys()))
 
+# Terminal outcomes a capability may pin as its own settled proof, on top of the
+# successful spawn/join settlement every capability can pin. A cancellation settles
+# `agent.cancel` and proves nothing about any other capability (#381), so the extra
+# outcome stays scoped to the capability that owns it.
+SETTLEMENT_PROMOTIONS: Dict[str, tuple] = {
+    "agent.cancel": ("cancelled",),
+}
+
 REQUIRED_CAPABILITIES = MANDATORY_SUPPORT_FLOOR
 
 FORBIDDEN_ORCHESTRATION_FIELDS = (
@@ -725,18 +733,38 @@ def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path
         package_driver_revision=package_driver_revision,
         boundary_driver_revision=boundary_driver_revision,
     )
-def _is_observed_settlement(scenario) -> bool:
-    """True only for a passing runtime observed_live scenario with a successful settlement.
+def _is_observed_settlement(scenario, capability: Optional[str] = None) -> bool:
+    """True only for a passing runtime observed_live scenario carrying a typed settlement.
 
-    A settlement that records an error, timeout or cancellation proves the child did not
-    spawn and join successfully, so it must never satisfy the promotion gate.
+    A settlement that records an error or timeout proves the child did not spawn and join,
+    so it never satisfies the promotion gate. A typed cancellation is the opposite for
+    `agent.cancel`: the cancellation *is* what that capability exists to prove, so the
+    outcome it may pin is listed in SETTLEMENT_PROMOTIONS (#381). Every other capability
+    still needs the successful spawn/join settlement, and a caller holding no capability
+    (support-state derivation, receipt preservation) sees only that unconditional shape.
     """
-    return (
+    if not (
         scenario.plane == "runtime"
         and scenario.evidence_level == "observed_live"
         and isinstance(scenario.settlement, ChildSettlement)
         and scenario.verdict == "PASS"
-        and scenario.settlement.terminal_outcome == "success"
+    ):
+        return False
+    outcome = scenario.settlement.terminal_outcome
+    if outcome == "success":
+        return True
+    return capability is not None and outcome in SETTLEMENT_PROMOTIONS.get(capability, ())
+
+
+def _is_preservable_settlement(scenario) -> bool:
+    """Any live typed settlement a pinned row may read, whoever pinned it.
+
+    preserve_observed_settlements works by scenario id and holds no profile, so it must
+    treat a settled cancellation as carryable evidence too: otherwise a route-free refresh
+    drops the scenario `agent.cancel` pins and turns that pin into a hard error (#322).
+    """
+    return _is_observed_settlement(scenario) or any(
+        _is_observed_settlement(scenario, capability) for capability in SETTLEMENT_PROMOTIONS
     )
 
 def preserve_observed_settlements(
@@ -759,11 +787,11 @@ def preserve_observed_settlements(
     current.validate()
     if previous.evaluate_plane_staleness(current.surface_revisions).get("runtime"):
         return []
-    prior = {s.id: s for s in previous.scenarios if _is_observed_settlement(s)}
+    prior = {s.id: s for s in previous.scenarios if _is_preservable_settlement(s)}
     preserved: List[str] = []
     for i, scenario in enumerate(current.scenarios):
         candidate = prior.get(scenario.id)
-        if candidate is None or _is_observed_settlement(scenario) or scenario.verdict != "PASS":
+        if candidate is None or _is_preservable_settlement(scenario) or scenario.verdict != "PASS":
             continue
         current.scenarios[i] = replace(candidate, preserved_from=candidate.preserved_from or previous.run_id)
         preserved.append(scenario.id)
@@ -903,7 +931,9 @@ def check_scenario_pins(
                 f"Binding for {binding.capability} on {binding.host} cites scenario {scenario_id!r}, "
                 f"which {binding.receipt_ref} does not record"
             )
-        if binding.verification_status == "verified" and not _is_observed_settlement(scenario):
+        if binding.verification_status == "verified" and not _is_observed_settlement(
+            scenario, binding.capability
+        ):
             raise ValidationError(
                 f"Binding for {binding.capability} on {binding.host} claims verified but scenario "
                 f"{scenario_id!r} carries no observed_live settlement (evidence_level="

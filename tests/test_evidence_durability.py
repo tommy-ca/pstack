@@ -29,6 +29,7 @@ from scripts.portability_schema import (
     check_scenario_pins,
     compute_surface_revisions,
     derive_support_state,
+    preserve_observed_settlements,
 )
 
 SIX_HARNESSES = ("grok", "codex", "omp", "opencode", "antigravity", "droid")
@@ -189,6 +190,7 @@ def test_omp_profile_claims_only_what_its_receipt_settles() -> None:
     assert {b.capability for b in prof.bindings if b.verification_status == "verified"} == {
         "agent.spawn",
         "agent.join",
+        "agent.cancel",
         "workspace.isolated",
     }
     for b in prof.bindings:
@@ -1116,6 +1118,70 @@ def test_a_non_success_child_settlement_never_satisfies_a_verified_pin(outcome: 
     )
     with pytest.raises(ValidationError, match="carries no observed_live settlement"):
         check_scenario_pins(_profile_pinning(ref, scenario_id), {ref: failed})
+
+
+def test_a_typed_cancellation_settles_only_the_cancel_capability() -> None:
+    """#381: a cancelled child is the settlement `agent.cancel` exists to prove, and it
+    proves nothing about any other capability."""
+    ref = ".audit/evidence/omp-receipt.json"
+    scenario_id = "runtime-child-cancel-omp"
+    cancelled = _adversarial_receipt(
+        _observed_scenario(
+            scenario_id, settlement=replace(_success_settlement(), terminal_outcome="cancelled")
+        )
+    )
+    check_scenario_pins(_profile_pinning(ref, scenario_id, "agent.cancel"), {ref: cancelled})
+    for capability in ("agent.spawn", "agent.join", "agent.resume"):
+        with pytest.raises(ValidationError, match="carries no observed_live settlement"):
+            check_scenario_pins(_profile_pinning(ref, scenario_id, capability), {ref: cancelled})
+
+    # The promotion is the cancelled outcome alone: a timeout or error settles nothing,
+    # not even for the capability that owns cancellation.
+    for outcome in ("timeout", "error"):
+        failed = _adversarial_receipt(
+            _observed_scenario(
+                scenario_id, settlement=replace(_success_settlement(), terminal_outcome=outcome)
+            )
+        )
+        with pytest.raises(ValidationError, match="carries no observed_live settlement"):
+            check_scenario_pins(_profile_pinning(ref, scenario_id, "agent.cancel"), {ref: failed})
+
+
+def test_a_settled_cancellation_survives_a_durable_refresh() -> None:
+    """A route-free refresh must carry the scenario `agent.cancel` pins, or that pin turns
+    into a hard error on the run that could not re-observe it (#322)."""
+    scenario_id = "runtime-child-cancel-omp"
+    cancelled = _observed_scenario(
+        scenario_id, settlement=replace(_success_settlement(), terminal_outcome="cancelled")
+    )
+    previous = _adversarial_receipt(cancelled)
+    downgraded = replace(cancelled, evidence_level="static", settlement=None)
+    current = replace(previous, run_id="refresh-run", scenarios=[downgraded])
+    current.validate()
+
+    assert preserve_observed_settlements(previous, current) == [scenario_id]
+    assert current.scenarios[0].evidence_level == "observed_live"
+    assert current.scenarios[0].preserved_from == previous.run_id
+
+    # A failed outcome is not carryable evidence, so a downgraded timeout stays static.
+    timed_out_previous = _adversarial_receipt(
+        replace(cancelled, settlement=replace(_success_settlement(), terminal_outcome="timeout"))
+    )
+    timed_out_current = replace(timed_out_previous, run_id="refresh-run", scenarios=[downgraded])
+    timed_out_current.validate()
+    assert preserve_observed_settlements(timed_out_previous, timed_out_current) == []
+
+
+def test_a_cancellation_only_receipt_never_derives_verified(tmp_path: Path) -> None:
+    """#381 exclusion: a typed cancellation proves `agent.cancel`, not the spawn/join
+    runtime proof that carries a host past `packaged`."""
+    root, prof = _synthetic_evidence_root(
+        tmp_path,
+        ["offline", "observed_live"],
+        settlements=[None, replace(_success_settlement(), terminal_outcome="cancelled")],
+        force_verified=True,
+    )
+    assert derive_support_state(prof, root) == "packaged"
 
 
 def test_a_verified_pin_naming_an_unrecorded_scenario_is_a_dangling_reference() -> None:
