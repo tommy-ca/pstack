@@ -205,10 +205,10 @@ def generate_antigravity_models(desc: PackageDescriptor) -> Dict[str, Any]:
         "singleRoleDefault": "pro",
         "panel": ["pro", "flash"],
         "available": [
-            {"label": "Gemini Pro", "slug": "pro"},
-            {"label": "Gemini Flash", "slug": "flash"},
-            {"label": "Gemini Flash Lite", "slug": "flash_lite"},
-            {"label": "Inherited Model", "slug": "inherit"},
+            {"label": "Gemini Pro 3.1", "slug": "pro", "family": "gemini-pro-3.1"},
+            {"label": "Gemini Flash 3.8", "slug": "flash", "family": "gemini-flash-3.8"},
+            {"label": "Gemini Flash 3.8 Lite", "slug": "flash_lite", "family": "gemini-flash-3.8-lite"},
+            {"label": "Inherited Model", "slug": "inherit", "family": "inherit"},
         ],
         "roles": [
             {"role": "feature, refactoring", "models": ["pro"], "skill": "poteto-mode"},
