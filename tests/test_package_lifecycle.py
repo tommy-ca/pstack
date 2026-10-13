@@ -147,3 +147,51 @@ def test_cli_lifecycle_prove(tmp_path: Path) -> None:
     )
     assert res.returncode == 0
     assert "[omp] PROVE PASS" in res.stdout
+
+
+def test_freshness_reports_drifted_installed_copy(tmp_path: Path) -> None:
+    plugin_dir = package_lifecycle.install_plugin("grok", tmp_path)
+    assert package_lifecycle.freshness_errors(plugin_dir) == []
+
+    stale = plugin_dir / "skills" / "deslop" / "SKILL.md"
+    stale.write_text("stale\n", encoding="utf-8")
+    ghost = plugin_dir / "skills" / "ghost-skill"
+    ghost.mkdir()
+    (ghost / "SKILL.md").write_text("ghost\n", encoding="utf-8")
+    errors = package_lifecycle.freshness_errors(plugin_dir)
+
+    assert any("drifted" in e and "deslop" in e for e in errors)
+    assert any("extra" in e and "ghost-skill" in e for e in errors)
+
+
+def test_owned_deploy_target_excludes_foreign_variant_installs(tmp_path: Path) -> None:
+    # Real directory installed by pstack -> owned, freshness applies.
+    owned = tmp_path / ".grok" / "plugins" / "pstack"
+    owned.mkdir(parents=True)
+    assert package_lifecycle.is_owned_deploy_target(owned) is True
+
+    # Claude-variant symlinked tree -> foreign source, excluded.
+    foreign = tmp_path / "pstack-claude" / "plugins" / "pstack"
+    foreign.mkdir(parents=True)
+    bind = tmp_path / ".agents" / "skills"
+    bind.parent.mkdir(parents=True, exist_ok=True)
+    bind.symlink_to(foreign)
+    assert package_lifecycle.is_owned_deploy_target(bind) is False
+
+    # Marketplace bind -> foreign source, excluded.
+    market = tmp_path / "marketplaces" / "pstack-claude" / "plugins" / "pstack"
+    market.mkdir(parents=True)
+    assert package_lifecycle.is_owned_deploy_target(market) is False
+
+
+def test_verify_plugin_skips_foreign_variant_live_install(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setenv("HOME", str(tmp_path))
+    foreign = tmp_path / "pstack-claude" / "plugins" / "pstack"
+    (foreign / "skills").mkdir(parents=True)
+    (foreign / "plugin.json").write_text('{"name": "not-pstack"}', encoding="utf-8")
+    bind = tmp_path / ".grok" / "plugins" / "pstack"
+    bind.parent.mkdir(parents=True)
+    bind.symlink_to(foreign)
+
+    ok, errors = package_lifecycle.verify_plugin("grok")
+    assert ok is True, errors
