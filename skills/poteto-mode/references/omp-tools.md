@@ -27,12 +27,20 @@ This document maps portable pstack capabilities (defined in [`pstack-portability
 Two native dispatch routes satisfy `agent.spawn` / `agent.join`. They are separate
 host paths, not interchangeable, so a run records which route it used.
 
-| Step | `task` route | eval `agent()` route |
+Only the `task` route is **driven**: the driver starts one RPC session, prompts a
+single `task` child and reduces its settlement, cancelling through the RPC
+`cancel_subagent` call (`scripts/drivers/omp.py:323`, `scripts/drivers/omp_rpc.py:348`).
+The eval `agent()` route is **undriven** — no `agent()`, `handle.cancel()` or
+handle-join path exists in the driver — so it is recorded here as documented
+aspiration, not as behavior a run can observe. Entries marked **undriven** in the
+`task` column have no driver path yet either.
+
+| Step | `task` route | eval `agent()` route (undriven) |
 | --- | --- | --- |
-| Fan-out | one call with a `tasks[]` batch (`task.batch`, default on); `context` carries the shared brief | one `agent(prompt, {...})` per lane, handles collected in one cell |
+| Fan-out | one call with a `tasks[]` batch (`task.batch`, default on) — **undriven**: the driver prompts a single child, there is no batch path; `context` carries the shared brief | one `agent(prompt, {...})` per lane, handles collected in one cell |
 | Isolation | `isolated: true` per item (`task.isolation.enabled`); plan mode off | `isolated: true` per call; plan mode off |
 | Join | background-job completion, or the `wait` tool | `wait(handles, timeout)`; `raise_errors=False` returns a failed or cancelled handle in its slot |
-| Cancel | `write proc://<id>/kill` (job id or agent id) | `handle.cancel()` |
+| Cancel | `write proc://<id>/kill` (job id or agent id) — **undriven**: the driver cancels via RPC `cancel_subagent` | `handle.cancel()` |
 | Inspect | `agent://<id>` / `history://<id>` | `handle.output()` / `history://<id>` |
 
 Rules both routes share:
