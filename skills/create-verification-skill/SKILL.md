@@ -12,7 +12,7 @@ Project-local verification skills live under the active harness's native skills 
 
 - **Google Antigravity**: `.agents/skills/verify-<app>/`
 - **Codex**: `.codex/skills/verify-<app>/`
-- **OMP**: `.omp/skills/verify-<app>/`
+- **OMP**: `.omp/skills/verify-<app>/` — drive conventions in [`../poteto-mode/references/omp-tools.md`](../poteto-mode/references/omp-tools.md).
 - **OpenCode**: `.opencode/skills/verify-<app>/`
 - **Grok Build**: `.grok/skills/verify-<app>/`
 - **Droid**: `.factory/skills/verify-<app>/`
