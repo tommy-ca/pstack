@@ -78,6 +78,16 @@ def test_driver_scenarios(host: str, tmp_path: Path) -> None:
     sc_ev = driver.evidence_capture(tmp_path)
     assert sc_ev.verdict == "PASS"
 
+    # In-flight child cancellation is an OMP-only drive surface. verify-portable.py
+    # dispatches the same arm for omp alone because the other hosts declare no cancel
+    # primitive. Without PSTACK_RUN_OMP_LIVE this resolves at the static contract level,
+    # so the arm never needs a live model.
+    if isinstance(driver, OMPDriver):
+        sc_cancel = driver.child_cancel(tmp_path)
+        assert sc_cancel.verdict == "PASS", f"Cancel failed for {host}: {sc_cancel.stdout} {sc_cancel.stderr}"
+        assert sc_cancel.evidence_level == "static"
+        assert sc_cancel.settlement is None
+
 
 def test_blocked_driver_fallback(tmp_path: Path) -> None:
     verifier = PortableVerifier(host="grok", evidence_root=tmp_path)
