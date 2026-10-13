@@ -29,6 +29,11 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from scripts.portability_schema import (  # noqa: E402
+    SKILLS_HASH_IGNORED_DIRS,
+    SKILLS_HASH_IGNORED_SUFFIXES,
+)
+
 PROJECT_PACKAGE_SCRIPT = ROOT / "scripts" / "project-package.py"
 _loader = importlib.util.spec_from_file_location("project_package", PROJECT_PACKAGE_SCRIPT)
 assert _loader is not None and _loader.loader is not None
@@ -66,6 +71,74 @@ def get_plugin_dir(host: str, target_base: Optional[Path] = None) -> Path:
     if target_base is not None:
         return target_base / rel
     return Path.home() / rel
+
+
+def is_owned_deploy_target(live_dir: Path) -> bool:
+    """True only for installed copies pstack itself deployed.
+
+    pstack installs real directories at `HOST_PLUGIN_REL_PATHS`. A symlinked or
+    marketplace-bind install is a foreign-source variant (the Claude variant's
+    `pstack-claude` symlinked tree, e.g. `~/.agents/skills` -> the pstack-claude
+    checkout, or `~/.claude/plugins/cache/pstack-claude`). Those carry a
+    different source tree, so a freshness comparison against this repo would
+    false-fail. They are excluded instead.
+    """
+    if live_dir.is_symlink():
+        return False
+    if "marketplaces" in live_dir.parts:
+        return False
+    return not any("pstack-claude" in part for part in live_dir.parts)
+
+
+def _tree_files(base: Path) -> Dict[str, bytes]:
+    """Files under a skills/agents tree, using the canonical skills-hash policy.
+
+    Mirrors `SKILLS_HASH_IGNORED_DIRS`/`_SUFFIXES` (plus dot-prefixed paths) so
+    `node_modules`, `__pycache__`, and bytecode never count as drift.
+    """
+    files: Dict[str, bytes] = {}
+    if not base.is_dir():
+        return files
+    for path in base.rglob("*"):
+        if not path.is_file() or path.is_symlink():
+            continue
+        rel = path.relative_to(base)
+        if any(part.startswith(".") or part in SKILLS_HASH_IGNORED_DIRS for part in rel.parts):
+            continue
+        if path.suffix in SKILLS_HASH_IGNORED_SUFFIXES:
+            continue
+        files[rel.as_posix()] = path.read_bytes()
+    return files
+
+
+def freshness_errors(plugin_dir: Path) -> List[str]:
+    """Compare the repo-owned skills/agents trees against an installed copy.
+
+    Only trees pstack actually copies are compared, so hosts that project
+    without agents (codex, opencode) or into `droids/` (droid) don't get a
+    spurious "missing agents" verdict.
+    """
+    errors: List[str] = []
+    for subtree in ("skills", "agents"):
+        src = ROOT / subtree
+        live = plugin_dir / subtree
+        if not src.is_dir() or (subtree == "agents" and not live.is_dir()):
+            continue
+        expected = _tree_files(src)
+        actual = _tree_files(live)
+        drifted = sorted(
+            name for name in expected.keys() & actual.keys() if expected[name] != actual[name]
+        )
+        for label, names in (
+            ("missing", sorted(expected.keys() - actual.keys())),
+            ("extra", sorted(actual.keys() - expected.keys())),
+            ("drifted", drifted),
+        ):
+            if names:
+                errors.append(
+                    f"Stale installed copy at {plugin_dir}: {label} {subtree} {names}"
+                )
+    return errors
 
 
 def copy_skills(dest_skills: Path) -> List[str]:
@@ -264,13 +337,14 @@ def verify_plugin(host: str, target_base: Optional[Path] = None) -> Tuple[bool, 
         if not ok:
             errors.append(f"Repository projected manifest check failed for {host}")
 
-        # If live Antigravity plugin exists, verify live synchronization
-        if host == "antigravity":
-            live_dir = Path.home() / ".gemini" / "config" / "plugins" / "pstack"
-            if live_dir.is_dir():
-                live_ok, live_errs = verify_plugin_at_dir("antigravity", live_dir, desc)
-                if not live_ok:
-                    errors.extend(live_errs)
+        # Installed-copy freshness for repo-owned deploy targets only (#404).
+        # A foreign-source variant install is skipped by is_owned_deploy_target.
+        live_dir = get_plugin_dir(host)
+        if live_dir.is_dir() and is_owned_deploy_target(live_dir):
+            live_ok, live_errs = verify_plugin_at_dir(host, live_dir, desc)
+            if not live_ok:
+                errors.extend(live_errs)
+            errors.extend(freshness_errors(live_dir))
         return len(errors) == 0, errors
 
     plugin_dir = get_plugin_dir(host, target_base)
