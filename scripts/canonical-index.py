@@ -50,6 +50,10 @@ EXCLUSIONS = {
         "mode": "exclude",
         "reason": "Upstream documentation screenshots; host docs use Markdown tables and plain text",
     },
+    "skills/poteto-mode/scripts/check-plan.test.ts": {
+        "mode": "exclude",
+        "reason": "Cursor-side bun:test twin of the retained check-plan.mjs; the port carries the same fence cases adapted in check-plan.test.mjs",
+    },
 }
 
 # Known upstream semantic defects with tracked local adaptations (#204, #205)

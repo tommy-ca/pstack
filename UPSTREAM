@@ -1,10 +1,10 @@
 Official pstack (discipline source)
 https://github.com/cursor/plugins/tree/main/pstack
-tree df581122cde17e6e27686b5a448bde23e4ad4318
-Verified against upstream `main`: 2026-10-07; commit timestamp: 2026-10-07.
-Upstream tree SHA: 9d9cb20f79203a97c925de402c66183d0fa26c42
-Cursor plugin version on cursor/plugins main at refresh: 0.15.15. This port stays 0.15.15-grokbuild.0.
-Pstack-specific delta after 4b4d98e5: 0.15.15 skill/prose/principle refresh (benchmark-checklist, correct, poteto-help, explain-the-number, design-red-flags). Packaging, logo, and the separate Cursor-only `advisor` plugin stay excluded.
+tree 1dcc2bacde73ddd284803b7af28164d0436198fc
+Verified against upstream `main`: 2026-10-12; commit timestamp: 2026-10-12.
+Upstream tree SHA: 64832e22b439e519c8ea0b38353ab87253d500ed
+Cursor plugin version on cursor/plugins main at refresh: 0.15.21. This port stays 0.15.21-grokbuild.0.
+Pstack-specific delta after df58112: 0.15.21 distill and section cuts (token-cut 00b14f1, section-cuts 08bd59b), ketchup skill (978ca6e, visuals ea32d95), poteto-agent delegate contract (2bd5dd4, 364a77e), create-verification-skill readiness (c49b37a), Agent Plugins v1 root manifest reference-only (e5a02f8), check-plan fence handling (87c8103), watch-pr pagination (ff8f83d), worktree-audit default-branch base (cf9a111), Comment Sicko id rename (de2dba6), unslop description (bc697d0), version bumps 0.15.20 (1b6d44f) and 0.15.21 (997ffc7). Packaging, logo, and the separate Cursor-only `advisor` plugin stay excluded.
 
 Grok adapter ancestor
 https://github.com/aa2246740/pstack-grokbuild
@@ -17,7 +17,7 @@ https://github.com/ericlitman/open-pstack
 
 This port
 https://github.com/tommy-ca/pstack
-version 0.15.15-grokbuild.0
+version 0.15.21-grokbuild.0
 
 One shared skills/ tree. Host maps:
 - Grok Build: skills/poteto-mode/references/grok-tools.md

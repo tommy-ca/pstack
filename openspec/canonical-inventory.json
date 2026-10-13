@@ -1,19 +1,19 @@
 {
-  "pin": "df581122cde17e6e27686b5a448bde23e4ad4318",
-  "pstack_tree": "9d9cb20f79203a97c925de402c66183d0fa26c42",
+  "pin": "1dcc2bacde73ddd284803b7af28164d0436198fc",
+  "pstack_tree": "8824c764d99583f7cc8059c915296e444c53f060",
   "pin_conformance": "PASS",
-  "upstream_freshness": "DRIFT",
-  "upstream_head": "d0ef80d86795816da932a153458c5dbe192d294e",
-  "observation_time": "2026-10-07T19:58:49.834308+00:00",
+  "upstream_freshness": "CURRENT",
+  "upstream_head": "1dcc2bacde73ddd284803b7af28164d0436198fc",
+  "observation_time": "2026-10-13T11:19:27.831686+00:00",
   "observation_source": "/home/tommyk/projects/pstack/.worktrees/upstream-cursor-plugins",
-  "commits_ahead": 4,
+  "commits_ahead": 0,
   "counts": {
     "principles": 24,
     "playbooks": 23,
-    "total_artifacts": 164,
-    "preserved": 91,
+    "total_artifacts": 167,
+    "preserved": 93,
     "adapted": 64,
-    "excluded": 9,
+    "excluded": 10,
     "gaps": 0
   },
   "known_defect_exceptions": {
@@ -22,12 +22,18 @@
       "upstream_issue": "https://github.com/cursor/plugins/issues/474",
       "description": "Upstream principle text conflates vacuous assertions with weak truthiness assertions",
       "reconciliation": "Separated weak assertion fail states from truly vacuous execution-only shapes"
+    },
+    "cursor-plugins-571": {
+      "surface": "skills/principle-exhaust-the-design-space/SKILL.md",
+      "upstream_issue": "https://github.com/cursor/plugins/issues/571",
+      "description": "Upstream section cut removed the antecedent sentence, leaving the product-design clause orphaned with no governing statement",
+      "reconciliation": "Re-anchored the body with the interaction/architectural-decision sentence ahead of the product-design clause"
     }
   },
   "artifacts": [
     {
       "path": ".cursor-plugin/plugin.json",
-      "canonical_hash": "68cc4443afd6b6f4881ab572b779f39d47854d42",
+      "canonical_hash": "40b963374713027008ae9214acc5defaa5b4192c",
       "category": "excluded",
       "mode": "exclude",
       "reason": "Cursor-only host manifest"
@@ -48,21 +54,21 @@
     },
     {
       "path": "README.md",
-      "canonical_hash": "7227da33bb709bf8744dbde5f3da38016a19350d",
+      "canonical_hash": "5e34dbff924bd4204eb2436c3357950d33718964",
       "category": "skill",
       "mode": "adapt",
       "local_path": "README.md"
     },
     {
       "path": "agents/comment-sicko.md",
-      "canonical_hash": "9a688b8c5b5734ee80f782d4616a78c4c59b0946",
+      "canonical_hash": "209e3704dfa75022060c936bd3f3362fa3bbe254",
       "category": "skill",
       "mode": "preserve",
       "local_path": "agents/comment-sicko.md"
     },
     {
       "path": "agents/poteto-agent.md",
-      "canonical_hash": "f9d79a75560520cbb2f939c587ce00fa7e33037a",
+      "canonical_hash": "c5515f51310207211e1bebe30719e15a9c1519d5",
       "category": "skill",
       "mode": "preserve",
       "local_path": "agents/poteto-agent.md"
@@ -278,8 +284,15 @@
       "reason": "Upstream documentation screenshots; host docs use Markdown tables and plain text"
     },
     {
+      "path": "plugin.json",
+      "canonical_hash": "4376304ac7e21e2eab3ceeaf3a13ba3925632562",
+      "category": "skill",
+      "mode": "preserve",
+      "local_path": "plugin.json"
+    },
+    {
       "path": "skills/architect/SKILL.md",
-      "canonical_hash": "c9c0726f57556f4c26bd7e7df5314ba15b3f1ac9",
+      "canonical_hash": "88e23ca105b89e67f4085d0e676c40d4b170a623",
       "category": "skill",
       "mode": "adapt",
       "local_path": "skills/architect/SKILL.md"
@@ -307,7 +320,7 @@
     },
     {
       "path": "skills/arena/SKILL.md",
-      "canonical_hash": "bd260a064d6e07a06073df6841e3d180d643372a",
+      "canonical_hash": "58ae9d9a3f8812429091515f2a7ce2f91cf14ef9",
       "category": "skill",
       "mode": "adapt",
       "local_path": "skills/arena/SKILL.md"
@@ -321,7 +334,7 @@
     },
     {
       "path": "skills/benchmark-checklist/SKILL.md",
-      "canonical_hash": "c02adb78929d0c1218fba554a31c423d65deb24d",
+      "canonical_hash": "e901d1fdbc9ffce53e94d6514be7d9a22e771a1a",
       "category": "skill",
       "mode": "preserve",
       "local_path": "skills/benchmark-checklist/SKILL.md"
@@ -349,7 +362,7 @@
     },
     {
       "path": "skills/create-verification-skill/SKILL.md",
-      "canonical_hash": "f869e26122991252373d5b8f6357e5b9ff195a00",
+      "canonical_hash": "140d033a001e8d27acd14b06004506c43053b199",
       "category": "skill",
       "mode": "preserve",
       "local_path": "skills/create-verification-skill/SKILL.md"
@@ -377,14 +390,14 @@
     },
     {
       "path": "skills/figure-it-out/SKILL.md",
-      "canonical_hash": "fbf3fb122cab127d71d3c41e84711e61cc5dec4c",
+      "canonical_hash": "195f50b83d0f643758a2b92e432374fbb5ef7635",
       "category": "skill",
       "mode": "adapt",
       "local_path": "skills/figure-it-out/SKILL.md"
     },
     {
       "path": "skills/how/SKILL.md",
-      "canonical_hash": "139cac5e4dce5d5889daaf77faa8d5f81dd87318",
+      "canonical_hash": "775d292f8d5d369200502eabe3136d8f56666239",
       "category": "skill",
       "mode": "adapt",
       "local_path": "skills/how/SKILL.md"
@@ -398,14 +411,14 @@
     },
     {
       "path": "skills/how/references/explorer-prompt.md",
-      "canonical_hash": "9b4b0594bfd779015616e9d280369aba939583b4",
+      "canonical_hash": "724bacfc7df759865c0c29705bfee641e4c1aeca",
       "category": "skill",
       "mode": "adapt",
       "local_path": "skills/how/references/explorer-prompt.md"
     },
     {
       "path": "skills/interrogate/SKILL.md",
-      "canonical_hash": "bac0049e40b624343537d12fb8e13a974a5f376a",
+      "canonical_hash": "9e3b99a19bf22623220b42412bbabd1d67d02f05",
       "category": "skill",
       "mode": "adapt",
       "local_path": "skills/interrogate/SKILL.md"
@@ -426,17 +439,24 @@
     },
     {
       "path": "skills/interrogate/references/reviewer-prompt.md",
-      "canonical_hash": "13a252b2c3cd18522d4c8dc39a7030477037b249",
+      "canonical_hash": "ef7bff3d77c35a0af2a9947187ccee15465657f4",
       "category": "skill",
       "mode": "adapt",
       "local_path": "skills/interrogate/references/reviewer-prompt.md"
     },
     {
       "path": "skills/interrogate/references/rubric.md",
-      "canonical_hash": "2d92f1b83e13be03fb10f20cba12639a1406a2da",
+      "canonical_hash": "8dab195ab840554bfe5e74e9b5ca0d9edbe9b496",
       "category": "skill",
       "mode": "adapt",
       "local_path": "skills/interrogate/references/rubric.md"
+    },
+    {
+      "path": "skills/ketchup/SKILL.md",
+      "canonical_hash": "1c63f43f5a58c7496eca0aa4c41d86c688ab3267",
+      "category": "skill",
+      "mode": "preserve",
+      "local_path": "skills/ketchup/SKILL.md"
     },
     {
       "path": "skills/maintain-verification-skill/SKILL.md",
@@ -454,14 +474,14 @@
     },
     {
       "path": "skills/no-comments/SKILL.md",
-      "canonical_hash": "3b3e76295a7ad66806dcc683e4de92fb25690f8b",
+      "canonical_hash": "4b608af0cb5323d7364011aa9e3d6a88b6e93ab5",
       "category": "skill",
       "mode": "preserve",
       "local_path": "skills/no-comments/SKILL.md"
     },
     {
       "path": "skills/poteto-help/SKILL.md",
-      "canonical_hash": "a97ecddf8953b92bda7d8a8cc070faf1d68abc79",
+      "canonical_hash": "575d80fbff15d3421e6ef020d3a9cfeb2b0b01f0",
       "category": "skill",
       "mode": "preserve",
       "local_path": "skills/poteto-help/SKILL.md"
@@ -482,7 +502,7 @@
     },
     {
       "path": "skills/poteto-mode/SKILL.md",
-      "canonical_hash": "de51c56164ff3da8f958437e207d14cec7d7fe99",
+      "canonical_hash": "d5be8a10b745f3676805cb6858b51ab758412069",
       "category": "skill",
       "mode": "adapt",
       "local_path": "skills/poteto-mode/SKILL.md"
@@ -521,7 +541,7 @@
     },
     {
       "path": "skills/poteto-mode/playbooks/babysit.md",
-      "canonical_hash": "683cf0ba889789cbe2d880fce667c75349f9ed12",
+      "canonical_hash": "51549ab2da11e5905342bbb3aadb93685c8ac348",
       "category": "playbook",
       "mode": "adapt",
       "local_path": "skills/poteto-mode/playbooks/babysit.md",
@@ -577,7 +597,7 @@
     },
     {
       "path": "skills/poteto-mode/playbooks/opening-a-pr.md",
-      "canonical_hash": "4e25989729174580e48ce36e265f298231c6de7f",
+      "canonical_hash": "fcd00527c6b9fb592aecfc3b1512e3b838146de3",
       "category": "playbook",
       "mode": "adapt",
       "local_path": "skills/poteto-mode/playbooks/opening-a-pr.md",
@@ -649,7 +669,7 @@
     },
     {
       "path": "skills/poteto-mode/playbooks/trace-forensics.md",
-      "canonical_hash": "48ed6b2f690215027eda96a1897ed98212bbd07a",
+      "canonical_hash": "ee54a2391b69d1d2a9ad7d3ee06266120c5e054e",
       "category": "playbook",
       "mode": "adapt",
       "local_path": "skills/poteto-mode/playbooks/trace-forensics.md",
@@ -665,7 +685,7 @@
     },
     {
       "path": "skills/poteto-mode/playbooks/worktree-cleanup.md",
-      "canonical_hash": "39c9ef9f368ac63b0e4245503302a4c174e846d6",
+      "canonical_hash": "c767ac09ab584070fe3a76ddd754966b0cdf452f",
       "category": "playbook",
       "mode": "adapt",
       "local_path": "skills/poteto-mode/playbooks/worktree-cleanup.md",
@@ -694,10 +714,17 @@
     },
     {
       "path": "skills/poteto-mode/scripts/check-plan.mjs",
-      "canonical_hash": "d242f28eb801e781ccc2f2ba93b700b263a77816",
+      "canonical_hash": "c8626766cee4cc4a2736fe438a1aea5c1f1b28ce",
       "category": "skill",
       "mode": "adapt",
       "local_path": "skills/poteto-mode/scripts/check-plan.mjs"
+    },
+    {
+      "path": "skills/poteto-mode/scripts/check-plan.test.ts",
+      "canonical_hash": "fd966c2b5fb6e99c12070c553906765c7bd900d8",
+      "category": "excluded",
+      "mode": "exclude",
+      "reason": "Cursor-side bun:test twin of the retained check-plan.mjs; the port carries the same fence cases adapted in check-plan.test.mjs"
     },
     {
       "path": "skills/poteto-mode/scripts/orch/orch.test.ts",
@@ -722,7 +749,7 @@
     },
     {
       "path": "skills/poteto-mode/scripts/package.json",
-      "canonical_hash": "8a3dfe27c2d0221a786e1ce61963d51c55260725",
+      "canonical_hash": "d8abe49ad0eafd10d302e8c6a9a0a95c5e6fb0ef",
       "category": "skill",
       "mode": "adapt",
       "local_path": "skills/poteto-mode/scripts/package.json"
@@ -743,35 +770,35 @@
     },
     {
       "path": "skills/poteto-mode/scripts/watch-pr/fakes.test-helper.ts",
-      "canonical_hash": "2312522cd7399334115a5f39fd6438aab7fc5aa5",
+      "canonical_hash": "84ccf596b01e03e7fb77e73ea82ec3b1738026ad",
       "category": "skill",
       "mode": "adapt",
       "local_path": "skills/poteto-mode/scripts/watch-pr/fakes.test-helper.ts"
     },
     {
       "path": "skills/poteto-mode/scripts/watch-pr/github.test.ts",
-      "canonical_hash": "87f4048f08a63a54975c4ef2de8065375e751683",
+      "canonical_hash": "4ef39d2a1d2981e205e948b1707f7db96b750280",
       "category": "skill",
       "mode": "adapt",
       "local_path": "skills/poteto-mode/scripts/watch-pr/github.test.ts"
     },
     {
       "path": "skills/poteto-mode/scripts/watch-pr/github.ts",
-      "canonical_hash": "79bc06fb682c5d99de7d48338b0a6ecd27a518da",
+      "canonical_hash": "cfc3764a03d35fd5ed6c79818b076329bcd08437",
       "category": "skill",
       "mode": "adapt",
       "local_path": "skills/poteto-mode/scripts/watch-pr/github.ts"
     },
     {
       "path": "skills/poteto-mode/scripts/watch-pr/policy.test.ts",
-      "canonical_hash": "0620ddedde46da8e763ab2a55ebceaad2aa6d0a7",
+      "canonical_hash": "6dae16da71800fb06eb37a7e3b296a8d27275b08",
       "category": "skill",
       "mode": "adapt",
       "local_path": "skills/poteto-mode/scripts/watch-pr/policy.test.ts"
     },
     {
       "path": "skills/poteto-mode/scripts/watch-pr/policy.ts",
-      "canonical_hash": "4665be37e8f9afff1c9e1f5dd60d98e0d70c8c6c",
+      "canonical_hash": "cabadb9bf96f4d8c4c0426d77d0cbdab80fbe3e5",
       "category": "skill",
       "mode": "adapt",
       "local_path": "skills/poteto-mode/scripts/watch-pr/policy.ts"
@@ -799,7 +826,7 @@
     },
     {
       "path": "skills/poteto-mode/scripts/watch-pr/types.ts",
-      "canonical_hash": "b67144e0d757e0b61ff079f981ced0a98555ea9d",
+      "canonical_hash": "6c94e0a687f8e48f91acffd21f725320dd66e659",
       "category": "skill",
       "mode": "adapt",
       "local_path": "skills/poteto-mode/scripts/watch-pr/types.ts"
@@ -813,7 +840,7 @@
     },
     {
       "path": "skills/poteto-mode/scripts/worktree-audit.sh",
-      "canonical_hash": "b9af08160032aeb17143248f2a3648e98f5a75b3",
+      "canonical_hash": "b2d1192187c0a1504366e591318129ac3d2879aa",
       "category": "skill",
       "mode": "adapt",
       "local_path": "skills/poteto-mode/scripts/worktree-audit.sh"
@@ -834,21 +861,21 @@
     },
     {
       "path": "skills/principle-build-the-lever/SKILL.md",
-      "canonical_hash": "277189a10b00fddc7cbb63fcf2323c7341abb0df",
+      "canonical_hash": "cbf003850489d95fea78e64198fd972c35b1aad3",
       "category": "principle",
       "mode": "preserve",
       "local_path": "skills/principle-build-the-lever/SKILL.md"
     },
     {
       "path": "skills/principle-encode-lessons-in-structure/SKILL.md",
-      "canonical_hash": "df9cd5ff2fb3c18267349cc6aecd8121848ef834",
+      "canonical_hash": "4a96f77fe70e36cb030f9c5efa142f66877bf58a",
       "category": "principle",
       "mode": "preserve",
       "local_path": "skills/principle-encode-lessons-in-structure/SKILL.md"
     },
     {
       "path": "skills/principle-exhaust-the-design-space/SKILL.md",
-      "canonical_hash": "85dd16f1312f3427e2dddcfc8e7deb89e2555bb3",
+      "canonical_hash": "395a0839126bb231430a9c9da02ebab5422557d5",
       "category": "principle",
       "mode": "preserve",
       "local_path": "skills/principle-exhaust-the-design-space/SKILL.md"
@@ -862,7 +889,7 @@
     },
     {
       "path": "skills/principle-explain-the-number/SKILL.md",
-      "canonical_hash": "9c22351d1fbe1ffcf277e61aef9fdb7816306fa7",
+      "canonical_hash": "1e180c14aefe49a3b2a515320398e08c3ebeb57d",
       "category": "principle",
       "mode": "preserve",
       "local_path": "skills/principle-explain-the-number/SKILL.md"
@@ -883,14 +910,14 @@
     },
     {
       "path": "skills/principle-guard-the-context-window/SKILL.md",
-      "canonical_hash": "c4db544909b26981c45eed9caa6591d32885f841",
+      "canonical_hash": "0a1d3cfcf4539fe048887174000fecbf2fa40e81",
       "category": "principle",
       "mode": "preserve",
       "local_path": "skills/principle-guard-the-context-window/SKILL.md"
     },
     {
       "path": "skills/principle-laziness-protocol/SKILL.md",
-      "canonical_hash": "e5bc77e62aa96ae13e482a84df61b3c711c5d828",
+      "canonical_hash": "016c3c7c8dfffd995c1a02135a62248e6625879b",
       "category": "principle",
       "mode": "preserve",
       "local_path": "skills/principle-laziness-protocol/SKILL.md"
@@ -911,21 +938,21 @@
     },
     {
       "path": "skills/principle-minimize-reader-load/SKILL.md",
-      "canonical_hash": "64541d963123e344078d82fd3977e857e76129df",
+      "canonical_hash": "628999088c5d05c1c546b3a3ca89da553cd3f3b2",
       "category": "principle",
       "mode": "preserve",
       "local_path": "skills/principle-minimize-reader-load/SKILL.md"
     },
     {
       "path": "skills/principle-model-the-domain/SKILL.md",
-      "canonical_hash": "e1d664a19243c90a84e5e7a816e9e05146c88720",
+      "canonical_hash": "09b7c739955facf03f08f66e1e329745d2f8880e",
       "category": "principle",
       "mode": "preserve",
       "local_path": "skills/principle-model-the-domain/SKILL.md"
     },
     {
       "path": "skills/principle-never-block-on-the-human/SKILL.md",
-      "canonical_hash": "11f08b6ef1fd93a3b3e47c57eb84716dc9acbff9",
+      "canonical_hash": "4f59bdc69f79d536b30b0014a563ed3be05b8b62",
       "category": "principle",
       "mode": "preserve",
       "local_path": "skills/principle-never-block-on-the-human/SKILL.md"
@@ -946,7 +973,7 @@
     },
     {
       "path": "skills/principle-redesign-from-first-principles/SKILL.md",
-      "canonical_hash": "090a4325f43a96080cce3895f0e932b62c39146a",
+      "canonical_hash": "5ca5246cbb0fa08884ce17b0d22c117ae1ad67b8",
       "category": "principle",
       "mode": "preserve",
       "local_path": "skills/principle-redesign-from-first-principles/SKILL.md"
@@ -967,21 +994,21 @@
     },
     {
       "path": "skills/principle-subtract-before-you-add/SKILL.md",
-      "canonical_hash": "d28770cf47a5798d0250a25ad494aedfecad154e",
+      "canonical_hash": "b8740ba6f06922d8e7ef3b23f9fb16e0fc4a876f",
       "category": "principle",
       "mode": "preserve",
       "local_path": "skills/principle-subtract-before-you-add/SKILL.md"
     },
     {
       "path": "skills/principle-test-behavior-not-implementation/SKILL.md",
-      "canonical_hash": "42de6f8f7cab01b9f67aa28bd59b128f7574fbab",
+      "canonical_hash": "f5a603e3a0925cdc6363bcc26dfbf587d9a36ec7",
       "category": "principle",
       "mode": "preserve",
       "local_path": "skills/principle-test-behavior-not-implementation/SKILL.md"
     },
     {
       "path": "skills/principle-type-system-discipline/SKILL.md",
-      "canonical_hash": "6030f171bee0d1902cf7ca91f06225e09f0f5433",
+      "canonical_hash": "4321b83e245d99eded0756c7a74f3fb64e32c36b",
       "category": "principle",
       "mode": "preserve",
       "local_path": "skills/principle-type-system-discipline/SKILL.md"
@@ -995,35 +1022,35 @@
     },
     {
       "path": "skills/reflect/SKILL.md",
-      "canonical_hash": "5ac697a2cc4cd4d066772b76855848a49a8b33c6",
+      "canonical_hash": "b6bd41afdc831741819b72efa60ef2f10947cc8c",
       "category": "skill",
       "mode": "adapt",
       "local_path": "skills/reflect/SKILL.md"
     },
     {
       "path": "skills/reflect/references/divergent-reviewer.md",
-      "canonical_hash": "de95be3b9cc9c11052596249336dcc328473eb26",
+      "canonical_hash": "1e070a2a3754f4dc0ddbaec4450a56179b81c92f",
       "category": "skill",
       "mode": "adapt",
       "local_path": "skills/reflect/references/divergent-reviewer.md"
     },
     {
       "path": "skills/reflect/references/judgment-reviewer.md",
-      "canonical_hash": "222f02b1c3c6eb3e700fa09a71bad108807d3485",
+      "canonical_hash": "61d15d76fff852eb573b551bc1317d79ed5a2e5f",
       "category": "skill",
       "mode": "adapt",
       "local_path": "skills/reflect/references/judgment-reviewer.md"
     },
     {
       "path": "skills/reflect/references/synthesizer.md",
-      "canonical_hash": "d0e78195186c0dd6cfdc87ba19402ea8cd2aa385",
+      "canonical_hash": "1a090d86134987719ddb418023020c2ef58a6dae",
       "category": "skill",
       "mode": "adapt",
       "local_path": "skills/reflect/references/synthesizer.md"
     },
     {
       "path": "skills/reflect/references/tooling-reviewer.md",
-      "canonical_hash": "a37e2009d6ef08f535df87e020e52426c6a5fa33",
+      "canonical_hash": "a839db4318798c51539c319cb90387ce02557225",
       "category": "skill",
       "mode": "adapt",
       "local_path": "skills/reflect/references/tooling-reviewer.md"
@@ -1079,7 +1106,7 @@
     },
     {
       "path": "skills/technical-writing/SKILL.md",
-      "canonical_hash": "5eef4fc494a059eb740cb621dadb4a7a81af23e4",
+      "canonical_hash": "3e6d26109376cd66439c87ed48b4033df8d78a3a",
       "category": "skill",
       "mode": "preserve",
       "local_path": "skills/technical-writing/SKILL.md"
@@ -1100,28 +1127,28 @@
     },
     {
       "path": "skills/unslop/SKILL.md",
-      "canonical_hash": "229a090708710c36caa0017f8d33e90880dc6846",
+      "canonical_hash": "97f5b6412148fa5b2a2fe478836fe8923ffa5cbb",
       "category": "skill",
       "mode": "preserve",
       "local_path": "skills/unslop/SKILL.md"
     },
     {
       "path": "skills/why/SKILL.md",
-      "canonical_hash": "a78076f9d492dbdb8b87136cf9d657a1b97659f7",
+      "canonical_hash": "bc2a3eb4f5bacf29949974376bc492df3d59db95",
       "category": "skill",
       "mode": "preserve",
       "local_path": "skills/why/SKILL.md"
     },
     {
       "path": "skills/why/references/epistemics.md",
-      "canonical_hash": "3732bf6881b60d1337fa3498574452a85d33ba30",
+      "canonical_hash": "b18abf41dfa245ee55e94f1b3a80c0b750eb10cf",
       "category": "skill",
       "mode": "preserve",
       "local_path": "skills/why/references/epistemics.md"
     },
     {
       "path": "skills/why/references/investigator-prompt.md",
-      "canonical_hash": "3b56af44c589833508f4605cfdd4432b39a16739",
+      "canonical_hash": "e1c2bbf52197ff600ba6e4552439e630687b7ae2",
       "category": "skill",
       "mode": "preserve",
       "local_path": "skills/why/references/investigator-prompt.md"
@@ -1135,7 +1162,7 @@
     },
     {
       "path": "skills/why/references/sources/code-archaeology.md",
-      "canonical_hash": "32d5f97f8d2d3974c668f5f0392737b7e8e25afd",
+      "canonical_hash": "e3555f809da0a5654ceefe7d2c20080397c03506",
       "category": "skill",
       "mode": "preserve",
       "local_path": "skills/why/references/sources/code-archaeology.md"
@@ -1149,14 +1176,14 @@
     },
     {
       "path": "skills/why/references/sources/datadog.md",
-      "canonical_hash": "d8363b1c1d1c7eadb15d47abd83bf70537c39620",
+      "canonical_hash": "536466ddd8ae6543836abb84bdf1efd8e43089ba",
       "category": "skill",
       "mode": "preserve",
       "local_path": "skills/why/references/sources/datadog.md"
     },
     {
       "path": "skills/why/references/sources/incident-postmortem.md",
-      "canonical_hash": "450d6e52f25b1b41f741cb3e9c93e1c74ef858b4",
+      "canonical_hash": "e7397e7ef374bee3b7f0018ac8e5ddd4322bab12",
       "category": "skill",
       "mode": "preserve",
       "local_path": "skills/why/references/sources/incident-postmortem.md"
@@ -1177,21 +1204,21 @@
     },
     {
       "path": "skills/why/references/sources/sentry.md",
-      "canonical_hash": "2b7cf6f3098ee868547dc4e69efacfe9c255246b",
+      "canonical_hash": "8200fd9f3abbb7fca76d0079663502b33524bd09",
       "category": "skill",
       "mode": "preserve",
       "local_path": "skills/why/references/sources/sentry.md"
     },
     {
       "path": "skills/why/references/sources/slack.md",
-      "canonical_hash": "863a527d60e4e055e680834ef8098ea04273a1ae",
+      "canonical_hash": "cadd5618a349adc5eb1dce6fddde38e7221e00fd",
       "category": "skill",
       "mode": "preserve",
       "local_path": "skills/why/references/sources/slack.md"
     },
     {
       "path": "skills/why/references/synthesizer-prompt.md",
-      "canonical_hash": "9707dfcc2fc57ea126484a433c5cd9ee4d400ef3",
+      "canonical_hash": "287a350c925c28b44f0e0dc687bb09a843e11100",
       "category": "skill",
       "mode": "preserve",
       "local_path": "skills/why/references/synthesizer-prompt.md"

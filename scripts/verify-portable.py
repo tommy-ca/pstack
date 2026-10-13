@@ -812,7 +812,7 @@ class PortableVerifier:
                 except Exception:
                     pass
             if not host_version:
-                host_version = "0.15.15-grokbuild.0"
+                host_version = "0.15.21-grokbuild.0"
 
         surface_revisions = compute_surface_revisions(ROOT, self.host)
 
