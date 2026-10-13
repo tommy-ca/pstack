@@ -102,7 +102,7 @@ Spawn using the active host's `agent.spawn` primitive per the harness profile (`
 
 **Defaults for every subagent spawn call.** Set background/async execution when the parent must keep working (or rely on native async / reactive wakeup). File pointers, not inlined dumps. Resolve `model` from active profile / host model configuration (e.g. `~/.grok/pstack-models.toml` on Grok, `.antigravity-plugin/models.json` on Antigravity, or host manifests). Absent configuration: send host default model resolved from active profile. Missing key, `inherit-parent`, or `auto`: omit `model`. Isolation is shared workspace (`workspace.shared`) unless the child must not touch the writer's tree, then isolated workspace (`workspace.isolated`). Join with the host's `agent.join` primitive per active harness profile. Do not send `reasoning_effort` or unsupported capability modes on spawn. Independent verify is `pstack:independent-verifier` plus the model rule above.
 
-You own every subagent's work. Review the diff and write your own summary, don't pass through what it said. Resume a finished child with the host's `agent.resume` primitive or continuation mechanism, same role. A second opinion is the same prompt against a different `model`. Agreement is high-signal.
+You own every subagent's work. Review the diff and write your own summary, don't pass through what it said. Resume a finished child with the host's `agent.resume` primitive or continuation mechanism, same role, except on OMP, where child handle revival is unproven and only cold-parent `--resume` is observed, so the follow-up is a fresh spawn carrying the frozen brief. A second opinion is the same prompt against a different `model`. Agreement is high-signal.
 
 ## Writing the reply
 
