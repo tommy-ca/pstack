@@ -234,11 +234,11 @@
 ### Delivery
 - [x] Unit 8: Offline gate runs the three new suites; the tiers doc lists them and names the two that are tier-limited, since the OMP suite skips without the binary (PR #333)
 - [x] Unit 9: Stacked PRs #328 to #334, per-PR independent verdicts, swarm lanes at each head, arena over the packaging candidates, three-model interrogate over the stack diff
-- [ ] Unit 10: OMP cancellation and steering over RPC with negative receipts (Issue #297 remainder; carried as P3 in the poteto audit plan below)
+- [x] Unit 10: OMP cancellation landed (runtime-child-cancel-omp observed_live); steering stays an accepted GAP with no primitive, recorded in profiles/omp.json agent.message (Issue #297 CLOSED)
 
 ### Poteto audit program (2026-10-12)
 - [x] Unit 11: Pilot of program `pstack-poteto-audit-20261012`: the recursive plan and issue-graph reconciliation for epic #288 and program #305, with one section per future PR (P1–P15), a verdict table over all 21 open issues, and the offline gate subset recorded (`openspec/changes/2026-10-12-poteto-audit-reconcile/`)
 - [x] Unit 12: Reopened #296 after a premature closure (two acceptance fixtures owed: the `live`/`documented` rejection in P2 and the adapter-PASS-plus-package-FAIL rejection in P8), kept #298 open as NEEDS-WORK with four named negative tests owed, and left the gated #290/#311/#312 untouched
-- [ ] Unit 13: P1 — OMP source matrix and honest bindings; the `agent.cancel`/`agent.resume`/`session.resume`/`monitor`/`schedule` rows claim `verified` with no scenario behind them (Issue #289)
-- [ ] Unit 14: P4 — package precedence, disabled plugin, nested skill and invalid-`omp`-key negatives (Issues #290, #298)
-- [ ] Unit 15: P9 — verification parity: join deadline, evidence binding and declared-host census in `swarm`, `arena` and `interrogate`
+- [x] Unit 13: P1 landed via PR #340: agent.cancel verified receipt-backed, agent.resume/session.resume/monitor static-only, schedule unverified (Issue #289 CLOSED)
+- [x] Unit 14: P4 landed via PR #341 + #330: nested-skill/disabled-plugin/omp-key/precedence negatives in tests/test_omp_native_package.py (Issues #290, #298 CLOSED)
+- [x] Unit 15: P9 landed via PRs #339/#346: bounded join deadline, dropout rule, evidence binding, declared-host census in swarm/arena/interrogate (verified test_playbook_parity.py)
