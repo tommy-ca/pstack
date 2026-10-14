@@ -243,7 +243,7 @@
 - [x] Unit 14: P4 landed via PR #341 + #330: nested-skill/disabled-plugin/omp-key/precedence negatives in tests/test_omp_native_package.py (Issues #290, #298 CLOSED)
 - [x] Unit 15: P9 landed via PRs #339/#346: bounded join deadline, dropout rule, evidence binding, declared-host census in swarm/arena/interrogate (verified test_playbook_parity.py)
 
-## Poteto audit program (2026-10-14, direct: parallel fan-out undriven on OMP)
+## Poteto audit program (2026-10-14, direct: RPC-driver batch fan-out undriven; native task fan-out proven in Unit 21)
 ### Closures reconciled 2026-10-14 (all CLOSED; 0 open issues, 0 open PRs at reconcile time)
 - [x] Unit 15a: Coverage note corrected 2026-10-14: archived task files DO record closing PRs for #292 (via #345), #293 (via #339 + #346), #294 (via #344 + #347), #308 (via #348), #309 (via #348), #313 (via #351). Only #306, #307, #314, #315 lack per-issue closing refs and stay the named graph gap, not backfilled with guesses.
 - [x] Unit 15b: Validate-gate fixes: refresh-hygiene MODIFIED block scenarios restored (Issue #378, PR #386), skip_specs declared on two docs-only changes (Issue #379, PR #383), pstack-playbooks requirements 1-2 scenarios added (Issue #380, PR #384), installed-copy orchestrate-store conflict closed as intentional-Claude-variant classification record with docs-only direction (Issue #402, no code change), scaffold false-success fixed with honest STUB_NOT_IMPLEMENTED stub exiting 2 (Issue #423, PR #422)

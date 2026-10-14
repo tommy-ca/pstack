@@ -177,3 +177,5 @@ def test_porting_table_is_twenty_four() -> None:
     assert "24 `principle-*` skills" in text
     assert "24 principles" in text
     assert "UPSTREAM" in text
+    readme = (ROOT / "docs" / "guide" / "README.md").read_text(encoding="utf-8")
+    assert "The 24 names that redirect an agent mid-task" in readme
