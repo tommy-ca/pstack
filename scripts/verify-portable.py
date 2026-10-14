@@ -394,7 +394,12 @@ def validate_openspec_change(change: str) -> int:
                 import json as _json
 
                 payload = _json.loads(listed.stdout or "{}")
-                changes = payload.get("changes", payload if isinstance(payload, list) else None)
+                if isinstance(payload, dict):
+                    changes = payload.get("changes")
+                elif isinstance(payload, list):
+                    changes = payload
+                else:
+                    changes = None
                 if changes == []:
                     return 0
             except Exception:
