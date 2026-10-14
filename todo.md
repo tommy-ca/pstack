@@ -205,7 +205,7 @@
 ### Phase 4: Verification tooling (Issue #312 core)
 - [x] Unit 9: Changed-path check selection inside the existing portable verifier, with the offline gate list read from the workflow (PR #321)
 - [x] Unit 10: Exact-head and working-tree evidence binding with invalidation on a dirty tree, an untracked change or a changed patch-id (PR #321)
-- [x] Unit 11: `fix-ci`, `babysit` and the tier doc own the contract; issue #312 stays open pending its #309, #311 and #310 prerequisites (PR #321)
+- [x] Unit 11: `fix-ci`, `babysit` and the tier doc own the contract (PR #321; issues #312, #309, #311, #310 all CLOSED since, recorded 2026-10-14)
 
 ### Phase 5: Verification and delivery
 - [x] Unit 12: Independent per-PR verdicts: escape hunt, real-consumer regression, live proof reproduction, selection re-verification, spec claim audit, hardened-predicate attack
@@ -238,7 +238,7 @@
 
 ### Poteto audit program (2026-10-12)
 - [x] Unit 11: Pilot of program `pstack-poteto-audit-20261012`: the recursive plan and issue-graph reconciliation for epic #288 and program #305, with one section per future PR (P1–P15), a verdict table over all 21 open issues, and the offline gate subset recorded (`openspec/changes/2026-10-12-poteto-audit-reconcile/`)
-- [x] Unit 12: Reopened #296 after a premature closure (two acceptance fixtures owed: the `live`/`documented` rejection in P2 and the adapter-PASS-plus-package-FAIL rejection in P8), kept #298 open as NEEDS-WORK with four named negative tests owed, and left the gated #290/#311/#312 untouched
+- [x] Unit 12: Reopened #296 after a premature closure (two acceptance fixtures owed); #298 later closed via PRs #341 + #330, and the gated #290/#311/#312 all CLOSED since (recorded 2026-10-14)
 - [x] Unit 13: P1 landed via PR #340: agent.cancel verified receipt-backed, agent.resume/session.resume/monitor static-only, schedule unverified (Issue #289 CLOSED)
 - [x] Unit 14: P4 landed via PR #341 + #330: nested-skill/disabled-plugin/omp-key/precedence negatives in tests/test_omp_native_package.py (Issues #290, #298 CLOSED)
 - [x] Unit 15: P9 landed via PRs #339/#346: bounded join deadline, dropout rule, evidence binding, declared-host census in swarm/arena/interrogate (verified test_playbook_parity.py)
@@ -251,4 +251,6 @@
 - [x] Unit 17: Verification truth and freshness: installed-copy freshness scoped to repo-owned deploy targets (Issue #404, commit `66c1d7a`), drift classification scoped to upstream-pin-to-HEAD (Issue #403, PR #405), offline-gate inventory reconciled (Issue #382), branch-payload shape fixed before field access (PR #424), dead census aliases deleted with unified verdict lattice and honest scaffold stub (PR #422), sync-requirement deltas reconciled before archiving both changes (Issue #420, PR #421)
 - [x] Unit 18: Packaging and docs parity: antigravity model family metadata emitted by generator (Issue #410, PR #411), 24 principle skills stated in spec, guides, leftover scanner, and evidence quotes (PRs #413, #416, #418, #419), pin records kept at 23 in porting guide with live-count assertion (PRs #415, #417), portability contract and OMP native adapter changes archived (PRs #412, #414), skip_specs harness changes archived (PR #408)
 - [x] Unit 19: Full offline gate green on tested code state 4771d4c (629 passed, 10 skipped, 2026-10-14); every commit since the gate touched only todo.md prose, so the code state under test is unchanged
-- [x] Unit 20: Parallel swarm, arena, and interrogate fan-out NOT run this round: the OMP mapping (`skills/poteto-mode/references/omp-tools.md`) marks batch fan-out and the eval agent() route undriven, with only the single-child task lane driven. Delivery was docs-only direct push, not stacked PRs: this section is the only change, the queue was empty, and the diff got self-review plus independent advisory corrections folded into a follow-up commit. The checklist item naming stacked-PRs/babysit delivery is therefore recorded here as intentionally collapsed, not performed.
+- [x] Unit 20: Real 4-lane swarm at head 6e79f90 (join met, 0 dropouts, 2026-10-14): lanes 1-3 PASS, lane 4 ISSUES (33/33 named and closed, but stale lines described #309-#312 as open/gated). Fixed in Units 12/11 lines above; affected check re-verified below.
+- [x] Unit 22: Swarm fix verified: grep confirms no remaining open/gated language for #309/#310/#311/#312; gh confirms all four CLOSED.
+- [x] Unit 21: Same-turn concurrent task fan-out PROVEN on this host (2026-10-14): two task children spawned in one turn both completed PASS with evidence at head 6e79f90 (lane A: issue #378 CLOSED by #386; lane B: changes holds only archive, issue #379 CLOSED by #383). profiles/omp.json agent_fanout mapping confirmed runtime-observed; the omp-tools.md driver-undriven note covers only the RPC driver lane, not this native route.
