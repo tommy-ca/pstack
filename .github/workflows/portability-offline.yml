@@ -38,6 +38,7 @@ jobs:
             tests/test_evidence_durability.py \
             tests/test_evidence_receipts.py \
             tests/test_select_checks.py \
+            tests/test_scaffold_verification_skill.py \
             tests/test_sync_antigravity_plugin.py \
             tests/test_omp_native_package.py \
             tests/test_ci_resource_isolation.py \

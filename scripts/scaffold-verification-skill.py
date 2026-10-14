@@ -65,8 +65,9 @@ def validate_app_name(app: str, *, allow_pstack: bool = False) -> None:
 
 def generate_driver_script(app: str) -> str:
     return f"""#!/usr/bin/env bash
-# Verification driver helper for {app}
-# Wraps Launch, Doctor, Drive, and Cleanup with 60s timeout handling
+# Verification driver stub template for {app}
+# Wire each branch to the app's real command during tailoring; the
+# 60s bound below applies to the tailored driver, not this stub.
 set -euo pipefail
 
 TIMEOUT_SECONDS=60
@@ -84,20 +85,20 @@ run_bounded() {{
 
 case "${{1:-all}}" in
     doctor)
-        echo "Doctor check for {app}..."
-        exit 0
+        echo "STUB_NOT_IMPLEMENTED: wire this branch to the app's real doctor command" >&2
+        exit 2
         ;;
     launch)
-        echo "Launching {app} in isolated environment..."
-        exit 0
+        echo "STUB_NOT_IMPLEMENTED: wire this branch to the app's real launch command" >&2
+        exit 2
         ;;
     drive)
-        echo "Driving {app} verification paths..."
-        exit 0
+        echo "STUB_NOT_IMPLEMENTED: wire this branch to the app's real drive command" >&2
+        exit 2
         ;;
     cleanup)
-        echo "Cleaning up {app} instances..."
-        exit 0
+        echo "STUB_NOT_IMPLEMENTED: wire this branch to the app's real cleanup command" >&2
+        exit 2
         ;;
     all)
         "$0" doctor
@@ -146,7 +147,7 @@ Reduce scenario verdicts with the strict failure-first lattice: FAIL > BLOCKED >
 
 Capture test outputs, exit codes, transcripts, and artifacts. Verify they survive teardown.
 Tag evidence with evidence_level (observed_live for live runs, offline for contract checks).
-Bound driver command executions to 60 seconds with strict timeout handling.
+Bound driver command executions to 60 seconds with strict timeout handling once each branch is wired to the app's real command.
 
 ## Cleanup
 
@@ -154,7 +155,7 @@ Tear down any processes or temporary instances spawned during verification.
 
 ## Helpers
 
-Run the verification driver script:
+Run the verification driver script (stub until each branch is wired to the app's real command):
 ```bash
 ./scripts/driver.sh doctor
 ./scripts/driver.sh drive

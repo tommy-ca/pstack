@@ -333,6 +333,15 @@ class TestCheckEvidenceBinding:
         assert claimable is False
         assert "UNTESTED" in reason
 
+    def test_invented_outcome_token_is_fail_not_claimable(self, tmp_path: Path) -> None:
+        repo = self._branch_with_patch(tmp_path)
+        receipt = self._record(repo, outcomes={"pytest:tests/test_x.py": "LGTM"})
+
+        assert receipt.verdict == "FAIL"
+        claimable, reason = evidence_receipts.can_claim_current_ci(receipt, repo, "main")
+        assert claimable is False
+        assert "FAIL" in reason
+
     def test_unchanged_worktree_does_not_invalidate(self, tmp_path: Path) -> None:
         repo = self._branch_with_patch(tmp_path)
         receipt = self._record(repo)

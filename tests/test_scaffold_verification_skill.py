@@ -375,3 +375,18 @@ def test_scaffold_audit_mode(tmp_path):
     result = cli(tmp_path, "--audit")
     assert result.returncode == 1
     assert "FAIL: .grok/skills/verify-app1" in result.stdout
+
+@pytest.mark.parametrize("mode", ["doctor", "launch", "drive", "cleanup", "all"])
+def test_generated_driver_stub_exits_nonzero_until_wired(draft, mode):
+    driver = draft / "scripts/driver.sh"
+    result = subprocess.run(
+        [str(driver), mode], capture_output=True, text=True, check=False,
+    )
+    assert result.returncode == 2
+    assert "STUB_NOT_IMPLEMENTED" in result.stderr
+
+
+def test_generated_driver_makes_no_timeout_bound_claim_while_unwired(draft):
+    text = (draft / "scripts/driver.sh").read_text()
+    assert text.count("run_bounded") == 1
+    assert "STUB_NOT_IMPLEMENTED" in text

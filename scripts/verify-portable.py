@@ -59,7 +59,7 @@ from scripts.evidence_receipts import (
     resolve_revision,
 )
 
-SUPPORTED_HOSTS = ("grok", "codex", "omp", "opencode", "antigravity", "droid", "mock")
+SUPPORTED_HOSTS = ("grok", "codex", "omp", "opencode", "antigravity", "droid")
 
 
 def get_declared_hosts() -> List[str]:
@@ -95,9 +95,6 @@ def get_canonical_root(root: Path) -> Path:
     return root
 
 
-DECLARED_HOSTS = get_declared_hosts()
-SIX_HARNESSES = tuple(DECLARED_HOSTS)
-FIVE_HARNESSES = SIX_HARNESSES  # Deprecated alias preserved for backwards compatibility; points to declared hosts
 DEFAULT_EVIDENCE_DIR = ROOT / ".audit" / "evidence"
 
 
@@ -201,7 +198,7 @@ CHECK_SELECTION_TABLE: List[tuple] = [
     ),
     (
         "scripts/evidence_receipts.py",
-        ("tests/test_evidence_receipts.py", "tests/test_evidence_durability.py"),
+        ("tests/test_evidence_receipts.py", "tests/test_evidence_durability.py", "tests/test_select_checks.py"),
         (),
     ),
     ("scripts/drivers/**", ("!tests/test_harness_drivers.py", "tests/test_route_resolver.py"), ()),
@@ -377,8 +374,44 @@ def _print_selection_plan(plan: Dict[str, Any]) -> None:
         print(f"      for: {', '.join(check['paths'])}")
 
 
+DEFAULT_OPENSPEC_CHANGE = "pstack-portability-contract"
+
+
+def validate_openspec_change(change: str) -> int:
+    """Exit 0 iff the named change validates, or the default target has nothing active.
+
+    Argv-safe: change travels as subprocess argv, never interpolated
+    into source. The no-op path applies only when the caller uses the
+    default target AND structured `openspec list --json` reports
+    `"changes": []`. An explicit --change name always validates.
+    """
+    if change == DEFAULT_OPENSPEC_CHANGE:
+        listed = subprocess.run(
+            ["openspec", "list", "--json"], capture_output=True, text=True, check=False
+        )
+        if listed.returncode == 0:
+            try:
+                import json as _json
+
+                payload = _json.loads(listed.stdout or "{}")
+                changes = payload.get("changes", payload if isinstance(payload, list) else None)
+                if changes == []:
+                    return 0
+            except Exception:
+                pass
+    probed = subprocess.run(
+        ["openspec", "validate", change, "--type", "change", "--strict"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    sys.stdout.write(probed.stdout)
+    sys.stderr.write(probed.stderr)
+    return probed.returncode
+
+
 class PortableVerifier:
-    def __init__(self, host: str, evidence_root: Path, change: str = "pstack-portability-contract"):
+    def __init__(self, host: str, evidence_root: Path, change: str = DEFAULT_OPENSPEC_CHANGE):
         self.host = host
         self.evidence_root = evidence_root
         self.change = change
@@ -461,12 +494,12 @@ class PortableVerifier:
             [sys.executable, str(ROOT / "scripts" / "canonical-index.py"), "--check"],
         )
 
-        # 2. OpenSpec change integrity
+        # 2. OpenSpec change integrity (argv-safe helper above)
         r2 = self.run_command(
             "doctor-openspec-validation",
             f"Verify {self.change} openspec change passes schema checks",
             "canonical",
-            ["openspec", "validate", self.change, "--type", "change", "--strict"],
+            [sys.executable, "-c", "import importlib.util, sys; spec = importlib.util.spec_from_file_location('vp_helper', 'scripts/verify-portable.py'); m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m); sys.exit(m.validate_openspec_change(sys.argv[1]))", self.change],
         )
 
         # 3. Static adapter checks
@@ -928,7 +961,7 @@ def main() -> None:
     parser.add_argument("--feature", help="Feature to drive (for 'drive' action)")
     parser.add_argument("--evidence-dir", type=Path, default=DEFAULT_EVIDENCE_DIR, help="Evidence directory")
     parser.add_argument("--allow-stale", action="store_true", help="Allow stale evidence during durability check")
-    parser.add_argument("--change", default="pstack-portability-contract", help="Target OpenSpec change to validate in doctor")
+    parser.add_argument("--change", default=DEFAULT_OPENSPEC_CHANGE, help="Target OpenSpec change to validate in doctor")
     parser.add_argument("--json", action="store_true", help="Emit JSON output for machine consumption")
     parser.add_argument("--base", help="Base ref to diff against (select-checks)")
     parser.add_argument("--head", default="HEAD", help="Head ref to scope (select-checks)")
