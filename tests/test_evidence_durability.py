@@ -32,8 +32,11 @@ from scripts.portability_schema import (
     preserve_observed_settlements,
 )
 
-SIX_HARNESSES = ("grok", "codex", "omp", "opencode", "antigravity", "droid")
-FIVE_HARNESSES = ("grok", "codex", "omp", "opencode", "antigravity")
+def _declared_hosts() -> tuple:
+    data = json.loads((ROOT / "pstack.package.json").read_text(encoding="utf-8"))
+    return tuple(data["host_targets"])
+
+SIX_HARNESSES = _declared_hosts()
 
 RECEIPT_SCHEMA = ROOT / "schemas" / "portability" / "receipt.schema.json"
 EVIDENCE_DIR = ROOT / ".audit" / "evidence"

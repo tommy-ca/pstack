@@ -318,17 +318,15 @@ class CheckEvidenceReceipt:
 
 
 def _reduce_outcomes(outcomes: Dict[str, str]) -> str:
-    """Failure-first reduction: FAIL > BLOCKED > UNTESTED > PASS."""
-    values = set(outcomes.values())
-    if not values:
-        return "UNTESTED"
-    if "FAIL" in values:
-        return "FAIL"
-    if "BLOCKED" in values:
-        return "BLOCKED"
-    if values != {"PASS"}:
-        return "UNTESTED"
-    return "PASS"
+    """Failure-first reduction: FAIL > BLOCKED > UNTESTED > PASS.
+
+    Single lattice lives in scripts/verify-portable.py::reduce_verdicts;
+    this keeps the Dict[str, str] receipt boundary and passes values.
+    """
+    import importlib
+
+    lattice = importlib.import_module("scripts.verify-portable").reduce_verdicts
+    return lattice(outcomes.values())
 
 
 def create_check_evidence_receipt(

@@ -59,7 +59,7 @@ from scripts.evidence_receipts import (
     resolve_revision,
 )
 
-SUPPORTED_HOSTS = ("grok", "codex", "omp", "opencode", "antigravity", "droid", "mock")
+SUPPORTED_HOSTS = ("grok", "codex", "omp", "opencode", "antigravity", "droid")
 
 
 def get_declared_hosts() -> List[str]:
@@ -95,9 +95,6 @@ def get_canonical_root(root: Path) -> Path:
     return root
 
 
-DECLARED_HOSTS = get_declared_hosts()
-SIX_HARNESSES = tuple(DECLARED_HOSTS)
-FIVE_HARNESSES = SIX_HARNESSES  # Deprecated alias preserved for backwards compatibility; points to declared hosts
 DEFAULT_EVIDENCE_DIR = ROOT / ".audit" / "evidence"
 
 
@@ -201,7 +198,7 @@ CHECK_SELECTION_TABLE: List[tuple] = [
     ),
     (
         "scripts/evidence_receipts.py",
-        ("tests/test_evidence_receipts.py", "tests/test_evidence_durability.py"),
+        ("tests/test_evidence_receipts.py", "tests/test_evidence_durability.py", "tests/test_select_checks.py"),
         (),
     ),
     ("scripts/drivers/**", ("!tests/test_harness_drivers.py", "tests/test_route_resolver.py"), ()),
