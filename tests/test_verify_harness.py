@@ -621,7 +621,7 @@ def test_guide_teaches_sync_then_adapt() -> None:
     plugin = json.loads((ROOT / "plugin.json").read_text(encoding="utf-8"))
     assert "HARNESS" not in json.dumps(plugin)
     port = (ROOT / "docs/guide/12-porting.md").read_text(encoding="utf-8")
-    assert "23 principles" in port
+    assert "24 principles" in port
     assert "host map" in port
     assert "Laziness Protocol" in port
     assert "Capability checklist" in port

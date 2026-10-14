@@ -172,9 +172,8 @@ def test_archive_and_superpowers_still_say_twenty_one() -> None:
     assert "21 principles" in superpowers.read_text(encoding="utf-8")
 
 
-def test_porting_table_is_twenty_three() -> None:
+def test_porting_table_is_twenty_four() -> None:
     text = (ROOT / "docs" / "guide" / "12-porting.md").read_text(encoding="utf-8")
-    assert "23 `principle-*` skills" in text
-    assert "21 `principle-*` skills" not in text
-    assert "23 principles" in text
+    assert "24 `principle-*` skills" in text
+    assert "24 principles" in text
     assert "UPSTREAM" in text

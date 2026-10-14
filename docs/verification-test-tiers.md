@@ -27,6 +27,7 @@ without installing proprietary agent harness binaries:
 - `tests/test_evidence_durability.py`: durable evidence/plane staleness.
 - `tests/test_select_checks.py`: change-scoped selection table and exact-head
   evidence binding.
+- `tests/test_scaffold_verification_skill.py`: scaffold input validation, ordered feature maps, and the honest non-zero stub.
 - `tests/test_sync_antigravity_plugin.py`: the sync source guard (dirty tree,
   linked worktree, non-repository, and the `--force` override).
 - `tests/test_omp_native_package.py`: the OMP native package proof against the
