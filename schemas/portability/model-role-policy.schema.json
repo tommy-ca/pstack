@@ -125,23 +125,9 @@
             },
             "tier_defaults": {
               "type": "object",
-              "properties": {
-                "fast-worker": {
-                  "$ref": "#/$defs/modelChoices"
-                },
-                "fast-verifier": {
-                  "$ref": "#/$defs/modelChoices"
-                },
-                "strong-judgment": {
-                  "$ref": "#/$defs/modelChoices"
-                },
-                "strongest": {
-                  "$ref": "#/$defs/modelChoices"
-                },
-                "panel": {
-                  "$ref": "#/$defs/modelChoices"
-                },
-                "adversarial-panel": {
+              "description": "Keys must match default_model_role values from pstack.package.json#/roles; cross-document agreement is enforced by the validator.",
+              "patternProperties": {
+                "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$": {
                   "$ref": "#/$defs/modelChoices"
                 }
               },
@@ -195,9 +181,18 @@
                 },
                 "receipt": {
                   "type": "string"
+                },
+                "implementation_revision": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{40}$"
                 }
               },
-              "additionalProperties": false
+              "additionalProperties": false,
+              "required": [
+                "host_version",
+                "observed_at",
+                "receipt"
+              ]
             }
           },
           "additionalProperties": false
