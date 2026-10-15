@@ -9,7 +9,8 @@ distinct scopes, not interchangeable PASS signals.
 `.github/workflows/portability-offline.yml` executes Python 3.12/pytest
 without installing proprietary agent harness binaries:
 
-- `tests/test_model_role_policy.py`: static model-role policy, pure planner, and fork-index pins.
+- `tests/test_portability_schemas.py`: schema/domain invariants.
+- `tests/test_model_role_policy.py`: static model-role policy, pure planner, and fork-index pins. The gate also runs `python -m scripts.model_role_policy` as a checked-in policy preflight.
 - `tests/test_droid_integration.py`: descriptor, profile, lifecycle and
   shape validation. The optional CLI-backed Droid scenarios skip when the
   Droid executable is absent; a skip is **not** a runtime PASS.
