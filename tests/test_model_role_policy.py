@@ -282,7 +282,7 @@ def test_reference_fork_snapshot_preserves_unreviewed_states() -> None:
 
 
 def test_plan_wire_schema_accepts_pure_planner_and_forbids_fake_runtime_claims() -> None:
-    from dataclasses import asdict
+    from scripts.model_role_resolver import model_plan_to_wire
     plan_schema = json.loads(
         (ROOT / "schemas/portability/model-plan.schema.json").read_text()
     )
@@ -291,7 +291,7 @@ def test_plan_wire_schema_accepts_pure_planner_and_forbids_fake_runtime_claims()
 
     plan = plan_role(catalog_plan_policy(), PACKAGE, host="codex",
                      role="swarm-workers", capabilities=capability_bindings())
-    wire = asdict(plan)
+    wire = model_plan_to_wire(plan)
     validate_plan(wire)
     assert wire["evidence_level"] == "static-planning-only"
     assert wire["status"] == "PLANNED"
@@ -299,7 +299,7 @@ def test_plan_wire_schema_accepts_pure_planner_and_forbids_fake_runtime_claims()
     blocked = plan_role(catalog_plan_policy(), PACKAGE, host="codex",
                         role="swarm-workers", explicit="not-there",
                         capabilities=capability_bindings())
-    validate_plan(asdict(blocked))
+    validate_plan(model_plan_to_wire(blocked))
 
     fake = copy.deepcopy(wire)
     fake["status"] = "VERIFIED"
