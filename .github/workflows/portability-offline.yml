@@ -50,4 +50,4 @@ jobs:
             tests/test_eval_blinded_pstack_dsh.py \
             tests/test_canonical_index.py
       # Native host spawn/join/isolation are intentionally NOT covered here.
-      # Their separate live evidence is tracked by issues #238 and #240.
+      # Their separate live evidence lives in .audit/evidence/ receipts and profiles/*.json bindings.
