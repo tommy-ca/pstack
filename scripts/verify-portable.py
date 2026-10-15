@@ -527,14 +527,17 @@ class PortableVerifier:
             [sys.executable, str(ROOT / "scripts" / "canonical-index.py"), "--check"],
         )
 
-        # 2. OpenSpec change integrity (argv-safe helper above; omitted --change travels as "None")
-        change_arg = self.change if self.change is not None else "None"
+        # 2. OpenSpec change integrity (argv-safe helper above; omitted --change passes no positional arg)
         change_label = self.change if self.change is not None else "active checkout (none: no-op)"
+        helper = "import importlib.util, sys; spec = importlib.util.spec_from_file_location('vp_helper', 'scripts/verify-portable.py'); m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m); sys.exit(m.validate_openspec_change(sys.argv[1] if len(sys.argv) > 1 else None))"
+        helper_cmd: list[str] = [sys.executable, "-c", helper]
+        if self.change is not None:
+            helper_cmd.append(self.change)
         r2 = self.run_command(
             "doctor-openspec-validation",
             f"Verify {change_label} openspec change passes schema checks",
             "canonical",
-            [sys.executable, "-c", "import importlib.util, sys; spec = importlib.util.spec_from_file_location('vp_helper', 'scripts/verify-portable.py'); m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m); raw = sys.argv[1]; sys.exit(m.validate_openspec_change(None if raw == 'None' else raw))", change_arg],
+            helper_cmd,
         )
 
         # 3. Static adapter checks
