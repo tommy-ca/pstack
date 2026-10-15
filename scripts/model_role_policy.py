@@ -96,7 +96,8 @@ def check_model_role_policy(policy: dict[str, Any], descriptor: dict[str, Any]) 
             require(bool(model.get("provider")) and bool(model.get("family")),
                     f"{host}: model {slug} missing provider/family")
             efforts = model.get("supported_efforts", [])
-            require(isinstance(efforts, list) and len(efforts) == len(set(efforts)),
+            require(isinstance(efforts, list) and all(isinstance(e, str) for e in efforts) and
+                    len(efforts) == len(set(efforts)),
                     f"{host}: model {slug} has duplicate/invalid efforts")
             models[slug] = model
 
@@ -118,6 +119,7 @@ def check_model_role_policy(policy: dict[str, Any], descriptor: dict[str, Any]) 
 
         def check_choices(label: str, choices: Any, effort: str | None = None) -> None:
             require(isinstance(choices, list) and bool(choices) and
+                    all(isinstance(c, str) for c in choices) and
                     len(choices) == len(set(choices)), f"{host}/{label}: choices must be unique nonempty list")
             for slug in choices:
                 require(isinstance(slug, str) and bool(slug), f"{host}/{label}: invalid choice")

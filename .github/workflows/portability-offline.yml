@@ -50,5 +50,7 @@ jobs:
             tests/test_eval_blinded_pstack_dsh_candidate.py \
             tests/test_eval_blinded_pstack_dsh.py \
             tests/test_canonical_index.py
+      - name: Validate checked-in model policy against canonical role registry
+        run: python -m scripts.model_role_policy
       # Native host spawn/join/isolation are intentionally NOT covered here.
       # Their separate live evidence is tracked by issues #238 and #240.
