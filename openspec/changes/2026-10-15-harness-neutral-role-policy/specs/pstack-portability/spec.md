@@ -22,9 +22,7 @@ Native model availability, allowed effort tokens and spawn fields MUST be resolv
 
 
 
-### Requirement: Logical model/role policy is typed and harness-neutral
-
-A policy document MUST conform to `schemas/portability/model-role-policy.schema.json`. `pstack.package.json#/roles` MUST remain the only canonical role ID/description/default-tier registry; the policy MAY add per-role capability and topology constraints but MUST NOT duplicate role definitions or introduce parallel tier names. It MUST reuse the six `default_model_role` tier values from the descriptor. Host records MUST separate provider/model/family catalogs from role policy. Duplicate role IDs, dangling references, undefined tiers and unknown role keys MUST fail validation by the implementation lever.
+A policy document MUST conform to `schemas/portability/model-role-policy.schema.json`. `pstack.package.json#/roles` MUST remain the only canonical role registry; the policy MAY add per-role constraints but MUST NOT duplicate role definitions or tier names. It MUST reuse the six `default_model_role` tier values. Host records MUST separate catalogs from role policy. Unknown roles, tiers, or dangling references MUST fail validation.
 
 #### Scenario: new harness
 
@@ -95,9 +93,7 @@ Every host addition progresses through candidate, mapped, packaged, verified and
 - **THEN** runtime status remains unverified or failed
 - **AND** the evidence ledger records the failure without overwriting previous receipts
 
-### Requirement: Role/model resolution is a pure, auditable plan before native dispatch
-
-A role resolver MUST produce a deterministic `ModelPlan` without spawning children or asserting real model availability. The planner MUST report `PLANNED`, `DEGRADED` or `BLOCKED`; these are *planning states*, never runtime conformance verdicts. Source precedence MUST be explicit → project → user → host role → host tier → inherited parent or fail-closed. A rejected explicit model MUST NOT silently fall back. Capabilities supplied from host metadata MUST NOT be interpreted as verified runtime receipts.
+A role resolver MUST produce a deterministic `ModelPlan` without spawning children or asserting model availability. The planner MUST report `PLANNED`, `DEGRADED` or `BLOCKED` as planning states, never runtime verdicts. Source precedence MUST be explicit → project → user → host role → host tier → inherited parent or fail-closed. Host metadata MUST NOT count as verified runtime receipts.
 
 #### Scenario: explicit configuration overrides project and user choices
 
@@ -114,9 +110,7 @@ A role resolver MUST produce a deterministic `ModelPlan` without spawning childr
 - **THEN** the plan is `BLOCKED` with a named-missing-model reason
 - **AND** no parent-inheritance or guessed substitute is dispatched
 
-### Requirement: Independent seats and model diversity are distinct measures
-
-Role settings MAY declare a bounded `seats` count independently from a unique set of configured model slugs. A panel MAY generate multiple fresh-context candidates using the same model, following canonical Arena behavior, but MUST record the family diversity as reduced. The canonical one-runner default MUST remain possible. The Arena cross-judge pool MUST select one eligible judge seat, preferring a family different from its parent/candidate. Interrogate reviewers MUST count truly independent sessions and distinct families separately.
+Role settings MAY declare a bounded `seats` count independent of configured model slugs. A panel MAY use one model for multiple fresh-context seats but MUST record reduced family diversity. The canonical one-runner default MUST remain possible. The Arena cross-judge pool MUST select one eligible seat preferring a different family. Interrogate reviewers MUST count independent sessions and families separately.
 
 #### Scenario: three Arena candidates using one configured model
 
@@ -151,9 +145,7 @@ Role settings MAY declare a bounded `seats` count independently from a unique se
 - **THEN** the output has no planned seats and at least one explicit reason
 - **AND** the plan validates as an honest error artifact
 
-### Requirement: Harness identity can extend without replicating the workflow router
-
-The portability design MUST support separately identifiable future harnesses through a versioned, declarative adapter identity/descriptor rather than assuming every new host is the one undifferentiated `custom` entry. Until a migration is tested and accepted, existing known-host enums remain operational and new IDs are **not** supported at runtime. A new identity MUST NOT silently inherit a known host's verified capabilities, tool mapping, model availability or installed execution environment. Source-owned skill and playbook content MUST remain unchanged.
+The design MUST support future harness identities through a versioned declarative adapter descriptor, not one undifferentiated `custom` entry. Until a migration is tested, known-host enums stay operational and new IDs are NOT runtime-supported. A new identity MUST NOT inherit verified capabilities, tool mappings, or model availability. Shared skill and playbook content MUST remain unchanged.
 
 #### Scenario: two new candidate harnesses
 

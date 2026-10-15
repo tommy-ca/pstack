@@ -199,3 +199,40 @@ def test_portable_verifier_cli_failing_change_observable(tmp_path: Path) -> None
     assert res.returncode != 0
     assert "Verify nonexistent-target-change openspec change passes schema checks" in res.stdout or res.returncode == 1
 
+def test_validate_default_change_fallback_branches(monkeypatch: pytest.MonkeyPatch) -> None:
+    validate = verify_portable.validate_openspec_change
+    default = verify_portable.DEFAULT_OPENSPEC_CHANGE
+
+    monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda: ["only-active"])
+    monkeypatch.setattr(
+        verify_portable.subprocess, "run",
+        lambda *a, **k: subprocess.CompletedProcess(a, 0, "ok", ""),
+    )
+    assert validate(default) == 0
+
+    monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda: None)
+    assert validate(default) == 1
+
+    monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda: ["a", "b"])
+    assert validate(default) == 1
+
+@pytest.mark.parametrize("stdout", [
+    '{"changes": ["junk"]}',
+    '{"changes": [{}]}',
+    '{"changes": [{"name": ""}]}',
+    '{"changes": [{"name": 42}]}',
+    '{"changes": "junk"}',
+    'not json',
+])
+def test_active_changes_malformed_payload_is_lookup_failure(
+    monkeypatch: pytest.MonkeyPatch, stdout: str
+) -> None:
+    monkeypatch.setattr(
+        verify_portable.subprocess, "run",
+        lambda *a, **k: subprocess.CompletedProcess(a, 0, stdout, ""),
+    )
+    assert verify_portable._active_openspec_changes() is None
+    assert verify_portable.validate_openspec_change(
+        verify_portable.DEFAULT_OPENSPEC_CHANGE
+    ) == 1
+
