@@ -4,7 +4,7 @@ Status: Proposed · 2026-10-15. Implementation requires issue graph and runtime 
 
 ## Authority and provenance
 
-1. `cursor/plugins/pstack` at `UPSTREAM` is the normative source for canonical principles, role intent, skills, router and playbooks.
+1. `cursor/plugins/pstack` at `UPSTREAM` is the normative source for canonical principles, role intent, skills, router and playbooks. In this port, `pstack.package.json#/roles` is the unique local role ID/description/default-model-tier registry; host policy augments it without copying the role array.
 2. `tommy-ca/pstack` is the portability implementation, not the canonical source.
 3. `michael-denyer/pstack-claude` at a recorded commit is a reference port; `tools/forks.json` explicitly declares policy forks. Adopt a pattern only after a behavior and license/provenance review.
 4. `tommy-ca/qstack` supplies quant-domain invariants after the host router; it MUST NOT own a pstack router or model namespace.
@@ -17,7 +17,7 @@ At audit time: target main `7700faa158558e47260565a71e7d0b6cdc95679a`; reference
 | --- | --- | --- |
 | Canonical inventory | role/skill/playbook IDs and pinned source provenance | host defaults |
 | Intent resolver | task -> canonical playbook and role intent | model/provider calls |
-| Role policy | role -> tier, spawn topology, minimal capabilities | model catalog discovery |
+| Role policy | canonical role ID -> existing descriptor tier, spawn topology, minimal capabilities | redefining role IDs/tiers or model catalog discovery |
 | Host catalog | observed models, provider/family, effort enum and evidence | global policy |
 | Role resolver | input + constraints + catalog -> typed choice or explicit gap | spawning |
 | Capability adapter | semantic spawn/join/cancel/resume/isolated/read-only to native primitives | playbook decisions |
@@ -59,7 +59,7 @@ No child may silently become the coordinator. Hard read-only isolation and advis
 
 ### Projection contract
 
-`pstack.package.json` remains package authority; `scripts/project-package.py` remains the single projector. The new schema describes *logical* model policy and can initially be checked as an example. The implementation phase may incorporate it as an optional field in `pstack.package.json` or a single adjacent `model-role-policy.json`, but MUST NOT create competing role registries or separately hand-maintained host manifests. Add only a minimal resolver/validator; keep host-specific hooks/extensions in host packages.
+`pstack.package.json` remains package authority; `scripts/project-package.py` remains the single projector. The new schema declares `role_source: pstack.package.json#/roles`, optional per-role constraints and per-host tiers; it must reuse exactly the existing tier values (`fast-worker`, `fast-verifier`, `strong-judgment`, `strongest`, `panel`, `adversarial-panel`). It does not redeclare canonical roles. This can initially be checked as an example. The implementation phase may incorporate it as an optional field in `pstack.package.json` or a single adjacent `model-role-policy.json`, but MUST NOT create competing role registries or separately hand-maintained host manifests. Add only a minimal resolver/validator; keep host-specific hooks/extensions in host packages.
 
 Before accepting a Copilot or Claude host entry: implement profile, manifest, hook policy, runtime scope, identity/permission checks and a package install/uninstall smoke test. `candidate` and `mapped` do not equal `supported`. Discovered skills do not prove independent agents, hooks, or model assignment.
 
