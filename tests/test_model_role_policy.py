@@ -256,3 +256,26 @@ def test_missing_named_mapping_fails_closed() -> None:
     inherited = plan_role(policy, PACKAGE, host="codex", role="swarm-workers",
                           capabilities=capability_bindings())
     assert (inherited.source, inherited.seats[0].model) == ("inherit-parent", None)
+
+
+def test_cross_judge_cannot_claim_multiple_seats() -> None:
+    policy = catalog_plan_policy()
+    policy["hosts"]["codex"]["role_overrides"] = {
+        "arena-cross-judge-pool": {"models": ["model-a", "model-b"], "seats": 3}
+    }
+    with pytest.raises(ValidationError, match="non-panel role"):
+        check_model_role_policy(policy, PACKAGE)
+
+
+def test_reference_fork_snapshot_preserves_unreviewed_states() -> None:
+    manifest = json.loads(
+        (ROOT / "docs/research/pstack-claude-forks-2026-10-15.json").read_text()
+    )
+    assert manifest["source_sha"] == "94f5ce95abe8a9dec976967d79941f631cf477cd"
+    rows = manifest["entries"]
+    assert len(rows) == 47
+    assert len({row["path"] for row in rows}) == len(rows)
+    assert sum(row["reference_kind"] == "policy" for row in rows) == 39
+    assert sum(row["reference_kind"] == "port-feature" for row in rows) == 8
+    assert all(row["review_state"] == "pending" for row in rows)
+    assert all(row["proposed_adoption"] == "unclassified" for row in rows)

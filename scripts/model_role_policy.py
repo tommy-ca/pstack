@@ -63,7 +63,8 @@ def check_model_role_policy(policy: dict[str, Any], descriptor: dict[str, Any]) 
         require(selection in VALID_SELECTIONS, f"{rid}: unsupported selection mode")
         count = contract.get("minimum_independent_workers", 1)
         require(type(count) is int and count >= 1, f"{rid}: invalid minimum_independent_workers")
-        require(selection != "single" or count == 1, f"{rid}: single model cannot require >1 workers")
+        require(selection == "panel" or count == 1,
+                f"{rid}: non-panel role cannot require >1 workers")
         capabilities = contract.get("required_capabilities", [])
         require(isinstance(capabilities, list), f"{rid}: required_capabilities must be a list")
         for capability in capabilities:
@@ -138,6 +139,11 @@ def check_model_role_policy(policy: dict[str, Any], descriptor: dict[str, Any]) 
             check_choices(f"tier={tier}", choices)
         for rid, override in overrides.items():
             require(isinstance(override, dict), f"{host}: override {rid} must be an object")
+            seats = override.get("seats", 1)
+            require(type(seats) is int and 1 <= seats <= 16, f"{host}/{rid}: invalid panel seats")
+            role_selection = constraints.get(rid, {}).get("selection", "single")
+            require(role_selection == "panel" or seats == 1,
+                    f"{host}/{rid}: non-panel role cannot request multiple seats")
             effort = override.get("effort")
             check_choices(f"role={rid}", override.get("models"), effort)
 

@@ -117,3 +117,20 @@ Configured model list uniqueness does not impose unique models across `seats`. A
 2. Model discovery `catalog` means static inventory only. Even `live` declared in JSON is insufficient to authorize a model call until receipt integrity and freshness have been checked by the host driver.
 3. `project` override as an input parameter is a contract, not a file path or policy engine. The setup skill owns safe configuration parsing/migration.
 4. The reference `pstack-claude` aliases (`opus/fable/sonnet/haiku`) are not the canonical role registry, and its Codex/Pi tables may not reflect the currently installed host. Models must be discovered from the target harness session.
+
+## Portability Arena decision record (static candidate evaluation, not an agent run)
+
+Rubric: upstream fidelity 30%, maintenance burden 20%, host-native correctness 25%, verifiability 15%, flexibility 10%. Alternatives:
+
+| Candidate | Canonical fidelity | Maintenance | Host correctness | Verification | Decision |
+| --- | --- | --- | --- | --- | --- |
+| A Copy comparator plugin, models and Pi engine | Lower: declared policy forks and alternate state | High drift cost | Pi-specific, not OMP | Existing Pi tests only | Reject |
+| B Keep typed descriptor + pure model planner + thin native adapters | Strong: one pinned workflow source | Incremental | Host version isolated | Existing CI + per-host native gate | **Recommend** |
+| C Introduce a provider-independent agent runtime and persistent workflow DB | Weak: duplicates router and state | Highest | Must imitate native auth/isolation | Extra untested surface | Reject |
+| D Preserve only documentation mapping | No implementation change | Low short term | Unverified runtime behavior | Prose only | Reject as final design |
+
+**Interrogate checklist, not an executed independent review:** Is the model alias a role ID? Are model/provider/family identities verified, not inferred from a list? Does an explicit invalid model fail rather than silently inherit? Is an Arena runner the same as a reviewer family? Is hard read-only really enforced? Can hooks run twice after compaction? Does a reference policy fork alter merge authority? Does this design introduce another durable store? Do review receipts bind precise model, host version, parent/candidate context, and SHA? Each requires independently recorded evidence at #436/#445 before a multi-agent PASS.
+
+## Pinned comparator fork inventory
+
+`docs/research/pstack-claude-forks-2026-10-15.json` captures all 47 paths from the comparator's own `tools/forks.json` at immutable revision `94f5ce95abe8a9dec976967d79941f631cf477cd`. Every row is `review_state=pending` and `proposed_adoption=unclassified`; classifying these is a blocking source-provenance task (#434). This JSON index is separate from `skills/swarm/references/classification.tsv`, which tracks **canonical upstream-pin refresh** only, and must not be repurposed for a third-party fork.
