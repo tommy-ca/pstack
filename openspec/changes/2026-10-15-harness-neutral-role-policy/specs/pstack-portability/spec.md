@@ -132,3 +132,21 @@ Role settings MAY declare a bounded `seats` count independently from a unique se
 - **WHEN** the canonical default resolves to one runner
 - **THEN** role planning permits one candidate
 - **AND** no implicit two-runner requirement is inserted by this port
+
+### Requirement: Planner output is typed and cannot masquerade as runtime proof
+
+`ModelPlan` MUST conform to `schemas/portability/model-plan.schema.json`. The output schema MUST reject runtime verdict statuses and evidence-level upgrades, carry immutable seat ordinals, and distinguish an inherited model's unknown provider/family from detected real model identity.
+
+#### Scenario: static plan cannot become a fake verified receipt
+
+- **GIVEN** a structurally valid static `ModelPlan`
+- **WHEN** its status is changed to `VERIFIED` or evidence level to `runtime-verified`
+- **THEN** JSON Schema validation fails
+- **AND** host-native runtime proof remains a separate capability receipt
+
+#### Scenario: blocked planning result
+
+- **GIVEN** a model not present in the host's declared catalog
+- **WHEN** the pure role planner returns `BLOCKED`
+- **THEN** the output has no planned seats and at least one explicit reason
+- **AND** the plan validates as an honest error artifact
