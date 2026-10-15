@@ -8,7 +8,7 @@ read-only/isolation boundary was enforced by a live host.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from typing import Any, Mapping, Sequence
 
 from scripts.model_role_policy import INHERIT, check_model_role_policy
@@ -180,3 +180,15 @@ def plan_role(
         status="DEGRADED" if degraded else "PLANNED",
         seats=tuple(members), reasons=tuple(reasons), effort=effort,
     )
+
+
+
+def model_plan_to_wire(plan: ModelPlan) -> dict[str, Any]:
+    """Convert frozen planning tuples into JSON-compatible arrays.
+
+    This is a static planning artifact, NOT a verified runtime receipt.
+    """
+    data = asdict(plan)
+    data["seats"] = [asdict(seat) for seat in plan.seats]
+    data["reasons"] = list(plan.reasons)
+    return data
