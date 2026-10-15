@@ -45,3 +45,28 @@ These are source-review partitions, **not executed independent swarm agents**. R
 ## Existing history, not reopened
 
 Recent upstream refresh #377, OMP steering gap #389, cancellation receipt #381/#387, project-model drift #410/#411, and pstack-claude orchestration-store scope #402 were already closed by 2026-10-15. New work must link rather than duplicate them.
+
+## Direct inventory comparison against checked GitHub main branches
+
+Observed on 2026-10-15 from the `skills/*/SKILL.md` paths (not historical file counts):
+
+| Source | Total skill directories | Difference to target |
+| --- | ---: | --- |
+| `cursor/plugins/pstack` current `main` | 54 | `in-your-own-words`, `make-bot-ui`, `sharpen` are on current canonical main, absent in target |
+| `tommy-ca/pstack` target `main` | 59 | 22 role-agent definition files `agents/*.md` |
+| `michael-denyer/pstack-claude` reference `main` | 61 | all 59 target skill names plus `thermo-nuclear-review` and `thermos` |
+
+The target/reference both have eight skill names not present in **current** canonical main: `babysit`, `deslop`, `fix-ci`, `fix-merge-conflicts`, `get-pr-comments`, `make-pr-easy-to-review`, `thermo-nuclear-code-quality-review`, `what-did-i-get-done`. These are candidates for `preserve/adapt/exclude/policy-fork` classification, NOT automatically defects.
+
+**Pin-vs-HEAD caution:** this is a **current-main inventory only**. The target's normative canonical pin is `1dcc2bacde73ddd284803b7af28164d0436198fc`, recorded on 2026-10-12; changes appearing later on canonical `main` belong to an upstream freshness delta, not automatically a pin-conformance failure. #434 must classify whether the three missing live-main skills predate or postdate that pin. Do not auto-copy them. `make-bot-ui` may be an intentional domain/packaging exclusion; verify rather than presume.
+
+### Comparator declared fork ledger
+
+The reference port's `tools/forks.json` currently declares **47 deliberate pstack file differences: 39 `policy` and 8 `port-feature`**. This is a necessary provenance gate, not evidence that any difference should be imported. High-risk examples include `autopilot-full` merge authority, `orchestrate` / `multi-phase-plan` local `~/.claude/orchestrate` state, and native session hooks. A reference feature must be assessed against canonical intent, target's existing host-owned state policy (ADR-0006), and native host proofs.
+
+### Static audit dispositions (not implemented host behavior)
+
+- **Keep** target's typed capability/profile model, package projection, receipt system, 22 role/agent registry and qstack routing precedence.
+- **Borrow pattern** from comparator's generated model-role defaults, host-specific hook lifecycle, per-mechanism Pi equivalence matrix and declared policy-fork ledger.
+- **Gate** Claude Code/Copilot additions on per-host native install/spawn/join/permissions; **do not transplant** comparator's Pi process manager to OMP.
+- **Review separately** comparator's `thermo-nuclear-review` and `thermos` before adding new skills; avoid duplicated review playbooks without a demonstrated user-facing gap.

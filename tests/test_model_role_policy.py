@@ -106,3 +106,14 @@ def test_wrong_effort_fails_for_named_model() -> None:
     policy["hosts"]["codex"]["role_overrides"]["swarm-workers"]["effort"] = "ultra"
     with pytest.raises(ValidationError, match="unsupported effort"):
         check_model_role_policy(policy, PACKAGE)
+
+
+def test_package_roles_have_exactly_one_local_agent_definition() -> None:
+    # Role IDs are owned by the descriptor. The agent files are host-independent
+    # references; checked-in example policy may not define another role roster.
+    role_ids = {role["id"] for role in PACKAGE["roles"]}
+    agent_paths = list((ROOT / "agents").glob("*.md"))
+    files = {p.stem for p in agent_paths}
+    assert len(role_ids) == len(PACKAGE["roles"]), "duplicate role IDs"
+    assert len(files) == len(agent_paths), "duplicate agent filenames"
+    assert files == role_ids, f"role-agent drift: missing={role_ids - files}; extra={files - role_ids}"
