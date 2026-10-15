@@ -204,11 +204,13 @@ def test_validate_default_change_fallback_branches(monkeypatch: pytest.MonkeyPat
     default = verify_portable.DEFAULT_OPENSPEC_CHANGE
 
     monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda: ["only-active"])
-    monkeypatch.setattr(
-        verify_portable.subprocess, "run",
-        lambda *a, **k: subprocess.CompletedProcess(a, 0, "ok", ""),
-    )
+    seen: dict[str, list[str]] = {}
+    def _fake_run(*a: object, **k: object) -> subprocess.CompletedProcess[str]:
+        seen["argv"] = list(a[0]) if a else []
+        return subprocess.CompletedProcess(a, 0, "ok", "")
+    monkeypatch.setattr(verify_portable.subprocess, "run", _fake_run)
     assert validate(default) == 0
+    assert seen.get("argv", [])[2] == "only-active"
 
     monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda: None)
     assert validate(default) == 1
