@@ -82,3 +82,7 @@ The original draft's `arena-runners.minimum_independent_workers=2` and `interrog
 The immutable comparator `tools/forks.json` was projected into [pstack-claude-forks-2026-10-15.json](./pstack-claude-forks-2026-10-15.json). It records all 47 named source paths, comparator classification, source `since` version when supplied, and a recommended review lane. **All 47 adoption decisions remain unclassified by design.** This source inventory is not a verdict to adopt, and its `policy` vs `port-feature` labels describe the comparator author's classification, not the target's architecture acceptance.
 
 Canonical refresh classification (`skills/swarm/references/classification.tsv`) is an independent stream. Do not blend those inventories or overwrite the canonical upstream pin.
+
+### Extensible host registry as distinct architectural gap
+
+Current portability code's known-host tuple and corresponding three JSON Schema enums must change to register *more than one* future non-builtin host without touching the generic contract. The `custom` enum value is insufficient to identify multiple independent adapters. `pstack-claude/tools/runtimes.mjs` supplies a useful registry/table pattern, but native hook paths and privilege controls remain harness-specific. Track migration, collision handling, safe input and evidence under [#446](https://github.com/tommy-ca/pstack/issues/446), not as an unchecked amendment to the existing OMP/Codex adapters. Until proven, target's existing known-host whitelist is a deliberate safety boundary.

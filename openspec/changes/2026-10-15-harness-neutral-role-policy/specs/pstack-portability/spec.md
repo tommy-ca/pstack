@@ -150,3 +150,22 @@ Role settings MAY declare a bounded `seats` count independently from a unique se
 - **WHEN** the pure role planner returns `BLOCKED`
 - **THEN** the output has no planned seats and at least one explicit reason
 - **AND** the plan validates as an honest error artifact
+
+### Requirement: Harness identity can extend without replicating the workflow router
+
+The portability design MUST support separately identifiable future harnesses through a versioned, declarative adapter identity/descriptor rather than assuming every new host is the one undifferentiated `custom` entry. Until a migration is tested and accepted, existing known-host enums remain operational and new IDs are **not** supported at runtime. A new identity MUST NOT silently inherit a known host's verified capabilities, tool mapping, model availability or installed execution environment. Source-owned skill and playbook content MUST remain unchanged.
+
+#### Scenario: two new candidate harnesses
+
+- **GIVEN** two distinct future harness descriptors that are not in the current six-host inventory
+- **WHEN** they are validated as candidate adapters by a future extensible registry
+- **THEN** their identities and model catalogs cannot collide or alias to `custom` as the same host
+- **AND** no native capability becomes `verified` or `supported` merely by registry insertion
+- **AND** the current six hosts continue to validate and project without drift
+
+#### Scenario: attempted untrusted host alias
+
+- **GIVEN** a proposed adapter identity colliding with a built-in host or containing path traversal
+- **WHEN** the registry resolves its manifest
+- **THEN** the descriptor is rejected without executing any provider code
+- **AND** no host tool mapping or user config file is rewritten
