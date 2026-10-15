@@ -377,33 +377,59 @@ def _print_selection_plan(plan: Dict[str, Any]) -> None:
 DEFAULT_OPENSPEC_CHANGE = "pstack-portability-contract"
 
 
-def validate_openspec_change(change: str) -> int:
-    """Exit 0 iff the named change validates, or the default target has nothing active.
-
-    Argv-safe: change travels as subprocess argv, never interpolated
-    into source. The no-op path applies only when the caller uses the
-    default target AND structured `openspec list --json` reports
-    `"changes": []`. An explicit --change name always validates.
-    """
-    if change == DEFAULT_OPENSPEC_CHANGE:
+def _active_openspec_changes() -> list[str] | None:
+    """Names from structured `openspec list --json`; None when the lookup itself fails."""
+    try:
         listed = subprocess.run(
             ["openspec", "list", "--json"], capture_output=True, text=True, check=False
         )
-        if listed.returncode == 0:
-            try:
-                import json as _json
+        if listed.returncode != 0:
+            return None
+        import json as _json
 
-                payload = _json.loads(listed.stdout or "{}")
-                if isinstance(payload, dict):
-                    changes = payload.get("changes")
-                elif isinstance(payload, list):
-                    changes = payload
-                else:
-                    changes = None
-                if changes == []:
-                    return 0
-            except Exception:
-                pass
+        payload = _json.loads(listed.stdout or "{}")
+        changes = payload.get("changes") if isinstance(payload, dict) else payload
+        if not isinstance(changes, list):
+            return None
+        parsed: list[str] = []
+        for entry in changes:
+            if not isinstance(entry, dict):
+                return None
+            name = entry.get("name")
+            if not isinstance(name, str) or not name:
+                return None
+            parsed.append(name)
+        return parsed
+    except Exception:
+        return None
+
+
+def validate_openspec_change(change: str) -> int:
+    """Exit 0 iff the named change validates, the default has nothing active, or the single active change validates.
+
+    Argv-safe: change travels as subprocess argv, never interpolated
+    into source. The fallback applies only when the caller uses the
+    default target: a failed lookup FAILS (never a no-op PASS); empty
+    active set means no-op PASS; exactly one active change means validate
+    it (the checkout's live intent); two or more active changes FAIL with
+    an explicit --change directive. An explicit --change name always
+    validates that name.
+    """
+    if change == DEFAULT_OPENSPEC_CHANGE:
+        active = _active_openspec_changes()
+        if active is None:
+            print("ERROR: `openspec list --json` lookup failed; cannot determine active changes.", file=sys.stderr)
+            print("Resolve the openspec CLI failure, then rerun.", file=sys.stderr)
+            return 1
+        if active == []:
+            return 0
+        if len(active) == 1:
+            change = active[0]
+        else:
+            print(f"ERROR: {len(active)} active openspec changes; pass one explicitly via --change.", file=sys.stderr)
+            for name in active:
+                print(f"  - {name}", file=sys.stderr)
+            return 1
     probed = subprocess.run(
         ["openspec", "validate", change, "--type", "change", "--strict"],
         capture_output=True,
@@ -413,7 +439,6 @@ def validate_openspec_change(change: str) -> int:
     sys.stdout.write(probed.stdout)
     sys.stderr.write(probed.stderr)
     return probed.returncode
-
 
 class PortableVerifier:
     def __init__(self, host: str, evidence_root: Path, change: str = DEFAULT_OPENSPEC_CHANGE):
