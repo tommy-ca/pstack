@@ -62,7 +62,7 @@ def check_model_role_policy(policy: dict[str, Any], descriptor: dict[str, Any]) 
         selection = contract.get("selection", "single")
         require(selection in VALID_SELECTIONS, f"{rid}: unsupported selection mode")
         count = contract.get("minimum_independent_workers", 1)
-        require(type(count) is int and count >= 1, f"{rid}: invalid minimum_independent_workers")
+        require(type(count) is int and 1 <= count <= 16, f"{rid}: invalid minimum_independent_workers")
         require(selection == "panel" or count == 1,
                 f"{rid}: non-panel role cannot require >1 workers")
         capabilities = contract.get("required_capabilities", [])
@@ -85,6 +85,9 @@ def check_model_role_policy(policy: dict[str, Any], descriptor: dict[str, Any]) 
         verification = config.get("verification_status", "unverified")
         require(discovery in VALID_DISCOVERY, f"{host}: unknown discovery level")
         require(verification in VALID_VERIFICATION, f"{host}: unknown verification level")
+        require("model_catalog" in config, f"{host}: model_catalog must be an explicit list")
+        require(config.get("fallback") in ("inherit-parent", "fail-closed"),
+                f"{host}: fallback must be inherit-parent or fail-closed")
         catalog = config.get("model_catalog", [])
         require(isinstance(catalog, list), f"{host}: model_catalog must be a list")
         models: dict[str, dict[str, Any]] = {}

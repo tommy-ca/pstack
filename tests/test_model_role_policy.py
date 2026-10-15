@@ -4,7 +4,12 @@ from __future__ import annotations
 
 import copy
 import json
+import sys
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 import pytest
 from jsonschema import Draft202012Validator, ValidationError as JsonSchemaError
@@ -12,7 +17,6 @@ from jsonschema import Draft202012Validator, ValidationError as JsonSchemaError
 from scripts.model_role_policy import check_model_role_policy
 from scripts.portability_schema import ValidationError
 
-ROOT = Path(__file__).resolve().parents[1]
 SCHEMA = json.loads((ROOT / "schemas/portability/model-role-policy.schema.json").read_text())
 EXAMPLE = json.loads((ROOT / "examples/portability/model-role-policy.example.json").read_text())
 PACKAGE = json.loads((ROOT / "pstack.package.json").read_text())
@@ -41,6 +45,9 @@ def test_schema_is_draft_2020_12_and_example_is_valid() -> None:
     (lambda p: p["canonical_source"].update({"pin": "0" * 40}), "canonical pin differs"),
     (lambda p: p["hosts"].update({"copilot": p["hosts"].pop("codex")}), "not declared"),
     (lambda p: p["constraints"].update({"allow_unverified_models": True}), "opt into unverified"),
+    (lambda p: p["hosts"]["codex"].pop("model_catalog"), "must be an explicit list"),
+    (lambda p: p["hosts"]["codex"].pop("fallback"), "fallback must be"),
+    (lambda p: p["role_constraints"]["swarm-workers"].update({"minimum_independent_workers": 17}), "invalid minimum_independent_workers"),
 ])
 def test_cross_document_failures(mutation, needle: str) -> None:
     policy = copy.deepcopy(EXAMPLE)
