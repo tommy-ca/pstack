@@ -404,32 +404,7 @@ def _active_openspec_changes() -> list[str] | None:
         return None
 
 
-def validate_openspec_change(change: str) -> int:
-    """Exit 0 iff the named change validates, the default has nothing active, or the single active change validates.
-
-    Argv-safe: change travels as subprocess argv, never interpolated
-    into source. The fallback applies only when the caller uses the
-    default target: a failed lookup FAILS (never a no-op PASS); empty
-    active set means no-op PASS; exactly one active change means validate
-    it (the checkout's live intent); two or more active changes FAIL with
-    an explicit --change directive. An explicit --change name always
-    validates that name.
-    """
-    if change == DEFAULT_OPENSPEC_CHANGE:
-        active = _active_openspec_changes()
-        if active is None:
-            print("ERROR: `openspec list --json` lookup failed; cannot determine active changes.", file=sys.stderr)
-            print("Resolve the openspec CLI failure, then rerun.", file=sys.stderr)
-            return 1
-        if active == []:
-            return 0
-        if len(active) == 1:
-            change = active[0]
-        else:
-            print(f"ERROR: {len(active)} active openspec changes; pass one explicitly via --change.", file=sys.stderr)
-            for name in active:
-                print(f"  - {name}", file=sys.stderr)
-            return 1
+def _validate_named_change(change: str) -> int:
     probed = subprocess.run(
         ["openspec", "validate", change, "--type", "change", "--strict"],
         capture_output=True,
@@ -440,8 +415,36 @@ def validate_openspec_change(change: str) -> int:
     sys.stderr.write(probed.stderr)
     return probed.returncode
 
+
+def validate_openspec_change(change: str | None) -> int:
+    """Exit 0 iff the named change validates, or the live checkout intent validates.
+
+    Argv-safe: change travels as subprocess argv, never interpolated
+    into source. None means the caller omitted --change: empty active set
+    is a no-op PASS; exactly one active change validates it (the checkout's
+    live intent); a failed lookup FAILS (never a no-op PASS); two or more
+    active changes FAIL with an explicit --change directive. A named change
+    (including DEFAULT_OPENSPEC_CHANGE) always validates that name.
+    """
+    if change is not None:
+        return _validate_named_change(change)
+    active = _active_openspec_changes()
+    if active is None:
+        print("ERROR: `openspec list --json` lookup failed; cannot determine active changes.", file=sys.stderr)
+        print("Resolve the openspec CLI failure, then rerun.", file=sys.stderr)
+        return 1
+    if active == []:
+        return 0
+    if len(active) == 1:
+        return _validate_named_change(active[0])
+    print(f"ERROR: {len(active)} active openspec changes; pass one explicitly via --change.", file=sys.stderr)
+    for name in active:
+        print(f"  - {name}", file=sys.stderr)
+    return 1
+
+
 class PortableVerifier:
-    def __init__(self, host: str, evidence_root: Path, change: str = DEFAULT_OPENSPEC_CHANGE):
+    def __init__(self, host: str, evidence_root: Path, change: str | None = None):
         self.host = host
         self.evidence_root = evidence_root
         self.change = change
@@ -524,12 +527,14 @@ class PortableVerifier:
             [sys.executable, str(ROOT / "scripts" / "canonical-index.py"), "--check"],
         )
 
-        # 2. OpenSpec change integrity (argv-safe helper above)
+        # 2. OpenSpec change integrity (argv-safe helper above; omitted --change travels as "None")
+        change_arg = self.change if self.change is not None else "None"
+        change_label = self.change if self.change is not None else "active checkout (none: no-op)"
         r2 = self.run_command(
             "doctor-openspec-validation",
-            f"Verify {self.change} openspec change passes schema checks",
+            f"Verify {change_label} openspec change passes schema checks",
             "canonical",
-            [sys.executable, "-c", "import importlib.util, sys; spec = importlib.util.spec_from_file_location('vp_helper', 'scripts/verify-portable.py'); m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m); sys.exit(m.validate_openspec_change(sys.argv[1]))", self.change],
+            [sys.executable, "-c", "import importlib.util, sys; spec = importlib.util.spec_from_file_location('vp_helper', 'scripts/verify-portable.py'); m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m); raw = sys.argv[1]; sys.exit(m.validate_openspec_change(None if raw == 'None' else raw))", change_arg],
         )
 
         # 3. Static adapter checks
@@ -991,7 +996,7 @@ def main() -> None:
     parser.add_argument("--feature", help="Feature to drive (for 'drive' action)")
     parser.add_argument("--evidence-dir", type=Path, default=DEFAULT_EVIDENCE_DIR, help="Evidence directory")
     parser.add_argument("--allow-stale", action="store_true", help="Allow stale evidence during durability check")
-    parser.add_argument("--change", default=DEFAULT_OPENSPEC_CHANGE, help="Target OpenSpec change to validate in doctor")
+    parser.add_argument("--change", default=None, help="Target OpenSpec change to validate in doctor (default: checkout's single active change, or no-op when none)")
     parser.add_argument("--json", action="store_true", help="Emit JSON output for machine consumption")
     parser.add_argument("--base", help="Base ref to diff against (select-checks)")
     parser.add_argument("--head", default="HEAD", help="Head ref to scope (select-checks)")

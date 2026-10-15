@@ -382,6 +382,16 @@
       "proposed_adoption": "unclassified",
       "review_lane": "skill-policy",
       "source_version": "0.9.17"
+    },
+    {
+      "path": "plugins/pstack/skills/thermo-nuclear-code-quality-review/SKILL.md",
+      "reference_kind": "policy",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "skill-policy",
+      "source_version": "0.9.11",
+      "reference_group": "thermos",
+      "source_note": "thermos-group row in upstream tools/forks.json; out of pstack scope, pending #434 classification"
     }
   ]
 }
