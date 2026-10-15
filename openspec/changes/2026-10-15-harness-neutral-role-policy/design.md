@@ -133,7 +133,7 @@ Rubric: upstream fidelity 30%, maintenance burden 20%, host-native correctness 2
 
 ## Pinned comparator fork inventory
 
-`docs/research/pstack-claude-forks-2026-10-15.json` captures all 47 paths from the comparator's own `tools/forks.json` at immutable revision `94f5ce95abe8a9dec976967d79941f631cf477cd`. Every row is `review_state=pending` and `proposed_adoption=unclassified`; classifying these is a blocking source-provenance task (#434). This JSON index is separate from `skills/swarm/references/classification.tsv`, which tracks **canonical upstream-pin refresh** only, and must not be repurposed for a third-party fork.
+`docs/research/pstack-claude-forks-2026-10-15.json` captures all 48 paths from the comparator's own `tools/forks.json` (47 pstack + 1 thermos-group) at immutable revision `94f5ce95abe8a9dec976967d79941f631cf477cd`. Every row is `review_state=pending` and `proposed_adoption=unclassified`; classifying these is a blocking source-provenance task (#434). This JSON index is separate from `skills/swarm/references/classification.tsv`, which tracks **canonical upstream-pin refresh** only, and must not be repurposed for a third-party fork.
 
 ## ModelPlan typed wire contract
 

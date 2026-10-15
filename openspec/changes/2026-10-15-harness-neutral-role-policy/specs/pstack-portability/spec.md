@@ -21,6 +21,7 @@ Native model availability, allowed effort tokens and spawn fields MUST be resolv
 - **AND** OMP requires its own native evidence receipt to advance status
 
 
+### Requirement: Logical model/role policy is typed and harness-neutral
 
 A policy document MUST conform to `schemas/portability/model-role-policy.schema.json`. `pstack.package.json#/roles` MUST remain the only canonical role registry; the policy MAY add per-role constraints but MUST NOT duplicate role definitions or tier names. It MUST reuse the six `default_model_role` tier values. Host records MUST separate catalogs from role policy. Unknown roles, tiers, or dangling references MUST fail validation.
 
