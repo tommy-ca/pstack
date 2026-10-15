@@ -111,6 +111,35 @@
                 }
               }
             }
+          },
+          {
+            "if": {
+              "properties": {
+                "model": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "model"
+              ]
+            },
+            "then": {
+              "properties": {
+                "family": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "provider": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "family",
+                "provider"
+              ]
+            }
           }
         ]
       }
