@@ -4,24 +4,17 @@
     "repository": "cursor/plugins",
     "pin": "1dcc2bacde73ddd284803b7af28164d0436198fc"
   },
-  "roles": [
-    {
-      "id": "swarm-workers",
-      "intent": "Cover independent slices with reported evidence",
+  "role_source": "pstack.package.json#/roles",
+  "role_constraints": {
+    "swarm-workers": {
       "selection": "single",
-      "tier": "fast-worker",
-      "skill": "swarm",
       "required_capabilities": [
         "agent.spawn",
         "agent.join"
       ]
     },
-    {
-      "id": "arena-runners",
-      "intent": "Generate separate candidates for one brief",
+    "arena-runners": {
       "selection": "panel",
-      "tier": "panel",
-      "skill": "arena",
       "required_capabilities": [
         "agent.spawn",
         "agent.join",
@@ -29,12 +22,8 @@
       ],
       "minimum_independent_workers": 2
     },
-    {
-      "id": "interrogate-reviewers",
-      "intent": "Read-only independent review with diverse model families",
-      "selection": "panel",
-      "tier": "panel",
-      "skill": "interrogate",
+    "interrogate-reviewers": {
+      "selection": "cross-judge",
       "required_capabilities": [
         "agent.spawn",
         "agent.join",
@@ -43,16 +32,19 @@
       "minimum_independent_workers": 2,
       "require_distinct_model_families": true
     }
-  ],
+  },
   "hosts": {
     "codex": {
       "discovery": "unverified",
       "model_catalog": [],
       "tier_defaults": {
-        "fast-worker": [
+        "fast-verifier": [
           "inherit-parent"
         ],
         "panel": [
+          "inherit-parent"
+        ],
+        "adversarial-panel": [
           "inherit-parent"
         ]
       },
