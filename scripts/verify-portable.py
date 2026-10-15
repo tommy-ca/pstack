@@ -416,6 +416,24 @@ def _validate_named_change(change: str) -> int:
     return probed.returncode
 
 
+def resolve_openspec_change(change: str | None) -> str | None:
+    """Name the change that would be validated, without validating it.
+
+    Returns the explicit name, the single active change, or None when the
+    checkout has no active change (no-op). Returns False-equivalent sentinel
+    details via empty string when validation would fail before probing
+    (lookup failure or multiple active changes).
+    """
+    if change is not None:
+        return change
+    active = _active_openspec_changes()
+    if active is None or len(active) > 1:
+        return ""
+    if active == []:
+        return None
+    return active[0]
+
+
 def validate_openspec_change(change: str | None) -> int:
     """Exit 0 iff the named change validates, or the live checkout intent validates.
 
@@ -428,19 +446,20 @@ def validate_openspec_change(change: str | None) -> int:
     """
     if change is not None:
         return _validate_named_change(change)
-    active = _active_openspec_changes()
-    if active is None:
-        print("ERROR: `openspec list --json` lookup failed; cannot determine active changes.", file=sys.stderr)
-        print("Resolve the openspec CLI failure, then rerun.", file=sys.stderr)
-        return 1
-    if active == []:
+    resolved = resolve_openspec_change(None)
+    if resolved is None:
         return 0
-    if len(active) == 1:
-        return _validate_named_change(active[0])
-    print(f"ERROR: {len(active)} active openspec changes; pass one explicitly via --change.", file=sys.stderr)
-    for name in active:
-        print(f"  - {name}", file=sys.stderr)
-    return 1
+    if resolved == "":
+        active = _active_openspec_changes()
+        if active is None:
+            print("ERROR: `openspec list --json` lookup failed; cannot determine active changes.", file=sys.stderr)
+            print("Resolve the openspec CLI failure, then rerun.", file=sys.stderr)
+            return 1
+        print(f"ERROR: {len(active)} active openspec changes; pass one explicitly via --change.", file=sys.stderr)
+        for name in active:
+            print(f"  - {name}", file=sys.stderr)
+        return 1
+    return _validate_named_change(resolved)
 
 
 class PortableVerifier:
@@ -528,7 +547,13 @@ class PortableVerifier:
         )
 
         # 2. OpenSpec change integrity (argv-safe helper above; omitted --change passes no positional arg)
-        change_label = self.change if self.change is not None else "active checkout (none: no-op)"
+        resolved = resolve_openspec_change(self.change)
+        if resolved:
+            change_label = resolved
+        elif resolved is None:
+            change_label = "no active change (no-op)"
+        else:
+            change_label = "ambiguous active changes (must fail)"
         helper = "import importlib.util, sys; spec = importlib.util.spec_from_file_location('vp_helper', 'scripts/verify-portable.py'); m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m); sys.exit(m.validate_openspec_change(sys.argv[1] if len(sys.argv) > 1 else None))"
         helper_cmd: list[str] = [sys.executable, "-c", helper]
         if self.change is not None:
