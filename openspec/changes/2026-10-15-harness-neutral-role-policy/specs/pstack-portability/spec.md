@@ -1,34 +1,30 @@
 # pstack-portability delta: model-role and cross-harness contract
 
-## MODIFIED Requirements
+## ADDED Requirements
 
-### Requirement: Harness runtime conventions are structured and schema-validated
+### Requirement: Model catalog discovery and proof are host-specific
 
-Each host's native model spawn fields, allowed effort tokens, tool capabilities, isolation controls and version-sensitive behaviors MUST be validated against the active host; static documentation MUST NOT be represented as proof of live model availability.
+Native model availability, allowed effort tokens and spawn fields MUST be resolved from the actual host version. Checked-in models and reference-port tests MUST NOT authorize a live dispatch claim. Capability-specific evidence from one host MUST NOT upgrade another host's `verified` status.
 
 #### Scenario: unsupported model or effort
 
-- **GIVEN** an explicit request for a model slug or effort token absent from the detected live host catalog
-- **WHEN** the role resolver validates that request
-- **THEN** it fails with the unavailable choice and the host's permitted alternatives
-- **AND** it does not silently substitute another model or claim verified dispatch
+- **GIVEN** a model slug or effort token absent from the live host catalog
+- **WHEN** role resolution validates an explicit request
+- **THEN** it stops with an actionable unsupported-choice error
+- **AND** it does not silently substitute a different named model
 
-### Requirement: Adapter bindings are typed and evidence-backed
+#### Scenario: a Pi reference proves a feature but OMP does not
 
-A reference port's tests, documentation and live receipts MUST be classified independently. Evidence from Pi MUST NOT establish OMP capabilities, and passing a manifest check MUST NOT establish runtime parity.
+- **GIVEN** a tested mechanism in the Pi extension of pstack-claude
+- **WHEN** the target OMP profile is audited
+- **THEN** that mechanism is only a candidate pattern
+- **AND** OMP requires its own native evidence receipt to advance status
 
-#### Scenario: claim from reference port
 
-- **GIVEN** a `pstack-claude` test covers a Pi extension capability
-- **WHEN** pstack considers reusing the behavior on OMP
-- **THEN** the entry is a candidate pattern with source commit and license provenance
-- **AND** OMP remains at its existing measured verification level until a host-specific test passes
-
-## ADDED Requirements
 
 ### Requirement: Logical model/role policy is typed and harness-neutral
 
-A policy document MUST conform to `schemas/portability/model-role-policy.schema.json`. Roles MUST use stable canonical IDs and declare intent, required semantic capabilities, selection topology and model tier. Host records MUST separate provider/model/family catalogs from role policy. Duplicate role IDs, dangling skill references and undefined tiers MUST fail validation by the implementation lever.
+A policy document MUST conform to `schemas/portability/model-role-policy.schema.json`. `pstack.package.json#/roles` MUST remain the only canonical role ID/description/default-tier registry; the policy MAY add per-role capability and topology constraints but MUST NOT duplicate role definitions or introduce parallel tier names. It MUST reuse the six `default_model_role` tier values from the descriptor. Host records MUST separate provider/model/family catalogs from role policy. Duplicate role IDs, dangling references, undefined tiers and unknown role keys MUST fail validation by the implementation lever.
 
 #### Scenario: new harness
 
