@@ -68,12 +68,13 @@ without installing proprietary agent harness binaries:
 Two suites in this list are tier-limited and a green job is not a pass for them.
 `tests/test_omp_native_package.py` skips without an `omp` binary, so the offline
 job proves nothing about native enrollment; that proof lives in the live tier
-tracked by issues #238 and #240. `tests/test_ci_resource_isolation.py` proves
+(`.audit/evidence/` receipts plus `profiles/*.json` bindings).
+`tests/test_ci_resource_isolation.py` proves
 only its Python half when `node` is absent.
   
 A green PR job proves **only these selected contract scenarios**.
 `tests/test_package_lifecycle.py` currently does not prove preservation of
-unexpected user-authored files inside plugin directories (see #239/#249).
+unexpected user-authored files inside plugin directories (see `tests/test_package_lifecycle_safety.py`).
 None of these checks prove that a real child model was spawned and joined.
 
 ## Host-dependent smoke (opt-in)
@@ -87,7 +88,7 @@ PSTACK_RUN_HOST_DEPENDENT_TESTS=1 python -m pytest -q tests/test_harness_drivers
 
 These checks require locally installed/configured host executables and may fail
 without prerequisites. They currently inspect several static/CLI-help surfaces
-that **must not be classified as observed live model execution**. See #238/#247.
+that **must not be classified as observed live model execution**. Live claims rest on `.audit/evidence/` receipts plus `profiles/*.json` bindings.
 
 The broader `tests/test_verify_portable.py` integration tests invoke OpenSpec,
 harness doctors and other external tools; they are **not** part of the minimal
@@ -145,11 +146,9 @@ need re-running. This is the same patch-id rule the shipping playbooks use.
 - Ineligible host: explicitly `UNTESTED` or `BLOCKED`, never invented PASS.
 - Candidate Droid: do not infer model-backed runtime support from contract tests.
 
-The existing four-plane receipt schema remains authoritative for recorded planes,
-but its current runtime PASS semantics are being corrected in #238/#247/#248.
-Never promote historical profile/CLI checks to live evidence during migration.
-
-Program: #235. Foundation #236/#243. Native-proof work #238/#248. Acceptance #240.
+The existing four-plane receipt schema remains authoritative for recorded planes.
+Never promote historical profile/CLI checks to live evidence.
+Historical program #235 (foundation #236/#243, native-proof #238/#248, acceptance #240) is closed. Current program: #429 with sub-epics #430-#433. Current promotion gate: #445.
 
 ## Adversarial acceptance and the six-host matrix (#294)
 
