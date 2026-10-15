@@ -70,3 +70,9 @@ The reference port's `tools/forks.json` currently declares **47 deliberate pstac
 - **Borrow pattern** from comparator's generated model-role defaults, host-specific hook lifecycle, per-mechanism Pi equivalence matrix and declared policy-fork ledger.
 - **Gate** Claude Code/Copilot additions on per-host native install/spawn/join/permissions; **do not transplant** comparator's Pi process manager to OMP.
 - **Review separately** comparator's `thermo-nuclear-review` and `thermos` before adding new skills; avoid duplicated review playbooks without a demonstrated user-facing gap.
+
+## Model/role recomposition decision
+
+The comparator's `plugins/pstack/models.json` expresses roles in mixed display groups (for example `feature, refactoring`) and alias-based models (`opus`, `fable`, `sonnet`, `haiku`). That form is appropriate for the comparator's generated skill-facing documentation but should not become pstack's canonical role ID source. The target retains `pstack.package.json#/roles` and a host-specific tier mapping. Build a pure role planning contract first; test the following exact incompatibilities before promoting any runtime: host-native tool availability, model catalog visibility, effort enum, independent seat count, family diversity, hook permissions, persistent agent identity, worktree ownership, cancellation and resume. A host-neutral model resolver cannot solve native spawn/security boundaries by itself.
+
+The original draft's `arena-runners.minimum_independent_workers=2` and `interrogate-reviewers.minimum_independent_workers=2` over-constrained the existing canonical fallback, which intentionally permits one runner/reviewer. The revised sample uses one as the minimum and permits optional per-role `seats` fan-out. This is a **portability parity correction**, not an attempt to reduce the verification demands for explicitly multi-model review requests.

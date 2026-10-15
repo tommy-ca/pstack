@@ -92,3 +92,28 @@ Before accepting a Copilot or Claude host entry: implement profile, manifest, ho
 - Swarm: independent host/source slices; Arena: same design brief with no-change baseline; Interrogate: independent model-family reviewers on an exact diff. This document is a **static synthesis only**, not evidence that those parallel agent runs occurred.
 
 No claims of PASS for tests not executed. Candidate patterns are not promoted until verifiers settle with objective evidence.
+
+## Pure role-model planning boundary (v1)
+
+The source-owned `pstack.package.json#/roles` registry defines role IDs and six tier strings. An optional `model-role-policy` document binds host catalogs, effort and per-role topology; it MUST NOT become a second registry. `scripts/model_role_resolver.py` is a pure **planning-only** reference which has no model runtime dependencies and never claims a live verification receipt.
+
+Input: `ModelPlanRequest` = `(host, role, explicit?, project?, user?, parent_family?, reported_capability_bindings?)`. Resolve the model choice in this order: explicit request → project override → user override → host role override → host tier default → configured inheritance or FAIL CLOSED. No unknown slug may silently fall back. Per-model effort needs observed host support. Native spawn API arguments are NOT constructed by the planner.
+
+Output: `ModelPlan` with `source`, `selection`, `seats[]`, `status=PLANNED|DEGRADED|BLOCKED`, `reasons[]`, `effort` and **`evidence_level=static-planning-only`**. A runtime adapter must independently prove availability, actual spawn, isolation, family identity, and join before upgrading a separate runtime receipt. Capability input is typed host *metadata*, not an attestation.
+
+**Arena:** `selection=panel`; `seats` may be greater than the unique model slug list. Round-robin assignment generates independent *planned slots* on one named model, not multi-family validation. Native runtime must give slots distinct contexts/worktrees. The canonical default remains one runner, not an invented mandatory two.
+
+**Arena cross-judge:** `selection=cross-judge` selects *one* model from a pool preferring a family different from the parent/candidate, not one judge per pool entry. When family divergence cannot be proven, mark DEGRADED or BLOCKED if explicitly required.
+
+**Interrogate:** `selection=panel` maps each configured model to a planned reviewer seat, records missing family diversity as DEGRADED, and treats advisory read-only enforcement as DEGRADED, never a hard access boundary. The canonical default may be one reviewer; do not invent an additional mandatory seat absent a configured choice.
+
+**Swarm:** `selection=single` describes the default model for each worker, NOT the worker fan-out count; actual task partitioning remains a playbook concern.
+
+Configured model list uniqueness does not impose unique models across `seats`. A separate `role_overrides.<role>.seats` controls bounded fan-out. Agent count, model slug count, model-family count and verified independently settled agent count are separate metrics. Runtime reporting MUST include all four.
+
+### Remnant issues to interrogate
+
+1. The runtime planner accepts host capability metadata passed by the caller; the caller MUST authenticate its profile/receipt rather than treating untrusted request data as proof.
+2. Model discovery `catalog` means static inventory only. Even `live` declared in JSON is insufficient to authorize a model call until receipt integrity and freshness have been checked by the host driver.
+3. `project` override as an input parameter is a contract, not a file path or policy engine. The setup skill owns safe configuration parsing/migration.
+4. The reference `pstack-claude` aliases (`opus/fable/sonnet/haiku`) are not the canonical role registry, and its Codex/Pi tables may not reflect the currently installed host. Models must be discovered from the target harness session.

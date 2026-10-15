@@ -117,3 +117,142 @@ def test_package_roles_have_exactly_one_local_agent_definition() -> None:
     assert len(role_ids) == len(PACKAGE["roles"]), "duplicate role IDs"
     assert len(files) == len(agent_paths), "duplicate agent filenames"
     assert files == role_ids, f"role-agent drift: missing={role_ids - files}; extra={files - role_ids}"
+
+# --- Harness-neutral planning, separated from live dispatch -----------------
+
+from scripts.model_role_resolver import plan_role
+
+
+def catalog_plan_policy() -> dict:
+    p = copy.deepcopy(EXAMPLE)
+    host = p["hosts"]["codex"]
+    host["discovery"] = "catalog"  # offline source inventory, NOT live evidence
+    host["verification_status"] = "static-only"
+    host["model_catalog"] = [
+        {"id": "model-a", "provider": "fixture", "family": "alpha"},
+        {"id": "model-b", "provider": "fixture", "family": "beta"},
+        {"id": "model-c", "provider": "fixture", "family": "alpha"},
+    ]
+    host["tier_defaults"].update({
+        "fast-verifier": ["model-a"],
+        "panel": ["model-a"],
+        "adversarial-panel": ["model-a", "model-b"],
+    })
+    return p
+
+
+def capability_bindings(*, advisory_readonly: bool = False) -> dict:
+    return {name: {"implementation_status": "native",
+                   "enforcement": "advisory" if advisory_readonly and name == "workspace.readonly" else "hard"}
+            for name in ["agent.spawn", "agent.join", "workspace.isolated", "workspace.readonly"]}
+
+
+def test_role_planner_static_only_even_with_complete_fixture() -> None:
+    plan = plan_role(catalog_plan_policy(), PACKAGE, host="codex", role="swarm-workers",
+                     capabilities=capability_bindings())
+    assert plan.status == "PLANNED"
+    assert plan.evidence_level == "static-planning-only"
+    assert plan.seats[0].model == "model-a"
+    assert plan.source == "host-tier"
+
+
+def test_overrides_are_precedent_but_do_not_silently_replace_unknown_slug() -> None:
+    policy = catalog_plan_policy()
+    plan = plan_role(policy, PACKAGE, host="codex", role="swarm-workers",
+                     explicit="model-b", project="model-c", user="model-a",
+                     capabilities=capability_bindings())
+    assert (plan.source, plan.seats[0].model) == ("explicit", "model-b")
+    project = plan_role(policy, PACKAGE, host="codex", role="swarm-workers",
+                        project="model-c", user="model-a", capabilities=capability_bindings())
+    assert (project.source, project.seats[0].model) == ("project", "model-c")
+    invalid = plan_role(policy, PACKAGE, host="codex", role="swarm-workers",
+                        explicit="does-not-exist", capabilities=capability_bindings())
+    assert invalid.status == "BLOCKED"
+    assert "no silent substitution" in invalid.reasons[0]
+
+
+def test_inherit_parent_omits_model_and_does_not_forge_family() -> None:
+    p = plan_role(catalog_plan_policy(), PACKAGE, host="codex", role="swarm-workers",
+                  explicit="inherit-parent", capabilities=capability_bindings())
+    assert p.status == "PLANNED"
+    assert p.seats[0].model is None
+    assert p.seats[0].family is None
+
+
+def test_unconfigured_host_and_role_fail_closed() -> None:
+    policy = catalog_plan_policy()
+    assert plan_role(policy, PACKAGE, host="claude", role="swarm-workers").status == "BLOCKED"
+    assert plan_role(policy, PACKAGE, host="codex", role="imaginary-role").status == "BLOCKED"
+
+
+def test_separate_seat_count_from_family_count() -> None:
+    policy = catalog_plan_policy()
+    policy["hosts"]["codex"]["role_overrides"] = {
+        "arena-runners": {"models": ["model-a"], "seats": 3}
+    }
+    validate(policy)
+    p = plan_role(policy, PACKAGE, host="codex", role="arena-runners",
+                  capabilities=capability_bindings())
+    assert len(p.seats) == 3
+    assert len({s.model for s in p.seats}) == 1
+    assert len({s.ordinal for s in p.seats}) == 3
+    assert p.status == "DEGRADED"
+    assert "model families" in p.reasons[0]
+
+
+def test_panel_diversity_is_not_assumed_from_repeated_family() -> None:
+    policy = catalog_plan_policy()
+    plan = plan_role(policy, PACKAGE, host="codex", role="interrogate-reviewers",
+                     explicit=["model-a", "model-c"], capabilities=capability_bindings())
+    assert len(plan.seats) == 2
+    assert plan.status == "DEGRADED"
+    assert {seat.family for seat in plan.seats} == {"alpha"}
+
+
+def test_cross_judge_prefers_different_family_from_parent() -> None:
+    policy = catalog_plan_policy()
+    plan = plan_role(policy, PACKAGE, host="codex", role="arena-cross-judge-pool",
+                     explicit=["model-a", "model-b"], parent_family="alpha",
+                     capabilities=capability_bindings())
+    assert len(plan.seats) == 1
+    assert plan.seats[0].model == "model-b"
+    assert plan.status == "PLANNED"
+
+
+def test_missing_required_family_diversity_blocks_without_switching_silently() -> None:
+    policy = catalog_plan_policy()
+    policy["role_constraints"]["arena-cross-judge-pool"]["require_distinct_model_families"] = True
+    plan = plan_role(policy, PACKAGE, host="codex", role="arena-cross-judge-pool",
+                     explicit=["model-a", "model-c"], parent_family="alpha",
+                     capabilities=capability_bindings())
+    assert plan.status == "BLOCKED"
+    assert "unproven" in plan.reasons[0]
+
+
+def test_unknown_or_advisory_capability_cannot_be_hard_pass() -> None:
+    policy = catalog_plan_policy()
+    missing = plan_role(policy, PACKAGE, host="codex", role="interrogate-reviewers",
+                        capabilities={"agent.spawn": {"implementation_status": "native", "enforcement": "hard"}})
+    assert missing.status == "BLOCKED"
+    advisory = plan_role(policy, PACKAGE, host="codex", role="interrogate-reviewers",
+                         capabilities=capability_bindings(advisory_readonly=True))
+    assert advisory.status == "DEGRADED"
+    assert any("not hard" in reason for reason in advisory.reasons)
+
+
+def test_single_role_rejects_panel_config() -> None:
+    plan = plan_role(catalog_plan_policy(), PACKAGE, host="codex", role="swarm-workers",
+                     explicit=["model-a", "model-b"], capabilities=capability_bindings())
+    assert plan.status == "BLOCKED"
+
+
+def test_missing_named_mapping_fails_closed() -> None:
+    policy = catalog_plan_policy()
+    policy["hosts"]["codex"]["tier_defaults"].pop("fast-verifier")
+    plan = plan_role(policy, PACKAGE, host="codex", role="swarm-workers",
+                     capabilities=capability_bindings())
+    assert plan.status == "BLOCKED"
+    policy["hosts"]["codex"]["fallback"] = "inherit-parent"
+    inherited = plan_role(policy, PACKAGE, host="codex", role="swarm-workers",
+                          capabilities=capability_bindings())
+    assert (inherited.source, inherited.seats[0].model) == ("inherit-parent", None)

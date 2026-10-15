@@ -20,7 +20,7 @@
         "agent.join",
         "workspace.isolated"
       ],
-      "minimum_independent_workers": 2
+      "minimum_independent_workers": 1
     },
     "interrogate-reviewers": {
       "selection": "panel",
@@ -29,8 +29,8 @@
         "agent.join",
         "workspace.readonly"
       ],
-      "minimum_independent_workers": 2,
-      "require_distinct_model_families": true
+      "minimum_independent_workers": 1,
+      "require_distinct_model_families": false
     },
     "arena-cross-judge-pool": {
       "selection": "cross-judge",
@@ -39,7 +39,7 @@
         "agent.join",
         "workspace.readonly"
       ],
-      "require_distinct_model_families": true
+      "require_distinct_model_families": false
     }
   },
   "hosts": {
