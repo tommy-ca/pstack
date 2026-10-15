@@ -2,11 +2,11 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://pstack.dev/schemas/portability/model-role-policy.schema.json",
   "title": "PstackModelRolePolicy",
-  "description": "Declarative model/role intent; runtime selection requires separate detection and receipts. Does not imply model availability.",
+  "description": "Host-resolved model policy extending pstack.package.json#/roles without a duplicate role registry. Static catalogs are not runtime availability evidence.",
   "type": "object",
   "required": [
     "version",
-    "roles",
+    "role_source",
     "hosts"
   ],
   "properties": {
@@ -30,65 +30,42 @@
       },
       "additionalProperties": false
     },
-    "roles": {
-      "type": "array",
-      "minItems": 1,
-      "items": {
-        "type": "object",
-        "required": [
-          "id",
-          "intent",
-          "selection",
-          "tier",
-          "required_capabilities"
-        ],
-        "properties": {
-          "id": {
-            "type": "string",
-            "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
-          },
-          "intent": {
-            "type": "string",
-            "minLength": 1
-          },
-          "skill": {
-            "type": "string",
-            "minLength": 1
-          },
-          "selection": {
-            "enum": [
-              "single",
-              "panel",
-              "cross-judge"
-            ]
-          },
-          "tier": {
-            "enum": [
-              "fast-worker",
-              "balanced",
-              "strongest",
-              "panel",
-              "inherit-parent"
-            ]
-          },
-          "required_capabilities": {
-            "type": "array",
-            "uniqueItems": true,
-            "items": {
-              "type": "string",
-              "minLength": 1
+    "role_source": {
+      "const": "pstack.package.json#/roles"
+    },
+    "role_constraints": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$": {
+          "type": "object",
+          "properties": {
+            "selection": {
+              "enum": [
+                "single",
+                "panel",
+                "cross-judge"
+              ]
+            },
+            "required_capabilities": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "minimum_independent_workers": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "require_distinct_model_families": {
+              "type": "boolean"
             }
           },
-          "minimum_independent_workers": {
-            "type": "integer",
-            "minimum": 1
-          },
-          "require_distinct_model_families": {
-            "type": "boolean"
-          }
-        },
-        "additionalProperties": false
-      }
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
     },
     "hosts": {
       "type": "object",
@@ -152,7 +129,10 @@
                 "fast-worker": {
                   "$ref": "#/$defs/modelChoices"
                 },
-                "balanced": {
+                "fast-verifier": {
+                  "$ref": "#/$defs/modelChoices"
+                },
+                "strong-judgment": {
                   "$ref": "#/$defs/modelChoices"
                 },
                 "strongest": {
@@ -161,7 +141,7 @@
                 "panel": {
                   "$ref": "#/$defs/modelChoices"
                 },
-                "inherit-parent": {
+                "adversarial-panel": {
                   "$ref": "#/$defs/modelChoices"
                 }
               },
@@ -202,6 +182,22 @@
                 "verified",
                 "stale"
               ]
+            },
+            "catalog_observation": {
+              "type": "object",
+              "properties": {
+                "host_version": {
+                  "type": "string"
+                },
+                "observed_at": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "receipt": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
             }
           },
           "additionalProperties": false
