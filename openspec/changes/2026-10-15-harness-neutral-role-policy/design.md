@@ -134,3 +134,7 @@ Rubric: upstream fidelity 30%, maintenance burden 20%, host-native correctness 2
 ## Pinned comparator fork inventory
 
 `docs/research/pstack-claude-forks-2026-10-15.json` captures all 47 paths from the comparator's own `tools/forks.json` at immutable revision `94f5ce95abe8a9dec976967d79941f631cf477cd`. Every row is `review_state=pending` and `proposed_adoption=unclassified`; classifying these is a blocking source-provenance task (#434). This JSON index is separate from `skills/swarm/references/classification.tsv`, which tracks **canonical upstream-pin refresh** only, and must not be repurposed for a third-party fork.
+
+## ModelPlan typed wire contract
+
+`schemas/portability/model-plan.schema.json` is the JSON Schema Draft 2020-12 wire model for `scripts/model_role_resolver.ModelPlan`. It enumerates the only legal static planning states, source-precedence labels, bounded seat ordinals, optional model/provider/family fields, human-readable reasons and effort. `evidence_level` is fixed to `static-planning-only`. An inherited model has `model=null`, `provider=null` and `family=null`; a BLOCKED plan has zero seats and at least one reason. Hosts MUST construct their own signed/receipt-bound execution records separately and MUST NOT mutate a plan into `VERIFIED` by altering its status.

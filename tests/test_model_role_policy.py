@@ -279,3 +279,40 @@ def test_reference_fork_snapshot_preserves_unreviewed_states() -> None:
     assert sum(row["reference_kind"] == "port-feature" for row in rows) == 8
     assert all(row["review_state"] == "pending" for row in rows)
     assert all(row["proposed_adoption"] == "unclassified" for row in rows)
+
+
+def test_plan_wire_schema_accepts_pure_planner_and_forbids_fake_runtime_claims() -> None:
+    from dataclasses import asdict
+    plan_schema = json.loads(
+        (ROOT / "schemas/portability/model-plan.schema.json").read_text()
+    )
+    Draft202012Validator.check_schema(plan_schema)
+    validate_plan = Draft202012Validator(plan_schema).validate
+
+    plan = plan_role(catalog_plan_policy(), PACKAGE, host="codex",
+                     role="swarm-workers", capabilities=capability_bindings())
+    wire = asdict(plan)
+    validate_plan(wire)
+    assert wire["evidence_level"] == "static-planning-only"
+    assert wire["status"] == "PLANNED"
+
+    blocked = plan_role(catalog_plan_policy(), PACKAGE, host="codex",
+                        role="swarm-workers", explicit="not-there",
+                        capabilities=capability_bindings())
+    validate_plan(asdict(blocked))
+
+    fake = copy.deepcopy(wire)
+    fake["status"] = "VERIFIED"
+    with pytest.raises(JsonSchemaError):
+        validate_plan(fake)
+
+    fake = copy.deepcopy(wire)
+    fake["evidence_level"] = "runtime-verified"
+    with pytest.raises(JsonSchemaError):
+        validate_plan(fake)
+
+    fake = copy.deepcopy(wire)
+    fake["seats"][0]["model"] = None
+    # Inherited model cannot magically have a known provider/family.
+    with pytest.raises(JsonSchemaError):
+        validate_plan(fake)
