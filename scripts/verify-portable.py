@@ -374,7 +374,6 @@ def _print_selection_plan(plan: Dict[str, Any]) -> None:
         print(f"      for: {', '.join(check['paths'])}")
 
 
-DEFAULT_OPENSPEC_CHANGE = "pstack-portability-contract"
 
 
 def _active_openspec_changes() -> list[str] | None:
@@ -442,7 +441,7 @@ def validate_openspec_change(change: str | None) -> int:
     is a no-op PASS; exactly one active change validates it (the checkout's
     live intent); a failed lookup FAILS (never a no-op PASS); two or more
     active changes FAIL with an explicit --change directive. A named change
-    (including DEFAULT_OPENSPEC_CHANGE) always validates that name.
+    always validates exactly that name.
     """
     if change is not None:
         return _validate_named_change(change)

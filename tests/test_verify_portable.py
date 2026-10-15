@@ -225,14 +225,14 @@ def test_validate_explicit_default_name_validates_that_name(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     validate = verify_portable.validate_openspec_change
-    default = verify_portable.DEFAULT_OPENSPEC_CHANGE
+    name = "pstack-portability-contract"
     seen: dict[str, list[str]] = {}
     def _fake_run(*a: object, **k: object) -> subprocess.CompletedProcess[str]:
         seen["argv"] = list(a[0]) if a else []
         return subprocess.CompletedProcess(a, 0, "ok", "")
     monkeypatch.setattr(verify_portable.subprocess, "run", _fake_run)
-    assert validate(default) == 0
-    assert seen.get("argv", [])[2] == default
+    assert validate(name) == 0
+    assert seen.get("argv", [])[2] == name
 
 @pytest.mark.parametrize("stdout", [
     '{"changes": ["junk"]}',
