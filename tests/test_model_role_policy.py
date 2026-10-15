@@ -32,7 +32,7 @@ def test_schema_is_draft_2020_12_and_example_is_valid() -> None:
 @pytest.mark.parametrize(("mutation", "needle"), [
     (lambda p: p["role_constraints"].update({"unlisted-role": {"selection": "single"}}), "unknown canonical role"),
     (lambda p: p["role_constraints"]["arena-runners"].update({"required_capabilities": ["agent.spawn"]}), "agent.spawn and agent.join"),
-    (lambda p: p["role_constraints"]["swarm-workers"].update({"minimum_independent_workers": 2}), "single model"),
+    (lambda p: p["role_constraints"]["swarm-workers"].update({"minimum_independent_workers": 2}), "non-panel role"),
     (lambda p: p["role_constraints"]["swarm-workers"].update({"required_capabilities": ["provider.call"]}), "unknown capability"),
     (lambda p: p["hosts"]["codex"]["tier_defaults"].update({"unlisted-tier": ["inherit-parent"]}), "unknown tier"),
     (lambda p: p["hosts"]["codex"]["tier_defaults"].update({"panel": ["gpt-not-observed"]}), "absent from host catalog"),
