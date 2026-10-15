@@ -323,3 +323,14 @@ def test_plan_wire_schema_accepts_pure_planner_and_forbids_fake_runtime_claims()
     # Inherited model cannot magically have a known provider/family.
     with pytest.raises(JsonSchemaError):
         validate_plan(fake)
+
+    fake = copy.deepcopy(wire)
+    fake["seats"][0]["family"] = None
+    # A named model without family identity is a forged half-plan.
+    with pytest.raises(JsonSchemaError):
+        validate_plan(fake)
+
+    fake = copy.deepcopy(wire)
+    fake["seats"][0]["provider"] = None
+    with pytest.raises(JsonSchemaError):
+        validate_plan(fake)
