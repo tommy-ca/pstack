@@ -44,3 +44,7 @@ Program: [#429](https://github.com/tommy-ca/pstack/issues/429). Draft spec: [PR 
 | [#433](https://github.com/tommy-ca/pstack/issues/433) Verification | #444, #445 | #435/#437/#440/#441/#442/#443 → #444 → #445 |
 
 These are **open issues** until their acceptance criteria receive independent evidence. The source review is not a completed live multi-model Swarm/Arena/Interrogate run.
+
+## Design-to-code progress snapshot (2026-10-15, PR #428)
+
+The policy schema now supports bounded `seats` independent of distinct model slugs. The draft includes `scripts/model_role_resolver.py`, a pure role-planning seam with explicit precedence, declared capability gaps, cross-judge selection, and honest status labels. No native harness is dispatched. All host-specific model/provider calls remain future tasks #440–#444. Issue #437 stays open until actual host integration and runtime receipts settle.

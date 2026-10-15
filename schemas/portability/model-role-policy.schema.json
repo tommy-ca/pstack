@@ -148,6 +148,12 @@
                     "effort": {
                       "type": "string",
                       "minLength": 1
+                    },
+                    "seats": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 16,
+                      "description": "Requested independent invocations; same named model may run multiple fresh contexts. Not a model-family diversity claim."
                     }
                   },
                   "additionalProperties": false

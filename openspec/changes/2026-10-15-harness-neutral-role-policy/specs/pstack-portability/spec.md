@@ -94,3 +94,41 @@ Every host addition progresses through candidate, mapped, packaged, verified and
 - **WHEN** the native host fails to dispatch a configured role
 - **THEN** runtime status remains unverified or failed
 - **AND** the evidence ledger records the failure without overwriting previous receipts
+
+### Requirement: Role/model resolution is a pure, auditable plan before native dispatch
+
+A role resolver MUST produce a deterministic `ModelPlan` without spawning children or asserting real model availability. The planner MUST report `PLANNED`, `DEGRADED` or `BLOCKED`; these are *planning states*, never runtime conformance verdicts. Source precedence MUST be explicit → project → user → host role → host tier → inherited parent or fail-closed. A rejected explicit model MUST NOT silently fall back. Capabilities supplied from host metadata MUST NOT be interpreted as verified runtime receipts.
+
+#### Scenario: explicit configuration overrides project and user choices
+
+- **GIVEN** a canonical role, eligible host catalog, and different explicit, project and user model selections
+- **WHEN** the pure resolver runs
+- **THEN** explicit wins and the selected origin is recorded in the plan
+- **AND** the plan is labeled `static-planning-only`
+- **AND** the host must separately prove real invocation
+
+#### Scenario: unsupported explicit model fails rather than downgrading
+
+- **GIVEN** a requested explicit model missing from the declared host catalog
+- **WHEN** role planning runs
+- **THEN** the plan is `BLOCKED` with a named-missing-model reason
+- **AND** no parent-inheritance or guessed substitute is dispatched
+
+### Requirement: Independent seats and model diversity are distinct measures
+
+Role settings MAY declare a bounded `seats` count independently from a unique set of configured model slugs. A panel MAY generate multiple fresh-context candidates using the same model, following canonical Arena behavior, but MUST record the family diversity as reduced. The canonical one-runner default MUST remain possible. The Arena cross-judge pool MUST select one eligible judge seat, preferring a family different from its parent/candidate. Interrogate reviewers MUST count truly independent sessions and distinct families separately.
+
+#### Scenario: three Arena candidates using one configured model
+
+- **GIVEN** one configured model and `seats=3`
+- **WHEN** Arena plans its candidate fan-out
+- **THEN** three independent planned seats are produced with unique ordinal identifiers
+- **AND** the report states only one configured model and model family
+- **AND** true session independence remains pending host-native evidence
+
+#### Scenario: single canonical-default Arena runner
+
+- **GIVEN** no user-requested multi-candidate configuration
+- **WHEN** the canonical default resolves to one runner
+- **THEN** role planning permits one candidate
+- **AND** no implicit two-runner requirement is inserted by this port
