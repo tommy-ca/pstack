@@ -23,13 +23,22 @@
       "minimum_independent_workers": 2
     },
     "interrogate-reviewers": {
-      "selection": "cross-judge",
+      "selection": "panel",
       "required_capabilities": [
         "agent.spawn",
         "agent.join",
         "workspace.readonly"
       ],
       "minimum_independent_workers": 2,
+      "require_distinct_model_families": true
+    },
+    "arena-cross-judge-pool": {
+      "selection": "cross-judge",
+      "required_capabilities": [
+        "agent.spawn",
+        "agent.join",
+        "workspace.readonly"
+      ],
       "require_distinct_model_families": true
     }
   },

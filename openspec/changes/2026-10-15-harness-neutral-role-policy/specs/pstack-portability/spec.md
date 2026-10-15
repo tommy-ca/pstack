@@ -53,7 +53,7 @@ Policy/safety/approval constraints are enforced before choosing a model. Within 
 
 ### Requirement: Panels and cross-judges preserve independence
 
-Panel slots MUST be discrete agent invocations. Cross-judges MUST use a distinct family where required and supported; otherwise the verifier MUST report a degraded or blocked independence condition, rather than claiming multi-model review. Required agent.spawn/agent.join and workspace isolation bindings MUST be checked before fan-out.
+Panel slots MUST be discrete agent invocations. An Arena cross-judge seat MUST differ from the candidate family when required and available; an Interrogate reviewer panel MUST preserve its declared independent-model family diversity; otherwise the verifier MUST report a degraded or blocked independence condition, rather than claiming multi-model review. Required agent.spawn/agent.join and workspace isolation bindings MUST be checked before fan-out.
 
 #### Scenario: only one live model family
 

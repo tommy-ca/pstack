@@ -42,7 +42,7 @@ canonical role registry + playbook task
 
 Explicit user choices never bypass policy/approval constraints. An unavailable explicit model yields an actionable error, NOT a silent substitution. `auto` / `inherit-parent` means omit model on the spawn call; it is not a model slug. Host-detected effort sets control acceptance: unsupported tokens do not become valid by appearing in documentation. Never infer live availability from a checked-in `models.json`.
 
-For single roles require one resolved model or documented inherit behavior. For a panel, each entry is an independently spawned seat. For a cross-judge, prefer a model family different from the candidate/parent; if independence or required diversity is impossible, mark `DEGRADED` or `BLOCKED`, never claim multi-model proof.
+For single roles require one resolved model or documented inherit behavior. For a panel, each entry is an independently spawned seat. For the `arena-cross-judge-pool` cross-judge selector, choose a judge family different from the candidate/parent even if only one judge is dispatched. For `interrogate-reviewers`, which is an adversarial panel, each reviewer is a separate agent; count only actual independent model families. If the requested independence or diversity is impossible, mark `DEGRADED` or `BLOCKED`, never claim multi-model proof.
 
 ### Tool/control flow
 
