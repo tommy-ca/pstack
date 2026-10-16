@@ -4,6 +4,8 @@ The planner composes a canonical role registry, host-specific model catalog,
 per-role topology, optional overrides, and *reported* capability bindings.
 No use of this planner proves a model is available, an agent spawned, or a
 read-only/isolation boundary was enforced by a live host.
+
+Library module: from scripts.model_role_resolver import plan_role. No CLI entry point; python -m exits silently. Direct script run is unsupported (package-relative imports).
 """
 
 from __future__ import annotations
