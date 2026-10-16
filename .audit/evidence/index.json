@@ -3,8 +3,8 @@
   "hosts": {
     "grok": {
       "receipt": ".audit/evidence/grok-receipt.json",
-      "run_id": "grok-1792168512-741d04a8",
-      "timestamp": "2026-10-16T16:35:49Z",
+      "run_id": "grok-1792176128-e7ab7444",
+      "timestamp": "2026-10-16T18:43:11Z",
       "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
@@ -21,14 +21,14 @@
         "package_descriptor_hash": "52cc6b3ce9b87a80f783362b109cb7b5a6190e7f26d25687b6b2a16f3651a647",
         "manifest_hash": "93708b1bea0284198757f9dab6256027f44e0b464087ce48f6bc96ec12db0fc0",
         "driver_revision": "42e76079a9f3a70326c42ac56ea114e59f2b6037be117635ea714cc341b4fb6d",
-        "package_driver_revision": "df25167def33e924250b2338cdf91778d298aa9e30cb8de976aed07c0a1c29bf",
+        "package_driver_revision": "8c476d733590898a1ab2e56007f204b2fbc00043171260e34416660a61c88b79",
         "boundary_driver_revision": "c7dd52906f6de7a0164ec3dd0e19392ac6f1915a840a952a9fcda6ad4a02fe7a"
       }
     },
     "codex": {
       "receipt": ".audit/evidence/codex-receipt.json",
-      "run_id": "codex-1792168553-1ba01eb9",
-      "timestamp": "2026-10-16T16:36:21Z",
+      "run_id": "codex-1792176199-9df01b8f",
+      "timestamp": "2026-10-16T18:44:45Z",
       "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
@@ -45,14 +45,14 @@
         "package_descriptor_hash": "52cc6b3ce9b87a80f783362b109cb7b5a6190e7f26d25687b6b2a16f3651a647",
         "manifest_hash": "b8fb2d730647c4b573bcd4a90d9f1ba666e9bee160ef4da99e560b585da1a886",
         "driver_revision": "42e76079a9f3a70326c42ac56ea114e59f2b6037be117635ea714cc341b4fb6d",
-        "package_driver_revision": "df25167def33e924250b2338cdf91778d298aa9e30cb8de976aed07c0a1c29bf",
+        "package_driver_revision": "8c476d733590898a1ab2e56007f204b2fbc00043171260e34416660a61c88b79",
         "boundary_driver_revision": "c7dd52906f6de7a0164ec3dd0e19392ac6f1915a840a952a9fcda6ad4a02fe7a"
       }
     },
     "omp": {
       "receipt": ".audit/evidence/omp-receipt.json",
-      "run_id": "omp-1792168651-b854f8cb",
-      "timestamp": "2026-10-16T16:39:43Z",
+      "run_id": "omp-1792176512-fe9d1684",
+      "timestamp": "2026-10-16T18:49:38Z",
       "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
@@ -69,14 +69,14 @@
         "package_descriptor_hash": "52cc6b3ce9b87a80f783362b109cb7b5a6190e7f26d25687b6b2a16f3651a647",
         "manifest_hash": "0796214ef5886c4763eaf83963145785e0cc363252671b3f4399eb0d8cb7ed06",
         "driver_revision": "42e76079a9f3a70326c42ac56ea114e59f2b6037be117635ea714cc341b4fb6d",
-        "package_driver_revision": "df25167def33e924250b2338cdf91778d298aa9e30cb8de976aed07c0a1c29bf",
+        "package_driver_revision": "8c476d733590898a1ab2e56007f204b2fbc00043171260e34416660a61c88b79",
         "boundary_driver_revision": "c7dd52906f6de7a0164ec3dd0e19392ac6f1915a840a952a9fcda6ad4a02fe7a"
       }
     },
     "opencode": {
       "receipt": ".audit/evidence/opencode-receipt.json",
-      "run_id": "opencode-1792168581-5e9f58b4",
-      "timestamp": "2026-10-16T16:36:42Z",
+      "run_id": "opencode-1792176285-d2823877",
+      "timestamp": "2026-10-16T18:45:42Z",
       "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
@@ -93,14 +93,14 @@
         "package_descriptor_hash": "52cc6b3ce9b87a80f783362b109cb7b5a6190e7f26d25687b6b2a16f3651a647",
         "manifest_hash": "e9d1cc124a523eb803bf7389871d44b406fa2a1265237d8dcd9d3bf589740331",
         "driver_revision": "42e76079a9f3a70326c42ac56ea114e59f2b6037be117635ea714cc341b4fb6d",
-        "package_driver_revision": "df25167def33e924250b2338cdf91778d298aa9e30cb8de976aed07c0a1c29bf",
+        "package_driver_revision": "8c476d733590898a1ab2e56007f204b2fbc00043171260e34416660a61c88b79",
         "boundary_driver_revision": "c7dd52906f6de7a0164ec3dd0e19392ac6f1915a840a952a9fcda6ad4a02fe7a"
       }
     },
     "antigravity": {
       "receipt": ".audit/evidence/antigravity-receipt.json",
-      "run_id": "antigravity-1792168951-8face974",
-      "timestamp": "2026-10-16T16:42:39Z",
+      "run_id": "antigravity-1792176783-279e35cd",
+      "timestamp": "2026-10-16T18:53:13Z",
       "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
@@ -117,7 +117,7 @@
         "package_descriptor_hash": "52cc6b3ce9b87a80f783362b109cb7b5a6190e7f26d25687b6b2a16f3651a647",
         "manifest_hash": "18cacfb7991e16b741ccd05c373733897340cdd74b11253f86fbadbec74493b0",
         "driver_revision": "42e76079a9f3a70326c42ac56ea114e59f2b6037be117635ea714cc341b4fb6d",
-        "package_driver_revision": "df25167def33e924250b2338cdf91778d298aa9e30cb8de976aed07c0a1c29bf",
+        "package_driver_revision": "8c476d733590898a1ab2e56007f204b2fbc00043171260e34416660a61c88b79",
         "boundary_driver_revision": "c7dd52906f6de7a0164ec3dd0e19392ac6f1915a840a952a9fcda6ad4a02fe7a"
       }
     }
