@@ -94,6 +94,8 @@ Every host addition progresses through candidate, mapped, packaged, verified and
 - **THEN** runtime status remains unverified or failed
 - **AND** the evidence ledger records the failure without overwriting previous receipts
 
+### Requirement: Role/model resolution is a pure, auditable plan before native dispatch
+
 A role resolver MUST produce a deterministic `ModelPlan` without spawning children or asserting model availability. The planner MUST report `PLANNED`, `DEGRADED` or `BLOCKED` as planning states, never runtime verdicts. Source precedence MUST be explicit → project → user → host role → host tier → inherited parent or fail-closed. Host metadata MUST NOT count as verified runtime receipts.
 
 #### Scenario: explicit configuration overrides project and user choices
@@ -110,6 +112,8 @@ A role resolver MUST produce a deterministic `ModelPlan` without spawning childr
 - **WHEN** role planning runs
 - **THEN** the plan is `BLOCKED` with a named-missing-model reason
 - **AND** no parent-inheritance or guessed substitute is dispatched
+
+### Requirement: Independent seats and model diversity are distinct measures
 
 Role settings MAY declare a bounded `seats` count independent of configured model slugs. A panel MAY use one model for multiple fresh-context seats but MUST record reduced family diversity. The canonical one-runner default MUST remain possible. The Arena cross-judge pool MUST select one eligible seat preferring a different family. Interrogate reviewers MUST count independent sessions and families separately.
 
@@ -145,6 +149,8 @@ Role settings MAY declare a bounded `seats` count independent of configured mode
 - **WHEN** the pure role planner returns `BLOCKED`
 - **THEN** the output has no planned seats and at least one explicit reason
 - **AND** the plan validates as an honest error artifact
+
+### Requirement: Harness identity can extend without replicating the workflow router
 
 The design MUST support future harness identities through a versioned declarative adapter descriptor, not one undifferentiated `custom` entry. Until a migration is tested, known-host enums stay operational and new IDs are NOT runtime-supported. A new identity MUST NOT inherit verified capabilities, tool mappings, or model availability. Shared skill and playbook content MUST remain unchanged.
 
