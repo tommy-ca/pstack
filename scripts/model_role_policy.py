@@ -8,20 +8,25 @@ never a claim that a provider/model can execute on the current host.
 from __future__ import annotations
 
 import json
+from collections.abc import Sequence
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
-from scripts.portability_schema import IMPLEMENTATION_STATUSES, ENFORCEMENT_LEVELS, VERIFICATION_STATUSES, PORTABLE_CAPABILITY_UNIVERSE, ValidationError
+from scripts.portability_schema import VERIFICATION_STATUSES, PORTABLE_CAPABILITY_UNIVERSE, ValidationError
 
 ROOT = Path(__file__).resolve().parents[1]
 POLICY = ROOT / "examples/portability/model-role-policy.example.json"
-DESCRIPTOR = ROOT / "pstack.package.json"
-def _inherit_tokens() -> frozenset[str]:
-    schema = json.loads((ROOT / "schemas/portability/model-role-policy.schema.json").read_text(encoding="utf-8"))
-    return frozenset(schema["$defs"]["inheritTokens"]["enum"])
+SCHEMA = ROOT / "schemas/portability/model-role-policy.schema.json"
 
 
-INHERIT = _inherit_tokens()
+@lru_cache(maxsize=1)
+def _schema() -> dict[str, Any]:
+    """Normative schema, read from disk once per process; no per-call I/O."""
+    return json.loads(SCHEMA.read_text(encoding="utf-8"))
+
+
+INHERIT = frozenset(_schema()["$defs"]["inheritTokens"]["enum"])
 VALID_SELECTIONS = frozenset({"single", "panel", "cross-judge"})
 VALID_DISCOVERY = frozenset({"unverified", "catalog", "live"})
 VALID_VERIFICATION = frozenset(VERIFICATION_STATUSES)
@@ -32,19 +37,44 @@ def require(condition: bool, message: str) -> None:
         raise ValidationError(message)
 
 
-def _validate_against_schema(policy: dict[str, Any]) -> None:
-    """Schema is normative per spec; the checker enforces it plus cross-document parity."""
+@lru_cache(maxsize=1)
+def _validator() -> Any:
+    """Compiled Draft 2020-12 validator; built once, reused by every policy check."""
     from jsonschema import Draft202012Validator
 
-    schema = json.loads((ROOT / "schemas/portability/model-role-policy.schema.json").read_text(encoding="utf-8"))
+    return Draft202012Validator(_schema())
+
+
+def _validate_against_schema(policy: dict[str, Any]) -> None:
+    """Schema is normative per spec; the checker enforces it plus cross-document parity."""
     try:
-        Draft202012Validator(schema).validate(policy)
+        _validator().validate(policy)
     except Exception as exc:
         raise ValidationError(f"model-role policy violates its schema: {exc}") from exc
 
 
+def check_choice_list(label: str, choices: Any) -> list[str]:
+    """The single home of the model-choice-list rule: nonempty, unique slugs.
+
+    Accepts one alias or any sequence of aliases and returns a list. Both the
+    policy checker and the planner route caller-supplied (explicit/project/user)
+    and policy-supplied (tier_defaults/overrides) lists through here, so a
+    duplicate list can never be planned as independent seats.
+    """
+    if isinstance(choices, str):
+        values: list[Any] = [choices]
+    elif isinstance(choices, Sequence) and not isinstance(choices, (bytes, bytearray)):
+        values = list(choices)
+    else:
+        raise ValidationError(f"{label}: choices must be a str or a sequence of model aliases")
+    require(bool(values) and all(isinstance(value, str) and bool(value) for value in values),
+            f"{label}: choices must be nonempty model aliases or slugs")
+    require(len(values) == len(set(values)), f"{label}: choices must be unique nonempty list")
+    return values  # every element is a nonempty str, proven by the require above
+
+
 def check_model_role_policy(policy: dict[str, Any], descriptor: dict[str, Any]) -> None:
-    """Validate all policy facts without I/O or any host invocation."""
+    """Validate all policy facts without host invocation; the schema is read once."""
     _validate_against_schema(policy)
     require(isinstance(policy, dict) and isinstance(descriptor, dict), "policy/descriptor must be objects")
     require(type(policy.get("version")) is int and policy["version"] == 1, "unsupported policy version")
@@ -139,11 +169,7 @@ def check_model_role_policy(policy: dict[str, Any], descriptor: dict[str, Any]) 
             require(rid in role_ids, f"{host}: unknown override role {rid}")
 
         def check_choices(label: str, choices: Any, effort: str | None = None) -> None:
-            require(isinstance(choices, list) and bool(choices) and
-                    all(isinstance(c, str) for c in choices) and
-                    len(choices) == len(set(choices)), f"{host}/{label}: choices must be unique nonempty list")
-            for slug in choices:
-                require(isinstance(slug, str) and bool(slug), f"{host}/{label}: invalid choice")
+            for slug in check_choice_list(f"{host}/{label}", choices):
                 if slug not in INHERIT:
                     require(slug in models, f"{host}/{label}: model {slug} absent from host catalog")
                     if effort is not None:
