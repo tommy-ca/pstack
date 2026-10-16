@@ -463,6 +463,9 @@ def uninstall_plugin(host: str, target_base: Optional[Path] = None, force: bool 
     if not plugin_dir.exists():
         return True, []
 
+    if not is_owned_deploy_target(plugin_dir):
+        return False, [f"refusing to uninstall a foreign-source install at {plugin_dir}"]
+
     desc, _ = load_package_descriptor()
 
     # Identify managed files from recorded manifest or derived defaults

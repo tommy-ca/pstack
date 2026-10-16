@@ -195,3 +195,20 @@ def test_verify_plugin_skips_foreign_variant_live_install(tmp_path: Path, monkey
 
     ok, errors = package_lifecycle.verify_plugin("grok")
     assert ok is True, errors
+
+
+def test_uninstall_refuses_foreign_symlinked_install(tmp_path: Path) -> None:
+    foreign = tmp_path / "foreign"
+    (foreign / "skills" / "poteto-mode").mkdir(parents=True)
+    sentinel = foreign / "skills" / "poteto-mode" / "SKILL.md"
+    sentinel.write_text("foreign router\n", encoding="utf-8")
+    live = tmp_path / ".grok" / "plugins" / "pstack"
+    live.parent.mkdir(parents=True)
+    live.symlink_to(foreign, target_is_directory=True)
+    assert package_lifecycle.is_owned_deploy_target(live) is False
+
+    for force in (False, True):
+        ok, errors = package_lifecycle.uninstall_plugin("grok", tmp_path, force=force)
+        assert ok is False, errors
+        assert any("foreign-source" in e for e in errors)
+        assert sentinel.exists()
