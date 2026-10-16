@@ -158,15 +158,15 @@ def test_portable_verifier_cli_host_all_doctor(tmp_path: Path) -> None:
 
 
 def test_portable_verifier_selected_change_validation(tmp_path: Path) -> None:
-    # Default target passes and aligns description
+    # Explicit archived name validates exactly that name and fails honestly
     verifier = PortableVerifier(host="grok", evidence_root=tmp_path, change="pstack-portability-contract")
     verifier.launch()
     ok = verifier.doctor(check_durability=False)
-    assert ok is True
+    assert ok is False
     openspec_scenario = next(s for s in verifier.scenarios if s.id == "doctor-openspec-validation")
     assert openspec_scenario.description == "Verify pstack-portability-contract openspec change passes schema checks"
     assert "pstack-portability-contract" in openspec_scenario.command
-    assert openspec_scenario.verdict == "PASS"
+    assert openspec_scenario.verdict == "FAIL"
 
     # Failing target is observable in scenario and fails doctor
     failing_verifier = PortableVerifier(host="grok", evidence_root=tmp_path, change="nonexistent-target-change")
@@ -198,4 +198,57 @@ def test_portable_verifier_cli_failing_change_observable(tmp_path: Path) -> None
     )
     assert res.returncode != 0
     assert "Verify nonexistent-target-change openspec change passes schema checks" in res.stdout or res.returncode == 1
+
+def test_validate_default_change_fallback_branches(monkeypatch: pytest.MonkeyPatch) -> None:
+    validate = verify_portable.validate_openspec_change
+
+    monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda: ["only-active"])
+    seen: dict[str, list[str]] = {}
+    def _fake_run(*a: object, **k: object) -> subprocess.CompletedProcess[str]:
+        seen["argv"] = list(a[0]) if a else []
+        return subprocess.CompletedProcess(a, 0, "ok", "")
+    monkeypatch.setattr(verify_portable.subprocess, "run", _fake_run)
+    assert validate(None) == 0
+    assert seen.get("argv", [])[2] == "only-active"
+
+    monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda: [])
+    assert validate(None) == 0
+
+    monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda: None)
+    assert validate(None) == 1
+
+    monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda: ["a", "b"])
+    assert validate(None) == 1
+
+
+def test_validate_explicit_default_name_validates_that_name(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    validate = verify_portable.validate_openspec_change
+    default = verify_portable.DEFAULT_OPENSPEC_CHANGE
+    seen: dict[str, list[str]] = {}
+    def _fake_run(*a: object, **k: object) -> subprocess.CompletedProcess[str]:
+        seen["argv"] = list(a[0]) if a else []
+        return subprocess.CompletedProcess(a, 0, "ok", "")
+    monkeypatch.setattr(verify_portable.subprocess, "run", _fake_run)
+    assert validate(default) == 0
+    assert seen.get("argv", [])[2] == default
+
+@pytest.mark.parametrize("stdout", [
+    '{"changes": ["junk"]}',
+    '{"changes": [{}]}',
+    '{"changes": [{"name": ""}]}',
+    '{"changes": [{"name": 42}]}',
+    '{"changes": "junk"}',
+    'not json',
+])
+def test_active_changes_malformed_payload_is_lookup_failure(
+    monkeypatch: pytest.MonkeyPatch, stdout: str
+) -> None:
+    monkeypatch.setattr(
+        verify_portable.subprocess, "run",
+        lambda *a, **k: subprocess.CompletedProcess(a, 0, stdout, ""),
+    )
+    assert verify_portable._active_openspec_changes() is None
+    assert verify_portable.validate_openspec_change(None) == 1
 

@@ -62,7 +62,7 @@ The target/reference both have eight skill names not present in **current** cano
 
 ### Comparator declared fork ledger
 
-The reference port's `tools/forks.json` currently declares **47 deliberate pstack file differences: 39 `policy` and 8 `port-feature`**. This is a necessary provenance gate, not evidence that any difference should be imported. High-risk examples include `autopilot-full` merge authority, `orchestrate` / `multi-phase-plan` local `~/.claude/orchestrate` state, and native session hooks. A reference feature must be assessed against canonical intent, target's existing host-owned state policy (ADR-0006), and native host proofs.
+The reference port's `tools/forks.json` currently declares **48 deliberate file differences: 40 `policy` and 8 `port-feature`** (47 pstack + 1 thermos). This is a necessary provenance gate, not evidence that any difference should be imported. High-risk examples include `autopilot-full` merge authority, `orchestrate` / `multi-phase-plan` local `~/.claude/orchestrate` state, and native session hooks. A reference feature must be assessed against canonical intent, target's existing host-owned state policy (ADR-0006), and native host proofs.
 
 ### Static audit dispositions (not implemented host behavior)
 
@@ -79,7 +79,7 @@ The original draft's `arena-runners.minimum_independent_workers=2` and `interrog
 
 ### Mechanically enumerated reference divergence ledger
 
-The immutable comparator `tools/forks.json` was projected into [pstack-claude-forks-2026-10-15.json](./pstack-claude-forks-2026-10-15.json). It records all 47 named source paths, comparator classification, source `since` version when supplied, and a recommended review lane. **All 47 adoption decisions remain unclassified by design.** This source inventory is not a verdict to adopt, and its `policy` vs `port-feature` labels describe the comparator author's classification, not the target's architecture acceptance.
+The immutable comparator `tools/forks.json` was projected into [pstack-claude-forks-2026-10-15.json](./pstack-claude-forks-2026-10-15.json). It records all 48 named source paths, comparator classification, source `since` version when supplied, and a recommended review lane. **All 48 adoption decisions remain unclassified by design.** This source inventory is not a verdict to adopt, and its `policy` vs `port-feature` labels describe the comparator author's classification, not the target's architecture acceptance.
 
 Canonical refresh classification (`skills/swarm/references/classification.tsv`) is an independent stream. Do not blend those inventories or overwrite the canonical upstream pin.
 

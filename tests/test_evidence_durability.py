@@ -100,6 +100,10 @@ def test_durable_receipts_exist_for_all_five_hosts() -> None:
 
         assert host in index_data["hosts"]
         assert index_data["hosts"][host]["overall_verdict"] == "PASS"
+        entry = index_data["hosts"][host]
+        assert entry["run_id"] == data["run_id"], f"index run_id stale for {host}"
+        assert entry["timestamp"] == data["timestamp"], f"index timestamp stale for {host}"
+        assert entry["surface_revisions"] == data["surface_revisions"], f"index revisions stale for {host}"
 
 
 def test_all_six_profiles_pass_evidence_durability_and_freshness() -> None:
