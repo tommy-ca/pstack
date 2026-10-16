@@ -74,7 +74,7 @@ adapt 38, preserve 3, exclude 2, gap 3, policy-fork 2. Total 48.
 
 ## License disposition (2026-10-16, corrected)
 
-Comparator `michael-denyer/pstack-claude@94f5ce95abe8a9dec976967d79941f631cf477cd` carries `LICENSE` (MIT), `LICENSE-cursor-team-kit`, `LICENSE-thermos`, root `NOTICE.md` and `NOTICE-skills.md`, plus `plugins/pstack/skills/poteto-mode/references/licenses/NOTICE.md`. Its NOTICE attributes pstack-derived skills to cursor/plugins/pstack (Lauren Tan, MIT), team-kit skills to cursor-team-kit (Cursor, MIT), and thermos skills to cursor/plugins/thermos (Cursor, MIT), with port modifications under Michael Denyer MIT. Local `LICENSE` is MIT with no NOTICE file.
+Comparator `michael-denyer/pstack-claude@94f5ce95abe8a9dec976967d79941f631cf477cd` carries `LICENSE` (MIT), a team-kit license file, `LICENSE-thermos`, root `NOTICE.md` and `NOTICE-skills.md`, plus `plugins/pstack/skills/poteto-mode/references/licenses/NOTICE.md`. Its NOTICE attributes pstack-derived skills to cursor/plugins/pstack (Lauren Tan, MIT), team-kit skills to the Cursor team-kit source (Cursor, MIT), and thermos skills to cursor/plugins/thermos (Cursor, MIT), with port modifications under Michael Denyer MIT. Local `LICENSE` is MIT with no NOTICE file.
 
 Group-level assessment only, pending per-file audit: preserve and adapt rows are assessed against canonical intent and host constraints, but no per-file verbatim-copy comparison against the comparator tree has been run. The two policy-fork rows (`thermo-nuclear-code-quality-review`, `orchestrate.md`) require individual attribution checks given the thermos NOTICE chain. Per-row attribution and classification stay pending until pinned ledger paths are audited file by file.
 
