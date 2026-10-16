@@ -14,6 +14,7 @@ if str(ROOT) not in sys.path:
 import pytest
 from jsonschema import Draft202012Validator, ValidationError as JsonSchemaError
 
+from scripts import model_role_policy
 from scripts.model_role_policy import check_model_role_policy
 from scripts.portability_schema import ValidationError
 
@@ -334,3 +335,19 @@ def test_plan_wire_schema_accepts_pure_planner_and_forbids_fake_runtime_claims()
     fake["seats"][0]["provider"] = None
     with pytest.raises(JsonSchemaError):
         validate_plan(fake)
+
+@pytest.mark.parametrize("token", sorted(model_role_policy.INHERIT))
+def test_inherit_tokens_rejected_as_catalog_ids_by_both_validators(token: str) -> None:
+    policy = copy.deepcopy(EXAMPLE)
+    policy["hosts"]["codex"]["model_catalog"] = [
+        {"id": token, "provider": "x", "family": "x", "supported_efforts": []}
+    ]
+    with pytest.raises(JsonSchemaError):
+        VALIDATOR.validate(policy)
+    with pytest.raises(ValidationError, match="violates its schema"):
+        check_model_role_policy(policy, PACKAGE)
+
+
+def test_inherit_set_matches_schema_def() -> None:
+    schema = json.loads((ROOT / "schemas/portability/model-role-policy.schema.json").read_text(encoding="utf-8"))
+    assert set(model_role_policy.INHERIT) == set(schema["$defs"]["inheritTokens"]["enum"])

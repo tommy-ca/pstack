@@ -16,7 +16,12 @@ from scripts.portability_schema import IMPLEMENTATION_STATUSES, ENFORCEMENT_LEVE
 ROOT = Path(__file__).resolve().parents[1]
 POLICY = ROOT / "examples/portability/model-role-policy.example.json"
 DESCRIPTOR = ROOT / "pstack.package.json"
-INHERIT = frozenset({"inherit-parent", "auto"})
+def _inherit_tokens() -> frozenset[str]:
+    schema = json.loads((ROOT / "schemas/portability/model-role-policy.schema.json").read_text(encoding="utf-8"))
+    return frozenset(schema["$defs"]["inheritTokens"]["enum"])
+
+
+INHERIT = _inherit_tokens()
 VALID_SELECTIONS = frozenset({"single", "panel", "cross-judge"})
 VALID_DISCOVERY = frozenset({"unverified", "catalog", "live"})
 VALID_VERIFICATION = frozenset(VERIFICATION_STATUSES)
