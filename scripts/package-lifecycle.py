@@ -84,6 +84,10 @@ def _traverses_symlink(path: Path) -> bool:
     another harness home) is the same hazard one level up: the path names a tree
     pstack never created, so deleting "managed files" inside it hits foreign
     content.
+
+    Deliberately walks to the filesystem root, so a platform alias (macOS
+    `/var` -> `/private/var`) also reads as foreign. That costs a refusal on
+    such hosts, never a delete, and pstack's CI and deploy hosts are Linux.
     """
     return any(candidate.is_symlink() for candidate in (path, *path.parents))
 
