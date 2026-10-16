@@ -72,6 +72,14 @@ Status: lane-level triage from pin-relative inspection. `diverged` means counter
 
 adapt 38, preserve 3, exclude 2, gap 3, policy-fork 2. Total 48.
 
+## License disposition (2026-10-16)
+
+Comparator `michael-denyer/pstack-claude` is MIT licensed (Lauren Tan, Michael Denyer). Local `LICENSE` is MIT. No license conflict for pattern adoption; no NOTICE file exists on either side.
+
+Per-group disposition: preserve rows reuse no comparator text beyond common pstack intent already under the canonical pin. Adapt rows rewrite behavior against canonical intent and host constraints; they carry no verbatim comparator code. Exclude rows import nothing. Gap rows are absent locally. The two policy-fork rows (`thermo-nuclear-code-quality-review`, `orchestrate.md`) are local originals or canonical adaptations, not comparator copies.
+
+No per-file verbatim-copy audit has been run; if a future port copies comparator text verbatim, that file needs an individual license header check. Until then this group-level disposition holds.
+
 ## Not done
 
-Per-file line diffs, license/NOTICE disposition, source-to-test evidence. The ledger JSON `review_state`/`proposed_adoption` fields are unchanged by this matrix; promoting this triage into the ledger is a separate reviewed step.
+Per-file line diffs, source-to-test evidence. The ledger JSON `review_state`/`proposed_adoption` fields are unchanged by this matrix; promoting this triage into the ledger is a separate reviewed step.
