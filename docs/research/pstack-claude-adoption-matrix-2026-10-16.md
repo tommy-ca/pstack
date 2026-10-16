@@ -72,6 +72,12 @@ Status: lane-level triage from pin-relative inspection. `diverged` means counter
 
 adapt 38, preserve 3, exclude 2, gap 3, policy-fork 2. Total 48.
 
+## License disposition (2026-10-16, corrected)
+
+Comparator `michael-denyer/pstack-claude@94f5ce9` carries `LICENSE` (MIT), `LICENSE-cursor-team-kit`, `LICENSE-thermos`, `NOTICE.md`, and `NOTICE-skills.md`. Its NOTICE attributes pstack-derived skills to cursor/plugins/pstack (Lauren Tan, MIT), team-kit skills to cursor-team-kit (Cursor, MIT), and thermos skills to cursor/plugins/thermos (Cursor, MIT), with port modifications under Michael Denyer MIT. Local `LICENSE` is MIT with no NOTICE file.
+
+Group-level assessment only, pending per-file audit: preserve and adapt rows are assessed against canonical intent and host constraints, but no per-file verbatim-copy comparison against the comparator tree has been run. The two policy-fork rows (`thermo-nuclear-code-quality-review`, `orchestrate.md`) require individual attribution checks given the thermos NOTICE chain. Per-row attribution and classification stay pending until pinned ledger paths are audited file by file.
+
 ## Not done
 
-Per-file line diffs, license/NOTICE disposition, source-to-test evidence. The ledger JSON `review_state`/`proposed_adoption` fields are unchanged by this matrix; promoting this triage into the ledger is a separate reviewed step.
+Per-file line diffs, source-to-test evidence. The ledger JSON `review_state`/`proposed_adoption` fields are unchanged by this matrix; promoting this triage into the ledger is a separate reviewed step.
