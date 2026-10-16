@@ -180,6 +180,26 @@ def test_overrides_are_precedent_but_do_not_silently_replace_unknown_slug() -> N
     assert "no silent substitution" in invalid.reasons[0]
 
 
+@pytest.mark.parametrize("path", ["explicit", "project", "user"])
+@pytest.mark.parametrize("duplicates", [["model-a", "model-a"], ["model-a", "model-a", "model-a"]])
+def test_duplicate_choice_lists_are_refused_on_every_caller_path(path: str,
+                                                                 duplicates: list[str]) -> None:
+    # A repeated slug is one model, never two independent seats: the uniqueness
+    # rule lives in check_choice_list, the single home shared by policy and planner.
+    with pytest.raises(ValidationError) as excinfo:
+        plan_role(catalog_plan_policy(), PACKAGE, host="codex", role="interrogate-reviewers",
+                  capabilities=capability_bindings(), **{path: duplicates})
+    assert f"{path}: choices must be unique nonempty list" in str(excinfo.value)
+
+
+@pytest.mark.parametrize("explicit", ["model-a", ["model-a"]])
+def test_single_slug_explicit_choice_still_plans(explicit: str | list[str]) -> None:
+    plan = plan_role(catalog_plan_policy(), PACKAGE, host="codex", role="swarm-workers",
+                     explicit=explicit, capabilities=capability_bindings())
+    assert plan.status == "PLANNED"
+    assert (plan.source, plan.seats[0].model) == ("explicit", "model-a")
+
+
 def test_inherit_parent_omits_model_and_does_not_forge_family() -> None:
     p = plan_role(catalog_plan_policy(), PACKAGE, host="codex", role="swarm-workers",
                   explicit="inherit-parent", capabilities=capability_bindings())
