@@ -67,4 +67,10 @@ Four code units landed: an ownership guard making uninstall refuse a foreign-sou
 
 The design question the review surfaced, that the module interpreting evidence is byte-hashed and therefore costs a full multi-host re-proof on a comment, is recorded at [`docs/research/arena-surface-revision-2026-10-16.md`](../../../docs/research/arena-surface-revision-2026-10-16.md) with three candidate designs, two of them measured with runnable harnesses, and a selected base. Its boundary is a product question: whether the freshness gate answers "is this claim still true" or "has anything in the interpretation path changed". G7 and G8 stay open on that decision, and on multi-family independence, which no run in this pass supplied.
 
-The freshness gaps that review proved, four of six hosts unable to fail on a stale package driver and a vacuous droid row, are tracked in issue #473 rather than fixed here.
+## Dated evidence (2026-10-16, wave-2 reconcile)
+
+Trunk moved `3852f4e` to `7a10736` across nine commits: ownership-guard extension (#472 at `0bf5657`), duplicate-choice guard coverage (#471), DSH candidate repin (#470), surface-revision arena record (#469), role policy and resolver decomposition (#468), skills reconciliation (#467), single choice-list rule (#465), foreign-source uninstall refusal (#464), and this plan reconcile (#474).
+
+Wave-2 baseline is green: full suite `961 passed, 10 skipped` on a private TMPDIR, and `doctor --host all` reports `6/6 PASS` at the offline planes after syncing the live Antigravity install to trunk. The one full-suite antigravity failure seen mid-run did not reproduce file-alone or on a clean rerun; the failing receipt said `Stale installed copy`, and the designed sync script fixed the drift, so the cause is recorded as a stale live install rather than a code regression.
+
+Eighteen open issues (`#429`–`#446`) still pin `3852f4e` in their delivery refs; `#473` carries no `3852f4e` delivery pin and dates its measurements to `0bf5657`. The reconcile keeps every acceptance criterion unchanged and only moves the recorded trunk pin to `7a10736` on the eighteen pinned issues.
