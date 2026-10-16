@@ -545,18 +545,25 @@ class PortableVerifier:
             [sys.executable, str(ROOT / "scripts" / "canonical-index.py"), "--check"],
         )
 
-        # 2. OpenSpec change integrity (argv-safe helper above; omitted --change passes no positional arg)
+        # 2. OpenSpec change integrity (argv-safe helper above). Resolve once: the
+        # label and the child validation share one observation, so the receipt binds
+        # the exact validated target. Explicit names pass through; omitted names use
+        # the resolved active change; no-op/ambiguous states travel as explicit argv.
         resolved = resolve_openspec_change(self.change)
-        if resolved:
+        if self.change is not None:
+            helper_arg: str | None = self.change
+            change_label = self.change
+        elif resolved:
+            helper_arg = resolved
             change_label = resolved
         elif resolved is None:
+            helper_arg = "--no-active-change"
             change_label = "no active change (no-op)"
         else:
+            helper_arg = "--ambiguous-active-changes"
             change_label = "ambiguous active changes (must fail)"
-        helper = "import importlib.util, sys; spec = importlib.util.spec_from_file_location('vp_helper', 'scripts/verify-portable.py'); m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m); sys.exit(m.validate_openspec_change(sys.argv[1] if len(sys.argv) > 1 else None))"
-        helper_cmd: list[str] = [sys.executable, "-c", helper]
-        if self.change is not None:
-            helper_cmd.append(self.change)
+        helper = "import importlib.util, sys; spec = importlib.util.spec_from_file_location('vp_helper', 'scripts/verify-portable.py'); m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m); raw = sys.argv[1] if len(sys.argv) > 1 else None; sys.exit(0 if raw == '--no-active-change' else (1 if raw == '--ambiguous-active-changes' else m.validate_openspec_change(raw)))"
+        helper_cmd: list[str] = [sys.executable, "-c", helper, helper_arg]
         r2 = self.run_command(
             "doctor-openspec-validation",
             f"Verify {change_label} openspec change passes schema checks",

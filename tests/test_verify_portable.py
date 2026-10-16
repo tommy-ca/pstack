@@ -252,3 +252,26 @@ def test_active_changes_malformed_payload_is_lookup_failure(
     assert verify_portable._active_openspec_changes() is None
     assert verify_portable.validate_openspec_change(None) == 1
 
+def test_active_changes_lookup_failure_modes(monkeypatch: pytest.MonkeyPatch) -> None:
+    def _rc1(*a: object, **k: object) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess(a, 1, "", "boom")
+    monkeypatch.setattr(verify_portable.subprocess, "run", _rc1)
+    assert verify_portable._active_openspec_changes() is None
+    assert verify_portable.validate_openspec_change(None) == 1
+
+    def _missing(*a: object, **k: object) -> subprocess.CompletedProcess[str]:
+        raise FileNotFoundError("no openspec binary")
+    monkeypatch.setattr(verify_portable.subprocess, "run", _missing)
+    assert verify_portable._active_openspec_changes() is None
+    assert verify_portable.validate_openspec_change(None) == 1
+
+
+def test_active_changes_empty_list_parses_to_noop(monkeypatch: pytest.MonkeyPatch) -> None:
+    import json as _json
+    monkeypatch.setattr(
+        verify_portable.subprocess, "run",
+        lambda *a, **k: subprocess.CompletedProcess(a, 0, _json.dumps({"changes": [], "root": {}}), ""),
+    )
+    assert verify_portable._active_openspec_changes() == []
+    assert verify_portable.validate_openspec_change(None) == 0
+

@@ -18,7 +18,7 @@ Dependency graph:
 flowchart LR
   G0[Provenance & inventory] --> G1[Formal schema acceptance]
   G1 --> G2[Resolver & catalog]
-  G1 --> G3[Projection and hooks]
+  G2 --> G3[Projection and hooks]
   G1 --> G3b[Host identity registry #446]
   G2 --> G3b
   G2 --> G4[Claude runtime]
@@ -26,7 +26,8 @@ flowchart LR
   G2 --> G5[Copilot candidate]
   G3 --> G5
   G3b --> G5
-  G2 --> G6[Pi/OMP parity]
+  G0 --> G6[Pi/OMP parity]
+  G2 --> G6
   G4 --> G7[Swarm/Arena/Interrogate]
   G5 --> G7
   G6 --> G7
