@@ -14,7 +14,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import asdict, dataclass
 from typing import Any
 
-from scripts.model_role_policy import INHERIT, check_choice_list, check_model_role_policy
+from scripts.model_role_policy import INHERIT, PANEL_SEAT_MAX, check_choice_list, check_model_role_policy
 from scripts.portability_schema import IMPLEMENTATION_STATUSES, ENFORCEMENT_LEVELS
 
 
@@ -42,6 +42,104 @@ class ModelPlan:
 
 def _blocked(host: str, role: str, selection: str, source: str, reason: str) -> ModelPlan:
     return ModelPlan(host, role, selection, source, "BLOCKED", (), (reason,), None)
+
+
+def _seat(ordinal: int, slug: str, models: dict[str, dict[str, Any]]) -> ModelSeat:
+    """Inherited slugs carry no fabricated model identity."""
+    if slug in INHERIT:
+        return ModelSeat(ordinal, None, None, None)
+    model = models[slug]
+    return ModelSeat(ordinal, slug, model["family"], model["provider"])
+
+
+def _resolve_source(
+    host: str, role: str, selection: str, *, tier: str, config: Mapping[str, Any],
+    role_cfg: Mapping[str, Any], explicit: str | Sequence[str] | None,
+    project: str | Sequence[str] | None, user: str | Sequence[str] | None,
+) -> tuple[list[str], str] | ModelPlan:
+    """Caller precedence, then host/tier config, then parent inheritance."""
+    if explicit is not None:
+        raw, source = explicit, "explicit"
+    elif project is not None:
+        raw, source = project, "project"
+    elif user is not None:
+        raw, source = user, "user"
+    elif "models" in role_cfg:
+        raw, source = role_cfg["models"], "host-role"
+    elif tier in config["tier_defaults"]:
+        raw, source = config["tier_defaults"][tier], "host-tier"
+    elif config["fallback"] == "inherit-parent":
+        raw, source = "inherit-parent", "inherit-parent"
+    else:
+        return _blocked(host, role, selection, "none",
+                        f"role {role} has no model mapping and fallback=fail-closed")
+    # One canonical rule for caller- and policy-supplied lists: duplicates are
+    # rejected here rather than planned twice as "independent" seats.
+    return check_choice_list(source, raw), source
+
+
+def _gate_capabilities(
+    host: str, role: str, selection: str, source: str, contract: Mapping[str, Any],
+    capabilities: Mapping[str, Mapping[str, str]] | None,
+) -> tuple[bool, list[str]] | ModelPlan:
+    """Capability binding availability is explicit: unknown != supported."""
+    degraded = False
+    reasons: list[str] = []
+    for capability in contract.get("required_capabilities", []):
+        data = (capabilities or {}).get(capability)
+        if not isinstance(data, Mapping) or data.get("implementation_status") in (None, "gap"):
+            return _blocked(host, role, selection, source,
+                            f"missing/unsupported required capability: {capability}")
+        if data.get("implementation_status") not in IMPLEMENTATION_STATUSES:
+            return _blocked(host, role, selection, source, f"unknown binding type for {capability}")
+        if data.get("enforcement") not in ENFORCEMENT_LEVELS:
+            return _blocked(host, role, selection, source, f"unknown enforcement for {capability}")
+        if data["enforcement"] != "hard":
+            degraded = True
+            reasons.append(f"{capability} enforcement is {data['enforcement']}, not hard")
+    return degraded, reasons
+
+
+def _members_for(
+    host: str, role: str, selection: str, source: str, contract: Mapping[str, Any],
+    role_cfg: Mapping[str, Any], choices: list[str], models: dict[str, dict[str, Any]],
+    parent_family: str | None,
+) -> tuple[list[ModelSeat], bool, list[str]] | ModelPlan:
+    """Seat topology for the three selection modes; blockers short-circuit."""
+    degraded = False
+    reasons: list[str] = []
+    if selection == "single":
+        members = [_seat(1, choices[0], models)]
+    elif selection == "cross-judge":
+        # One judge, selected from a configured pool where possible.
+        different = [slug for slug in choices if
+                     slug not in INHERIT and models[slug]["family"] != parent_family]
+        if parent_family and different:
+            picked = different[0]
+        else:
+            picked = choices[0]
+        members = [_seat(1, picked, models)]
+        if not parent_family or members[0].family == parent_family or members[0].family is None:
+            if contract.get("require_distinct_model_families", False):
+                return _blocked(host, role, selection, source,
+                                "cross-judge model family independence is unproven")
+            degraded = True
+            reasons.append("cross-judge family diversity unproven; cannot label independent model review")
+    else:
+        minimum = contract.get("minimum_independent_workers", 1)
+        configured_seats = role_cfg.get("seats")  # None until the policy sets a seat override
+        count = max(minimum, configured_seats if configured_seats is not None else 0, len(choices))
+        if count > PANEL_SEAT_MAX:
+            return _blocked(host, role, selection, source,
+                            f"panel exceeds max {PANEL_SEAT_MAX} planned seats")
+        members = [_seat(i + 1, choices[i % len(choices)], models) for i in range(count)]
+        unique_families = {s.family for s in members if s.family is not None}
+        if len(members) > 1 and len(unique_families) < 2:
+            degraded = True
+            reasons.append("independent seats do not prove diverse model families")
+        if contract.get("require_distinct_model_families", False) and len(unique_families) < 2:
+            return _blocked(host, role, selection, source, "required model-family diversity missing")
+    return members, degraded, reasons
 
 
 def plan_role(
@@ -75,25 +173,11 @@ def plan_role(
     tier = registry[role]["default_model_role"]
     role_cfg = config.get("role_overrides", {}).get(role, {})
 
-    if explicit is not None:
-        raw, source = explicit, "explicit"
-    elif project is not None:
-        raw, source = project, "project"
-    elif user is not None:
-        raw, source = user, "user"
-    elif "models" in role_cfg:
-        raw, source = role_cfg["models"], "host-role"
-    elif tier in config["tier_defaults"]:
-        raw, source = config["tier_defaults"][tier], "host-tier"
-    elif config["fallback"] == "inherit-parent":
-        raw, source = "inherit-parent", "inherit-parent"
-    else:
-        return _blocked(host, role, selection, "none",
-                        f"role {role} has no model mapping and fallback=fail-closed")
-
-    # One canonical rule for caller- and policy-supplied lists: duplicates are
-    # rejected here rather than planned twice as "independent" seats.
-    choices = check_choice_list(source, raw)
+    resolved = _resolve_source(host, role, selection, tier=tier, config=config, role_cfg=role_cfg,
+                               explicit=explicit, project=project, user=user)
+    if isinstance(resolved, ModelPlan):
+        return resolved
+    choices, source = resolved
     if selection == "single" and len(choices) != 1:
         return _blocked(host, role, selection, source, "single role requires exactly one model entry")
 
@@ -113,65 +197,23 @@ def plan_role(
             return _blocked(host, role, selection, source,
                             "model-specific effort requires a live-observed catalog")
 
-    # Capability binding availability is explicit: unknown != supported.
-    reasons: list[str] = []
-    degraded = False
-    for capability in contract.get("required_capabilities", []):
-        data = (capabilities or {}).get(capability)
-        if not isinstance(data, Mapping) or data.get("implementation_status") in (None, "gap"):
-            return _blocked(host, role, selection, source,
-                            f"missing/unsupported required capability: {capability}")
-        if data.get("implementation_status") not in IMPLEMENTATION_STATUSES:
-            return _blocked(host, role, selection, source, f"unknown binding type for {capability}")
-        if data.get("enforcement") not in ENFORCEMENT_LEVELS:
-            return _blocked(host, role, selection, source, f"unknown enforcement for {capability}")
-        if data["enforcement"] != "hard":
-            degraded = True
-            reasons.append(f"{capability} enforcement is {data['enforcement']}, not hard")
+    gated = _gate_capabilities(host, role, selection, source, contract, capabilities)
+    if isinstance(gated, ModelPlan):
+        return gated
+    degraded, reasons = gated
 
-    def seat(slot: int, slug: str) -> ModelSeat:
-        if slug in INHERIT:
-            return ModelSeat(slot, None, None, None)
-        model = models[slug]
-        return ModelSeat(slot, slug, model["family"], model["provider"])
-
-    if selection == "single":
-        members = [seat(1, choices[0])]
-    elif selection == "cross-judge":
-        # One judge, selected from a configured pool where possible.
-        different = [slug for slug in choices if
-                     slug not in INHERIT and models[slug]["family"] != parent_family]
-        if parent_family and different:
-            picked = different[0]
-        else:
-            picked = choices[0]
-        members = [seat(1, picked)]
-        if not parent_family or members[0].family == parent_family or members[0].family is None:
-            if contract.get("require_distinct_model_families", False):
-                return _blocked(host, role, selection, source,
-                                "cross-judge model family independence is unproven")
-            degraded = True
-            reasons.append("cross-judge family diversity unproven; cannot label independent model review")
-    else:
-        minimum = contract.get("minimum_independent_workers", 1)
-        configured_seats = role_cfg.get("seats")  # None until the policy sets a seat override
-        count = max(minimum, configured_seats if configured_seats is not None else 0, len(choices))
-        if count > 16:
-            return _blocked(host, role, selection, source, "panel exceeds max 16 planned seats")
-        members = [seat(i + 1, choices[i % len(choices)]) for i in range(count)]
-        unique_families = {s.family for s in members if s.family is not None}
-        if len(members) > 1 and len(unique_families) < 2:
-            degraded = True
-            reasons.append("independent seats do not prove diverse model families")
-        if contract.get("require_distinct_model_families", False) and len(unique_families) < 2:
-            return _blocked(host, role, selection, source, "required model-family diversity missing")
+    built = _members_for(host, role, selection, source, contract, role_cfg, choices, models,
+                         parent_family)
+    if isinstance(built, ModelPlan):
+        return built
+    members, seat_degraded, seat_reasons = built
 
     # 'PLANNED' is deliberately not 'VERIFIED': actual independence and
     # supported native model IDs are proven by an external runtime driver.
     return ModelPlan(
         host=host, role=role, selection=selection, source=source,
-        status="DEGRADED" if degraded else "PLANNED",
-        seats=tuple(members), reasons=tuple(reasons), effort=effort,
+        status="DEGRADED" if degraded or seat_degraded else "PLANNED",
+        seats=tuple(members), reasons=tuple(reasons + seat_reasons), effort=effort,
     )
 
 
