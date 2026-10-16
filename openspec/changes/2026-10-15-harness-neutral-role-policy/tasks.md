@@ -51,7 +51,7 @@ These are **open issues** until their acceptance criteria receive independent ev
 
 ## Design-to-code progress snapshot (2026-10-15, superseded draft #428; landed state)
 
-The policy schema now supports bounded `seats` independent of distinct model slugs. Trunk carries `scripts/model_role_resolver.py`, a pure role-planning seam with explicit precedence, declared capability gaps, cross-judge selection, and honest status labels. No native harness is dispatched. All host-specific model/provider calls remain future tasks #440–#444. Issue #437 stays open until actual host integration and runtime receipts settle.
+The policy schema now supports bounded `seats` independent of distinct model slugs. The landed implementation includes `scripts/model_role_resolver.py`, a pure role-planning seam with explicit precedence, declared capability gaps, cross-judge selection, and honest status labels. No native harness is dispatched. All host-specific model/provider calls remain future tasks #440–#444. Issue #437 stays open until actual host integration and runtime receipts settle.
 
 The planner output now has a JSON Schema Draft 2020-12 wire contract (`schemas/portability/model-plan.schema.json`); tests check both honest error plans and rejection of forged runtime PASS. This is a **static type contract**, not a live host integration or settlement protocol.
 
