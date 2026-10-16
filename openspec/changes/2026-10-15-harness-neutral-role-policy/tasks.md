@@ -38,7 +38,7 @@ Every child issue MUST state its dependency, deterministic acceptance, file/API 
 
 ## Published GitHub execution graph (2026-10-15)
 
-Program: [#429](https://github.com/tommy-ca/pstack/issues/429). Superseded draft: [PR #428](https://github.com/tommy-ca/pstack/pull/428) (CLOSED; delivered via #450, #451, #452 as 59a6d0c, #453 as ca6f8d9; evidence on trunk).
+Program: [#429](https://github.com/tommy-ca/pstack/issues/429). Superseded draft: [PR #428](https://github.com/tommy-ca/pstack/pull/428) (CLOSED; landed on trunk via #450 as 66f67c8, #452 as 59a6d0c, #453 as ca6f8d9; #451 content delivered via stacked base; evidence on trunk).
 
 | Epic | Children | Dependencies |
 | --- | --- | --- |
