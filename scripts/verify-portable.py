@@ -575,6 +575,7 @@ class PortableVerifier:
                 verdict="PASS",
                 duration_s=0.0,
             )
+            self.scenarios.append(r2)
         elif state == "lookup-failed":
             r2 = ScenarioResult(
                 id="doctor-openspec-validation",
@@ -586,6 +587,7 @@ class PortableVerifier:
                 verdict="FAIL",
                 duration_s=0.0,
             )
+            self.scenarios.append(r2)
         else:
             r2 = ScenarioResult(
                 id="doctor-openspec-validation",
@@ -597,7 +599,7 @@ class PortableVerifier:
                 verdict="FAIL",
                 duration_s=0.0,
             )
-        self.scenarios.append(r2)
+            self.scenarios.append(r2)
 
 
         # 3. Static adapter checks

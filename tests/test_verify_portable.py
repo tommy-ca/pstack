@@ -252,24 +252,31 @@ def test_resolution_states_are_distinct(monkeypatch: pytest.MonkeyPatch) -> None
 def test_doctor_labels_each_resolution_state(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    def scenario_for(state_values: list[str] | None, **kwargs: object) -> object:
+    def scenarios_for(state_values: list[str] | None, **kwargs: object) -> list:
         monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda: state_values)
         verifier = PortableVerifier(host="grok", evidence_root=tmp_path, **kwargs)  # type: ignore[arg-type]
         verifier.launch()
         verifier.doctor(check_durability=False)
-        return next(s for s in verifier.scenarios if s.id == "doctor-openspec-validation")
+        return [s for s in verifier.scenarios if s.id == "doctor-openspec-validation"]
 
-    none_scenario = scenario_for([])
-    assert none_scenario.verdict == "PASS"
-    assert "No active OpenSpec change" in none_scenario.description
+    none_matches = scenarios_for([])
+    assert len(none_matches) == 1
+    assert none_matches[0].verdict == "PASS"
+    assert "No active OpenSpec change" in none_matches[0].description
 
-    failed = scenario_for(None)
-    assert failed.verdict == "FAIL"
-    assert "lookup failed" in failed.description
+    failed_matches = scenarios_for(None)
+    assert len(failed_matches) == 1
+    assert failed_matches[0].verdict == "FAIL"
+    assert "lookup failed" in failed_matches[0].description
 
-    ambiguous = scenario_for(["a", "b"])
-    assert ambiguous.verdict == "FAIL"
-    assert "2 active OpenSpec changes" in ambiguous.description
+    ambiguous_matches = scenarios_for(["a", "b"])
+    assert len(ambiguous_matches) == 1
+    assert ambiguous_matches[0].verdict == "FAIL"
+    assert "2 active OpenSpec changes" in ambiguous_matches[0].description
+
+    active_matches = scenarios_for(["only-active"])
+    assert len(active_matches) == 1
+    assert "only-active" in active_matches[0].description
 
 
 def test_change_named_like_a_flag_still_validates_as_a_name(
