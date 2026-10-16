@@ -38,7 +38,7 @@ Every child issue MUST state its dependency, deterministic acceptance, file/API 
 
 ## Published GitHub execution graph (2026-10-15)
 
-Program: [#429](https://github.com/tommy-ca/pstack/issues/429). Draft spec: [PR #428](https://github.com/tommy-ca/pstack/pull/428).
+Program: [#429](https://github.com/tommy-ca/pstack/issues/429). Superseded draft: [PR #428](https://github.com/tommy-ca/pstack/pull/428) (CLOSED; delivered via #450, #451, #452 as 59a6d0c, #453 as ca6f8d9; evidence on trunk).
 
 | Epic | Children | Dependencies |
 | --- | --- | --- |
@@ -49,7 +49,7 @@ Program: [#429](https://github.com/tommy-ca/pstack/issues/429). Draft spec: [PR 
 
 These are **open issues** until their acceptance criteria receive independent evidence. The source review is not a completed live multi-model Swarm/Arena/Interrogate run.
 
-## Design-to-code progress snapshot (2026-10-15, PR #428)
+## Design-to-code progress snapshot (2026-10-15, superseded draft #428; landed state)
 
 The policy schema now supports bounded `seats` independent of distinct model slugs. The draft includes `scripts/model_role_resolver.py`, a pure role-planning seam with explicit precedence, declared capability gaps, cross-judge selection, and honest status labels. No native harness is dispatched. All host-specific model/provider calls remain future tasks #440–#444. Issue #437 stays open until actual host integration and runtime receipts settle.
 
@@ -57,4 +57,4 @@ The planner output now has a JSON Schema Draft 2020-12 wire contract (`schemas/p
 
 ## New design task #446 (P1) — extensible host identity
 
-Parent: #432. Dependencies: #436 and #437. Implement a bounded, backwards-compatible declarative host identity registry following the formal OpenSpec requirement, with unique namespaced IDs and fail-closed capability states. No host is added automatically by the static model-role policy. Future Copilot issue #442 MUST consider this contract before extending the closed enums; do not duplicate host inventory sources. PR #428 documents the contract; #446 performs code migration only after acceptance.
+Parent: #432. Dependencies: #436 and #437. Implement a bounded, backwards-compatible declarative host identity registry following the formal OpenSpec requirement, with unique namespaced IDs and fail-closed capability states. No host is added automatically by the static model-role policy. Future Copilot issue #442 MUST consider this contract before extending the closed enums; do not duplicate host inventory sources. Superseded PR #428 documented the contract; trunk (#450-#453) carries it; #446 performs code migration only after acceptance.
