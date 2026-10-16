@@ -44,10 +44,10 @@ def test_schema_is_draft_2020_12_and_example_is_valid() -> None:
     (lambda p: p["hosts"]["codex"].update({"verification_status": "verified"}), "live verified claims"),
     (lambda p: p["canonical_source"].update({"pin": "0" * 40}), "canonical pin differs"),
     (lambda p: p["hosts"].update({"copilot": p["hosts"].pop("codex")}), "not declared"),
-    (lambda p: p["constraints"].update({"allow_unverified_models": True}), "opt into unverified"),
-    (lambda p: p["hosts"]["codex"].pop("model_catalog"), "must be an explicit list"),
-    (lambda p: p["hosts"]["codex"].pop("fallback"), "fallback must be"),
-    (lambda p: p["role_constraints"]["swarm-workers"].update({"minimum_independent_workers": 17}), "invalid minimum_independent_workers"),
+    (lambda p: p["constraints"].update({"allow_unverified_models": True}), "violates its schema"),
+    (lambda p: p["hosts"]["codex"].pop("model_catalog"), "violates its schema"),
+    (lambda p: p["hosts"]["codex"].pop("fallback"), "violates its schema"),
+    (lambda p: p["role_constraints"]["swarm-workers"].update({"minimum_independent_workers": 17}), "violates its schema"),
 ])
 def test_cross_document_failures(mutation, needle: str) -> None:
     policy = copy.deepcopy(EXAMPLE)

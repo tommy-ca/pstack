@@ -12,7 +12,7 @@ from dataclasses import asdict, dataclass
 from typing import Any, Mapping, Sequence
 
 from scripts.model_role_policy import INHERIT, check_model_role_policy
-from scripts.portability_schema import ValidationError
+from scripts.portability_schema import IMPLEMENTATION_STATUSES, ENFORCEMENT_LEVELS, ValidationError
 
 
 @dataclass(frozen=True)
@@ -128,9 +128,9 @@ def plan_role(
         if not isinstance(data, Mapping) or data.get("implementation_status") in (None, "gap"):
             return _blocked(host, role, selection, source,
                             f"missing/unsupported required capability: {capability}")
-        if data.get("implementation_status") not in ("native", "shim", "version-gated"):
+        if data.get("implementation_status") not in IMPLEMENTATION_STATUSES or data.get("implementation_status") == "gap":
             return _blocked(host, role, selection, source, f"unknown binding type for {capability}")
-        if data.get("enforcement") not in ("hard", "soft", "advisory"):
+        if data.get("enforcement") not in ENFORCEMENT_LEVELS:
             return _blocked(host, role, selection, source, f"unknown enforcement for {capability}")
         if data["enforcement"] != "hard":
             degraded = True

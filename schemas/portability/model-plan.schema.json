@@ -164,26 +164,24 @@
   },
   "allOf": [
     {
-      "if": {
-        "properties": {
-          "status": {
-            "const": "BLOCKED"
-          }
-        },
-        "required": [
-          "status"
-        ]
-      },
-      "then": {
-        "properties": {
-          "seats": {
-            "maxItems": 0
-          },
-          "reasons": {
-            "minItems": 1
-          }
-        }
-      }
+      "if": {"properties": {"status": {"const": "BLOCKED"}}, "required": ["status"]},
+      "then": {"properties": {"seats": {"maxItems": 0}, "reasons": {"minItems": 1}}}
+    },
+    {
+      "if": {"properties": {"status": {"enum": ["PLANNED", "DEGRADED"]}}, "required": ["status"]},
+      "then": {"properties": {"seats": {"minItems": 1}}, "not": {"properties": {"source": {"const": "none"}}}}
+    },
+    {
+      "if": {"properties": {"selection": {"const": "single"}}, "required": ["selection"]},
+      "then": {"properties": {"seats": {"maxItems": 1}}}
+    },
+    {
+      "if": {"properties": {"selection": {"const": "cross-judge"}}, "required": ["selection"]},
+      "then": {"properties": {"seats": {"maxItems": 1}}}
+    },
+    {
+      "if": {"properties": {"status": {"const": "DEGRADED"}}, "required": ["status"]},
+      "then": {"properties": {"reasons": {"minItems": 1}}}
     }
   ],
   "additionalProperties": false

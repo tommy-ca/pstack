@@ -11,7 +11,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from scripts.portability_schema import PORTABLE_CAPABILITY_UNIVERSE, ValidationError
+from scripts.portability_schema import IMPLEMENTATION_STATUSES, ENFORCEMENT_LEVELS, VERIFICATION_STATUSES, PORTABLE_CAPABILITY_UNIVERSE, ValidationError
 
 ROOT = Path(__file__).resolve().parents[1]
 POLICY = ROOT / "examples/portability/model-role-policy.example.json"
@@ -19,7 +19,7 @@ DESCRIPTOR = ROOT / "pstack.package.json"
 INHERIT = frozenset({"inherit-parent", "auto"})
 VALID_SELECTIONS = frozenset({"single", "panel", "cross-judge"})
 VALID_DISCOVERY = frozenset({"unverified", "catalog", "live"})
-VALID_VERIFICATION = frozenset({"unverified", "static-only", "verified", "stale"})
+VALID_VERIFICATION = frozenset(VERIFICATION_STATUSES)
 
 
 def require(condition: bool, message: str) -> None:
@@ -27,8 +27,20 @@ def require(condition: bool, message: str) -> None:
         raise ValidationError(message)
 
 
+def _validate_against_schema(policy: dict[str, Any]) -> None:
+    """Schema is normative per spec; the checker enforces it plus cross-document parity."""
+    from jsonschema import Draft202012Validator
+
+    schema = json.loads((ROOT / "schemas/portability/model-role-policy.schema.json").read_text(encoding="utf-8"))
+    try:
+        Draft202012Validator(schema).validate(policy)
+    except Exception as exc:
+        raise ValidationError(f"model-role policy violates its schema: {exc}") from exc
+
+
 def check_model_role_policy(policy: dict[str, Any], descriptor: dict[str, Any]) -> None:
     """Validate all policy facts without I/O or any host invocation."""
+    _validate_against_schema(policy)
     require(isinstance(policy, dict) and isinstance(descriptor, dict), "policy/descriptor must be objects")
     require(type(policy.get("version")) is int and policy["version"] == 1, "unsupported policy version")
     require(policy.get("role_source") == "pstack.package.json#/roles", "role_source must point to package roles")
