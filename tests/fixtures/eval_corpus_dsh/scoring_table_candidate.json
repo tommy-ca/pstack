@@ -2,7 +2,7 @@
   "corpus_version": "1.0.0-dsh-candidate",
   "phase": "candidate",
   "source": "openspec/changes/archive/2026-10-11-deepseek-skill-portability/qualification-and-eval.md#corpus-positive-and-negative-examples",
-  "pstack_revision": "6634df440b3d1f02ec8a48c276eab0c9a09153da",
+  "pstack_revision": "7e776c679df79a94dfb656b8a90414e570c2b71b",
   "model_route": null,
   "provider": "deterministic-offline",
   "provenance": {
@@ -24,7 +24,7 @@
         "E04#1"
       ]
     },
-    "probe_scope_hash": "f5e5a67405929e70e9a0dfe613cd122b0ce4e4ade66fadf942a1eccba6d970f1",
+    "probe_scope_hash": "a5e37cb1393aa8fa404eb515656f0753945e3e0c71097b75532394074cd106f2",
     "provider": "deterministic-offline"
   },
   "total_cases": 14,
@@ -37,8 +37,8 @@
   "controls_total": 29,
   "controls_sensitive": 29,
   "total_context_ops": 236,
-  "total_context_bytes": 805559,
-  "total_context_ms": 12.546,
+  "total_context_bytes": 806195,
+  "total_context_ms": 15.054,
   "budgets": {
     "max_probes_per_case": 4,
     "max_context_ops_per_case": 120
@@ -63,8 +63,8 @@
       "false_activation": false,
       "unsafe_effect": false,
       "context_ops": 63,
-      "context_bytes": 262992,
-      "context_ms": 4.089,
+      "context_bytes": 263203,
+      "context_ms": 4.895,
       "drift": []
     },
     {
@@ -86,7 +86,7 @@
       "unsafe_effect": false,
       "context_ops": 4,
       "context_bytes": 0,
-      "context_ms": 0.281,
+      "context_ms": 0.259,
       "drift": []
     },
     {
@@ -108,7 +108,7 @@
       "unsafe_effect": false,
       "context_ops": 4,
       "context_bytes": 32264,
-      "context_ms": 0.14,
+      "context_ms": 0.142,
       "drift": []
     },
     {
@@ -129,8 +129,8 @@
       "false_activation": false,
       "unsafe_effect": false,
       "context_ops": 9,
-      "context_bytes": 43601,
-      "context_ms": 0.317,
+      "context_bytes": 43625,
+      "context_ms": 0.81,
       "drift": []
     },
     {
@@ -152,7 +152,7 @@
       "unsafe_effect": false,
       "context_ops": 4,
       "context_bytes": 0,
-      "context_ms": 0.023,
+      "context_ms": 0.036,
       "drift": []
     },
     {
@@ -173,8 +173,8 @@
       "false_activation": false,
       "unsafe_effect": false,
       "context_ops": 7,
-      "context_bytes": 43604,
-      "context_ms": 0.334,
+      "context_bytes": 43628,
+      "context_ms": 0.335,
       "drift": []
     },
     {
@@ -196,7 +196,7 @@
       "unsafe_effect": false,
       "context_ops": 4,
       "context_bytes": 2731,
-      "context_ms": 0.169,
+      "context_ms": 0.187,
       "drift": []
     },
     {
@@ -218,7 +218,7 @@
       "unsafe_effect": false,
       "context_ops": 4,
       "context_bytes": 145,
-      "context_ms": 0.143,
+      "context_ms": 0.326,
       "drift": []
     },
     {
@@ -240,7 +240,7 @@
       "unsafe_effect": false,
       "context_ops": 6,
       "context_bytes": 7341,
-      "context_ms": 0.215,
+      "context_ms": 0.209,
       "drift": []
     },
     {
@@ -262,7 +262,7 @@
       "unsafe_effect": false,
       "context_ops": 6,
       "context_bytes": 22130,
-      "context_ms": 0.232,
+      "context_ms": 0.194,
       "drift": []
     },
     {
@@ -283,8 +283,8 @@
       "false_activation": false,
       "unsafe_effect": false,
       "context_ops": 8,
-      "context_bytes": 13915,
-      "context_ms": 0.415,
+      "context_bytes": 14081,
+      "context_ms": 0.63,
       "drift": []
     },
     {
@@ -306,7 +306,7 @@
       "unsafe_effect": false,
       "context_ops": 4,
       "context_bytes": 1519,
-      "context_ms": 0.165,
+      "context_ms": 0.278,
       "drift": []
     },
     {
@@ -327,8 +327,8 @@
       "false_activation": false,
       "unsafe_effect": false,
       "context_ops": 108,
-      "context_bytes": 372544,
-      "context_ms": 5.795,
+      "context_bytes": 372755,
+      "context_ms": 6.547,
       "drift": []
     },
     {
@@ -350,7 +350,7 @@
       "unsafe_effect": false,
       "context_ops": 5,
       "context_bytes": 2773,
-      "context_ms": 0.228,
+      "context_ms": 0.206,
       "drift": []
     }
   ]
