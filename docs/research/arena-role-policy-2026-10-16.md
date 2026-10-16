@@ -1,6 +1,20 @@
 # Arena record: harness-neutral role/model-policy seam (gate #436)
 
-Date: 2026-10-16. Reviewed head: `ae06ef1` (stack branch `stack/pr428-static-planner`), base `main` `1fa1671`.
+Date: 2026-10-16. Arena reviewed head `ae06ef1` (stack branch `stack/pr428-static-planner`), base `main` `1fa1671`. This record was committed at `527eadc`, which adds only this document and the candidate artifacts below.
+
+Related evidence bound to a different head: the three Interrogate arms reviewed `90ad8ae`, the parent of `ae06ef1`. The verifier, ADR-manifest, and graph changes in `792f19a` answered those arms and were not re-reviewed by them.
+
+Artifacts in `docs/research/arena-role-policy-2026-10-16/`:
+
+| Artifact | SHA256 |
+| --- | --- |
+| `rubric.md` | `6e245721598b030818e12ccb64b892e8f94467d7b3ae831503fece680c860ea8` |
+| `brief.md` | `2ba5b9078c0969952cb4869ece4d088cb76d5968a0497d55b7e36c641b48f30a` |
+| `candidate-control.md` | `220c8ae75d71be1dc2016b240f96cfad8b6456c4f276283bd49f8af64440fb0c` |
+| `candidate-deep-fork.md` | `1fa332e59dc7d42cc014e34e9d9d1330d094bae3a91bb7f9b20ccf52eca1479a` |
+| `candidate-gateway.md` | `9ee247f2ee6f990344e3205f60bf0aeee3863e45d447700c5fa06c1ae5baef8f` |
+| `candidate-typed-seam.md` | `d53f967555afb171447b033f2557db881c0cf003a4a1ac486f2719b20806594c` |
+
 Method: four candidates against a frozen rubric, then one cross-judge scoring criterion by criterion and independently re-verifying one load-bearing claim per candidate.
 
 ## Frozen rubric

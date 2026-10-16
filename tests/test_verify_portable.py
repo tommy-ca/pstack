@@ -234,6 +234,60 @@ def test_validate_explicit_default_name_validates_that_name(
     assert validate(name) == 0
     assert seen.get("argv", [])[2] == name
 
+
+def test_resolution_states_are_distinct(monkeypatch: pytest.MonkeyPatch) -> None:
+    resolve = verify_portable.resolve_openspec_change
+    monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda: None)
+    assert resolve(None)[0] == "lookup-failed"
+    monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda: [])
+    assert resolve(None)[0] == "none"
+    monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda: ["one"])
+    assert resolve(None)[:2] == ("active", "one")
+    monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda: ["a", "b"])
+    state, name, names = resolve(None)
+    assert (state, name, names) == ("ambiguous", None, ["a", "b"])
+    assert resolve("explicit-name")[:2] == ("explicit", "explicit-name")
+
+
+def test_doctor_labels_each_resolution_state(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def scenario_for(state_values: list[str] | None, **kwargs: object) -> object:
+        monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda: state_values)
+        verifier = PortableVerifier(host="grok", evidence_root=tmp_path, **kwargs)  # type: ignore[arg-type]
+        verifier.launch()
+        verifier.doctor(check_durability=False)
+        return next(s for s in verifier.scenarios if s.id == "doctor-openspec-validation")
+
+    none_scenario = scenario_for([])
+    assert none_scenario.verdict == "PASS"
+    assert "No active OpenSpec change" in none_scenario.description
+
+    failed = scenario_for(None)
+    assert failed.verdict == "FAIL"
+    assert "lookup failed" in failed.description
+
+    ambiguous = scenario_for(["a", "b"])
+    assert ambiguous.verdict == "FAIL"
+    assert "2 active OpenSpec changes" in ambiguous.description
+
+
+def test_change_named_like_a_flag_still_validates_as_a_name(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    seen: list[list[str]] = []
+    def _fake_run(*a: object, **k: object) -> subprocess.CompletedProcess[str]:
+        seen.append(list(a[0]) if a else [])
+        return subprocess.CompletedProcess(a, 1, "", "invalid change")
+    monkeypatch.setattr(verify_portable.subprocess, "run", _fake_run)
+    verifier = PortableVerifier(host="grok", evidence_root=tmp_path, change="--no-active-change")
+    verifier.launch()
+    verifier.doctor(check_durability=False)
+    scenario = next(s for s in verifier.scenarios if s.id == "doctor-openspec-validation")
+    assert any(argv and argv[-1] == "--no-active-change" for argv in seen)
+    assert scenario.verdict == "FAIL"
+
+
 @pytest.mark.parametrize("stdout", [
     '{"changes": ["junk"]}',
     '{"changes": [{}]}',
