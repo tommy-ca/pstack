@@ -72,13 +72,11 @@ Status: lane-level triage from pin-relative inspection. `diverged` means counter
 
 adapt 38, preserve 3, exclude 2, gap 3, policy-fork 2. Total 48.
 
-## License disposition (2026-10-16)
+## License disposition (2026-10-16, corrected)
 
-Comparator `michael-denyer/pstack-claude` is MIT licensed (Lauren Tan, Michael Denyer). Local `LICENSE` is MIT. No license conflict for pattern adoption; no NOTICE file exists on either side.
+Comparator `michael-denyer/pstack-claude@94f5ce9` carries `LICENSE` (MIT), `LICENSE-cursor-team-kit`, `LICENSE-thermos`, `NOTICE.md`, and `NOTICE-skills.md`. Its NOTICE attributes pstack-derived skills to cursor/plugins/pstack (Lauren Tan, MIT), team-kit skills to cursor-team-kit (Cursor, MIT), and thermos skills to cursor/plugins/thermos (Cursor, MIT), with port modifications under Michael Denyer MIT. Local `LICENSE` is MIT with no NOTICE file.
 
-Per-group disposition: preserve rows reuse no comparator text beyond common pstack intent already under the canonical pin. Adapt rows rewrite behavior against canonical intent and host constraints; they carry no verbatim comparator code. Exclude rows import nothing. Gap rows are absent locally. The two policy-fork rows (`thermo-nuclear-code-quality-review`, `orchestrate.md`) are local originals or canonical adaptations, not comparator copies.
-
-No per-file verbatim-copy audit has been run; if a future port copies comparator text verbatim, that file needs an individual license header check. Until then this group-level disposition holds.
+Group-level assessment only, pending per-file audit: preserve and adapt rows are assessed against canonical intent and host constraints, but no per-file verbatim-copy comparison against the comparator tree has been run. The two policy-fork rows (`thermo-nuclear-code-quality-review`, `orchestrate.md`) require individual attribution checks given the thermos NOTICE chain. Per-row attribution and classification stay pending until pinned ledger paths are audited file by file.
 
 ## Not done
 
