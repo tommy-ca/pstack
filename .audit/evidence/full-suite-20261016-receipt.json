@@ -1,0 +1,1 @@
+{"command":"TMPDIR=/home/tommyk/.tmp-pstack-429 uv run --no-sync pytest tests/ -q -p no:cacheprovider","duration_s":494.28,"head":"7a107365371da17fa076e035bef30ee08433ffd5","result":"961 passed, 10 skipped","timestamp":"2026-10-16T22:20:00Z"}
