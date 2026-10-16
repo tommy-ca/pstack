@@ -9,7 +9,7 @@ Status: Proposed · 2026-10-15. Implementation requires issue graph and runtime 
 3. `michael-denyer/pstack-claude` at a recorded commit is a reference port; `tools/forks.json` explicitly declares policy forks. Adopt a pattern only after a behavior and license/provenance review.
 4. `tommy-ca/qstack` supplies quant-domain invariants after the host router; it MUST NOT own a pstack router or model namespace.
 
-At audit time: target main `7700faa158558e47260565a71e7d0b6cdc95679a`; reference main `94f5ce95abe8a9dec976967d79941f631cf477cd`; canonical target pin `1dcc2bacde73ddd284803b7af28164d0436198fc`. Refresh and record those pins in evidence before implementing.
+At audit time: target main `7700faa158558e47260565a71e7d0b6cdc95679a`; reference main `94f5ce95abe8a9dec976967d79941f631cf477cd`; canonical target pin `1dcc2bacde73ddd284803b7af28164d0436198fc`. Refresh and record those pins in evidence before implementing. Reconciled 2026-10-16 at trunk `54082a6`: the 14 commits `7700faa..54082a6` delivered the static planner, schemas, 40-test policy suite, OpenSpec change plus ADR-0021, 48-row fork index, resolver invocation contract, OpenSpec reconcile, durable receipts, fork matrix, skill-token regression, license disposition, verify retarget, and schema-first refactor (#447, #450/#451/#452/#453/#454/#455/#456/#457/#458/#459/#460/#461 plus unnumbered bb97e50). The runtime and multi-family gates stay open per tasks G2/G7.
 
 ## Reusable atomic blocks (ownership / interfaces)
 
