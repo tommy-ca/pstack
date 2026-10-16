@@ -96,8 +96,10 @@ defects (filename-list binding misses `route_resolver.py`; self-hash freezes
 the file; runtime PASS on zero live evidence; corrupt `index.json` silently
 reset). Lane C (planner/spec): split earns its keep, boundary misdrawn
 (whole-document revalidation per call, three rules written twice, 16-seat cap
-planner-only); one spec-vs-spec conflict (delta mandates Interrogate model
-diversity, main spec says diversity is not portable). Findings filed as
+planner-only); one wording ambiguity on Interrogate model diversity (delta conditions
+diversity on declared policy and permits one-model multi-seat panels, main
+spec calls diversity an adapter choice; filed as conflict, corrected to
+ambiguity with a one-sentence clarification proposed). Findings filed as
 comments on #473 (lane A), #444 (lane B), #437 + #436 (lane C); no trunk code
 changed by this review. Full reports: `/tmp/pstack-thermo-a/`,
 `/tmp/pstack-thermo-b/`, `/tmp/pstack-thermo-c/` plus `/tmp/00_summary.md`
