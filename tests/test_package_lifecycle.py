@@ -212,3 +212,82 @@ def test_uninstall_refuses_foreign_symlinked_install(tmp_path: Path) -> None:
         assert ok is False, errors
         assert any("foreign-source" in e for e in errors)
         assert sentinel.exists()
+
+
+def _tree_digest(root: Path) -> dict:
+    """Path -> sha256 for every real file under root, for byte-unchanged checks."""
+    import hashlib
+    return {
+        p.relative_to(root).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
+        for p in sorted(root.rglob("*"))
+        if p.is_file() and not p.is_symlink()
+    }
+
+
+def _foreign_home(base: Path) -> Path:
+    """A foreign harness home shaped like a pstack install, with a sentinel skill."""
+    plugin = base / "foreign-home" / ".grok" / "plugins" / "pstack"
+    (plugin / "skills" / "poteto-mode").mkdir(parents=True)
+    (plugin / "skills" / "poteto-mode" / "SKILL.md").write_text("foreign router\n", encoding="utf-8")
+    (plugin / "plugin.json").write_text('{"name": "not-pstack"}\n', encoding="utf-8")
+    return plugin
+
+
+def _symlinked_ancestor_target(base: Path, foreign_plugin: Path) -> Path:
+    """A scratch target whose `.grok` is bound to the foreign harness home."""
+    target = base / "scratch-ancestor"
+    target.mkdir()
+    (target / ".grok").symlink_to(foreign_plugin.parents[1], target_is_directory=True)
+    return target
+
+
+@pytest.mark.parametrize("force", [False, True])
+def test_uninstall_refuses_foreign_install_behind_symlinked_ancestor(force: bool, tmp_path: Path) -> None:
+    foreign_plugin = _foreign_home(tmp_path)
+    sentinel = foreign_plugin / "skills" / "poteto-mode" / "SKILL.md"
+    before = _tree_digest(foreign_plugin)
+    target = _symlinked_ancestor_target(tmp_path, foreign_plugin)
+    live = package_lifecycle.get_plugin_dir("grok", target)
+
+    assert live == target / ".grok" / "plugins" / "pstack"
+    assert package_lifecycle.is_owned_deploy_target(live) is False
+
+    ok, errors = package_lifecycle.uninstall_plugin("grok", target, force=force)
+    assert ok is False, errors
+    assert any("foreign-source" in e and str(live) in e for e in errors), errors
+    assert sentinel.read_text(encoding="utf-8") == "foreign router\n"
+    assert _tree_digest(foreign_plugin) == before
+
+
+@pytest.mark.parametrize("leaf_symlink", [True, False])
+def test_install_refuses_foreign_tree(leaf_symlink: bool, tmp_path: Path) -> None:
+    foreign_plugin = _foreign_home(tmp_path)
+    before = _tree_digest(foreign_plugin)
+    if leaf_symlink:
+        target = tmp_path / "scratch-leaf"
+        live = package_lifecycle.get_plugin_dir("grok", target)
+        live.parent.mkdir(parents=True)
+        live.symlink_to(foreign_plugin, target_is_directory=True)
+    else:
+        target = _symlinked_ancestor_target(tmp_path, foreign_plugin)
+        live = package_lifecycle.get_plugin_dir("grok", target)
+
+    with pytest.raises(package_lifecycle.ForeignSourceError) as excinfo:
+        package_lifecycle.install_plugin("grok", target)
+
+    assert "foreign-source" in str(excinfo.value)
+    assert str(live) in str(excinfo.value)
+    assert _tree_digest(foreign_plugin) == before
+
+
+def test_update_refuses_foreign_tree(tmp_path: Path) -> None:
+    foreign_plugin = _foreign_home(tmp_path)
+    before = _tree_digest(foreign_plugin)
+    target = _symlinked_ancestor_target(tmp_path, foreign_plugin)
+    live = package_lifecycle.get_plugin_dir("grok", target)
+
+    ok, errors = package_lifecycle.update_plugin("grok", target)
+
+    assert ok is False, errors
+    assert any("refused" in e and str(live) in e for e in errors), errors
+    assert _tree_digest(foreign_plugin) == before

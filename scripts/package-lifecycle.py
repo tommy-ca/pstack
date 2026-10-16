@@ -73,17 +73,33 @@ def get_plugin_dir(host: str, target_base: Optional[Path] = None) -> Path:
     return Path.home() / rel
 
 
+class ForeignSourceError(RuntimeError):
+    """Raised when a write would clobber a deploy tree pstack does not own."""
+
+
+def _traverses_symlink(path: Path) -> bool:
+    """True when `path` or any of its ancestors is a symlink.
+
+    A symlinked leaf is obvious; a symlinked ancestor (e.g. `~/.grok` bound to
+    another harness home) is the same hazard one level up: the path names a tree
+    pstack never created, so deleting "managed files" inside it hits foreign
+    content.
+    """
+    return any(candidate.is_symlink() for candidate in (path, *path.parents))
+
+
 def is_owned_deploy_target(live_dir: Path) -> bool:
     """True only for installed copies pstack itself deployed.
 
-    pstack installs real directories at `HOST_PLUGIN_REL_PATHS`. A symlinked or
-    marketplace-bind install is a foreign-source variant (the Claude variant's
-    `pstack-claude` symlinked tree, e.g. `~/.agents/skills` -> the pstack-claude
-    checkout, or `~/.claude/plugins/cache/pstack-claude`). Those carry a
-    different source tree, so a freshness comparison against this repo would
-    false-fail. They are excluded instead.
+    pstack installs real directories at `HOST_PLUGIN_REL_PATHS`. A symlinked
+    (leaf or ancestor) or marketplace-bind install is a foreign-source variant
+    (the Claude variant's `pstack-claude` symlinked tree, e.g. `~/.agents/skills`
+    -> the pstack-claude checkout, or `~/.claude/plugins/cache/pstack-claude`).
+    Those carry a different source tree, so a freshness comparison against this
+    repo would false-fail — and a delete would hit content pstack does not own.
+    They are excluded instead.
     """
-    if live_dir.is_symlink():
+    if _traverses_symlink(live_dir):
         return False
     if "marketplaces" in live_dir.parts:
         return False
@@ -235,6 +251,8 @@ def get_unmanaged_paths(plugin_dir: Path, managed_files: Set[str]) -> List[str]:
 def install_plugin(host: str, target_base: Optional[Path] = None) -> Path:
     desc, _ = load_package_descriptor()
     plugin_dir = get_plugin_dir(host, target_base)
+    if not is_owned_deploy_target(plugin_dir):
+        raise ForeignSourceError(f"refusing to install over a foreign-source install at {plugin_dir}")
     plugin_dir.mkdir(parents=True, exist_ok=True)
 
     skills_dir = plugin_dir / "skills"
@@ -441,7 +459,10 @@ def verify_plugin_at_dir(host: str, plugin_dir: Path, desc: Any) -> Tuple[bool, 
 
 def update_plugin(host: str, target_base: Optional[Path] = None) -> Tuple[bool, List[str]]:
     """Idempotently re-install and verify convergence."""
-    install_plugin(host, target_base)
+    try:
+        install_plugin(host, target_base)
+    except ForeignSourceError as exc:
+        return False, [f"Update refused for {host}: {exc}"]
     ok, errors = verify_plugin(host, target_base)
     if not ok:
         return False, [f"Update verification failed for {host}: {errors}"]
@@ -556,14 +577,18 @@ def prove_lifecycle(host: str, target_base: Optional[Path] = None) -> Tuple[bool
 
         # Step 1: Install
         t0 = time.perf_counter()
-        installed_dir = install_plugin(host, target_base)
+        installed_dir = get_plugin_dir(host, target_base)
+        try:
+            installed_dir = install_plugin(host, target_base)
+            ok_verify, v_errs = verify_plugin_at_dir(host, installed_dir, load_package_descriptor()[0])
+        except ForeignSourceError as exc:
+            ok_verify, v_errs = False, [str(exc)]
         d_install = time.perf_counter() - t0
-        ok_verify, v_errs = verify_plugin_at_dir(host, installed_dir, load_package_descriptor()[0])
         scenarios.append({
             "step": "install",
             "verdict": "PASS" if ok_verify else "FAIL",
             "duration_s": d_install,
-            "details": f"Installed {host} into {installed_dir} (verified={ok_verify})",
+            "details": f"Installed {host} into {installed_dir} (verified={ok_verify}, errors={v_errs})",
         })
         if not ok_verify:
             overall_pass = False
@@ -619,7 +644,12 @@ def main() -> None:
     for h in hosts:
         print(f"[{h}] Executing {args.action}...")
         if args.action == "install":
-            p = install_plugin(h, args.target_dir)
+            try:
+                p = install_plugin(h, args.target_dir)
+            except ForeignSourceError as exc:
+                print(f"[{h}] INSTALL REFUSED: {exc}")
+                all_ok = False
+                continue
             print(f"[{h}] Installed to {p}")
         elif args.action == "verify":
             ok, errs = verify_plugin(h, args.target_dir)
