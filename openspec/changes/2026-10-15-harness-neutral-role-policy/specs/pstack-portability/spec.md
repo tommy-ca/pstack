@@ -32,9 +32,7 @@ A policy document MUST conform to `schemas/portability/model-role-policy.schema.
 - **THEN** it uses that host's validated catalog and declared tier mapping
 - **AND** the shared skill/playbook remains unchanged
 
-### Requirement: Model and effort selection is deterministic and conservative
-
-Policy/safety/approval constraints are enforced before choosing a model. Within eligible choices, precedence is explicit invocation, project override, user override, host default, and parent inheritance. `inherit-parent`/`auto` MUST omit model from native spawn arguments. A role MUST NOT dispatch an unavailable real slug or an unsupported effort token. Runtime-discovered model/effort data MUST carry host version and freshness evidence.
+Policy/safety/approval constraints are enforced before choosing a model. Within eligible choices, precedence is explicit invocation, project override, user override, host role override, host tier default, and parent inheritance. `inherit-parent`/`auto` MUST omit model from native spawn arguments. A role MUST NOT dispatch an unavailable real slug or an unsupported effort token. Runtime-discovered model/effort data MUST carry host version and freshness evidence.
 
 #### Scenario: explicit unavailable model
 

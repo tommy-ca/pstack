@@ -1,6 +1,6 @@
 # Recursive implementation plan
 
-This branch formalizes the proposed interface; it does not assert production implementation.
+This change is design-stage with static planner landed on trunk; it does not assert production runtime implementation.
 
 - [ ] **G0** Approve canonical/reference parity and explicit policy-fork classification; check frozen commits and licenses.
 - [ ] **G1** Accept Arena architecture seam, Interrogate review of the formal change, and unique-role model with schema fixtures.
@@ -38,7 +38,7 @@ Every child issue MUST state its dependency, deterministic acceptance, file/API 
 
 ## Published GitHub execution graph (2026-10-15)
 
-Program: [#429](https://github.com/tommy-ca/pstack/issues/429). Superseded draft: [PR #428](https://github.com/tommy-ca/pstack/pull/428) (CLOSED; landed on trunk via #450 as 66f67c8, #452 as 59a6d0c, #453 as ca6f8d9; #451 content delivered via stacked base; evidence on trunk).
+Program: [#429](https://github.com/tommy-ca/pstack/issues/429). Superseded draft: [PR #428](https://github.com/tommy-ca/pstack/pull/428) (CLOSED; landed on trunk via #450 as 66f67c8, #452 as 59a6d0c, #453 as ca6f8d9, #455 as 5115205; #451 content delivered via stacked base; evidence on trunk).
 
 | Epic | Children | Dependencies |
 | --- | --- | --- |
@@ -51,10 +51,10 @@ These are **open issues** until their acceptance criteria receive independent ev
 
 ## Design-to-code progress snapshot (2026-10-15, superseded draft #428; landed state)
 
-The policy schema now supports bounded `seats` independent of distinct model slugs. The draft includes `scripts/model_role_resolver.py`, a pure role-planning seam with explicit precedence, declared capability gaps, cross-judge selection, and honest status labels. No native harness is dispatched. All host-specific model/provider calls remain future tasks #440–#444. Issue #437 stays open until actual host integration and runtime receipts settle.
+The policy schema now supports bounded `seats` independent of distinct model slugs. Trunk carries `scripts/model_role_resolver.py`, a pure role-planning seam with explicit precedence, declared capability gaps, cross-judge selection, and honest status labels. No native harness is dispatched. All host-specific model/provider calls remain future tasks #440–#444. Issue #437 stays open until actual host integration and runtime receipts settle.
 
 The planner output now has a JSON Schema Draft 2020-12 wire contract (`schemas/portability/model-plan.schema.json`); tests check both honest error plans and rejection of forged runtime PASS. This is a **static type contract**, not a live host integration or settlement protocol.
 
 ## New design task #446 (P1) — extensible host identity
 
-Parent: #432. Dependencies: #436 and #437. Implement a bounded, backwards-compatible declarative host identity registry following the formal OpenSpec requirement, with unique namespaced IDs and fail-closed capability states. No host is added automatically by the static model-role policy. Future Copilot issue #442 MUST consider this contract before extending the closed enums; do not duplicate host inventory sources. Superseded PR #428 documented the contract; trunk (#450-#453) carries it; #446 performs code migration only after acceptance.
+Parent: #432. Dependencies: #436 and #437. Implement a bounded, backwards-compatible declarative host identity registry following the formal OpenSpec requirement, with unique namespaced IDs and fail-closed capability states. No host is added automatically by the static model-role policy. Future Copilot issue #442 MUST consider this contract before extending the closed enums; do not duplicate host inventory sources. Superseded PR #428 documented the contract; trunk (#450-#455) carries it; #446 performs code migration only after acceptance.
