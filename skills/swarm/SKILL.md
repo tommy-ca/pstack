@@ -44,4 +44,4 @@ Keep a compact result table, one-line evidenced issues, and explicit gaps or dro
 
 ## Phase D: Report
 
-Return one consolidated in-chat report with the table, issue one-liners, gaps or dropouts, and the race rule when used. When the report claims host parity, name the declared census read from `pstack.package.json#host_targets` via `get_declared_hosts` in `scripts/verify-portable.py`, with each host's evidence tier. A missing host is a stated gap, not silence.
+Return one consolidated in-chat report with the table, issue one-liners, gaps or dropouts, and the race rule when used. Name each worker model and its evidence-backed family. When the harness cannot identify a family from live discovery, record it as `unknown` and mark the run degraded. Never derive a family from a slug or an inferred provider. A single-family run stays degraded and never counts as multi-model proof. When the report claims host parity, name the declared census read from `pstack.package.json#host_targets` via `get_declared_hosts` in `scripts/verify-portable.py`, with each host's evidence tier. A missing host is a stated gap, not silence.

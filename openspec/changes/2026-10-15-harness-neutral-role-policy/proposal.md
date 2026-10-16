@@ -1,6 +1,6 @@
 ## Why
 
-The canonical Cursor pstack 0.15.21 intent is already ported into `tommy-ca/pstack` with typed capability bindings, six declared hosts, deterministic package projection and evidence receipts. `michael-denyer/pstack-claude` demonstrates additional executable ports (Claude Code hooks, Codex/Copilot routing, a Pi extension), generator-enforced role/model consistency, and mechanism-level equivalence tests. Today the target has a `claude` enum but no `profiles/claude.json`, no `copilot` host enum, and no single validated model/role resolution contract. Cross-repo pattern transfer must not accidentally import another port's policy forks, orchestration store, or runtime-only claims.
+The canonical Cursor pstack 0.15.21 intent is already ported into `tommy-ca/pstack` with typed capability bindings, six declared hosts, deterministic package projection and evidence receipts. `michael-denyer/pstack-claude` demonstrates additional executable ports (Claude Code hooks, Codex/Copilot routing, a Pi extension), generator-enforced role/model consistency, and mechanism-level equivalence tests. At change proposal time the target had a `claude` enum but no `profiles/claude.json`, no `copilot` host enum, and no single validated model/role resolution contract; the static planner, policy schema, and ModelPlan wire contract have since landed as static planning only, with native host integration still open. Cross-repo pattern transfer must not accidentally import another port's policy forks, orchestration store, or runtime-only claims.
 
 ## What Changes
 
