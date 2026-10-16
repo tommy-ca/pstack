@@ -26,7 +26,7 @@ import sys
 import time
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -374,36 +374,36 @@ def _print_selection_plan(plan: Dict[str, Any]) -> None:
         print(f"      for: {', '.join(check['paths'])}")
 
 
-DEFAULT_OPENSPEC_CHANGE = "pstack-portability-contract"
 
 
-def validate_openspec_change(change: str) -> int:
-    """Exit 0 iff the named change validates, or the default target has nothing active.
-
-    Argv-safe: change travels as subprocess argv, never interpolated
-    into source. The no-op path applies only when the caller uses the
-    default target AND structured `openspec list --json` reports
-    `"changes": []`. An explicit --change name always validates.
-    """
-    if change == DEFAULT_OPENSPEC_CHANGE:
+def _active_openspec_changes() -> list[str] | None:
+    """Names from structured `openspec list --json`; None when the lookup itself fails."""
+    try:
         listed = subprocess.run(
             ["openspec", "list", "--json"], capture_output=True, text=True, check=False
         )
-        if listed.returncode == 0:
-            try:
-                import json as _json
+        if listed.returncode != 0:
+            return None
+        import json as _json
 
-                payload = _json.loads(listed.stdout or "{}")
-                if isinstance(payload, dict):
-                    changes = payload.get("changes")
-                elif isinstance(payload, list):
-                    changes = payload
-                else:
-                    changes = None
-                if changes == []:
-                    return 0
-            except Exception:
-                pass
+        payload = _json.loads(listed.stdout or "{}")
+        changes = payload.get("changes") if isinstance(payload, dict) else payload
+        if not isinstance(changes, list):
+            return None
+        parsed: list[str] = []
+        for entry in changes:
+            if not isinstance(entry, dict):
+                return None
+            name = entry.get("name")
+            if not isinstance(name, str) or not name:
+                return None
+            parsed.append(name)
+        return parsed
+    except Exception:
+        return None
+
+
+def _validate_named_change(change: str) -> int:
     probed = subprocess.run(
         ["openspec", "validate", change, "--type", "change", "--strict"],
         capture_output=True,
@@ -415,8 +415,59 @@ def validate_openspec_change(change: str) -> int:
     return probed.returncode
 
 
+ChangeResolution = Tuple[str, Optional[str], List[str]]
+
+
+def resolve_openspec_change(change: str | None) -> ChangeResolution:
+    """Resolve the change to validate into one typed observation.
+
+    Returns (state, name, names):
+      "explicit"      - caller named it; name is that exact string
+      "active"        - checkout has exactly one active change; name is it
+      "none"          - checkout has no active change (vacuous, nothing to validate)
+      "lookup-failed" - `openspec list --json` failed or returned an unusable payload
+      "ambiguous"     - two or more active changes; names lists them
+    """
+    if change is not None:
+        return "explicit", change, []
+    active = _active_openspec_changes()
+    if active is None:
+        return "lookup-failed", None, []
+    if active == []:
+        return "none", None, []
+    if len(active) == 1:
+        return "active", active[0], []
+    return "ambiguous", None, active
+
+
+def validate_openspec_change(change: str | None) -> int:
+    """Exit 0 iff the named change validates, or the live checkout intent validates.
+
+    Argv-safe: change travels as subprocess argv, never interpolated
+    into source. A named change always validates exactly that name. None
+    means the caller omitted --change and the checkout decides: no active
+    change is vacuously satisfied; exactly one active change is validated;
+    a failed lookup and a multi-change checkout both FAIL with a diagnostic.
+    """
+    state, name, names = resolve_openspec_change(change)
+    if state in ("explicit", "active"):
+        assert name is not None
+        return _validate_named_change(name)
+    if state == "none":
+        return 0
+    if state == "lookup-failed":
+        print("ERROR: `openspec list --json` lookup failed; cannot determine active changes.", file=sys.stderr)
+        print("Resolve the openspec CLI failure, then rerun.", file=sys.stderr)
+        return 1
+    print(f"ERROR: {len(names)} active openspec changes; pass one explicitly via --change.", file=sys.stderr)
+    for entry in names:
+        print(f"  - {entry}", file=sys.stderr)
+    return 1
+
+
+
 class PortableVerifier:
-    def __init__(self, host: str, evidence_root: Path, change: str = DEFAULT_OPENSPEC_CHANGE):
+    def __init__(self, host: str, evidence_root: Path, change: str | None = None):
         self.host = host
         self.evidence_root = evidence_root
         self.change = change
@@ -499,13 +550,57 @@ class PortableVerifier:
             [sys.executable, str(ROOT / "scripts" / "canonical-index.py"), "--check"],
         )
 
-        # 2. OpenSpec change integrity (argv-safe helper above)
-        r2 = self.run_command(
-            "doctor-openspec-validation",
-            f"Verify {self.change} openspec change passes schema checks",
-            "canonical",
-            [sys.executable, "-c", "import importlib.util, sys; spec = importlib.util.spec_from_file_location('vp_helper', 'scripts/verify-portable.py'); m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m); sys.exit(m.validate_openspec_change(sys.argv[1]))", self.change],
-        )
+        # 2. OpenSpec change integrity (argv-safe helper above). Resolve once: the
+        # label and the child validation share one observation, so the receipt binds
+        # the exact validated target. Only a real change name reaches the child;
+        # none/lookup-failed/ambiguous are decided here and recorded as scenarios.
+        state, change_name, active_names = resolve_openspec_change(self.change)
+        helper = "import importlib.util, sys; spec = importlib.util.spec_from_file_location('vp_helper', 'scripts/verify-portable.py'); m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m); sys.exit(m.validate_openspec_change(sys.argv[1]))"
+        if state in ("explicit", "active"):
+            assert change_name is not None
+            r2 = self.run_command(
+                "doctor-openspec-validation",
+                f"Verify {change_name} openspec change passes schema checks",
+                "canonical",
+                [sys.executable, "-c", helper, change_name],
+            )
+        elif state == "none":
+            r2 = ScenarioResult(
+                id="doctor-openspec-validation",
+                description="No active OpenSpec change; nothing to validate (vacuous)",
+                plane="canonical",
+                command="openspec list --json -> no active changes",
+                exit_code=0,
+                stdout_snippet="no active changes; no change was validated",
+                verdict="PASS",
+                duration_s=0.0,
+            )
+            self.scenarios.append(r2)
+        elif state == "lookup-failed":
+            r2 = ScenarioResult(
+                id="doctor-openspec-validation",
+                description="openspec list --json lookup failed; active change undetermined",
+                plane="canonical",
+                command="openspec list --json -> lookup failed",
+                exit_code=1,
+                stdout_snippet="lookup failed; cannot determine the active change",
+                verdict="FAIL",
+                duration_s=0.0,
+            )
+            self.scenarios.append(r2)
+        else:
+            r2 = ScenarioResult(
+                id="doctor-openspec-validation",
+                description=f"{len(active_names)} active OpenSpec changes; pass one via --change",
+                plane="canonical",
+                command="openspec list --json -> multiple active changes",
+                exit_code=1,
+                stdout_snippet="; ".join(active_names),
+                verdict="FAIL",
+                duration_s=0.0,
+            )
+            self.scenarios.append(r2)
+
 
         # 3. Static adapter checks
         r3 = self.run_command(
@@ -966,7 +1061,7 @@ def main() -> None:
     parser.add_argument("--feature", help="Feature to drive (for 'drive' action)")
     parser.add_argument("--evidence-dir", type=Path, default=DEFAULT_EVIDENCE_DIR, help="Evidence directory")
     parser.add_argument("--allow-stale", action="store_true", help="Allow stale evidence during durability check")
-    parser.add_argument("--change", default=DEFAULT_OPENSPEC_CHANGE, help="Target OpenSpec change to validate in doctor")
+    parser.add_argument("--change", default=None, help="Target OpenSpec change to validate in doctor (default: checkout's single active change, or no-op when none)")
     parser.add_argument("--json", action="store_true", help="Emit JSON output for machine consumption")
     parser.add_argument("--base", help="Base ref to diff against (select-checks)")
     parser.add_argument("--head", default="HEAD", help="Head ref to scope (select-checks)")

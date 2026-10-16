@@ -18,12 +18,16 @@ Dependency graph:
 flowchart LR
   G0[Provenance & inventory] --> G1[Formal schema acceptance]
   G1 --> G2[Resolver & catalog]
-  G1 --> G3[Projection and hooks]
+  G2 --> G3[Projection and hooks]
+  G1 --> G3b[Host identity registry #446]
+  G2 --> G3b
   G2 --> G4[Claude runtime]
   G3 --> G4
   G2 --> G5[Copilot candidate]
   G3 --> G5
-  G2 --> G6[Pi/OMP parity]
+  G3b --> G5
+  G0 --> G6[Pi/OMP parity]
+  G2 --> G6
   G4 --> G7[Swarm/Arena/Interrogate]
   G5 --> G7
   G6 --> G7
@@ -40,8 +44,8 @@ Program: [#429](https://github.com/tommy-ca/pstack/issues/429). Draft spec: [PR 
 | --- | --- | --- |
 | [#430](https://github.com/tommy-ca/pstack/issues/430) Provenance/spec | #434, #435, #436 | #434 → #435 → #436 |
 | [#431](https://github.com/tommy-ca/pstack/issues/431) Role/model | #437, #438, #439 | #436 → #437 → (#438, #439) |
-| [#432](https://github.com/tommy-ca/pstack/issues/432) Adapters | #440, #441, #442, #443, #446 | #437/#438 → #440 → #441; #434/#437 → #443; #436/#437 → #446; #440/#446 → #442 |
-| [#433](https://github.com/tommy-ca/pstack/issues/433) Verification | #444, #445 | #435/#437/#440/#441/#442/#443 → #444 → #445 |
+| [#432](https://github.com/tommy-ca/pstack/issues/432) Adapters | #440, #441, #442, #443, #446 | #437/#438 → #440 → (#439 →) #441; #434/#437 → #443; #436/#437 → #446; #440/#446 → #442 |
+| [#433](https://github.com/tommy-ca/pstack/issues/433) Verification | #444, #445 | #435/#437/#440/#441/#442/#443 → #444; #436/#438/#439/#444 → #445 |
 
 These are **open issues** until their acceptance criteria receive independent evidence. The source review is not a completed live multi-model Swarm/Arena/Interrogate run.
 

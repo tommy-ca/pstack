@@ -13,7 +13,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "skill-policy",
-      "source_version": "0.9.34"
+      "source_version": "0.9.34",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/architect/SKILL.md",
@@ -21,7 +23,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "skill-policy",
-      "source_version": "0.9.34"
+      "source_version": "0.9.34",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/blast-radius/SKILL.md",
@@ -29,7 +33,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "skill-policy",
-      "source_version": "0.9.21"
+      "source_version": "0.9.21",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/bro/SKILL.md",
@@ -37,7 +43,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "skill-policy",
-      "source_version": "0.9.10"
+      "source_version": "0.9.10",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/create-verification-skill/SKILL.md",
@@ -45,7 +53,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "skill-policy",
-      "source_version": "0.9.29"
+      "source_version": "0.9.29",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/poteto-help/SKILL.md",
@@ -53,7 +63,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "skill-policy",
-      "source_version": "0.9.71"
+      "source_version": "0.9.71",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/playbooks/autopilot-full.md",
@@ -61,7 +73,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "playbook-policy",
-      "source_version": "0.9.39"
+      "source_version": "0.9.39",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/playbooks/autopilot-stack.md",
@@ -69,7 +83,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "playbook-policy",
-      "source_version": "0.9.34"
+      "source_version": "0.9.34",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/playbooks/babysit.md",
@@ -77,7 +93,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "playbook-policy",
-      "source_version": "0.9.39"
+      "source_version": "0.9.39",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/playbooks/bug-fix.md",
@@ -85,7 +103,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "playbook-policy",
-      "source_version": "0.9.10"
+      "source_version": "0.9.10",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/playbooks/feature.md",
@@ -93,7 +113,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "playbook-policy",
-      "source_version": "0.9.39"
+      "source_version": "0.9.39",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/playbooks/multi-phase-plan.md",
@@ -101,7 +123,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "playbook-policy",
-      "source_version": "0.9.19"
+      "source_version": "0.9.19",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/playbooks/opening-a-pr.md",
@@ -109,7 +133,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "playbook-policy",
-      "source_version": "0.9.10"
+      "source_version": "0.9.10",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/playbooks/orchestrate.md",
@@ -117,7 +143,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "playbook-policy",
-      "source_version": "0.9.29"
+      "source_version": "0.9.29",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/playbooks/pause-safely.md",
@@ -125,7 +153,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "playbook-policy",
-      "source_version": "0.9.34"
+      "source_version": "0.9.34",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/playbooks/session-pickup.md",
@@ -133,7 +163,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "playbook-policy",
-      "source_version": "0.9.34"
+      "source_version": "0.9.34",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/playbooks/shipping.md",
@@ -141,7 +173,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "playbook-policy",
-      "source_version": "0.9.34"
+      "source_version": "0.9.34",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/playbooks/worktree-cleanup.md",
@@ -149,7 +183,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "playbook-policy",
-      "source_version": "0.9.74"
+      "source_version": "0.9.74",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/scripts/bootstrap.ts",
@@ -157,7 +193,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "code-contract",
-      "source_version": "0.9.11"
+      "source_version": "0.9.11",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/scripts/check-plan.mjs",
@@ -165,7 +203,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "code-contract",
-      "source_version": "0.9.19"
+      "source_version": "0.9.19",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/scripts/check-plan.test.ts",
@@ -173,7 +213,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "code-contract",
-      "source_version": "0.9.83"
+      "source_version": "0.9.83",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/scripts/orch/orch.test.ts",
@@ -181,7 +223,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "code-contract",
-      "source_version": "0.9.47"
+      "source_version": "0.9.47",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/scripts/orch/store.ts",
@@ -189,7 +233,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "code-contract",
-      "source_version": "0.9.13"
+      "source_version": "0.9.13",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/scripts/package.json",
@@ -197,7 +243,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "code-contract",
-      "source_version": "0.9.23"
+      "source_version": "0.9.23",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/cli.test.ts",
@@ -205,7 +253,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "code-contract",
-      "source_version": "0.9.34"
+      "source_version": "0.9.34",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/cli.ts",
@@ -213,7 +263,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "code-contract",
-      "source_version": "0.9.24"
+      "source_version": "0.9.24",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/fakes.test-helper.ts",
@@ -221,7 +273,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "code-contract",
-      "source_version": "0.9.10"
+      "source_version": "0.9.10",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/github.test.ts",
@@ -229,7 +283,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "code-contract",
-      "source_version": "0.9.24"
+      "source_version": "0.9.24",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/github.ts",
@@ -237,7 +293,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "code-contract",
-      "source_version": "0.9.24"
+      "source_version": "0.9.24",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/policy.test.ts",
@@ -245,7 +303,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "code-contract",
-      "source_version": "0.9.24"
+      "source_version": "0.9.24",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/policy.ts",
@@ -253,7 +313,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "code-contract",
-      "source_version": "0.9.24"
+      "source_version": "0.9.24",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/render.ts",
@@ -261,7 +323,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "code-contract",
-      "source_version": "0.9.43"
+      "source_version": "0.9.43",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/types.compile.ts",
@@ -269,7 +333,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "code-contract",
-      "source_version": "0.9.34"
+      "source_version": "0.9.34",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/types.ts",
@@ -277,7 +343,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "code-contract",
-      "source_version": "0.9.24"
+      "source_version": "0.9.24",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/SKILL.md",
@@ -285,7 +353,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "skill-policy",
-      "source_version": "0.9.2"
+      "source_version": "0.9.2",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/principle-attack-the-premise/SKILL.md",
@@ -293,7 +363,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "skill-policy",
-      "source_version": "0.9.82"
+      "source_version": "0.9.82",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/principle-prove-it-works/SKILL.md",
@@ -301,7 +373,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "skill-policy",
-      "source_version": "0.1.0"
+      "source_version": "0.1.0",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/principle-test-behavior-not-implementation/SKILL.md",
@@ -309,7 +383,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "skill-policy",
-      "source_version": "0.9.82"
+      "source_version": "0.9.82",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/recall/SKILL.md",
@@ -317,7 +393,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "skill-policy",
-      "source_version": "0.9.2"
+      "source_version": "0.9.2",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/reflect/SKILL.md",
@@ -325,7 +403,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "skill-policy",
-      "source_version": "0.1.0"
+      "source_version": "0.1.0",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/setup-pstack/SKILL.md",
@@ -333,7 +413,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "skill-policy",
-      "source_version": "0.9.2"
+      "source_version": "0.9.2",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/show-me-your-work/scripts/log.sh",
@@ -341,7 +423,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "code-contract",
-      "source_version": "0.9.41"
+      "source_version": "0.9.41",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/show-me-your-work/SKILL.md",
@@ -349,7 +433,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "skill-policy",
-      "source_version": "0.9.41"
+      "source_version": "0.9.41",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/tdd/SKILL.md",
@@ -357,7 +443,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "skill-policy",
-      "source_version": "0.9.21"
+      "source_version": "0.9.21",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/why/references/epistemics.md",
@@ -365,7 +453,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "skill-policy",
-      "source_version": "0.9.34"
+      "source_version": "0.9.34",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/why/references/investigator-prompt.md",
@@ -373,7 +463,9 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "skill-policy",
-      "source_version": "0.9.34"
+      "source_version": "0.9.34",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
     },
     {
       "path": "plugins/pstack/skills/why/references/synthesizer-prompt.md",
@@ -381,7 +473,19 @@
       "review_state": "pending",
       "proposed_adoption": "unclassified",
       "review_lane": "skill-policy",
-      "source_version": "0.9.17"
+      "source_version": "0.9.17",
+      "reference_group": "pstack",
+      "source_note": "pstack-group row in upstream tools/forks.json"
+    },
+    {
+      "path": "plugins/pstack/skills/thermo-nuclear-code-quality-review/SKILL.md",
+      "reference_kind": "policy",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "skill-policy",
+      "source_version": "0.9.11",
+      "reference_group": "thermos",
+      "source_note": "thermos-group row in upstream tools/forks.json; out of pstack scope, pending #434 classification"
     }
   ]
 }
