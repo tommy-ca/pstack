@@ -34,7 +34,7 @@ For each reviewer:
 
 If the host rejects a slug, omit `model` or retry only with a slug the error text named that is already in this session's detected set. Do not pick a closest family equivalent. If the configured value is `inherit-parent` or `auto`, omit `model`; never treat those aliases as broken slugs.
 
-Fill the reviewer prompt with `scripts/pack.py --intent` plus exactly one of `--range` or `--diff-file` (`references/rubric.md`, `references/code-quality-review.md`). Do not hand-fill the template. Point reviewers at the packed `prompt.md` rather than inlining dumps. The same packed prompt goes to all reviewers, so every model applies the code-quality lens.
+Fill the reviewer prompt with `skills/interrogate/scripts/pack.py --intent` plus exactly one of `--range` or `--diff-file` (`references/rubric.md`, `references/code-quality-review.md`). Do not hand-fill the template. Point reviewers at the packed `prompt.md` rather than inlining dumps. The same packed prompt goes to all reviewers, so every model applies the code-quality lens. When the reviewer panel resolves to one model family, record reduced family diversity per the change design instead of claiming multi-model proof.
 
 Join the reviewers under a bounded join deadline named before spawn (e.g. `join deadline: 10m`). A reviewer that has not returned by the deadline is a reported dropout, not a pass. A reviewer you cancel, or that the host kills in flight, is the same reported dropout, never a pass and never silently omitted.
 
