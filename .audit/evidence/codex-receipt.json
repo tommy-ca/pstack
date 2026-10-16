@@ -1,8 +1,8 @@
 {
-  "run_id": "codex-1792111251-6884b2ad",
+  "run_id": "codex-1792115048-557f6f8b",
   "host": "codex",
   "host_version": "codex-cli 0.162.1",
-  "timestamp": "2026-10-16T00:41:03Z",
+  "timestamp": "2026-10-16T01:44:32Z",
   "overall_verdict": "PASS",
   "planes": {
     "canonical": "PASS",
@@ -18,7 +18,7 @@
     "profile_hash": "3c7572b5cebaf8dd6c62b7465a88e15a2694291be8fd0c143f5d2ef96a9394af",
     "package_descriptor_hash": "52cc6b3ce9b87a80f783362b109cb7b5a6190e7f26d25687b6b2a16f3651a647",
     "manifest_hash": "b8fb2d730647c4b573bcd4a90d9f1ba666e9bee160ef4da99e560b585da1a886",
-    "driver_revision": "45d17aa50f1297312e4f0babbd1f0e7ca280e697ae9a9ed455318664004cf192",
+    "driver_revision": "42e76079a9f3a70326c42ac56ea114e59f2b6037be117635ea714cc341b4fb6d",
     "package_driver_revision": "bc926b8f5752f96dc6203374329a9f62889f60bc5fff500a347b4d93f51155c2",
     "boundary_driver_revision": "c7dd52906f6de7a0164ec3dd0e19392ac6f1915a840a952a9fcda6ad4a02fe7a"
   },
@@ -31,7 +31,7 @@
       "exit_code": 0,
       "stdout_snippet": "Conformance: PASS\nFreshness: DRIFT (23 commits ahead)\nPrinciples: 24 | Playbooks: 23\nArtifacts: 167 (preserved=93, adapted=64, excluded=10, gaps=0)\nPASS: Canonical inventory conforms to pin.",
       "verdict": "PASS",
-      "duration_s": 0.097,
+      "duration_s": 0.136,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -44,20 +44,7 @@
       "exit_code": 0,
       "stdout_snippet": "Change '2026-10-15-harness-neutral-role-policy' is valid",
       "verdict": "PASS",
-      "duration_s": 0.468,
-      "evidence_level": "offline",
-      "settlement": null,
-      "preserved_from": ""
-    },
-    {
-      "id": "doctor-openspec-validation",
-      "description": "Verify 2026-10-15-harness-neutral-role-policy openspec change passes schema checks",
-      "plane": "canonical",
-      "command": "/home/tommyk/projects/pstack/.venv/bin/python -c import importlib.util, sys; spec = importlib.util.spec_from_file_location('vp_helper', 'scripts/verify-portable.py'); m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m); sys.exit(m.validate_openspec_change(sys.argv[1])) 2026-10-15-harness-neutral-role-policy",
-      "exit_code": 0,
-      "stdout_snippet": "Change '2026-10-15-harness-neutral-role-policy' is valid",
-      "verdict": "PASS",
-      "duration_s": 0.468,
+      "duration_s": 0.711,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -70,7 +57,7 @@
       "exit_code": 0,
       "stdout_snippet": "PASS\nplaybooks: 22 named + opening-a-pr\nprinciples: 24\nplugin.json name: pstack",
       "verdict": "PASS",
-      "duration_s": 0.559,
+      "duration_s": 0.852,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -83,7 +70,7 @@
       "exit_code": 0,
       "stdout_snippet": "[scan-host-boundary] PASS: Scanned 138 files across portable surfaces. 0 boundary leaks.",
       "verdict": "PASS",
-      "duration_s": 0.388,
+      "duration_s": 0.655,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -96,7 +83,7 @@
       "exit_code": 0,
       "stdout_snippet": "PASS: grok manifest at .grok-plugin/plugin.json in sync\nPASS: codex manifest at .codex-plugin/plugin.json in sync\nPASS: codex models at .codex-plugin/models.json in sync\nPASS: omp manifest at .omp-plugin/package.json in sync\nPASS: opencode manifest at .opencode-plugin/package.json in sync\nPASS: anti",
       "verdict": "PASS",
-      "duration_s": 0.073,
+      "duration_s": 0.845,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -109,7 +96,7 @@
       "exit_code": 0,
       "stdout_snippet": "[codex] Executing verify...\nPASS: codex manifest at .codex-plugin/plugin.json in sync\nPASS: codex models at .codex-plugin/models.json in sync\n[codex] VERIFY PASS",
       "verdict": "PASS",
-      "duration_s": 0.07,
+      "duration_s": 0.118,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -122,7 +109,7 @@
       "exit_code": 0,
       "stdout_snippet": "",
       "verdict": "PASS",
-      "duration_s": 0.063,
+      "duration_s": 0.05,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -135,7 +122,7 @@
       "exit_code": 0,
       "stdout_snippet": "",
       "verdict": "PASS",
-      "duration_s": 0.025,
+      "duration_s": 0.032,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -148,7 +135,7 @@
       "exit_code": 0,
       "stdout_snippet": "bun test v1.4.3 (c6da4a4d3)",
       "verdict": "PASS",
-      "duration_s": 1.872,
+      "duration_s": 2.412,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -159,9 +146,9 @@
       "plane": "adapter",
       "command": "bash /home/tommyk/projects/pstack/skills/poteto-mode/scripts/worktree-audit.sh .",
       "exit_code": 0,
-      "stdout_snippet": "# base: origin/main\nSIZE\tAGE\tMERGED\tDIRTY\tREMOTE\tPR\tLAST_CHAT\tBUCKET\tWORKTREE\n73M\t0d\tno\twip:2\tpushed\t#452/OPEN\t2026-10-16\thold-wip\t/home/tommyk/projects/pstack\n6.3M\t3d\tno\tclean\tdetached\t-\t2026-10-16\thold-unpushed\t/home/tommyk/projects/pstack/.worktrees/p14b-context",
+      "stdout_snippet": "# base: origin/main\nSIZE\tAGE\tMERGED\tDIRTY\tREMOTE\tPR\tLAST_CHAT\tBUCKET\tWORKTREE\n74M\t0d\tno\tclean\tdetached\t-\t2026-10-16\thold-unpushed\t/home/tommyk/projects/pstack/.worktrees/pr428-stack\n48M\t0d\tno\twip:2\tahead1\t-\t2026-10-16\thold-wip\t/home/tommyk/projects/pstack\n6.3M\t3d\tno\tclean\tdetac",
       "verdict": "PASS",
-      "duration_s": 3.279,
+      "duration_s": 5.032,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -170,11 +157,11 @@
       "id": "drive-verification-skill-scaffold",
       "description": "Prove verification skill scaffolding for codex",
       "plane": "package",
-      "command": "/home/tommyk/projects/pstack/.venv/bin/python /home/tommyk/projects/pstack/scripts/scaffold-verification-skill.py --host codex --app smoke --write --target-dir .audit/evidence/codex-1792111251-6884b2ad/verify-smoke",
+      "command": "/home/tommyk/projects/pstack/.venv/bin/python /home/tommyk/projects/pstack/scripts/scaffold-verification-skill.py --host codex --app smoke --write --target-dir .audit/evidence/codex-1792115048-557f6f8b/verify-smoke",
       "exit_code": 0,
-      "stdout_snippet": "Draft scaffold for 'smoke' on codex at .audit/evidence/codex-1792111251-6884b2ad/verify-smoke; requires tailoring and runtime proof.",
+      "stdout_snippet": "Draft scaffold for 'smoke' on codex at .audit/evidence/codex-1792115048-557f6f8b/verify-smoke; requires tailoring and runtime proof.",
       "verdict": "PASS",
-      "duration_s": 0.071,
+      "duration_s": 0.092,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -183,11 +170,11 @@
       "id": "drive-verification-skill-check",
       "description": "Validate generated verification skill structure for codex",
       "plane": "package",
-      "command": "/home/tommyk/projects/pstack/.venv/bin/python /home/tommyk/projects/pstack/scripts/scaffold-verification-skill.py --host codex --check --target-dir .audit/evidence/codex-1792111251-6884b2ad/verify-smoke",
+      "command": "/home/tommyk/projects/pstack/.venv/bin/python /home/tommyk/projects/pstack/scripts/scaffold-verification-skill.py --host codex --check --target-dir .audit/evidence/codex-1792115048-557f6f8b/verify-smoke",
       "exit_code": 0,
-      "stdout_snippet": "PASS: Structural validation of verification skill at .audit/evidence/codex-1792111251-6884b2ad/verify-smoke; runtime proof unassessed.",
+      "stdout_snippet": "PASS: Structural validation of verification skill at .audit/evidence/codex-1792115048-557f6f8b/verify-smoke; runtime proof unassessed.",
       "verdict": "PASS",
-      "duration_s": 0.072,
+      "duration_s": 0.097,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -196,11 +183,11 @@
       "id": "drive-package-lifecycle-proof-codex",
       "description": "Prove isolated native package lifecycle for codex",
       "plane": "package",
-      "command": "/home/tommyk/projects/pstack/.venv/bin/python /home/tommyk/projects/pstack/scripts/package-lifecycle.py prove --host codex --target-dir .audit/evidence/codex-1792111251-6884b2ad/lifecycle-codex",
+      "command": "/home/tommyk/projects/pstack/.venv/bin/python /home/tommyk/projects/pstack/scripts/package-lifecycle.py prove --host codex --target-dir .audit/evidence/codex-1792115048-557f6f8b/lifecycle-codex",
       "exit_code": 0,
-      "stdout_snippet": "[codex] Executing prove...\n  [install] PASS (0.303s) - Installed codex into .audit/evidence/codex-1792111251-6884b2ad/lifecycle-codex/.codex/plugins/pstack (verified=True)\n  [update] PASS (0.772s) - Idempotent convergence check for codex (errors=[])\n  [uninstall] PASS (0.096s) - Clean residue verifi",
+      "stdout_snippet": "[codex] Executing prove...\n  [install] PASS (0.436s) - Installed codex into .audit/evidence/codex-1792115048-557f6f8b/lifecycle-codex/.codex/plugins/pstack (verified=True)\n  [update] PASS (4.806s) - Idempotent convergence check for codex (errors=[])\n  [uninstall] PASS (0.096s) - Clean residue verifi",
       "verdict": "PASS",
-      "duration_s": 1.252,
+      "duration_s": 5.436,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -213,7 +200,7 @@
       "exit_code": 0,
       "stdout_snippet": "bun test v1.4.3 (c6da4a4d3)",
       "verdict": "PASS",
-      "duration_s": 0.708,
+      "duration_s": 0.843,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -226,7 +213,7 @@
       "exit_code": 0,
       "stdout_snippet": "bun test v1.4.3 (c6da4a4d3)",
       "verdict": "PASS",
-      "duration_s": 0.048,
+      "duration_s": 0.045,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -239,7 +226,7 @@
       "exit_code": 0,
       "stdout_snippet": "Codex Doctor v0.162.1 \u00b7 linux-x86_64\n\nNotes\n   \u2191 updates      0.163.0 available (current 0.162.1, dismissed 0.161.0)\n   \u26a0 rollouts     1,319 active files \u00b7 713.16 MB on disk\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\nEnvironment",
       "verdict": "PASS",
-      "duration_s": 2.795,
+      "duration_s": 6.049,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -278,7 +265,7 @@
       "exit_code": 0,
       "stdout_snippet": "Codex CLI supports managed git worktrees (found=True)",
       "verdict": "PASS",
-      "duration_s": 0.05,
+      "duration_s": 0.088,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -298,7 +285,7 @@
     }
   ],
   "artifacts": [
-    ".audit/evidence/codex-1792111251-6884b2ad/receipt.json",
+    ".audit/evidence/codex-1792115048-557f6f8b/receipt.json",
     ".audit/evidence/codex-receipt.json"
   ],
   "claim": "codex 5-harness portability conformance verification",
