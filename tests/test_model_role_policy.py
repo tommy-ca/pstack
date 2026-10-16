@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import copy
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -351,3 +352,25 @@ def test_inherit_tokens_rejected_as_catalog_ids_by_both_validators(token: str) -
 def test_inherit_set_matches_schema_def() -> None:
     schema = json.loads((ROOT / "schemas/portability/model-role-policy.schema.json").read_text(encoding="utf-8"))
     assert set(model_role_policy.INHERIT) == set(schema["$defs"]["inheritTokens"]["enum"])
+
+
+ROLE_TOKEN_RE = re.compile(r"pstack:([a-z][a-z0-9-]*)")
+PLACEHOLDER_RE = re.compile(r"pstack:<[^>]*>")
+
+
+def test_skill_role_tokens_resolve_to_descriptor_roles_and_agents() -> None:
+    # Local claim only: every concrete pstack:<role> token emitted in skill
+    # docs resolves to a descriptor role id and a local agent file.
+    # Template placeholders (pstack:<...>) are excluded, not resolved.
+    role_ids = {role["id"] for role in PACKAGE["roles"]}
+    agent_files = {p.stem for p in (ROOT / "agents").glob("*.md")}
+    tokens: set[str] = set()
+    for path in sorted((ROOT / "skills").rglob("*.md")):
+        text = path.read_text(encoding="utf-8")
+        text = PLACEHOLDER_RE.sub("", text)
+        tokens.update(ROLE_TOKEN_RE.findall(text))
+    assert tokens, "no role tokens found; scan is broken"
+    missing_roles = tokens - role_ids
+    missing_agents = tokens - agent_files
+    assert not missing_roles, f"tokens without descriptor role: {sorted(missing_roles)}"
+    assert not missing_agents, f"tokens without agent file: {sorted(missing_agents)}"
