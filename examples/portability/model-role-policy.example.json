@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "canonical_source": {
+    "repository": "cursor/plugins",
+    "pin": "1dcc2bacde73ddd284803b7af28164d0436198fc"
+  },
+  "role_source": "pstack.package.json#/roles",
+  "role_constraints": {
+    "swarm-workers": {
+      "selection": "single",
+      "required_capabilities": [
+        "agent.spawn",
+        "agent.join"
+      ]
+    },
+    "arena-runners": {
+      "selection": "panel",
+      "required_capabilities": [
+        "agent.spawn",
+        "agent.join",
+        "workspace.isolated"
+      ],
+      "minimum_independent_workers": 1
+    },
+    "interrogate-reviewers": {
+      "selection": "panel",
+      "required_capabilities": [
+        "agent.spawn",
+        "agent.join",
+        "workspace.readonly"
+      ],
+      "minimum_independent_workers": 1,
+      "require_distinct_model_families": false
+    },
+    "arena-cross-judge-pool": {
+      "selection": "cross-judge",
+      "required_capabilities": [
+        "agent.spawn",
+        "agent.join",
+        "workspace.readonly"
+      ],
+      "require_distinct_model_families": false
+    }
+  },
+  "hosts": {
+    "codex": {
+      "discovery": "unverified",
+      "model_catalog": [],
+      "tier_defaults": {
+        "fast-verifier": [
+          "inherit-parent"
+        ],
+        "panel": [
+          "inherit-parent"
+        ],
+        "adversarial-panel": [
+          "inherit-parent"
+        ]
+      },
+      "fallback": "fail-closed",
+      "verification_status": "unverified"
+    }
+  },
+  "constraints": {
+    "allow_unverified_models": false,
+    "require_review_for_configured_cross_judge_diversity": true
+  }
+}

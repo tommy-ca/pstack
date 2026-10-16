@@ -1,0 +1,387 @@
+{
+  "schema": "pstack-reference-forks/v1",
+  "source": "michael-denyer/pstack-claude",
+  "source_sha": "94f5ce95abe8a9dec976967d79941f631cf477cd",
+  "source_path": "tools/forks.json",
+  "canonical_authority": "cursor/plugins/pstack@UPSTREAM",
+  "snapshot_date": "2026-10-15",
+  "policy": "Review every fork against canonical intent; metadata does not authorize importing implementation or policy",
+  "entries": [
+    {
+      "path": "plugins/pstack/skills/architect/references/rationale-template.md",
+      "reference_kind": "policy",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "skill-policy",
+      "source_version": "0.9.34"
+    },
+    {
+      "path": "plugins/pstack/skills/architect/SKILL.md",
+      "reference_kind": "policy",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "skill-policy",
+      "source_version": "0.9.34"
+    },
+    {
+      "path": "plugins/pstack/skills/blast-radius/SKILL.md",
+      "reference_kind": "policy",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "skill-policy",
+      "source_version": "0.9.21"
+    },
+    {
+      "path": "plugins/pstack/skills/bro/SKILL.md",
+      "reference_kind": "policy",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "skill-policy",
+      "source_version": "0.9.10"
+    },
+    {
+      "path": "plugins/pstack/skills/create-verification-skill/SKILL.md",
+      "reference_kind": "port-feature",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "skill-policy",
+      "source_version": "0.9.29"
+    },
+    {
+      "path": "plugins/pstack/skills/poteto-help/SKILL.md",
+      "reference_kind": "port-feature",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "skill-policy",
+      "source_version": "0.9.71"
+    },
+    {
+      "path": "plugins/pstack/skills/poteto-mode/playbooks/autopilot-full.md",
+      "reference_kind": "policy",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "playbook-policy",
+      "source_version": "0.9.39"
+    },
+    {
+      "path": "plugins/pstack/skills/poteto-mode/playbooks/autopilot-stack.md",
+      "reference_kind": "policy",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "playbook-policy",
+      "source_version": "0.9.34"
+    },
+    {
+      "path": "plugins/pstack/skills/poteto-mode/playbooks/babysit.md",
+      "reference_kind": "policy",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "playbook-policy",
+      "source_version": "0.9.39"
+    },
+    {
+      "path": "plugins/pstack/skills/poteto-mode/playbooks/bug-fix.md",
+      "reference_kind": "policy",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "playbook-policy",
+      "source_version": "0.9.10"
+    },
+    {
+      "path": "plugins/pstack/skills/poteto-mode/playbooks/feature.md",
+      "reference_kind": "policy",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "playbook-policy",
+      "source_version": "0.9.39"
+    },
+    {
+      "path": "plugins/pstack/skills/poteto-mode/playbooks/multi-phase-plan.md",
+      "reference_kind": "port-feature",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "playbook-policy",
+      "source_version": "0.9.19"
+    },
+    {
+      "path": "plugins/pstack/skills/poteto-mode/playbooks/opening-a-pr.md",
+      "reference_kind": "policy",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "playbook-policy",
+      "source_version": "0.9.10"
+    },
+    {
+      "path": "plugins/pstack/skills/poteto-mode/playbooks/orchestrate.md",
+      "reference_kind": "port-feature",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "playbook-policy",
+      "source_version": "0.9.29"
+    },
+    {
+      "path": "plugins/pstack/skills/poteto-mode/playbooks/pause-safely.md",
+      "reference_kind": "policy",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "playbook-policy",
+      "source_version": "0.9.34"
+    },
+    {
+      "path": "plugins/pstack/skills/poteto-mode/playbooks/session-pickup.md",
+      "reference_kind": "policy",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "playbook-policy",
+      "source_version": "0.9.34"
+    },
+    {
+      "path": "plugins/pstack/skills/poteto-mode/playbooks/shipping.md",
+      "reference_kind": "policy",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "playbook-policy",
+      "source_version": "0.9.34"
+    },
+    {
+      "path": "plugins/pstack/skills/poteto-mode/playbooks/worktree-cleanup.md",
+      "reference_kind": "policy",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "playbook-policy",
+      "source_version": "0.9.74"
+    },
+    {
+      "path": "plugins/pstack/skills/poteto-mode/scripts/bootstrap.ts",
+      "reference_kind": "policy",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "code-contract",
+      "source_version": "0.9.11"
+    },
+    {
+      "path": "plugins/pstack/skills/poteto-mode/scripts/check-plan.mjs",
+      "reference_kind": "port-feature",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "code-contract",
+      "source_version": "0.9.19"
+    },
+    {
+      "path": "plugins/pstack/skills/poteto-mode/scripts/check-plan.test.ts",
+      "reference_kind": "port-feature",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "code-contract",
+      "source_version": "0.9.83"
+    },
+    {
+      "path": "plugins/pstack/skills/poteto-mode/scripts/orch/orch.test.ts",
+      "reference_kind": "policy",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "code-contract",
+      "source_version": "0.9.47"
+    },
+    {
+      "path": "plugins/pstack/skills/poteto-mode/scripts/orch/store.ts",
+      "reference_kind": "policy",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "code-contract",
+      "source_version": "0.9.13"
+    },
+    {
+      "path": "plugins/pstack/skills/poteto-mode/scripts/package.json",
+      "reference_kind": "policy",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "code-contract",
+      "source_version": "0.9.23"
+    },
+    {
+      "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/cli.test.ts",
+      "reference_kind": "policy",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "code-contract",
+      "source_version": "0.9.34"
+    },
+    {
+      "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/cli.ts",
+      "reference_kind": "policy",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "code-contract",
+      "source_version": "0.9.24"
+    },
+    {
+      "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/fakes.test-helper.ts",
+      "reference_kind": "policy",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "code-contract",
+      "source_version": "0.9.10"
+    },
+    {
+      "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/github.test.ts",
+      "reference_kind": "policy",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "code-contract",
+      "source_version": "0.9.24"
+    },
+    {
+      "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/github.ts",
+      "reference_kind": "policy",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "code-contract",
+      "source_version": "0.9.24"
+    },
+    {
+      "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/policy.test.ts",
+      "reference_kind": "policy",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "code-contract",
+      "source_version": "0.9.24"
+    },
+    {
+      "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/policy.ts",
+      "reference_kind": "policy",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "code-contract",
+      "source_version": "0.9.24"
+    },
+    {
+      "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/render.ts",
+      "reference_kind": "policy",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "code-contract",
+      "source_version": "0.9.43"
+    },
+    {
+      "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/types.compile.ts",
+      "reference_kind": "policy",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "code-contract",
+      "source_version": "0.9.34"
+    },
+    {
+      "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/types.ts",
+      "reference_kind": "policy",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "code-contract",
+      "source_version": "0.9.24"
+    },
+    {
+      "path": "plugins/pstack/skills/poteto-mode/SKILL.md",
+      "reference_kind": "policy",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "skill-policy",
+      "source_version": "0.9.2"
+    },
+    {
+      "path": "plugins/pstack/skills/principle-attack-the-premise/SKILL.md",
+      "reference_kind": "policy",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "skill-policy",
+      "source_version": "0.9.82"
+    },
+    {
+      "path": "plugins/pstack/skills/principle-prove-it-works/SKILL.md",
+      "reference_kind": "policy",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "skill-policy",
+      "source_version": "0.1.0"
+    },
+    {
+      "path": "plugins/pstack/skills/principle-test-behavior-not-implementation/SKILL.md",
+      "reference_kind": "policy",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "skill-policy",
+      "source_version": "0.9.82"
+    },
+    {
+      "path": "plugins/pstack/skills/recall/SKILL.md",
+      "reference_kind": "policy",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "skill-policy",
+      "source_version": "0.9.2"
+    },
+    {
+      "path": "plugins/pstack/skills/reflect/SKILL.md",
+      "reference_kind": "port-feature",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "skill-policy",
+      "source_version": "0.1.0"
+    },
+    {
+      "path": "plugins/pstack/skills/setup-pstack/SKILL.md",
+      "reference_kind": "port-feature",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "skill-policy",
+      "source_version": "0.9.2"
+    },
+    {
+      "path": "plugins/pstack/skills/show-me-your-work/scripts/log.sh",
+      "reference_kind": "policy",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "code-contract",
+      "source_version": "0.9.41"
+    },
+    {
+      "path": "plugins/pstack/skills/show-me-your-work/SKILL.md",
+      "reference_kind": "policy",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "skill-policy",
+      "source_version": "0.9.41"
+    },
+    {
+      "path": "plugins/pstack/skills/tdd/SKILL.md",
+      "reference_kind": "policy",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "skill-policy",
+      "source_version": "0.9.21"
+    },
+    {
+      "path": "plugins/pstack/skills/why/references/epistemics.md",
+      "reference_kind": "policy",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "skill-policy",
+      "source_version": "0.9.34"
+    },
+    {
+      "path": "plugins/pstack/skills/why/references/investigator-prompt.md",
+      "reference_kind": "policy",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "skill-policy",
+      "source_version": "0.9.34"
+    },
+    {
+      "path": "plugins/pstack/skills/why/references/synthesizer-prompt.md",
+      "reference_kind": "policy",
+      "review_state": "pending",
+      "proposed_adoption": "unclassified",
+      "review_lane": "skill-policy",
+      "source_version": "0.9.17"
+    }
+  ]
+}
