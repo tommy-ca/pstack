@@ -1,8 +1,8 @@
 {
-  "run_id": "omp-1792168651-b854f8cb",
+  "run_id": "omp-1792176512-fe9d1684",
   "host": "omp",
   "host_version": "omp/18.11.1",
-  "timestamp": "2026-10-16T16:39:43Z",
+  "timestamp": "2026-10-16T18:49:38Z",
   "overall_verdict": "PASS",
   "planes": {
     "canonical": "PASS",
@@ -19,7 +19,7 @@
     "package_descriptor_hash": "52cc6b3ce9b87a80f783362b109cb7b5a6190e7f26d25687b6b2a16f3651a647",
     "manifest_hash": "0796214ef5886c4763eaf83963145785e0cc363252671b3f4399eb0d8cb7ed06",
     "driver_revision": "42e76079a9f3a70326c42ac56ea114e59f2b6037be117635ea714cc341b4fb6d",
-    "package_driver_revision": "df25167def33e924250b2338cdf91778d298aa9e30cb8de976aed07c0a1c29bf",
+    "package_driver_revision": "8c476d733590898a1ab2e56007f204b2fbc00043171260e34416660a61c88b79",
     "boundary_driver_revision": "c7dd52906f6de7a0164ec3dd0e19392ac6f1915a840a952a9fcda6ad4a02fe7a"
   },
   "scenarios": [
@@ -31,7 +31,7 @@
       "exit_code": 0,
       "stdout_snippet": "Conformance: PASS\nFreshness: DRIFT (28 commits ahead)\nPrinciples: 24 | Playbooks: 23\nArtifacts: 167 (preserved=93, adapted=64, excluded=10, gaps=0)\nPASS: Canonical inventory conforms to pin.",
       "verdict": "PASS",
-      "duration_s": 0.321,
+      "duration_s": 0.104,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -44,7 +44,7 @@
       "exit_code": 0,
       "stdout_snippet": "Change '2026-10-15-harness-neutral-role-policy' is valid",
       "verdict": "PASS",
-      "duration_s": 0.586,
+      "duration_s": 0.513,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -57,7 +57,7 @@
       "exit_code": 0,
       "stdout_snippet": "PASS\nplaybooks: 22 named + opening-a-pr\nprinciples: 24\nplugin.json name: pstack",
       "verdict": "PASS",
-      "duration_s": 50.072,
+      "duration_s": 5.858,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -70,7 +70,7 @@
       "exit_code": 0,
       "stdout_snippet": "[scan-host-boundary] PASS: Scanned 138 files across portable surfaces. 0 boundary leaks.",
       "verdict": "PASS",
-      "duration_s": 0.413,
+      "duration_s": 0.485,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -83,7 +83,7 @@
       "exit_code": 0,
       "stdout_snippet": "PASS: grok manifest at .grok-plugin/plugin.json in sync\nPASS: codex manifest at .codex-plugin/plugin.json in sync\nPASS: codex models at .codex-plugin/models.json in sync\nPASS: omp manifest at .omp-plugin/package.json in sync\nPASS: opencode manifest at .opencode-plugin/package.json in sync\nPASS: anti",
       "verdict": "PASS",
-      "duration_s": 0.07,
+      "duration_s": 0.09,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -96,7 +96,7 @@
       "exit_code": 0,
       "stdout_snippet": "[omp] Executing verify...\nPASS: omp manifest at .omp-plugin/package.json in sync\n[omp] VERIFY PASS",
       "verdict": "PASS",
-      "duration_s": 0.075,
+      "duration_s": 0.096,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -109,7 +109,7 @@
       "exit_code": 0,
       "stdout_snippet": "",
       "verdict": "PASS",
-      "duration_s": 0.047,
+      "duration_s": 0.06,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -122,7 +122,7 @@
       "exit_code": 0,
       "stdout_snippet": "",
       "verdict": "PASS",
-      "duration_s": 0.031,
+      "duration_s": 0.036,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -135,7 +135,7 @@
       "exit_code": 0,
       "stdout_snippet": "bun test v1.4.3 (c6da4a4d3)",
       "verdict": "PASS",
-      "duration_s": 1.867,
+      "duration_s": 1.988,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -146,9 +146,9 @@
       "plane": "adapter",
       "command": "bash /home/tommyk/projects/pstack/skills/poteto-mode/scripts/worktree-audit.sh .",
       "exit_code": 0,
-      "stdout_snippet": "# base: origin/main\nSIZE\tAGE\tMERGED\tDIRTY\tREMOTE\tPR\tLAST_CHAT\tBUCKET\tWORKTREE\n82M\t0d\tno\tclean\tpushed\t#466/OPEN\t2026-10-16\thold-open-pr\t/home/tommyk/projects/pstack/.worktrees/thermo-skills-reconcile\n48M\t0d\tno\tclean\tdetached\t-\t2026-10-16\thold-unpushed\t/home/tommyk/projects/pstack/.worktrees/verify-46",
+      "stdout_snippet": "# base: origin/main\nSIZE\tAGE\tMERGED\tDIRTY\tREMOTE\tPR\tLAST_CHAT\tBUCKET\tWORKTREE\n82M\t0d\tno\tclean\tpushed\t#466/CLOSED\t2026-10-16\thold-closed-unmerged\t/home/tommyk/projects/pstack/.worktrees/thermo-skills-reconcile\n48M\t0d\tno\tclean\tdetached\t-\t2026-10-16\thold-unpushed\t/home/tommyk/projects/pstack/.worktrees",
       "verdict": "PASS",
-      "duration_s": 17.785,
+      "duration_s": 53.248,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -157,11 +157,11 @@
       "id": "drive-verification-skill-scaffold",
       "description": "Prove verification skill scaffolding for omp",
       "plane": "package",
-      "command": "/home/tommyk/projects/pstack/.venv/bin/python /home/tommyk/projects/pstack/scripts/scaffold-verification-skill.py --host omp --app smoke --write --target-dir /home/tommyk/projects/pstack/.audit/evidence/omp-1792168651-b854f8cb/verify-smoke",
+      "command": "/home/tommyk/projects/pstack/.venv/bin/python /home/tommyk/projects/pstack/scripts/scaffold-verification-skill.py --host omp --app smoke --write --target-dir /home/tommyk/projects/pstack/.audit/evidence/omp-1792176512-fe9d1684/verify-smoke",
       "exit_code": 0,
-      "stdout_snippet": "Draft scaffold for 'smoke' on omp at /home/tommyk/projects/pstack/.audit/evidence/omp-1792168651-b854f8cb/verify-smoke; requires tailoring and runtime proof.",
+      "stdout_snippet": "Draft scaffold for 'smoke' on omp at /home/tommyk/projects/pstack/.audit/evidence/omp-1792176512-fe9d1684/verify-smoke; requires tailoring and runtime proof.",
       "verdict": "PASS",
-      "duration_s": 0.07,
+      "duration_s": 0.186,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -170,11 +170,11 @@
       "id": "drive-verification-skill-check",
       "description": "Validate generated verification skill structure for omp",
       "plane": "package",
-      "command": "/home/tommyk/projects/pstack/.venv/bin/python /home/tommyk/projects/pstack/scripts/scaffold-verification-skill.py --host omp --check --target-dir /home/tommyk/projects/pstack/.audit/evidence/omp-1792168651-b854f8cb/verify-smoke",
+      "command": "/home/tommyk/projects/pstack/.venv/bin/python /home/tommyk/projects/pstack/scripts/scaffold-verification-skill.py --host omp --check --target-dir /home/tommyk/projects/pstack/.audit/evidence/omp-1792176512-fe9d1684/verify-smoke",
       "exit_code": 0,
-      "stdout_snippet": "PASS: Structural validation of verification skill at /home/tommyk/projects/pstack/.audit/evidence/omp-1792168651-b854f8cb/verify-smoke; runtime proof unassessed.",
+      "stdout_snippet": "PASS: Structural validation of verification skill at /home/tommyk/projects/pstack/.audit/evidence/omp-1792176512-fe9d1684/verify-smoke; runtime proof unassessed.",
       "verdict": "PASS",
-      "duration_s": 0.063,
+      "duration_s": 0.097,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -183,11 +183,11 @@
       "id": "drive-package-lifecycle-proof-omp",
       "description": "Prove isolated native package lifecycle for omp",
       "plane": "package",
-      "command": "/home/tommyk/projects/pstack/.venv/bin/python /home/tommyk/projects/pstack/scripts/package-lifecycle.py prove --host omp --target-dir /home/tommyk/projects/pstack/.audit/evidence/omp-1792168651-b854f8cb/lifecycle-omp",
+      "command": "/home/tommyk/projects/pstack/.venv/bin/python /home/tommyk/projects/pstack/scripts/package-lifecycle.py prove --host omp --target-dir /home/tommyk/projects/pstack/.audit/evidence/omp-1792176512-fe9d1684/lifecycle-omp",
       "exit_code": 0,
-      "stdout_snippet": "[omp] Executing prove...\n  [install] PASS (0.481s) - Installed omp into /home/tommyk/projects/pstack/.audit/evidence/omp-1792168651-b854f8cb/lifecycle-omp/.omp/plugins/pstack (verified=True)\n  [update] PASS (0.731s) - Idempotent convergence check for omp (errors=[])\n  [uninstall] PASS (0.098s) - Cle",
+      "stdout_snippet": "[omp] Executing prove...\n  [install] PASS (0.817s) - Installed omp into /home/tommyk/projects/pstack/.audit/evidence/omp-1792176512-fe9d1684/lifecycle-omp/.omp/plugins/pstack (verified=True, errors=[])\n  [update] PASS (0.737s) - Idempotent convergence check for omp (errors=[])\n  [uninstall] PASS (0.",
       "verdict": "PASS",
-      "duration_s": 1.394,
+      "duration_s": 1.766,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -200,7 +200,7 @@
       "exit_code": 0,
       "stdout_snippet": "npm Plugins:\n\n\u25cf @dietrichgebert/ponytail@4.9.0",
       "verdict": "PASS",
-      "duration_s": 0.448,
+      "duration_s": 0.475,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -235,7 +235,7 @@
         "transport": "rpc",
         "effective_rpc": "rpc-v2:maxFrameBytes=1048576:maxReassembledFrameBytes=67108864"
       },
-      "preserved_from": ""
+      "preserved_from": "omp-1792168651-b854f8cb"
     },
     {
       "id": "runtime-child-cancel-omp",
@@ -254,7 +254,7 @@
         "transport": "rpc",
         "effective_rpc": "rpc-v2:maxFrameBytes=1048576:maxReassembledFrameBytes=67108864"
       },
-      "preserved_from": ""
+      "preserved_from": "omp-1792168651-b854f8cb"
     },
     {
       "id": "runtime-isolation-omp",
@@ -273,7 +273,7 @@
         "transport": "rpc",
         "effective_rpc": "rpc-v2:maxFrameBytes=1048576:maxReassembledFrameBytes=67108864"
       },
-      "preserved_from": ""
+      "preserved_from": "omp-1792168651-b854f8cb"
     },
     {
       "id": "runtime-evidence-capture-omp",
@@ -290,7 +290,7 @@
     }
   ],
   "artifacts": [
-    "/home/tommyk/projects/pstack/.audit/evidence/omp-1792168651-b854f8cb/receipt.json",
+    "/home/tommyk/projects/pstack/.audit/evidence/omp-1792176512-fe9d1684/receipt.json",
     ".audit/evidence/omp-receipt.json"
   ],
   "claim": "omp 5-harness portability conformance verification",
