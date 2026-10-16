@@ -82,3 +82,25 @@ Trunk moved `927a2d0` to `c6bd628` across two commits: interrogate-findings reco
 Wave-2 baseline stands with one correction: full suite `961 passed, 10 skipped` (receipt `.audit/evidence/full-suite-20261016-receipt.json` at head `7a10736`). The receipt's `timestamp` field reads `2026-10-16T22:20:00Z` but is local `+02:00` wall clock mislabeled `Z` (true UTC `20:20:00Z`); it postdates its introducing commit and must be regenerated from UTC before being cited as a durable artifact. `scripts/verify-portable.py doctor --host all` reports `6-Harness Matrix Verdict: PASS` with all six hosts `PASS` at the offline planes and `Runtime: UNTESTED`.
 
 Nineteen open issues (`#429`–`#446` plus `#473`): the eighteen pinned issues keep delivery refs historical at `3852f4e` with the wave-2 footer at trunk `7a10736` (pilot #475 at `927a2d0`); `#473` (measured at `0bf5657`, REOPENED 2026-10-16 after a premature COMPLETED closure with acceptance unmet) is the live freshness-gate gap tracker, not a delivery pin. Related to `#444` by studied-surface lineage, not a dependency. The suite's live-install coupling identified in #477 has no tracking issue yet and is not owned by #473. G7 and G8 stay open on the freshness-design decision (#473 live gate blocks #445), the untracked hermeticity coupling, and multi-family independence, which no run in this pass supplied.
+
+## Dated evidence (2026-10-17, thermo-nuclear review)
+
+Three read-only lanes on trunk `d61a2fd`, single model family, no multi-model
+PASS claimed. Lane A (freshness gate, `scripts/portability_schema.py`):
+verdict not approvable as-is; `supported` derived from a weaker per-row proof
+than `verified` (foreign-host and all-FAIL-plane receipts accepted, probe 2
+also accepted by `check_evidence_durability`); code-judo ladder fix proven
+74/74 in a disposable copy, filed as proposal. Lane B (verifier lever,
+`scripts/verify-portable.py` 1305 L): honesty machinery sound; four P1 seam
+defects (filename-list binding misses `route_resolver.py`; self-hash freezes
+the file; runtime PASS on zero live evidence; corrupt `index.json` silently
+reset). Lane C (planner/spec): split earns its keep, boundary misdrawn
+(whole-document revalidation per call, three rules written twice, 16-seat cap
+planner-only); one spec-vs-spec conflict (delta mandates Interrogate model
+diversity, main spec says diversity is not portable). Findings filed as
+comments on #473 (lane A), #444 (lane B), #437 + #436 (lane C); no trunk code
+changed by this review. Full reports: `/tmp/pstack-thermo-a/`,
+`/tmp/pstack-thermo-b/`, `/tmp/pstack-thermo-c/` plus `/tmp/00_summary.md`
+(disk-backed copies under `/var/tmp/pstack-thermo/`; `/tmp` was 100% full
+tmpfs mid-run). G7/G8 stay open; the review adds unmet-acceptance evidence and
+closes nothing.
