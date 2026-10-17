@@ -1483,6 +1483,100 @@ def test_a_stat_denied_durable_receipt_is_refused_not_crashed(tmp_path: Path) ->
     assert (second.run_dir / "receipt.json").is_file()
 
 
+def _stat_denied_copy(tmp_path: Path, relative: str) -> tuple:
+    """A disposable copy whose `relative` path resolves through an unsearchable directory.
+
+    The link keeps the path spelling intact while the stat itself fails with EACCES,
+    which is the state a reader gate has to refuse. Caller restores 0o755 to clean up.
+    """
+    copy_root = _disposable_copy(tmp_path)
+    link = copy_root / relative
+    denied = tmp_path / "denied"
+    denied.mkdir()
+    real = denied / Path(relative).name
+    real.write_bytes(link.read_bytes())
+    link.unlink()
+    link.symlink_to(real)
+    denied.chmod(0o000)
+    return copy_root, link, denied
+
+
+def _run_gate(copy_root: Path, *arguments: str) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        [sys.executable, str(copy_root / "scripts" / "verify-portable.py"), *arguments],
+        capture_output=True,
+        text=True,
+        cwd=copy_root,
+    )
+
+
+def test_a_stat_denied_profile_is_refused_not_reported_absent(tmp_path: Path) -> None:
+    """check-evidence must not read a denied profile stat as "not found" (#495).
+
+    `Path.is_file()` raises the denial on 3.12 and swallows it to `False` on 3.14, so
+    the raw guard either crashed or printed the false absence and exited. Reporting
+    "present" routes the denial into the read, which refuses by name.
+    """
+    copy_root, _, denied = _stat_denied_copy(tmp_path, "profiles/grok.json")
+    try:
+        res = _run_gate(copy_root, "check-evidence", "--host", "grok")
+    finally:
+        denied.chmod(0o755)
+
+    assert res.returncode == 1, res.stdout + res.stderr
+    assert "Traceback" not in res.stderr
+    assert "Profile not found" not in res.stdout
+    assert "profiles/grok.json" in res.stdout and "Permission denied" in res.stdout
+
+
+def test_a_stat_denied_staleness_receipt_is_refused_not_reported_absent(tmp_path: Path) -> None:
+    """The same denial on a durable receipt is not "receipt not found" (#495)."""
+    copy_root, _, denied = _stat_denied_copy(tmp_path, ".audit/evidence/grok-receipt.json")
+    try:
+        res = _run_gate(copy_root, "check-staleness", "--host", "grok")
+    finally:
+        denied.chmod(0o755)
+
+    assert res.returncode == 1, res.stdout + res.stderr
+    assert "Traceback" not in res.stderr
+    assert "not found" not in res.stdout
+    assert "grok-receipt.json" in res.stdout and "Permission denied" in res.stdout
+
+
+def test_a_stat_denied_recorded_receipt_is_refused_not_reported_missing(tmp_path: Path) -> None:
+    """select-checks cannot call an unreadable recorded receipt "no recorded evidence" (#495).
+
+    Unlike the two reader gates above this one reads outside the checkout, so it runs
+    against the real root (select-checks needs the git history) and mutates nothing.
+    """
+    denied = tmp_path / "denied"
+    denied.mkdir()
+    receipt_file = denied / "check-evidence-receipt.json"
+    receipt_file.write_text("{}", encoding="utf-8")
+    denied.chmod(0o000)
+    try:
+        res = subprocess.run(
+            [
+                sys.executable,
+                str(ROOT / "scripts" / "verify-portable.py"),
+                "select-checks",
+                "--base",
+                "HEAD",
+                "--receipt",
+                str(receipt_file),
+            ],
+            capture_output=True,
+            text=True,
+        )
+    finally:
+        denied.chmod(0o755)
+
+    assert res.returncode == 2, res.stdout + res.stderr
+    assert "Traceback" not in res.stderr
+    assert "No recorded evidence at" not in res.stdout
+    assert "check-evidence-receipt.json" in res.stdout and "Permission denied" in res.stdout
+
+
 def test_a_missing_evidence_index_is_initialized_for_this_host(tmp_path: Path) -> None:
     """A fresh evidence root has no inventory to protect, so the first host creates it."""
     root, prof, evidence_root, _ = _omp_live_root(tmp_path)

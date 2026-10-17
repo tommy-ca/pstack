@@ -1145,11 +1145,18 @@ def main() -> None:
         index_file = ROOT / ".audit" / "evidence" / "index.json"
         for h in hosts:
             profile_file = ROOT / "profiles" / f"{h}.json"
-            if not profile_file.is_file():
+            if not _file_or_denied(profile_file):
                 print(f"[{h}] Profile not found at {profile_file}")
                 all_ok = False
                 continue
-            d = json.loads(profile_file.read_text(encoding="utf-8"))
+            try:
+                d = json.loads(profile_file.read_text(encoding="utf-8"))
+            except OSError as err:
+                # The guard reads a denied stat as present, so this read is where the
+                # denial lands (#495): name the file, never a false "not found".
+                print(f"[{h}] FAIL: profile {profile_file} is unreadable: {type(err).__name__}: {err}")
+                all_ok = False
+                continue
             b = [Binding(**x) for x in d.get("bindings", [])]
             e = [Evidence(**x) for x in d.get("evidence_ledger", [])]
             prof = HarnessProfile(
@@ -1196,10 +1203,12 @@ def main() -> None:
         for h in hosts:
             current_revs = compute_surface_revisions(ROOT, h)
             receipt_file = args.evidence_dir / f"{h}-receipt.json"
-            if not receipt_file.is_file():
+            if not _file_or_denied(receipt_file):
                 profile_file = ROOT / "profiles" / f"{h}.json"
                 claimed_state = ""
-                if profile_file.is_file():
+                if _file_or_denied(profile_file):
+                    # A denied profile stat is not an absent claim: the read
+                    # below refuses by name instead of defaulting to non-candidate.
                     try:
                         claimed_state = json.loads(profile_file.read_text(encoding="utf-8")).get("support_state", "")
                     except Exception:
@@ -1287,10 +1296,19 @@ def main() -> None:
             )
 
         if args.receipt:
-            if not args.receipt.is_file():
+            if not _file_or_denied(args.receipt):
                 print(f"No recorded evidence at {args.receipt}: run the selected checks, then record them.")
                 sys.exit(2)
-            receipt = load_check_evidence_receipt(args.receipt)
+            try:
+                receipt = load_check_evidence_receipt(args.receipt)
+            except OSError as err:
+                # Same rule (#495): a denied stat is not an absent receipt. An
+                # unreadable one is no evidence to evaluate, so it is not "missing".
+                print(
+                    f"REFUSING to evaluate unreadable recorded evidence {args.receipt}: "
+                    f"{type(err).__name__}: {err}"
+                )
+                sys.exit(2)
             stale, reasons = check_check_evidence_staleness(receipt, ROOT, args.base, args.head)
             claimable, claim_reason = can_claim_current_ci(receipt, ROOT, args.base, args.head)
             if args.json:
