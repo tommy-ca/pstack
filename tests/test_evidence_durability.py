@@ -294,6 +294,31 @@ def test_stale_profile_hash_invalidates_adapter_and_runtime() -> None:
     assert len(stale_map["package"]) == 0
 
 
+@pytest.mark.parametrize("host", ["grok", "codex", "omp", "opencode", "antigravity"])
+def test_stale_package_driver_rejected_for_packaged_claim(host: str) -> None:
+    # #473: five hosts claim packaged; a stale package driver must fail closed.
+    profile_data = json.loads((ROOT / "profiles" / f"{host}.json").read_text(encoding="utf-8"))
+    assert profile_data["support_state"] == "packaged"
+    b = [Binding(**x) for x in profile_data["bindings"]]
+    e = [Evidence(**x) for x in profile_data.get("evidence_ledger", [])]
+    prof = HarnessProfile(
+        host=profile_data["host"],
+        support_state=profile_data["support_state"],
+        bindings=b,
+        skills_dir=profile_data.get("skills_dir"),
+        plugins_dir=profile_data.get("plugins_dir"),
+        plugin_manifest=profile_data.get("plugin_manifest"),
+        evidence_ledger=e,
+        tool_mappings=profile_data.get("tool_mappings"),
+        skill_order=profile_data.get("skill_order"),
+        runtime_conventions=profile_data.get("runtime_conventions"),
+    )
+    current_revs = compute_surface_revisions(ROOT, host)
+    tampered_revs = replace(current_revs, package_driver_revision="stale-package-driver")
+    with pytest.raises(ValidationError, match="evidence is stale"):
+        check_evidence_durability(prof, ROOT, check_freshness=True, current_revisions=tampered_revs)
+
+
 def test_stale_package_descriptor_invalidates_package_and_runtime() -> None:
     current_revs = compute_surface_revisions(ROOT, "codex")
     receipt_data = json.loads((EVIDENCE_DIR / "codex-receipt.json").read_text(encoding="utf-8"))

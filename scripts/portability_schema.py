@@ -988,29 +988,34 @@ def check_evidence_durability(
 
     derived_state = derive_support_state(profile, root, current_revisions=current_revisions)
 
+    # Pin violations name their remedy; staleness is reported after, so a bad
+    # claim points at the claim first (see
+    # test_check_evidence_names_the_omp_live_remedy).
+    check_scenario_pins(profile, receipts_by_ref)
+
     if check_freshness:
-        # Check staleness based on claimed support_state
-        if profile.support_state in ("verified", "supported"):
+        # Freshness planes follow the claimed level: packaged proves the
+        # package plane; verified adds canonical, adapter and runtime; only
+        # supported enforces all four. Candidate claims skip the gate.
+        if profile.support_state in ("verified", "supported", "packaged"):
             stale_details: List[str] = []
+            if profile.support_state == "packaged":
+                freshness_planes = ("package",)
+            elif profile.support_state == "verified":
+                freshness_planes = ("canonical", "adapter", "runtime")
+            else:
+                freshness_planes = ("canonical", "adapter", "runtime", "package")
             for b in profile.bindings:
                 if b.capability in MANDATORY_SUPPORT_FLOOR:
                     if b.receipt_ref and b.receipt_ref in staleness_by_ref:
                         s_map = staleness_by_ref[b.receipt_ref]
-                        for plane in ("canonical", "adapter", "runtime"):
+                        for plane in freshness_planes:
                             if s_map.get(plane):
                                 stale_details.append(f"{b.capability} ({plane}): {', '.join(s_map[plane])}")
-            if profile.support_state == "supported":
-                for b in profile.bindings:
-                    if b.receipt_ref and b.receipt_ref in staleness_by_ref:
-                        s_map = staleness_by_ref[b.receipt_ref]
-                        if s_map.get("package"):
-                            stale_details.append(f"{b.capability} (package): {', '.join(s_map['package'])}")
-
             if stale_details:
                 raise ValidationError(
                     f"Profile {profile.host} evidence is stale for claimed {profile.support_state}: {'; '.join(stale_details[:5])}"
                 )
-
         claimed_idx = SUPPORT_STATES.index(profile.support_state)
         derived_idx = SUPPORT_STATES.index(derived_state)
         if claimed_idx > derived_idx:
@@ -1019,7 +1024,6 @@ def check_evidence_durability(
                 f"evidence-derived support state {derived_state!r}."
             )
 
-    check_scenario_pins(profile, receipts_by_ref)
 
     return {
         "valid": True,
