@@ -696,6 +696,7 @@ def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path
         "scaffold-verification-skill.py",
         "skill_frontmatter.py",
         "portability_schema.py",
+        "route_resolver.py",
     ):
         driver_file = root / "scripts" / fname
         if driver_file.is_file():

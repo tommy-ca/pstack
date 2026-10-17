@@ -409,6 +409,7 @@ def _disposable_copy(tmp_path: Path) -> Path:
         "scripts/scaffold-verification-skill.py",
         "scripts/skill_frontmatter.py",
         "scripts/portability_schema.py",
+        "scripts/route_resolver.py",
         "scripts/drivers/base.py",
         "scripts/drivers/codex.py",
     ],
