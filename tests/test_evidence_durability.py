@@ -1191,6 +1191,45 @@ def test_an_unreadable_durable_receipt_is_not_overwritten(tmp_path: Path) -> Non
     assert (verifier.run_dir / "receipt.json").is_file()
 
 
+def test_a_corrupt_evidence_index_is_refused_not_reset(tmp_path: Path) -> None:
+    """index.json is the inventory of every host's durable receipt.
+
+    A run that cannot read it used to fall back to a fresh {"hosts": {}} and write its
+    own host alone, silently un-listing the other hosts (#429, #444). It must fail
+    loudly, name the file, and leave the bytes on disk for the operator to recover.
+    """
+    root, prof, evidence_root, _ = _omp_live_root(tmp_path)
+    index_file = evidence_root / "index.json"
+    index_file.write_text(
+        json.dumps({"version": 1, "hosts": {"grok": {"run_id": "grok-run"}}}), encoding="utf-8"
+    )
+    corrupt_bytes = b'{ "version": 1, "hosts": { "grok": { "run_id": "grok-run"'
+    index_file.write_bytes(corrupt_bytes)
+    verifier, receipt = _proof_bar_refresh(root, evidence_root)
+
+    with pytest.raises(SystemExit) as exit_info:
+        verifier.evidence(receipt, update_durable=True)
+
+    assert str(index_file) in str(exit_info.value.code)
+    # No silent reset and no backup-and-continue: the corrupt bytes are untouched.
+    assert index_file.read_bytes() == corrupt_bytes
+    assert (verifier.run_dir / "receipt.json").is_file()
+
+
+def test_a_missing_evidence_index_is_initialized_for_this_host(tmp_path: Path) -> None:
+    """A fresh evidence root has no inventory to protect, so the first host creates it."""
+    root, prof, evidence_root, _ = _omp_live_root(tmp_path)
+    index_file = evidence_root / "index.json"
+    assert not index_file.is_file()
+    verifier, receipt = _proof_bar_refresh(root, evidence_root)
+
+    verifier.evidence(receipt, update_durable=True)
+
+    index = json.loads(index_file.read_text(encoding="utf-8"))
+    assert sorted(index["hosts"]) == ["omp"]
+    assert index["hosts"]["omp"]["run_id"] == receipt.run_id
+
+
 def test_repeated_refreshes_keep_the_run_that_observed(tmp_path: Path) -> None:
     """A second model-route-free refresh must not rewrite the provenance chain."""
     root, prof, evidence_root, _ = _omp_live_root(tmp_path)
