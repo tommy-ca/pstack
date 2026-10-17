@@ -691,7 +691,16 @@ class RecipeError(RuntimeError):
 # Drivers that publish their own module docstring at runtime
 # (`argparse.ArgumentParser(description=__doc__)`): that text is observable
 # behaviour, so it contributes raw on top of the behaviour-bearing core.
-DOCSTRING_CONSUMED_DRIVERS = ("canonical-index.py", "verify-portable.py")
+DOCSTRING_CONSUMED_DRIVERS = (
+    "canonical-index.py",
+    "verify-portable.py",
+    # Skills CLIs publishing `__doc__` as `--help` (F3, #444): a docstring edit
+    # changes user-visible output, so the fingerprint keeps it.
+    "pack.py",
+    "partition.py",
+    "apply.py",
+    "refresh-hygiene.py",
+)
 
 
 def _strip_docstrings(tree: ast.AST) -> ast.AST:

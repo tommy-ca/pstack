@@ -1,3 +1,4 @@
+import ast
 import importlib.util
 import json
 import shutil
@@ -494,6 +495,27 @@ def test_published_module_docstring_moves_the_driver_revision(tmp_path: Path) ->
         encoding="utf-8",
     )
     assert compute_surface_revisions(copy_root, "codex") == fresh
+@pytest.mark.parametrize(
+    "relative_path",
+    [
+        "skills/interrogate/scripts/pack.py",
+        "skills/swarm/scripts/partition.py",
+        "skills/swarm/scripts/apply.py",
+        "skills/swarm/scripts/refresh-hygiene.py",
+    ],
+)
+def test_published_skill_docstring_moves_skills_tree_hash(tmp_path: Path, relative_path: str) -> None:
+    """A skills CLI publishing `__doc__` as `--help` keeps its docstring in the pin (F3, #444)."""
+    copy_root = _disposable_copy(tmp_path)
+    fresh = compute_surface_revisions(copy_root, "grok").skills_tree_hash
+    script = copy_root / relative_path
+    src = script.read_text(encoding="utf-8")
+    tree = ast.parse(src)
+    assert isinstance(tree.body[0], ast.Expr) and isinstance(tree.body[0].value, ast.Constant)
+    anchor = tree.body[0].value.value
+    script.write_text(src.replace(anchor, anchor + " Published at --help.", 1), encoding="utf-8")
+    assert compute_surface_revisions(copy_root, "grok").skills_tree_hash != fresh
+
 
 
 @pytest.mark.parametrize("relative_path", ["README.md", "docs/fingerprint-notes.md"])
