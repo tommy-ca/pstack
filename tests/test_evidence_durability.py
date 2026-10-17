@@ -1079,33 +1079,54 @@ def _omp_live_root(tmp_path: Path) -> tuple:
     return root, prof, evidence_root, revisions
 
 
-def _portable_verifier(evidence_root: Path):
+def _portable_verifier(evidence_root: Path, root: Path | None = None):
     loader = importlib.util.spec_from_file_location("verify_portable_preserve", ROOT / "scripts" / "verify-portable.py")
     module = importlib.util.module_from_spec(loader)
     loader.loader.exec_module(module)
+    if root is not None:
+        # proof_bar reads the surface revisions off the module root. Point it at the
+        # fixture root so the receipt it assembles is comparable to the durable one there.
+        module.ROOT = root
     verifier = module.PortableVerifier(host="omp", evidence_root=evidence_root)
     verifier.launch()
     return verifier
 
 
-def _static_refresh_receipt(revisions: SurfaceRevisions, *, verdict: str = "PASS") -> VerificationReceipt:
-    return VerificationReceipt(
-        run_id="refresh-without-a-model-route",
-        host="omp",
-        host_version="18.8.9",
-        timestamp="2026-10-12T00:00:00Z",
-        overall_verdict=verdict,
-        planes={plane: ("FAIL" if verdict != "PASS" and plane == "runtime" else "PASS") for plane in CONFORMANCE_PLANES},
-        surface_revisions=revisions,
-        scenarios=[_omp_spawn_scenario("static", verdict=verdict)],
-    )
+def _proof_bar_refresh(root: Path, evidence_root: Path, *, verdict: str = "PASS") -> tuple:
+    """Assemble the route-free refresh receipt the way `verify-portable.py run` does.
+
+    The fixture used to hand-write `planes={plane: "PASS"}`, so the preservation path and
+    the settlement gate could disagree with no test noticing: the durable receipt carried
+    a live settlement row under a runtime UNTESTED plane and demoted the host (#322, #444).
+    Reduce the planes from the scenarios instead, exactly like the CLI does.
+    """
+    verifier = _portable_verifier(evidence_root, root=root)
+    verifier.scenarios = [
+        ScenarioResult(
+            id=f"doctor-{plane}-stub",
+            description=f"static {plane} plane",
+            plane=plane,
+            command="stub",
+            exit_code=0,
+            stdout_snippet="stub",
+            verdict="PASS",
+            duration_s=0.0,
+        )
+        for plane in ("canonical", "adapter", "package")
+    ]
+    verifier.scenarios.append(_omp_spawn_scenario("static", verdict=verdict))
+    return verifier, verifier.proof_bar()
 
 
 def test_durable_refresh_preserves_an_unchanged_observed_settlement(tmp_path: Path) -> None:
     """A model-route-free refresh must not delete the live proof its own gate reads."""
-    root, prof, evidence_root, revisions = _omp_live_root(tmp_path)
-    verifier = _portable_verifier(evidence_root)
-    verifier.evidence(_static_refresh_receipt(revisions), update_durable=True)
+    root, prof, evidence_root, _ = _omp_live_root(tmp_path)
+    verifier, receipt = _proof_bar_refresh(root, evidence_root)
+    # The refresh itself observed no child, so its own planes claim no live runtime.
+    assert receipt.planes["runtime"] == "UNTESTED"
+    assert receipt.overall_verdict == "UNTESTED"
+
+    verifier.evidence(receipt, update_durable=True)
 
     durable = json.loads((evidence_root / "omp-receipt.json").read_text(encoding="utf-8"))
     scenario = next(s for s in durable["scenarios"] if s["id"] == "runtime-child-spawn-omp")
@@ -1113,45 +1134,58 @@ def test_durable_refresh_preserves_an_unchanged_observed_settlement(tmp_path: Pa
     assert scenario["settlement"]["child_id"] == "subagent-1"
     assert scenario["settlement"]["terminal_outcome"] == "success"
     assert scenario["preserved_from"] == "previous-live-run"
+    # The preserved settlement is what the runtime gate reads, so the planes land with
+    # the live row instead of demoting the host for a reason unrelated to the refresh.
+    assert durable["planes"]["runtime"] == "PASS"
+    assert durable["overall_verdict"] == "PASS"
+    assert receipt.planes["runtime"] == "PASS"
+    assert receipt.overall_verdict == "PASS"
     assert check_evidence_durability(prof, root)["derived_support_state"] == "supported"
 
 
 def test_durable_refresh_drops_a_settlement_once_the_runtime_surface_moved(tmp_path: Path) -> None:
     root, prof, evidence_root, revisions = _omp_live_root(tmp_path)
     moved = replace(revisions, driver_revision="moved-driver-revision")
+    durable_file = evidence_root / "omp-receipt.json"
+    previous = json.loads(durable_file.read_text(encoding="utf-8"))
+    previous["surface_revisions"] = asdict(moved)
+    durable_file.write_text(json.dumps(previous), encoding="utf-8")
 
-    verifier = _portable_verifier(evidence_root)
-    verifier.evidence(_static_refresh_receipt(moved), update_durable=True)
+    verifier, receipt = _proof_bar_refresh(root, evidence_root)
+    verifier.evidence(receipt, update_durable=True)
 
     durable = json.loads((evidence_root / "omp-receipt.json").read_text(encoding="utf-8"))
     scenario = next(s for s in durable["scenarios"] if s["id"] == "runtime-child-spawn-omp")
     assert scenario["evidence_level"] == "static"
     assert scenario["settlement"] is None
     assert scenario["preserved_from"] == ""
+    # Nothing was preserved, so the settlement-free plane stays UNTESTED.
+    assert durable["planes"]["runtime"] == "UNTESTED"
     assert derive_support_state(prof, root) == "packaged"
 
 
 def test_durable_refresh_does_not_paper_over_a_failing_run(tmp_path: Path) -> None:
-    root, prof, evidence_root, revisions = _omp_live_root(tmp_path)
-    verifier = _portable_verifier(evidence_root)
-    verifier.evidence(_static_refresh_receipt(revisions, verdict="FAIL"), update_durable=True)
+    root, prof, evidence_root, _ = _omp_live_root(tmp_path)
+    verifier, receipt = _proof_bar_refresh(root, evidence_root, verdict="FAIL")
+    verifier.evidence(receipt, update_durable=True)
 
     durable = json.loads((evidence_root / "omp-receipt.json").read_text(encoding="utf-8"))
     scenario = next(s for s in durable["scenarios"] if s["id"] == "runtime-child-spawn-omp")
     assert scenario["verdict"] == "FAIL"
     assert scenario["evidence_level"] == "static"
     assert scenario["preserved_from"] == ""
+    assert durable["planes"]["runtime"] == "FAIL"
     assert derive_support_state(prof, root) == "packaged"
 
 
 def test_an_unreadable_durable_receipt_is_not_overwritten(tmp_path: Path) -> None:
     """The one place a prior observation lives must survive a run that cannot read it."""
-    root, prof, evidence_root, revisions = _omp_live_root(tmp_path)
+    root, prof, evidence_root, _ = _omp_live_root(tmp_path)
     durable = evidence_root / "omp-receipt.json"
     durable.write_text("{ not json at all", encoding="utf-8")
 
-    verifier = _portable_verifier(evidence_root)
-    verifier.evidence(_static_refresh_receipt(revisions), update_durable=True)
+    verifier, receipt = _proof_bar_refresh(root, evidence_root)
+    verifier.evidence(receipt, update_durable=True)
 
     assert durable.read_text(encoding="utf-8") == "{ not json at all"
     assert (verifier.run_dir / "receipt.json").is_file()
@@ -1159,17 +1193,18 @@ def test_an_unreadable_durable_receipt_is_not_overwritten(tmp_path: Path) -> Non
 
 def test_repeated_refreshes_keep_the_run_that_observed(tmp_path: Path) -> None:
     """A second model-route-free refresh must not rewrite the provenance chain."""
-    root, prof, evidence_root, revisions = _omp_live_root(tmp_path)
+    root, prof, evidence_root, _ = _omp_live_root(tmp_path)
 
-    first = _portable_verifier(evidence_root)
-    first.evidence(_static_refresh_receipt(revisions), update_durable=True)
-    second = _portable_verifier(evidence_root)
-    second.evidence(_static_refresh_receipt(revisions), update_durable=True)
+    first, first_receipt = _proof_bar_refresh(root, evidence_root)
+    first.evidence(first_receipt, update_durable=True)
+    second, second_receipt = _proof_bar_refresh(root, evidence_root)
+    second.evidence(second_receipt, update_durable=True)
 
     durable = json.loads((evidence_root / "omp-receipt.json").read_text(encoding="utf-8"))
     scenario = next(s for s in durable["scenarios"] if s["id"] == "runtime-child-spawn-omp")
     assert scenario["preserved_from"] == "previous-live-run"
     assert scenario["settlement"]["child_id"] == "subagent-1"
+    assert durable["planes"]["runtime"] == "PASS"
 
 
 def test_check_evidence_names_the_omp_live_remedy(tmp_path: Path) -> None:

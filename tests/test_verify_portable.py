@@ -55,11 +55,13 @@ def test_portable_verifier_antigravity(tmp_path: Path) -> None:
     assert ok is True
     assert verifier.drive() is True
     receipt = verifier.proof_bar()
-    assert receipt.overall_verdict == "PASS"
+    # #444: every driven runtime scenario here is an offline contract check, so the
+    # plane reads UNTESTED instead of a PASS claiming an unobserved child spawn/join.
+    assert receipt.overall_verdict == "UNTESTED"
     assert receipt.planes["canonical"] == "PASS"
     assert receipt.planes["adapter"] == "PASS"
     assert receipt.planes["package"] == "PASS"
-    assert receipt.planes["runtime"] == "PASS"
+    assert receipt.planes["runtime"] == "UNTESTED"
 
 
 def test_portable_verifier_droid(tmp_path: Path) -> None:
@@ -69,11 +71,13 @@ def test_portable_verifier_droid(tmp_path: Path) -> None:
     assert ok is True
     assert verifier.drive() is True
     receipt = verifier.proof_bar()
-    assert receipt.overall_verdict == "PASS"
+    # #444: every driven runtime scenario here is an offline contract check, so the
+    # plane reads UNTESTED instead of a PASS claiming an unobserved child spawn/join.
+    assert receipt.overall_verdict == "UNTESTED"
     assert receipt.planes["canonical"] == "PASS"
     assert receipt.planes["adapter"] == "PASS"
     assert receipt.planes["package"] == "PASS"
-    assert receipt.planes["runtime"] == "PASS"
+    assert receipt.planes["runtime"] == "UNTESTED"
 
 
 def test_portable_verifier_doctor_allow_stale(tmp_path: Path) -> None:

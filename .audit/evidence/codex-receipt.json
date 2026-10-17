@@ -1,8 +1,8 @@
 {
-  "run_id": "codex-1792238816-787566f0",
+  "run_id": "codex-1792242041-e7810a05",
   "host": "codex",
   "host_version": "codex-cli 0.163.0",
-  "timestamp": "2026-10-17T12:06:59Z",
+  "timestamp": "2026-10-17T13:00:44Z",
   "overall_verdict": "UNTESTED",
   "planes": {
     "canonical": "PASS",
@@ -18,7 +18,7 @@
     "profile_hash": "6508f23e3fd2e3558706b36bcf9e16a5430cc6d6dea1a793ed1ad62d67710d0c",
     "package_descriptor_hash": "52cc6b3ce9b87a80f783362b109cb7b5a6190e7f26d25687b6b2a16f3651a647",
     "manifest_hash": "b8fb2d730647c4b573bcd4a90d9f1ba666e9bee160ef4da99e560b585da1a886",
-    "driver_revision": "16fc9bf152ec950bf01173fc61c29a8e2ca49573235c6f82779b4626d3643851",
+    "driver_revision": "ae1759fb85ce7198bc5808ce605a9cfa7b72cde200cc39c545b6bcc5e09ecebb",
     "package_driver_revision": "8c476d733590898a1ab2e56007f204b2fbc00043171260e34416660a61c88b79",
     "boundary_driver_revision": "c7dd52906f6de7a0164ec3dd0e19392ac6f1915a840a952a9fcda6ad4a02fe7a"
   },
@@ -31,7 +31,7 @@
       "exit_code": 0,
       "stdout_snippet": "Conformance: PASS\nFreshness: DRIFT (49 commits ahead)\nPrinciples: 24 | Playbooks: 23\nArtifacts: 167 (preserved=93, adapted=64, excluded=10, gaps=0)\nPASS: Canonical inventory conforms to pin.",
       "verdict": "PASS",
-      "duration_s": 0.078,
+      "duration_s": 0.077,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -44,7 +44,7 @@
       "exit_code": 0,
       "stdout_snippet": "Change '2026-10-15-harness-neutral-role-policy' is valid",
       "verdict": "PASS",
-      "duration_s": 0.43,
+      "duration_s": 0.447,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -57,7 +57,7 @@
       "exit_code": 0,
       "stdout_snippet": "PASS\nplaybooks: 22 named + opening-a-pr\nprinciples: 24\nplugin.json name: pstack",
       "verdict": "PASS",
-      "duration_s": 1.453,
+      "duration_s": 1.167,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -70,7 +70,7 @@
       "exit_code": 0,
       "stdout_snippet": "[scan-host-boundary] PASS: Scanned 138 files across portable surfaces. 0 boundary leaks.",
       "verdict": "PASS",
-      "duration_s": 0.607,
+      "duration_s": 0.504,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -83,7 +83,7 @@
       "exit_code": 0,
       "stdout_snippet": "PASS: grok manifest at .grok-plugin/plugin.json in sync\nPASS: codex manifest at .codex-plugin/plugin.json in sync\nPASS: codex models at .codex-plugin/models.json in sync\nPASS: omp manifest at .omp-plugin/package.json in sync\nPASS: opencode manifest at .opencode-plugin/package.json in sync\nPASS: anti",
       "verdict": "PASS",
-      "duration_s": 0.1,
+      "duration_s": 0.096,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -96,7 +96,7 @@
       "exit_code": 0,
       "stdout_snippet": "[codex] Executing verify...\nPASS: codex manifest at .codex-plugin/plugin.json in sync\nPASS: codex models at .codex-plugin/models.json in sync\n[codex] VERIFY PASS",
       "verdict": "PASS",
-      "duration_s": 0.094,
+      "duration_s": 0.085,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -116,7 +116,7 @@
     }
   ],
   "artifacts": [
-    "/home/tommyk/projects/pstack/.audit/evidence/codex-1792238816-787566f0/receipt.json",
+    "/home/tommyk/projects/pstack/.audit/evidence/codex-1792242041-e7810a05/receipt.json",
     ".audit/evidence/codex-receipt.json"
   ],
   "claim": "codex 5-harness portability conformance verification",
