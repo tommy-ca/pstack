@@ -21,6 +21,9 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts.decision_adapter import FakeDecisionProvider
+# The behaviour-bearing fingerprint recipe the surface revisions use (#444). Imported, not
+# restated: the probe scope must not grow a second copy of the normalizer.
+from scripts.portability_schema import _update_driver_digest
 from scripts.route_resolver import resolve_skill_order, resolve_skill_order_with_shadow
 
 
@@ -254,6 +257,14 @@ def _sha256(path: Path) -> str:
 
 
 def _probe_scope_hash(root: Path) -> str:
+    """Fingerprint the files a frozen eval table is reproduced against.
+
+    A Python file contributes its behaviour-bearing core (the same recipe the surface
+    revisions use, #444): a comment, docstring, blank line or reformat must not
+    invalidate a frozen table, and a file that will not parse raises rather than
+    silently degrading to a whole-file byte hash. Markdown and JSON have no comment
+    layer — their text is the content — so they contribute raw.
+    """
     h = hashlib.sha256()
     scope = sorted(root.glob("skills/**/SKILL.md")) + sorted(root.glob("skills/**/playbooks/*.md"))
     scope += sorted(root.glob("agents/*.md")) + [root / "profiles" / "grok.json"]
@@ -261,7 +272,12 @@ def _probe_scope_hash(root: Path) -> str:
               root / "scripts" / "decision_adapter.py", root / "scripts" / "eval_blinded_pstack.py"]
     for path in scope:
         if path.is_file() and "node_modules" not in path.parts:
-            h.update(str(path.relative_to(root)).encode() + b"\0" + path.read_bytes() + b"\0")
+            h.update(str(path.relative_to(root)).encode() + b"\0")
+            if path.suffix == ".py":
+                _update_driver_digest(h, path)
+            else:
+                h.update(path.read_bytes())
+            h.update(b"\0")
     return h.hexdigest()
 
 
