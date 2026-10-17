@@ -19,6 +19,7 @@ import importlib.util
 import inspect
 import json
 import sys
+from dataclasses import replace
 from pathlib import Path
 import pytest
 
@@ -53,6 +54,7 @@ _native_spec.loader.exec_module(native_package)
 
 from scripts.drivers.omp import OMPDriver, _model_route_error  # noqa: E402
 from scripts.drivers.opencode import OpenCodeDriver  # noqa: E402
+from scripts.portability_schema import ChildSettlement  # noqa: E402
 from scripts.route_resolver import resolve_primary_artifact, resolve_skill_order  # noqa: E402
 
 reduce_verdicts = verify_portable.reduce_verdicts
@@ -106,7 +108,7 @@ def test_proof_bar_fail_with_blocked_yields_fail(tmp_path: Path) -> None:
         ScenarioResult("s4", "adapter blocked", "adapter", "none", 127, "blocked", "BLOCKED", 0.01),
         # Package plane: PASS
         ScenarioResult("s5", "package pass", "package", "echo ok", 0, "ok", "PASS", 0.01),
-        # Runtime plane: PASS
+        # Runtime plane: PASS offline, which is not a live claim -> UNTESTED (#444)
         ScenarioResult("s6", "runtime pass", "runtime", "echo ok", 0, "ok", "PASS", 0.01),
     ])
 
@@ -114,7 +116,7 @@ def test_proof_bar_fail_with_blocked_yields_fail(tmp_path: Path) -> None:
     assert receipt.planes["canonical"] == "FAIL"
     assert receipt.planes["adapter"] == "BLOCKED"
     assert receipt.planes["package"] == "PASS"
-    assert receipt.planes["runtime"] == "PASS"
+    assert receipt.planes["runtime"] == "UNTESTED"
     # Overall must be FAIL, NOT BLOCKED!
     assert receipt.overall_verdict == "FAIL"
 
@@ -132,6 +134,64 @@ def test_proof_bar_blocked_with_pass_yields_blocked(tmp_path: Path) -> None:
 
     receipt = verifier.proof_bar()
     assert receipt.overall_verdict == "BLOCKED"
+
+
+def test_a_settlement_free_runtime_pass_is_demoted_to_untested(tmp_path: Path) -> None:
+    """#444: five passing offline runtime checks are not a spawned child.
+
+    Pins each edge of the gate: the settlement-free runtime PASS drops to UNTESTED
+    (the host's overall verdict following it), a live typed settlement keeps the PASS
+    — including a driver's raw dict, which is normalized before the gate reads it, and
+    a live-labelled row whose child outcome failed is refused again — while FAIL and
+    BLOCKED rows still reduce on their own severity.
+    """
+
+    def receipt_for(*scenarios: ScenarioResult):
+        verifier = PortableVerifier(host="codex", evidence_root=tmp_path)
+        verifier.launch()
+        verifier.scenarios.extend(scenarios)
+        return verifier.proof_bar()
+
+    offline = tuple(
+        ScenarioResult(
+            f"offline-{i}", "offline runtime check", "runtime", "echo ok", 0, "ok", "PASS", 0.01
+        )
+        for i in range(5)
+    )
+    assert receipt_for(*offline).planes["runtime"] == "UNTESTED"
+    assert receipt_for(*offline).overall_verdict == "UNTESTED"
+
+    live = ScenarioResult(
+        "live-child",
+        "live runtime check",
+        "runtime",
+        "omp rpc child spawn",
+        0,
+        "child settled",
+        "PASS",
+        0.01,
+        "observed_live",
+        {"child_id": "c1", "terminal_outcome": "success", "model": "m", "transport": "rpc", "effective_rpc": "cfg"},
+    )
+    assert receipt_for(*offline, live).planes["runtime"] == "PASS"
+
+    failed_child = replace(
+        live,
+        settlement=ChildSettlement(
+            child_id="c1", terminal_outcome="error", model="m", transport="rpc", effective_rpc="cfg"
+        ),
+    )
+    assert receipt_for(*offline, failed_child).planes["runtime"] == "UNTESTED"
+
+    assert receipt_for(*offline[:-1], replace(offline[-1], verdict="FAIL")).planes["runtime"] == "FAIL"
+    assert (
+        receipt_for(*offline[:-1], replace(offline[-1], verdict="BLOCKED")).planes["runtime"] == "BLOCKED"
+    )
+    assert (
+        receipt_for(*offline[:-1], replace(offline[-1], evidence_level="observed_live"))
+        .planes["runtime"]
+        == "UNTESTED"
+    )
 
 
 # --- 3. Subprocess Bounds, Timeouts, and Missing Binaries ---

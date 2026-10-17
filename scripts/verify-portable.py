@@ -36,6 +36,7 @@ if str(ROOT) not in sys.path:
 from scripts.portability_schema import (
     Binding,
     Capability,
+    ChildSettlement,
     Evidence,
     HarnessProfile,
     PackageDescriptor,
@@ -48,6 +49,7 @@ from scripts.portability_schema import (
     compute_surface_revisions,
     derive_support_state,
     preserve_observed_settlements,
+    _is_observed_settlement,
 )
 from scripts.drivers import get_driver
 from scripts.evidence_receipts import (
@@ -925,6 +927,20 @@ class PortableVerifier:
             results = [s for s in self.scenarios if s.plane == plane]
             planes[plane] = reduce_verdicts(s.verdict for s in results)
 
+        # A runtime PASS is a live claim: it needs at least one runtime scenario carrying
+        # a typed child spawn/join settlement. Offline scenario checks (route, config,
+        # doctor) prove the wiring, not a running child, so a settlement-free runtime
+        # plane is UNTESTED and never promotes the host. FAIL and BLOCKED are findings in
+        # their own right and pass through untouched (#444).
+        runtime = [s for s in self.scenarios if s.plane == "runtime"]
+        for s in runtime:
+            # A driver hands its settlement back as a plain dict; type it the way
+            # ScenarioResult.validate does so the gate reads the same shape.
+            if isinstance(s.settlement, dict):
+                s.settlement = ChildSettlement(**s.settlement)
+        if planes["runtime"] == "PASS" and not any(_is_observed_settlement(s) for s in runtime):
+            planes["runtime"] = "UNTESTED"
+
         overall = reduce_verdicts(planes.values())
 
         # Host version from live driver or package descriptor fallback
@@ -1271,11 +1287,14 @@ def main() -> None:
 
         elif args.action == "drive":
             verifier.doctor(check_durability=False)
-            ok = verifier.drive(feature=args.feature)
+            verifier.drive(feature=args.feature)
             receipt = verifier.proof_bar()
             verifier.evidence(receipt, update_durable=False)
             receipts.append(receipt)
-            all_pass = all_pass and ok
+            # The matrix verdict reads the same runtime plane the printed status line
+            # does: an offline drive proves the wiring, not a child spawn/join, so its
+            # runtime plane is UNTESTED and never a PASS (#444).
+            all_pass = all_pass and (receipt.planes.get("runtime") == "PASS")
 
         elif args.action == "run":
             verifier.doctor(check_durability=False)
