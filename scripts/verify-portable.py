@@ -119,6 +119,35 @@ def reduce_verdicts(verdicts: Iterable[str]) -> str:
     return "FAIL"
 
 
+def settle_planes(scenarios: Iterable[ScenarioResult]) -> Dict[str, str]:
+    """Reduce every conformance plane, gating a runtime PASS on a live settlement.
+
+    A runtime PASS is a live claim: it needs at least one runtime scenario carrying a
+    typed child spawn/join settlement. Offline scenario checks (route, config, doctor)
+    prove the wiring, not a running child, so a settlement-free runtime plane is
+    UNTESTED and never promotes the host. FAIL and BLOCKED are findings in their own
+    right and pass through untouched (#444).
+
+    Every path that can add or restore a scenario reduces through here. Preservation
+    puts a live settlement back into the scenario list, so a plane reduced before it
+    claims a live observation the receipt's own rows contradict (#322, #444).
+    """
+    scenarios = list(scenarios)
+    planes = {
+        plane: reduce_verdicts(s.verdict for s in scenarios if s.plane == plane)
+        for plane in ("canonical", "adapter", "package", "runtime")
+    }
+    runtime = [s for s in scenarios if s.plane == "runtime"]
+    for s in runtime:
+        # A driver hands its settlement back as a plain dict; type it the way
+        # ScenarioResult.validate does so the gate reads the same shape.
+        if isinstance(s.settlement, dict):
+            s.settlement = ChildSettlement(**s.settlement)
+    if planes["runtime"] == "PASS" and not any(_is_observed_settlement(s) for s in runtime):
+        planes["runtime"] = "UNTESTED"
+    return planes
+
+
 # --- Change-scoped check selection (#312) ------------------------------------
 #
 # Ownership: the tier inventory stays with its owners — the offline PR gate list
@@ -922,25 +951,7 @@ class PortableVerifier:
 
     def proof_bar(self) -> VerificationReceipt:
         """Step 4: Compute the proof bar and verdicts across the four planes."""
-        planes = {}
-        for plane in ("canonical", "adapter", "package", "runtime"):
-            results = [s for s in self.scenarios if s.plane == plane]
-            planes[plane] = reduce_verdicts(s.verdict for s in results)
-
-        # A runtime PASS is a live claim: it needs at least one runtime scenario carrying
-        # a typed child spawn/join settlement. Offline scenario checks (route, config,
-        # doctor) prove the wiring, not a running child, so a settlement-free runtime
-        # plane is UNTESTED and never promotes the host. FAIL and BLOCKED are findings in
-        # their own right and pass through untouched (#444).
-        runtime = [s for s in self.scenarios if s.plane == "runtime"]
-        for s in runtime:
-            # A driver hands its settlement back as a plain dict; type it the way
-            # ScenarioResult.validate does so the gate reads the same shape.
-            if isinstance(s.settlement, dict):
-                s.settlement = ChildSettlement(**s.settlement)
-        if planes["runtime"] == "PASS" and not any(_is_observed_settlement(s) for s in runtime):
-            planes["runtime"] = "UNTESTED"
-
+        planes = settle_planes(self.scenarios)
         overall = reduce_verdicts(planes.values())
 
         # Host version from live driver or package descriptor fallback
@@ -1035,6 +1046,14 @@ class PortableVerifier:
                     )
                 else:
                     if preserved:
+                        # A preserved settlement is a live scenario this receipt's planes
+                        # never saw, so re-reduce them (and the overall verdict) over the
+                        # final scenario set. Without this the durable receipt carries a
+                        # live settlement row under a runtime UNTESTED plane and demotes
+                        # the host for a reason unrelated to the change (#322, #444).
+                        # FAIL and BLOCKED still win the reduction.
+                        receipt.planes = settle_planes(receipt.scenarios)
+                        receipt.overall_verdict = reduce_verdicts(receipt.planes.values())
                         durable_data = asdict(receipt)
                         print(
                             f"Preserved prior observed_live settlement(s) from {previous.run_id}: "
