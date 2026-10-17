@@ -873,6 +873,69 @@ def preserve_observed_settlements(
     return preserved
 
 
+def _row_receipt(binding: Binding, root: Path) -> Optional[VerificationReceipt]:
+    """The receipt a row cites, or None when the row cannot be read at all.
+
+    A row that is not `verified`, cites nothing, cites a file that is not on disk, or
+    cites bytes that are not a valid receipt proves nothing. Both levels ask that same
+    question of a row, so the read lives here once.
+    """
+    if binding.verification_status != "verified":
+        return None
+    if not binding.receipt_ref or not (root / binding.receipt_ref).is_file():
+        return None
+    try:
+        receipt = VerificationReceipt(
+            **json.loads((root / binding.receipt_ref).read_text(encoding="utf-8"))
+        )
+        receipt.validate()
+    except Exception:
+        return None
+    return receipt
+
+
+def _row_level(
+    receipt: Optional[VerificationReceipt],
+    profile: HarnessProfile,
+    current_revisions: SurfaceRevisions,
+    *,
+    require_package: bool,
+) -> str:
+    """The level one row proves: '' (nothing), 'verified' (the floor bar) or 'supported'.
+
+    One row bar for both levels (#473). `require_package` is the only thing separating
+    them — the floor is runtime plus canonical/adapter PASS, fresh against
+    `current_revisions`, plus the OMP settlement bar; `supported` adds the package plane —
+    so `supported ⇒ verified` is structural instead of a second copy of the clauses that
+    can drift from this one.
+    """
+    if receipt is None or receipt.host != profile.host:
+        return ""
+    # The live plane is what both levels rest on; `package` is what `supported` adds.
+    rest = ("canonical", "adapter", "package") if require_package else ("canonical", "adapter")
+    if receipt.planes.get("runtime") != "PASS" or any(
+        receipt.planes.get(p) != "PASS" for p in rest
+    ):
+        return ""
+    # Staleness over the planes the bar asks for (all four at `supported`).
+    stale = receipt.evaluate_plane_staleness(current_revisions)
+    if any(stale.get(p) for p in ("runtime", *rest)):
+        return ""
+    # OMP only: the receipt carries evidence_level on every scenario and at least one
+    # runtime-plane scenario observed_live carrying structured settlement evidence (child
+    # identity plus terminal outcome). OMP offline-only receipts prove at most 'packaged':
+    # the OMP driver never observed a child spawn/join, a live canonical check cannot
+    # stand in for it, and a bare observed_live label without settlement markers is
+    # relabel fraud, not proof. Other hosts keep their existing contract until their own
+    # leaf proves the same bar.
+    if profile.host == "omp" and (
+        any(not s.evidence_level for s in receipt.scenarios)
+        or not any(_is_observed_settlement(s) for s in receipt.scenarios)
+    ):
+        return ""
+    return "supported" if require_package else "verified"
+
+
 def derive_support_state(
     profile: HarnessProfile,
     root: Path,
@@ -896,110 +959,32 @@ def derive_support_state(
     if not (root / "pstack.package.json").is_file():
         return "mapped"
 
-    # Level: verified
-    # Requires:
-    # 1. All mandatory capabilities have verification_status == "verified"
-    #    (workspace.readonly can be gap/shim if soft/advisory)
-    # 2. Every mandatory capability has evidence_ref pointing to an existing file
-    # 3. The referenced receipt has canonical, adapter, and runtime PASS
-    # 4. None of canonical, adapter, runtime planes is STALE against current_revisions
-    # 5. OMP only: the receipt carries evidence_level on every scenario and at
-    #    least one runtime-plane scenario observed_live carrying structured
-    #    settlement evidence (child identity plus terminal outcome). OMP
-    #    offline-only receipts prove at most 'packaged': the OMP driver never
-    #    observed a child spawn/join, a live canonical check cannot stand in
-    #    for it, and a bare observed_live label without settlement markers is
-    #    relabel fraud, not proof. Other hosts keep their existing contract
-    #    until their own leaf proves the same bar.
-    has_mandatory_runtime_proof = True
+    # Level: verified — the nine mandatory capabilities are rows like any other, and
+    # every one of them has to clear the floor bar `_row_level` defines: a `verified`
+    # row citing a readable receipt of this host (canonical+adapter+runtime PASS and
+    # fresh) plus the OMP settlement bar. The floor declares the bar, not a copy of it.
     for cap_id in MANDATORY_SUPPORT_FLOOR:
-        binding = bound_caps[cap_id]
-        if binding.verification_status != "verified":
-            has_mandatory_runtime_proof = False
-            break
-        if not binding.receipt_ref or not (root / binding.receipt_ref).is_file():
-            has_mandatory_runtime_proof = False
-            break
-        try:
-            rdata = json.loads((root / binding.receipt_ref).read_text(encoding="utf-8"))
-            receipt = VerificationReceipt(**rdata)
-            receipt.validate()
-            if receipt.host != profile.host:
-                has_mandatory_runtime_proof = False
-                break
-            if (
-                receipt.planes.get("canonical") != "PASS"
-                or receipt.planes.get("adapter") != "PASS"
-                or receipt.planes.get("runtime") != "PASS"
-            ):
-                has_mandatory_runtime_proof = False
-                break
-            stale_map = receipt.evaluate_plane_staleness(current_revisions)
-            if stale_map.get("canonical") or stale_map.get("adapter") or stale_map.get("runtime"):
-                has_mandatory_runtime_proof = False
-                break
-            if profile.host == "omp":
-                live_runtime = [s for s in receipt.scenarios if _is_observed_settlement(s)]
-                if any(not s.evidence_level for s in receipt.scenarios) or not live_runtime:
-                    has_mandatory_runtime_proof = False
-                    break
-        except Exception:
-            has_mandatory_runtime_proof = False
-            break
+        if _row_level(
+            _row_receipt(bound_caps[cap_id], root),
+            profile,
+            current_revisions,
+            require_package=False,
+        ) != "verified":
+            return "packaged"
 
-    if not has_mandatory_runtime_proof:
-        return "packaged"
+    # Level: supported — the same rows, the same one bar, plus the package plane. The
+    # conditional rows cannot claim the level above `verified` off a package-only PASS
+    # while their behavioral planes FAIL, and every row is checked, not just the floor.
+    for binding in bound_caps.values():
+        if _row_level(
+            _row_receipt(binding, root),
+            profile,
+            current_revisions,
+            require_package=True,
+        ) != "supported":
+            return "verified"
 
-    # Level: supported
-    # Requires verified PLUS:
-    # 1. Package plane is verified with PASS and NOT STALE
-    # 2. All 17 capabilities in PORTABLE_CAPABILITY_UNIVERSE have verification_status == "verified" (or valid shim/gap)
-    #    with valid, non-stale receipts
-    # 3. Every row cites a receipt of this host whose four planes all PASS, so
-    #    the conditional rows cannot claim supported off a package-only PASS
-    #    while their behavioral planes FAIL (#473)
-    # 4. OMP rows carry the same settlement bar the mandatory floor demands,
-    #    so a relabelled observed_live without child settlement cannot reach
-    #    the level above `verified` by citing a row outside the floor.
-    is_supported = True
-    for cap_id, binding in bound_caps.items():
-        if binding.verification_status != "verified":
-            is_supported = False
-            break
-        if not binding.receipt_ref or not (root / binding.receipt_ref).is_file():
-            is_supported = False
-            break
-        try:
-            rdata = json.loads((root / binding.receipt_ref).read_text(encoding="utf-8"))
-            receipt = VerificationReceipt(**rdata)
-            receipt.validate()
-            if receipt.host != profile.host:
-                is_supported = False
-                break
-            if (
-                receipt.planes.get("canonical") != "PASS"
-                or receipt.planes.get("adapter") != "PASS"
-                or receipt.planes.get("runtime") != "PASS"
-                or receipt.planes.get("package") != "PASS"
-            ):
-                is_supported = False
-                break
-            stale_map = receipt.evaluate_plane_staleness(current_revisions)
-            if any(len(errs) > 0 for errs in stale_map.values()):
-                is_supported = False
-                break
-            if profile.host == "omp":
-                if any(not s.evidence_level for s in receipt.scenarios):
-                    is_supported = False
-                    break
-                if not any(_is_observed_settlement(s) for s in receipt.scenarios):
-                    is_supported = False
-                    break
-        except Exception:
-            is_supported = False
-            break
-
-    return "supported" if is_supported else "verified"
+    return "supported"
 
 
 def check_scenario_pins(

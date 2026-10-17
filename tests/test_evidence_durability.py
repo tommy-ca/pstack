@@ -25,6 +25,7 @@ from scripts.portability_schema import (
     SurfaceRevisions,
     ValidationError,
     VerificationReceipt,
+    _row_level,
     check_evidence_durability,
     check_scenario_pins,
     compute_surface_revisions,
@@ -1734,6 +1735,117 @@ def test_supported_needs_a_behavioral_pass_on_every_row(tmp_path: Path) -> None:
         assert derive_support_state(split, root) == "verified", name
         with pytest.raises(ValidationError, match=match):
             check_evidence_durability(split, root)
+
+
+def test_a_runtime_fail_row_clears_neither_bar(tmp_path: Path) -> None:
+    """#473: the runtime plane is gated once, and a FAIL row cannot slip under it.
+
+    Before the dedupe the runtime clause existed in two loops, so deleting it from
+    either one left the suite green — the other copy still read the plane, and no test
+    noticed. This pins the one evaluator instead: the row's only non-PASS plane is
+    runtime (declared and evidenced FAIL by a second runtime row, per #473's rules),
+    while the settled observed_live row that would satisfy the settlement clause stays
+    in the receipt. Both bars must refuse it.
+    """
+    root, prof = _synthetic_evidence_root(
+        tmp_path,
+        ["offline", "observed_live"],
+        settlements=[None, _success_settlement()],
+        force_verified=True,
+    )
+    receipt_path = root / ".audit" / "evidence" / "synthetic-receipt.json"
+    data_before = json.loads(receipt_path.read_text(encoding="utf-8"))
+    assert data_before["planes"]["runtime"] == "PASS"
+
+    data = json.loads(json.dumps(data_before))
+    data["scenarios"] = [
+        *data["scenarios"],
+        asdict(
+            ScenarioResult(
+                id="synthetic-runtime-fail",
+                description="runtime row that failed",
+                plane="runtime",
+                command="false",
+                exit_code=1,
+                stdout_snippet="",
+                verdict="FAIL",
+                duration_s=0.01,
+                evidence_level="offline",
+            )
+        ),
+    ]
+    data["planes"], data["overall_verdict"] = _declared_from(
+        [ScenarioResult(**row) for row in data["scenarios"]]
+    )
+    receipt_path.write_text(json.dumps(data), encoding="utf-8")
+    assert data["planes"]["runtime"] == "FAIL"
+
+    revisions = compute_surface_revisions(root, "omp")
+    runtime_fail = VerificationReceipt(**data)
+    runtime_fail.validate()
+    assert _row_level(runtime_fail, prof, revisions, require_package=False) == ""
+    assert _row_level(runtime_fail, prof, revisions, require_package=True) == ""
+    assert derive_support_state(prof, root) == "packaged"
+
+    # Positive control: the same evaluator on the same row shape clears both bars as
+    # soon as the runtime plane really passes, so the refusals above are the plane.
+    clean = VerificationReceipt(**data_before)
+    clean.validate()
+    assert _row_level(clean, prof, revisions, require_package=False) == "verified"
+    assert _row_level(clean, prof, revisions, require_package=True) == "supported"
+
+
+def test_a_package_only_pass_never_clears_a_bar(tmp_path: Path) -> None:
+    """#473: one evaluator — `supported` is the floor bar plus `package` and nothing else.
+
+    Both directions of the act-on's `package-only-PASS` shape are pinned against the
+    single evaluator: a package PASS whose behavioral planes FAIL clears neither bar,
+    and a row that clears the floor on behavior alone stops at `verified` because the
+    same evaluator asks one plane more. Delete the package clause from the one bar and
+    the second direction is what reddens (the pre-dedupe suite had a second copy of the
+    package check in the `supported` loop that this test would not have reached).
+    """
+    root, prof = _synthetic_evidence_root(
+        tmp_path,
+        ["offline", "observed_live"],
+        settlements=[None, _success_settlement()],
+        force_verified=True,
+    )
+    receipt_path = root / ".audit" / "evidence" / "synthetic-receipt.json"
+    base = json.loads(receipt_path.read_text(encoding="utf-8"))
+    revisions = compute_surface_revisions(root, "omp")
+
+    def row_with(plane_verdicts: dict) -> VerificationReceipt:
+        data = json.loads(json.dumps(base))
+        for row in data["scenarios"]:
+            if row["plane"] in plane_verdicts:
+                row["verdict"], row["exit_code"] = plane_verdicts[row["plane"]], 1
+        data["planes"], data["overall_verdict"] = _declared_from(
+            [ScenarioResult(**row) for row in data["scenarios"]]
+        )
+        receipt_path.write_text(json.dumps(data), encoding="utf-8")
+        receipt = VerificationReceipt(**data)
+        receipt.validate()
+        return receipt
+
+    # package-only PASS: the behavioral planes FAIL, so neither bar may be cleared.
+    package_only = row_with({p: "FAIL" for p in ("canonical", "adapter", "runtime")})
+    assert package_only.planes == {
+        "canonical": "FAIL",
+        "adapter": "FAIL",
+        "package": "PASS",
+        "runtime": "FAIL",
+    }
+    assert _row_level(package_only, prof, revisions, require_package=False) == ""
+    assert _row_level(package_only, prof, revisions, require_package=True) == ""
+    assert derive_support_state(prof, root) == "packaged"
+
+    # The converse: the floor bar clears on the behavioral planes alone, and the
+    # package plane is the only thing `supported` adds.
+    package_fail = row_with({"package": "FAIL"})
+    assert _row_level(package_fail, prof, revisions, require_package=False) == "verified"
+    assert _row_level(package_fail, prof, revisions, require_package=True) == ""
+    assert derive_support_state(prof, root) == "verified"
 
 
 def test_a_receipt_cannot_declare_a_plane_it_never_observed(tmp_path: Path) -> None:
