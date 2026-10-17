@@ -10,6 +10,11 @@ distinct scopes, not interchangeable PASS signals.
 without installing proprietary agent harness binaries:
 
 - `tests/test_portability_schemas.py`: schema/domain invariants.
+- `tests/test_host_identity.py`: the host identity seam (#446) — one module owns
+  the closed six and the namespaced rule a declared host id must satisfy, the four
+  host-bearing schemas reference that one definition, and a declared host stays
+  candidate/GAP while a collision, an unknown name and an unattributed receipt all
+  fail closed.
 - `tests/test_model_role_policy.py`: static model-role policy, pure planner, and fork-index pins. The gate also runs `python -m scripts.model_role_policy` as a checked-in policy preflight.
 - `tests/test_droid_integration.py`: descriptor, profile, lifecycle and
   shape validation. The optional CLI-backed Droid scenarios skip when the

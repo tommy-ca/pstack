@@ -29,6 +29,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from scripts.host_identity import BUILTIN_HOSTS, require_builtin_host_keys  # noqa: E402
 from scripts.portability_schema import (  # noqa: E402
     SKILLS_HASH_IGNORED_DIRS,
     SKILLS_HASH_IGNORED_SUFFIXES,
@@ -54,7 +55,7 @@ generate_droid_marketplace = _pp_mod.generate_droid_marketplace
 generate_droid_roles = _pp_mod.generate_droid_roles
 check_all_projected = _pp_mod.check_all
 
-SUPPORTED_HOSTS = ("grok", "codex", "omp", "opencode", "antigravity", "droid")
+SUPPORTED_HOSTS = BUILTIN_HOSTS
 
 HOST_PLUGIN_REL_PATHS = {
     "grok": Path(".grok/plugins/pstack"),
@@ -64,6 +65,7 @@ HOST_PLUGIN_REL_PATHS = {
     "antigravity": Path(".gemini/config/plugins/pstack"),
     "droid": Path(".factory/plugins/pstack"),
 }
+require_builtin_host_keys(HOST_PLUGIN_REL_PATHS, "HOST_PLUGIN_REL_PATHS")
 
 
 def get_plugin_dir(host: str, target_base: Optional[Path] = None) -> Path:

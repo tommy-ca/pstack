@@ -22,6 +22,10 @@ from typing import Dict, List, Optional, Set, Tuple
 
 ROOT = Path(__file__).resolve().parents[1]
 PROFILES_DIR = ROOT / "profiles"
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from scripts.host_identity import KNOWN_HOSTS, OBSERVER_HOSTS  # noqa: E402
 
 
 @dataclass(frozen=True)
@@ -81,18 +85,7 @@ CAPABILITY_NAMES: Set[str] = {
     "manifest.project",
 }
 
-HARNESS_NAMES: Set[str] = {
-    "grok",
-    "codex",
-    "omp",
-    "opencode",
-    "antigravity",
-    "droid",
-    "claude",
-    "custom",
-    "mock",
-    "pi",
-}
+HARNESS_NAMES: Set[str] = set(KNOWN_HOSTS) | set(OBSERVER_HOSTS) | {"pi"}
 
 GENERIC_WORDS: Set[str] = {
     "inherit",

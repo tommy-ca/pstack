@@ -26,8 +26,7 @@
     "host_targets": {
       "type": "array",
       "items": {
-        "type": "string",
-        "enum": ["grok", "codex", "omp", "opencode", "antigravity", "droid", "claude", "custom"]
+        "$ref": "host-id.schema.json#/$defs/host"
       },
       "minItems": 1
     },

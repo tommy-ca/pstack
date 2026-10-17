@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pstack.dev/schemas/portability/host-id.schema.json",
+  "title": "HostId",
+  "description": "The one declaration of harness host identity (#446). Every host-bearing schema references this file instead of carrying its own enum. `scripts/host_identity.py` owns the same identity set and the same external-id pattern, and `tests/test_host_identity.py` pins the two together, so the rule has one source and one proof. A *built-in* host is one of the six pstack ships native drivers, projections and receipts for. A *declared* host is namespaced (`acme:copilot`): it may be described by a local adapter profile, but it starts at candidate with unproved bindings and its receipt must name the adapter_version it was produced by.",
+  "$defs": {
+    "known": {
+      "type": "string",
+      "enum": ["grok", "codex", "omp", "opencode", "antigravity", "droid", "claude", "custom"],
+      "description": "The six built-in hosts plus the two pre-registry names existing profiles and receipts still carry (`claude`, `custom`)."
+    },
+    "observer": {
+      "type": "string",
+      "enum": ["mock"],
+      "description": "A host a receipt may name for an observation that is not a real harness."
+    },
+    "external": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{1,31}:[a-z][a-z0-9-]{1,47}$",
+      "description": "A declared external host id: `<namespace>:<name>`, two lowercase labels. A bare new name is refused because it would collide with the flat built-in namespace, and no dot, slash, underscore or uppercase may appear, so an id can never be read as a path or a host name to probe."
+    },
+    "host": {
+      "description": "An identity a profile, binding or package descriptor may carry: a built-in host or a declared namespaced one.",
+      "oneOf": [{ "$ref": "#/$defs/known" }, { "$ref": "#/$defs/external" }]
+    },
+    "receiptHost": {
+      "description": "An identity a verification receipt may carry: the profile set plus the observer host.",
+      "oneOf": [
+        { "$ref": "#/$defs/known" },
+        { "$ref": "#/$defs/observer" },
+        { "$ref": "#/$defs/external" }
+      ]
+    }
+  }
+}

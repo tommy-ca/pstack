@@ -14,12 +14,23 @@ from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Literal, Optional, Tuple
 
+from scripts.host_identity import (
+    KNOWN_HOSTS,
+    is_external,
+    is_valid_host_id,
+    is_valid_receipt_host,
+    require_builtin_host_keys,
+)
+
 SUPPORT_STATES = ("candidate", "mapped", "packaged", "verified", "supported")
 IMPLEMENTATION_STATUSES = ("native", "shim", "version-gated", "gap")
 ENFORCEMENT_LEVELS = ("hard", "soft", "advisory")
 VERIFICATION_STATUSES = ("verified", "static-only", "unverified", "stale")
 ADAPTATION_MODES = ("preserve", "adapt", "exclude", "gap")
-HOSTS = ("grok", "codex", "omp", "opencode", "antigravity", "droid", "claude", "custom")
+# The closed pre-registry set, kept as a readable name for importers. Validation
+# goes through `host_identity.is_valid_host_id`, so a declared namespaced host id
+# is accepted without editing this tuple (#446).
+HOSTS = KNOWN_HOSTS
 
 CONFORMANCE_PLANES = ("canonical", "adapter", "package", "runtime")
 
@@ -134,7 +145,7 @@ class Binding:
         return None
 
     def validate(self) -> None:
-        if self.host not in HOSTS:
+        if not is_valid_host_id(self.host):
             raise ValidationError(f"Unknown host: {self.host!r}")
         if self.capability not in PORTABLE_CAPABILITY_UNIVERSE:
             raise ValidationError(f"Unknown capability: {self.capability!r}")
@@ -303,7 +314,7 @@ class PackageDescriptor:
         if len(self.upstream_pin) != 40:
             raise ValidationError(f"Invalid 40-hex upstream pin: {self.upstream_pin!r}")
         for host in self.host_targets:
-            if host not in HOSTS:
+            if not is_valid_host_id(host):
                 raise ValidationError(f"Unknown host target: {host!r}")
         for required_cycle in ("install", "verify", "uninstall"):
             if required_cycle not in self.lifecycle:
@@ -334,6 +345,12 @@ DEFAULT_PLUGIN_MANIFESTS = {
     "antigravity": ".antigravity-plugin/plugin.json",
     "droid": ".factory-plugin/plugin.json",
 }
+
+# One row per built-in host, no more and no less: the key set is the identity set
+# (#446), so a seventh host cannot be added to the census while these two tables
+# silently miss it.
+require_builtin_host_keys(DEFAULT_SKILLS_DIRS, "DEFAULT_SKILLS_DIRS")
+require_builtin_host_keys(DEFAULT_PLUGIN_MANIFESTS, "DEFAULT_PLUGIN_MANIFESTS")
 
 
 @dataclass
@@ -380,7 +397,7 @@ class HarnessProfile:
                 raise ValidationError(f"Invalid runtime_conventions: {err}") from err
 
     def validate(self) -> None:
-        if self.host not in HOSTS:
+        if not is_valid_host_id(self.host):
             raise ValidationError(f"Unknown host: {self.host!r}")
         if self.support_state not in SUPPORT_STATES:
             raise ValidationError(f"Invalid support state: {self.support_state!r}")
@@ -388,6 +405,24 @@ class HarnessProfile:
             raise ValidationError(f"Harness profile for {self.host} must declare a non-empty skills_dir")
         if not self.plugin_manifest:
             raise ValidationError(f"Harness profile for {self.host} must declare a plugin_manifest")
+
+        # Domain Rule: a declared host is not a supported one (#446). Its profile may
+        # describe the adapter, but the declaration itself proves nothing: a support
+        # state above `candidate` or a `verified` capability row would be a promotion
+        # off the declaration, so both fail closed. Native evidence is the only way
+        # up, and it is read through the same receipt gates as any built-in host.
+        if is_external(self.host):
+            if self.support_state != "candidate":
+                raise ValidationError(
+                    f"Declared host {self.host!r} must stay candidate until native evidence proves it, "
+                    f"not {self.support_state!r}"
+                )
+            for declared in self.bindings:
+                if declared.verification_status == "verified":
+                    raise ValidationError(
+                        f"Declared host {self.host!r} cannot mark {declared.capability} verified "
+                        "without native evidence"
+                    )
 
         for b in self.bindings:
             b.validate()
@@ -619,6 +654,9 @@ class VerificationReceipt:
     artifacts: List[str] = field(default_factory=list)
     claim: Optional[str] = None
     kind: Optional[str] = "runtime"
+    # Exact adapter build the evidence was produced by. Optional for the built-in
+    # six; a declared host has to name it before its receipt can be read (#446).
+    adapter_version: Optional[str] = None
 
     def __post_init__(self) -> None:
         if isinstance(self.surface_revisions, dict):
@@ -636,10 +674,18 @@ class VerificationReceipt:
     def validate(self) -> None:
         if not self.run_id:
             raise ValidationError("run_id cannot be empty")
-        if self.host not in HOSTS and self.host != "mock":
+        if not is_valid_receipt_host(self.host):
             raise ValidationError(f"Unknown host: {self.host!r}")
         if not self.host_version:
             raise ValidationError("host_version cannot be empty")
+        # A declared host's identity names a namespace, not a build (#446). Without
+        # the exact adapter version this receipt cannot say what produced it, so it
+        # refuses to be read: the row citing it proves nothing and the host stays
+        # candidate/GAP rather than being promoted off an unattributed observation.
+        if is_external(self.host) and not self.adapter_version:
+            raise ValidationError(
+                f"Receipt for declared host {self.host!r} must name the adapter_version it was produced by"
+            )
         if self.overall_verdict not in ("PASS", "FAIL", "BLOCKED", "UNTESTED"):
             raise ValidationError(f"Invalid overall_verdict: {self.overall_verdict!r}")
         for p, v in self.planes.items():
@@ -868,6 +914,7 @@ def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path
         "adapt-harness.py",
         "scaffold-verification-skill.py",
         "skill_frontmatter.py",
+        "host_identity.py",
         "portability_schema.py",
         "route_resolver.py",
     ):

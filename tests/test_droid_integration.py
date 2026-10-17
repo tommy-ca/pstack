@@ -58,6 +58,30 @@ def test_descriptor_declares_droid_like_existing_hosts() -> None:
     assert len(adapter_keys) == 1, "droid adapter shape must match the five existing hosts"
 
 
+def _host_enum(schema: dict, enum_path: tuple) -> list:
+    """The built-in host list a host-bearing property declares.
+
+    `host-id.schema.json` is the one place the host set is written down (#446), so a
+    host property is a `$ref` to it and the enum lives in the referenced definition.
+    """
+    node = schema["properties"]
+    for key in enum_path:
+        node = node[key]
+    document = schema
+    while "$ref" in node:
+        target, _, pointer = node["$ref"].partition("#")
+        if target:
+            document = json.loads(
+                (ROOT / "schemas" / "portability" / target).read_text(encoding="utf-8")
+            )
+        node = document
+        for part in [p for p in pointer.split("/") if p]:
+            node = node[part]
+        if "oneOf" in node:
+            node = node["oneOf"][0]
+    return node["enum"]
+
+
 def test_schema_host_enums_accept_droid() -> None:
     for schema_name, enum_path in (
         ("package-descriptor", ("host_targets", "items")),
@@ -68,12 +92,10 @@ def test_schema_host_enums_accept_droid() -> None:
         schema = json.loads(
             (ROOT / "schemas" / "portability" / f"{schema_name}.schema.json").read_text(encoding="utf-8")
         )
-        node = schema["properties"]
-        for key in enum_path:
-            node = node[key]
-        assert "droid" in node["enum"], schema_name
+        enum = _host_enum(schema, enum_path)
+        assert "droid" in enum, schema_name
         declared = json.loads((ROOT / "pstack.package.json").read_text(encoding="utf-8"))["host_targets"]
-        assert set(declared) <= set(node["enum"]), schema_name
+        assert set(declared) <= set(enum), schema_name
 
 
 def test_portability_schema_census_includes_droid() -> None:

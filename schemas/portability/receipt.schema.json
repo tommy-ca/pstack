@@ -20,11 +20,15 @@
       "type": "string"
     },
     "host": {
-      "type": "string",
-      "enum": ["grok", "codex", "omp", "opencode", "antigravity", "droid", "claude", "custom", "mock"]
+      "$ref": "host-id.schema.json#/$defs/receiptHost"
     },
     "host_version": {
       "type": "string"
+    },
+    "adapter_version": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact adapter build that produced this evidence. Optional, and fail-closed where it matters: a receipt for a declared (non-built-in) host must name it, so a host without one stays candidate/GAP instead of being promoted off an unattributed observation (#446)."
     },
     "timestamp": {
       "type": "string"

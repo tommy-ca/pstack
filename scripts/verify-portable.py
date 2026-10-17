@@ -55,6 +55,7 @@ from scripts.portability_schema import (
     _is_observed_settlement,
 )
 from scripts.drivers import get_driver
+from scripts.host_identity import BUILTIN_HOSTS
 from scripts.evidence_receipts import (
     can_claim_current_ci,
     check_check_evidence_staleness,
@@ -65,7 +66,19 @@ from scripts.evidence_receipts import (
     resolve_revision,
 )
 
-SUPPORTED_HOSTS = ("grok", "codex", "omp", "opencode", "antigravity", "droid")
+SUPPORTED_HOSTS = BUILTIN_HOSTS
+
+
+def _receipt_payload(receipt: VerificationReceipt) -> Dict[str, Any]:
+    """Serialized receipt, minus optional keys the schema types as strings.
+
+    `adapter_version` is optional in the receipt schema, so an unset value is an
+    absent key rather than a null a reader would have to special-case (#446).
+    """
+    data = asdict(receipt)
+    if data.get("adapter_version") is None:
+        data.pop("adapter_version", None)
+    return data
 
 
 def _file_or_denied(path: Path) -> bool:
@@ -96,7 +109,7 @@ def get_declared_hosts() -> List[str]:
                 return [str(t) for t in targets]
         except Exception:
             pass
-    return ["grok", "codex", "omp", "opencode", "antigravity", "droid"]
+    return list(BUILTIN_HOSTS)
 
 
 def get_canonical_root(root: Path) -> Path:
@@ -996,7 +1009,7 @@ class PortableVerifier:
         """Step 5: Write structured run evidence receipt and optionally durable pointer."""
         self.evidence_root.mkdir(parents=True, exist_ok=True)
         receipt_file = self.run_dir / "receipt.json"
-        data = asdict(receipt)
+        data = _receipt_payload(receipt)
         receipt_file.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
 
         if update_durable:
@@ -1058,7 +1071,7 @@ class PortableVerifier:
                         # FAIL and BLOCKED still win the reduction.
                         receipt.planes = settle_planes(receipt.scenarios)
                         receipt.overall_verdict = reduce_verdicts(receipt.planes.values())
-                        durable_data = asdict(receipt)
+                        durable_data = _receipt_payload(receipt)
                         print(
                             f"Preserved prior observed_live settlement(s) from {previous.run_id}: "
                             f"{', '.join(preserved)}"

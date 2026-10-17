@@ -16,6 +16,11 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 SCRIPTS = pathlib.Path(__file__).resolve().parent
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
+# `portability_schema` imports the host identity seam through the `scripts`
+# package, so the repository root has to be importable too when this CLI is run
+# as a plain script (#446).
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from portability_schema import DEFAULT_SKILLS_DIRS
 from skill_frontmatter import SKILL_NAME_RE, read_scalar, split_frontmatter, validate_skill_name
