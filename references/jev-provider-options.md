@@ -1,72 +1,114 @@
-# JEV provider options — verified access and integration boundaries
+# JEV decisions: minimal SDK and provider plan
 
-> Status: research / design only (2026-10-17). This file does not implement a live network adapter, grant model/skill execution authority, or verify entitlement. See PStack #515/#519/#520/#521, QStack #1786/#1789/#1791.
-> Source baseline: pstack main audited at 3f06c934d17fb0fc05b0cd093ff838fa068a6699; refresh exact SHA before implementing. Provider catalogs, free-tier availability, and pricing are dynamic.
+> **Status:** Proposed OpenSpec-adjacent reference design, 2026-10-17. This is a research/specification PR only; not a live API implementation, calibrated acceptance, or a request to change QStack's router. Issues PStack #515/#516/#517/#519/#520/#521; QStack #1786/#1789/#1790/#1791/#1792.
 
-## 1. The source-grounded service distinction
+## Decision: subtract transport proliferation
 
-| Service | JEV model ID | API endpoint | Access/pricing as published | Supported inference protocol |
-| --- | --- | --- | --- | --- |
-| OpenCode Console (formerly Zen) | `jev-1.13-free` | `https://opencode.ai/inference/systemone/v1/systemone` | Free **for a limited time**; availability/limits not guaranteed | TypeSafe-style System One |
-| OpenCode Console | `jev-1.13` | Same System One endpoint | $0.042/M input tokens; zero listed output price | TypeSafe-style System One |
-| OpenRouter | `typesafe/jev-1.13` | `https://openrouter.ai/api/alpha/decisions` | $0.042/M input tokens; $0/M output | OpenRouter Decisions API (alpha) |
-| OpenRouter | `typesafe/jev-1.14` | Same Decisions API | $0.042/M input tokens; $0/M output; latest pinned listed version as of 2026-10-17 | OpenRouter Decisions API (alpha) |
-| OpenRouter | `~typesafe/jev-latest` | Same Decisions API | Mutable alias and billable; verify resolved model snapshot | OpenRouter Decisions API |
-| Direct TypeSafe | provider-chosen, verified at runtime | Per official TypeSafe API/SDK | Consult TypeSafe current plan; no assumed free entitlement | System One native |
-| OpenCode **Go / Go Plus** | **No JEV entry in current Go catalog** | Go coding-model endpoints are NOT the JEV endpoint | Subscription $10 / $40 per month for listed coding models | Not an eligible JEV decision provider at this snapshot |
+**Choose one Python decision client behind the existing PStack `SemanticDecisionProvider` contract.** PStack's current Python `scripts/decision_adapter.py` and `scripts/route_resolver.py` are already the implementation boundary. Prefer `typesafe-sdk` as the *smallest* dependency for the free-first OpenCode/paid OpenRouter/optional direct TypeSafe *System One* protocol; its `TypeSafeClient(base_url=..., api_key=..., model=...)` supports configurable API root. OpenRouter documents the official Python SDK with `base_url='https://openrouter.ai/api'`. OpenCode publishes System One endpoints; compatibility with this client is a hypothesis until a keyed wire-contract test, not a claim of live support.
 
-Primary sources:
-- OpenCode Console models, pricing, JEV System One example, and limited-time qualifier: https://opencode.ai/v2/docs/console/models/
-- OpenCode Go and its distinct model list/subscription: https://opencode.ai/v2/docs/console/go/
-- OpenRouter JEV 1.14 listing: https://openrouter.ai/typesafe/jev-1.14
-- OpenRouter Decisions API example: https://openrouter.ai/blog/insights/what-is-jev/
-- TypeSafe typed System One SDK reference: https://github.com/typesafe-ai/typesafe-sdk-python
+Alternatives, **not additive layers**:
+- **Vercel AI SDK 7 TypeScript**: `experimental_decide` is native as of `ai` >= 7.0.128; supported `decisionModels` in `customProvider`. Choose it only for an existing TypeScript decision caller; avoid Node/Bun subprocess bridging for the Python resolver.
+- **Vercel AI SDK for Python (`ai`)**: native `ai.ops.experimental.evaluate` with `ChoiceQuestion`, `ScoreQuestion`, `NoulQuestion`, initially documented via AI Gateway (`AI_GATEWAY_API_KEY`). Substitute only if PStack already adopts that gateway and it measurably removes code; Gateway does not automatically provide the free OpenCode JEV entitlement.
+- **PydanticAI**: excellent for generative Python agents and typed model output. Its documented `OpenAIDecisionsModel` targets the OpenAI Decisions API (`openai-decisions:gpt-6-luna`), not proof that OpenCode or TypeSafe System One works. Adding PydanticAI and AI SDK simultaneously is unnecessary for a one-request classifier. Existing PStack host agent/harness continues to select generative workers.
+- **Plain HTTP**: fallback only when official SDK fails a documented endpoint/response contract; prefer one tiny transport with explicit tests rather than importing an agent framework.
 
-**Important:** OpenCode Console JEV free access does not imply that a $10/$40 OpenCode Go subscription includes JEV, and the zero *output* price on OpenRouter does **not** make requests free. None of the hosted Jev models are generative coding workers. Use host-model catalog/capabilities separately for `/setup-pstack` worker/Swarm/Arena/Interrogate roles.
+**Subtraction rule:** turn #519 (OpenCode) and #520 (OpenRouter) into *configuration profile + conformance fixture* issues, NOT distinct Python implementations. #515 owns the *single* typed transport. #516 is pure class-specific policy, #517 is research, #521 owns cross-profile tests, budget/consent and rollout. No new generic gateway, role-router clone, QStack provider adapter, or shadow scheduler.
 
-## 2. Keep a single semantic contract and narrow provider I/O
+## Verified provider catalog and endpoint variants
 
-Existing owners: `scripts/decision_adapter.py` exposes `SemanticDecisionProvider.decide(request)`, `DecisionOutcome`, and `ProviderObservation`; `scripts/route_resolver.py` owns deterministic/semantic route precedence; `openspec/specs/pstack-jev-decisions/spec.md` owns bounded egress, mapping, and controlling eligibility. **Do not** introduce a second generic router, an OpenCode-specific execution-policy fork, a model gateway framework, or provider wire types into shared PStack core.
+| Config profile | Model ID | Documented endpoint | SDK base URL candidate | Access |
+|---|---|---|---|---|
+| `opencode-console` | `jev-1.13-free` | `https://opencode.ai/inference/systemone/v1/systemone` | `https://opencode.ai/inference/systemone` | Limited-time free, not guaranteed; requires appropriate Console credentials |
+| `opencode-zen` | `jev-1.13-free` | `https://opencode.ai/zen/v1/systemone` | `https://opencode.ai/zen` | Limited-time free; verify configured account/endpoint |
+| `opencode-console` or `opencode-zen` | `jev-1.13` | corresponding System One endpoint | matching service root | Paid, advertised $0.042/M input tokens |
+| `openrouter` | `jev-1.13`, `jev-1.14` | `https://openrouter.ai/api/v1/systemone` (official TypeSafe SDK bridge), alternatively `/api/alpha/decisions` for its own API | `https://openrouter.ai/api` | Paid, advertised $0.042/M input |
+| `typesafe-direct` | pinned documented TypeSafe JEV identifier | `https://api.typesafe.ai/v1/systemone` | `https://api.typesafe.ai` | Separate direct account, optional, no assumed free access |
 
-Implementation candidates:
-1. `PSTACK_JEV_MODE=none|shadow|advisory` remains OFF by default. Operators choose one configured, currently authorized provider/model. Disabled/unsafe/unknown inputs always use the precomputed baseline route.
-2. OpenCode Console adapter authenticates with `OPENCODE_API_KEY`, uses `https://opencode.ai/inference/systemone/v1/systemone` and a body with `model`, `state`, `questions`. Free model is `jev-1.13-free`; paid `jev-1.13` requires separate explicit billing approval and bounded budget. Avoid using a Go endpoint or a generic chat-completions client for JEV.
-3. OpenRouter adapter authenticates with `OPENROUTER_API_KEY`, sends the same semantic `state` and typed `questions` to `https://openrouter.ai/api/alpha/decisions`, explicitly names model `typesafe/jev-1.14` or pinned 1.13, and normalizes the Decisions API response. OpenRouter's `/api/v1/chat/completions` is NOT the correct JEV interface.
-4. Direct TypeSafe transport may remain a third option under #515, depending on measured value. Never require three separate adapters unless observed wire differences justify them; one tiny transport/config switch plus a proven normalizer may be sufficient. All provider behavior stays behind the existing neutral interface.
-5. Parse choice keyed by option ID (not list order); validate full question IDs, selected member, probabilities, confidence, requested model versus returned resolved model, usage/cost, and provider identity where returned. For `noul`, use probability, not a fictional universal confidence field. `score` should validate levels/legend. Reject unknown/mismatched shapes to existing `invalid`/`unavailable` outcome.
-6. Existing conservative egress ceiling (2,048 UTF-8 state bytes, max 32 choices, max 8,192 total request bytes) and provenance controls remain enforceable. Do not send proprietary repo diffs, secrets, logs, model transcripts, raw code or config to free or paid services.
+**OpenCode Go/Go Plus is distinct from OpenCode Console/Zen.** Current Go catalog does not list Jev; do not assume its subscription grants decision endpoint access. **OpenRouter's output-token-free price does not mean requests are free.** `jev-1.13-free` and `jev-1.13` are different SKUs. Official docs list both `/zen/` and `/inference/systemone/` surfaces; do not silently choose or rewrite paths at runtime. One allowlisted profile corresponds to exactly one documented URL and credential.
 
-## 3. Free-first is a cost policy, not implicit billing consent
+Sources (reviewed 2026-10-17; prices and availability must be rechecked at use):
+- OpenCode Zen model catalog, limited-time JEV free and `/zen` endpoint: https://docs.opencode.ai/docs/zen/
+- OpenCode Console model catalog for `/inference/systemone`: https://dev.opencode.ai/v2/docs/console/models
+- OpenCode Go model catalog: https://opencode.ai/v2/docs/console/go/
+- OpenRouter System One SDK configuration (Python/JS): https://openrouter.ai/blog/insights/what-is-jev/
+- TypeSafe official Python SDK and `base_url`: https://github.com/typesafe-ai/typesafe-sdk-python
+- AI SDK native decision interface (2026-10-07): https://vercel.com/i/ai-sdk-evaluation-to-decisions
+- AI SDK for Python JEV native evaluate (2026-10-02): https://vercel.com/blog/jev-for-python-engineers
+- PydanticAI OpenAI Decisions model scope: https://github.com/pydantic/pydantic-ai/blob/main/docs/models/openai.md
 
-Use a declarative allowlist (or equivalent direct settings), NOT an auto-discovered unbounded routing engine:
+## Requirements / invariants
+
+- **R-JEV-01 Host authority.** Compute `/poteto-mode` deterministic/explicit preflight *first*. Never promote JEV to model/worker authority, tool authorization, code generation, trading orders, capital/risk enable, qorch freeze/promotion, holdout release, PR merge, autonomy override or human gate. Host's *how/architect/swarm/arena/interrogate* triggers are mandatory.
+- **R-JEV-02 Single seam.** Existing `SemanticDecisionProvider.decide(DecisionRequest)->ProviderObservation` is the only runtime boundary; clients, headers, model aliases, wire DTOs and HTTP versions live inside one provider implementation.
+- **R-JEV-03 Bounded public egress.** Only explicit `safe_to_send` or `derived_sanitized` context with current PStack caps (state <= 2048 UTF-8 bytes, <=32 options, total <=8192 bytes). No implicit sending task prompt, code, diffs, private repo data, secrets, or arbitrary tool output; regex blocking is an auxiliary check, not a privacy classifier.
+- **R-JEV-04 Finite decision vocabulary.** Phase 1 only invokes *already used, eligible closed-set playbook `Choice`*. Preserve `Score` and `Boolean` neutral request contracts but do NOT construct provider wire shapes for them until callers/evaluation justify it. Existing numeric `ScoreRange(minimum, maximum)` is not equivalent to TypeSafe's discrete ordered rubric, and `Noul` probability cannot safely be coerced into a Boolean before a class policy decides threshold.
+- **R-JEV-05 Exact evidence.** Preserve selected option ID and probability map/confidence; verify returned provider/model identity (including resolved snapshot), question-set ID, policy/class version, source pins, fixture revision. Unknown or unverified identity cannot enable advisory. Invalid option, malformed/conflicting response, absent required confidence, or stale calibration => baseline unchanged.
+- **R-JEV-06 Per-class calibration.** Living PStack spec forbids universal thresholds; replace resolver's hardcoded `DEFAULT_ADVISORY_CONFIDENCE_THRESHOLD = 0.70` with evidence-defined class-specific policy or disable promotion until calibrated. Confidence alone is not authority; check margins, baseline agreement, risk, and host availability.
+- **R-JEV-07 Free vs paid.** Default OFF. Shadow optional and behavior-inert. One explicitly authorized provider/model at a time to start. Free retired/429/401/402/403/timeout => existing baseline; **NO automatic paid fallback**. Paid profiles require separate positive opt-in, bounded spending/call count and no automatic wallet top-up.
+- **R-JEV-08 Portability.** JEV optional. A PStack host without Python, secrets or Jev retains baseline routing and supported status. Model aliases/configured host worker capabilities are resolved by `#429`, not the JEV client. QStack is only a confirmed QUANT overlay.
+- **R-JEV-09 No unsupported role claim.** The `references/decision-routing.json` registry currently contains only seven eligible semantic candidate playbooks, not leaf-skill IDs or fast worker tiers. Treat model selection/skills suggestions as *shadow research* until #517 and QStack #1791 establish incremental value.
+- **R-JEV-10 Prove via exact head.** Fake transport and fresh main/PR diffs are separate evidence from optional authenticated public-fixture JEV smoke. Independent Swarm/Arena/Interrogate runners are required for their own PASS; no synthetic roleplay substitutes.
+
+## Minimal data / code flow
 
 ```text
-mode: none (default) / shadow / advisory
-allowed_jev_endpoints: []                     # closed list, explicit opt-in
-primary (evaluation-only): opencode-console/jev-1.13-free
-paid_fallback: disabled (default)
-paid_fallback (explicit opt-in): openrouter/typesafe/jev-1.14
-paid_spend_limit_usd: explicitly operator-set
+task intent + host profile + explicit commands
+ -> PStack preflight and deterministic baseline route (authoritative)
+ -> [eligible? public/sanitized? enabled? budget?] -> optional bounded ChoiceRequest
+ -> exactly one TypeSafe Python SDK client configured with an allowlisted API root/model
+ -> System One typed choices/probabilities/confidence
+ -> provider-edge parser -> PStack ProviderObservation(status, kind, value, provider/model id, confidence, probabilities)
+ -> pure host admission(policy_class, calibrated threshold, entitlements, receipts)
+ -> acting route = permitted advisory OR unchanged baseline
+ -> PStack leaf skill/playbook & worker role resolution (host-owned)
+ -> QStack overlay ONLY if quant domain independently confirmed
+ -> qorch durable research state (when applicable), immutable artifacts, verification
 ```
 
-Provider outage, free tier retired, expired credits, 401/402/403/429, missing key, timeout, malformed output, source/policy/model drift, or overbudget => **baseline route**, never silent charged calls. If several providers are explicitly approved, a fallback provider may run only within that declared plan and budget. Do not assume server-side model aliases are stable.
+### Neutral data contract and ownership
 
-## 4. Verification and promotion
+| Type | Owner | Notes |
+|---|---|---|
+| `ChoiceRequest(question_id, SafeContext, tuple[ChoiceOption, ...])` | PStack adapter | IDs are closed/whitelisted from current canonical playbook registry. Labels are short public descriptions only |
+| `ProviderObservation(DecisionOutcome, provider_identity, model_identity, confidence, probabilities)` | PStack adapter | Transport names and snapshot evidence do not leak into host policy; reject unknown identity for controlling routes |
+| `JevProviderProfile(key, api_root, configured_model, credential_env, paid, max_spend)` | Provider config boundary, proposed | Exact host allowlist and unit-tested path concatenation. Env-only key, no cached raw prompt. Do not invent a broad provider registry |
+| `RouteDecision(baseline, observation, admission, acting)` | PStack routing | Deterministic, auditable; no JEV action side effects. Policy owns class calibration, not client |
+| `QuantDomainOverlay` / `ResearchProgram` | QStack/qorch | QStack contributes invariants and research lifecycle facts only; no provider selection |
 
-- Offline hermetic fake transport first: same frozen public input, identical PStack choice semantics, provider-specific request/response mapping, authentication header isolation, malformed responses, free-retirement control, no-key and timeout. Prove no unauthorized calls or state changes.
-- Version-equivalent parity: OpenCode Console `jev-1.13` vs OpenRouter `typesafe/jev-1.13` before comparing latest 1.14. JEV 1.13 vs 1.14 quality cannot be attributed solely to provider routing.
-- Keep per-class calibrated thresholds (living spec requirement, corrective #516), not one global `0.70` controlling threshold. A model/provider version change invalidates stale confidence evidence.
-- Run opt-in authenticated smoke with a *public sanitized fixture* only. Capture provider endpoint and resolved model, request/response id where available, SHA, cost, latency, class policy version, and test command; no API keys or raw private context. Without credentials: `BLOCKED/NOT EXECUTED`, not PASS.
-- Benchmark whole task costs and p50/p95 wall time versus no-JEV deterministic PStack baseline. Do not declare savings because token price is low without measuring.
-- Keep QStack quant-domain and qorch/runtime safety unchanged; JEV must never approve trading risk, order routing, holdout data, research promotion, or capital enable.
-- Independent actual Swarm/Arena/Interrogate receipts required for promotion; author-written scenario analysis is not independent multi-model verification.
+## Task-fit / host routing decision matrix (hypotheses pending blind evaluation)
 
-## 5. Work graph / issue ownership
+| Task | JEV (if any) | Who actually executes |
+|---|---|---|
+| Explicit PStack command; safety/approval; simple deterministic facts | SKIP | Fixed PStack rule |
+| Ambiguous low-risk bug triage / investigation / perf / refactor / prototype | Optional existing playbook Choice in shadow | Host selected playbook and configured worker |
+| Fast worker selection for small, reversible task | Candidate low-risk closed-set role hint ONLY after #517 evaluation | Host capabilities + budgets + rollback decide |
+| Quant skills/factors/research playbook | Hint only after caller, taxonomy and QStack domain are confirmed | QStack overlay composed over host; qorch owns state |
+| Architecture, code crossing boundary, multi-step plan | No authority; high-capability host plan required | PStack how/architect/figure-it-out |
+| Swarm fan-out | At most classify non-critical slice suitability in a later evaluated phase | Independent configured workers via PStack |
+| Arena/Interrogate judgments | NO substitution for independent family reviewers | Real independent host-configured panel |
+| Backtest PIT/holdout, strategy promotion, OMS orders/live risk | SKIP | Deterministic quant & human controls |
 
-- PStack #515: native TypeSafe real transport (direct); #516: per-class calibration; #517: experimental fast-role/model-fit research.
-- PStack #519: OpenCode Console/Zen JEV 1.13 Free (and explicit paid variant).
-- PStack #520: OpenRouter JEV 1.14/1.13 Decisions API with explicit billing.
-- PStack #521: consent, safe free-first fallback, parity, rollback and provider-independent exact-head acceptance.
-- QStack #1786 parent, #1789 PStack host conformance, #1791 incremental quant/task-fit eval, #1792 independent acceptance.
+## Recursive implementation / evaluation DAG (reuse existing issues)
 
-Promotion is optional: keeping the existing deterministic PStack router unchanged is a valid outcome if JEV provides no measured benefit.
+```mermaid
+flowchart TD
+  A[#515 single native Python SDK transport] --> B[#519 OpenCode config + free fixture]
+  A --> C[#520 OpenRouter config + paid fixture]
+  B --> D[#521 provider parity / consent / rollback]
+  C --> D
+  E[#516 class calibration + neutral shapes] --> D
+  D --> F[QStack #1789 host integration]
+  F --> G[QStack #1791 blinded quant and fast-role eval]
+  H[#517 host model / skills fit research] --> G
+  G --> I[QStack #1792 exact-head Swarm/Arena/Interrogate]
+```
+
+**Depth-first sequence:** (1) offline adapter mapping + exact URL tests and opt-in live public-fixture smoke #515 → (2) one free provider profile #519; paid profile #520 is optional and can remain NOT IMPLEMENTED → (3) baseline preservation & class policy #516/#521 → (4) QStack host projection #1789 and blinded eval #1791 → (5) independently run review/evidence #1792. Do not inflate the graph with duplicate adapter epics.
+
+## Arena rubric and adversarial verification
+
+**Design arms** (author analysis only; NOT independently executed): A = no JEV baseline, B = one Python TypeSafe SDK + provider config (preferred), C = Python AI SDK via Gateway (only where Gateway is adopted), D = PydanticAI + generated agent routing (reject unless existing Python generative agent provides proven reuse). Compare lines of new code/dependencies, supported verified providers, baseline preservation, private egress, full task quality + wall latency and total spend. Prefer A if no incremental benefit; prefer B over C/D for current Python PStack if free-first works.
+
+**Interrogate falsifiers**: latest model alias drifts; 1.13 vs 1.14 confounds; Go subscription misidentified; `opencode/zen` vs `/inference/systemone` confusion; base URL duplicated path; provider-specific error 429/retired free silently bills; malicious prompt encoded as SafeContext; SDK retries multiply paid costs; numeric ScoreRange incorrectly mapped to rubric; Boolean Noul probability rounded before threshold; high-confidence wrong choice; stale missing receipt grants authority; host worker model unavailable; QUANT false positive; qorch live-risk gate bypass; same-family reviewer collapse. Execute with actual independent models only on a real host and record runner/model IDs and both HEAD SHAs.
+
+Acceptance: contract fixtures and golden OFF/shadow equivalence pass at exact HEAD; zero forbidden operations; live credentials or provider call unavailable means live smoke BLOCKED; class calibration and cost/latency budgets predeclared before advisory promotion. Source docs, PR review and mock observations never constitute production or live-trading readiness.
