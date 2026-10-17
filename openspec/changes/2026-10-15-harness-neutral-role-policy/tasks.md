@@ -151,3 +151,11 @@ F4 (corrupt index silently reset): corrupt index now refused loudly (exit 1 nami
 DSH candidate table repinned twice at the F3 then F4 driver scopes (verdict/counts unchanged). doctor 6/6 offline PASS Runtime UNTESTED; check-evidence 5 PASS + droid NOT_COVERED throughout.
 
 Nineteen open issues (#429-#446 plus #473) plus new follow-up #495: open state otherwise unchanged. G7/G8 stay open on multi-family independence and exact-head independent review. Remaining lane-B row: F2 self-hash coupling (scouted: verifier 1380 lines, three test pins reject unrefreshed edits; minimal seam is hashing a behavior-bearing core, not the whole wrapper).
+
+## Dated evidence (2026-10-17, wave-10 closeout correction)
+
+Correction to the wave-10 note above: it was committed directly to main as `f6b1f5d`, against the deviation record that resumed changes via PR. This note records that as a second exception. Subsequent reconciliation updates go through a docs PR.
+
+Post-merge independent F4 verification (APPROVE, main `0769e2f`): named evidence suites 128 passed; check-evidence 5 PASS plus droid NOT_COVERED; doctor 6/6 offline PASS Runtime UNTESTED; tooth check re-derived (reverted arm fails with DID NOT RAISE, fixed arm refuses with named path, index bytes byte-identical). One non-reproducible droid-lookup failure traced to the live-install openspec-list probe (same non-hermetic class as #477), not F4.
+
+Partial-write residue is tracked as #495, not as transactional F4: a corrupt-index abort rewrites the current host receipt before the index refusal, so restoring the old index leaves its run_id stale, and deleting the index plus rerunning re-enters the omit-other-hosts class. Supported recovery is uncommitted; no index/receipt atomicity is claimed.
