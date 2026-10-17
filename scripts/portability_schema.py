@@ -6,6 +6,7 @@ and issues #50 and #76. Pure Python with zero external dependencies.
 
 from __future__ import annotations
 
+import ast
 import hashlib
 import json
 import re
@@ -683,6 +684,64 @@ class VerificationReceipt:
         return reasons
 
 
+class RecipeError(RuntimeError):
+    """The driver-fingerprint recipe refused to produce a revision (fail closed)."""
+
+
+# Drivers that publish their own module docstring at runtime
+# (`argparse.ArgumentParser(description=__doc__)`): that text is observable
+# behaviour, so it contributes raw on top of the behaviour-bearing core.
+DOCSTRING_CONSUMED_DRIVERS = ("canonical-index.py", "verify-portable.py")
+
+
+def _strip_docstrings(tree: ast.AST) -> ast.AST:
+    """Drop every module/class/function docstring from `tree` in place."""
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.Module, ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            body = node.body
+            if (
+                body
+                and isinstance(body[0], ast.Expr)
+                and isinstance(body[0].value, ast.Constant)
+                and isinstance(body[0].value.value, str)
+            ):
+                node.body = body[1:] or [ast.Pass()]
+    return tree
+
+
+def _module_docstring(tree: ast.AST) -> bytes:
+    body = getattr(tree, "body", [])
+    if (
+        body
+        and isinstance(body[0], ast.Expr)
+        and isinstance(body[0].value, ast.Constant)
+        and isinstance(body[0].value.value, str)
+    ):
+        return body[0].value.value.encode("utf-8")
+    return b""
+
+
+def _update_driver_digest(hasher: Any, path: Path) -> None:
+    """Fold `path` into `hasher` as its behaviour-bearing core.
+
+    The core is `ast.unparse` of the parsed module with docstrings stripped, so a
+    comment, docstring, blank line or reformat cannot move a revision — only an
+    edit the AST can carry does (#444). A file that will not parse raises
+    `RecipeError` rather than silently degrading to a whole-file byte hash, and
+    a `DOCSTRING_CONSUMED_DRIVERS` module contributes its published module
+    docstring raw because the core would drop it.
+    """
+    src = path.read_bytes()
+    try:
+        tree = ast.parse(src.decode("utf-8"))
+    except (SyntaxError, UnicodeDecodeError) as err:
+        raise RecipeError(f"unparseable driver {path}: {err}") from err
+    # Read the published docstring before stripping: the strip mutates the tree.
+    published = _module_docstring(tree) if path.name in DOCSTRING_CONSUMED_DRIVERS else b""
+    hasher.update(ast.unparse(_strip_docstrings(tree)).encode("utf-8"))
+    hasher.update(published)
+
+
 def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path] = None) -> SurfaceRevisions:
     # 1. canonical pin
     upstream_file = root / "UPSTREAM"
@@ -771,7 +830,8 @@ def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path
     else:
         manifest_hash = "missing"
 
-    # 8. driver revision
+    # 8. driver revision — the behaviour-bearing core of each driver, not its
+    # whole-file bytes: a comment must not cost a five-host re-proof (#444).
     hasher = hashlib.sha256()
     for fname in (
         "canonical-index.py",
@@ -786,12 +846,12 @@ def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path
         driver_file = root / "scripts" / fname
         if driver_file.is_file():
             hasher.update(fname.encode("utf-8"))
-            hasher.update(driver_file.read_bytes())
+            _update_driver_digest(hasher, driver_file)
     drivers_dir = root / "scripts" / "drivers"
     if drivers_dir.is_dir():
         for p in sorted(drivers_dir.rglob("*.py")):
             hasher.update(p.relative_to(drivers_dir).as_posix().encode("utf-8"))
-            hasher.update(p.read_bytes())
+            _update_driver_digest(hasher, p)
     driver_revision = hasher.hexdigest()
 
     # 9. package driver revision
@@ -800,12 +860,17 @@ def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path
         p = root / "scripts" / fname
         if p.is_file():
             pkg_hasher.update(fname.encode("utf-8"))
-            pkg_hasher.update(p.read_bytes())
+            _update_driver_digest(pkg_hasher, p)
     package_driver_revision = pkg_hasher.hexdigest()
 
     # 10. boundary driver revision
     bnd_driver_file = root / "scripts" / "scan-host-boundary.py"
-    boundary_driver_revision = hashlib.sha256(bnd_driver_file.read_bytes()).hexdigest() if bnd_driver_file.is_file() else "missing"
+    if bnd_driver_file.is_file():
+        bnd_hasher = hashlib.sha256()
+        _update_driver_digest(bnd_hasher, bnd_driver_file)
+        boundary_driver_revision = bnd_hasher.hexdigest()
+    else:
+        boundary_driver_revision = "missing"
 
     return SurfaceRevisions(
         canonical_pin=canonical_pin,
