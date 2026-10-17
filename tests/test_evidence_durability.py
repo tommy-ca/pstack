@@ -1415,6 +1415,74 @@ def test_a_corrupt_evidence_index_is_refused_not_reset(tmp_path: Path) -> None:
     assert (verifier.run_dir / "receipt.json").is_file()
 
 
+def test_a_stat_denied_evidence_index_is_refused_not_crashed(tmp_path: Path) -> None:
+    """A stat denial above index.json is a refusal, not a traceback (#495).
+
+    The guard stats through the link, so a parent directory this run cannot search
+    raised PermissionError *before* the read that already knows how to refuse. A
+    denied stat must route into that same refusal: name the file, leave both durable
+    byte sets alone, and keep the run's own receipt.
+    """
+    root, prof, evidence_root, _ = _omp_live_root(tmp_path)
+    durable = evidence_root / "omp-receipt.json"
+    index_file = evidence_root / "index.json"
+    first, first_receipt = _proof_bar_refresh(root, evidence_root)
+    first.evidence(first_receipt, update_durable=True)
+    durable_before = durable.read_bytes()
+    index_before = index_file.read_bytes()
+
+    denied = tmp_path / "denied"
+    denied.mkdir()
+    real_index = denied / "index.json"
+    real_index.write_bytes(index_before)
+    index_file.unlink()
+    index_file.symlink_to(real_index)
+    denied.chmod(0o000)
+
+    second, second_receipt = _proof_bar_refresh(root, evidence_root)
+    try:
+        with pytest.raises(SystemExit) as exit_info:
+            second.evidence(second_receipt, update_durable=True)
+        assert "REFUSING to rewrite the unreadable evidence index" in str(exit_info.value.code)
+        assert str(index_file) in str(exit_info.value.code)
+        assert durable.read_bytes() == durable_before
+        assert (second.run_dir / "receipt.json").is_file()
+    finally:
+        denied.chmod(0o755)
+
+    assert real_index.read_bytes() == index_before
+
+
+def test_a_stat_denied_durable_receipt_is_refused_not_crashed(tmp_path: Path) -> None:
+    """The durable guard refuses the same denial instead of crashing on the stat (#495)."""
+    root, prof, evidence_root, _ = _omp_live_root(tmp_path)
+    durable = evidence_root / "omp-receipt.json"
+    index_file = evidence_root / "index.json"
+    first, first_receipt = _proof_bar_refresh(root, evidence_root)
+    first.evidence(first_receipt, update_durable=True)
+    durable_before = durable.read_bytes()
+    index_before = index_file.read_bytes()
+
+    denied = tmp_path / "denied"
+    denied.mkdir()
+    real_durable = denied / "omp-receipt.json"
+    real_durable.write_bytes(durable_before)
+    durable.unlink()
+    durable.symlink_to(real_durable)
+    denied.chmod(0o000)
+
+    second, second_receipt = _proof_bar_refresh(root, evidence_root)
+    try:
+        second.evidence(second_receipt, update_durable=True)
+    finally:
+        denied.chmod(0o755)
+
+    # The refused overwrite leaves the durable bytes and the row that names them alone.
+    assert durable.read_bytes() == durable_before
+    assert index_file.read_bytes() == index_before
+    assert (second.run_dir / "receipt.json").is_file()
+
+
 def test_a_missing_evidence_index_is_initialized_for_this_host(tmp_path: Path) -> None:
     """A fresh evidence root has no inventory to protect, so the first host creates it."""
     root, prof, evidence_root, _ = _omp_live_root(tmp_path)
