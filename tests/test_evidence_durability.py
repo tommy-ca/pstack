@@ -439,7 +439,16 @@ def test_driver_source_change_invalidates_adapter_and_runtime(
 
     driver_file = copy_root / relative_path
     original = driver_file.read_bytes()
+
+    # A comment is not behaviour: it must not cost a re-proof. Asserted here in
+    # the opposite direction, because the whole-file recipe this test used to
+    # pin moved on comment bytes (#444).
     driver_file.write_bytes(original + b"\n# Changed verification behavior.\n")
+    assert compute_surface_revisions(copy_root, "codex") == fresh
+
+    # A statement is behaviour: it must stale exactly the planes that depend on
+    # the driver revision.
+    driver_file.write_bytes(original + b"\nBEHAVIOR_PROBE = 'changed verification behavior'\n")
     edited = compute_surface_revisions(copy_root, "codex")
 
     assert edited.driver_revision != fresh.driver_revision
@@ -456,6 +465,34 @@ def test_driver_source_change_invalidates_adapter_and_runtime(
             assert stale_map[plane] == []
 
     driver_file.write_bytes(original)
+    assert compute_surface_revisions(copy_root, "codex") == fresh
+
+
+def test_published_module_docstring_moves_the_driver_revision(tmp_path: Path) -> None:
+    """`--help` text is the module docstring, so a consumed one stays in the fingerprint.
+
+    A driver that publishes its own docstring at runtime contributes it raw; a
+    docstring nobody publishes is commentary and must not cost a re-proof (#444).
+    """
+    copy_root = _disposable_copy(tmp_path)
+    fresh = compute_surface_revisions(copy_root, "codex")
+
+    published = copy_root / "scripts" / "verify-portable.py"
+    src = published.read_text(encoding="utf-8")
+    anchor = '"""Portable lever verification engine for pstack across agent harnesses.'
+    assert src.count(anchor) == 1
+    published.write_text(src.replace(anchor, anchor + " Published at --help."), encoding="utf-8")
+    assert compute_surface_revisions(copy_root, "codex").driver_revision != fresh.driver_revision
+
+    published.write_text(src, encoding="utf-8")
+    commentary = copy_root / "scripts" / "drivers" / "base.py"
+    base_src = commentary.read_text(encoding="utf-8")
+    base_anchor = '"""Base classes and scenario contracts for host-native harness drivers."""'
+    assert base_src.count(base_anchor) == 1
+    commentary.write_text(
+        base_src.replace(base_anchor, '"""Base classes for host-native harness drivers."""'),
+        encoding="utf-8",
+    )
     assert compute_surface_revisions(copy_root, "codex") == fresh
 
 
