@@ -6,6 +6,7 @@ import copy
 import json
 import re
 import sys
+from collections import Counter
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -297,6 +298,7 @@ def test_cross_judge_cannot_claim_multiple_seats() -> None:
 
 
 def test_reference_fork_snapshot_preserves_unreviewed_states() -> None:
+    """Lane triage is recorded, but no row may claim a completed per-file review."""
     manifest = json.loads(
         (ROOT / "docs/research/pstack-claude-forks-2026-10-15.json").read_text()
     )
@@ -306,8 +308,29 @@ def test_reference_fork_snapshot_preserves_unreviewed_states() -> None:
     assert len({row["path"] for row in rows}) == len(rows)
     assert sum(row["reference_kind"] == "policy" for row in rows) == 40
     assert sum(row["reference_kind"] == "port-feature" for row in rows) == 8
-    assert all(row["review_state"] == "pending" for row in rows)
-    assert all(row["proposed_adoption"] == "unclassified" for row in rows)
+
+    # Backfilled from the pinned upstream tools/forks.json; never invented locally.
+    assert all(row["why"].strip() for row in rows)
+    assert all(row["upstream"] == "not-proposed" for row in rows)
+
+    # Lane triage is promoted from the adoption matrix; per-file review stays open.
+    assert all(row["review_state"] == "lane-triaged" for row in rows)
+    assert not any(row["review_state"] in {"reviewed", "verified"} for row in rows)
+    assert all(row["triage_source"].startswith("docs/research/pstack-claude-adoption-matrix-2026-10-16.md#")
+               for row in rows)
+    counts = Counter(row["proposed_adoption"] for row in rows)
+    assert counts == {"adapt": 38, "preserve": 3, "exclude": 2, "gap": 3, "policy-fork": 2}
+    assert not any(row["proposed_adoption"] == "unclassified" for row in rows)
+
+    # Only the two policy-fork rows carry a per-row license/NOTICE disposition.
+    per_row = [row for row in rows if "license_disposition" in row]
+    assert {row["path"] for row in per_row} == {
+        "plugins/pstack/skills/thermo-nuclear-code-quality-review/SKILL.md",
+        "plugins/pstack/skills/poteto-mode/playbooks/orchestrate.md",
+    }
+    assert all(row["proposed_adoption"] == "policy-fork" for row in per_row)
+    assert all(row["license_disposition"]["scope"] == "per-row" for row in per_row)
+    assert manifest["license_disposition_default"]["scope"] == "group-level"
 
 
 def test_plan_wire_schema_accepts_pure_planner_and_forbids_fake_runtime_claims() -> None:
