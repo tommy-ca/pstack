@@ -1027,14 +1027,25 @@ class PortableVerifier:
         receipt_file.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
 
         if update_durable:
-            # Parse the index BEFORE writing anything durable: a corrupt index refuses
-            # the whole update, so the receipt file and its index row keep one run_id
-            # instead of the index row trailing the rewritten receipt (#495).
+            # Parse the index BEFORE writing anything durable: an unreadable or
+            # wrong-shaped index refuses the whole update, so the receipt file and its
+            # index row keep one run_id instead of the index row trailing the rewritten
+            # receipt (#495).
             index_file = self.evidence_root / "index.json"
             index_data: Dict[str, Any] = {"version": 1, "hosts": {}}
             if index_file.is_file():
                 try:
                     index_data = json.loads(index_file.read_text(encoding="utf-8"))
+                    if not isinstance(index_data, dict) or not isinstance(index_data.get("hosts", {}), dict):
+                        # Parses, wrong shape: `[]` and {"version": 1, "hosts": []} both
+                        # reached the row assignment below and died with AttributeError /
+                        # TypeError *after* the durable receipt was rewritten (#495), so
+                        # the index kept naming a run whose bytes were gone. Same refusal
+                        # as the unreadable case: nothing durable is written at all.
+                        raise ValueError(
+                            "expected an object with a 'hosts' object, got "
+                            f"{type(index_data).__name__}"
+                        )
                 except Exception as err:
                     # index.json is the only inventory of every host's durable receipt.
                     # Resetting it to a fresh {"hosts": {}} would rewrite the file for
@@ -1082,16 +1093,17 @@ class PortableVerifier:
             if reusable:
                 durable_file.write_text(json.dumps(durable_data, indent=2) + "\n", encoding="utf-8")
 
-            # Update durable index.json with the inventory parsed above.
-            index_data.setdefault("hosts", {})[self.host] = {
-                "receipt": f".audit/evidence/{self.host}-receipt.json",
-                "run_id": receipt.run_id,
-                "timestamp": receipt.timestamp,
-                "overall_verdict": receipt.overall_verdict,
-                "planes": receipt.planes,
-                "surface_revisions": asdict(receipt.surface_revisions) if isinstance(receipt.surface_revisions, SurfaceRevisions) else receipt.surface_revisions,
-            }
-            index_file.write_text(json.dumps(index_data, indent=2) + "\n", encoding="utf-8")
+                # The row follows the durable bytes it names: a refused overwrite must not
+                # advance the index onto a run whose receipt was never written (#495).
+                index_data.setdefault("hosts", {})[self.host] = {
+                    "receipt": f".audit/evidence/{self.host}-receipt.json",
+                    "run_id": receipt.run_id,
+                    "timestamp": receipt.timestamp,
+                    "overall_verdict": receipt.overall_verdict,
+                    "planes": receipt.planes,
+                    "surface_revisions": asdict(receipt.surface_revisions) if isinstance(receipt.surface_revisions, SurfaceRevisions) else receipt.surface_revisions,
+                }
+                index_file.write_text(json.dumps(index_data, indent=2) + "\n", encoding="utf-8")
             print(f"Evidence captured at {receipt_file} (durable: {durable_file})")
         else:
             print(f"Evidence captured at {receipt_file}")
@@ -1101,6 +1113,40 @@ class PortableVerifier:
     def cleanup(self) -> None:
         """Step 6: Cleanup transient files while preserving evidence."""
         pass
+
+
+def index_row_mismatch(host: str, index_file: Path, receipt_root: Path) -> Optional[str]:
+    """Cross-check one host's `.audit/evidence/index.json` row against the receipt it names.
+
+    The writer refuses a wrong-shaped or unreadable index and leaves the row alone on a
+    refused durable overwrite, so a mismatch here means the durable bytes and the
+    inventory it is read through moved apart — the write window between the two writes
+    (ENOSPC, SIGINT, a read-only index) that no writer-side guard closes. A host with no
+    row (droid ships no durable receipt) has nothing to cross-check and returns None.
+    """
+    try:
+        hosts = json.loads(index_file.read_text(encoding="utf-8")).get("hosts", {})
+    except Exception as err:
+        return f"evidence index {index_file} unreadable: {type(err).__name__}: {err}"
+    if not isinstance(hosts, dict):
+        return f"evidence index {index_file} has a non-object 'hosts': {type(hosts).__name__}"
+    row = hosts.get(host)
+    if row is None:
+        return None
+    if not isinstance(row, dict):
+        return f"index row for {host} in {index_file} is {type(row).__name__}, not an object"
+    receipt_file = receipt_root / str(row.get("receipt") or f".audit/evidence/{host}-receipt.json")
+    try:
+        receipt = json.loads(receipt_file.read_text(encoding="utf-8"))
+    except Exception as err:
+        return f"index row for {host} names {receipt_file}, which cannot be read: {type(err).__name__}: {err}"
+    for field_name in ("run_id", "timestamp", "planes", "surface_revisions"):
+        if row.get(field_name) != receipt.get(field_name):
+            return (
+                f"index row for {host} disagrees with {receipt_file} on {field_name}: "
+                f"row={row.get(field_name)!r} receipt={receipt.get(field_name)!r}"
+            )
+    return None
 
 
 def main() -> None:
@@ -1123,6 +1169,7 @@ def main() -> None:
 
     if args.action == "check-evidence":
         all_ok = True
+        index_file = ROOT / ".audit" / "evidence" / "index.json"
         for h in hosts:
             profile_file = ROOT / "profiles" / f"{h}.json"
             if not profile_file.is_file():
@@ -1161,6 +1208,12 @@ def main() -> None:
                         "       OMP runtime evidence is only observed by a model-backed run: "
                         "regenerate the durable receipt with PSTACK_RUN_OMP_LIVE=1, then re-check."
                     )
+                all_ok = False
+            # The inventory must describe the bytes it is read through, not just the
+            # run this process just assembled (#495).
+            mismatch = index_row_mismatch(h, index_file, ROOT)
+            if mismatch:
+                print(f"[{h}] FAIL: {mismatch}")
                 all_ok = False
         sys.exit(0 if all_ok else 1)
 
