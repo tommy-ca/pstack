@@ -562,11 +562,26 @@ def test_check_evidence_cli_output() -> None:
     )
     assert res.returncode == 0
     for host in SIX_HARNESSES:
-        expected = "candidate" if host == "droid" else "packaged"
+        if host == "droid":
+            # #473: the candidate row evaluates no planes, so it reports
+            # NOT_COVERED rather than PASS.
+            assert "[droid] NOT_COVERED" in res.stdout
+            continue
         assert (
-            f"[{host}] PASS: Evidence durable, derived support state: {expected} (claimed: {expected})"
+            f"[{host}] PASS: Evidence durable, derived support state: packaged (claimed: packaged)"
             in res.stdout
         )
+
+def test_candidate_row_reports_not_covered_not_pass() -> None:
+    # #473: a candidate row evaluates no planes; it must not print PASS.
+    res = subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "verify-portable.py"), "check-evidence", "--host", "droid"],
+        capture_output=True,
+        text=True,
+    )
+    assert res.returncode == 0
+    assert "[droid] NOT_COVERED" in res.stdout
+    assert "[droid] PASS" not in res.stdout
 
 
 def _load_verify_portable_module():

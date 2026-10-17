@@ -1098,7 +1098,14 @@ def main() -> None:
             )
             try:
                 res = check_evidence_durability(prof, ROOT, check_freshness=not args.allow_stale)
-                print(f"[{h}] PASS: Evidence durable, derived support state: {res['derived_support_state']} (claimed: {res['claimed_support_state']})")
+                if res["derived_support_state"] == "candidate":
+                    # #473: a candidate row evaluates no planes, so PASS would
+                    # claim coverage it has none of. Exit stays 0; only the
+                    # label changes. (ponytail: label-only; exit-code split if
+                    # automation ever needs to gate on coverage.)
+                    print(f"[{h}] NOT_COVERED: no planes evaluated, derived support state: candidate (claimed: {res['claimed_support_state']})")
+                else:
+                    print(f"[{h}] PASS: Evidence durable, derived support state: {res['derived_support_state']} (claimed: {res['claimed_support_state']})")
             except Exception as err:
                 print(f"[{h}] FAIL: {err}")
                 if h == "omp" and "exceeds evidence-derived support state" in str(err):
