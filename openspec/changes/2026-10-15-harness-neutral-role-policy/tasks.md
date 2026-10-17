@@ -297,3 +297,15 @@ Docs-only record on branch `docs/wave-20-record` from main `dd90e96`. No code, r
 Gate: `openspec validate --changes --strict` -> 1 passed, 0 failed. Head is this wave's docs commit on `docs/wave-20-record`; diff stat: 1 file changed, insertions only.
 
 No issue state, acceptance criterion or dependency changed in this wave. #495, #473 and #444 all stay OPEN on the rows named above.
+
+## Dated evidence (2026-10-18, wave-21: receipts after contract landed via #529)
+
+Docs-only record on branch `docs/wave-21-record` from main `0e4e0e1`. No code, receipt, fixture or evidence-index file is touched: this section is appended and no earlier wave's prose is rewritten, so every claim above stands as dated at its own head and the diff is insertions only.
+
+**(a) Receipts landed.** #527's SKILL.md prose moved five receipts (skills text feeds `skills_tree_hash`) and the live Antigravity install had drifted on exactly the two edited files, failing its package plane. #529 restamped all receipts against the synced live install and re-recorded the DSH candidate (20 of 257 leaves: revision, hash, context size, wall-clock only). Independent verifier PASS at `251fdf4` from a project worktree: durability 92, DSH pair 29, ALL FRESH, 5 PASS plus droid NOT_COVERED, 6-host doctor PASS. Landed as `0e4e0e1`. CI success on the branch head. The receipts branch was rehomed mid-flight into `.worktrees/fix/receipts-after-contract` before verification, per the worktree contract.
+
+**(b) Remaining open scope.** The graft itself stays held for the cross-family judge. All other wave findings stand closed. No other scope moved.
+
+Gate: `openspec validate --changes --strict` -> 1 passed, 0 failed. Head is this wave's docs commit on `docs/wave-21-record`; diff stat: 1 file changed, insertions only.
+
+No issue state, acceptance criterion or dependency changed in this wave. #495, #473 and #444 all stay OPEN on the rows named above.
