@@ -790,7 +790,20 @@ def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path
                     continue
                 hasher.update(rel.as_posix().encode("utf-8"))
                 if p.suffix == ".py":
-                    _update_driver_digest(hasher, p)
+                    try:
+                        _update_driver_digest(hasher, p)
+                    except RecipeError as err:
+                        # F2 (#444): an upstream-shaped skills script that will not
+                        # parse is data, not a local edit. Fail closed per file so
+                        # the matrix still reports every other host instead of
+                        # aborting the whole run on one row. The mark is the
+                        # stable error category plus the file bytes: never the
+                        # exception string, which carries the absolute root path
+                        # and would fingerprint the same bad file differently in
+                        # the checkout, a pytest copy, and CI.
+                        category = type(err.__cause__).__name__ if err.__cause__ else type(err).__name__
+                        hasher.update(f"recipe-error:{category}:".encode("utf-8"))
+                        hasher.update(hashlib.sha256(p.read_bytes()).digest())
                 else:
                     hasher.update(p.read_bytes())
         skills_tree_hash = hasher.hexdigest()

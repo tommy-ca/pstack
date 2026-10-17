@@ -610,6 +610,38 @@ def test_skills_script_comment_does_not_stale_runtime(tmp_path: Path) -> None:
 
     script.write_bytes(original)
     assert compute_surface_revisions(copy_root, "grok") == fresh
+def test_unparseable_skills_script_names_its_file_without_aborting(tmp_path: Path) -> None:
+    """An upstream-shaped skills script that will not parse fails per file (F2, #444).
+
+    The recipe names the bad path inside the fingerprint instead of raising out
+    of `compute_surface_revisions`, so every host row still reports.
+    """
+    copy_root = _disposable_copy(tmp_path)
+    fresh = compute_surface_revisions(copy_root, "grok").skills_tree_hash
+    bad = copy_root / "skills" / "legacy-pack" / "scripts" / "legacy.py"
+    bad.parent.mkdir(parents=True, exist_ok=True)
+    bad.write_bytes(b'print "py2"\n')
+    named = compute_surface_revisions(copy_root, "grok")
+    assert named.skills_tree_hash != fresh
+    # Deterministic: same bad file, same fingerprint.
+    assert compute_surface_revisions(copy_root, "grok").skills_tree_hash == named.skills_tree_hash
+    # Same path, same error class, different bytes: the pin still moves.
+    bad.write_bytes(b'print "py2 with more bytes"\n')
+    changed = compute_surface_revisions(copy_root, "grok")
+    assert changed.skills_tree_hash != named.skills_tree_hash
+    # Root-stable: identical bad bytes under a different root pin identically.
+    # The exception string carries the absolute path, so it must not feed the pin.
+    second_root = tmp_path / "extracted-package-2"
+    shutil.copytree(copy_root, second_root)
+    assert (
+        compute_surface_revisions(second_root, "grok").skills_tree_hash
+        == changed.skills_tree_hash
+    )
+    # Removing it restores the fingerprint.
+    bad.unlink()
+    assert compute_surface_revisions(copy_root, "grok").skills_tree_hash == fresh
+
+
 
 
 def test_harness_verifier_dynamic_import_does_not_self_invalidate(tmp_path: Path) -> None:
