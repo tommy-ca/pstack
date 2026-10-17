@@ -285,3 +285,15 @@ Docs-only record on branch `docs/wave-19-record` from main `3758f23`. No code, r
 Gate: `openspec validate --changes --strict` -> 1 passed, 0 failed. Head is this wave's docs commit on `docs/wave-19-record`; diff stat: 1 file changed, insertions only.
 
 No issue state, acceptance criterion or dependency changed in this wave. #495, #473 and #444 all stay OPEN on the rows named above. F2 closure posts as a follow-up comment on #444 in this wave.
+
+## Dated evidence (2026-10-18, wave-20: worktree contract landed via #527)
+
+Docs-only record on branch `docs/wave-20-record` from main `dd90e96`. No code, receipt, fixture or evidence-index file is touched: this section is appended and no earlier wave's prose is rewritten, so every claim above stands as dated at its own head and the diff is insertions only.
+
+**(a) Contract landed.** Swarm and arena direct repo-backed lanes to project worktrees under the ignored `.worktrees/` root per using-git-worktrees; scratch `/tmp` only with no repo checkout; bare branch only for branch-local edits. TMPDIR stays the pytest-private dir, never lane placement. The unit itself was rehomed mid-flight from an in-place branch to `.worktrees/fix/worktree-contract` before any merge, per the reviewer catch. Independent re-verifier PASS at `baa4187` from a project worktree (superseding a pre-restamp FAIL): 87 skill-contract tests, ALL FRESH, 5 PASS plus droid NOT_COVERED, 6-host doctor PASS, changes strict 1 passed. Landed as `dd90e96`. CI success on the branch head. Live Antigravity plugin synced from the worktree (its package plane checks the live install, which had drifted on exactly the two edited files).
+
+**(b) Remaining open scope.** The graft itself stays held for the cross-family judge. The F2/F3 closures stand. No other finding moved.
+
+Gate: `openspec validate --changes --strict` -> 1 passed, 0 failed. Head is this wave's docs commit on `docs/wave-20-record`; diff stat: 1 file changed, insertions only.
+
+No issue state, acceptance criterion or dependency changed in this wave. #495, #473 and #444 all stay OPEN on the rows named above.
