@@ -26,9 +26,16 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+# Sole production caller of the pure planner: a read-only planning check, never
+# a model dispatch path.
+from scripts.model_role_resolver import plan_role
 from scripts.portability_schema import PackageDescriptor, ValidationError
 
 PACKAGE_JSON = ROOT / "pstack.package.json"
+MODEL_ROLE_POLICY = ROOT / "examples/portability/model-role-policy.example.json"
+# One probe role with no required capability bindings, so `--check` reports the
+# host/tier/model-mapping verdict instead of re-testing capability opinions.
+PLAN_PROBE_ROLE = "independent-verifier"
 AGENTS_DIR = ROOT / "agents"
 DROIDS_DIR = ROOT / "droids"
 FACTORY_PLUGIN_DIR = ROOT / ".factory-plugin"
@@ -436,6 +443,25 @@ def project_all(desc: PackageDescriptor, hosts: List[str] | None = None) -> None
 
 
 
+def check_model_role_plan(desc: PackageDescriptor) -> bool:
+    """Read-only planner verdict per declared host; a static plan, never a receipt.
+
+    A BLOCKED probe plan means the checked-in policy cannot map a host the
+    descriptor declares, so that host has no planning path at all.
+    """
+    policy = json.loads(MODEL_ROLE_POLICY.read_text(encoding="utf-8"))
+    all_ok = True
+    for host in desc.host_targets:
+        plan = plan_role(policy, desc.raw_dict, host=host, role=PLAN_PROBE_ROLE)
+        reasons = f": {'; '.join(plan.reasons)}" if plan.reasons else ""
+        if plan.status == "BLOCKED":
+            print(f"BLOCKED: {host} cannot plan {PLAN_PROBE_ROLE}{reasons}")
+            all_ok = False
+        else:
+            print(f"{plan.status}: {host} {PLAN_PROBE_ROLE} <- {plan.source} ({plan.evidence_level}){reasons}")
+    return all_ok
+
+
 def check_all(desc: PackageDescriptor, hosts: List[str] | None = None) -> bool:
     targets = hosts or list(TARGET_MAP.keys())
     all_ok = True
@@ -548,7 +574,9 @@ def check_all(desc: PackageDescriptor, hosts: List[str] | None = None) -> bool:
                 all_ok = False
             elif roles_ok:
                 print(f"PASS: {len(expected_roles)} droid roles at {DROIDS_DIR.relative_to(ROOT)} in sync")
-    return all_ok
+    # Policy coverage is package-wide: declared hosts are planned regardless of
+    # which host's manifests this run projected.
+    return check_model_role_plan(desc) and all_ok
 
 
 def main() -> None:

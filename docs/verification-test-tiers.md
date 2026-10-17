@@ -249,11 +249,13 @@ is `candidate`, never an invented PASS.
 
 `scripts/model_role_policy.py` and `scripts/model_role_resolver.py` are
 deliberately not revision inputs. `plan_role`
-(`scripts/model_role_resolver.py:145`) has no production caller — every call
-site is in `tests/test_model_role_policy.py`, and the only production
-execution of either module is the static CI preflight
+(`scripts/model_role_resolver.py:151`) has exactly one production caller —
+`project-package.py --check` → `check_model_role_plan`, a read-only per-host
+planning probe over the checked-in example policy — plus the call sites in
+`tests/test_model_role_policy.py`. The only production execution of the policy
+module itself is the static CI preflight
 (`.github/workflows/portability-offline.yml:54` →
-`scripts/model_role_policy.py:225-234`). Both modules consume the
+`scripts/model_role_policy.py:256-258`). Both modules consume the
 `portability_schema` vocabulary without feeding any revision field, so a stale
 copy cannot move a verdict any gate checks. Adding them to `driver_revision`
 would force 5 host re-proofs per behaviour edit; adding them to
