@@ -92,6 +92,17 @@ def test_lattice_empty_is_untested() -> None:
     assert reduce_verdicts([]) == "UNTESTED"
 
 
+def test_one_lattice_definition_serves_receipts_drivers_and_derivation() -> None:
+    """#473: the receipt validator, the drivers and `check-evidence` reduce through one
+    definition. A second copy is what let a declared plane float free of its scenarios."""
+    from scripts.portability_schema import reduce_verdicts as schema_reduce
+    from scripts.portability_schema import settle_planes as schema_settle
+
+    assert reduce_verdicts is schema_reduce
+    assert verify_portable.settle_planes is schema_settle
+    assert reduce_verdicts(["LGTM", "PASS"]) == "FAIL"
+
+
 # --- 2. proof_bar Mixed Outcomes ---
 
 
