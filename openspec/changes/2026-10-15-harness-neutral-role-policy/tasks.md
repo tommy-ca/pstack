@@ -137,3 +137,17 @@ Trunk `7e59c2c` (PR #487 merged). No code change in this wave. Two records close
 Current-head checks on `7e59c2c`: `tests/test_evidence_durability.py` plus `tests/test_eval_blinded_pstack_dsh_candidate.py` report 74 passed; `scripts/verify-portable.py doctor --host all` reports 6 of 6 PASS on offline planes with Runtime UNTESTED on every host; `check-evidence --host all` reports durable PASS for five packaged hosts plus droid NOT_COVERED. Independent verifier PASS on `104cf9f` to `097ec48` plus full suite 968 passed 10 skipped recorded for PR #487.
 
 Nineteen open issues (`#429` to `#446` plus `#473`): open state unchanged. `#473` keeps its original acceptance verbatim; the packaged-plane row (closed by `24f0178`) and droid-reporting row (closed by `7e59c2c`) are marked as delivered in the wave notes, not in the bullets. Remaining work is the supported-derivation proof-equivalence row, the hermeticity question, and the role-policy-module scope line, none owned here. G7 and G8 stay open on multi-family independence and exact-head independent review. Child-issue body pins stay deferred as in wave-6.
+
+## Dated evidence (2026-10-17, wave-10 reconcile: lane-B F1/F3/F4 shipped)
+
+Trunk `b0f9aa7` plus the shipped stack (PR #492 merged as `a9329d4`, PR #493 merged as `bc401ae`, PR #494 merged as `0769e2f`): three lane-B verifier-lever defects closed with worker/verifier separation on every unit.
+
+F1 (route_resolver outside driver_revision): one-line binding plus regression param. Repro pre-fix FRESH exit 0, post-fix REGENERATE adapter+runtime exit 1. Evidence scope 117 passed. Independent verifier APPROVE.
+
+F3 (runtime PASS on zero live evidence): proof_bar demotes settlement-free runtime PASS to UNTESTED; dict settlements normalized; evidence() re-reduces planes+overall after preserve_observed_settlements (round-1 BLOCK on the #322 preservation path, repaired and re-verified). Settlement-free codex run now Runtime UNTESTED exit 1; preserved live settlement keeps runtime PASS with derive supported. Named suite 115 passed. Independent verifier APPROVE at 6988bfe.
+
+F4 (corrupt index silently reset): corrupt index now refused loudly (exit 1 naming the file, bytes untouched). Missing index still initializes. Tooth check fails without the fix, passes with it. Full offline CI 694 passed 10 skipped. Post-merge independent verifier APPROVE at 0769e2f with a LOW-MODERATE partial-write residue filed as #495 (durable receipt lands before index refusal; no gate reads index.json).
+
+DSH candidate table repinned twice at the F3 then F4 driver scopes (verdict/counts unchanged). doctor 6/6 offline PASS Runtime UNTESTED; check-evidence 5 PASS + droid NOT_COVERED throughout.
+
+Nineteen open issues (#429-#446 plus #473) plus new follow-up #495: open state otherwise unchanged. G7/G8 stay open on multi-family independence and exact-head independent review. Remaining lane-B row: F2 self-hash coupling (scouted: verifier 1380 lines, three test pins reject unrefreshed edits; minimal seam is hashing a behavior-bearing core, not the whole wrapper).
