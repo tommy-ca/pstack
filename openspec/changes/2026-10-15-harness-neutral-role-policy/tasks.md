@@ -273,3 +273,15 @@ Docs-only record on branch `docs/wave-18-record` from main `928fb0a`. No code, r
 Gate: `openspec validate --changes --strict` -> 1 passed, 0 failed. Head is this wave's docs commit on `docs/wave-18-record`; diff stat: 1 file changed, insertions only.
 
 No issue state, acceptance criterion or dependency changed in this wave. #495, #473 and #444 all stay OPEN on the rows named above. F3 closure posts as a follow-up comment on #444 in this wave.
+
+## Dated evidence (2026-10-18, wave-19: F2 per-file failure landed via #525)
+
+Docs-only record on branch `docs/wave-19-record` from main `3758f23`. No code, receipt, fixture or evidence-index file is touched: this section is appended and no earlier wave's prose is rewritten, so every claim above stands as dated at its own head and the diff is insertions only.
+
+**(a) F2 closed.** The skills fingerprint catches `RecipeError` per file, folding the stable error category plus the sha256 of the bad bytes — never the exception string, which carries the absolute root path. The matrix reports every host instead of aborting; a changed bad file moves the pin even under an identical parse error; identical bytes pin identically across roots. Three reviewer catches shaped the unit: arm A's latent-hardening note, the collision catch (content digest added), the root-stability catch (category plus bytes, cross-root test). Test pins no-raise, determinism, same-error-class byte change, cross-root stability, and removal restore. Independent re-verifier PASS at `cb6dc24` (superseding a FAIL on the pre-restamp head, itself an exact pin mismatch the gates caught): durability 92 passed, DSH pair 29 passed, ALL FRESH, 5 PASS plus droid NOT_COVERED. Landed as `3758f23`. CI success on the branch head.
+
+**(b) Remaining open scope.** The graft itself (path-only md membership plus adapter-plane content re-home) stays held for the cross-family judge. The skills_tree_hash plane-scope residual in #444 stays open alongside it. No other wave-18 finding moved.
+
+Gate: `openspec validate --changes --strict` -> 1 passed, 0 failed. Head is this wave's docs commit on `docs/wave-19-record`; diff stat: 1 file changed, insertions only.
+
+No issue state, acceptance criterion or dependency changed in this wave. #495, #473 and #444 all stay OPEN on the rows named above. F2 closure posts as a follow-up comment on #444 in this wave.
