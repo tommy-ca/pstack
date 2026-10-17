@@ -261,3 +261,15 @@ Docs-only record on branch `docs/wave-16-record` from main `3f06c93`. No code, r
 Gate: `openspec validate --changes --strict` -> 1 passed, 0 failed. Head is this wave's docs commit on `docs/wave-16-record`; diff stat: 1 file changed, insertions only.
 
 No issue state, acceptance criterion or dependency changed in this wave. #495, #473 and #444 all stay OPEN on the rows named above. Arm finding dispositions post as follow-up comments on their owner issues in this wave.
+
+## Dated evidence (2026-10-18, wave-18: F3 docstring teeth landed via #523)
+
+Docs-only record on branch `docs/wave-18-record` from main `928fb0a`. No code, receipt, fixture or evidence-index file is touched: this section is appended and no earlier wave's prose is rewritten, so every claim above stands as dated at its own head and the diff is insertions only.
+
+**(a) F3 closed.** `DOCSTRING_CONSUMED_DRIVERS` (`scripts/portability_schema.py:694`) grows from two entries to six: the four skills CLIs publishing `__doc__` as `--help` (`pack.py`, `partition.py`, `apply.py`, `refresh-hygiene.py`) rejoin the `skills_tree_hash` pin. New parametrized test pins all four (docstring edit moves the hash). Receipts restamped, DSH candidate re-recorded (17 of 257 leaves: revision, hash, wall-clock only). Independent verifier PASS at `7f2b46c`: durability 91 passed, DSH pair 29 passed, staleness ALL FRESH, evidence 5 PASS plus droid NOT_COVERED. Landed as `928fb0a`. CI success on the branch head.
+
+**(b) Remaining open scope, unchanged owners.** F2 unparseable-skills hardening still needs the arena base decision (same-family G agreement only; cross-family row open). The graft itself (path-only md membership plus adapter-plane content re-home) stays held for that judge. skills_tree_hash plane-scope residual in #444 stays open alongside it. No other wave-17 finding moved.
+
+Gate: `openspec validate --changes --strict` -> 1 passed, 0 failed. Head is this wave's docs commit on `docs/wave-18-record`; diff stat: 1 file changed, insertions only.
+
+No issue state, acceptance criterion or dependency changed in this wave. #495, #473 and #444 all stay OPEN on the rows named above. F3 closure posts as a follow-up comment on #444 in this wave.
