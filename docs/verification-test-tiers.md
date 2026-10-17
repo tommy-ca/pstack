@@ -242,7 +242,10 @@ the runtime surface they proved had moved, and the omp profile now claims
 historical). A live claim comes back only from a live run —
 `PSTACK_RUN_OMP_LIVE=1 python3 scripts/verify-portable.py run --host omp`, or
 `run --host <host>` where the host CLI and a model route exist — which records a
-new `observed_live` settlement for the row that pins it. ### Role modules stay out of the revision inputs (planning-only)
+new `observed_live` settlement for the row that pins it. A host without a receipt
+is `candidate`, never an invented PASS.
+
+### Role modules stay out of the revision inputs (planning-only)
 
 `scripts/model_role_policy.py` and `scripts/model_role_resolver.py` are
 deliberately not revision inputs. `plan_role`
@@ -257,6 +260,3 @@ would force 5 host re-proofs per behaviour edit; adding them to
 `package_driver_revision` would fail `check-evidence` at the wrong plane.
 Trigger to revisit: the day a recorded scenario depends on either module, name
 it in the revision set then. (#473)
-
-A host without a receipt
-is `candidate`, never an invented PASS.
