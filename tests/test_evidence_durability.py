@@ -585,6 +585,31 @@ def test_candidate_row_reports_not_covered_not_pass() -> None:
     assert "[droid] PASS" not in res.stdout
 
 
+def test_check_evidence_fails_when_a_row_disagrees_with_its_receipt(tmp_path: Path) -> None:
+    """The reader is the only closure for the window between the durable write and the row.
+
+    No writer-side guard can cover a crash in between (ENOSPC, SIGINT, a read-only index),
+    so `check-evidence` has to compare the inventory to the bytes it names (#495). The same
+    command on the untouched copy is the positive control: it exits 0.
+    """
+    copy_root = _disposable_copy(tmp_path)
+    command = [sys.executable, str(copy_root / "scripts" / "verify-portable.py"), "check-evidence", "--host", "grok"]
+
+    clean = subprocess.run(command, capture_output=True, text=True, cwd=copy_root)
+    assert clean.returncode == 0, clean.stdout + clean.stderr
+
+    index_file = copy_root / ".audit" / "evidence" / "index.json"
+    index = json.loads(index_file.read_text(encoding="utf-8"))
+    index["hosts"]["grok"]["run_id"] = "hand-edited-run-id"
+    index_file.write_text(json.dumps(index, indent=2) + "\n", encoding="utf-8")
+
+    tampered = subprocess.run(command, capture_output=True, text=True, cwd=copy_root)
+    assert tampered.returncode == 1, tampered.stdout + tampered.stderr
+    assert "[grok] FAIL" in tampered.stdout
+    assert "run_id" in tampered.stdout and "hand-edited-run-id" in tampered.stdout
+    assert "grok-receipt.json" in tampered.stdout
+
+
 def _load_verify_portable_module():
     loader = importlib.util.spec_from_file_location(
         "verify_portable_refresh", ROOT / "scripts" / "verify-portable.py"
@@ -1179,16 +1204,57 @@ def test_durable_refresh_does_not_paper_over_a_failing_run(tmp_path: Path) -> No
 
 
 def test_an_unreadable_durable_receipt_is_not_overwritten(tmp_path: Path) -> None:
-    """The one place a prior observation lives must survive a run that cannot read it."""
+    """The one place a prior observation lives must survive a run that cannot read it.
+
+    The index row follows the durable bytes it names (#495): a refused overwrite leaves the
+    row on the run whose receipt is actually on disk, not on the run that was refused.
+    """
     root, prof, evidence_root, _ = _omp_live_root(tmp_path)
     durable = evidence_root / "omp-receipt.json"
-    durable.write_text("{ not json at all", encoding="utf-8")
+    index_file = evidence_root / "index.json"
 
-    verifier, receipt = _proof_bar_refresh(root, evidence_root)
-    verifier.evidence(receipt, update_durable=True)
+    first, first_receipt = _proof_bar_refresh(root, evidence_root)
+    first.evidence(first_receipt, update_durable=True)
+    row_before = json.loads(index_file.read_text(encoding="utf-8"))["hosts"]["omp"]
+    assert row_before["run_id"] == json.loads(durable.read_text(encoding="utf-8"))["run_id"]
+
+    durable.write_text("{ not json at all", encoding="utf-8")
+    second, second_receipt = _proof_bar_refresh(root, evidence_root)
+    second.evidence(second_receipt, update_durable=True)
 
     assert durable.read_text(encoding="utf-8") == "{ not json at all"
-    assert (verifier.run_dir / "receipt.json").is_file()
+    assert (second.run_dir / "receipt.json").is_file()
+    assert json.loads(index_file.read_text(encoding="utf-8"))["hosts"]["omp"] == row_before
+    assert row_before["run_id"] != second_receipt.run_id
+
+
+@pytest.mark.parametrize("shape", ["[]", '{"version": 1, "hosts": []}'])
+def test_a_wrong_shaped_evidence_index_is_refused_not_crashed(tmp_path: Path, shape: str) -> None:
+    """A parseable index of the wrong shape refuses the whole update, like an unreadable one.
+
+    `[]` reached `index_data.setdefault` and died with AttributeError; `{"hosts": []}` with
+    TypeError. Both *after* `omp-receipt.json` had been rewritten, so the refusal left the
+    index naming a run whose durable bytes were gone (#495). Nothing durable may move, and
+    the run that was refused still keeps its own run receipt.
+    """
+    root, prof, evidence_root, _ = _omp_live_root(tmp_path)
+    durable = evidence_root / "omp-receipt.json"
+    index_file = evidence_root / "index.json"
+    first, first_receipt = _proof_bar_refresh(root, evidence_root)
+    first.evidence(first_receipt, update_durable=True)
+    durable_before = durable.read_bytes()
+    index_file.write_text(shape, encoding="utf-8")
+
+    second, second_receipt = _proof_bar_refresh(root, evidence_root)
+    with pytest.raises(SystemExit) as exit_info:
+        second.evidence(second_receipt, update_durable=True)
+
+    assert "REFUSING to rewrite the unreadable evidence index" in str(exit_info.value.code)
+    assert str(index_file) in str(exit_info.value.code)
+    assert durable.read_bytes() == durable_before
+    assert index_file.read_text(encoding="utf-8") == shape
+    run_receipt = json.loads((second.run_dir / "receipt.json").read_text(encoding="utf-8"))
+    assert run_receipt["run_id"] == second_receipt.run_id != first_receipt.run_id
 
 
 def test_a_corrupt_evidence_index_is_refused_not_reset(tmp_path: Path) -> None:
