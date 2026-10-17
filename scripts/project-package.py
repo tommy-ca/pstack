@@ -40,6 +40,17 @@ PLAN_PROBE_ROLE = "independent-verifier"
 AGENTS_DIR = ROOT / "agents"
 DROIDS_DIR = ROOT / "droids"
 FACTORY_PLUGIN_DIR = ROOT / ".factory-plugin"
+CLAUDE_PLUGIN_DIR = ROOT / ".claude-plugin"
+# What a Claude Code install reads out of .claude-plugin/plugin.json, and the
+# type each key must carry: a wrong-typed descriptor is drift, not presence.
+CLAUDE_MANIFEST_SHAPE = {"name": str, "version": str, "skills": str, "agents": str}
+# Host-local lifecycle hooks (#438) have no implementation on this revision; the
+# probe names the gap and the tracker instead of reporting a silent pass. Hook
+# data would land in a host plugin dir (`.antigravity-plugin/hooks.json`, the
+# `hooks/` surfaces referenced by sync-antigravity-plugin.py) or under the
+# descriptor's own `hooks` key, so both are probed.
+HOOKS_TRACKER = "#438"
+HOOKS_SURFACE_GLOB = ".*-plugin/hooks*"
 
 # Grok-native role frontmatter sentence, replaced with the Droid-native spawn
 # contract. The overlay path is Grok-only; Droid has no per-role toml overlay.
@@ -208,6 +219,109 @@ def generate_antigravity_commands(desc: PackageDescriptor) -> Dict[str, str]:
     return cmds
 
 
+# Host-native role catalogs (.codex-plugin/models.json#/roles,
+# .antigravity-plugin/models.json#/roles) key on the canonical role IDs in
+# pstack.package.json#/roles, which is also what the model-role-policy schema
+# binds (#440). Row order and the ID set come from the descriptor; the routing
+# skill and the per-host model choice are host-local maps validated against it,
+# so a renamed, merged, dropped, duplicated or non-canonical row cannot project.
+ROLE_SKILLS = {
+    "architect-runners": "architect",
+    "arena-cross-judge-pool": "arena",
+    "arena-runners": "arena",
+    "bug-fix": "poteto-mode",
+    "comment-sicko": "poteto-mode",
+    "feature": "poteto-mode",
+    "hardest-tasks": "poteto-mode",
+    "hillclimb": "poteto-mode",
+    "how-critics": "how",
+    "how-explainer": "how",
+    "how-explorer": "how",
+    "independent-verifier": "poteto-mode",
+    "interrogate-reviewers": "interrogate",
+    "judgment-and-prose": "poteto-mode",
+    "perf-issue": "poteto-mode",
+    "poteto-agent": "poteto-mode",
+    "refactoring": "poteto-mode",
+    "reflect-judgment": "reflect",
+    "reflect-tooling": "reflect",
+    "swarm-workers": "swarm",
+    "why-investigators": "why",
+    "why-synthesizer": "why",
+}
+
+# Per-host model choice, by canonical role ID. "panel" is the host's panel
+# selector, not a model slug.
+CODEX_ROLE_MODELS: Dict[str, Any] = {
+    "architect-runners": ["gpt-6.1-sol"],
+    "arena-cross-judge-pool": ["gpt-6.1-sol"],
+    "arena-runners": "panel",
+    "bug-fix": ["gpt-6-luna"],
+    "comment-sicko": ["gpt-6-luna"],
+    "feature": ["gpt-6-luna"],
+    "hardest-tasks": ["gpt-6-astra"],
+    "hillclimb": ["gpt-6-luna"],
+    "how-critics": ["gpt-6-luna"],
+    "how-explainer": ["gpt-6-luna"],
+    "how-explorer": ["gpt-6-luna"],
+    "independent-verifier": ["gpt-6.1-sol"],
+    "interrogate-reviewers": ["gpt-6.1-sol"],
+    "judgment-and-prose": ["gpt-6.1-sol", "gpt-6-luna"],
+    "perf-issue": ["gpt-6-luna"],
+    "poteto-agent": ["gpt-6.1-sol"],
+    "refactoring": ["gpt-6-luna"],
+    "reflect-judgment": ["gpt-6.1-sol"],
+    "reflect-tooling": ["gpt-6-luna"],
+    "swarm-workers": ["gpt-6-luna"],
+    "why-investigators": ["gpt-6-luna"],
+    "why-synthesizer": ["gpt-6.1-sol"],
+}
+
+ANTIGRAVITY_ROLE_MODELS: Dict[str, Any] = {
+    "architect-runners": "panel",
+    "arena-cross-judge-pool": "panel",
+    "arena-runners": "panel",
+    "bug-fix": ["pro"],
+    "comment-sicko": ["flash"],
+    "feature": ["pro"],
+    "hardest-tasks": ["pro"],
+    "hillclimb": ["pro"],
+    "how-critics": ["pro"],
+    "how-explainer": ["pro"],
+    "how-explorer": ["pro"],
+    "independent-verifier": ["pro"],
+    "interrogate-reviewers": "panel",
+    "judgment-and-prose": ["pro"],
+    "perf-issue": ["pro"],
+    "poteto-agent": ["pro"],
+    "refactoring": ["pro"],
+    "reflect-judgment": ["pro"],
+    "reflect-tooling": ["pro"],
+    "swarm-workers": ["flash"],
+    "why-investigators": ["pro"],
+    "why-synthesizer": ["pro"],
+}
+
+
+def generate_role_catalog(desc: PackageDescriptor, host: str, models: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """Project pstack.package.json#/roles into one host's role catalog rows.
+
+    Fails closed: a role added to the descriptor without a host model, a
+    non-canonical row, or a duplicated canonical ID raises instead of projecting
+    a catalog that has silently drifted from the canonical vocabulary (#440).
+    """
+    canonical = [role["id"] for role in desc.roles]
+    duplicates = sorted({role_id for role_id in canonical if canonical.count(role_id) > 1})
+    missing = [role_id for role_id in canonical if role_id not in models or role_id not in ROLE_SKILLS]
+    extra = [role_id for role_id in models if role_id not in canonical]
+    if duplicates or missing or extra:
+        raise ValidationError(
+            f"{host} role catalog must be exactly pstack.package.json#/roles: "
+            f"duplicate={duplicates} missing={missing} non-canonical={extra}"
+        )
+    return [{"role": role_id, "models": models[role_id], "skill": ROLE_SKILLS[role_id]} for role_id in canonical]
+
+
 def generate_antigravity_models(desc: PackageDescriptor) -> Dict[str, Any]:
     return {
         "singleRoleDefault": "pro",
@@ -218,25 +332,7 @@ def generate_antigravity_models(desc: PackageDescriptor) -> Dict[str, Any]:
             {"label": "Gemini Flash 3.8 Lite", "slug": "flash_lite", "family": "gemini-flash-3.8-lite"},
             {"label": "Inherited Model", "slug": "inherit", "family": "inherit"},
         ],
-        "roles": [
-            {"role": "feature, refactoring", "models": ["pro"], "skill": "poteto-mode"},
-            {"role": "bug-fix", "models": ["pro"], "skill": "poteto-mode"},
-            {"role": "perf-issue", "models": ["pro"], "skill": "poteto-mode"},
-            {"role": "hillclimb", "models": ["pro"], "skill": "poteto-mode"},
-            {"role": "judgment and prose", "models": ["pro"], "skill": "poteto-mode"},
-            {"role": "strongest judgment", "models": ["pro"], "skill": "poteto-mode"},
-            {"role": "how explorer", "models": ["pro"], "skill": "how"},
-            {"role": "how explainer", "models": ["pro"], "skill": "how"},
-            {"role": "why investigators", "models": ["pro"], "skill": "why"},
-            {"role": "why synthesizer", "models": ["pro"], "skill": "why"},
-            {"role": "reflect tooling", "models": ["pro"], "skill": "reflect"},
-            {"role": "reflect judgment, divergent, synthesizer", "models": ["pro"], "skill": "reflect"},
-            {"role": "arena runners", "models": "panel", "skill": "arena"},
-            {"role": "arena cross-judge pool", "models": "panel", "skill": "arena"},
-            {"role": "swarm workers", "models": ["flash"], "skill": "swarm"},
-            {"role": "architect runners", "models": "panel", "skill": "architect"},
-            {"role": "interrogate reviewers", "models": "panel", "skill": "interrogate"},
-        ],
+        "roles": generate_role_catalog(desc, "antigravity", ANTIGRAVITY_ROLE_MODELS),
     }
 
 
@@ -249,27 +345,7 @@ def generate_codex_models(desc: PackageDescriptor) -> Dict[str, Any]:
             {"label": "GPT-6 Astra", "slug": "gpt-6-astra"},
             {"label": "GPT-6 Luna", "slug": "gpt-6-luna"},
         ],
-        "roles": [
-            {"role": "feature, refactoring", "models": ["gpt-6-luna"], "skill": "poteto-mode"},
-            {"role": "bug-fix", "models": ["gpt-6-luna"], "skill": "poteto-mode"},
-            {"role": "perf-issue", "models": ["gpt-6-luna"], "skill": "poteto-mode"},
-            {"role": "hillclimb", "models": ["gpt-6-luna"], "skill": "poteto-mode"},
-            {"role": "judgment and prose", "models": ["gpt-6.1-sol", "gpt-6-luna"], "skill": "poteto-mode"},
-            {"role": "strongest judgment", "models": ["gpt-6.1-sol"], "skill": "poteto-mode"},
-            {"role": "how explorer", "models": ["gpt-6-luna"], "skill": "how"},
-            {"role": "how explainer", "models": ["gpt-6-luna"], "skill": "how"},
-            {"role": "why investigators", "models": ["gpt-6-luna"], "skill": "why"},
-            {"role": "why synthesizer", "models": ["gpt-6.1-sol"], "skill": "why"},
-            {"role": "reflect tooling", "models": ["gpt-6-luna"], "skill": "reflect"},
-            {"role": "reflect judgment, divergent, synthesizer", "models": ["gpt-6.1-sol"], "skill": "reflect"},
-            {"role": "hardest-tasks", "models": ["gpt-6-astra"], "skill": "poteto-mode"},
-            {"role": "arena runners", "models": "panel", "skill": "arena"},
-            {"role": "arena cross-judge pool", "models": ["gpt-6.1-sol"], "skill": "arena"},
-            {"role": "swarm workers", "models": ["gpt-6-luna"], "skill": "swarm"},
-            {"role": "architect runners", "models": ["gpt-6.1-sol"], "skill": "architect"},
-            {"role": "interrogate reviewers", "models": ["gpt-6.1-sol"], "skill": "interrogate"},
-            {"role": "independent-verifier", "models": ["gpt-6.1-sol"], "skill": "poteto-mode"},
-        ],
+        "roles": generate_role_catalog(desc, "codex", CODEX_ROLE_MODELS),
     }
 
 
@@ -465,6 +541,85 @@ def check_model_role_plan(desc: PackageDescriptor) -> bool:
         else:
             print(f"{plan.status}: {host} {PLAN_PROBE_ROLE} <- {plan.source} ({plan.evidence_level}){reasons}")
     return all_ok
+def check_claude_plugin(desc: PackageDescriptor) -> bool:
+    """.claude-plugin presence, shape and version lockstep.
+
+    Claude Code is a supported host whose descriptors are hand-maintained, not
+    TARGET_MAP projections, so --check validates the files that exist instead of
+    manifest equality: a missing, unparseable, wrong-typed, wrongly named or
+    stale descriptor fails the check rather than passing as "present".
+    """
+    ok = True
+    plugin_file = CLAUDE_PLUGIN_DIR / "plugin.json"
+    market_file = CLAUDE_PLUGIN_DIR / "marketplace.json"
+    for path in (plugin_file, market_file):
+        if not path.is_file():
+            label = path.relative_to(ROOT) if path.is_relative_to(ROOT) else path
+            print(f"MISSING: {label} (Claude Code host descriptor)")
+            ok = False
+    if not ok:
+        return False
+    try:
+        plugin = json.loads(plugin_file.read_text(encoding="utf-8"))
+        market = json.loads(market_file.read_text(encoding="utf-8"))
+    except Exception as e:
+        print(f"ERROR: .claude-plugin descriptor failed to parse: {e}")
+        return False
+    if not isinstance(plugin, dict) or not isinstance(market, dict):
+        print("DRIFT: .claude-plugin descriptors must be JSON objects")
+        return False
+    for key, expected_type in CLAUDE_MANIFEST_SHAPE.items():
+        value = plugin.get(key)
+        if not isinstance(value, expected_type) or (isinstance(value, str) and not value):
+            print(
+                f"DRIFT: .claude-plugin/plugin.json {key!r} must be a non-empty "
+                f"{expected_type.__name__}, got {type(value).__name__}"
+            )
+            ok = False
+    for key in ("name", "version"):
+        if plugin.get(key) != getattr(desc, key):
+            print(
+                f"DRIFT: .claude-plugin/plugin.json {key} {plugin.get(key)!r} "
+                f"!= pstack.package.json {getattr(desc, key)!r}"
+            )
+            ok = False
+    entries = market.get("plugins")
+    if not isinstance(entries, list):
+        print(f"DRIFT: .claude-plugin/marketplace.json plugins must be a list, got {type(entries).__name__}")
+        return False
+    entry = next((p for p in entries if isinstance(p, dict) and p.get("name") == desc.name), None)
+    if entry is None:
+        print(f"MISSING: .claude-plugin/marketplace.json has no {desc.name!r} plugin entry")
+        ok = False
+    elif entry.get("version") != desc.version:
+        print(
+            f"DRIFT: .claude-plugin/marketplace.json {desc.name} version {entry.get('version')!r} "
+            f"!= pstack.package.json {desc.version!r}"
+        )
+        ok = False
+    if ok:
+        print("PASS: .claude-plugin manifests present, shaped and in version lockstep")
+    return ok
+
+
+def hook_surface_paths(root: Path = ROOT) -> List[Path]:
+    """Hook-bearing paths a host plugin dir would carry, if the lifecycle existed."""
+    return sorted(root.glob(HOOKS_SURFACE_GLOB))
+
+
+def check_hooks(raw: Dict[str, Any], root: Path = ROOT) -> bool:
+    """Fail-closed probe for the host-local hook lifecycle (spec G3, open).
+
+    Hooks are not implemented, so the surface is reported ABSENT with its
+    tracker rather than omitted; a green --check must never imply a hook
+    lifecycle that does not exist. Hook data appearing before that lifecycle is
+    verifiable fails the check instead of being silently projected.
+    """
+    if raw.get("hooks") is None and not hook_surface_paths(root):
+        print(f"ABSENT: host-local hooks not implemented; nothing claimed ({HOOKS_TRACKER})")
+        return True
+    print(f"FAIL: hook surface present but unverifiable; land the lifecycle before projecting it ({HOOKS_TRACKER})")
+    return False
 
 
 def check_all(desc: PackageDescriptor, hosts: List[str] | None = None) -> bool:
@@ -474,11 +629,16 @@ def check_all(desc: PackageDescriptor, hosts: List[str] | None = None) -> bool:
         if host not in TARGET_MAP:
             continue
         dest_file, generator = TARGET_MAP[host]
+        try:
+            expected = generator(desc)
+        except ValidationError as e:
+            print(f"ERROR: {host} manifest cannot be projected: {e}")
+            all_ok = False
+            continue
         if not dest_file.is_file():
             print(f"MISSING: {host} manifest not found at {dest_file.relative_to(ROOT)}")
             all_ok = False
             continue
-        expected = generator(desc)
         try:
             actual = json.loads(dest_file.read_text(encoding="utf-8"))
         except Exception as e:
@@ -493,11 +653,17 @@ def check_all(desc: PackageDescriptor, hosts: List[str] | None = None) -> bool:
 
         if host == "antigravity":
             models_file = ROOT / ".antigravity-plugin" / "models.json"
-            if not models_file.is_file():
+            try:
+                expected_models = generate_antigravity_models(desc)
+            except ValidationError as e:
+                print(f"ERROR: antigravity models cannot be projected: {e}")
+                expected_models = None
+            if expected_models is None:
+                all_ok = False
+            elif not models_file.is_file():
                 print(f"MISSING: antigravity models not found at {models_file.relative_to(ROOT)}")
                 all_ok = False
             else:
-                expected_models = generate_antigravity_models(desc)
                 try:
                     actual_models = json.loads(models_file.read_text(encoding="utf-8"))
                     if actual_models != expected_models:
@@ -531,11 +697,17 @@ def check_all(desc: PackageDescriptor, hosts: List[str] | None = None) -> bool:
 
         if host == "codex":
             models_file = ROOT / ".codex-plugin" / "models.json"
-            if not models_file.is_file():
+            try:
+                expected_models = generate_codex_models(desc)
+            except ValidationError as e:
+                print(f"ERROR: codex models cannot be projected: {e}")
+                expected_models = None
+            if expected_models is None:
+                all_ok = False
+            elif not models_file.is_file():
                 print(f"MISSING: codex models not found at {models_file.relative_to(ROOT)}")
                 all_ok = False
             else:
-                expected_models = generate_codex_models(desc)
                 try:
                     actual_models = json.loads(models_file.read_text(encoding="utf-8"))
                     if actual_models != expected_models:
@@ -579,9 +751,11 @@ def check_all(desc: PackageDescriptor, hosts: List[str] | None = None) -> bool:
                 all_ok = False
             elif roles_ok:
                 print(f"PASS: {len(expected_roles)} droid roles at {DROIDS_DIR.relative_to(ROOT)} in sync")
-    # Policy coverage is package-wide: declared hosts are planned regardless of
-    # which host's manifests this run projected.
-    return check_model_role_plan(desc) and all_ok
+    # Policy coverage and the Claude/hook probes are package-wide: they are
+    # reported regardless of which host's manifests this run projected.
+    claude_ok = check_claude_plugin(desc)
+    hooks_ok = check_hooks(desc.raw_dict)
+    return all_ok and check_model_role_plan(desc) and claude_ok and hooks_ok
 
 
 def main() -> None:

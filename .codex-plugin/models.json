@@ -20,15 +20,98 @@
   ],
   "roles": [
     {
-      "role": "feature, refactoring",
+      "role": "architect-runners",
+      "models": [
+        "gpt-6.1-sol"
+      ],
+      "skill": "architect"
+    },
+    {
+      "role": "arena-cross-judge-pool",
+      "models": [
+        "gpt-6.1-sol"
+      ],
+      "skill": "arena"
+    },
+    {
+      "role": "arena-runners",
+      "models": "panel",
+      "skill": "arena"
+    },
+    {
+      "role": "bug-fix",
       "models": [
         "gpt-6-luna"
       ],
       "skill": "poteto-mode"
     },
     {
-      "role": "bug-fix",
+      "role": "comment-sicko",
       "models": [
+        "gpt-6-luna"
+      ],
+      "skill": "poteto-mode"
+    },
+    {
+      "role": "feature",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "skill": "poteto-mode"
+    },
+    {
+      "role": "hardest-tasks",
+      "models": [
+        "gpt-6-astra"
+      ],
+      "skill": "poteto-mode"
+    },
+    {
+      "role": "hillclimb",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "skill": "poteto-mode"
+    },
+    {
+      "role": "how-critics",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "skill": "how"
+    },
+    {
+      "role": "how-explainer",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "skill": "how"
+    },
+    {
+      "role": "how-explorer",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "skill": "how"
+    },
+    {
+      "role": "independent-verifier",
+      "models": [
+        "gpt-6.1-sol"
+      ],
+      "skill": "poteto-mode"
+    },
+    {
+      "role": "interrogate-reviewers",
+      "models": [
+        "gpt-6.1-sol"
+      ],
+      "skill": "interrogate"
+    },
+    {
+      "role": "judgment-and-prose",
+      "models": [
+        "gpt-6.1-sol",
         "gpt-6-luna"
       ],
       "skill": "poteto-mode"
@@ -41,115 +124,53 @@
       "skill": "poteto-mode"
     },
     {
-      "role": "hillclimb",
-      "models": [
-        "gpt-6-luna"
-      ],
-      "skill": "poteto-mode"
-    },
-    {
-      "role": "judgment and prose",
-      "models": [
-        "gpt-6.1-sol",
-        "gpt-6-luna"
-      ],
-      "skill": "poteto-mode"
-    },
-    {
-      "role": "strongest judgment",
+      "role": "poteto-agent",
       "models": [
         "gpt-6.1-sol"
       ],
       "skill": "poteto-mode"
     },
     {
-      "role": "how explorer",
+      "role": "refactoring",
       "models": [
         "gpt-6-luna"
       ],
-      "skill": "how"
+      "skill": "poteto-mode"
     },
     {
-      "role": "how explainer",
-      "models": [
-        "gpt-6-luna"
-      ],
-      "skill": "how"
-    },
-    {
-      "role": "why investigators",
-      "models": [
-        "gpt-6-luna"
-      ],
-      "skill": "why"
-    },
-    {
-      "role": "why synthesizer",
-      "models": [
-        "gpt-6.1-sol"
-      ],
-      "skill": "why"
-    },
-    {
-      "role": "reflect tooling",
-      "models": [
-        "gpt-6-luna"
-      ],
-      "skill": "reflect"
-    },
-    {
-      "role": "reflect judgment, divergent, synthesizer",
+      "role": "reflect-judgment",
       "models": [
         "gpt-6.1-sol"
       ],
       "skill": "reflect"
     },
     {
-      "role": "hardest-tasks",
+      "role": "reflect-tooling",
       "models": [
-        "gpt-6-astra"
+        "gpt-6-luna"
       ],
-      "skill": "poteto-mode"
+      "skill": "reflect"
     },
     {
-      "role": "arena runners",
-      "models": "panel",
-      "skill": "arena"
-    },
-    {
-      "role": "arena cross-judge pool",
-      "models": [
-        "gpt-6.1-sol"
-      ],
-      "skill": "arena"
-    },
-    {
-      "role": "swarm workers",
+      "role": "swarm-workers",
       "models": [
         "gpt-6-luna"
       ],
       "skill": "swarm"
     },
     {
-      "role": "architect runners",
+      "role": "why-investigators",
       "models": [
-        "gpt-6.1-sol"
+        "gpt-6-luna"
       ],
-      "skill": "architect"
+      "skill": "why"
     },
     {
-      "role": "interrogate reviewers",
+      "role": "why-synthesizer",
       "models": [
         "gpt-6.1-sol"
       ],
-      "skill": "interrogate"
-    },
-    {
-      "role": "independent-verifier",
-      "models": [
-        "gpt-6.1-sol"
-      ],
-      "skill": "poteto-mode"
+      "skill": "why"
     }
   ]
 }
