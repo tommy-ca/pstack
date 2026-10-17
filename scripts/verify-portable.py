@@ -1027,6 +1027,26 @@ class PortableVerifier:
         receipt_file.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
 
         if update_durable:
+            # Parse the index BEFORE writing anything durable: a corrupt index refuses
+            # the whole update, so the receipt file and its index row keep one run_id
+            # instead of the index row trailing the rewritten receipt (#495).
+            index_file = self.evidence_root / "index.json"
+            index_data: Dict[str, Any] = {"version": 1, "hosts": {}}
+            if index_file.is_file():
+                try:
+                    index_data = json.loads(index_file.read_text(encoding="utf-8"))
+                except Exception as err:
+                    # index.json is the only inventory of every host's durable receipt.
+                    # Resetting it to a fresh {"hosts": {}} would rewrite the file for
+                    # this host alone and silently un-list every other host, so fail
+                    # loudly and leave the corrupt bytes in place for recovery (#429, #444).
+                    sys.exit(
+                        f"REFUSING to rewrite the unreadable evidence index at {index_file}: "
+                        f"{type(err).__name__}: {err}. The index lists every host's durable "
+                        f"receipt, so resetting it would silently drop the other hosts. Repair "
+                        f"or remove the file, then re-run. This run's receipt is at {receipt_file}."
+                    )
+
             # Stable durable receipt copy
             durable_file = self.evidence_root / f"{self.host}-receipt.json"
             durable_data = data
@@ -1062,23 +1082,7 @@ class PortableVerifier:
             if reusable:
                 durable_file.write_text(json.dumps(durable_data, indent=2) + "\n", encoding="utf-8")
 
-            # Update durable index.json
-            index_file = self.evidence_root / "index.json"
-            index_data: Dict[str, Any] = {"version": 1, "hosts": {}}
-            if index_file.is_file():
-                try:
-                    index_data = json.loads(index_file.read_text(encoding="utf-8"))
-                except Exception as err:
-                    # index.json is the only inventory of every host's durable receipt.
-                    # Resetting it to a fresh {"hosts": {}} would rewrite the file for
-                    # this host alone and silently un-list every other host, so fail
-                    # loudly and leave the corrupt bytes in place for recovery (#429, #444).
-                    sys.exit(
-                        f"REFUSING to rewrite the unreadable evidence index at {index_file}: "
-                        f"{type(err).__name__}: {err}. The index lists every host's durable "
-                        f"receipt, so resetting it would silently drop the other hosts. Repair "
-                        f"or remove the file, then re-run. This run's receipt is at {receipt_file}."
-                    )
+            # Update durable index.json with the inventory parsed above.
             index_data.setdefault("hosts", {})[self.host] = {
                 "receipt": f".audit/evidence/{self.host}-receipt.json",
                 "run_id": receipt.run_id,

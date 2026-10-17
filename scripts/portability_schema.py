@@ -881,6 +881,12 @@ def derive_support_state(
     # 1. Package plane is verified with PASS and NOT STALE
     # 2. All 17 capabilities in PORTABLE_CAPABILITY_UNIVERSE have verification_status == "verified" (or valid shim/gap)
     #    with valid, non-stale receipts
+    # 3. Every row cites a receipt of this host whose four planes all PASS, so
+    #    the conditional rows cannot claim supported off a package-only PASS
+    #    while their behavioral planes FAIL (#473)
+    # 4. OMP rows carry the same settlement bar the mandatory floor demands,
+    #    so a relabelled observed_live without child settlement cannot reach
+    #    the level above `verified` by citing a row outside the floor.
     is_supported = True
     for cap_id, binding in bound_caps.items():
         if binding.verification_status != "verified":
@@ -892,13 +898,29 @@ def derive_support_state(
         try:
             rdata = json.loads((root / binding.receipt_ref).read_text(encoding="utf-8"))
             receipt = VerificationReceipt(**rdata)
-            if receipt.planes.get("package") != "PASS":
+            receipt.validate()
+            if receipt.host != profile.host:
+                is_supported = False
+                break
+            if (
+                receipt.planes.get("canonical") != "PASS"
+                or receipt.planes.get("adapter") != "PASS"
+                or receipt.planes.get("runtime") != "PASS"
+                or receipt.planes.get("package") != "PASS"
+            ):
                 is_supported = False
                 break
             stale_map = receipt.evaluate_plane_staleness(current_revisions)
             if any(len(errs) > 0 for errs in stale_map.values()):
                 is_supported = False
                 break
+            if profile.host == "omp":
+                if any(not s.evidence_level for s in receipt.scenarios):
+                    is_supported = False
+                    break
+                if not any(_is_observed_settlement(s) for s in receipt.scenarios):
+                    is_supported = False
+                    break
         except Exception:
             is_supported = False
             break

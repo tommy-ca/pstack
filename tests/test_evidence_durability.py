@@ -1503,6 +1503,101 @@ def test_a_cancellation_only_receipt_never_derives_verified(tmp_path: Path) -> N
     assert derive_support_state(prof, root) == "packaged"
 
 
+def test_a_corrupt_index_refusal_leaves_the_durable_receipt_untouched(tmp_path: Path) -> None:
+    """A corrupt index refuses the whole durable update, receipt included (#495).
+
+    The receipt used to be rewritten before the index was parsed, so the abort left
+    a new run_id in omp-receipt.json and the previous one in the repaired index row.
+    """
+    root, prof, evidence_root, _ = _omp_live_root(tmp_path)
+    verifier, receipt = _proof_bar_refresh(root, evidence_root)
+    verifier.evidence(receipt, update_durable=True)
+
+    durable_file = evidence_root / "omp-receipt.json"
+    index_file = evidence_root / "index.json"
+    durable_before = durable_file.read_bytes()
+    assert json.loads(index_file.read_text(encoding="utf-8"))["hosts"]["omp"]["run_id"] == json.loads(
+        durable_before
+    )["run_id"]
+
+    corrupt = b'{ "version": 1, "hosts": { BAD'
+    index_file.write_bytes(corrupt)
+    second, second_receipt = _proof_bar_refresh(root, evidence_root)
+    with pytest.raises(SystemExit):
+        second.evidence(second_receipt, update_durable=True)
+
+    assert durable_file.read_bytes() == durable_before
+    assert index_file.read_bytes() == corrupt
+    # The refused run still keeps its own run receipt, so the abort names real evidence.
+    assert json.loads((second.run_dir / "receipt.json").read_text(encoding="utf-8"))["run_id"] == second_receipt.run_id
+
+
+def test_supported_needs_a_behavioral_pass_on_every_row(tmp_path: Path) -> None:
+    """A non-floor row citing a package-only PASS receipt proves `verified`, not `supported` (#473).
+
+    The supported loop read the package plane alone, so a receipt with FAIL
+    canonical/adapter/runtime still derived `supported` and outvoted the floor.
+    The lane-A probe set (all-FAIL planes, foreign host, settlement-free omp
+    receipt) must all stop at `verified` and fail the supported claim.
+    """
+    root, prof = _synthetic_evidence_root(
+        tmp_path,
+        ["offline", "observed_live"],
+        settlements=[
+            None,
+            ChildSettlement(
+                child_id="subagent-7",
+                terminal_outcome="success",
+                model="test-model",
+                transport="rpc",
+                effective_rpc="rpc-v2:profile=disposable:depth=1",
+            ),
+        ],
+        force_verified=True,
+    )
+    assert derive_support_state(prof, root) == "supported"
+
+    floor_ref = ".audit/evidence/synthetic-receipt.json"
+    rest_ref = ".audit/evidence/rest.json"
+    base = json.loads((root / floor_ref).read_text(encoding="utf-8"))
+    all_pass = {plane: "PASS" for plane in CONFORMANCE_PLANES}
+    # Claimed supported, with every conditional row citing a second receipt: only the
+    # nine floor rows keep the settled receipt that does prove `verified`.
+    split = replace(
+        prof,
+        support_state="supported",
+        bindings=[
+            replace(b, evidence_ref=floor_ref if b.capability in MANDATORY_SUPPORT_FLOOR else rest_ref)
+            for b in prof.bindings
+        ],
+    )
+
+    probes = {
+        "package-only-PASS": (
+            {"planes": {**all_pass, "canonical": "FAIL", "adapter": "FAIL", "runtime": "FAIL"}},
+            "exceeds evidence-derived support state 'verified'",
+        ),
+        # A foreign-host receipt is already refused earlier by the durability check,
+        # so this probe pins the derivation half only.
+        "foreign-host": ({"host": "codex"}, "host mismatch"),
+        "settlement-free-omp": (
+            {
+                "scenarios": [
+                    {**s, "evidence_level": "static", "settlement": None} for s in base["scenarios"]
+                ]
+            },
+            "exceeds evidence-derived support state 'verified'",
+        ),
+    }
+    for name, (patch, match) in probes.items():
+        (root / ".audit" / "evidence" / "rest.json").write_text(
+            json.dumps({**base, "run_id": f"rest-{name}", **patch}), encoding="utf-8"
+        )
+        assert derive_support_state(split, root) == "verified", name
+        with pytest.raises(ValidationError, match=match):
+            check_evidence_durability(split, root)
+
+
 def test_a_verified_pin_naming_an_unrecorded_scenario_is_a_dangling_reference() -> None:
     ref = ".audit/evidence/omp-receipt.json"
     receipt = _adversarial_receipt(
