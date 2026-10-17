@@ -8,6 +8,7 @@ Usage:
     python3 scripts/verify-portable.py doctor [--host <host>]
     python3 scripts/verify-portable.py drive --feature <feature> [--host <host>]
     python3 scripts/verify-portable.py run [--host <host>] [--evidence-dir <dir>]
+    python3 scripts/verify-portable.py refresh-static [--host <host>] [--evidence-dir <dir>]
     python3 scripts/verify-portable.py select-checks --base <ref> [--head <ref>] [--json]
         [--record <path>] [--receipt <path>] [--outcome <check-id>=<verdict>]
 """
@@ -1056,7 +1057,7 @@ class PortableVerifier:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=["doctor", "drive", "run", "check-evidence", "check-staleness", "select-checks"], help="Action to execute")
+    parser.add_argument("action", choices=["doctor", "drive", "run", "refresh-static", "check-evidence", "check-staleness", "select-checks"], help="Action to execute")
     parser.add_argument("--host", choices=[*SUPPORTED_HOSTS, "all"], default="grok", help="Target harness (or 'all' for all declared hosts)")
     parser.add_argument("--feature", help="Feature to drive (for 'drive' action)")
     parser.add_argument("--evidence-dir", type=Path, default=DEFAULT_EVIDENCE_DIR, help="Evidence directory")
@@ -1285,10 +1286,30 @@ def main() -> None:
             receipts.append(receipt)
             all_pass = all_pass and (receipt.overall_verdict == "PASS")
 
+        elif args.action == "refresh-static":
+            # Honest static refresh: run the static doctor planes only (no model route,
+            # no drive) and record them as the host's durable receipt. The receipt keeps
+            # runtime and overall UNTESTED, so the exit status has to come from the
+            # doctor result — a failing static plane stays FAIL and is never reported as
+            # the nominal UNTESTED the missing runtime plane alone would produce.
+            ok = verifier.doctor(check_durability=False)
+            receipt = verifier.proof_bar()
+            profile_file = ROOT / "profiles" / f"{h}.json"
+            claimed_state = ""
+            if profile_file.is_file():
+                claimed_state = json.loads(profile_file.read_text(encoding="utf-8")).get("support_state", "")
+            # Same rule as `run`: a candidate host has no durable receipt to refresh,
+            # while every mapped/packaged host records the static planes it does prove.
+            update_durable = claimed_state != "candidate"
+            verifier.evidence(receipt, update_durable=update_durable)
+            verifier.cleanup()
+            receipts.append(receipt)
+            all_pass = all_pass and ok
+
     if args.action == "run" or len(hosts) > 1:
         print(f"\n================ Verification Summary ================")
         for r in receipts:
-            if args.action == "doctor":
+            if args.action in ("doctor", "refresh-static"):
                 status = "PASS" if (r.planes.get("canonical") == "PASS" and r.planes.get("adapter") == "PASS" and r.planes.get("package") == "PASS") else "FAIL"
             elif args.action == "drive":
                 status = "PASS" if (r.planes.get("runtime") == "PASS") else "FAIL"

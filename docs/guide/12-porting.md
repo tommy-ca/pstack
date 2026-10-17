@@ -128,6 +128,13 @@ candidate → mapped → packaged → verified → supported
 
 A host is supported only after its required capability bindings have static and runtime conformance evidence.
 
+**Recorded status (2026-10-17):** no harness in `profiles/` claims a state above `packaged`.
+The five receipt hosts (grok, codex, omp, opencode, antigravity) each carry a durable
+receipt refreshed statically — canonical, adapter and package `PASS`, runtime and overall
+`UNTESTED` — and every binding row in those profiles is `static-only`; droid stays
+`candidate` with no durable receipt. Treat every earlier `verified`/`supported` label in this
+repository as historical.
+
 ## Port sequence
 
 1. Pin canonical pstack.
@@ -154,12 +161,23 @@ A port that copies another port's host calls is not portable pstack. A thin adap
 
 ## Batch 2 acceptance matrix (5 harnesses)
 
-Batch 2 expands the verified host matrix to 5 harnesses across 3 verification planes (Canonical, Adapter, Runtime):
+Batch 2 expanded the host matrix to 5 harnesses across 3 verification planes (Canonical, Adapter, Runtime):
 1. **Grok Build** (`grok`): Reference host. Subagent tree with depth 2 and shared workspace.
 2. **Codex** (`codex`): Pilot host. Independent workspace git-tree with advisory read-only enforcement.
 3. **OMP** (`omp`): Scale host. Subagent-driven, multi-lane execution with model tier binding.
 4. **OpenCode** (`opencode`): Scale host. Tool-call delegation and structured multi-lane orchestration.
 5. **Google Antigravity** (`antigravity`): Subagent orchestration (`invoke_subagent`, `define_subagent`, `manage_subagents`), background tasks (`run_command` async, `manage_task`, `schedule`), structured human gates (`ask_question`), Gemini model role bindings (`pro`, `flash`, `flash_lite`), and native `.agents/` / plugin rules.
 
-All 5 harnesses are verified via the 3-plane lever engine (`scripts/verify-portable.py run --host <host>`).
+All 5 were recorded as verified through the 3-plane lever engine (`scripts/verify-portable.py run --host <host>`). **That claim is historical.** On 2026-10-17 the durable receipts were refreshed statically:
+
+```sh
+python3 scripts/verify-portable.py refresh-static --host all
+```
+
+which re-runs the static doctor planes and records them as each host's durable receipt:
+canonical, adapter and package `PASS`, runtime `UNTESTED`, overall `UNTESTED`. The runtime
+plane returns only from a live run — `python3 scripts/verify-portable.py run --host <host>`
+with the host CLI and a model route (`PSTACK_RUN_OMP_LIVE=1` for omp) — which records the
+`observed_live` settlement a `verified` row must pin. Never read a historical label as
+current proof.
 

@@ -68,8 +68,10 @@ without installing proprietary agent harness binaries:
 
 Two suites in this list are tier-limited and a green job is not a pass for them.
 `tests/test_omp_native_package.py` skips without an `omp` binary, so the offline
-job proves nothing about native enrollment; that proof lives in the live tier
-(`.audit/evidence/` receipts plus `profiles/*.json` bindings).
+job proves nothing about native enrollment; that proof would live in an
+`observed_live` settlement recorded under `.audit/evidence/` and pinned by a
+`profiles/*.json` row. The checked-in durable receipts are static refreshes
+(`refresh-static`), so their runtime plane is `UNTESTED` and they prove no live claim.
 `tests/test_ci_resource_isolation.py` proves
 only its Python half when `node` is absent.
   
@@ -89,7 +91,10 @@ PSTACK_RUN_HOST_DEPENDENT_TESTS=1 python -m pytest -q tests/test_harness_drivers
 
 These checks require locally installed/configured host executables and may fail
 without prerequisites. They currently inspect several static/CLI-help surfaces
-that **must not be classified as observed live model execution**. Live claims rest on `.audit/evidence/` receipts plus `profiles/*.json` bindings.
+that **must not be classified as observed live model execution**. A live claim
+would rest on an `observed_live` settlement under `.audit/evidence/` plus the
+`profiles/*.json` row that pins it; today's durable receipts are static refreshes
+and carry runtime `UNTESTED`.
 
 The broader `tests/test_verify_portable.py` integration tests invoke OpenSpec,
 harness doctors and other external tools; they are **not** part of the minimal
@@ -190,24 +195,35 @@ Attacks refused by a suite this unit does not own, with where the refusal lives:
 
 ### Six-host offline matrix
 
-Recorded at `6b0a0e9` and re-verified at the land head (receipts bound by surface hash, not commit):
+Recorded at `6b0a0e9`, re-verified at the land head, and refreshed statically on
+2026-10-17 (receipts bound by surface hash, not commit):
 
 ```sh
 python scripts/verify-portable.py check-evidence --host all
 python scripts/verify-portable.py check-staleness --host all --json
+python scripts/verify-portable.py refresh-static --host all
 ```
+
+The third command is the honest repair for a moved surface: it re-runs the static
+doctor planes for each host and records them as that host's durable receipt,
+leaving the model-backed runtime plane `UNTESTED`. Its exit status is the doctor
+result, so a failing static plane stays `FAIL` instead of riding the `UNTESTED`
+overall verdict out as a pass, and a host whose claimed state is `candidate`
+(droid) gets no durable receipt written at all.
 
 | Host | Binary on PATH | Durable receipt | Stale planes | Derived support state | Offline verdict |
 | --- | --- | --- | --- | --- | --- |
-| grok | present | yes | none | supported | PASS |
-| codex | present | yes | none | supported | PASS |
-| omp | present | yes | none | packaged | PASS |
-| opencode | present | yes | none | supported | PASS |
-| antigravity | present | yes | none | supported | PASS |
+| grok | present | yes (static refresh) | none | packaged | PASS |
+| codex | present | yes (static refresh) | none | packaged | PASS |
+| omp | present | yes (static refresh) | none | packaged | PASS |
+| opencode | present | yes (static refresh) | none | packaged | PASS |
+| antigravity | present | yes (static refresh) | none | packaged | PASS |
 | droid | present | no (by design) | n/a | candidate | BLOCKED (ineligible host) |
 
-Offline pytest gate on a host with all six binaries present: **526 passed, 10
-skipped**. Every skip is a measured opt-out, never a pass: seven opt-in host CLI
+Offline pytest gate on a host with all six binaries present, recorded
+2026-10-16: **526 passed, 10 skipped**, plus the one case the static refresh adds
+(`tests/test_evidence_durability.py::test_refresh_static_is_partial_and_never_rounds_a_failure_up`).
+Every skip is a measured opt-out, never a pass: seven opt-in host CLI
 smoke cases in `tests/test_harness_drivers.py`
 (`PSTACK_RUN_HOST_DEPENDENT_TESTS=1`), the live model-backed case in
 `tests/test_omp_rpc.py`, and the two live-arm cases in
@@ -217,7 +233,14 @@ the `omp` binary further cases skip instead of passing. Where the upstream cache
 is absent (as in CI), the canonical-index classify-drift arm skips instead as
 contract BLOCKED.
 
-The durable receipts bound here carry OMP's three `observed_live` settlements
-(spawn, cancel, isolation); the other hosts rest on offline evidence and droid
-has no receipt by design. OMP's derived state remains `packaged`, and a host
-without a receipt is `candidate`, never an invented PASS.
+Every checked-in durable receipt is a static refresh: canonical, adapter and
+package `PASS` at the current surface revisions, with runtime and overall
+`UNTESTED` and no `observed_live` row. The OMP settlements observed on 2026-10-13
+(spawn, cancel, isolation) are historical: the static refresh dropped them because
+the runtime surface they proved had moved, and the omp profile now claims
+`packaged` with every row `static-only` (and both its ledger claims marked
+historical). A live claim comes back only from a live run —
+`PSTACK_RUN_OMP_LIVE=1 python3 scripts/verify-portable.py run --host omp`, or
+`run --host <host>` where the host CLI and a model route exist — which records a
+new `observed_live` settlement for the row that pins it. A host without a receipt
+is `candidate`, never an invented PASS.
