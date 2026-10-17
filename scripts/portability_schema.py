@@ -1237,15 +1237,15 @@ def check_evidence_durability(
     check_scenario_pins(profile, receipts_by_ref)
 
     if check_freshness:
-        # Freshness planes follow the claimed level: packaged proves the
-        # package plane; verified adds canonical, adapter and runtime; only
-        # supported enforces all four. Candidate claims skip the gate.
+        # Freshness planes follow the claimed level cumulatively: `packaged` proves
+        # the package plane, and every level above it keeps that plane while adding
+        # the behavioral ones. `verified` used to check canonical/adapter/runtime
+        # only, so a stale package driver passed a claim one rung above `packaged`,
+        # which does check it (#473). Candidate claims skip the gate.
         if profile.support_state in ("verified", "supported", "packaged"):
             stale_details: List[str] = []
             if profile.support_state == "packaged":
                 freshness_planes = ("package",)
-            elif profile.support_state == "verified":
-                freshness_planes = ("canonical", "adapter", "runtime")
             else:
                 freshness_planes = ("canonical", "adapter", "runtime", "package")
             for b in profile.bindings:

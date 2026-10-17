@@ -1116,7 +1116,10 @@ def index_row_mismatch(host: str, index_file: Path, receipt_root: Path) -> Optio
     refused durable overwrite, so a mismatch here means the durable bytes and the
     inventory it is read through moved apart — the write window between the two writes
     (ENOSPC, SIGINT, a read-only index) that no writer-side guard closes. A host with no
-    row (droid ships no durable receipt) has nothing to cross-check and returns None.
+    row *and* no durable receipt (droid ships none) has nothing to cross-check and
+    returns None; a host that has a durable receipt but no row has an inventory
+    trailing its bytes, so it reports rebuild-required (or a repair, when the orphan
+    bytes are unusable) instead of passing (#495).
     """
     try:
         hosts = json.loads(index_file.read_text(encoding="utf-8")).get("hosts", {})
@@ -1126,7 +1129,31 @@ def index_row_mismatch(host: str, index_file: Path, receipt_root: Path) -> Optio
         return f"evidence index {index_file} has a non-object 'hosts': {type(hosts).__name__}"
     row = hosts.get(host)
     if row is None:
-        return None
+        # Deleting a row (the F4 remedy an operator reaches for, or a crash between the
+        # durable write and the index write) used to pass silently while the receipt it
+        # should describe sat on disk. A host with no durable receipt (droid) still has
+        # nothing to cross-check.
+        durable_file = receipt_root / ".audit" / "evidence" / f"{host}-receipt.json"
+        if not _file_or_denied(durable_file):
+            return None
+        # Read the orphan before prescribing a remedy: bytes a rebuild cannot stand on
+        # are a repair, not a rebuild, and a run that cannot read them refuses to
+        # rewrite them (#495).
+        try:
+            VerificationReceipt(**json.loads(durable_file.read_text(encoding="utf-8"))).validate()
+        except Exception as err:
+            return (
+                f"index {index_file} has no row for {host} and its durable receipt "
+                f"{durable_file} cannot be read as a usable receipt: "
+                f"{type(err).__name__}: {err}. Repair or remove that receipt, then re-run."
+            )
+        return (
+            f"index {index_file} has no row for {host} but its durable receipt "
+            f"{durable_file} exists: the inventory is STALE/REBUILD-REQUIRED. Rebuild "
+            f"the row with `python3 scripts/verify-portable.py refresh-static --host {host}` "
+            f"(a host claiming `candidate` writes no durable receipt, so an orphan left by "
+            f"a demotion has to be removed instead)."
+        )
     if not isinstance(row, dict):
         return f"index row for {host} in {index_file} is {type(row).__name__}, not an object"
     receipt_file = receipt_root / str(row.get("receipt") or f".audit/evidence/{host}-receipt.json")

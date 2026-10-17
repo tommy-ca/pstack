@@ -250,6 +250,58 @@ historical). A live claim comes back only from a live run —
 new `observed_live` settlement for the row that pins it. A host without a receipt
 is `candidate`, never an invented PASS.
 
+### Claim freshness planes are cumulative, and the inventory is read too
+
+`check-evidence` gates a level claim on the planes that level rests on, and the
+planes accumulate: `packaged` proves the package plane, `verified` keeps it and
+adds canonical, adapter and runtime, `supported` keeps all four across every row.
+`verified` used to check only the behavioral three, so a stale package driver —
+`scripts/package-lifecycle.py`, `pstack.package.json` or the plugin manifest —
+failed the `packaged` claim one rung below and passed the `verified` claim above
+it. Pinned by
+`tests/test_evidence_durability.py::test_a_verified_claim_evaluates_the_package_plane`
+and, for the level below,
+`::test_stale_package_driver_rejected_for_packaged_claim`. (#473)
+
+The same command reads `.audit/evidence/index.json` as evidence, not only as a
+cache: every row is compared with the receipt it names on `run_id`, `timestamp`,
+`planes` and `surface_revisions`, and a host with a durable receipt but **no row**
+reports `STALE/REBUILD-REQUIRED` naming the receipt, because deleting a row was
+the F4 remedy that used to pass silently. Rebuild with
+`python3 scripts/verify-portable.py refresh-static --host <host>` — unless the
+orphan receipt cannot be read at all (that failure reports a repair, since a run
+refuses to rewrite bytes it cannot read) or the host claims `candidate` (which
+writes no durable receipt, so the orphan is removed instead). A host with
+neither row nor durable receipt (droid) has nothing to inventory and keeps
+reporting `NOT_COVERED`. Pinned by
+`tests/test_evidence_durability.py::test_a_row_less_host_with_a_durable_receipt_reports_rebuild_required`
+and `::test_check_evidence_fails_when_a_row_disagrees_with_its_receipt`. (#495)
+
+### What a receipt does not bind (recorded gap)
+
+A durable receipt binds the host binary (`host_version`) and the recorded surface
+revisions. It does **not** bind the host's model catalog or the pstack
+schema/harness-catalog hash, so a `verified` receipt proves the surfaces and
+binary it names and never the model catalog a live route would resolve. The
+receipt schema states this in its own description
+(`schemas/portability/receipt.schema.json`). Closing it means new
+`VerificationReceipt` fields plus a restamp of all five durable receipts and the
+index, which is out of scope for this unit; the gap is recorded here rather than
+implied by the word `verified`. (#444)
+
+The external `qstack` quant-domain overlay is pinned as a **post-routing**
+boundary: `tests/fixtures/qstack-overlay-routing.json` declares the contract
+(stage `post-routing`, owns no router or model namespace) and the overlay's
+activation table, and
+`tests/test_context_overlays.py::test_qstack_overlay_stays_post_routing_and_leaves_routes_unchanged`
+binds the production half: the route each of the six harnesses resolves for one
+fixed need (`TDD` → `/tdd`), and the assertion that no file under `scripts/` or
+`profiles/` mentions qstack at all, so wiring the overlay into pstack routing or
+into a profile's model namespace reddens there. The declared contract and
+activation table are checked against this repo's overlay-gating semantics
+(`select_overlays` in that module), not by executing the external pack: they pin
+the declaration, and profile drift is what reddens the route half. (#444)
+
 ### Role modules stay out of the revision inputs (planning-only)
 
 `scripts/model_role_policy.py` and `scripts/model_role_resolver.py` are

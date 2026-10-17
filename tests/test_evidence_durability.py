@@ -323,6 +323,30 @@ def test_stale_package_driver_rejected_for_packaged_claim(host: str) -> None:
         check_evidence_durability(prof, ROOT, check_freshness=True, current_revisions=tampered_revs)
 
 
+def test_a_verified_claim_evaluates_the_package_plane(tmp_path: Path) -> None:
+    """#473: the level above `packaged` must not tolerate the plane `packaged` refuses.
+
+    `verified` checked canonical/adapter/runtime only, so one stale package driver failed
+    the `packaged` claim one rung below and passed the `verified` claim above it. Claimed
+    planes are cumulative; the fresh arm is the control that the fixture itself is legal.
+    """
+    root, prof = _synthetic_evidence_root(
+        tmp_path,
+        ["offline", "observed_live"],
+        settlements=[None, _success_settlement()],
+        force_verified=True,
+    )
+    assert prof.support_state == "verified"
+    assert check_evidence_durability(prof, root)["derived_support_state"] == "supported"
+
+    tampered = replace(
+        compute_surface_revisions(root, "omp"), package_driver_revision="stale-package-driver"
+    )
+    with pytest.raises(ValidationError, match="evidence is stale for claimed verified") as refused:
+        check_evidence_durability(prof, root, current_revisions=tampered)
+    assert "package_driver_revision mismatch" in str(refused.value)
+
+
 def test_stale_package_descriptor_invalidates_package_and_runtime() -> None:
     current_revs = compute_surface_revisions(ROOT, "codex")
     receipt_data = json.loads((EVIDENCE_DIR / "codex-receipt.json").read_text(encoding="utf-8"))
@@ -742,6 +766,52 @@ def test_check_evidence_fails_when_a_row_disagrees_with_its_receipt(tmp_path: Pa
     assert "[grok] FAIL" in tampered.stdout
     assert "run_id" in tampered.stdout and "hand-edited-run-id" in tampered.stdout
     assert "grok-receipt.json" in tampered.stdout
+
+
+def test_a_row_less_host_with_a_durable_receipt_reports_rebuild_required(tmp_path: Path) -> None:
+    """Deleting an index row is the F4 remedy, and it used to pass silently (#495).
+
+    A host whose durable receipt exists and whose row does not is the inventory trailing
+    its bytes — the same shape a crash between the two writes leaves. Nothing read that:
+    `check-evidence` exited 0 while the receipt it should have described sat on disk. The
+    untouched copy is the positive control, and droid (no durable receipt) keeps passing
+    because it has nothing to inventory.
+    """
+    copy_root = _disposable_copy(tmp_path)
+    command = [sys.executable, str(copy_root / "scripts" / "verify-portable.py"), "check-evidence"]
+
+    clean = subprocess.run(command + ["--host", "grok"], capture_output=True, text=True, cwd=copy_root)
+    assert clean.returncode == 0, clean.stdout + clean.stderr
+
+    index_file = copy_root / ".audit" / "evidence" / "index.json"
+    index = json.loads(index_file.read_text(encoding="utf-8"))
+    del index["hosts"]["grok"]
+    index_file.write_text(json.dumps(index, indent=2) + "\n", encoding="utf-8")
+
+    row_less = subprocess.run(command + ["--host", "grok"], capture_output=True, text=True, cwd=copy_root)
+    assert row_less.returncode == 1, row_less.stdout + row_less.stderr
+    assert "STALE/REBUILD-REQUIRED" in row_less.stdout
+    assert "grok-receipt.json" in row_less.stdout
+
+    droid = subprocess.run(command + ["--host", "droid"], capture_output=True, text=True, cwd=copy_root)
+    assert droid.returncode == 0, droid.stdout + droid.stderr
+
+    # An orphan whose bytes a rebuild cannot stand on is a repair, not a rebuild: the
+    # remedy text has to differ, because `refresh-static` refuses to rewrite a receipt
+    # it cannot read and would leave the inventory missing that host either way.
+    del index["hosts"]["codex"]
+    index_file.write_text(json.dumps(index, indent=2) + "\n", encoding="utf-8")
+    (copy_root / ".audit" / "evidence" / "codex-receipt.json").write_text("{not json", encoding="utf-8")
+    unreadable = subprocess.run(command + ["--host", "codex"], capture_output=True, text=True, cwd=copy_root)
+    assert unreadable.returncode == 1, unreadable.stdout + unreadable.stderr
+    assert "cannot be read as a usable receipt" in unreadable.stdout
+    assert "STALE/REBUILD-REQUIRED" not in unreadable.stdout
+
+    # Whole-file removal is the same class one level up: no inventory at all, named.
+    index_file.unlink()
+    deleted = subprocess.run(command + ["--host", "grok"], capture_output=True, text=True, cwd=copy_root)
+    assert deleted.returncode == 1, deleted.stdout + deleted.stderr
+    assert "unreadable" in deleted.stdout
 
 
 def _load_verify_portable_module():

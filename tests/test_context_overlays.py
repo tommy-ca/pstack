@@ -36,6 +36,7 @@ FIXTURES = Path(__file__).resolve().parent / "fixtures" / "context-overlays"
 REGISTRY_PATH = FIXTURES / "domain-overlays.json"
 CASES_PATH = FIXTURES / "cases.json"
 TRACE_PATH = FIXTURES / "context-work-trace.json"
+QSTACK_ROUTING_PATH = Path(__file__).resolve().parent / "fixtures" / "qstack-overlay-routing.json"
 QUALIFICATION_DOC = (
     ROOT
     / "openspec/changes/archive/2026-10-11-deepseek-skill-portability/qualification-and-eval.md"
@@ -321,6 +322,64 @@ def test_prohibited_context_deactivates_the_overlay(overlay: Dict) -> None:
         )
         assert overlay["id"] not in gated.activated, f"{overlay['id']} fired in prohibited context {context}"
         assert overlay["id"] not in [pair[0] for pair in gated.blocked]
+
+
+# --- qstack overlay boundary (#444) ----------------------------------------
+
+
+def test_qstack_overlay_stays_post_routing_and_leaves_routes_unchanged() -> None:
+    """qstack is a post-router domain overlay, never a second router.
+
+    Two of the three halves here are production-bound and one is a declaration, stated
+    so the pin is not read as more than it is:
+
+    - production: every harness resolves the recorded route for one fixed need, so a
+      profile/`skill_order` drift reddens it;
+    - production: no file under `scripts/` or `profiles/` may mention qstack at all —
+      the overlay is external, and the day it is wired into pstack routing (or into a
+      profile's model namespace) this reddens;
+    - declaration: the fixture's own contract fields, and its activation table run
+      through this repo's overlay-gating semantics (`select_overlays`), which pin the
+      declared contract rather than executing the external pack.
+    """
+    from scripts.route_resolver import resolve_skill_order
+
+    fixture = _load(QSTACK_ROUTING_PATH)
+    contract, overlay, route = fixture["contract"], fixture["overlay"], fixture["route"]
+
+    assert contract["stage"] == "post-routing"
+    assert contract["owns_router"] is False
+    assert contract["owns_model_namespace"] is False
+    assert overlay["unsupported_response"] in UNSUPPORTED_RESPONSES
+
+    for host in route["hosts"]:
+        resolved = resolve_skill_order(_load(ROOT / "profiles" / f"{host}.json"), route["need"], ROOT)
+        observed = {"status": resolved.status, "kind": resolved.kind, "target": resolved.target}
+        assert observed == route["expect"], host
+
+    coupled = sorted(
+        path.relative_to(ROOT).as_posix()
+        for path in (*ROOT.glob("scripts/**/*.py"), *ROOT.glob("profiles/*.json"))
+        if "qstack" in path.read_text(encoding="utf-8", errors="ignore")
+    )
+    assert not coupled, f"pstack must not own a qstack router or model namespace: {coupled}"
+
+    for case in fixture["cases"]:
+        activation = select_overlays(
+            [overlay],
+            capabilities=case["capabilities"],
+            domain=case["domain"],
+            contexts=case["contexts"],
+            requested=case["requested"],
+        )
+        if overlay["id"] in activation.activated:
+            observed = "activated"
+        elif overlay["id"] in [pair[0] for pair in activation.blocked]:
+            observed = "blocked"
+            assert dict(activation.blocked)[overlay["id"]] == overlay["unsupported_response"]
+        else:
+            observed = "inactive"
+        assert observed == case["expect"], case["id"]
 
 
 # --- measured context work -------------------------------------------------
