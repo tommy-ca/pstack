@@ -369,7 +369,9 @@ def test_docs_changes_do_not_stale_any_plane() -> None:
 def test_hand_authored_support_state_cannot_outrun_evidence() -> None:
     # A profile claiming 'supported' with tampered stale surface revisions must be rejected
     profile_data = json.loads((ROOT / "profiles" / "grok.json").read_text(encoding="utf-8"))
-    b = [Binding(**x) for x in profile_data["bindings"]]
+    # `check-evidence` now runs the profile domain rules before the staleness gate (#473),
+    # so the fixture has to be a profile that *may* claim `supported`: every row verified.
+    b = [Binding(**{**x, "verification_status": "verified"}) for x in profile_data["bindings"]]
     e = [Evidence(**x) for x in profile_data.get("evidence_ledger", [])]
     prof = HarnessProfile(
         host=profile_data["host"],
@@ -1950,3 +1952,105 @@ def test_a_verified_pin_naming_an_unrecorded_scenario_is_a_dangling_reference() 
     )
     with pytest.raises(ValidationError, match="does not record"):
         check_scenario_pins(_profile_pinning(ref, "child-resume-typo"), {ref: receipt})
+
+
+def test_a_profile_that_binds_one_capability_twice_is_refused(tmp_path: Path) -> None:
+    """#473: two rows for one capability collapse last-wins, so the dropped row's
+    evidence stops being read and nine duplicate floor rows could hide a `FAIL` receipt
+    behind a `supported` baseline. One predicate in `HarnessProfile.validate()` refuses
+    the shape on both readers instead.
+    """
+    root, prof = _synthetic_evidence_root(
+        tmp_path,
+        ["offline", "observed_live"],
+        settlements=[None, _success_settlement()],
+        force_verified=True,
+    )
+    assert derive_support_state(prof, root) == "supported"
+
+    floor_row = next(b for b in prof.bindings if b.capability == "agent.spawn")
+    duplicated = replace(prof, bindings=[floor_row] * 9 + list(prof.bindings))
+
+    with pytest.raises(ValidationError, match=r"binds a capability more than once.*agent\.spawn"):
+        derive_support_state(duplicated, root)
+    with pytest.raises(ValidationError, match=r"binds a capability more than once.*agent\.spawn"):
+        check_evidence_durability(duplicated, root)
+
+    # The act-on's reproduction shape: nine duplicate floor rows citing a FAIL-plane
+    # receipt, prepended to the supported baseline. Last-wins read the baseline's good
+    # receipt and derived `supported`; the shape is refused before any row is read.
+    fail_ref = ".audit/evidence/fail-receipt.json"
+    data = json.loads((root / ".audit" / "evidence" / "synthetic-receipt.json").read_text(encoding="utf-8"))
+    for row in data["scenarios"]:
+        if row["plane"] == "runtime":
+            row["verdict"], row["exit_code"] = "FAIL", 1
+    data["planes"], data["overall_verdict"] = _declared_from(
+        [ScenarioResult(**row) for row in data["scenarios"]]
+    )
+    (root / fail_ref).write_text(json.dumps(data), encoding="utf-8")
+
+    act_on = replace(
+        prof,
+        bindings=[replace(floor_row, evidence_ref=fail_ref)] * 9 + list(prof.bindings),
+    )
+    with pytest.raises(ValidationError, match=r"binds a capability more than once.*agent\.spawn"):
+        derive_support_state(act_on, root)
+
+
+def test_check_evidence_validates_the_profile_it_reads(tmp_path: Path) -> None:
+    """#473: the check-evidence path skipped the domain rules doctor already ran.
+
+    A profile claiming `supported` with a `gap` on a mandatory floor capability used to
+    pass `check-evidence`; the same predicate now runs on both readers, so the claim is
+    refused by name instead of being derived.
+    """
+    root, prof = _synthetic_evidence_root(
+        tmp_path,
+        ["offline", "observed_live"],
+        settlements=[None, _success_settlement()],
+        force_verified=True,
+    )
+    gap_row = replace(
+        next(b for b in prof.bindings if b.capability == "workspace.shared"),
+        implementation_status="gap",
+    )
+    bad = replace(
+        prof,
+        support_state="supported",
+        bindings=[gap_row if b.capability == "workspace.shared" else b for b in prof.bindings],
+    )
+    message = r"cannot have gap on mandatory capability workspace\.shared"
+    with pytest.raises(ValidationError, match=message):
+        derive_support_state(bad, root)
+    with pytest.raises(ValidationError, match=message):
+        check_evidence_durability(bad, root)
+
+
+def test_check_evidence_cli_refuses_a_profile_that_violates_a_domain_rule(tmp_path: Path) -> None:
+    """The CLI path is the reachability half of the same rule (#473)."""
+    copy_root = _disposable_copy(tmp_path)
+    command = [
+        sys.executable,
+        str(copy_root / "scripts" / "verify-portable.py"),
+        "check-evidence",
+        "--host",
+        "grok",
+    ]
+    clean = subprocess.run(command, capture_output=True, text=True, cwd=copy_root)
+    assert clean.returncode == 0, clean.stdout + clean.stderr
+
+    profile_file = copy_root / "profiles" / "grok.json"
+    d = json.loads(profile_file.read_text(encoding="utf-8"))
+    d["support_state"] = "supported"
+    # Every row verified, so the *gap* rule is the one that fires rather than the
+    # unverified-row rule that precedes it in the mandatory-floor scan.
+    for binding in d["bindings"]:
+        binding["verification_status"] = "verified"
+        if binding["capability"] == "workspace.shared":
+            binding["implementation_status"] = "gap"
+    profile_file.write_text(json.dumps(d, indent=2) + "\n", encoding="utf-8")
+
+    res = subprocess.run(command, capture_output=True, text=True, cwd=copy_root)
+    assert res.returncode == 1, res.stdout + res.stderr
+    assert "[grok] FAIL" in res.stdout
+    assert "cannot have gap on mandatory capability workspace.shared" in res.stdout
