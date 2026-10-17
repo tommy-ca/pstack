@@ -22,6 +22,7 @@ import os
 import re
 import secrets
 import shlex
+import stat
 import subprocess
 import sys
 import time
@@ -65,6 +66,23 @@ from scripts.evidence_receipts import (
 )
 
 SUPPORTED_HOSTS = ("grok", "codex", "omp", "opencode", "antigravity", "droid")
+
+
+def _file_or_denied(path: Path) -> bool:
+    """`is_file()` that reports a denied stat as present rather than crashing or lying.
+
+    A parent directory this run cannot search makes the stat itself fail with
+    EACCES/EPERM. `Path.is_file()` raises that on 3.12 and swallows it to `False` on
+    3.14, so the raw guard either escaped as a traceback or skipped the refusal and
+    wrote straight through the denial. Reporting "present" sends both into the read
+    that already refuses, naming the file (#495).
+    """
+    try:
+        return stat.S_ISREG(path.stat().st_mode)
+    except PermissionError:
+        return True
+    except OSError:
+        return False
 
 
 def get_declared_hosts() -> List[str]:
@@ -988,7 +1006,7 @@ class PortableVerifier:
             # receipt (#495).
             index_file = self.evidence_root / "index.json"
             index_data: Dict[str, Any] = {"version": 1, "hosts": {}}
-            if index_file.is_file():
+            if _file_or_denied(index_file):
                 try:
                     index_data = json.loads(index_file.read_text(encoding="utf-8"))
                     if not isinstance(index_data, dict) or not isinstance(index_data.get("hosts", {}), dict):
@@ -1017,7 +1035,7 @@ class PortableVerifier:
             durable_file = self.evidence_root / f"{self.host}-receipt.json"
             durable_data = data
             reusable = True
-            if durable_file.is_file():
+            if _file_or_denied(durable_file):
                 try:
                     previous = VerificationReceipt(**json.loads(durable_file.read_text(encoding="utf-8")))
                     preserved = preserve_observed_settlements(previous, receipt)
