@@ -1,0 +1,58 @@
+{
+  "recipe": "B",
+  "restamped": [
+    "restamped grok",
+    "restamped codex",
+    "restamped omp",
+    "restamped opencode",
+    "restamped antigravity",
+    "restamped index.json"
+  ],
+  "failed_before_restamp": [
+    "tests/test_evidence_durability.py::test_all_five_profiles_pass_evidence_durability_and_freshness",
+    "tests/test_evidence_durability.py::test_all_six_profiles_pass_evidence_durability_and_freshness",
+    "tests/test_evidence_durability.py::test_check_evidence_cli_output",
+    "tests/test_evidence_durability.py::test_check_staleness_cli_json_output",
+    "tests/test_evidence_durability.py::test_docs_changes_do_not_stale_any_plane",
+    "tests/test_evidence_durability.py::test_driver_source_change_invalidates_adapter_and_runtime[scripts/adapt-harness.py]",
+    "tests/test_evidence_durability.py::test_driver_source_change_invalidates_adapter_and_runtime[scripts/drivers/base.py]",
+    "tests/test_evidence_durability.py::test_driver_source_change_invalidates_adapter_and_runtime[scripts/drivers/codex.py]",
+    "tests/test_evidence_durability.py::test_driver_source_change_invalidates_adapter_and_runtime[scripts/portability_schema.py]",
+    "tests/test_evidence_durability.py::test_driver_source_change_invalidates_adapter_and_runtime[scripts/route_resolver.py]",
+    "tests/test_evidence_durability.py::test_driver_source_change_invalidates_adapter_and_runtime[scripts/scaffold-verification-skill.py]",
+    "tests/test_evidence_durability.py::test_driver_source_change_invalidates_adapter_and_runtime[scripts/skill_frontmatter.py]",
+    "tests/test_evidence_durability.py::test_driver_source_change_invalidates_adapter_and_runtime[scripts/verify-harness.py]",
+    "tests/test_evidence_durability.py::test_driver_source_change_invalidates_adapter_and_runtime[scripts/verify-portable.py]",
+    "tests/test_evidence_durability.py::test_durable_receipts_exist_for_all_five_hosts"
+  ],
+  "failed_after_restamp": [
+    "tests/test_evidence_durability.py::test_driver_source_change_invalidates_adapter_and_runtime[scripts/adapt-harness.py]",
+    "tests/test_evidence_durability.py::test_driver_source_change_invalidates_adapter_and_runtime[scripts/drivers/base.py]",
+    "tests/test_evidence_durability.py::test_driver_source_change_invalidates_adapter_and_runtime[scripts/drivers/codex.py]",
+    "tests/test_evidence_durability.py::test_driver_source_change_invalidates_adapter_and_runtime[scripts/portability_schema.py]",
+    "tests/test_evidence_durability.py::test_driver_source_change_invalidates_adapter_and_runtime[scripts/route_resolver.py]",
+    "tests/test_evidence_durability.py::test_driver_source_change_invalidates_adapter_and_runtime[scripts/scaffold-verification-skill.py]",
+    "tests/test_evidence_durability.py::test_driver_source_change_invalidates_adapter_and_runtime[scripts/skill_frontmatter.py]",
+    "tests/test_evidence_durability.py::test_driver_source_change_invalidates_adapter_and_runtime[scripts/verify-harness.py]",
+    "tests/test_evidence_durability.py::test_driver_source_change_invalidates_adapter_and_runtime[scripts/verify-portable.py]"
+  ],
+  "migration_only": [
+    "tests/test_evidence_durability.py::test_all_five_profiles_pass_evidence_durability_and_freshness",
+    "tests/test_evidence_durability.py::test_all_six_profiles_pass_evidence_durability_and_freshness",
+    "tests/test_evidence_durability.py::test_check_evidence_cli_output",
+    "tests/test_evidence_durability.py::test_check_staleness_cli_json_output",
+    "tests/test_evidence_durability.py::test_docs_changes_do_not_stale_any_plane",
+    "tests/test_evidence_durability.py::test_durable_receipts_exist_for_all_five_hosts"
+  ],
+  "needs_pin_rewrite": [
+    "tests/test_evidence_durability.py::test_driver_source_change_invalidates_adapter_and_runtime[scripts/adapt-harness.py]",
+    "tests/test_evidence_durability.py::test_driver_source_change_invalidates_adapter_and_runtime[scripts/drivers/base.py]",
+    "tests/test_evidence_durability.py::test_driver_source_change_invalidates_adapter_and_runtime[scripts/drivers/codex.py]",
+    "tests/test_evidence_durability.py::test_driver_source_change_invalidates_adapter_and_runtime[scripts/portability_schema.py]",
+    "tests/test_evidence_durability.py::test_driver_source_change_invalidates_adapter_and_runtime[scripts/route_resolver.py]",
+    "tests/test_evidence_durability.py::test_driver_source_change_invalidates_adapter_and_runtime[scripts/scaffold-verification-skill.py]",
+    "tests/test_evidence_durability.py::test_driver_source_change_invalidates_adapter_and_runtime[scripts/skill_frontmatter.py]",
+    "tests/test_evidence_durability.py::test_driver_source_change_invalidates_adapter_and_runtime[scripts/verify-harness.py]",
+    "tests/test_evidence_durability.py::test_driver_source_change_invalidates_adapter_and_runtime[scripts/verify-portable.py]"
+  ]
+}

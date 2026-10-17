@@ -1,0 +1,12 @@
+{
+  "recipe": "A",
+  "exit": 1,
+  "failed": [
+    "tests/test_eval_blinded_pstack_dsh.py::TestDshBaselineCorpus::test_a_moved_tree_is_reported_as_drift_not_as_a_failed_baseline",
+    "tests/test_eval_blinded_pstack_dsh.py::TestDshBaselineCorpus::test_baseline_gaps_are_untested_not_failed",
+    "tests/test_refresh_hygiene.py::test_sync_remote_cache_is_primary_checkout",
+    "tests/test_verify_portable.py::test_portable_verifier_antigravity",
+    "tests/test_verify_portable.py::test_portable_verifier_droid"
+  ],
+  "summary_line": "5 failed, 968 passed, 11 skipped in 295.52s (0:04:55)"
+}
