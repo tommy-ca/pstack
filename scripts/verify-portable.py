@@ -1068,8 +1068,17 @@ class PortableVerifier:
             if index_file.is_file():
                 try:
                     index_data = json.loads(index_file.read_text(encoding="utf-8"))
-                except Exception:
-                    pass
+                except Exception as err:
+                    # index.json is the only inventory of every host's durable receipt.
+                    # Resetting it to a fresh {"hosts": {}} would rewrite the file for
+                    # this host alone and silently un-list every other host, so fail
+                    # loudly and leave the corrupt bytes in place for recovery (#429, #444).
+                    sys.exit(
+                        f"REFUSING to rewrite the unreadable evidence index at {index_file}: "
+                        f"{type(err).__name__}: {err}. The index lists every host's durable "
+                        f"receipt, so resetting it would silently drop the other hosts. Repair "
+                        f"or remove the file, then re-run. This run's receipt is at {receipt_file}."
+                    )
             index_data.setdefault("hosts", {})[self.host] = {
                 "receipt": f".audit/evidence/{self.host}-receipt.json",
                 "run_id": receipt.run_id,
