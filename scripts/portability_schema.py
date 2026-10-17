@@ -765,7 +765,10 @@ def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path
     spec_file = root / "openspec" / "specs" / "pstack-portability" / "spec.md"
     spec_hash = hashlib.sha256(spec_file.read_bytes()).hexdigest() if spec_file.is_file() else "missing"
 
-    # 4. skills tree hash
+    # 4. skills tree hash — prose raw, Python by its behaviour-bearing core.
+    # A skill script is code, so a comment inside it must not cost a five-host
+    # re-proof any more than a comment inside a driver does (#444); a statement
+    # the AST can carry still moves the revision.
     skills_dir = root / "skills"
     if skills_dir.is_dir():
         hasher = hashlib.sha256()
@@ -777,7 +780,10 @@ def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path
                 if p.suffix in SKILLS_HASH_IGNORED_SUFFIXES:
                     continue
                 hasher.update(rel.as_posix().encode("utf-8"))
-                hasher.update(p.read_bytes())
+                if p.suffix == ".py":
+                    _update_driver_digest(hasher, p)
+                else:
+                    hasher.update(p.read_bytes())
         skills_tree_hash = hasher.hexdigest()
     else:
         skills_tree_hash = "missing"

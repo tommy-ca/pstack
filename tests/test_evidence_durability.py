@@ -552,6 +552,44 @@ def test_genuine_skill_source_change_changes_skills_tree_hash(tmp_path: Path) ->
     assert reverted == fresh
 
 
+def test_skills_script_comment_does_not_stale_runtime(tmp_path: Path) -> None:
+    """A comment under `skills/` is not a skill change; a statement still is (#444).
+
+    `skills_tree_hash` sits in the runtime plane, so the byte-wise recipe used to
+    cost every host a live re-proof for a comment inside a skill script.
+    """
+    copy_root = _disposable_copy(tmp_path)
+    script = copy_root / "skills" / "swarm" / "scripts" / "partition.py"
+    original = script.read_bytes()
+    fresh = compute_surface_revisions(copy_root, "grok")
+    receipt = VerificationReceipt(
+        run_id="skills-tree-hash-regression",
+        host="grok",
+        host_version="test",
+        timestamp="2026-10-17T00:00:00Z",
+        overall_verdict="PASS",
+        planes={plane: "PASS" for plane in CONFORMANCE_PLANES},
+        surface_revisions=fresh,
+    )
+    assert receipt.evaluate_plane_staleness(fresh) == {
+        "canonical": [], "adapter": [], "package": [], "runtime": []
+    }
+
+    script.write_bytes(original + b"\n# comment only: no behaviour changed\n")
+    assert compute_surface_revisions(copy_root, "grok") == fresh
+
+    script.write_bytes(original + b"\nBEHAVIOR_PROBE = 'changed skill behaviour'\n")
+    edited = compute_surface_revisions(copy_root, "grok")
+    assert edited.skills_tree_hash != fresh.skills_tree_hash
+    assert replace(edited, skills_tree_hash=fresh.skills_tree_hash) == fresh
+    stale_map = receipt.evaluate_plane_staleness(edited)
+    assert {plane for plane, reasons in stale_map.items() if reasons} == {"runtime"}
+    assert stale_map["runtime"][0].startswith("skills_tree_hash mismatch")
+
+    script.write_bytes(original)
+    assert compute_surface_revisions(copy_root, "grok") == fresh
+
+
 def test_harness_verifier_dynamic_import_does_not_self_invalidate(tmp_path: Path) -> None:
     copy_root = _disposable_copy(tmp_path)
     partition_script = copy_root / "skills" / "swarm" / "scripts" / "partition.py"
