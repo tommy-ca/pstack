@@ -39,6 +39,7 @@ def _sha256(path: Path) -> str:
 
 
 from scripts.eval_blinded_pstack import _probe_scope_hash
+from scripts.portability_schema import RecipeError
 
 
 @pytest.fixture(scope="module")
@@ -195,3 +196,85 @@ class TestDshCandidatePhase:
         (corpus_dir / "cases.json").write_text(json.dumps(corpus), encoding="utf-8")
         with pytest.raises(ValueError, match="frozen baseline corpus changed"):
             run_dsh_blinded_eval(corpus_dir, ROOT, phase="candidate")
+
+
+# --- the probe scope: what a frozen table is reproduced against (#444) ---
+
+PROBE_SCOPE_SCRIPTS = (
+    "verify-portable.py",
+    "route_resolver.py",
+    "decision_adapter.py",
+    "eval_blinded_pstack.py",
+)
+
+
+def _probe_scope_copy(tmp_path: Path) -> Path:
+    """A copy of exactly the files `_probe_scope_hash` reads, real bytes intact.
+
+    Only the Python scripts contribute a behaviour core; the markdown and JSON files
+    are content, so their bytes are the fingerprint (whether `skills/` markdown belongs
+    in a *plane* at all is the separate decision tracked on #444).
+    """
+    root = tmp_path / "probe_scope"
+    for pattern in ("skills/**/SKILL.md", "skills/**/playbooks/*.md", "agents/*.md"):
+        for path in ROOT.glob(pattern):
+            target = root / path.relative_to(ROOT)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(path, target)
+    (root / "profiles").mkdir(parents=True, exist_ok=True)
+    shutil.copy2(ROOT / "profiles" / "grok.json", root / "profiles" / "grok.json")
+    (root / "scripts").mkdir(parents=True, exist_ok=True)
+    for name in PROBE_SCOPE_SCRIPTS:
+        shutil.copy2(ROOT / "scripts" / name, root / "scripts" / name)
+    return root
+
+
+@pytest.mark.parametrize("relative_path", [f"scripts/{name}" for name in PROBE_SCOPE_SCRIPTS])
+def test_probe_scope_hash_survives_a_comment_and_moves_on_a_statement(
+    tmp_path: Path, relative_path: str
+) -> None:
+    """A comment must not invalidate a frozen eval table; a statement must (#444).
+
+    The equality with `ROOT` also pins that these four scripts are the scope: a script
+    dropping out of it would make the copy and the tree disagree.
+    """
+    copy_root = _probe_scope_copy(tmp_path)
+    assert _probe_scope_hash(copy_root) == _probe_scope_hash(ROOT)
+
+    target = copy_root / relative_path
+    original = target.read_bytes()
+
+    target.write_bytes(original + b"\n# a comment is not behaviour\n")
+    assert _probe_scope_hash(copy_root) == _probe_scope_hash(ROOT)
+
+    target.write_bytes(original + b"\nBEHAVIOR_PROBE = 'moved'\n")
+    assert _probe_scope_hash(copy_root) != _probe_scope_hash(ROOT)
+
+    target.write_bytes(original)
+    assert _probe_scope_hash(copy_root) == _probe_scope_hash(ROOT)
+
+
+def test_probe_scope_hash_keeps_the_docstring_verify_portable_publishes(tmp_path: Path) -> None:
+    """`verify-portable.py` publishes its docstring as `--help` text, so it stays raw.
+
+    The behaviour core drops docstrings; the one module that publishes its own would
+    otherwise leave observable text out of the frozen table's fingerprint (#444).
+    """
+    copy_root = _probe_scope_copy(tmp_path)
+    target = copy_root / "scripts" / "verify-portable.py"
+    source = target.read_text(encoding="utf-8")
+    start = source.index('"""') + 3
+    end = source.index('"""', start)
+
+    target.write_text(source[:start] + "changed --help text.\n" + source[end:], encoding="utf-8")
+
+    assert _probe_scope_hash(copy_root) != _probe_scope_hash(ROOT)
+
+
+def test_probe_scope_hash_fails_closed_on_an_unparseable_script(tmp_path: Path) -> None:
+    """A script the recipe cannot parse is refused, not silently byte-hashed (#444)."""
+    copy_root = _probe_scope_copy(tmp_path)
+    (copy_root / "scripts" / "route_resolver.py").write_bytes(b"def (:\n")
+
+    with pytest.raises(RecipeError, match="unparseable driver"):
+        _probe_scope_hash(copy_root)
