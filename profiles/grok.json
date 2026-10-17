@@ -1,6 +1,6 @@
 {
   "host": "grok",
-  "support_state": "supported",
+  "support_state": "packaged",
   "skills_dir": ".grok/skills",
   "plugins_dir": "~/.grok/installed-plugins",
   "plugin_manifest": ".grok-plugin/plugin.json",
@@ -11,7 +11,7 @@
       "implementation_status": "native",
       "primitive": "spawn_subagent",
       "enforcement": "hard",
-      "verification_status": "verified",
+      "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/grok-receipt.json"
     },
     {
@@ -20,7 +20,7 @@
       "implementation_status": "native",
       "primitive": "get_command_or_subagent_output",
       "enforcement": "hard",
-      "verification_status": "verified",
+      "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/grok-receipt.json"
     },
     {
@@ -29,7 +29,7 @@
       "implementation_status": "native",
       "primitive": "spawn_subagent (resume)",
       "enforcement": "hard",
-      "verification_status": "verified",
+      "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/grok-receipt.json"
     },
     {
@@ -38,7 +38,7 @@
       "implementation_status": "native",
       "primitive": "kill_command_or_subagent",
       "enforcement": "hard",
-      "verification_status": "verified",
+      "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/grok-receipt.json"
     },
     {
@@ -47,7 +47,7 @@
       "implementation_status": "native",
       "primitive": "spawn_subagent (resume_from)",
       "enforcement": "hard",
-      "verification_status": "verified",
+      "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/grok-receipt.json"
     },
     {
@@ -56,7 +56,7 @@
       "implementation_status": "native",
       "primitive": "isolation: none",
       "enforcement": "hard",
-      "verification_status": "verified",
+      "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/grok-receipt.json"
     },
     {
@@ -65,7 +65,7 @@
       "implementation_status": "native",
       "primitive": "isolation: worktree",
       "enforcement": "hard",
-      "verification_status": "verified",
+      "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/grok-receipt.json"
     },
     {
@@ -74,7 +74,7 @@
       "implementation_status": "native",
       "primitive": "pstack:how-explorer (no file-edit tools)",
       "enforcement": "hard",
-      "verification_status": "verified",
+      "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/grok-receipt.json"
     },
     {
@@ -83,7 +83,7 @@
       "implementation_status": "native",
       "primitive": "ask_user_question",
       "enforcement": "hard",
-      "verification_status": "verified",
+      "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/grok-receipt.json"
     },
     {
@@ -92,7 +92,7 @@
       "implementation_status": "native",
       "primitive": "ask_user_question (blocking gate)",
       "enforcement": "hard",
-      "verification_status": "verified",
+      "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/grok-receipt.json"
     },
     {
@@ -101,7 +101,7 @@
       "implementation_status": "native",
       "primitive": "todo_write",
       "enforcement": "hard",
-      "verification_status": "verified",
+      "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/grok-receipt.json"
     },
     {
@@ -110,7 +110,7 @@
       "implementation_status": "native",
       "primitive": "scheduler_create",
       "enforcement": "hard",
-      "verification_status": "verified",
+      "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/grok-receipt.json"
     },
     {
@@ -119,7 +119,7 @@
       "implementation_status": "native",
       "primitive": "monitor command + scheduler_create",
       "enforcement": "hard",
-      "verification_status": "verified",
+      "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/grok-receipt.json"
     },
     {
@@ -128,7 +128,7 @@
       "implementation_status": "native",
       "primitive": "~/.grok/ persistence",
       "enforcement": "hard",
-      "verification_status": "verified",
+      "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/grok-receipt.json"
     },
     {
@@ -137,7 +137,7 @@
       "implementation_status": "native",
       "primitive": "grok resume",
       "enforcement": "hard",
-      "verification_status": "verified",
+      "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/grok-receipt.json"
     },
     {
@@ -146,7 +146,7 @@
       "implementation_status": "native",
       "primitive": "receipts under .audit/evidence/",
       "enforcement": "hard",
-      "verification_status": "verified",
+      "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/grok-receipt.json"
     },
     {
@@ -155,13 +155,13 @@
       "implementation_status": "native",
       "primitive": "scripts/verify-portable.py",
       "enforcement": "hard",
-      "verification_status": "verified",
+      "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/grok-receipt.json"
     }
   ],
   "evidence_ledger": [
     {
-      "claim": "Grok Build implements all 7 required capabilities natively with hard enforcement",
+      "claim": "HISTORICAL runtime claim, superseded 2026-10-17: Grok Build implements all 7 required capabilities natively with hard enforcement. The durable receipt was then refreshed statically (canonical/adapter/package PASS, runtime UNTESTED), so this runtime claim is no longer current evidence; grok claims packaged with static-only rows until `python3 scripts/verify-portable.py run --host grok` records an observed_live settlement.",
       "kind": "runtime",
       "artifact": ".audit/evidence/grok-receipt.json",
       "command": "python3 scripts/verify-portable.py run --host grok",

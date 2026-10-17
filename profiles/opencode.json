@@ -1,6 +1,6 @@
 {
   "host": "opencode",
-  "support_state": "verified",
+  "support_state": "packaged",
   "skills_dir": ".opencode/skills",
   "plugins_dir": "~/.opencode/plugins",
   "plugin_manifest": ".opencode-plugin/package.json",
@@ -11,7 +11,7 @@
       "implementation_status": "native",
       "primitive": "task",
       "enforcement": "hard",
-      "verification_status": "verified",
+      "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/opencode-receipt.json"
     },
     {
@@ -20,7 +20,7 @@
       "implementation_status": "native",
       "primitive": "task (completion)",
       "enforcement": "hard",
-      "verification_status": "verified",
+      "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/opencode-receipt.json"
     },
     {
@@ -29,7 +29,7 @@
       "implementation_status": "native",
       "primitive": "session message",
       "enforcement": "hard",
-      "verification_status": "verified",
+      "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/opencode-receipt.json"
     },
     {
@@ -38,7 +38,7 @@
       "implementation_status": "native",
       "primitive": "task cancel",
       "enforcement": "hard",
-      "verification_status": "verified",
+      "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/opencode-receipt.json"
     },
     {
@@ -47,7 +47,7 @@
       "implementation_status": "native",
       "primitive": "opencode --continue",
       "enforcement": "hard",
-      "verification_status": "verified",
+      "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/opencode-receipt.json"
     },
     {
@@ -56,7 +56,7 @@
       "implementation_status": "native",
       "primitive": "workspace folder (cwd)",
       "enforcement": "hard",
-      "verification_status": "verified",
+      "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/opencode-receipt.json"
     },
     {
@@ -65,7 +65,7 @@
       "implementation_status": "native",
       "primitive": "git worktree",
       "enforcement": "hard",
-      "verification_status": "verified",
+      "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/opencode-receipt.json"
     },
     {
@@ -74,7 +74,7 @@
       "implementation_status": "native",
       "primitive": "fs.readonly",
       "enforcement": "advisory",
-      "verification_status": "verified",
+      "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/opencode-receipt.json"
     },
     {
@@ -83,7 +83,7 @@
       "implementation_status": "native",
       "primitive": "question",
       "enforcement": "advisory",
-      "verification_status": "verified",
+      "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/opencode-receipt.json"
     },
     {
@@ -92,7 +92,7 @@
       "implementation_status": "native",
       "primitive": "question (blocking confirmation)",
       "enforcement": "hard",
-      "verification_status": "verified",
+      "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/opencode-receipt.json"
     },
     {
@@ -101,7 +101,7 @@
       "implementation_status": "native",
       "primitive": "todo",
       "enforcement": "advisory",
-      "verification_status": "verified",
+      "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/opencode-receipt.json"
     },
     {
@@ -110,7 +110,7 @@
       "implementation_status": "gap",
       "primitive": null,
       "enforcement": "advisory",
-      "verification_status": "verified",
+      "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/opencode-receipt.json",
       "notes": "No native cron scheduler in OpenCode"
     },
@@ -120,7 +120,7 @@
       "implementation_status": "shim",
       "primitive": "terminal (background) / ps",
       "enforcement": "soft",
-      "verification_status": "verified",
+      "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/opencode-receipt.json"
     },
     {
@@ -129,7 +129,7 @@
       "implementation_status": "native",
       "primitive": "opencode session storage",
       "enforcement": "hard",
-      "verification_status": "verified",
+      "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/opencode-receipt.json"
     },
     {
@@ -138,7 +138,7 @@
       "implementation_status": "native",
       "primitive": "opencode restore workspace",
       "enforcement": "hard",
-      "verification_status": "verified",
+      "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/opencode-receipt.json"
     },
     {
@@ -147,7 +147,7 @@
       "implementation_status": "native",
       "primitive": "receipts under .audit/evidence/",
       "enforcement": "hard",
-      "verification_status": "verified",
+      "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/opencode-receipt.json"
     },
     {
@@ -156,13 +156,13 @@
       "implementation_status": "native",
       "primitive": "scripts/verify-portable.py",
       "enforcement": "hard",
-      "verification_status": "verified",
+      "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/opencode-receipt.json"
     }
   ],
   "evidence_ledger": [
     {
-      "claim": "OpenCode implements required capabilities with verified runtime proof bar",
+      "claim": "HISTORICAL runtime claim, superseded 2026-10-17: OpenCode implements required capabilities with a runtime proof bar. The durable receipt was then refreshed statically (canonical/adapter/package PASS, runtime UNTESTED), so this runtime claim is no longer current evidence; opencode claims packaged with static-only rows until `python3 scripts/verify-portable.py run --host opencode` records an observed_live settlement.",
       "kind": "runtime",
       "artifact": ".audit/evidence/opencode-receipt.json",
       "command": "python3 scripts/verify-portable.py run --host opencode",
