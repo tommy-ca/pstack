@@ -49,6 +49,8 @@ from scripts.portability_schema import (
     compute_surface_revisions,
     derive_support_state,
     preserve_observed_settlements,
+    reduce_verdicts,
+    settle_planes,
     _is_observed_settlement,
 )
 from scripts.drivers import get_driver
@@ -99,53 +101,6 @@ def get_canonical_root(root: Path) -> Path:
 
 
 DEFAULT_EVIDENCE_DIR = ROOT / ".audit" / "evidence"
-
-
-def reduce_verdicts(verdicts: Iterable[str]) -> str:
-    """Reduce scenario or plane verdicts according to the strict severity lattice:
-    FAIL > BLOCKED > UNTESTED > PASS.
-    """
-    v_set = set(verdicts)
-    if not v_set:
-        return "UNTESTED"
-    if "FAIL" in v_set:
-        return "FAIL"
-    if "BLOCKED" in v_set:
-        return "BLOCKED"
-    if "UNTESTED" in v_set:
-        return "UNTESTED"
-    if v_set == {"PASS"}:
-        return "PASS"
-    return "FAIL"
-
-
-def settle_planes(scenarios: Iterable[ScenarioResult]) -> Dict[str, str]:
-    """Reduce every conformance plane, gating a runtime PASS on a live settlement.
-
-    A runtime PASS is a live claim: it needs at least one runtime scenario carrying a
-    typed child spawn/join settlement. Offline scenario checks (route, config, doctor)
-    prove the wiring, not a running child, so a settlement-free runtime plane is
-    UNTESTED and never promotes the host. FAIL and BLOCKED are findings in their own
-    right and pass through untouched (#444).
-
-    Every path that can add or restore a scenario reduces through here. Preservation
-    puts a live settlement back into the scenario list, so a plane reduced before it
-    claims a live observation the receipt's own rows contradict (#322, #444).
-    """
-    scenarios = list(scenarios)
-    planes = {
-        plane: reduce_verdicts(s.verdict for s in scenarios if s.plane == plane)
-        for plane in ("canonical", "adapter", "package", "runtime")
-    }
-    runtime = [s for s in scenarios if s.plane == "runtime"]
-    for s in runtime:
-        # A driver hands its settlement back as a plain dict; type it the way
-        # ScenarioResult.validate does so the gate reads the same shape.
-        if isinstance(s.settlement, dict):
-            s.settlement = ChildSettlement(**s.settlement)
-    if planes["runtime"] == "PASS" and not any(_is_observed_settlement(s) for s in runtime):
-        planes["runtime"] = "UNTESTED"
-    return planes
 
 
 # --- Change-scoped check selection (#312) ------------------------------------

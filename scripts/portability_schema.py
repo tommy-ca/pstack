@@ -11,7 +11,7 @@ import json
 import re
 from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Literal, Optional, Tuple
 
 SUPPORT_STATES = ("candidate", "mapped", "packaged", "verified", "supported")
 IMPLEMENTATION_STATUSES = ("native", "shim", "version-gated", "gap")
@@ -527,7 +527,12 @@ class ScenarioResult:
             raise ValidationError(f"Invalid plane: {self.plane!r}")
         if self.verdict not in ("PASS", "FAIL", "BLOCKED", "UNTESTED"):
             raise ValidationError(f"Invalid verdict: {self.verdict!r}")
-        if self.evidence_level and self.evidence_level not in ("static", "offline", "observed_live", "legacy"):
+        if not self.evidence_level:
+            raise ValidationError(
+                f"Scenario {self.id!r} records no evidence_level: every scenario must say "
+                "how it was observed (static | offline | observed_live | legacy)"
+            )
+        if self.evidence_level not in ("static", "offline", "observed_live", "legacy"):
             raise ValidationError(f"Invalid evidence_level: {self.evidence_level!r}")
         if isinstance(self.settlement, dict):
             self.settlement = ChildSettlement(**self.settlement)
@@ -535,6 +540,58 @@ class ScenarioResult:
             if not isinstance(self.settlement, ChildSettlement):
                 raise ValidationError(f"Invalid settlement: {self.settlement!r}")
             self.settlement.validate()
+
+
+def reduce_verdicts(verdicts: Iterable[str]) -> str:
+    """Reduce scenario or plane verdicts according to the strict severity lattice:
+    FAIL > BLOCKED > UNTESTED > PASS.
+
+    The single lattice: the receipt validator, the drivers' receipt assembly, the
+    support-state derivation and `check-evidence` all reduce through here (#473).
+    """
+    v_set = set(verdicts)
+    if not v_set:
+        return "UNTESTED"
+    if "FAIL" in v_set:
+        return "FAIL"
+    if "BLOCKED" in v_set:
+        return "BLOCKED"
+    if "UNTESTED" in v_set:
+        return "UNTESTED"
+    if v_set == {"PASS"}:
+        return "PASS"
+    return "FAIL"
+
+
+def settle_planes(scenarios: Iterable[ScenarioResult]) -> Dict[str, str]:
+    """Reduce every conformance plane, gating a runtime PASS on a live settlement.
+
+    A runtime PASS is a live claim: it needs at least one runtime scenario carrying a
+    typed child spawn/join settlement. Offline scenario checks (route, config, doctor)
+    prove the wiring, not a running child, so a settlement-free runtime plane is
+    UNTESTED and never promotes the host. FAIL and BLOCKED are findings in their own
+    right and pass through untouched (#444).
+
+    Every path that can add or restore a scenario reduces through here. Preservation
+    puts a live settlement back into the scenario list, so a plane reduced before it
+    claims a live observation the receipt's own rows contradict (#322, #444).
+    `VerificationReceipt.validate` reduces through it too, so declared planes cannot
+    float free of the scenarios that are supposed to prove them (#473).
+    """
+    scenarios = list(scenarios)
+    planes = {
+        plane: reduce_verdicts(s.verdict for s in scenarios if s.plane == plane)
+        for plane in CONFORMANCE_PLANES
+    }
+    runtime = [s for s in scenarios if s.plane == "runtime"]
+    for s in runtime:
+        # A driver hands its settlement back as a plain dict; type it the way
+        # ScenarioResult.validate does so the gate reads the same shape.
+        if isinstance(s.settlement, dict):
+            s.settlement = ChildSettlement(**s.settlement)
+    if planes["runtime"] == "PASS" and not any(_is_observed_settlement(s) for s in runtime):
+        planes["runtime"] = "UNTESTED"
+    return planes
 
 
 @dataclass
@@ -580,6 +637,23 @@ class VerificationReceipt:
                 raise ValidationError(f"Invalid plane verdict: {v!r}")
         for s in self.scenarios:
             s.validate()
+        # A receipt must be evidence-shaped before any bar reads it: the planes it
+        # declares are the reduction of the scenarios supposed to prove them, and the
+        # overall verdict is the reduction of those planes. Without this, hand-written
+        # or foreign bytes can declare a plane the run never observed and outvote the
+        # scenarios that contradict it (#473).
+        declared = settle_planes(self.scenarios)
+        if self.planes != declared:
+            raise ValidationError(
+                f"Declared planes {self.planes!r} are not the scenario reduction {declared!r}: "
+                "a plane must be proved by its own scenarios"
+            )
+        reduced_overall = reduce_verdicts(declared.values())
+        if self.overall_verdict != reduced_overall:
+            raise ValidationError(
+                f"overall_verdict {self.overall_verdict!r} is not the reduction of its "
+                f"planes ({reduced_overall!r})"
+            )
 
     def evaluate_plane_staleness(self, current_revisions: SurfaceRevisions) -> Dict[str, List[str]]:
         reasons: Dict[str, List[str]] = {p: [] for p in CONFORMANCE_PLANES}

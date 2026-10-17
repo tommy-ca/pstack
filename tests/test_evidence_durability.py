@@ -30,6 +30,8 @@ from scripts.portability_schema import (
     compute_surface_revisions,
     derive_support_state,
     preserve_observed_settlements,
+    reduce_verdicts,
+    settle_planes,
 )
 
 def _declared_hosts() -> tuple:
@@ -728,9 +730,42 @@ def test_refresh_static_is_partial_and_never_rounds_a_failure_up(
     assert failed["overall_verdict"] == "FAIL"
 
 
+def _declared_from(scenarios: list) -> tuple[dict, str]:
+    """The planes and overall verdict a run's own scenarios reduce to.
+
+    Fixtures declare planes the way a driver writes them — from the reduction — because
+    `VerificationReceipt.validate` refuses a declaration that floats free of its scenarios
+    (#473). A receipt that observed nothing declares UNTESTED, not PASS.
+    """
+    planes = settle_planes(scenarios)
+    return planes, reduce_verdicts(planes.values())
+
+
+def _plane_rows(covered: set, verdict: str = "PASS") -> list:
+    """One `verdict` scenario per conformance plane not already covered by a fixture row,
+    so a fixture that claims a whole-receipt shape proves each plane it declares."""
+    return [
+        ScenarioResult(
+            id=f"synthetic-{plane}-plane-row",
+            description=f"synthetic {plane} plane row",
+            plane=plane,
+            command="true",
+            exit_code=0 if verdict == "PASS" else 1,
+            stdout_snippet=f"{plane} fixture row",
+            verdict=verdict,
+            duration_s=0.01,
+            evidence_level="offline",
+        )
+        for plane in CONFORMANCE_PLANES
+        if plane not in covered
+    ]
+
+
 def _synthetic_evidence_root(tmp_path: Path, evidence_levels: list, planes: list | None = None, host: str = "omp", snippets: list | None = None, settlements: list | None = None, force_verified: bool = False) -> tuple:
     """Self-consistent minimal root: every OMP binding points at one synthetic receipt
-    whose scenario (evidence_level, plane) pairs are exactly zipped `evidence_levels`."""
+    whose scenario (evidence_level, plane) pairs are exactly zipped `evidence_levels`,
+    plus one row per remaining plane so the receipt's declared planes are its own
+    reduction instead of a hand-written PASS (#473)."""
     tmp_path.mkdir(parents=True, exist_ok=True)
     (tmp_path / "pstack.package.json").write_text("{}", encoding="utf-8")
     manifest = tmp_path / ".omp-plugin" / "package.json"
@@ -739,29 +774,32 @@ def _synthetic_evidence_root(tmp_path: Path, evidence_levels: list, planes: list
 
     revisions = compute_surface_revisions(tmp_path, host)
     ref = ".audit/evidence/synthetic-receipt.json"
+    scenarios = [
+        ScenarioResult(
+            id=f"synthetic-{i}",
+            description="synthetic scenario",
+            plane=(planes[i] if planes else "runtime"),
+            command="true",
+            exit_code=0,
+            stdout_snippet=(snippets[i] if snippets else ""),
+            verdict="PASS",
+            duration_s=0.01,
+            evidence_level=level,
+            settlement=(settlements[i] if settlements else None),
+        )
+        for i, level in enumerate(evidence_levels)
+    ]
+    scenarios += _plane_rows({s.plane for s in scenarios})
+    declared, overall = _declared_from(scenarios)
     receipt = VerificationReceipt(
         run_id="evidence-level-gate",
         host=host,
         host_version="test",
         timestamp="2026-10-11T00:00:00Z",
-        overall_verdict="PASS",
-        planes={plane: "PASS" for plane in CONFORMANCE_PLANES},
+        overall_verdict=overall,
+        planes=declared,
         surface_revisions=revisions,
-        scenarios=[
-            ScenarioResult(
-                id=f"synthetic-{i}",
-                description="synthetic scenario",
-                plane=(planes[i] if planes else "runtime"),
-                command="true",
-                exit_code=0,
-                stdout_snippet=(snippets[i] if snippets else ""),
-                verdict="PASS",
-                duration_s=0.01,
-                evidence_level=level,
-                settlement=(settlements[i] if settlements else None),
-            )
-            for i, level in enumerate(evidence_levels)
-        ],
+        scenarios=scenarios,
     )
     receipt_path = tmp_path / ref
     receipt_path.parent.mkdir(parents=True, exist_ok=True)
@@ -845,7 +883,14 @@ def test_adapter_pass_with_package_fail_is_never_an_accepted_package_pass(tmp_pa
         "package": "PASS",
         "runtime": "PASS",
     }
-    data["planes"]["package"] = "FAIL"
+    # The failed package plane is a FAIL scenario, not a hand-written declared plane:
+    # the receipt's own rows are what the gate reads (#473).
+    for row in data["scenarios"]:
+        if row["plane"] == "package":
+            row["verdict"], row["exit_code"] = "FAIL", 1
+    data["planes"], data["overall_verdict"] = _declared_from(
+        [ScenarioResult(**row) for row in data["scenarios"]]
+    )
     receipt_path.write_text(json.dumps(data), encoding="utf-8")
 
     # The adapter PASS and the settled runtime scenario prove their own planes only.
@@ -860,10 +905,12 @@ def test_bare_live_label_without_settlement_stays_packaged(tmp_path: Path) -> No
 
 
 def test_static_isolation_row_cannot_satisfy_the_runtime_plane_on_its_own() -> None:
-    """#291 negative direction: the runtime plane reduces on verdicts alone, so a runtime
-    `PASS` can contain a static row. A static isolation row must not stand in for observed
-    isolation — it is not an observed settlement, so a `verified` pin to it is rejected
-    until the live isolation run replaces the row.
+    """#291 negative direction: a static runtime row proves no live runtime.
+
+    A static isolation row must not stand in for observed isolation — it is not an
+    observed settlement, so the runtime plane it would claim reduces to UNTESTED
+    (#473), and a `verified` pin to it is rejected until the live isolation run
+    replaces the row.
 
     The refreshed durable receipt carries no runtime row at all (a static refresh drives
     nothing), so the row this gate reads is rebuilt here as the static row it was before
@@ -884,13 +931,14 @@ def test_static_isolation_row_cannot_satisfy_the_runtime_plane_on_its_own() -> N
         host="omp",
         host_version="test",
         timestamp="2026-10-17T00:00:00Z",
-        overall_verdict="PASS",
-        planes={plane: "PASS" for plane in CONFORMANCE_PLANES},
+        overall_verdict="UNTESTED",
+        planes={plane: "UNTESTED" for plane in CONFORMANCE_PLANES},
         surface_revisions=compute_surface_revisions(ROOT, "omp"),
         scenarios=[static_isolation],
     )
+    receipt.planes, receipt.overall_verdict = _declared_from(receipt.scenarios)
     receipt.validate()
-    assert receipt.planes["runtime"] == "PASS", "the plane reduces on verdicts alone"
+    assert receipt.planes["runtime"] == "UNTESTED", "a static row never claims a live plane"
 
     ref = ".audit/evidence/omp-receipt.json"
     profile_data = json.loads((ROOT / "profiles" / "omp.json").read_text(encoding="utf-8"))
@@ -931,6 +979,8 @@ def test_static_isolation_row_cannot_satisfy_the_runtime_plane_on_its_own() -> N
             )
         ],
     )
+    live_receipt.planes, live_receipt.overall_verdict = _declared_from(live_receipt.scenarios)
+    assert live_receipt.planes["runtime"] == "PASS", "the settled row is what promotes the plane"
     live_receipt.validate()
     check_scenario_pins(profile, {ref: live_receipt})
 
@@ -1053,7 +1103,10 @@ def _omp_spawn_scenario(evidence_level: str, verdict: str = "PASS", settlement=N
 
 
 def _omp_live_root(tmp_path: Path) -> tuple:
-    """Minimal omp root whose durable receipt already carries a live settlement."""
+    """Minimal omp root whose durable receipt already carries a live settlement.
+
+    The receipt is the whole-receipt shape a driver writes: one row per plane, planes
+    declared from that reduction, so the durable bytes stay evidence-shaped (#473)."""
     root = tmp_path / "repo"
     (root / ".omp-plugin").mkdir(parents=True)
     (root / "pstack.package.json").write_text("{}", encoding="utf-8")
@@ -1061,26 +1114,28 @@ def _omp_live_root(tmp_path: Path) -> tuple:
     evidence_root = root / ".audit" / "evidence"
     evidence_root.mkdir(parents=True)
     revisions = compute_surface_revisions(root, "omp")
+    scenarios = [
+        _omp_spawn_scenario(
+            "observed_live",
+            settlement=ChildSettlement(
+                child_id="subagent-1",
+                terminal_outcome="success",
+                model="deepseek-v4-pro",
+                transport="rpc",
+                effective_rpc="rpc-v2:profile=disposable:depth=1",
+            ),
+        )
+    ] + _plane_rows({"runtime"})
+    declared, overall = _declared_from(scenarios)
     live = VerificationReceipt(
         run_id="previous-live-run",
         host="omp",
         host_version="18.8.9",
         timestamp="2026-10-11T20:00:00Z",
-        overall_verdict="PASS",
-        planes={plane: "PASS" for plane in CONFORMANCE_PLANES},
+        overall_verdict=overall,
+        planes=declared,
         surface_revisions=revisions,
-        scenarios=[
-            _omp_spawn_scenario(
-                "observed_live",
-                settlement=ChildSettlement(
-                    child_id="subagent-1",
-                    terminal_outcome="success",
-                    model="deepseek-v4-pro",
-                    transport="rpc",
-                    effective_rpc="rpc-v2:profile=disposable:depth=1",
-                ),
-            )
-        ],
+        scenarios=scenarios,
     )
     (evidence_root / "omp-receipt.json").write_text(json.dumps(asdict(live)), encoding="utf-8")
 
@@ -1439,13 +1494,14 @@ def _success_settlement() -> ChildSettlement:
 
 
 def _adversarial_receipt(scenario: ScenarioResult) -> VerificationReceipt:
+    planes, overall = _declared_from([scenario])
     receipt = VerificationReceipt(
         run_id="p8-adversarial",
         host="omp",
         host_version="test",
         timestamp="2026-10-12T00:00:00Z",
-        overall_verdict="PASS",
-        planes={plane: "PASS" for plane in CONFORMANCE_PLANES},
+        overall_verdict=overall,
+        planes=planes,
         surface_revisions=compute_surface_revisions(ROOT, "omp"),
         scenarios=[scenario],
     )
@@ -1603,8 +1659,12 @@ def test_supported_needs_a_behavioral_pass_on_every_row(tmp_path: Path) -> None:
 
     The supported loop read the package plane alone, so a receipt with FAIL
     canonical/adapter/runtime still derived `supported` and outvoted the floor.
-    The lane-A probe set (all-FAIL planes, foreign host, settlement-free omp
+    The lane-A probe set (behavioral FAILs, foreign host, settlement-free omp
     receipt) must all stop at `verified` and fail the supported claim.
+
+    Every probe is expressed as scenarios (a `FAIL` row, a foreign host, static
+    settlement-free rows) and declares the planes that reduction yields — the
+    declaration is no longer free to disagree with the rows (#473).
     """
     root, prof = _synthetic_evidence_root(
         tmp_path,
@@ -1626,7 +1686,6 @@ def test_supported_needs_a_behavioral_pass_on_every_row(tmp_path: Path) -> None:
     floor_ref = ".audit/evidence/synthetic-receipt.json"
     rest_ref = ".audit/evidence/rest.json"
     base = json.loads((root / floor_ref).read_text(encoding="utf-8"))
-    all_pass = {plane: "PASS" for plane in CONFORMANCE_PLANES}
     # Claimed supported, with every conditional row citing a second receipt: only the
     # nine floor rows keep the settled receipt that does prove `verified`.
     split = replace(
@@ -1638,9 +1697,18 @@ def test_supported_needs_a_behavioral_pass_on_every_row(tmp_path: Path) -> None:
         ],
     )
 
+    def behavioral_fail(row: dict) -> dict:
+        return (
+            {**row, "verdict": "FAIL", "exit_code": 1}
+            if row["plane"] in ("canonical", "adapter", "runtime")
+            else row
+        )
+
     probes = {
+        # Package PASS beside FAIL canonical/adapter/runtime rows: the receipt says so in
+        # its own scenarios, which is the only way it may say it.
         "package-only-PASS": (
-            {"planes": {**all_pass, "canonical": "FAIL", "adapter": "FAIL", "runtime": "FAIL"}},
+            {"scenarios": [behavioral_fail(row) for row in base["scenarios"]]},
             "exceeds evidence-derived support state 'verified'",
         ),
         # A foreign-host receipt is already refused earlier by the durability check,
@@ -1656,12 +1724,111 @@ def test_supported_needs_a_behavioral_pass_on_every_row(tmp_path: Path) -> None:
         ),
     }
     for name, (patch, match) in probes.items():
+        rest = {**base, "run_id": f"rest-{name}", **patch}
+        rest["planes"], rest["overall_verdict"] = _declared_from(
+            [ScenarioResult(**row) for row in rest["scenarios"]]
+        )
         (root / ".audit" / "evidence" / "rest.json").write_text(
-            json.dumps({**base, "run_id": f"rest-{name}", **patch}), encoding="utf-8"
+            json.dumps(rest), encoding="utf-8"
         )
         assert derive_support_state(split, root) == "verified", name
         with pytest.raises(ValidationError, match=match):
             check_evidence_durability(split, root)
+
+
+def test_a_receipt_cannot_declare_a_plane_it_never_observed(tmp_path: Path) -> None:
+    """Act-on probe A (#473): zero scenarios under four declared PASS planes.
+
+    The hand-written declaration was a `supported` receipt: no scenario proved anything,
+    and every row that cited these bytes read the declared plane. Both readers now refuse
+    the bytes instead, and the host the rows belong to derives at `packaged`.
+    """
+    root, prof = _synthetic_evidence_root(
+        tmp_path,
+        ["observed_live"],
+        settlements=[_success_settlement()],
+        force_verified=True,
+    )
+    assert derive_support_state(prof, root) == "supported"
+
+    receipt_path = root / ".audit" / "evidence" / "synthetic-receipt.json"
+    data = json.loads(receipt_path.read_text(encoding="utf-8"))
+    assert data["planes"] == {plane: "PASS" for plane in CONFORMANCE_PLANES}
+    data["scenarios"] = []
+    receipt_path.write_text(json.dumps(data), encoding="utf-8")
+
+    with pytest.raises(ValidationError, match="not the scenario reduction"):
+        VerificationReceipt(**data).validate()
+    assert derive_support_state(prof, root) == "packaged"
+    with pytest.raises(ValidationError, match="is not a valid VerificationReceipt"):
+        check_evidence_durability(prof, root)
+
+
+def test_a_declared_plane_cannot_outlive_a_failing_scenario(tmp_path: Path) -> None:
+    """Act-on probe B (#473): declared runtime PASS beside a FAIL runtime row.
+
+    The declaration used to win: the runtime row failed, the plane said PASS, and the
+    receipt derived `supported`.
+    """
+    root, prof = _synthetic_evidence_root(
+        tmp_path,
+        ["observed_live"],
+        settlements=[_success_settlement()],
+        force_verified=True,
+    )
+    receipt_path = root / ".audit" / "evidence" / "synthetic-receipt.json"
+    data = json.loads(receipt_path.read_text(encoding="utf-8"))
+    runtime_row = next(row for row in data["scenarios"] if row["plane"] == "runtime")
+    runtime_row["verdict"], runtime_row["exit_code"] = "FAIL", 1
+    receipt_path.write_text(json.dumps(data), encoding="utf-8")
+
+    with pytest.raises(ValidationError, match="not the scenario reduction"):
+        VerificationReceipt(**data).validate()
+    assert derive_support_state(prof, root) == "packaged"
+    with pytest.raises(ValidationError, match="is not a valid VerificationReceipt"):
+        check_evidence_durability(prof, root)
+
+
+def test_a_scenario_records_how_it_was_observed() -> None:
+    """Explicit `evidence_level: null` is not evidence, at either level (#473)."""
+    scenario = _omp_spawn_scenario("offline")
+    scenario.evidence_level = None
+    with pytest.raises(ValidationError, match="records no evidence_level"):
+        scenario.validate()
+
+    durable = json.loads((EVIDENCE_DIR / "codex-receipt.json").read_text(encoding="utf-8"))
+    durable["scenarios"][0]["evidence_level"] = None
+    with pytest.raises(ValidationError, match="records no evidence_level"):
+        VerificationReceipt(**durable).validate()
+
+
+def test_driver_shaped_receipts_still_validate() -> None:
+    """Positive control: the tightening rejects nothing a run actually produced.
+
+    The five durable receipts are already evidence-shaped (§0), and a receipt assembled
+    the way the driver assembles one — planes from the scenario reduction — validates.
+    """
+    for host in ("grok", "codex", "omp", "opencode", "antigravity"):
+        VerificationReceipt(
+            **json.loads((EVIDENCE_DIR / f"{host}-receipt.json").read_text(encoding="utf-8"))
+        ).validate()
+
+    scenario = _omp_spawn_scenario("observed_live", settlement=_success_settlement())
+    scenarios = [scenario] + _plane_rows({"runtime"})
+    planes, overall = _declared_from(scenarios)
+    receipt = VerificationReceipt(
+        run_id="driver-shaped-control",
+        host="omp",
+        host_version="test",
+        timestamp="2026-10-17T00:00:00Z",
+        overall_verdict=overall,
+        planes=planes,
+        surface_revisions=compute_surface_revisions(ROOT, "omp"),
+        scenarios=scenarios,
+    )
+    receipt.validate()
+    assert receipt.planes == {plane: "PASS" for plane in CONFORMANCE_PLANES}
+    assert settle_planes(receipt.scenarios) == receipt.planes
 
 
 def test_a_verified_pin_naming_an_unrecorded_scenario_is_a_dangling_reference() -> None:
