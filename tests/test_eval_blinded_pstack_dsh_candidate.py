@@ -205,6 +205,10 @@ PROBE_SCOPE_SCRIPTS = (
     "route_resolver.py",
     "decision_adapter.py",
     "eval_blinded_pstack.py",
+    # The shared recipe module itself: `_probe_scope_hash` folds every in-scope Python
+    # file through `portability_schema._update_driver_digest`, so that module is a
+    # declared input and must be in this copy or the copy would disagree with the tree.
+    "portability_schema.py",
 )
 
 
@@ -235,7 +239,7 @@ def test_probe_scope_hash_survives_a_comment_and_moves_on_a_statement(
 ) -> None:
     """A comment must not invalidate a frozen eval table; a statement must (#444).
 
-    The equality with `ROOT` also pins that these four scripts are the scope: a script
+    The equality with `ROOT` also pins that these five scripts are the scope: a script
     dropping out of it would make the copy and the tree disagree.
     """
     copy_root = _probe_scope_copy(tmp_path)

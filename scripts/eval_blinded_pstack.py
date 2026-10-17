@@ -264,12 +264,17 @@ def _probe_scope_hash(root: Path) -> str:
     invalidate a frozen table, and a file that will not parse raises rather than
     silently degrading to a whole-file byte hash. Markdown and JSON have no comment
     layer — their text is the content — so they contribute raw.
+
+    `portability_schema.py` is named because it owns that recipe: the normalizer is an
+    input to the fingerprint even where the stock `skills/` prose passes it by, so an
+    edit there must move the pin rather than move every frozen table silently.
     """
     h = hashlib.sha256()
     scope = sorted(root.glob("skills/**/SKILL.md")) + sorted(root.glob("skills/**/playbooks/*.md"))
     scope += sorted(root.glob("agents/*.md")) + [root / "profiles" / "grok.json"]
     scope += [root / "scripts" / "verify-portable.py", root / "scripts" / "route_resolver.py",
-              root / "scripts" / "decision_adapter.py", root / "scripts" / "eval_blinded_pstack.py"]
+              root / "scripts" / "decision_adapter.py", root / "scripts" / "eval_blinded_pstack.py",
+              root / "scripts" / "portability_schema.py"]
     for path in scope:
         if path.is_file() and "node_modules" not in path.parts:
             h.update(str(path.relative_to(root)).encode() + b"\0")
