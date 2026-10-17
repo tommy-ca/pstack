@@ -392,6 +392,17 @@ class HarnessProfile:
             b.validate()
         for e in self.evidence_ledger:
             e.validate()
+
+        # Domain Rule: one binding per capability. Every reader indexes the bindings as
+        # `{b.capability: b}`, so a second row for one capability collapses last-wins and
+        # the dropped row's evidence stops being read. A profile that binds one capability
+        # twice never has a well-defined verdict, so it fails closed here (#473).
+        caps = [b.capability for b in self.bindings]
+        duplicates = sorted({c for c in caps if caps.count(c) > 1})
+        if duplicates:
+            raise ValidationError(
+                f"Harness profile for {self.host} binds a capability more than once: {duplicates}"
+            )
         if self.package_descriptor:
             self.package_descriptor.validate()
 
@@ -942,6 +953,9 @@ def derive_support_state(
     current_revisions: Optional[SurfaceRevisions] = None,
 ) -> str:
     """Mechanically derive the support state proved by durable evidence."""
+    # Direct callers (tests, tooling) get the same domain rules the CLI paths run: a
+    # profile that binds a capability twice has no defined verdict (#473).
+    profile.validate()
     bound_caps = {b.capability: b for b in profile.bindings}
     if not bound_caps or any(c not in bound_caps for c in PORTABLE_CAPABILITY_UNIVERSE):
         return "candidate"
@@ -1031,6 +1045,10 @@ def check_evidence_durability(
     current_revisions: Optional[SurfaceRevisions] = None,
 ) -> Dict[str, Any]:
     """Check that all evidence references exist, receipts are valid, and support state is derived."""
+    # `doctor` already validates the profile in its subprocess; this is the same gate on
+    # the in-process path, so `check-evidence` judges the file it read, not a looser copy
+    # of it (#473).
+    profile.validate()
     refs = {b.receipt_ref for b in profile.bindings if b.receipt_ref}
     refs.update(e.artifact for e in profile.evidence_ledger if e.artifact)
 
