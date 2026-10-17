@@ -3,8 +3,8 @@
   "hosts": {
     "grok": {
       "receipt": ".audit/evidence/grok-receipt.json",
-      "run_id": "grok-1792275738-41603386",
-      "timestamp": "2026-10-17T22:22:20Z",
+      "run_id": "grok-1792276071-4ec57e44",
+      "timestamp": "2026-10-17T22:27:54Z",
       "overall_verdict": "UNTESTED",
       "planes": {
         "canonical": "PASS",
@@ -27,8 +27,8 @@
     },
     "codex": {
       "receipt": ".audit/evidence/codex-receipt.json",
-      "run_id": "codex-1792275740-1ba944da",
-      "timestamp": "2026-10-17T22:22:22Z",
+      "run_id": "codex-1792276074-b42bb473",
+      "timestamp": "2026-10-17T22:27:58Z",
       "overall_verdict": "UNTESTED",
       "planes": {
         "canonical": "PASS",
@@ -51,8 +51,8 @@
     },
     "omp": {
       "receipt": ".audit/evidence/omp-receipt.json",
-      "run_id": "omp-1792275742-ed8fa3c4",
-      "timestamp": "2026-10-17T22:22:24Z",
+      "run_id": "omp-1792276078-9617b64f",
+      "timestamp": "2026-10-17T22:28:01Z",
       "overall_verdict": "UNTESTED",
       "planes": {
         "canonical": "PASS",
@@ -75,8 +75,8 @@
     },
     "opencode": {
       "receipt": ".audit/evidence/opencode-receipt.json",
-      "run_id": "opencode-1792275744-e7934a9f",
-      "timestamp": "2026-10-17T22:22:26Z",
+      "run_id": "opencode-1792276081-2b08c299",
+      "timestamp": "2026-10-17T22:28:05Z",
       "overall_verdict": "UNTESTED",
       "planes": {
         "canonical": "PASS",
@@ -99,13 +99,13 @@
     },
     "antigravity": {
       "receipt": ".audit/evidence/antigravity-receipt.json",
-      "run_id": "antigravity-1792275746-8063b8df",
-      "timestamp": "2026-10-17T22:22:28Z",
-      "overall_verdict": "FAIL",
+      "run_id": "antigravity-1792276085-1236f111",
+      "timestamp": "2026-10-17T22:28:09Z",
+      "overall_verdict": "UNTESTED",
       "planes": {
         "canonical": "PASS",
         "adapter": "PASS",
-        "package": "FAIL",
+        "package": "PASS",
         "runtime": "UNTESTED"
       },
       "surface_revisions": {
