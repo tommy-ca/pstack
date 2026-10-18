@@ -475,13 +475,6 @@ def test_hand_authored_support_state_cannot_outrun_evidence() -> None:
 
 
 def _package_ignored_paths() -> frozenset:
-    """Repo-relative paths `.gitignore` keeps out of a checkout.
-
-    A package carries tracked bytes, and `.audit/evidence/` collects one directory per
-    local run: 1418 junkyards holding ~139 MiB against 3.9 MiB of tracked files. Every
-    `_disposable_copy` re-copied all of it. Deriving the set from git keeps it in step
-    with `.gitignore` -- and with the next junkyard -- instead of restating the patterns.
-    """
     try:
         listed = subprocess.run(
             [
@@ -492,7 +485,7 @@ def _package_ignored_paths() -> frozenset:
             text=True,
             check=True,
         ).stdout
-    except (OSError, subprocess.CalledProcessError):  # no git checkout to derive from
+    except (OSError, subprocess.CalledProcessError):
         return frozenset()
     return frozenset(path.rstrip("/") for path in listed.split("\0") if path)
 
@@ -502,7 +495,7 @@ _PACKAGE_IGNORED = _package_ignored_paths()
 
 def _disposable_copy(tmp_path: Path) -> Path:
     """Fresh extraction of the repo as an installed/extracted package: no .git,
-    no pre-existing dependency or bytecode artifacts, no run-local audit junk."""
+    no pre-existing dependency or bytecode artifacts."""
     copy_root = tmp_path / "extracted-package"
     dropped_by_name = shutil.ignore_patterns(".git", "__pycache__", "node_modules", ".venv")
 
@@ -519,12 +512,6 @@ def _disposable_copy(tmp_path: Path) -> Path:
 
 
 def test_the_disposable_copy_drops_audit_run_junk_and_keeps_the_receipts(tmp_path: Path) -> None:
-    """The copy stands for an installed/extracted package: tracked bytes only.
-
-    `.audit/evidence/<run-id>/` accumulates one directory per local run -- 1418 of them,
-    ~139 MiB -- and every test calling `_disposable_copy` used to re-copy all of it. The
-    tracked receipts have to survive: they are the bytes under test.
-    """
     evidence = _disposable_copy(tmp_path) / ".audit" / "evidence"
     assert [path.name for path in evidence.iterdir() if path.is_dir()] == []
     assert (evidence / "index.json").is_file()
