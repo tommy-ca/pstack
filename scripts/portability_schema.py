@@ -7,9 +7,15 @@ and issues #50 and #76. Pure Python with zero external dependencies.
 from __future__ import annotations
 
 import ast
+import base64
+import binascii
 import hashlib
 import json
+import os
 import re
+import stat
+import sys
+import tempfile
 from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Literal, Optional, Tuple
@@ -779,6 +785,138 @@ def _module_docstring(tree: ast.AST) -> bytes:
     return b""
 
 
+_DRIVER_CORE_CACHE_VERSION = 1
+_DRIVER_CORE_CACHE_MAX_RECORDS = 256
+_DRIVER_CORE_CACHE_MAX_BYTES = 32 * 1024 * 1024
+
+
+def _driver_core_cache_dir() -> Optional[Path]:
+    if os.name != "posix":
+        return None
+    raw_cache_home = os.environ.get("XDG_CACHE_HOME")
+    try:
+        base = Path(raw_cache_home).expanduser() if raw_cache_home else Path.home() / ".cache"
+        if not base.is_absolute():
+            return None
+        cache_dir = Path(os.path.abspath(base / "pstack" / "driver-core"))
+        current = Path(cache_dir.anchor)
+        owner_uid = os.geteuid()
+
+        for component in cache_dir.parts[1:]:
+            current /= component
+            current.mkdir(mode=0o700, exist_ok=True)
+            info = current.lstat()
+            if not stat.S_ISDIR(info.st_mode):
+                return None
+            if info.st_uid not in (0, owner_uid):
+                return None
+            if info.st_mode & 0o022 and not info.st_mode & stat.S_ISVTX:
+                return None
+            if current == cache_dir:
+                if info.st_uid != owner_uid:
+                    return None
+                if info.st_mode & 0o077:
+                    current.chmod(0o700)
+                    info = current.lstat()
+                if info.st_uid != owner_uid or info.st_mode & 0o077:
+                    return None
+        return cache_dir
+    except (OSError, RuntimeError, ValueError):
+        return None
+
+
+def _read_driver_core_cache(
+    cache_file: Path, expected: Dict[str, Any]
+) -> Optional[bytes]:
+    try:
+        info = cache_file.lstat()
+        if not stat.S_ISREG(info.st_mode) or info.st_size > _DRIVER_CORE_CACHE_MAX_BYTES:
+            return None
+        if os.name == "posix" and (
+            info.st_uid != os.getuid() or info.st_mode & 0o077
+        ):
+            return None
+        record = json.loads(cache_file.read_text(encoding="utf-8"))
+        if not isinstance(record, dict) or any(
+            record.get(name) != value for name, value in expected.items()
+        ):
+            return None
+        encoded = record.get("core_b64")
+        if not isinstance(encoded, str):
+            return None
+        core = base64.b64decode(encoded, validate=True)
+        if record.get("core_sha256") != hashlib.sha256(core).hexdigest():
+            return None
+        return core
+    except (OSError, ValueError, TypeError, binascii.Error, RecursionError):
+        return None
+
+
+def _prune_driver_core_cache(cache_dir: Path) -> None:
+    try:
+        entries = []
+        for path in cache_dir.iterdir():
+            is_record = path.suffix == ".json"
+            is_temp = path.name.startswith(".driver-core-") and path.name.endswith(".tmp")
+            if not is_record and not is_temp:
+                continue
+            try:
+                info = path.lstat()
+            except OSError:
+                continue
+            if stat.S_ISREG(info.st_mode):
+                entries.append(
+                    (info.st_mtime_ns, path.name, path, is_record, info.st_size)
+                )
+
+        record_count = sum(entry[3] for entry in entries)
+        total_bytes = sum(entry[4] for entry in entries)
+        for _, _, path, is_record, size in sorted(entries):
+            if (
+                record_count <= _DRIVER_CORE_CACHE_MAX_RECORDS
+                and total_bytes <= _DRIVER_CORE_CACHE_MAX_BYTES
+            ):
+                break
+            try:
+                path.unlink()
+            except OSError:
+                continue
+            total_bytes -= size
+            if is_record:
+                record_count -= 1
+    except OSError:
+        pass
+
+
+def _write_driver_core_cache(
+    cache_dir: Path, cache_file: Path, record: Dict[str, Any]
+) -> None:
+    temporary: Optional[Path] = None
+    try:
+        payload = json.dumps(record, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        if len(payload) > _DRIVER_CORE_CACHE_MAX_BYTES:
+            return
+        with tempfile.NamedTemporaryFile(
+            mode="wb",
+            prefix=".driver-core-",
+            suffix=".tmp",
+            dir=cache_dir,
+            delete=False,
+        ) as handle:
+            temporary = Path(handle.name)
+            handle.write(payload)
+        os.replace(temporary, cache_file)
+    except (OSError, UnicodeError, ValueError, TypeError):
+        return
+    finally:
+        if temporary is not None:
+            try:
+                temporary.unlink()
+            except OSError:
+                pass
+    _prune_driver_core_cache(cache_dir)
+
+
 # ponytail: process-lifetime memo, bounded by the distinct file contents one run
 # sees (a few dozen here); swap for an LRU if a long-lived caller ever folds
 # unbounded external trees.
@@ -790,6 +928,36 @@ def _driver_core(path: Path, src: bytes) -> bytes:
     core = _DRIVER_CORE_MEMO.get(key)
     if core is not None:
         return core
+
+    cache_dir = _driver_core_cache_dir()
+    cache_file: Optional[Path] = None
+    cache_metadata: Dict[str, Any] = {}
+    if cache_dir is not None:
+        python_tag = sys.implementation.cache_tag or ""
+        source_sha256 = hashlib.sha256(src).hexdigest()
+        cache_metadata = {
+            "format": _DRIVER_CORE_CACHE_VERSION,
+            "python_tag": python_tag,
+            "basename": path.name,
+            "source_size": len(src),
+            "source_sha256": source_sha256,
+        }
+        cache_key = hashlib.sha256(
+            b"\0".join(
+                (
+                    f"driver-core-v{_DRIVER_CORE_CACHE_VERSION}".encode("ascii"),
+                    python_tag.encode("utf-8"),
+                    path.name.encode("utf-8", "surrogatepass"),
+                    source_sha256.encode("ascii"),
+                )
+            )
+        ).hexdigest()
+        cache_file = cache_dir / f"{cache_key}.json"
+        core = _read_driver_core_cache(cache_file, cache_metadata)
+        if core is not None:
+            _DRIVER_CORE_MEMO[key] = core
+            return core
+
     try:
         tree = ast.parse(src.decode("utf-8"))
     except (SyntaxError, UnicodeDecodeError) as err:
@@ -798,6 +966,13 @@ def _driver_core(path: Path, src: bytes) -> bytes:
     published = _module_docstring(tree) if path.name in DOCSTRING_CONSUMED_DRIVERS else b""
     core = ast.unparse(_strip_docstrings(tree)).encode("utf-8") + published
     _DRIVER_CORE_MEMO[key] = core
+    if cache_dir is not None and cache_file is not None:
+        record = {
+            **cache_metadata,
+            "core_b64": base64.b64encode(core).decode("ascii"),
+            "core_sha256": hashlib.sha256(core).hexdigest(),
+        }
+        _write_driver_core_cache(cache_dir, cache_file, record)
     return core
 
 
