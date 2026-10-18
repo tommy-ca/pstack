@@ -943,25 +943,13 @@ def test_unparseable_skills_script_names_its_file_without_aborting(tmp_path: Pat
 
 
 def test_driver_core_is_memoised_by_content_not_by_location(tmp_path: Path) -> None:
-    """The core a file contributes is memoised under the bytes that produced it.
-
-    `compute_surface_revisions` folds the same drivers on every call -- five hosts
-    per `--host all`, every durability case -- and the core is `ast.unparse` of a
-    stripped module, the single dearest step in a revision. Keying the memo on
-    content is what keeps that reuse sound: identical bytes cannot reach a
-    different core, so a mutation arrives with different bytes and cannot read a
-    stale one, whichever root or path it lives at.
-    """
     src = b"def probe():\n    return 1\n"
     one = tmp_path / "one" / "probe.py"
     two = tmp_path / "two" / "probe.py"
-    # A hit returns the memoised object itself, not an equal rebuild.
     assert _driver_core(one, src) is _driver_core(one, src)
     assert _driver_core(one, src) == _driver_core(two, src)
-    # A non-behaviour edit cannot move the core; a behaviour edit must.
     assert _driver_core(one, b'"""published docs"""\n' + src) == _driver_core(one, src)
     assert _driver_core(one, b"def probe():\n    return 2\n") != _driver_core(one, src)
-    # ... except where the driver publishes its module docstring: there it is behaviour.
     publishing = tmp_path / "pack.py"
     assert _driver_core(publishing, b'"""docs"""\n' + src) != _driver_core(publishing, src)
 

@@ -779,13 +779,6 @@ def _module_docstring(tree: ast.AST) -> bytes:
     return b""
 
 
-# The core a file contributes is a function of its name and its bytes alone, and
-# one `compute_surface_revisions` call folds ~30 files through `ast.parse` +
-# `ast.unparse`. Callers ask for the same revisions over and over -- five hosts
-# per `check-evidence --host all`, every durability case, every CI gate -- so the
-# cores are memoised under the exact bytes that produced them. Keyed by content,
-# never by path or mtime: identical bytes cannot reach a different core, so a
-# mutation misses the memo on its own and no staleness rule has to be trusted.
 # ponytail: process-lifetime memo, bounded by the distinct file contents one run
 # sees (a few dozen here); swap for an LRU if a long-lived caller ever folds
 # unbounded external trees.
@@ -793,7 +786,6 @@ _DRIVER_CORE_MEMO: Dict[Tuple[str, bytes], bytes] = {}
 
 
 def _driver_core(path: Path, src: bytes) -> bytes:
-    """The behaviour-bearing bytes `src` contributes for a file named `path.name`."""
     key = (path.name, src)
     core = _DRIVER_CORE_MEMO.get(key)
     if core is not None:
