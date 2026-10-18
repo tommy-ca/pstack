@@ -8,7 +8,7 @@ never a claim that a provider/model can execute on the current host.
 from __future__ import annotations
 
 import json
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
@@ -31,6 +31,25 @@ VALID_SELECTIONS = frozenset({"single", "panel", "cross-judge"})
 VALID_DISCOVERY = frozenset({"unverified", "catalog", "live"})
 VALID_VERIFICATION = frozenset(VERIFICATION_STATUSES)
 PANEL_SEAT_MAX = 16
+
+# `discovery: catalog` is an offline inventory source, never live evidence. A
+# stale/unverified claim over one stays planning-grade: the planner may degrade
+# such a host, but must never report PLANNED from it.
+UNPROVEN_CATALOG_STATUSES = frozenset({"stale", "unverified"})
+
+
+def unproven_catalog_reason(config: Mapping[str, Any]) -> str | None:
+    """Single home for the unproven-catalog rule; the checker and planner share it.
+
+    Returns the reason a host's catalog is not dispatch-grade, or None when the
+    host is either live-observed or explicitly static-only.
+    """
+    if config.get("discovery") != "catalog":
+        return None
+    status = config.get("verification_status", "unverified")
+    if status not in UNPROVEN_CATALOG_STATUSES:
+        return None
+    return f"catalog discovery is {status}: an offline inventory is not live evidence"
 
 
 def require(condition: bool, message: str) -> None:
@@ -161,6 +180,11 @@ def _require_host_config(host: str, config: Any, *, host_targets: set[str], role
         models[slug] = model
 
     observation = config.get("catalog_observation")
+    unproven = unproven_catalog_reason(config)
+    if unproven is not None:
+        # An unproven catalog may not look evidence-backed: planning-grade only.
+        require(observation is None and not any(m.get("evidence_ref") for m in models.values()),
+                f"{host}: {unproven}; drop the observation/evidence_ref or record live verification")
     if discovery == "live" or verification == "verified":
         require(discovery == "live" and bool(models) and isinstance(observation, dict),
                 f"{host}: live verified claims need observed catalog and models")

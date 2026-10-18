@@ -43,17 +43,156 @@
     }
   },
   "hosts": {
-    "codex": {
-      "discovery": "unverified",
+    "grok": {
+      "discovery": "catalog",
       "model_catalog": [],
       "tier_defaults": {
+        "adversarial-panel": [
+          "inherit-parent"
+        ],
         "fast-verifier": [
+          "inherit-parent"
+        ],
+        "fast-worker": [
           "inherit-parent"
         ],
         "panel": [
           "inherit-parent"
         ],
+        "strong-judgment": [
+          "inherit-parent"
+        ],
+        "strongest": [
+          "inherit-parent"
+        ]
+      },
+      "fallback": "fail-closed",
+      "verification_status": "unverified"
+    },
+    "codex": {
+      "discovery": "unverified",
+      "model_catalog": [],
+      "tier_defaults": {
         "adversarial-panel": [
+          "inherit-parent"
+        ],
+        "fast-verifier": [
+          "inherit-parent"
+        ],
+        "fast-worker": [
+          "inherit-parent"
+        ],
+        "panel": [
+          "inherit-parent"
+        ],
+        "strong-judgment": [
+          "inherit-parent"
+        ],
+        "strongest": [
+          "inherit-parent"
+        ]
+      },
+      "fallback": "fail-closed",
+      "verification_status": "unverified"
+    },
+    "omp": {
+      "discovery": "catalog",
+      "model_catalog": [],
+      "tier_defaults": {
+        "adversarial-panel": [
+          "inherit-parent"
+        ],
+        "fast-verifier": [
+          "inherit-parent"
+        ],
+        "fast-worker": [
+          "inherit-parent"
+        ],
+        "panel": [
+          "inherit-parent"
+        ],
+        "strong-judgment": [
+          "inherit-parent"
+        ],
+        "strongest": [
+          "inherit-parent"
+        ]
+      },
+      "fallback": "fail-closed",
+      "verification_status": "unverified"
+    },
+    "opencode": {
+      "discovery": "catalog",
+      "model_catalog": [],
+      "tier_defaults": {
+        "adversarial-panel": [
+          "inherit-parent"
+        ],
+        "fast-verifier": [
+          "inherit-parent"
+        ],
+        "fast-worker": [
+          "inherit-parent"
+        ],
+        "panel": [
+          "inherit-parent"
+        ],
+        "strong-judgment": [
+          "inherit-parent"
+        ],
+        "strongest": [
+          "inherit-parent"
+        ]
+      },
+      "fallback": "fail-closed",
+      "verification_status": "unverified"
+    },
+    "antigravity": {
+      "discovery": "catalog",
+      "model_catalog": [],
+      "tier_defaults": {
+        "adversarial-panel": [
+          "inherit-parent"
+        ],
+        "fast-verifier": [
+          "inherit-parent"
+        ],
+        "fast-worker": [
+          "inherit-parent"
+        ],
+        "panel": [
+          "inherit-parent"
+        ],
+        "strong-judgment": [
+          "inherit-parent"
+        ],
+        "strongest": [
+          "inherit-parent"
+        ]
+      },
+      "fallback": "fail-closed",
+      "verification_status": "unverified"
+    },
+    "droid": {
+      "discovery": "catalog",
+      "model_catalog": [],
+      "tier_defaults": {
+        "adversarial-panel": [
+          "inherit-parent"
+        ],
+        "fast-verifier": [
+          "inherit-parent"
+        ],
+        "fast-worker": [
+          "inherit-parent"
+        ],
+        "panel": [
+          "inherit-parent"
+        ],
+        "strong-judgment": [
+          "inherit-parent"
+        ],
+        "strongest": [
           "inherit-parent"
         ]
       },

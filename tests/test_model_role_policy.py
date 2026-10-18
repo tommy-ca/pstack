@@ -130,7 +130,7 @@ def test_package_roles_have_exactly_one_local_agent_definition() -> None:
 
 # --- Harness-neutral planning, separated from live dispatch -----------------
 
-from scripts.model_role_resolver import plan_role
+from scripts.model_role_resolver import model_plan_to_wire, plan_role
 
 
 def catalog_plan_policy() -> dict:
@@ -417,3 +417,120 @@ def test_skill_role_tokens_resolve_to_descriptor_roles_and_agents() -> None:
     missing_agents = tokens - agent_files
     assert not missing_roles, f"tokens without descriptor role: {sorted(missing_roles)}"
     assert not missing_agents, f"tokens without agent file: {sorted(missing_agents)}"
+
+
+# --- Stale/unverified catalog stays planning-grade (never PLANNED) ----------
+
+
+def unproven_catalog_policy(status: str) -> dict:
+    """Same complete fixture as catalog_plan_policy, one verification claim flipped."""
+    policy = catalog_plan_policy()
+    policy["hosts"]["codex"]["verification_status"] = status
+    return policy
+
+
+@pytest.mark.parametrize("status", ["stale", "unverified"])
+def test_unproven_catalog_can_never_plan_clean(status: str) -> None:
+    # Every other input here is a complete, valid planning fixture; only the
+    # catalog's verification claim distinguishes it. A stale or unverified
+    # catalog must degrade, never report PLANNED as if it were observed.
+    assert model_role_policy.UNPROVEN_CATALOG_STATUSES == {"stale", "unverified"}
+    plan = plan_role(unproven_catalog_policy(status), PACKAGE, host="codex",
+                     role="swarm-workers", capabilities=capability_bindings())
+    assert plan.status == "DEGRADED"
+    assert len(plan.seats) == 1 and plan.seats[0].model == "model-a"
+    assert plan.reasons and "not live evidence" in plan.reasons[0]
+    assert status in plan.reasons[0]
+    # The wire contract must accept the degraded plan as a static artifact.
+    plan_schema = json.loads((ROOT / "schemas/portability/model-plan.schema.json").read_text())
+    Draft202012Validator(plan_schema).validate(model_plan_to_wire(plan))
+
+
+def test_static_only_catalog_still_plans_and_stale_flips_it() -> None:
+    policy = catalog_plan_policy()
+    static_only = plan_role(policy, PACKAGE, host="codex", role="swarm-workers",
+                            capabilities=capability_bindings())
+    assert static_only.status == "PLANNED"
+    assert static_only.reasons == ()
+
+    policy["hosts"]["codex"]["verification_status"] = "stale"
+    stale = plan_role(policy, PACKAGE, host="codex", role="swarm-workers",
+                      capabilities=capability_bindings())
+    assert stale.status == "DEGRADED"
+    assert (stale.seats, stale.source) == (static_only.seats, static_only.source)
+
+
+def test_unproven_catalog_gate_cannot_upgrade_a_blocker() -> None:
+    # The gate lowers PLANNED to DEGRADED; a real blocker still wins outright.
+    plan = plan_role(unproven_catalog_policy("stale"), PACKAGE, host="codex",
+                     role="swarm-workers", explicit="not-a-real-model",
+                     capabilities=capability_bindings())
+    assert plan.status == "BLOCKED"
+    assert "no silent substitution" in plan.reasons[0]
+
+
+def test_unproven_catalog_may_not_carry_observation_or_evidence_refs() -> None:
+    # A planning-grade catalog may not look evidence-backed in the same document.
+    live_looking = unproven_catalog_policy("unverified")
+    live_looking["hosts"]["codex"]["catalog_observation"] = {
+        "host_version": "test-fixture-only", "observed_at": "2026-10-15T00:00:00Z",
+        "receipt": ".audit/test-fixture-no-runtime-claim.json",
+    }
+    with pytest.raises(ValidationError, match="not live evidence"):
+        check_model_role_policy(live_looking, PACKAGE)
+
+    referenced = unproven_catalog_policy("stale")
+    referenced["hosts"]["codex"]["model_catalog"][0]["evidence_ref"] = ".audit/test-fixture.json"
+    with pytest.raises(ValidationError, match="not live evidence"):
+        check_model_role_policy(referenced, PACKAGE)
+
+    # Same claim, honest document: accepted as planning-grade input.
+    check_model_role_policy(unproven_catalog_policy("stale"), PACKAGE)
+
+
+def test_example_policy_covers_every_declared_host_with_empty_catalogs() -> None:
+    declared = PACKAGE["host_targets"]
+    tiers = {role["default_model_role"] for role in PACKAGE["roles"]}
+    assert len(declared) == 6
+    assert sorted(EXAMPLE["hosts"]) == sorted(declared)
+    for host, config in EXAMPLE["hosts"].items():
+        assert config["model_catalog"] == [], f"{host} must not invent unobserved model IDs"
+        assert set(config["tier_defaults"]) == tiers, f"{host} does not map every declared tier"
+    validate(EXAMPLE)
+
+
+def test_every_declared_host_plans_without_an_unmapped_host_verdict() -> None:
+    for host in PACKAGE["host_targets"]:
+        plan = plan_role(EXAMPLE, PACKAGE, host=host, role="independent-verifier")
+        assert plan.status != "BLOCKED", f"{host}: {plan.reasons}"
+        assert plan.evidence_level == "static-planning-only"
+        assert all(seat.model is None for seat in plan.seats), "no model ID may be invented"
+
+
+def load_project_package_module():
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "project_package_plan_probe", ROOT / "scripts" / "project-package.py")
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_project_package_check_surfaces_the_planner_verdict(capsys) -> None:
+    project_package = load_project_package_module()
+    desc, _ = project_package.load_package_descriptor()
+    assert project_package.check_model_role_plan(desc) is True
+    out = capsys.readouterr().out
+    assert out.count(project_package.PLAN_PROBE_ROLE) == len(PACKAGE["host_targets"])
+    assert "BLOCKED" not in out
+    assert "static-planning-only" in out
+
+
+def test_plan_role_has_exactly_one_production_caller() -> None:
+    # U2 wiring: the sole non-test import of the planner is the read-only
+    # project-package --check probe; no router or gateway may join it.
+    callers = {path.name for path in (ROOT / "scripts").rglob("*.py")
+               if re.search(r"\bplan_role\b", path.read_text(encoding="utf-8"))}
+    assert callers == {"model_role_resolver.py", "project-package.py"}

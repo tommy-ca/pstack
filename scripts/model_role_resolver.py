@@ -14,7 +14,13 @@ from collections.abc import Mapping, Sequence
 from dataclasses import asdict, dataclass
 from typing import Any
 
-from scripts.model_role_policy import INHERIT, PANEL_SEAT_MAX, check_choice_list, check_model_role_policy
+from scripts.model_role_policy import (
+    INHERIT,
+    PANEL_SEAT_MAX,
+    check_choice_list,
+    check_model_role_policy,
+    unproven_catalog_reason,
+)
 from scripts.portability_schema import IMPLEMENTATION_STATUSES, ENFORCEMENT_LEVELS
 
 
@@ -208,12 +214,19 @@ def plan_role(
         return built
     members, seat_degraded, seat_reasons = built
 
+    # A stale/unverified catalog claim is planning-grade only: it may degrade a
+    # plan, never yield a clean PLANNED. Blocker paths above already returned
+    # BLOCKED, so this gate can only lower PLANNED to DEGRADED.
+    unproven = unproven_catalog_reason(config)
+    catalog_reason = (unproven,) if unproven is not None else ()
+
     # 'PLANNED' is deliberately not 'VERIFIED': actual independence and
     # supported native model IDs are proven by an external runtime driver.
     return ModelPlan(
         host=host, role=role, selection=selection, source=source,
-        status="DEGRADED" if degraded or seat_degraded else "PLANNED",
-        seats=tuple(members), reasons=tuple(reasons + seat_reasons), effort=effort,
+        status="DEGRADED" if degraded or seat_degraded or catalog_reason else "PLANNED",
+        seats=tuple(members), reasons=tuple(reasons + seat_reasons + list(catalog_reason)),
+        effort=effort,
     )
 
 
