@@ -13,7 +13,8 @@
   "policy": "Review every fork against canonical intent; metadata does not authorize importing implementation or policy",
   "review_state_values": {
     "pending": "no triage recorded",
-    "lane-triaged": "lane-level disposition recorded from the adoption matrix; per-file diff review still open"
+    "lane-triaged": "lane-level disposition only; per-file source review remains open",
+    "source-reviewed": "pinned comparator/canonical/target files reviewed per file with semantic rationale, attribution and check/gap mapping; does not imply approval, implementation, runtime verification, or independent acceptance"
   },
   "proposed_adoption_values": [
     "adapt",
@@ -37,7 +38,7 @@
     {
       "path": "plugins/pstack/skills/architect/references/rationale-template.md",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "adapt",
       "review_lane": "skill-policy",
       "source_version": "0.9.34",
@@ -45,12 +46,22 @@
       "why": "Adds an Implementation reconciliation section that records accepted deviations and their acceptance sources.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#skill-policy",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "9ccea423df568bbedeea0c371b9ca6990f1d6b07",
+          "canonical": "a10f77f59510c532cd909faaf3bfeee5ffbfd588",
+          "target": "a10f77f59510c532cd909faaf3bfeee5ffbfd588"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**adapt**. Comparator adds recording accepted deviations, acceptance sources, and reconciliation before unit closure. Target template matches this instruction. The comparator notice attributes architect to canonical pstack, Lauren Tan, MIT; port edits to Michael Denyer, MIT; target has MIT `LICENSE`, no `NOTICE`.",
+        "check_or_gap": "No check found for this template’s reconciliation behavior. **Gap:** prose contract is not behavior-tested."
+      }
     },
     {
       "path": "plugins/pstack/skills/architect/SKILL.md",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "adapt",
       "review_lane": "skill-policy",
       "source_version": "0.9.34",
@@ -58,25 +69,45 @@
       "why": "Requires comparing accepted deviations with the saved sketch and rationale, and updating them, before each implementation unit closes.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#skill-policy",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "9083812759091be7cb94f035d34e2b59228ae321",
+          "canonical": "88e23ca105b89e67f4085d0e676c40d4b170a623",
+          "target": "69430fbb75e428e6865a704072edd45294be085d"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**adapt**. Target changes runner selection to host configuration, adds `disable-model-invocation`, and narrows Phase D: comparator explicitly reconciles accepted deviations against usage, outcomes, signatures, and ownership before the next unit. Preserve the actual requirement if adopting the port; do not claim the target has comparator’s reconciliation workflow. Pstack/Lauren MIT; comparator port/Michael Denyer MIT; target MIT, no notice.",
+        "check_or_gap": "No source-backed skill workflow check found. **Gap.**"
+      }
     },
     {
       "path": "plugins/pstack/skills/blast-radius/SKILL.md",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
-      "proposed_adoption": "gap",
+      "review_state": "source-reviewed",
+      "proposed_adoption": "adapt",
       "review_lane": "skill-policy",
       "source_version": "0.9.21",
       "reference_group": "pstack",
       "why": "Extends the trigger to run before design when a brief asserts something about existing code.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#skill-policy",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "8ee5a95c43e710f8b8e3bb975c95b136a844b648",
+          "canonical": "b296cce0d746260a53c16e3671cb05bacfe82daf",
+          "target": "1713b283d477530be64e925ede2bdbe5ce2d6e31"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**adapt**. The comparator description adds invocation before design when the brief asserts existing-code behavior; body explicitly says to run it before design and treat the assertion as a hypothesis. Target removes that trigger from both description and body. Matrix’s local-absent/gap claim is stale; target does not currently implement the proposed trigger. Pstack/Lauren MIT; comparator port/Michael Denyer MIT; target MIT, no notice.",
+        "check_or_gap": "No test exercises this trigger or workflow. **Gap.**"
+      }
     },
     {
       "path": "plugins/pstack/skills/bro/SKILL.md",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "exclude",
       "review_lane": "skill-policy",
       "source_version": "0.9.10",
@@ -84,33 +115,63 @@
       "why": "Adds a /bro and say-it-plainly trigger to the description.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#skill-policy",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "c21e6a4070325a7540f4c1ef4b3b8aac43676138",
+          "canonical": "b1701b778639c08bfc306291d70170c525c66a68",
+          "target": "b1701b778639c08bfc306291d70170c525c66a68"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**Exclude** the comparator-only trigger change. Comparator description adds “Use for /bro or when asked to say it plainly.” Canonical and target descriptions say only “Restate the last message in plain human language,” and target additionally has `disable-model-invocation: true`. Preserve the host’s existing invocation policy; the canonical plain-language behavior is already present.",
+        "check_or_gap": "No behavior check found for trigger routing. Canonical and target both provide plain-language restatement; comparator adds /bro and plain-language invocation text, while target disables model invocation. This is an explicit trigger-policy gap, not a missing source file."
+      }
     },
     {
       "path": "plugins/pstack/skills/create-verification-skill/SKILL.md",
       "reference_kind": "port-feature",
-      "review_state": "lane-triaged",
-      "proposed_adoption": "gap",
+      "review_state": "source-reviewed",
+      "proposed_adoption": "adapt",
       "review_lane": "skill-policy",
       "source_version": "0.9.29",
       "reference_group": "pstack",
       "why": "Names the generated project skill verify so it replaces Claude Code's bundled user-only /verify and the playbooks can invoke it.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#skill-policy",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "93ea1bc4d18237bcdbe7c208c60f1c52311d2647",
+          "canonical": "140d033a001e8d27acd14b06004506c43053b199",
+          "target": "3c9424432bf0af82ab33ab4a980baa715dead7c9"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**adapt**. Target implements a Grok/host-aware scaffold with host skill directories, project-local generated names, safety constraints, three verification tiers, and a more demanding map/proof contract. This is substantive behavioral evolution, not absence. Pstack/Lauren MIT per comparator `NOTICE.md` v0.11.3/v0.14.2 attribution; comparator port/Michael Denyer MIT; target MIT, no notice.",
+        "check_or_gap": "`tests/test_scaffold_verification_skill.py` exercises scaffold outputs, destination selection, refusal cases, and structural validation. It explicitly expects “runtime proof unassessed”; it does **not** test the generated app’s live behavior."
+      }
     },
     {
       "path": "plugins/pstack/skills/poteto-help/SKILL.md",
       "reference_kind": "port-feature",
-      "review_state": "lane-triaged",
-      "proposed_adoption": "gap",
+      "review_state": "source-reviewed",
+      "proposed_adoption": "adapt",
       "review_lane": "skill-policy",
       "source_version": "0.9.71",
       "reference_group": "pstack",
       "why": "Routes installation, model-sheet loading, and persistent routing preferences to the current runtime's setup sources, gives installed playbooks precedence over upstream guides, and keeps the port's public skill loading, hidden principles, verification-skill naming, local-worker advice, driver and built-in equivalents, excluded make-bot-ui row, and orchestrate wording as prose changes in this fork.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#skill-policy",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "94545599432a7ba126357278f06f8e1b99add4fd",
+          "canonical": "575d80fbff15d3421e6ef020d3a9cfeb2b0b01f0",
+          "target": "51b9ba201d55e1d5553e608a13f003c0b40ec9a0"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**adapt**, not `gap`. Target routes to Grok/runtime setup, profile data, host-specific maps and skill paths; it also changes recommendations and available skill listings. Comparator directs to Claude/Cursor documentation and GitHub copies. Pstack/Lauren MIT; comparator port/Michael Denyer MIT; target MIT, no notice.",
+        "check_or_gap": "No check found for routes, links, or prose accuracy. **Gap.**"
+      }
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/playbooks/autopilot-full.md",
@@ -493,7 +554,7 @@
     {
       "path": "plugins/pstack/skills/poteto-mode/SKILL.md",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "adapt",
       "review_lane": "skill-policy",
       "source_version": "0.9.2",
@@ -501,12 +562,22 @@
       "why": "Adds the Claude Code, Codex, Pi, and GitHub Copilot Platform Adaptation section with its task-tool and todo.md fallback (per task slug when sessions share a checkout), the run-or-verify driver line, the deploy-platform and defect-severity triggers, the port's principle summaries, the project playbooks paragraph, and the closed-review-gate rule that the Codex and Pi mappings point to, and it points the Agent-call defaults at the Models section with full tool access and the namespaced pstack:poteto-agent name, requires stopping an abandoned agent before replacing it, renders every reply item as prose, layers technical-writing on top of unslop, and describes Autopilot-full as stopping at merge-ready for the operator's click.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#skill-policy",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "5278f9de3fd9f9c4ca212746007f5ccb2de77a2e",
+          "canonical": "d5be8a10b745f3676805cb6858b51ab758412069",
+          "target": "d9dc2c5a5ea822cec1c767ab05d8a0639ea0018a"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**adapt**. Target is a broad host-specific rewrite: Grok/Antigravity/Codex/OMP/OpenCode/Droid mappings; task tooling, plugin namespaces, policy triggers, and detailed operational rules replace Claude/Codex/Pi-oriented mapping and orchestration. The comparator’s operator-click merge limit is not a generic requirement; keep host-specific merge authority and mappings rather than importing them unchanged. Pstack/Lauren MIT; comparator port/Michael Denyer MIT; target MIT, no notice.",
+        "check_or_gap": "`tests/test_playbook_parity.py` checks only `swarm`, `arena`, and `interrogate` clauses, not this skill’s full routing policy. **Gap** for this file’s host and merge rules."
+      }
     },
     {
       "path": "plugins/pstack/skills/principle-attack-the-premise/SKILL.md",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "adapt",
       "review_lane": "skill-policy",
       "source_version": "0.9.82",
@@ -514,25 +585,45 @@
       "why": "Adds a Pattern line that replaces the per-actor census with a rerunnable falsifying check when the premise is not about actors.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#skill-policy",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "78ca084cf711365494195e7112d47b73ad14cbfe",
+          "canonical": "f9785ff9fdcf37d1c689e4468da7d611f3b76d4b",
+          "target": "f9785ff9fdcf37d1c689e4468da7d611f3b76d4b"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**adapt**. Comparator’s new non-actor case asks for a rerunnable falsifying check; target retains the pattern but omits that clause and the accompanying actor-census exception detail. The gap is that explicit alternative, not the principle’s absence. Pstack/Lauren MIT; comparator port/Michael Denyer MIT; target MIT, no notice.",
+        "check_or_gap": "No targeted check found for the new non-actor pattern. **Gap.**"
+      }
     },
     {
       "path": "plugins/pstack/skills/principle-prove-it-works/SKILL.md",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
-      "proposed_adoption": "preserve",
+      "review_state": "source-reviewed",
+      "proposed_adoption": "adapt",
       "review_lane": "skill-policy",
       "source_version": "0.1.0",
       "reference_group": "pstack",
       "why": "Adds checks that the process behind a result was sound and that a failing check fails for the predicted reason.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#skill-policy",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "3ba219579fc3febfc1a9d32bcd8d937d15d89050",
+          "canonical": "5dc14a3b06f9d579e5c17cd8a7242f432ddb3125",
+          "target": "7031db24ade7bc65e6679e785d84e46d06ca1887"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**adapt**. Comparator adds checks for Chezmoi apply/diff and Grok sandbox identity; target adds corresponding host-specific examples. **Matrix canonical absence is stale.** Pstack/Lauren MIT; comparator port/Michael Denyer MIT; target MIT, no notice.",
+        "check_or_gap": "No test found for this principle’s full verification contract. **Gap.**"
+      }
     },
     {
       "path": "plugins/pstack/skills/principle-test-behavior-not-implementation/SKILL.md",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "adapt",
       "review_lane": "skill-policy",
       "source_version": "0.9.82",
@@ -540,7 +631,17 @@
       "why": "Extends the keep-list to absence-only tests proven by injecting the forbidden effect, and to constant pins on values promised to users.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#skill-policy",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "23f1fb510764b6b4b08fe9600d67b095a68de4f1",
+          "canonical": "f5a603e3a0925cdc6363bcc26dfbf587d9a36ec7",
+          "target": "dd828aa6c15965f64b218683e84bba714d15b5cc"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**adapt**. Target separates vacuous from weak-but-nonvacuous matchers and documents the canonical matcher-error exception, unlike comparator’s more compressed matcher guidance. This is not a simple extension of the comparator’s keep-list. Pstack/Lauren MIT; comparator port/Michael Denyer MIT; target MIT, no notice.",
+        "check_or_gap": "`tests/test_principle_test_behavior.py` checks the target’s exception text and demonstrates Python equivalents of vacuous versus weak assertions. It does not comprehensively validate the prose or test all listed matcher families."
+      }
     },
     {
       "path": "plugins/pstack/skills/recall/SKILL.md",
@@ -688,5 +789,50 @@
         "verdict": "no copy authorized by this row; attribution required before any import"
       }
     }
-  ]
+  ],
+  "review_counts": {
+    "adapt": 9,
+    "preserve": 0,
+    "exclude": 1,
+    "gap": 0,
+    "policy-fork": 0
+  },
+  "review_scope": {
+    "source_review": "reviewed 10/48 comparator paths against pinned comparator, canonical and target blobs; 38 rows remain lane-triaged; check-plan.test.ts is the only absent target counterpart",
+    "approval": "not granted",
+    "implementation": "not authorized or claimed",
+    "runtime": "not verified",
+    "independent_acceptance": "pending; issue #434 remains open",
+    "watcher_gap": "Unknown mergeability can yield false READY in the target watcher; tracked at https://github.com/tommy-ca/pstack/issues/545; no fix is present in reviewed target pin."
+  },
+  "source_review_contract": {
+    "counterpart_sources": {
+      "reference": {
+        "repository": "michael-denyer/pstack-claude",
+        "pin": "94f5ce95abe8a9dec976967d79941f631cf477cd",
+        "path_rule": "exactly row.path"
+      },
+      "canonical": {
+        "repository": "cursor/plugins/pstack",
+        "pin": "1dcc2bacde73ddd284803b7af28164d0436198fc",
+        "path_rule": "pstack rows remove the leading plugins/; thermos row replaces plugins/pstack/ with thermos/"
+      },
+      "target": {
+        "repository": "tommy-ca/pstack",
+        "pin": "3f4cd124f27cab90865df79d18d376e2f4335b2c",
+        "path_rule": "remove the leading plugins/pstack/"
+      }
+    },
+    "absent_counterparts": [
+      {
+        "side": "target",
+        "path": "skills/poteto-mode/scripts/check-plan.test.ts",
+        "pin": "3f4cd124f27cab90865df79d18d376e2f4335b2c"
+      }
+    ],
+    "attribution_profiles": {
+      "pstack": "Canonical Cursor pstack: Lauren Tan, MIT (pinned LICENSE). Comparator fork also lists Michael Denyer, MIT (LICENSE, NOTICE.md and NOTICE-skills.md). Target project LICENSE names Lauren Tan and aa2246740 under MIT and has no NOTICE file. Provenance only; no verbatim-copy claim or import authorization.",
+      "thermos": "Cursor thermos, MIT (pinned LICENSE). Comparator NOTICE.md names this path; NOTICE-skills.md and LICENSE-thermos apply; comparator modifications by Michael Denyer carry MIT. Target project license is MIT with no NOTICE. The policy-fork row does not authorize import; any copy requires the stated thermos attribution and MIT terms."
+    }
+  }
 }
