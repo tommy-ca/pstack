@@ -195,11 +195,11 @@ The frozen script runs the full durability module. The POSIX candidate adds nine
 
 Measured after review fixes: the candidate median was 24.6s versus the exact-base median of 31.2s, a 21.2% reduction. All five pairs favored the cache, and all 113 candidate tests passed.
 
-- [ ] **Step 3: Review semantic scope and commit implementation**
+- [x] **Step 3: Review semantic scope and commit implementation**
 
 Run: `sem diff --format json`; inspect the file/entity summary and confirm only the implementation, focused tests, plan, and refreshed durable receipt/index deltas changed before candidate-fixture regeneration. Run `git diff --check`, verify the durability suite, and create a signed implementation commit. This source commit is the revision the candidate fixture must name.
 
-- [ ] **Step 4: Refresh candidate evidence and verify the delivered state**
+- [x] **Step 4: Refresh candidate evidence and verify the delivered state**
 
 After the implementation commit, run:
 
