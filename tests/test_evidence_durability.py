@@ -1,6 +1,7 @@
 import ast
 import importlib.util
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -474,19 +475,15 @@ def test_hand_authored_support_state_cannot_outrun_evidence() -> None:
 
 
 def _package_ignored_paths() -> frozenset:
-    try:
-        listed = subprocess.run(
-            [
-                "git", "-C", str(ROOT), "ls-files",
-                "--others", "--ignored", "--exclude-standard", "--directory", "-z",
-            ],
-            capture_output=True,
-            text=True,
-            check=True,
-        ).stdout
-    except (OSError, subprocess.CalledProcessError):
-        return frozenset()
-    return frozenset(path.rstrip("/") for path in listed.split("\0") if path)
+    listed = subprocess.run(
+        [
+            "git", "-C", str(ROOT), "ls-files",
+            "--others", "--ignored", "--exclude-standard", "--directory", "-z",
+        ],
+        capture_output=True,
+        check=True,
+    ).stdout
+    return frozenset(os.fsdecode(path.rstrip(b"/")) for path in listed.split(b"\0") if path)
 
 
 _PACKAGE_IGNORED = _package_ignored_paths()
@@ -510,11 +507,42 @@ def _disposable_copy(tmp_path: Path) -> Path:
     return copy_root
 
 
-def test_the_disposable_copy_drops_audit_run_junk_and_keeps_the_receipts(tmp_path: Path) -> None:
-    evidence = _disposable_copy(tmp_path) / ".audit" / "evidence"
-    assert [path.name for path in evidence.iterdir() if path.is_dir()] == []
-    assert (evidence / "index.json").is_file()
-    assert (evidence / "grok-receipt.json").is_file()
+@pytest.mark.skipif(sys.platform == "win32", reason="requires POSIX byte-path semantics")
+def test_the_disposable_copy_drops_only_git_ignored_paths(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    source = tmp_path / "source"
+    source.mkdir()
+    subprocess.run(["git", "-C", str(source), "init", "--quiet"], check=True)
+    (source / ".gitignore").write_text("*.tmp\n", encoding="utf-8")
+    evidence = source / ".audit" / "evidence"
+    evidence.mkdir(parents=True)
+    (evidence / "index.json").write_text("tracked receipt index", encoding="utf-8")
+    (evidence / "keep.txt").write_text("unignored input", encoding="utf-8")
+    carriage_return_name = "ignored\rname.tmp"
+    non_utf8_name = os.fsdecode(b"ignored-\xff.tmp")
+    (evidence / carriage_return_name).write_text("ignored", encoding="utf-8")
+    (evidence / non_utf8_name).write_text("ignored", encoding="utf-8")
+    subprocess.run(
+        ["git", "-C", str(source), "add", "--", ".gitignore", ".audit/evidence/index.json"],
+        check=True,
+    )
+
+    monkeypatch.setitem(globals(), "ROOT", source)
+    monkeypatch.setitem(globals(), "_PACKAGE_IGNORED", _package_ignored_paths())
+    copied = _disposable_copy(tmp_path) / ".audit" / "evidence"
+
+    assert (copied / "index.json").read_text(encoding="utf-8") == "tracked receipt index"
+    assert (copied / "keep.txt").read_text(encoding="utf-8") == "unignored input"
+    assert not (copied / carriage_return_name).exists()
+    assert not (copied / non_utf8_name).exists()
+
+
+def test_package_ignored_path_query_propagates_git_failure(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    source = tmp_path / "not-a-git-repository"
+    source.mkdir()
+    monkeypatch.setitem(globals(), "ROOT", source)
+
+    with pytest.raises(subprocess.CalledProcessError):
+        _package_ignored_paths()
 
 
 @pytest.mark.parametrize(
