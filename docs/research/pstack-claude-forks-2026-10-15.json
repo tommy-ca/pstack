@@ -646,7 +646,7 @@
     {
       "path": "plugins/pstack/skills/recall/SKILL.md",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "adapt",
       "review_lane": "skill-policy",
       "source_version": "0.9.2",
@@ -654,12 +654,22 @@
       "why": "Sweeps the locations the project's standing rules name before reporting anything as never recorded and applies the human-rulings epistemics, on top of Claude Code's transcript path.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#skill-policy",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "c8084cdbf4fe3a7d05eea7330d499e3c57e9358b",
+          "canonical": "a70062a3f89a8d68b3391bc71fc4c6cc2dfcf6a4",
+          "target": "a6dd56b5ac97dc14934c0df99278b0a217ec6046"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**adapt**. Comparator gives a Claude transcript path and mandates historical mining, shared-source sweep, and live `git`/`gh` validation. Target defers transcript location to the system prompt and retains the sweep/verification contract; some detailed mining procedures are omitted. Pstack/Lauren MIT; comparator port/Michael Denyer MIT; target MIT, no notice.",
+        "check_or_gap": "No check found for recall’s evidence sweep. **Gap.**"
+      }
     },
     {
       "path": "plugins/pstack/skills/reflect/SKILL.md",
       "reference_kind": "port-feature",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "adapt",
       "review_lane": "skill-policy",
       "source_version": "0.1.0",
@@ -667,12 +677,22 @@
       "why": "Finds the session transcript with the port's find-transcript.mjs under Claude Code's projects directory, keeps the parent's conclusions out of the reviewer prompts (a fallback digest records events without a verdict, and nothing goes beside a transcript path), and drops Cursor's readonly agent mode and inline model column.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#skill-policy",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "49bca6f3b38959d77871d36f91eb3b209618328e",
+          "canonical": "b6bd41afdc831741819b72efa60ef2f10947cc8c",
+          "target": "23dd9add70d016403d48c2da00ffca5b373303f1"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**adapt**. Comparator uses Claude transcript finder, `Agent` calls, and Claude paths. Target uses Grok session history, `task`/Grok roles, and Grok-specific routing. Target retains the three-reviewer synthesis shape but its transcript and model mechanics are not interchangeable with comparator. Pstack/Lauren MIT; comparator port/Michael Denyer MIT; target MIT, no notice.",
+        "check_or_gap": "`tests/test_refresh_hygiene.py` covers reflect-path refresh/hygiene behavior, not transcript selection or reviewer quality. **Gap** for the semantic workflow."
+      }
     },
     {
       "path": "plugins/pstack/skills/setup-pstack/SKILL.md",
       "reference_kind": "port-feature",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "adapt",
       "review_lane": "skill-policy",
       "source_version": "0.9.2",
@@ -680,7 +700,17 @@
       "why": "Writes the override sheet at each runtime's own path, loaded by @-include on Claude Code and pasted into AGENTS.md on Codex since neither has Cursor's always-applied rules, replaces Cursor's budget step with a default effort and per-role effort levels, adds the SessionStart hook toggle and names the Pi extension as a reader of it, lists every runtime's sheet path in a table, and routes GitHub Copilot to copilot.md.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#skill-policy",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "6dd8a25ace99193e2e4485c7a1fe39f105a50027",
+          "canonical": "90a9e575397fb59f4d9a47e6157c2106f4b4a5e2",
+          "target": "e1996351d657cf25e69ef705e6b9ca0621ba20c8"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**adapt**. Target writes Grok model and per-role effort files, detects live effort values, and prevents cross-host configuration writes. Comparator writes a Cursor always-applied model rule and offers Cursor-specific budget choices. Treat this as a runtime port, not a policy-equivalent text transplant. Pstack/Lauren MIT; comparator port/Michael Denyer MIT; target MIT, no notice.",
+        "check_or_gap": "No check found for setup’s choice mapping or file-writing contract in this assigned skill. **Gap.**"
+      }
     },
     {
       "path": "plugins/pstack/skills/show-me-your-work/scripts/log.sh",
@@ -698,7 +728,7 @@
     {
       "path": "plugins/pstack/skills/show-me-your-work/SKILL.md",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "adapt",
       "review_lane": "skill-policy",
       "source_version": "0.9.41",
@@ -706,12 +736,22 @@
       "why": "Documents that log.sh also neutralizes a cell opening with a double quote.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#skill-policy",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "9adafb6c48a185db178e343b1653470e78e11790",
+          "canonical": "d350a150c36ca16382b4aa6d4196b39e67454ad1",
+          "target": "d350a150c36ca16382b4aa6d4196b39e67454ad1"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**adapt**. Comparator quotes the failure content rather than the assertion line and escapes TSV cells beginning with `\"`. Target omits the failure-content detail and its helper’s listed escaping set does not include `\"`. Target still documents TSV sanitation and audit rules. This is a concrete prose-contract delta, not “absent.” Pstack/Lauren MIT; comparator port/Michael Denyer MIT; target MIT, no notice.",
+        "check_or_gap": "`skills/show-me-your-work/scripts/log.sh` is a helper, but no source-backed check was found proving this documented escaping behavior. **Gap.**"
+      }
     },
     {
       "path": "plugins/pstack/skills/tdd/SKILL.md",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "adapt",
       "review_lane": "skill-policy",
       "source_version": "0.9.21",
@@ -719,12 +759,22 @@
       "why": "Requires quoting the failure content, not the assertion line, as evidence that the new test fails for the intended reason.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#skill-policy",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "67d91899a44c094d999eda716fa9877de245e109",
+          "canonical": "ca6f24c963001d9d518db2936dfe3d12f29b4e94",
+          "target": "9b70811f0ecad51b2d6e977ee5e799a836aac05e"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**adapt**. Comparator requires quoting the failure content to prove the intended failure. Target’s step 4 omits that discriminator; target also adds adjacent validation and explicit impractical-test handling. Keep the exact-failure requirement if it is intended policy. Pstack/Lauren MIT; comparator port/Michael Denyer MIT; target MIT, no notice.",
+        "check_or_gap": "No check found for TDD’s failure-evidence policy. **Gap.**"
+      }
     },
     {
       "path": "plugins/pstack/skills/why/references/epistemics.md",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "adapt",
       "review_lane": "skill-policy",
       "source_version": "0.9.34",
@@ -732,12 +782,22 @@
       "why": "Adds the Claims about human decisions section that five other files cite for keeping a ruling's original wording and scope.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#skill-policy",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "e483ab1af872548dc69835ddb787101c5eaf310f",
+          "canonical": "b18abf41dfa245ee55e94f1b3a80c0b750eb10cf",
+          "target": "b18abf41dfa245ee55e94f1b3a80c0b750eb10cf"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**adapt**. Comparator includes explicit human-ruling ownership, original wording, dependent evidence-chain, and unavailable-original rules. Target omits that whole section. This is a material epistemic policy gap relative to the comparator, not a runtime-name substitution. Pstack/Lauren MIT; comparator port/Michael Denyer MIT; target MIT, no notice.",
+        "check_or_gap": "No check found enforcing citation or human-ruling epistemics. **Gap.**"
+      }
     },
     {
       "path": "plugins/pstack/skills/why/references/investigator-prompt.md",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "adapt",
       "review_lane": "skill-policy",
       "source_version": "0.9.34",
@@ -745,12 +805,22 @@
       "why": "Tells investigators to return a human ruling's attributable original wording per the epistemics section.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#skill-policy",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "3f5cbce2389bf8d23ba8a577ace2a21afc1d4172",
+          "canonical": "e1c2bbf52197ff600ba6e4552439e630687b7ae2",
+          "target": "e1c2bbf52197ff600ba6e4552439e630687b7ae2"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**adapt**. Comparator explicitly instructs investigators to preserve original human rulings, distinguish interpretations, and flag missing originals. Target omits those instructions along with the corresponding epistemics link. This weakens the investigator contract. Pstack/Lauren MIT; comparator port/Michael Denyer MIT; target MIT, no notice.",
+        "check_or_gap": "No check found for investigator prompt’s ruling-handling requirements. **Gap.**"
+      }
     },
     {
       "path": "plugins/pstack/skills/why/references/synthesizer-prompt.md",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "adapt",
       "review_lane": "skill-policy",
       "source_version": "0.9.17",
@@ -758,12 +828,22 @@
       "why": "Adds a step that applies the human-rulings epistemics, and gives the Direct-claim example a URL the link validator resolves.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#skill-policy",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "0ad6ef7c7dfb07a00a227468167303cf74d9e006",
+          "canonical": "287a350c925c28b44f0e0dc687bb09a843e11100",
+          "target": "287a350c925c28b44f0e0dc687bb09a843e11100"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**adapt**. Comparator requires applying human-ruling epistemics and preserving attributable scope; target drops those directives. The target still requires confidence tiers and citation checks but is not semantically equivalent on human decisions. Pstack/Lauren MIT; comparator port/Michael Denyer MIT; target MIT, no notice.",
+        "check_or_gap": "No check found for these synthesizer instructions. **Gap.**"
+      }
     },
     {
       "path": "plugins/pstack/skills/thermo-nuclear-code-quality-review/SKILL.md",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "policy-fork",
       "review_lane": "skill-policy",
       "source_version": "0.9.11",
@@ -787,18 +867,28 @@
         "local_state": "local skills/thermo-nuclear-code-quality-review/SKILL.md carries no attribution header; local LICENSE is MIT with no NOTICE file",
         "requirement": "thermos is out of canonical pstack scope; any verbatim copy MUST carry the thermos copyright notice and MIT terms (LICENSE-thermos) alongside the local MIT LICENSE",
         "verdict": "no copy authorized by this row; attribution required before any import"
+      },
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "4d9176be4ac90728c24eb9b29125f45d8d8aecd1",
+          "canonical": "ac76a2bc88bb2d895e83ab1788aa584a82346cfc",
+          "target": "8c1437ede7765c1b410653f3913ef6b757d11ee8"
+        },
+        "attribution_profile": "thermos",
+        "semantic_delta": "**policy-fork**, retaining the target’s substantive adaptation. Comparator adds hard reachability, exact base/head pin, behavior evidence, net obligation, and partial-effect standards absent from canonical thermos source. It also requires producing a layered report on disk; target omits that output requirement. This row belongs to the thermos provenance chain, not canonical pstack. Comparator `NOTICE.md`, `NOTICE-skills.md`, and `LICENSE-thermos` attribute upstream to Cursor thermos, MIT; comparator port edits to Michael Denyer, MIT. Target MIT license with no notice; no import is being proposed here.",
+        "check_or_gap": "Target eval corpus `tests/fixtures/eval_corpus_dsh/cases.json` has artifact/required probes for this skill, including reachability language. This is a bounded content-evaluation contract, not proof of runtime review quality or execution of the skill."
       }
     }
   ],
   "review_counts": {
-    "adapt": 9,
+    "adapt": 17,
     "preserve": 0,
     "exclude": 1,
     "gap": 0,
-    "policy-fork": 0
+    "policy-fork": 1
   },
   "review_scope": {
-    "source_review": "reviewed 10/48 comparator paths against pinned comparator, canonical and target blobs; 38 rows remain lane-triaged; check-plan.test.ts is the only absent target counterpart",
+    "source_review": "reviewed 19/48 comparator paths against pinned comparator, canonical and target blobs; 29 rows remain lane-triaged; check-plan.test.ts is the only absent target counterpart",
     "approval": "not granted",
     "implementation": "not authorized or claimed",
     "runtime": "not verified",

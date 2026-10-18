@@ -3,7 +3,7 @@
 Source: comparator `michael-denyer/pstack-claude@94f5ce95abe8a9dec976967d79941f631cf477cd`, `tools/forks.json`.
 Canonical authority: `cursor/plugins/pstack@1dcc2bacde73ddd284803b7af28164d0436198fc`.
 Target source pin: `pstack@3f4cd124f27cab90865df79d18d376e2f4335b2c`. Later merged main `722deb048a809004253a44a9130dfad5f4153591` changes only specification, task-plan, and cache-evidence files outside these pinned counterparts.
-Review status: source review covers 10/48 comparator paths against pinned canonical and target counterparts. Remaining rows retain lane-triaged status. Findings are not implementation, runtime or independent acceptance; issue #434 remains open.
+Review status: source review covers 19/48 comparator paths against pinned canonical and target counterparts. Remaining rows retain lane-triaged status. Findings are not implementation, runtime or independent acceptance; issue #434 remains open.
 
 The lane tables preserve original 2026-10-16 triage labels for history. For rows source-reviewed so far, the per-file pinned evidence table and ledger fields supersede those provisional labels; remaining rows retain lane-level labels. A disposition never authorizes importing comparator code.
 
@@ -72,7 +72,7 @@ The lane tables preserve original 2026-10-16 triage labels for history. For rows
 
 ## Current source-reviewed dispositions
 
-Current source-reviewed disposition counts (10/48 rows): adapt 9, exclude 1.
+Current source-reviewed disposition counts (19/48 rows): adapt 17, exclude 1, policy-fork 1.
 
 ## License disposition (2026-10-16, corrected)
 
@@ -80,7 +80,7 @@ Comparator `michael-denyer/pstack-claude@94f5ce95abe8a9dec976967d79941f631cf477c
 
 ## Per-file review status
 
-File-level source review covers 10/48 comparator paths. The ledger records exact counterpart blobs, semantic rationale, attribution and NOTICE implications, plus a check or explicit gap for each reviewed row. Remaining rows retain lane-level triage. This is not implementation, approval, runtime evidence, or independent acceptance. Issue #434 remains open.
+File-level source review covers 19/48 comparator paths. The ledger records exact counterpart blobs, semantic rationale, attribution and NOTICE implications, plus a check or explicit gap for each reviewed row. Remaining rows retain lane-level triage. This is not implementation, approval, runtime evidence, or independent acceptance. Issue #434 remains open.
 
 
 
@@ -100,6 +100,15 @@ The JSON ledger is the detailed record for each source-reviewed row: exact compa
 | `plugins/pstack/skills/principle-attack-the-premise/SKILL.md` | adapt | plugins/pstack/skills/principle-attack-the-premise/SKILL.md @ `78ca084cf711365494195e7112d47b73ad14cbfe` | pstack/skills/principle-attack-the-premise/SKILL.md @ `f9785ff9fdcf37d1c689e4468da7d611f3b76d4b` (present) | skills/principle-attack-the-premise/SKILL.md @ `f9785ff9fdcf37d1c689e4468da7d611f3b76d4b` (present) | Ledger `entries[].source_review` and the shared `source_review_contract` attribution profile |
 | `plugins/pstack/skills/principle-prove-it-works/SKILL.md` | adapt | plugins/pstack/skills/principle-prove-it-works/SKILL.md @ `3ba219579fc3febfc1a9d32bcd8d937d15d89050` | pstack/skills/principle-prove-it-works/SKILL.md @ `5dc14a3b06f9d579e5c17cd8a7242f432ddb3125` (present) | skills/principle-prove-it-works/SKILL.md @ `7031db24ade7bc65e6679e785d84e46d06ca1887` (present) | Ledger `entries[].source_review` and the shared `source_review_contract` attribution profile |
 | `plugins/pstack/skills/principle-test-behavior-not-implementation/SKILL.md` | adapt | plugins/pstack/skills/principle-test-behavior-not-implementation/SKILL.md @ `23f1fb510764b6b4b08fe9600d67b095a68de4f1` | pstack/skills/principle-test-behavior-not-implementation/SKILL.md @ `f5a603e3a0925cdc6363bcc26dfbf587d9a36ec7` (present) | skills/principle-test-behavior-not-implementation/SKILL.md @ `dd828aa6c15965f64b218683e84bba714d15b5cc` (present) | Ledger `entries[].source_review` and the shared `source_review_contract` attribution profile |
+| `plugins/pstack/skills/recall/SKILL.md` | adapt | plugins/pstack/skills/recall/SKILL.md @ `c8084cdbf4fe3a7d05eea7330d499e3c57e9358b` | pstack/skills/recall/SKILL.md @ `a70062a3f89a8d68b3391bc71fc4c6cc2dfcf6a4` (present) | skills/recall/SKILL.md @ `a6dd56b5ac97dc14934c0df99278b0a217ec6046` (present) | Ledger `entries[].source_review` and the shared `source_review_contract` attribution profile |
+| `plugins/pstack/skills/reflect/SKILL.md` | adapt | plugins/pstack/skills/reflect/SKILL.md @ `49bca6f3b38959d77871d36f91eb3b209618328e` | pstack/skills/reflect/SKILL.md @ `b6bd41afdc831741819b72efa60ef2f10947cc8c` (present) | skills/reflect/SKILL.md @ `23dd9add70d016403d48c2da00ffca5b373303f1` (present) | Ledger `entries[].source_review` and the shared `source_review_contract` attribution profile |
+| `plugins/pstack/skills/setup-pstack/SKILL.md` | adapt | plugins/pstack/skills/setup-pstack/SKILL.md @ `6dd8a25ace99193e2e4485c7a1fe39f105a50027` | pstack/skills/setup-pstack/SKILL.md @ `90a9e575397fb59f4d9a47e6157c2106f4b4a5e2` (present) | skills/setup-pstack/SKILL.md @ `e1996351d657cf25e69ef705e6b9ca0621ba20c8` (present) | Ledger `entries[].source_review` and the shared `source_review_contract` attribution profile |
+| `plugins/pstack/skills/show-me-your-work/SKILL.md` | adapt | plugins/pstack/skills/show-me-your-work/SKILL.md @ `9adafb6c48a185db178e343b1653470e78e11790` | pstack/skills/show-me-your-work/SKILL.md @ `d350a150c36ca16382b4aa6d4196b39e67454ad1` (present) | skills/show-me-your-work/SKILL.md @ `d350a150c36ca16382b4aa6d4196b39e67454ad1` (present) | Ledger `entries[].source_review` and the shared `source_review_contract` attribution profile |
+| `plugins/pstack/skills/tdd/SKILL.md` | adapt | plugins/pstack/skills/tdd/SKILL.md @ `67d91899a44c094d999eda716fa9877de245e109` | pstack/skills/tdd/SKILL.md @ `ca6f24c963001d9d518db2936dfe3d12f29b4e94` (present) | skills/tdd/SKILL.md @ `9b70811f0ecad51b2d6e977ee5e799a836aac05e` (present) | Ledger `entries[].source_review` and the shared `source_review_contract` attribution profile |
+| `plugins/pstack/skills/why/references/epistemics.md` | adapt | plugins/pstack/skills/why/references/epistemics.md @ `e483ab1af872548dc69835ddb787101c5eaf310f` | pstack/skills/why/references/epistemics.md @ `b18abf41dfa245ee55e94f1b3a80c0b750eb10cf` (present) | skills/why/references/epistemics.md @ `b18abf41dfa245ee55e94f1b3a80c0b750eb10cf` (present) | Ledger `entries[].source_review` and the shared `source_review_contract` attribution profile |
+| `plugins/pstack/skills/why/references/investigator-prompt.md` | adapt | plugins/pstack/skills/why/references/investigator-prompt.md @ `3f5cbce2389bf8d23ba8a577ace2a21afc1d4172` | pstack/skills/why/references/investigator-prompt.md @ `e1c2bbf52197ff600ba6e4552439e630687b7ae2` (present) | skills/why/references/investigator-prompt.md @ `e1c2bbf52197ff600ba6e4552439e630687b7ae2` (present) | Ledger `entries[].source_review` and the shared `source_review_contract` attribution profile |
+| `plugins/pstack/skills/why/references/synthesizer-prompt.md` | adapt | plugins/pstack/skills/why/references/synthesizer-prompt.md @ `0ad6ef7c7dfb07a00a227468167303cf74d9e006` | pstack/skills/why/references/synthesizer-prompt.md @ `287a350c925c28b44f0e0dc687bb09a843e11100` (present) | skills/why/references/synthesizer-prompt.md @ `287a350c925c28b44f0e0dc687bb09a843e11100` (present) | Ledger `entries[].source_review` and the shared `source_review_contract` attribution profile |
+| `plugins/pstack/skills/thermo-nuclear-code-quality-review/SKILL.md` | policy-fork | plugins/pstack/skills/thermo-nuclear-code-quality-review/SKILL.md @ `4d9176be4ac90728c24eb9b29125f45d8d8aecd1` | thermos/skills/thermo-nuclear-code-quality-review/SKILL.md @ `ac76a2bc88bb2d895e83ab1788aa584a82346cfc` (present) | skills/thermo-nuclear-code-quality-review/SKILL.md @ `8c1437ede7765c1b410653f3913ef6b757d11ee8` (present) | Ledger `entries[].source_review` and the shared `source_review_contract` attribution profile |
 
 ## Attribution and notices
 
