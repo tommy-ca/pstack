@@ -51,14 +51,14 @@
     },
     "omp": {
       "receipt": ".audit/evidence/omp-receipt.json",
-      "run_id": "omp-1792292370-61f1027e",
-      "timestamp": "2026-10-18T02:59:33Z",
-      "overall_verdict": "UNTESTED",
+      "run_id": "omp-1792293082-1b4aea58",
+      "timestamp": "2026-10-18T03:12:35Z",
+      "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
         "adapter": "PASS",
         "package": "PASS",
-        "runtime": "UNTESTED"
+        "runtime": "PASS"
       },
       "surface_revisions": {
         "canonical_pin": "1dcc2bacde73ddd284803b7af28164d0436198fc",
