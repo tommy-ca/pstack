@@ -323,6 +323,30 @@ def test_stale_package_driver_rejected_for_packaged_claim(host: str) -> None:
         check_evidence_durability(prof, ROOT, check_freshness=True, current_revisions=tampered_revs)
 
 
+def test_a_verified_claim_evaluates_the_package_plane(tmp_path: Path) -> None:
+    """#473: the level above `packaged` must not tolerate the plane `packaged` refuses.
+
+    `verified` checked canonical/adapter/runtime only, so one stale package driver failed
+    the `packaged` claim one rung below and passed the `verified` claim above it. Claimed
+    planes are cumulative; the fresh arm is the control that the fixture itself is legal.
+    """
+    root, prof = _synthetic_evidence_root(
+        tmp_path,
+        ["offline", "observed_live"],
+        settlements=[None, _success_settlement()],
+        force_verified=True,
+    )
+    assert prof.support_state == "verified"
+    assert check_evidence_durability(prof, root)["derived_support_state"] == "supported"
+
+    tampered = replace(
+        compute_surface_revisions(root, "omp"), package_driver_revision="stale-package-driver"
+    )
+    with pytest.raises(ValidationError, match="evidence is stale for claimed verified") as refused:
+        check_evidence_durability(prof, root, current_revisions=tampered)
+    assert "package_driver_revision mismatch" in str(refused.value)
+
+
 def test_stale_package_descriptor_invalidates_package_and_runtime() -> None:
     current_revs = compute_surface_revisions(ROOT, "codex")
     receipt_data = json.loads((EVIDENCE_DIR / "codex-receipt.json").read_text(encoding="utf-8"))
@@ -742,6 +766,54 @@ def test_check_evidence_fails_when_a_row_disagrees_with_its_receipt(tmp_path: Pa
     assert "[grok] FAIL" in tampered.stdout
     assert "run_id" in tampered.stdout and "hand-edited-run-id" in tampered.stdout
     assert "grok-receipt.json" in tampered.stdout
+
+
+def test_a_row_less_host_with_a_durable_receipt_reports_rebuild_required(tmp_path: Path) -> None:
+    """Deleting an index row is the F4 remedy, and it used to pass silently (#495).
+
+    A host whose durable receipt exists and whose row does not is the inventory trailing
+    its bytes — the same shape a crash between the two writes leaves. Nothing read that:
+    `check-evidence` exited 0 while the receipt it should have described sat on disk. The
+    untouched copy is the positive control, and droid (no durable receipt) keeps passing
+    because it has nothing to inventory.
+    """
+    copy_root = _disposable_copy(tmp_path)
+    command = [sys.executable, str(copy_root / "scripts" / "verify-portable.py"), "check-evidence"]
+
+    clean = subprocess.run(command + ["--host", "grok"], capture_output=True, text=True, cwd=copy_root)
+    assert clean.returncode == 0, clean.stdout + clean.stderr
+
+    index_file = copy_root / ".audit" / "evidence" / "index.json"
+    index = json.loads(index_file.read_text(encoding="utf-8"))
+    del index["hosts"]["grok"]
+    index_file.write_text(json.dumps(index, indent=2) + "\n", encoding="utf-8")
+
+    row_less = subprocess.run(command + ["--host", "grok"], capture_output=True, text=True, cwd=copy_root)
+    assert row_less.returncode == 1, row_less.stdout + row_less.stderr
+    assert "STALE/REBUILD-REQUIRED" in row_less.stdout
+    assert "grok-receipt.json" in row_less.stdout
+
+    droid = subprocess.run(command + ["--host", "droid"], capture_output=True, text=True, cwd=copy_root)
+    assert droid.returncode == 0, droid.stdout + droid.stderr
+
+    # An orphan whose bytes a rebuild cannot stand on is a repair, not a rebuild: the
+    # remedy text has to differ, because `refresh-static` refuses to rewrite a receipt
+    # it cannot read and would leave the inventory missing that host either way.
+    del index["hosts"]["codex"]
+    index_file.write_text(json.dumps(index, indent=2) + "\n", encoding="utf-8")
+    (copy_root / ".audit" / "evidence" / "codex-receipt.json").write_text("{not json", encoding="utf-8")
+    unreadable = subprocess.run(command + ["--host", "codex"], capture_output=True, text=True, cwd=copy_root)
+    assert unreadable.returncode == 1, unreadable.stdout + unreadable.stderr
+    assert "cannot be read as a usable receipt" in unreadable.stdout
+    assert "STALE/REBUILD-REQUIRED" not in unreadable.stdout
+
+    # Whole-file removal is the same class one level up: no inventory at all, named, and
+    # now carrying the command that rebuilds it from the receipts on disk.
+    index_file.unlink()
+    deleted = subprocess.run(command + ["--host", "grok"], capture_output=True, text=True, cwd=copy_root)
+    assert deleted.returncode == 1, deleted.stdout + deleted.stderr
+    assert "is missing" in deleted.stdout
+    assert "refresh-static --host all" in deleted.stdout
 
 
 def _load_verify_portable_module():
@@ -2345,3 +2417,131 @@ def test_check_evidence_cli_refuses_a_profile_that_violates_a_domain_rule(tmp_pa
     assert res.returncode == 1, res.stdout + res.stderr
     assert "[grok] FAIL" in res.stdout
     assert "cannot have gap on mandatory capability workspace.shared" in res.stdout
+
+
+def test_a_missing_index_is_rebuilt_from_the_durable_receipts(tmp_path: Path) -> None:
+    """The F4 remedy ("remove the inventory") must not re-list this host alone (#495).
+
+    Deleting index.json and re-running one host used to leave an inventory naming that
+    host only while four durable receipts sat on disk, and `check-evidence` passed all of
+    them because a row-less host was not looked at. A run now projects a missing inventory
+    from the receipts on disk, and the reader names the rebuild command instead of
+    reporting the file as merely unreadable.
+    """
+    copy_root = _disposable_copy(tmp_path)
+    command = [sys.executable, str(copy_root / "scripts" / "verify-portable.py")]
+    index_file = copy_root / ".audit" / "evidence" / "index.json"
+
+    index_file.unlink()
+    named = subprocess.run(command + ["check-evidence", "--host", "grok"], capture_output=True, text=True, cwd=copy_root)
+    assert named.returncode == 1, named.stdout + named.stderr
+    assert "is missing" in named.stdout and "refresh-static --host all" in named.stdout
+
+    rebuilt = subprocess.run(command + ["refresh-static", "--host", "grok"], capture_output=True, text=True, cwd=copy_root)
+    # The exit status is the host's own static doctor verdict, not this pin's subject: on a
+    # host with no host CLIs the canonical plane is FAIL, so `refresh-static` exits 1 while
+    # still projecting the rows. What the prescription owes is a whole inventory, so the
+    # inventory is what is asserted — and it owes no traceback either way.
+    assert "Traceback" not in (rebuilt.stdout + rebuilt.stderr), rebuilt.stdout + rebuilt.stderr
+    hosts = json.loads(index_file.read_text(encoding="utf-8"))["hosts"]
+    assert sorted(hosts) == ["antigravity", "codex", "grok", "omp", "opencode"]
+    for host, row in hosts.items():
+        receipt = json.loads((copy_root / row["receipt"]).read_text(encoding="utf-8"))
+        assert row["run_id"] == receipt["run_id"], host
+        assert row["timestamp"] == receipt["timestamp"], host
+        assert row["planes"] == receipt["planes"], host
+        assert row["surface_revisions"] == receipt["surface_revisions"], host
+
+    all_hosts = subprocess.run(command + ["check-evidence", "--host", "all"], capture_output=True, text=True, cwd=copy_root)
+    assert all_hosts.returncode == 0, all_hosts.stdout + all_hosts.stderr
+
+
+def test_the_projection_skips_receipt_bytes_a_row_cannot_stand_on(tmp_path: Path) -> None:
+    """The rebuilt inventory is a projection of usable bytes, not of file names (#495).
+
+    A receipt file that exists but is not a receipt must not gain a row in the rebuilt
+    inventory: the row would name bytes no repair can stand on, and the writer refuses
+    to rewrite such a receipt, so the host has to keep failing as an orphan instead.
+    """
+    copy_root = _disposable_copy(tmp_path)
+    command = [sys.executable, str(copy_root / "scripts" / "verify-portable.py")]
+    index_file = copy_root / ".audit" / "evidence" / "index.json"
+
+    index_file.unlink()
+    (copy_root / ".audit" / "evidence" / "codex-receipt.json").write_text('{"run_id": "x"}\n', encoding="utf-8")
+    rebuilt = subprocess.run(command + ["refresh-static", "--host", "grok"], capture_output=True, text=True, cwd=copy_root)
+    # The exit status is the host's own static doctor verdict, not this pin's subject: on a
+    # host with no host CLIs the canonical plane is FAIL, so `refresh-static` exits 1 while
+    # still projecting the rows. What the prescription owes is a whole inventory, so the
+    # inventory is what is asserted — and it owes no traceback either way.
+    assert "Traceback" not in (rebuilt.stdout + rebuilt.stderr), rebuilt.stdout + rebuilt.stderr
+    hosts = sorted(json.loads(index_file.read_text(encoding="utf-8"))["hosts"])
+    assert hosts == ["antigravity", "grok", "omp", "opencode"]
+
+    orphan = subprocess.run(command + ["check-evidence", "--host", "codex"], capture_output=True, text=True, cwd=copy_root)
+    assert orphan.returncode == 1, orphan.stdout + orphan.stderr
+    assert "codex-receipt.json" in orphan.stdout
+
+
+def test_a_missing_row_comes_back_from_the_receipt_on_the_next_run(tmp_path: Path) -> None:
+    """The prescription the reader prints has to be whole: one run, every missing row (#495).
+
+    A row-less host is reported as `STALE/REBUILD-REQUIRED` with
+    `refresh-static --host <host>`, and that command has to leave the inventory whole — not
+    just this host's row — because the rows are a projection of the receipts on disk. An
+    existing row is never rewritten here: drift stays the cross-check's to report.
+    """
+    copy_root = _disposable_copy(tmp_path)
+    command = [sys.executable, str(copy_root / "scripts" / "verify-portable.py")]
+    index_file = copy_root / ".audit" / "evidence" / "index.json"
+
+    index = json.loads(index_file.read_text(encoding="utf-8"))
+    del index["hosts"]["grok"]
+    del index["hosts"]["codex"]
+    index_file.write_text(json.dumps(index, indent=2) + "\n", encoding="utf-8")
+
+    reported = subprocess.run(command + ["check-evidence", "--host", "grok"], capture_output=True, text=True, cwd=copy_root)
+    assert reported.returncode == 1, reported.stdout + reported.stderr
+    assert "STALE/REBUILD-REQUIRED" in reported.stdout
+    assert json.loads(index_file.read_text(encoding="utf-8"))["hosts"].keys() == {"omp", "opencode", "antigravity"}
+
+    rebuilt = subprocess.run(command + ["refresh-static", "--host", "grok"], capture_output=True, text=True, cwd=copy_root)
+    # The exit status is the host's own static doctor verdict, not this pin's subject: on a
+    # host with no host CLIs the canonical plane is FAIL, so `refresh-static` exits 1 while
+    # still projecting the rows. What the prescription owes is a whole inventory, so the
+    # inventory is what is asserted — and it owes no traceback either way.
+    assert "Traceback" not in (rebuilt.stdout + rebuilt.stderr), rebuilt.stdout + rebuilt.stderr
+    hosts = json.loads(index_file.read_text(encoding="utf-8"))["hosts"]
+    assert sorted(hosts) == ["antigravity", "codex", "grok", "omp", "opencode"]
+    for host, row in hosts.items():
+        receipt = json.loads((copy_root / row["receipt"]).read_text(encoding="utf-8"))
+        assert row["run_id"] == receipt["run_id"] and row["planes"] == receipt["planes"], host
+
+    green = subprocess.run(command + ["check-evidence", "--host", "all"], capture_output=True, text=True, cwd=copy_root)
+    assert green.returncode == 0, green.stdout + green.stderr
+
+
+def test_a_denied_index_write_is_named_not_raised(tmp_path: Path) -> None:
+    """The index write is the window #495 keeps open, so its failure is named (#495).
+
+    A run whose index write is denied has already written its durable receipt, so the
+    inventory trails it. A traceback there hides which invariant broke; the refusal names
+    the split, leaves the inventory bytes alone, and no in-process retry can undo a denial.
+    """
+    copy_root = _disposable_copy(tmp_path)
+    command = [sys.executable, str(copy_root / "scripts" / "verify-portable.py")]
+    index_file = copy_root / ".audit" / "evidence" / "index.json"
+    before = index_file.read_bytes()
+
+    index_file.chmod(0o444)
+    try:
+        denied = subprocess.run(command + ["refresh-static", "--host", "grok"], capture_output=True, text=True, cwd=copy_root)
+    finally:
+        index_file.chmod(0o644)
+
+    output = denied.stdout + denied.stderr
+    assert denied.returncode == 1, output
+    assert "FAILED to write the evidence index" in output
+    assert "Traceback" not in output
+    assert index_file.read_bytes() == before
+    assert "grok-receipt.json" in output

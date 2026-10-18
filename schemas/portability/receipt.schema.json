@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://pstack.dev/schemas/portability/receipt.schema.json",
   "title": "VerificationReceipt",
-  "description": "Durable verification receipt recording conformance verdicts, scenario results, and proven surface revisions.",
+  "description": "Durable verification receipt recording conformance verdicts, scenario results, and proven surface revisions. It binds the host binary (host_version) and the recorded surface revisions, not the host's model catalog or the pstack schema/harness-catalog hash: a receipt proves the surfaces and binary it names, never the model catalog a live route would resolve. That binding gap is open on #444 and is stated here instead of being implied by 'verified'.",
   "type": "object",
   "required": [
     "run_id",

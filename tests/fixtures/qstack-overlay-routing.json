@@ -1,0 +1,59 @@
+{
+  "source": "openspec/changes/2026-10-15-harness-neutral-role-policy/design.md (qstack = post-router domain overlay)",
+  "contract": {
+    "stage": "post-routing",
+    "owns_router": false,
+    "owns_model_namespace": false,
+    "note": "pstack resolves the host route first; the external qstack quant-domain overlay decorates the domain afterwards. It never renames, replaces, adds or reorders a route, and a requested overlay whose capability is absent is a typed refusal, never a silent skip or a PASS."
+  },
+  "overlay": {
+    "id": "qstack-quant-domain",
+    "domain": "quant",
+    "required_capability": "quant_domain",
+    "prohibited_contexts": ["docs_only", "read_only"],
+    "unsupported_response": "BLOCKED"
+  },
+  "route": {
+    "need": "TDD",
+    "hosts": ["grok", "codex", "omp", "opencode", "antigravity", "droid"],
+    "expect": {
+      "status": "matched",
+      "kind": "skill",
+      "target": "/tdd"
+    }
+  },
+  "cases": [
+    {
+      "id": "activates-on-declared-capability",
+      "capabilities": ["quant_domain"],
+      "domain": "quant",
+      "contexts": [],
+      "requested": [],
+      "expect": "activated"
+    },
+    {
+      "id": "absent-capability-is-a-typed-refusal",
+      "capabilities": [],
+      "domain": "quant",
+      "contexts": [],
+      "requested": ["qstack-quant-domain"],
+      "expect": "blocked"
+    },
+    {
+      "id": "other-domain-stays-inactive",
+      "capabilities": ["quant_domain"],
+      "domain": "docs",
+      "contexts": [],
+      "requested": [],
+      "expect": "inactive"
+    },
+    {
+      "id": "prohibited-context-stays-inactive",
+      "capabilities": ["quant_domain"],
+      "domain": "quant",
+      "contexts": ["docs_only"],
+      "requested": [],
+      "expect": "inactive"
+    }
+  ]
+}
