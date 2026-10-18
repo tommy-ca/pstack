@@ -954,6 +954,205 @@ def test_driver_core_is_memoised_by_content_not_by_location(tmp_path: Path) -> N
     assert _driver_core(publishing, b'"""docs"""\n' + src) != _driver_core(publishing, src)
 
 
+@pytest.mark.skipif(
+    os.name != "posix", reason="disk cache requires POSIX permission checks"
+)
+def test_driver_core_disk_cache_persists_and_tracks_source_bytes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    copy_root = _disposable_copy(tmp_path)
+    cache_home = tmp_path / "cache-home"
+    monkeypatch.setenv("XDG_CACHE_HOME", str(cache_home))
+    driver = copy_root / "scripts" / "drivers" / "base.py"
+    program = (
+        "import sys; from pathlib import Path; "
+        "from scripts.portability_schema import compute_surface_revisions; "
+        "print(compute_surface_revisions(Path(sys.argv[1]), 'grok').driver_revision)"
+    )
+
+    def run_revision() -> str:
+        proc = subprocess.run(
+            [sys.executable, "-c", program, str(copy_root)],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        return proc.stdout.strip()
+
+    first = run_revision()
+    cache_dir = cache_home / "pstack" / "driver-core"
+    assert list(cache_dir.glob("*.json"))
+    assert run_revision() == first
+    corrupt = next(cache_dir.glob("*.json"))
+    corrupt.write_text("{", encoding="utf-8")
+    assert run_revision() == first
+
+    driver.write_bytes(driver.read_bytes() + b"\nCACHE_PROBE = 'changed'\n")
+    assert run_revision() != first
+
+
+@pytest.mark.skipif(
+    os.name != "posix", reason="disk cache requires POSIX permission checks"
+)
+def test_driver_core_disk_cache_keeps_published_docs_basename_sensitive(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    cache_home = tmp_path / "cache-home"
+    monkeypatch.setenv("XDG_CACHE_HOME", str(cache_home))
+    source = tmp_path / "same-source.py"
+    source.write_bytes(b'"""published docs"""\ndef probe():\n    return 1\n')
+    program = (
+        "import json, sys; from pathlib import Path; "
+        "from scripts.portability_schema import _driver_core; "
+        "src = Path(sys.argv[1]).read_bytes(); "
+        "print(json.dumps([_driver_core(Path('verify-portable.py'), src).decode(), "
+        "_driver_core(Path('ordinary.py'), src).decode()]))"
+    )
+
+    def run_cores() -> list[str]:
+        proc = subprocess.run(
+            [sys.executable, "-c", program, str(source)],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        return json.loads(proc.stdout)
+
+    first = run_cores()
+    assert "published docs" in first[0]
+    assert "published docs" not in first[1]
+    assert first[0] != first[1]
+    cache_dir = cache_home / "pstack" / "driver-core"
+    assert len(list(cache_dir.glob("*.json"))) >= 2
+    assert run_cores() == first
+
+
+def test_driver_core_cache_unavailable_path_preserves_core(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    cache_home = tmp_path / "not-a-directory"
+    cache_home.write_text("blocked", encoding="utf-8")
+    monkeypatch.setenv("XDG_CACHE_HOME", str(cache_home))
+    source = b"def cache_offline_probe():\n    return 7\n"
+    assert _driver_core(
+        tmp_path / "cache_offline_probe.py", source
+    ) == b"def cache_offline_probe():\n    return 7"
+
+
+@pytest.mark.skipif(
+    os.name != "posix", reason="simulates non-POSIX cache behavior on POSIX"
+)
+def test_driver_core_cache_is_disabled_without_posix_permission_checks(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import scripts.portability_schema as schema
+    from pathlib import PosixPath
+
+    cache_home = tmp_path / "cache-home"
+    monkeypatch.setenv("XDG_CACHE_HOME", str(cache_home))
+    monkeypatch.setattr(schema, "Path", PosixPath)
+    monkeypatch.setattr(schema.os, "name", "nt")
+
+    assert schema._driver_core_cache_dir() is None
+    assert not cache_home.exists()
+
+
+@pytest.mark.skipif(os.name != "posix", reason="requires POSIX symlink semantics")
+@pytest.mark.parametrize("symlink_component", ("cache-home", "pstack"))
+def test_driver_core_cache_rejects_symlink_directory_before_writing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, symlink_component: str
+) -> None:
+    target = tmp_path / "symlink-target"
+    target.mkdir()
+    cache_home = tmp_path / "cache-home"
+    if symlink_component == "cache-home":
+        cache_home.symlink_to(target, target_is_directory=True)
+        untouched = target / "pstack"
+    else:
+        cache_home.mkdir()
+        (cache_home / "pstack").symlink_to(target, target_is_directory=True)
+        untouched = target / "driver-core"
+    monkeypatch.setenv("XDG_CACHE_HOME", str(cache_home))
+    source = f"def symlink_probe_{symlink_component.replace('-', '_')}():\n    return 1\n".encode()
+
+    core = _driver_core(tmp_path / f"{symlink_component}.py", source)
+
+    expected_name = symlink_component.replace("-", "_")
+    assert core == f"def symlink_probe_{expected_name}():\n    return 1".encode()
+    assert not untouched.exists()
+
+
+@pytest.mark.skipif(os.name != "posix", reason="requires POSIX symlink semantics")
+def test_driver_core_cache_rejects_symlinked_ancestor_before_writing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    target = tmp_path / "symlink-target"
+    target.mkdir()
+    cache_link = tmp_path / "cache-link"
+    cache_link.symlink_to(target, target_is_directory=True)
+    cache_home = cache_link / "cache-home"
+    monkeypatch.setenv("XDG_CACHE_HOME", str(cache_home))
+    source = b"def symlink_ancestor_probe():\n    return 1\n"
+
+    core = _driver_core(tmp_path / "symlink-ancestor-probe.py", source)
+
+    assert core == b"def symlink_ancestor_probe():\n    return 1"
+    assert not (target / "cache-home").exists()
+
+
+@pytest.mark.skipif(
+    os.name != "posix", reason="requires POSIX directory mode semantics"
+)
+def test_driver_core_cache_rejects_world_writable_ancestor_before_writing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    unsafe_parent = tmp_path / "world-writable-parent"
+    unsafe_parent.mkdir()
+    unsafe_parent.chmod(0o777)
+    cache_home = unsafe_parent / "cache-home"
+    monkeypatch.setenv("XDG_CACHE_HOME", str(cache_home))
+    source = b"def writable_ancestor_probe():\n    return 1\n"
+
+    core = _driver_core(tmp_path / "writable-ancestor-probe.py", source)
+
+    assert core == b"def writable_ancestor_probe():\n    return 1"
+    assert not cache_home.exists()
+
+
+@pytest.mark.skipif(
+    os.name != "posix", reason="disk cache requires POSIX permission checks"
+)
+def test_driver_core_disk_cache_prunes_to_record_and_byte_bounds(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import scripts.portability_schema as schema
+
+    monkeypatch.setattr(schema, "_DRIVER_CORE_CACHE_MAX_RECORDS", 2)
+    record_home = tmp_path / "record-bound"
+    monkeypatch.setenv("XDG_CACHE_HOME", str(record_home))
+    for index in range(3):
+        _driver_core(
+            tmp_path / f"record-bound-{index}.py",
+            f"VALUE_{index} = {index}\n".encode(),
+        )
+    record_files = list((record_home / "pstack" / "driver-core").glob("*.json"))
+    assert len(record_files) == 2
+
+    byte_home = tmp_path / "byte-bound"
+    monkeypatch.setenv("XDG_CACHE_HOME", str(byte_home))
+    monkeypatch.setattr(schema, "_DRIVER_CORE_CACHE_MAX_RECORDS", 256)
+    monkeypatch.setattr(schema, "_DRIVER_CORE_CACHE_MAX_BYTES", 2500)
+    for index in range(3):
+        source = f"VALUE_{index} = {'x' * 1024!r}\n".encode()
+        _driver_core(tmp_path / f"byte-bound-{index}.py", source)
+    byte_files = list((byte_home / "pstack" / "driver-core").glob("*.json"))
+    byte_sizes = [path.stat().st_size for path in byte_files]
+    assert len(byte_files) == 1
+    assert 1250 < byte_sizes[0] <= 2500
+
+
 def test_harness_verifier_dynamic_import_does_not_self_invalidate(tmp_path: Path) -> None:
     copy_root = _disposable_copy(tmp_path)
     partition_script = copy_root / "skills" / "swarm" / "scripts" / "partition.py"
