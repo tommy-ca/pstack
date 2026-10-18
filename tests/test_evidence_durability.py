@@ -473,16 +473,61 @@ def test_hand_authored_support_state_cannot_outrun_evidence() -> None:
         check_evidence_durability(prof, ROOT, check_freshness=True, current_revisions=tampered_revs)
 
 
+def _package_ignored_paths() -> frozenset:
+    """Repo-relative paths `.gitignore` keeps out of a checkout.
+
+    A package carries tracked bytes, and `.audit/evidence/` collects one directory per
+    local run: 1418 junkyards holding ~139 MiB against 3.9 MiB of tracked files. Every
+    `_disposable_copy` re-copied all of it. Deriving the set from git keeps it in step
+    with `.gitignore` -- and with the next junkyard -- instead of restating the patterns.
+    """
+    try:
+        listed = subprocess.run(
+            [
+                "git", "-C", str(ROOT), "ls-files",
+                "--others", "--ignored", "--exclude-standard", "--directory", "-z",
+            ],
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout
+    except (OSError, subprocess.CalledProcessError):  # no git checkout to derive from
+        return frozenset()
+    return frozenset(path.rstrip("/") for path in listed.split("\0") if path)
+
+
+_PACKAGE_IGNORED = _package_ignored_paths()
+
+
 def _disposable_copy(tmp_path: Path) -> Path:
     """Fresh extraction of the repo as an installed/extracted package: no .git,
-    no pre-existing dependency or bytecode artifacts."""
+    no pre-existing dependency or bytecode artifacts, no run-local audit junk."""
     copy_root = tmp_path / "extracted-package"
-    shutil.copytree(
-        ROOT,
-        copy_root,
-        ignore=shutil.ignore_patterns(".git", "__pycache__", "node_modules", ".venv"),
-    )
+    dropped_by_name = shutil.ignore_patterns(".git", "__pycache__", "node_modules", ".venv")
+
+    def ignore(src: str, names: list) -> set:
+        skipped = set(dropped_by_name(src, names))
+        skipped.update(
+            name for name in names
+            if Path(src, name).relative_to(ROOT).as_posix() in _PACKAGE_IGNORED
+        )
+        return skipped
+
+    shutil.copytree(ROOT, copy_root, ignore=ignore)
     return copy_root
+
+
+def test_the_disposable_copy_drops_audit_run_junk_and_keeps_the_receipts(tmp_path: Path) -> None:
+    """The copy stands for an installed/extracted package: tracked bytes only.
+
+    `.audit/evidence/<run-id>/` accumulates one directory per local run -- 1418 of them,
+    ~139 MiB -- and every test calling `_disposable_copy` used to re-copy all of it. The
+    tracked receipts have to survive: they are the bytes under test.
+    """
+    evidence = _disposable_copy(tmp_path) / ".audit" / "evidence"
+    assert [path.name for path in evidence.iterdir() if path.is_dir()] == []
+    assert (evidence / "index.json").is_file()
+    assert (evidence / "grok-receipt.json").is_file()
 
 
 @pytest.mark.parametrize(
