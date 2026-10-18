@@ -1,5 +1,3 @@
-"""Release version metadata must match the read-only upstream recipe."""
-
 import json
 import re
 import subprocess
