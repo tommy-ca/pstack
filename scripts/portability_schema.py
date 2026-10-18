@@ -16,7 +16,7 @@ from typing import Any, Dict, Iterable, List, Literal, Optional, Tuple
 
 from scripts.host_identity import (
     KNOWN_HOSTS,
-    is_external,
+    is_declared_host,
     is_valid_host_id,
     is_valid_receipt_host,
     require_builtin_host_keys,
@@ -410,8 +410,10 @@ class HarnessProfile:
         # describe the adapter, but the declaration itself proves nothing: a support
         # state above `candidate` or a `verified` capability row would be a promotion
         # off the declaration, so both fail closed. Native evidence is the only way
-        # up, and it is read through the same receipt gates as any built-in host.
-        if is_external(self.host):
+        # up, and it is read through the same receipt gates as any built-in host. The
+        # legacy aliases walk this gate too - `custom` and `claude` are declarations
+        # without native support, not built-ins.
+        if is_declared_host(self.host):
             if self.support_state != "candidate":
                 raise ValidationError(
                     f"Declared host {self.host!r} must stay candidate until native evidence proves it, "
@@ -678,11 +680,12 @@ class VerificationReceipt:
             raise ValidationError(f"Unknown host: {self.host!r}")
         if not self.host_version:
             raise ValidationError("host_version cannot be empty")
-        # A declared host's identity names a namespace, not a build (#446). Without
-        # the exact adapter version this receipt cannot say what produced it, so it
-        # refuses to be read: the row citing it proves nothing and the host stays
-        # candidate/GAP rather than being promoted off an unattributed observation.
-        if is_external(self.host) and not self.adapter_version:
+        # A declared host's identity names a namespace (or a pre-registry alias),
+        # not a build (#446). Without the exact adapter version this receipt cannot
+        # say what produced it, so it refuses to be read: the row citing it proves
+        # nothing and the host stays candidate/GAP rather than being promoted off an
+        # unattributed observation.
+        if is_declared_host(self.host) and not self.adapter_version:
             raise ValidationError(
                 f"Receipt for declared host {self.host!r} must name the adapter_version it was produced by"
             )

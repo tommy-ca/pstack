@@ -63,6 +63,20 @@ def is_external(host_id: str) -> bool:
     return isinstance(host_id, str) and bool(EXTERNAL_HOST_ID_RE.match(host_id))
 
 
+def is_declared_host(host_id: str) -> bool:
+    """True for every non-built-in harness identity: a namespaced id or an alias.
+
+    Neither ships a native driver, projection or receipt, so both walk the
+    declared-host gates: the profile stays `candidate`, and its receipt must name
+    the `adapter_version` it was produced by. A legacy alias is therefore gated
+    exactly like a declared host - the name is historical spelling, not a
+    capability, and keying those gates on `is_external` alone let `custom` and
+    `claude` through them (#446). `mock` is not here: it names an observation,
+    not a harness.
+    """
+    return is_external(host_id) or host_id in LEGACY_HOST_ALIASES
+
+
 def is_valid_host_id(host_id: str) -> bool:
     """True for every identity a profile, binding or descriptor may carry."""
     return host_id in KNOWN_HOSTS or is_external(host_id)

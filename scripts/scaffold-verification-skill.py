@@ -23,6 +23,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from portability_schema import DEFAULT_SKILLS_DIRS
+from scripts.host_identity import require_builtin_host_keys
 from skill_frontmatter import SKILL_NAME_RE, read_scalar, split_frontmatter, validate_skill_name
 
 REQUIRED_SECTIONS = [
@@ -40,6 +41,11 @@ REQUIRED_SECTIONS = [
 # more specific hosts are probed first. Droid's `.factory` marker is last
 # because the directory also appears in non-skill Droid setups.
 HOST_DETECT_ORDER = ("antigravity", "codex", "omp", "opencode", "grok", "droid")
+
+# The order above is a detection preference, but its key set is the identity set:
+# a built-in added to `BUILTIN_HOSTS` and to `DEFAULT_SKILLS_DIRS` and missed here
+# is never detected and silently falls through to the `"grok"` default (#446).
+require_builtin_host_keys(HOST_DETECT_ORDER, "HOST_DETECT_ORDER")
 
 
 def detect_host(workspace: pathlib.Path) -> str:

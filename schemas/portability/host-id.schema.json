@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://pstack.dev/schemas/portability/host-id.schema.json",
   "title": "HostId",
-  "description": "The one declaration of harness host identity (#446). Every host-bearing schema references this file instead of carrying its own enum. `scripts/host_identity.py` owns the same identity set and the same external-id pattern, and `tests/test_host_identity.py` pins the two together, so the rule has one source and one proof. A *built-in* host is one of the six pstack ships native drivers, projections and receipts for. A *declared* host is namespaced (`acme:copilot`): it may be described by a local adapter profile, but it starts at candidate with unproved bindings and its receipt must name the adapter_version it was produced by.",
+  "description": "The one declaration of harness host identity (#446). Every host-bearing schema references this file instead of carrying its own enum. `scripts/host_identity.py` owns the same identity set and the same external-id pattern, and `tests/test_host_identity.py` pins the two together, so the rule has one source and one proof. A *built-in* host is one of the six pstack ships native drivers, projections and receipts for. A *declared* host is any other harness identity - namespaced (`acme:copilot`) or one of the two pre-registry aliases (`claude`, `custom`): it may be described by a local adapter profile, but it starts at candidate with unproved bindings and its receipt must name the adapter_version it was produced by.",
   "$defs": {
     "known": {
       "type": "string",

@@ -32,6 +32,7 @@ from scripts.host_identity import (  # noqa: E402
     OBSERVER_HOSTS,
     HostIdentityError,
     is_builtin,
+    is_declared_host,
     is_external,
     is_valid_host_id,
     is_valid_receipt_host,
@@ -284,11 +285,19 @@ def test_the_six_builtin_hosts_are_unchanged_everywhere() -> None:
     verify_portable = _load_module("verify_portable_seam", "scripts/verify-portable.py")
     scan_boundary = _load_module("scan_host_boundary_seam", "scripts/scan-host-boundary.py")
     project_package = _load_module("project_package_seam", "scripts/project-package.py")
+    scaffold = _load_module(
+        "scaffold_verification_skill_seam", "scripts/scaffold-verification-skill.py"
+    )
 
     assert BUILTIN_HOSTS == ("grok", "codex", "omp", "opencode", "antigravity", "droid")
     assert portability_schema.HOSTS == KNOWN_HOSTS
     assert verify_portable.SUPPORTED_HOSTS == BUILTIN_HOSTS
     assert lifecycle.SUPPORTED_HOSTS == BUILTIN_HOSTS
+    # Order-insensitive: the tuple's order is a detection preference (a workspace can
+    # carry several markers), its key set is the identity set. This tuple is the sixth
+    # declaration the literal-adjacency detector above cannot see, because its two
+    # built-ins are not adjacent.
+    assert set(scaffold.HOST_DETECT_ORDER) == set(BUILTIN_HOSTS)
     for table in (
         DRIVER_REGISTRY,
         project_package.TARGET_MAP,
@@ -308,6 +317,26 @@ def test_the_six_builtin_hosts_are_unchanged_everywhere() -> None:
     ]
 
 
+def test_a_seventh_builtin_missed_by_the_detector_order_fails_closed(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The tuple is census-checked, so drift refuses to load instead of never detecting.
+
+    Simulated by adding a built-in to the seam and re-executing the scaffold source the
+    way its CLI does: the table's key set is the identity set, so the module raises
+    rather than falling through to its `"grok"` default (#446).
+    """
+    import scripts.host_identity as host_identity_module
+
+    scaffold_path = ROOT / "scripts" / "scaffold-verification-skill.py"
+    monkeypatch.setattr(host_identity_module, "BUILTIN_HOSTS", BUILTIN_HOSTS + ("seventh",))
+    with pytest.raises(HostIdentityError, match="HOST_DETECT_ORDER"):
+        exec(
+            compile(scaffold_path.read_text(encoding="utf-8"), str(scaffold_path), "exec"),
+            {"__file__": str(scaffold_path), "__name__": "scaffold_detect_order_probe"},
+        )
+
+
 def test_the_pre_registry_names_stay_readable() -> None:
     """`claude` and `custom` keep loading; they are aliases, not new identities."""
     assert KNOWN_HOSTS == BUILTIN_HOSTS + LEGACY_HOST_ALIASES
@@ -316,6 +345,23 @@ def test_the_pre_registry_names_stay_readable() -> None:
         assert not is_external(alias)
     assert is_valid_receipt_host("mock")
     assert _receipt("grok").validate() is None
+
+
+def test_the_pre_registry_aliases_walk_the_declared_host_gates() -> None:
+    """`custom` and `claude` are declarations without native support, not built-ins.
+
+    They stay readable, but they are gated exactly like a namespaced declared host: a
+    profile that promotes itself is refused, and so is a receipt that cannot name the
+    adapter version it was produced by (#446).
+    """
+    for alias in LEGACY_HOST_ALIASES:
+        assert is_declared_host(alias) and not is_builtin(alias) and not is_external(alias)
+        assert _declared_profile(host=alias).validate() is None
+        with pytest.raises(ValidationError, match="must stay candidate"):
+            _declared_profile(host=alias, support_state="packaged").validate()
+        with pytest.raises(ValidationError, match="adapter_version"):
+            _receipt(alias).validate()
+        assert _receipt(alias, adapter_version="alias-adapter 1.0.0").validate() is None
 
 
 # --- unknown and unproved stay fail-closed --------------------------------
@@ -389,3 +435,41 @@ def test_the_receipt_payload_never_serializes_a_null_adapter_version() -> None:
     payload = verify_portable._receipt_payload(_receipt("grok"))
     assert "adapter_version" not in payload
     assert verify_portable._receipt_payload(_receipt(DECLARED, "1.2.3"))["adapter_version"] == "1.2.3"
+
+
+def test_a_run_in_a_linked_worktree_points_at_a_run_dir_that_exists(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """`artifacts[0]` names the receipt this run wrote, in a checkout that outlives the lane.
+
+    A lane runs in a linked worktree, which is pruned after merge while the durable
+    receipt it commits lives on: the run dir is rooted at the canonical checkout (here
+    a stand-in directory, because a rewrite to a path that never held the file is what
+    made these pointers dead in the first place). The pointer is then the file the run
+    actually wrote, and it is still there for the reader of the committed receipt (#446).
+    """
+    verify_portable = _load_module("verify_portable_pointer", "scripts/verify-portable.py")
+    worktree = tmp_path / "worktree"
+    evidence_root = worktree / ".audit" / "evidence"
+    evidence_root.mkdir(parents=True)
+    canonical = tmp_path / "primary"
+
+    monkeypatch.setattr(verify_portable, "ROOT", worktree)
+    monkeypatch.setattr(verify_portable, "DEFAULT_EVIDENCE_DIR", evidence_root)
+    monkeypatch.setattr(verify_portable, "get_canonical_root", lambda root: canonical)
+    monkeypatch.setattr(
+        verify_portable.PortableVerifier,
+        "doctor",
+        lambda self, check_durability=True, allow_stale=False: True,
+    )
+    monkeypatch.setattr(sys, "argv", ["verify-portable.py", "refresh-static", "--host", "omp"])
+
+    with pytest.raises(SystemExit) as exit_info:
+        verify_portable.main()
+    assert exit_info.value.code == 0
+
+    receipt = json.loads((evidence_root / "omp-receipt.json").read_text(encoding="utf-8"))
+    run_receipt = Path(receipt["artifacts"][0])
+    assert run_receipt == canonical / ".audit" / "evidence" / receipt["run_id"] / "receipt.json"
+    assert run_receipt.is_file()
+    assert not run_receipt.is_relative_to(worktree)

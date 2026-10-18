@@ -490,7 +490,17 @@ class PortableVerifier:
         self.evidence_root = evidence_root
         self.change = change
         self.run_id = f"{host}-{int(time.time())}-{secrets.token_hex(4)}"
-        self.run_dir = self.evidence_root / self.run_id
+        # The raw run dir has to outlive the checkout that made it: a lane runs in a
+        # linked worktree that is pruned after merge, while the durable receipt it
+        # commits lives on. An evidence root inside the worktree is therefore mapped to
+        # the same relative path in the canonical checkout, so the `artifacts[0]`
+        # pointer the receipt commits names a path a reader of that receipt can still
+        # reach (#446). An explicit --evidence-dir outside the worktree is untouched.
+        run_root = evidence_root
+        canonical_root = get_canonical_root(ROOT)
+        if canonical_root != ROOT and evidence_root.is_relative_to(ROOT):
+            run_root = canonical_root / evidence_root.relative_to(ROOT)
+        self.run_dir = run_root / self.run_id
         self.scenarios: List[ScenarioResult] = []
 
     def launch(self) -> bool:
@@ -987,8 +997,6 @@ class PortableVerifier:
                 scenarios.append(s)
 
         run_receipt_path = str(self.run_dir / "receipt.json")
-        if root_str != canon_str:
-            run_receipt_path = run_receipt_path.replace(root_str, canon_str)
 
         receipt = VerificationReceipt(
             run_id=self.run_id,
