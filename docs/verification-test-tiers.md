@@ -302,20 +302,27 @@ activation table are checked against this repo's overlay-gating semantics
 (`select_overlays` in that module), not by executing the external pack: they pin
 the declaration, and profile drift is what reddens the route half. (#444)
 
-### Role modules stay out of the revision inputs (planning-only)
+### Role inputs join the package revision (planner code, policy, schema)
 
-`scripts/model_role_policy.py` and `scripts/model_role_resolver.py` are
-deliberately not revision inputs. `plan_role`
-(`scripts/model_role_resolver.py:151`) has exactly one production caller —
-`project-package.py --check` → `check_model_role_plan`, a read-only per-host
-planning probe over the checked-in example policy — plus the call sites in
-`tests/test_model_role_policy.py`. The only production execution of the policy
-module itself is the static CI preflight
-(`.github/workflows/portability-offline.yml:54` →
-`scripts/model_role_policy.py:256-258`). Both modules consume the
-`portability_schema` vocabulary without feeding any revision field, so a stale
-copy cannot move a verdict any gate checks. Adding them to `driver_revision`
-would force 5 host re-proofs per behaviour edit; adding them to
-`package_driver_revision` would fail `check-evidence` at the wrong plane.
-Trigger to revisit: the day a recorded scenario depends on either module, name
-it in the revision set then. (#473)
+`plan_role` (`scripts/model_role_resolver.py:151`) has exactly one production caller —
+`project-package.py --check` → `check_model_role_plan`, a read-only per-host planning
+probe — plus the call sites in `tests/test_model_role_policy.py`, and that is still the
+whole set (`tests/test_model_role_policy.py::test_plan_role_has_exactly_one_production_caller`
+re-derives it from `scripts/`). The only other production execution of the policy module
+is the static CI preflight (`.github/workflows/portability-offline.yml:54` →
+`scripts/model_role_policy.py:256-258`). Because that probe builds its verdict from the
+policy bytes, the schema that validates them, and the planner code that interprets them,
+all four join `package_driver_revision`: the two planner modules by behaviour-bearing AST
+core, the policy and the schema byte for byte. A probe-verdict change from any of the four
+fails a `packaged` claim closed on the package plane instead of passing silently. The
+schema is read with raw bytes (no AST could carry a tightening enum), and a deleted policy
+or schema moves the digest to a value no receipt carries, so both deletions fail closed.
+Measured before the fix: the mutated policy left `check-evidence` and `check-staleness`
+both exiting 0; proven 2026-10-19, neutralising `unproven_catalog_reason` flips the grok
+probe DEGRADED → PLANNED with the policy untouched, so code-only coverage was required too.
+Pinned by `test_mutated_model_role_policy_stales_the_package_plane` (policy edit, policy
+deletion, schema deletion) and `test_mutated_planner_module_stales_the_package_plane`
+(resolver behaviour edit). `portability_schema.py` itself stays in `driver_revision` (its
+constants feed the adapter plane via validation), and the probe modules stay out of
+`driver_revision`, so a planner behaviour edit costs one package-plane re-proof, not five
+host re-proofs. (#473)

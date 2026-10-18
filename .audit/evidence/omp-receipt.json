@@ -1,8 +1,8 @@
 {
-  "run_id": "omp-1792289966-1599bb43",
+  "run_id": "omp-1792292370-61f1027e",
   "host": "omp",
   "host_version": "omp/18.11.2",
-  "timestamp": "2026-10-18T02:19:28Z",
+  "timestamp": "2026-10-18T02:59:33Z",
   "overall_verdict": "UNTESTED",
   "planes": {
     "canonical": "PASS",
@@ -18,8 +18,8 @@
     "profile_hash": "24ff0dd0e08c0c19b20f27554963cb09eba4c313601a1dcccf868694626e86b8",
     "package_descriptor_hash": "52cc6b3ce9b87a80f783362b109cb7b5a6190e7f26d25687b6b2a16f3651a647",
     "manifest_hash": "0796214ef5886c4763eaf83963145785e0cc363252671b3f4399eb0d8cb7ed06",
-    "driver_revision": "e46f7d3ba3c58eca0e8eb6eccdde4bc024d30de5c51e94a89ad873c0b6e3e52d",
-    "package_driver_revision": "f1870e223911ab127c04a622d420f12bf605dfd7342fdcfbcd4c77cb6871090b",
+    "driver_revision": "38a43b4b420937017916525fbb0b31c4a2b75dd9b267bd7dc9bb5984c3e7c370",
+    "package_driver_revision": "68075de71e8e3806677ec06d4cc513be8abe283cf1cf13ba6cab4e75ddb0f144",
     "boundary_driver_revision": "418b9dd247f469174b003b45d2bfc71d393fc70558344268a49518fd83e92122"
   },
   "scenarios": [
@@ -31,7 +31,7 @@
       "exit_code": 0,
       "stdout_snippet": "Conformance: PASS\nFreshness: DRIFT (53 commits ahead)\nPrinciples: 24 | Playbooks: 23\nArtifacts: 167 (preserved=93, adapted=64, excluded=10, gaps=0)\nPASS: Canonical inventory conforms to pin.",
       "verdict": "PASS",
-      "duration_s": 0.078,
+      "duration_s": 0.071,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -44,7 +44,7 @@
       "exit_code": 0,
       "stdout_snippet": "Change '2026-10-15-harness-neutral-role-policy' is valid",
       "verdict": "PASS",
-      "duration_s": 0.398,
+      "duration_s": 0.466,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -57,7 +57,7 @@
       "exit_code": 0,
       "stdout_snippet": "PASS\nplaybooks: 22 named + opening-a-pr\nprinciples: 24\nplugin.json name: pstack",
       "verdict": "PASS",
-      "duration_s": 0.492,
+      "duration_s": 1.264,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -70,7 +70,7 @@
       "exit_code": 0,
       "stdout_snippet": "[scan-host-boundary] PASS: Scanned 139 files across portable surfaces. 0 boundary leaks.",
       "verdict": "PASS",
-      "duration_s": 0.346,
+      "duration_s": 0.387,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -96,7 +96,7 @@
       "exit_code": 0,
       "stdout_snippet": "[omp] Executing verify...\nPASS: omp manifest at .omp-plugin/package.json in sync\nPASS: .claude-plugin manifests present, shaped and in version lockstep\nABSENT: host-local hooks not implemented; nothing claimed (#438)\nDEGRADED: grok independent-verifier <- host-tier (static-planning-only): catalog di",
       "verdict": "PASS",
-      "duration_s": 0.126,
+      "duration_s": 0.12,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -109,14 +109,14 @@
       "exit_code": 0,
       "stdout_snippet": "",
       "verdict": "PASS",
-      "duration_s": 0.048,
+      "duration_s": 0.042,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
     }
   ],
   "artifacts": [
-    "/home/tommyk/projects/pstack/.audit/evidence/omp-1792289966-1599bb43/receipt.json",
+    "/home/tommyk/projects/pstack/.audit/evidence/omp-1792292370-61f1027e/receipt.json",
     ".audit/evidence/omp-receipt.json"
   ],
   "claim": "omp 5-harness portability conformance verification",

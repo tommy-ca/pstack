@@ -934,12 +934,43 @@ def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path
 
     # 9. package driver revision
     pkg_hasher = hashlib.sha256()
-    for fname in ("project-package.py", "package-lifecycle.py", "sync-antigravity-plugin.py"):
+    for fname in ("project-package.py", "package-lifecycle.py", "sync-antigravity-plugin.py",
+                  "model_role_policy.py", "model_role_resolver.py", "portability_schema.py"):
         p = root / "scripts" / fname
         if p.is_file():
             pkg_hasher.update(fname.encode("utf-8"))
             _update_driver_digest(pkg_hasher, p)
+    # The policy the package driver *reads* is an input to the package plane, and so
+    # is everything that interprets it: `check_model_role_plan` loads the policy
+    # bytes, validates them against `schemas/portability/model-role-policy.schema.json`
+    # via `check_model_role_policy`, and returns a verdict built by
+    # `plan_role`/`unproven_catalog_reason` against the `portability_schema`
+    # vocabularies it imports (`VERIFICATION_STATUSES`,
+    # `PORTABLE_CAPABILITY_UNIVERSE`, `IMPLEMENTATION_STATUSES`, `ENFORCEMENT_LEVELS`).
+    # A schema tightening, a vocabulary rename in `portability_schema.py`, a behavior
+    # edit in either planner module, or a one-byte policy edit all move the plane
+    # that gates `packaged`. Raw policy bytes are folded so a non-AST edit still
+    # moves the revision; `portability_schema.py` is folded by the same AST
+    # core as the other drivers, so a comment there stays inert while a constant
+    # rename moves it. An unreadable policy degrades to the digest-moving sentinel
+    # boundary_driver_revision already uses: a receipt can never match it, so the
+    # gate fails loudly instead of hashing an absence.
+    policy_file = root / "examples" / "portability" / "model-role-policy.example.json"
+    if policy_file.is_file():
+        pkg_hasher.update(b"model-role-policy.example.json")
+        pkg_hasher.update(policy_file.read_bytes())
+    else:
+        pkg_hasher.update(b"model-role-policy.example.json:missing")
+    schema_file = root / "schemas" / "portability" / "model-role-policy.schema.json"
+    if schema_file.is_file():
+        pkg_hasher.update(b"model-role-policy.schema.json")
+        pkg_hasher.update(schema_file.read_bytes())
+    else:
+        pkg_hasher.update(b"model-role-policy.schema.json:missing")
     package_driver_revision = pkg_hasher.hexdigest()
+    # NOTE: the old 'missing'-policy => literal "missing" sentinel is gone; a deleted
+    # policy or schema now moves the digest to a value no receipt carries, which the
+    # package plane refuses by name. The mutation test pins both deletions.
 
     # 10. boundary driver revision
     bnd_driver_file = root / "scripts" / "scan-host-boundary.py"

@@ -529,8 +529,17 @@ def test_project_package_check_surfaces_the_planner_verdict(capsys) -> None:
 
 
 def test_plan_role_has_exactly_one_production_caller() -> None:
-    # U2 wiring: the sole non-test import of the planner is the read-only
-    # project-package --check probe; no router or gateway may join it.
-    callers = {path.name for path in (ROOT / "scripts").rglob("*.py")
-               if re.search(r"\bplan_role\b", path.read_text(encoding="utf-8"))}
-    assert callers == {"model_role_resolver.py", "project-package.py"}
+    # U2 wiring: the sole non-test importer of the planner entry point is the
+    # read-only project-package --check probe; no router or gateway may join it.
+    # portability_schema.py mentions plan_role only in its recipe comment naming the
+    # probe path, not as an import or call.
+    importers = set()
+    for path in (ROOT / "scripts").rglob("*.py"):
+        for line in path.read_text(encoding="utf-8").splitlines():
+            stripped = line.strip()
+            if stripped.startswith("#"):
+                continue
+            if re.search(r"\bplan_role\b", line):
+                importers.add(path.name)
+                break
+    assert importers == {"model_role_resolver.py", "project-package.py"}
