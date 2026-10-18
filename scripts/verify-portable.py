@@ -1052,6 +1052,19 @@ class PortableVerifier:
                         f"or remove the file, then re-run. This run's receipt is at {receipt_file}."
                     )
 
+            # The rows follow the receipts on disk: put back the rows a deleted index or a
+            # crash between the two writes left out, so one host's run cannot leave the
+            # inventory listing that host alone. Missing rows only — an existing row is
+            # left for the cross-check to report, and bytes a row cannot stand on are left
+            # for the reader's orphan check instead of being guessed at (#495).
+            index_data.setdefault("hosts", {}).update(
+                {
+                    host: row
+                    for host, row in rows_from_receipts(self.evidence_root).items()
+                    if host not in index_data["hosts"]
+                }
+            )
+
             # Stable durable receipt copy
             durable_file = self.evidence_root / f"{self.host}-receipt.json"
             durable_data = data
@@ -1089,15 +1102,20 @@ class PortableVerifier:
 
                 # The row follows the durable bytes it names: a refused overwrite must not
                 # advance the index onto a run whose receipt was never written (#495).
-                index_data.setdefault("hosts", {})[self.host] = {
-                    "receipt": f".audit/evidence/{self.host}-receipt.json",
-                    "run_id": receipt.run_id,
-                    "timestamp": receipt.timestamp,
-                    "overall_verdict": receipt.overall_verdict,
-                    "planes": receipt.planes,
-                    "surface_revisions": asdict(receipt.surface_revisions) if isinstance(receipt.surface_revisions, SurfaceRevisions) else receipt.surface_revisions,
-                }
-                index_file.write_text(json.dumps(index_data, indent=2) + "\n", encoding="utf-8")
+                index_data.setdefault("hosts", {})[self.host] = evidence_index_row(self.host, receipt)
+                try:
+                    index_file.write_text(json.dumps(index_data, indent=2) + "\n", encoding="utf-8")
+                except OSError as err:
+                    # A refused index write leaves the inventory trailing the receipt this
+                    # run just wrote (ENOSPC, a read-only index, a denied directory). Name
+                    # it instead of a traceback: the reader cross-check reports the split,
+                    # and no in-process retry can undo a denial (#495).
+                    sys.exit(
+                        f"FAILED to write the evidence index at {index_file}: "
+                        f"{type(err).__name__}: {err}. The durable receipt at {durable_file} is "
+                        f"already written, so the inventory trails it until the file is writable "
+                        f"and this check is re-run."
+                    )
             print(f"Evidence captured at {receipt_file} (durable: {durable_file})")
         else:
             print(f"Evidence captured at {receipt_file}")
@@ -1107,6 +1125,50 @@ class PortableVerifier:
     def cleanup(self) -> None:
         """Step 6: Cleanup transient files while preserving evidence."""
         pass
+
+
+def evidence_index_row(host: str, receipt: VerificationReceipt) -> Dict[str, Any]:
+    """One host's index row, derived from the receipt the row names.
+
+    Both paths that write a row — the `evidence()` run and the inventory projection below — derive it
+    here, so a row is a projection of the durable bytes and the two cannot drift (#495).
+    """
+    revisions = receipt.surface_revisions
+    return {
+        "receipt": f".audit/evidence/{host}-receipt.json",
+        "run_id": receipt.run_id,
+        "timestamp": receipt.timestamp,
+        "overall_verdict": receipt.overall_verdict,
+        "planes": receipt.planes,
+        "surface_revisions": asdict(revisions) if isinstance(revisions, SurfaceRevisions) else revisions,
+    }
+
+
+def rows_from_receipts(evidence_root: Path) -> Dict[str, Any]:
+    """Inventory rows rebuilt from the durable receipt bytes on disk (#495).
+
+    A missing index is the F4 remedy ("remove the file") and the crash window between the
+    two writes; re-listing this run's host alone silently drops every other host's row.
+    Bytes a row cannot stand on are left out rather than guessed at: the reader's orphan
+    check reports that host, and a run refuses to rewrite a receipt it cannot read, so a
+    projected row would name bytes nothing can repair.
+    """
+    rows: Dict[str, Any] = {}
+    for host in get_declared_hosts():
+        receipt_file = evidence_root / f"{host}-receipt.json"
+        if not _file_or_denied(receipt_file):
+            continue
+        try:
+            receipt = VerificationReceipt(**json.loads(receipt_file.read_text(encoding="utf-8")))
+            receipt.validate()
+            if receipt.host != host:
+                # A receipt for another host is not this host's bytes: projecting a row from
+                # it would inventory one host's evidence under another host's name (#495).
+                raise ValueError(f"{receipt_file} is the receipt for {receipt.host!r}, not {host!r}")
+        except Exception:
+            continue
+        rows[host] = evidence_index_row(host, receipt)
+    return rows
 
 
 def index_row_mismatch(host: str, index_file: Path, receipt_root: Path) -> Optional[str]:
@@ -1123,6 +1185,14 @@ def index_row_mismatch(host: str, index_file: Path, receipt_root: Path) -> Optio
     """
     try:
         hosts = json.loads(index_file.read_text(encoding="utf-8")).get("hosts", {})
+    except FileNotFoundError:
+        # Missing inventory is a shape a run repairs, not a dead end: the writer projects
+        # every readable durable receipt's row back into a missing index (#495).
+        return (
+            f"evidence index {index_file} is missing; it is the inventory of every host's "
+            f"durable receipt. Rebuild it with: "
+            f"python3 scripts/verify-portable.py refresh-static --host all."
+        )
     except Exception as err:
         return f"evidence index {index_file} unreadable: {type(err).__name__}: {err}"
     if not isinstance(hosts, dict):
@@ -1150,7 +1220,7 @@ def index_row_mismatch(host: str, index_file: Path, receipt_root: Path) -> Optio
         return (
             f"index {index_file} has no row for {host} but its durable receipt "
             f"{durable_file} exists: the inventory is STALE/REBUILD-REQUIRED. Rebuild "
-            f"the row with `python3 scripts/verify-portable.py refresh-static --host {host}` "
+            f"the row with: python3 scripts/verify-portable.py refresh-static --host {host} "
             f"(a host claiming `candidate` writes no durable receipt, so an orphan left by "
             f"a demotion has to be removed instead)."
         )
