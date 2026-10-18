@@ -14,6 +14,8 @@ from .grok import GrokDriver
 from .omp import OMPDriver
 from .opencode import OpenCodeDriver
 
+from scripts.host_identity import require_builtin_host_keys
+
 DRIVER_REGISTRY: Dict[str, Type[HarnessDriver]] = {
     "grok": GrokDriver,
     "antigravity": AntigravityDriver,
@@ -22,6 +24,12 @@ DRIVER_REGISTRY: Dict[str, Type[HarnessDriver]] = {
     "opencode": OpenCodeDriver,
     "droid": DroidDriver,
 }
+
+# Every built-in host has exactly one native driver, and no host outside the
+# built-in set can be driven: the registry routes, host_identity decides who
+# exists (#446). `get_driver` refuses anything else instead of falling back to a
+# neighbouring host's driver.
+require_builtin_host_keys(DRIVER_REGISTRY, "DRIVER_REGISTRY")
 
 
 def get_driver(host: str, root: Path) -> HarnessDriver:

@@ -7,8 +7,7 @@
   "required": ["host", "support_state", "bindings", "skills_dir", "plugin_manifest"],
   "properties": {
     "host": {
-      "type": "string",
-      "enum": ["grok", "codex", "omp", "opencode", "antigravity", "droid", "claude", "custom"]
+      "$ref": "host-id.schema.json#/$defs/host"
     },
     "support_state": {
       "type": "string",

@@ -28,6 +28,7 @@ if str(ROOT) not in sys.path:
 
 # Sole production caller of the pure planner: a read-only planning check, never
 # a model dispatch path.
+from scripts.host_identity import require_builtin_host_keys
 from scripts.model_role_resolver import plan_role
 from scripts.portability_schema import PackageDescriptor, ValidationError
 
@@ -396,6 +397,10 @@ TARGET_MAP = {
     "antigravity": (ROOT / ".antigravity-plugin" / "plugin.json", generate_antigravity_manifest),
     "droid": (FACTORY_PLUGIN_DIR / "plugin.json", generate_droid_manifest),
 }
+# The projection census is the identity census: a built-in host without a row here
+# would silently project nothing, so the key set is checked against the one source
+# of host identity rather than restated (#446).
+require_builtin_host_keys(TARGET_MAP, "TARGET_MAP")
 
 
 def project_all(desc: PackageDescriptor, hosts: List[str] | None = None) -> None:
