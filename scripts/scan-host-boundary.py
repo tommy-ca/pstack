@@ -25,7 +25,7 @@ PROFILES_DIR = ROOT / "profiles"
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from scripts.host_identity import KNOWN_HOSTS, OBSERVER_HOSTS  # noqa: E402
+from scripts.host_identity import KNOWN_HOSTS, OBSERVER_HOSTS, SCANNED_ONLY_HOST_NAMES  # noqa: E402
 
 
 @dataclass(frozen=True)
@@ -85,7 +85,7 @@ CAPABILITY_NAMES: Set[str] = {
     "manifest.project",
 }
 
-HARNESS_NAMES: Set[str] = set(KNOWN_HOSTS) | set(OBSERVER_HOSTS) | {"pi"}
+HARNESS_NAMES: Set[str] = set(KNOWN_HOSTS) | set(OBSERVER_HOSTS) | set(SCANNED_ONLY_HOST_NAMES)
 
 GENERIC_WORDS: Set[str] = {
     "inherit",
