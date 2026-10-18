@@ -28,11 +28,19 @@
   ],
   "roles": [
     {
-      "role": "feature, refactoring",
-      "models": [
-        "pro"
-      ],
-      "skill": "poteto-mode"
+      "role": "architect-runners",
+      "models": "panel",
+      "skill": "architect"
+    },
+    {
+      "role": "arena-cross-judge-pool",
+      "models": "panel",
+      "skill": "arena"
+    },
+    {
+      "role": "arena-runners",
+      "models": "panel",
+      "skill": "arena"
     },
     {
       "role": "bug-fix",
@@ -42,7 +50,21 @@
       "skill": "poteto-mode"
     },
     {
-      "role": "perf-issue",
+      "role": "comment-sicko",
+      "models": [
+        "flash"
+      ],
+      "skill": "poteto-mode"
+    },
+    {
+      "role": "feature",
+      "models": [
+        "pro"
+      ],
+      "skill": "poteto-mode"
+    },
+    {
+      "role": "hardest-tasks",
       "models": [
         "pro"
       ],
@@ -56,87 +78,100 @@
       "skill": "poteto-mode"
     },
     {
-      "role": "judgment and prose",
-      "models": [
-        "pro"
-      ],
-      "skill": "poteto-mode"
-    },
-    {
-      "role": "strongest judgment",
-      "models": [
-        "pro"
-      ],
-      "skill": "poteto-mode"
-    },
-    {
-      "role": "how explorer",
+      "role": "how-critics",
       "models": [
         "pro"
       ],
       "skill": "how"
     },
     {
-      "role": "how explainer",
+      "role": "how-explainer",
       "models": [
         "pro"
       ],
       "skill": "how"
     },
     {
-      "role": "why investigators",
+      "role": "how-explorer",
       "models": [
         "pro"
       ],
-      "skill": "why"
+      "skill": "how"
     },
     {
-      "role": "why synthesizer",
+      "role": "independent-verifier",
       "models": [
         "pro"
       ],
-      "skill": "why"
+      "skill": "poteto-mode"
     },
     {
-      "role": "reflect tooling",
+      "role": "interrogate-reviewers",
+      "models": "panel",
+      "skill": "interrogate"
+    },
+    {
+      "role": "judgment-and-prose",
+      "models": [
+        "pro"
+      ],
+      "skill": "poteto-mode"
+    },
+    {
+      "role": "perf-issue",
+      "models": [
+        "pro"
+      ],
+      "skill": "poteto-mode"
+    },
+    {
+      "role": "poteto-agent",
+      "models": [
+        "pro"
+      ],
+      "skill": "poteto-mode"
+    },
+    {
+      "role": "refactoring",
+      "models": [
+        "pro"
+      ],
+      "skill": "poteto-mode"
+    },
+    {
+      "role": "reflect-judgment",
       "models": [
         "pro"
       ],
       "skill": "reflect"
     },
     {
-      "role": "reflect judgment, divergent, synthesizer",
+      "role": "reflect-tooling",
       "models": [
         "pro"
       ],
       "skill": "reflect"
     },
     {
-      "role": "arena runners",
-      "models": "panel",
-      "skill": "arena"
-    },
-    {
-      "role": "arena cross-judge pool",
-      "models": "panel",
-      "skill": "arena"
-    },
-    {
-      "role": "swarm workers",
+      "role": "swarm-workers",
       "models": [
         "flash"
       ],
       "skill": "swarm"
     },
     {
-      "role": "architect runners",
-      "models": "panel",
-      "skill": "architect"
+      "role": "why-investigators",
+      "models": [
+        "pro"
+      ],
+      "skill": "why"
     },
     {
-      "role": "interrogate reviewers",
-      "models": "panel",
-      "skill": "interrogate"
+      "role": "why-synthesizer",
+      "models": [
+        "pro"
+      ],
+      "skill": "why"
     }
   ]
 }

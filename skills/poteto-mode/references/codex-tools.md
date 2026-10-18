@@ -89,24 +89,32 @@ Codex model routing uses detected OpenAI frontier models. Configuration lives at
 
 ### Role mappings
 
+Rows are the canonical role IDs from `pstack.package.json#/roles`, projected with these models into `.codex-plugin/models.json`.
+
 | Role | Target Model | Purpose |
 | --- | --- | --- |
-| `feature`, `refactoring` | `gpt-6-luna` | Fast execution and volume authoring |
-| `bug-fix`, `perf-issue`, `hillclimb` | `gpt-6-luna` | Worker fixes, performance, and metric hillclimbing |
-| `judgment and prose` | `gpt-6.1-sol` (judgment), `gpt-6-luna` (prose) | Orchestrated judgment and prose drafting |
-| `strongest judgment` | `gpt-6.1-sol` | Final verdict and architectural gate |
-| `how explorer`, `why investigators` | `gpt-6-luna` | Read-only codebase traversal |
-| `how explainer` | `gpt-6-luna` | Structured documentation and explanation |
-| `why synthesizer` | `gpt-6.1-sol` | Orchestration-level architectural synthesis |
-| `reflect tooling` | `gpt-6-luna` | Tooling audit and lint checking |
-| `reflect judgment, divergent, synthesizer` | `gpt-6.1-sol` | Deep structural reflection |
+| `architect-runners` | `gpt-6.1-sol` | System architecture sketch authoring |
+| `arena-cross-judge-pool` | `gpt-6.1-sol` | High-rigor evaluation and cross-judging |
+| `arena-runners` | panel (`gpt-6.1-sol`, `gpt-6-luna`) | Multi-model candidate generation |
+| `bug-fix` | `gpt-6-luna` | Defect reproduction and root-cause fix |
+| `comment-sicko` | `gpt-6-luna` | Comment hunting and deletion |
+| `feature` | `gpt-6-luna` | Fast execution and volume authoring |
 | `hardest-tasks` | `gpt-6-astra` | High-difficulty reasoning and hardest tasks |
-| `arena runners` | `gpt-6.1-sol`, `gpt-6-luna` | Multi-model candidate generation |
-| `arena cross-judge pool` | `gpt-6.1-sol` | High-rigor evaluation and cross-judging |
-| `swarm workers` | `gpt-6-luna` | Fast parallel matrix execution |
-| `architect runners` | `gpt-6.1-sol` | System architecture sketch authoring |
-| `interrogate reviewers` | `gpt-6.1-sol` | Multi-model adversarial review |
+| `hillclimb` | `gpt-6-luna` | Metric hillclimbing |
+| `how-critics` | `gpt-6-luna` | Read-only architecture and execution critique |
+| `how-explainer` | `gpt-6-luna` | Structured documentation and explanation |
+| `how-explorer` | `gpt-6-luna` | Read-only codebase traversal |
 | `independent-verifier` | `gpt-6.1-sol` | Read-only independent verification |
+| `interrogate-reviewers` | `gpt-6.1-sol` | Multi-model adversarial review |
+| `judgment-and-prose` | `gpt-6.1-sol` (judgment), `gpt-6-luna` (prose) | Orchestrated judgment and prose drafting |
+| `perf-issue` | `gpt-6-luna` | Performance profiling and latency work |
+| `poteto-agent` | `gpt-6.1-sol` | Delegated poteto-mode subagent worker |
+| `refactoring` | `gpt-6-luna` | Behaviour-preserving structural refactoring |
+| `reflect-judgment` | `gpt-6.1-sol` | Deep structural reflection |
+| `reflect-tooling` | `gpt-6-luna` | Tooling audit and lint checking |
+| `swarm-workers` | `gpt-6-luna` | Fast parallel matrix execution |
+| `why-investigators` | `gpt-6-luna` | Historical and architectural intent investigation |
+| `why-synthesizer` | `gpt-6.1-sol` | Orchestration-level architectural synthesis |
 
 ## Overnight / babysit / shipping
 
