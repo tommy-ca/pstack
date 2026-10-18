@@ -779,6 +779,28 @@ def _module_docstring(tree: ast.AST) -> bytes:
     return b""
 
 
+# ponytail: process-lifetime memo, bounded by the distinct file contents one run
+# sees (a few dozen here); swap for an LRU if a long-lived caller ever folds
+# unbounded external trees.
+_DRIVER_CORE_MEMO: Dict[Tuple[str, bytes], bytes] = {}
+
+
+def _driver_core(path: Path, src: bytes) -> bytes:
+    key = (path.name, src)
+    core = _DRIVER_CORE_MEMO.get(key)
+    if core is not None:
+        return core
+    try:
+        tree = ast.parse(src.decode("utf-8"))
+    except (SyntaxError, UnicodeDecodeError) as err:
+        raise RecipeError(f"unparseable driver {path}: {err}") from err
+    # Read the published docstring before stripping: the strip mutates the tree.
+    published = _module_docstring(tree) if path.name in DOCSTRING_CONSUMED_DRIVERS else b""
+    core = ast.unparse(_strip_docstrings(tree)).encode("utf-8") + published
+    _DRIVER_CORE_MEMO[key] = core
+    return core
+
+
 def _update_driver_digest(hasher: Any, path: Path) -> None:
     """Fold `path` into `hasher` as its behaviour-bearing core.
 
@@ -789,15 +811,7 @@ def _update_driver_digest(hasher: Any, path: Path) -> None:
     a `DOCSTRING_CONSUMED_DRIVERS` module contributes its published module
     docstring raw because the core would drop it.
     """
-    src = path.read_bytes()
-    try:
-        tree = ast.parse(src.decode("utf-8"))
-    except (SyntaxError, UnicodeDecodeError) as err:
-        raise RecipeError(f"unparseable driver {path}: {err}") from err
-    # Read the published docstring before stripping: the strip mutates the tree.
-    published = _module_docstring(tree) if path.name in DOCSTRING_CONSUMED_DRIVERS else b""
-    hasher.update(ast.unparse(_strip_docstrings(tree)).encode("utf-8"))
-    hasher.update(published)
+    hasher.update(_driver_core(path, path.read_bytes()))
 
 
 def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path] = None) -> SurfaceRevisions:

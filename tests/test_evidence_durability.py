@@ -27,6 +27,7 @@ from scripts.portability_schema import (
     SurfaceRevisions,
     ValidationError,
     VerificationReceipt,
+    _driver_core,
     _row_level,
     check_evidence_durability,
     check_scenario_pins,
@@ -939,6 +940,18 @@ def test_unparseable_skills_script_names_its_file_without_aborting(tmp_path: Pat
     assert compute_surface_revisions(copy_root, "grok").skills_tree_hash == fresh
 
 
+
+
+def test_driver_core_is_memoised_by_content_not_by_location(tmp_path: Path) -> None:
+    src = b"def probe():\n    return 1\n"
+    one = tmp_path / "one" / "probe.py"
+    two = tmp_path / "two" / "probe.py"
+    assert _driver_core(one, src) is _driver_core(one, src)
+    assert _driver_core(one, src) == _driver_core(two, src)
+    assert _driver_core(one, b'"""published docs"""\n' + src) == _driver_core(one, src)
+    assert _driver_core(one, b"def probe():\n    return 2\n") != _driver_core(one, src)
+    publishing = tmp_path / "pack.py"
+    assert _driver_core(publishing, b'"""docs"""\n' + src) != _driver_core(publishing, src)
 
 
 def test_harness_verifier_dynamic_import_does_not_self_invalidate(tmp_path: Path) -> None:
