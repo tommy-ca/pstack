@@ -11,8 +11,12 @@
       "implementation_status": "native",
       "primitive": "task",
       "enforcement": "hard",
-      "verification_status": "static-only",
-      "notes": "HISTORICAL (superseded 2026-10-17): observed live on 2026-10-13 — a bounded omp --mode rpc v2 session negotiated protocol v2, prompted one `task` child, and reduced its terminal subagent_lifecycle plus resolvedModelIdentity into the typed settlement on runtime-child-spawn-omp (evidence_level observed_live). The durable receipt was then refreshed statically (canonical/adapter/package PASS, runtime UNTESTED), which dropped that settlement because the runtime surface it proved had moved, so the row is static-only again and pins no scenario. Depth: single-child spawn only; no nested grandchild spawn or refusal probe has run, so max_subagent_depth 1 stays a pstack policy claim, never an observed host control. Restore with PSTACK_RUN_OMP_LIVE=1."
+      "verification_status": "verified",
+      "evidence_ref": {
+        "receipt": ".audit/evidence/omp-receipt.json",
+        "scenario": "runtime-child-spawn-omp"
+      },
+      "notes": "Observed live 2026-10-13, demoted by the 2026-10-17 static refresh (it dropped the settlement because the runtime surface had moved), re-observed live 2026-10-18 on the supported run path (PSTACK_RUN_OMP_LIVE=1 python3 scripts/verify-portable.py run --host omp), which is what settles this row again: a bounded omp --mode rpc v2 session negotiated protocol v2, prompted one `task` child, and reduced its terminal subagent_lifecycle plus resolvedModelIdentity into the typed settlement on runtime-child-spawn-omp (evidence_level observed_live). Depth: single-child spawn only; no nested grandchild spawn or refusal probe has run, so max_subagent_depth 1 stays a pstack policy claim, never an observed host control."
     },
     {
       "host": "omp",
@@ -20,8 +24,12 @@
       "implementation_status": "native",
       "primitive": "task (completion / wait)",
       "enforcement": "hard",
-      "verification_status": "static-only",
-      "notes": "HISTORICAL (superseded 2026-10-17): observed live on 2026-10-13 — the same RPC v2 session joined the child through prompt_result and session_settled and recorded the child's terminal subagent_lifecycle; join is the task primitive's completion path. The static refresh dropped that settlement (see agent.spawn), so the row is static-only again and pins no scenario. Restore with PSTACK_RUN_OMP_LIVE=1."
+      "verification_status": "verified",
+      "evidence_ref": {
+        "receipt": ".audit/evidence/omp-receipt.json",
+        "scenario": "runtime-child-spawn-omp"
+      },
+      "notes": "Observed live 2026-10-13 and re-observed live 2026-10-18 on the supported run path: the same RPC v2 session joined the child through prompt_result and session_settled and recorded the child's terminal subagent_lifecycle; join is the task primitive's completion path, so the spawn scenario's successful settlement is what settles this row. The static refresh had dropped that settlement (see agent.spawn); the run path restored it."
     },
     {
       "host": "omp",
@@ -38,8 +46,12 @@
       "implementation_status": "native",
       "primitive": "proc://<id>/kill / cancel_subagent",
       "enforcement": "hard",
-      "verification_status": "static-only",
-      "notes": "HISTORICAL (superseded 2026-10-17): observed live 2026-10-13 (receipt run omp-1791892165-cbc0cc6e) and promoted from static-only on that observation; the static refresh dropped the settlement, so the row is static-only again and pins no scenario. What the live run exercised, and what scripts/drivers/omp.py child_cancel still emits for a live run: runtime-child-cancel-omp, dispatched from verify-portable.py drive() for this host, driving a bounded --mode rpc session that prompts one child, confirms it in flight through get_subagents, cancels it through cancel_subagent (requiring the acceptance flag `data.cancelled: true`, because upstream answers `cancelled: false` for an id that was not running), and reduces the terminal `subagent_lifecycle` (`status: aborted`) into a typed cancelled settlement (child UpperHorse, outcome cancelled, latency 0.051s, rpc-v2). The bounded negatives stay negatives and promote nothing: the missing-child, rejected-or-idempotent cancel and dropped-terminal-frame paths carry no settlement, so they are recorded as negatives only. Promotion gate note: a cancellation settles agent.cancel but is never a spawn/join settlement, so scripts/portability_schema.py gates the pinned scenario by capability (_is_observed_settlement(scenario, capability)). Statically mapped from can1357/oh-my-pi@0affc77 docs/tools/task.md (`write proc://<jobId>/kill`, `proc://<agentId>/kill`) and docs/rpc.md (`cancel_subagent`, `get_subagents`). Restore with PSTACK_RUN_OMP_LIVE=1."
+      "verification_status": "verified",
+      "evidence_ref": {
+        "receipt": ".audit/evidence/omp-receipt.json",
+        "scenario": "runtime-child-cancel-omp"
+      },
+      "notes": "Observed live 2026-10-13 (receipt run omp-1791892165-cbc0cc6e) and promoted from static-only on that observation; the 2026-10-17 static refresh dropped the settlement, and the supported run path re-observed it live on 2026-10-18, which is what the pin now reads. What the live run exercises, and what scripts/drivers/omp.py child_cancel emits for a live run: runtime-child-cancel-omp, dispatched from verify-portable.py drive() for this host, driving a bounded --mode rpc session that prompts one child, confirms it in flight through get_subagents, cancels it through cancel_subagent (requiring the acceptance flag `data.cancelled: true`, because upstream answers `cancelled: false` for an id that was not running), and reduces the terminal `subagent_lifecycle` (`status: aborted`) into a typed cancelled settlement (child UpperHorse, outcome cancelled, latency 0.051s, rpc-v2). The bounded negatives stay negatives and promote nothing: the missing-child, rejected-or-idempotent cancel and dropped-terminal-frame paths carry no settlement, so they are recorded as negatives only. Promotion gate note: a cancellation settles agent.cancel but is never a spawn/join settlement, so scripts/portability_schema.py gates the pinned scenario by capability (_is_observed_settlement(scenario, capability)). Statically mapped from can1357/oh-my-pi@0affc77 docs/tools/task.md (`write proc://<jobId>/kill`, `proc://<agentId>/kill`) and docs/rpc.md (`cancel_subagent`, `get_subagents`)."
     },
     {
       "host": "omp",
@@ -65,8 +77,12 @@
       "implementation_status": "native",
       "primitive": "git worktree / overlay (task.isolation.backend)",
       "enforcement": "hard",
-      "verification_status": "static-only",
-      "notes": "HISTORICAL (superseded 2026-10-17): observed live on 2026-10-13 — isolated task child writes captured-but-unapplied patch under apply=false, parent sentinel byte-identical, no worktree residue (runtime-isolation-omp observed_live). The static refresh dropped that settlement because the runtime surface had moved, so the row is static-only again and pins no scenario. Restore with PSTACK_RUN_OMP_LIVE=1."
+      "verification_status": "verified",
+      "evidence_ref": {
+        "receipt": ".audit/evidence/omp-receipt.json",
+        "scenario": "runtime-isolation-omp"
+      },
+      "notes": "Observed live 2026-10-13, dropped by the 2026-10-17 static refresh because the runtime surface had moved, and re-observed live 2026-10-18 on the supported run path — isolated task child writes a captured-but-unapplied patch under apply=false, parent sentinel byte-identical, no worktree residue (runtime-isolation-omp observed_live)."
     },
     {
       "host": "omp",
@@ -165,11 +181,11 @@
   ],
   "evidence_ledger": [
     {
-      "claim": "HISTORICAL runtime claim, superseded 2026-10-17: the OMP runtime plane was observed live on 2026-10-13 — a bounded omp --mode rpc v2 session negotiated protocol v2, spawned and joined one real model-backed `task` child, and reduced it to a typed settlement on runtime-child-spawn-omp, alongside a cancelled settlement on runtime-child-cancel-omp and an isolation settlement on runtime-isolation-omp. The durable receipt was then refreshed statically (canonical/adapter/package PASS, runtime UNTESTED) and, because the runtime surface those settlements proved had moved, the refresh dropped them: no row is verified, the profile claims packaged with every row static-only, and the only surviving scenario pin is the verify row's doctor-profile-omp. Restore with PSTACK_RUN_OMP_LIVE=1. The package plane stays an offline lifecycle fixture only, while the native installed-package load is proven by scripts/prove-omp-native-package.py against the real binary.",
+      "claim": "The OMP runtime plane is observed live at the current revision (supported run path: PSTACK_RUN_OMP_LIVE=1 python3 scripts/verify-portable.py run --host omp): a bounded omp --mode rpc v2 session negotiated protocol v2, spawned and joined one real model-backed `task` child, and reduced it to a typed settlement on runtime-child-spawn-omp, alongside a cancelled settlement on runtime-child-cancel-omp and an isolation settlement on runtime-isolation-omp. Those three settlements are what promote agent.spawn, agent.join, agent.cancel and workspace.isolated to `verified`, each pinned to the scenario that settles it in .audit/evidence/omp-receipt.json (agent.join reads the spawn scenario's completion path; agent.cancel is the capability-scoped cancellation settlement). The profile still claims `packaged`, not `verified`, because the rest of the mandatory floor (workspace.shared, workspace.readonly, human.ask, plan.update, verify, evidence.capture) has no live settlement and stays static-only; the package plane remains an offline lifecycle fixture, while the native installed-package load is proven separately by scripts/prove-omp-native-package.py against the real binary.",
       "kind": "runtime",
       "artifact": ".audit/evidence/omp-receipt.json",
       "command": "PSTACK_RUN_OMP_LIVE=1 python3 scripts/verify-portable.py run --host omp",
-      "timestamp": "2026-10-11T21:30:00Z"
+      "timestamp": "2026-10-18"
     }
   ],
   "tool_mappings": {

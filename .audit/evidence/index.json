@@ -51,8 +51,8 @@
     },
     "omp": {
       "receipt": ".audit/evidence/omp-receipt.json",
-      "run_id": "omp-1792293082-1b4aea58",
-      "timestamp": "2026-10-18T03:12:35Z",
+      "run_id": "omp-1792295156-c0f6f0a9",
+      "timestamp": "2026-10-18T03:46:43Z",
       "overall_verdict": "PASS",
       "planes": {
         "canonical": "PASS",
@@ -65,7 +65,7 @@
         "upstream_head": "1dcc2bacde73ddd284803b7af28164d0436198fc",
         "spec_hash": "f403a35e9ce91413047544cd3cbfc1bba3baf9d56bd90a2e3863432d3fc5bf63",
         "skills_tree_hash": "0cb3d1855712d5e9aed6ac62d5dbfda4989b57e86723979cb1318c0b292b9710",
-        "profile_hash": "24ff0dd0e08c0c19b20f27554963cb09eba4c313601a1dcccf868694626e86b8",
+        "profile_hash": "1c56d0d43197fceb1f48d4c7195ea2df0d25463a3364ab3eb7fd998d94a8cd86",
         "package_descriptor_hash": "52cc6b3ce9b87a80f783362b109cb7b5a6190e7f26d25687b6b2a16f3651a647",
         "manifest_hash": "0796214ef5886c4763eaf83963145785e0cc363252671b3f4399eb0d8cb7ed06",
         "driver_revision": "38a43b4b420937017916525fbb0b31c4a2b75dd9b267bd7dc9bb5984c3e7c370",
