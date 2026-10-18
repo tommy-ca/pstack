@@ -38,14 +38,29 @@ OBSERVER_HOSTS: Tuple[str, ...] = ("mock",)
 # Every identity a profile, binding or package descriptor may carry.
 KNOWN_HOSTS: Tuple[str, ...] = BUILTIN_HOSTS + LEGACY_HOST_ALIASES
 
+# The one bare harness name `scripts/scan-host-boundary.py` knows without this
+# module (`HARNESS_NAMES = set(KNOWN_HOSTS) | set(OBSERVER_HOSTS) | {"pi"}`), so
+# its namespace is spent too.
+SCANNED_ONLY_HOST_NAMES: Tuple[str, ...] = ("pi",)
+
+# Every name the flat namespace already spends, derived so a seventh built-in
+# reserves itself. A namespace reusing one would shadow a harness with a declared
+# identity, which is the collision the bare-name rule refuses one level down.
+RESERVED_NAMESPACES: Tuple[str, ...] = KNOWN_HOSTS + OBSERVER_HOSTS + SCANNED_ONLY_HOST_NAMES
+
 # A declared host MUST be namespaced: `<namespace>:<name>`, two lowercase labels.
 # A bare new name would collide with the flat built-in namespace and reopen the
 # central enum, so it is refused; `acme:copilot` and `beta:copilot` are two
 # distinct identities that coexist. No dots, slashes, underscores or uppercase,
-# so an id can never be read as a path or a host name to probe. The pattern is
-# JSON-Schema syntax, so `schemas/portability/host-id.schema.json` carries it
-# verbatim instead of restating the rule.
-EXTERNAL_HOST_ID_PATTERN = r"^[a-z][a-z0-9-]{1,31}:[a-z][a-z0-9-]{1,47}$"
+# so an id can never be read as a path or a host name to probe. Both clauses live
+# in the string, because every carrier of this rule is compiled by Python `re` in
+# this repo: the head refuses a reserved namespace, and `(?!\n)$` pins the end of
+# the string, since Python's `$` also matches before a trailing newline and such
+# an id lands inside `f"{host}-receipt.json"` (#446).
+EXTERNAL_HOST_ID_PATTERN = (
+    r"^(?!(?:" + "|".join(RESERVED_NAMESPACES) + r"):)"
+    r"[a-z][a-z0-9-]{1,31}:[a-z][a-z0-9-]{1,47}(?!\n)$"
+)
 EXTERNAL_HOST_ID_RE = re.compile(EXTERNAL_HOST_ID_PATTERN)
 
 
@@ -59,8 +74,13 @@ def is_builtin(host_id: str) -> bool:
 
 
 def is_external(host_id: str) -> bool:
-    """True for a declared, namespaced host id (`acme:copilot`)."""
-    return isinstance(host_id, str) and bool(EXTERNAL_HOST_ID_RE.match(host_id))
+    """True for a declared, namespaced host id (`acme:copilot`).
+
+    `fullmatch`, not `match`: the Python carrier keeps its own end-of-string
+    guarantee instead of relying on the pattern's `(?!\n)$`, which exists because
+    the schema this repo validates with shares the same semantics (#446).
+    """
+    return isinstance(host_id, str) and bool(EXTERNAL_HOST_ID_RE.fullmatch(host_id))
 
 
 def is_declared_host(host_id: str) -> bool:

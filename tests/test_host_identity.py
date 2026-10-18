@@ -30,6 +30,8 @@ from scripts.host_identity import (  # noqa: E402
     KNOWN_HOSTS,
     LEGACY_HOST_ALIASES,
     OBSERVER_HOSTS,
+    RESERVED_NAMESPACES,
+    SCANNED_ONLY_HOST_NAMES,
     HostIdentityError,
     is_builtin,
     is_declared_host,
@@ -274,6 +276,29 @@ def test_a_namespace_collision_is_refused() -> None:
         require_builtin_host_keys({host: "row" for host in BUILTIN_HOSTS[:-1]}, "DRIVER_REGISTRY")
 
 
+def test_a_reserved_namespace_and_a_trailing_newline_are_refused_by_both_carriers() -> None:
+    """The loader and the published schema refuse the same ids.
+
+    `$` is not an end-of-string assertion in Python, and `jsonschema` compiles the
+    schema's `pattern` with Python `re` too, so `"acme:copilot\\n"` used to validate
+    and then be interpolated into `f"{host}-receipt.json"`. A namespace that
+    reuses a name the identity set spends would shadow a harness the same way, so
+    the reserved head is derived from the set rather than retyped.
+    """
+    validator = _validator()
+    assert set(RESERVED_NAMESPACES) == set(KNOWN_HOSTS) | set(OBSERVER_HOSTS) | {"pi"}
+    for ident in [f"{namespace}:probe" for namespace in RESERVED_NAMESPACES] + [
+        "acme:copilot\n",
+        "acme:copilot ",
+        "acme:copilot/../x",
+    ]:
+        assert not is_external(ident), ident
+        assert not is_valid_host_id(ident), ident
+        assert list(validator.iter_errors(ident)), ident
+    # The name label is not reserved: only the namespace half of the id is.
+    assert is_external("acme:grok") and is_external("acme:pi")
+
+
 # --- the six built-ins are untouched --------------------------------------
 
 
@@ -306,7 +331,9 @@ def test_the_six_builtin_hosts_are_unchanged_everywhere() -> None:
         portability_schema.DEFAULT_PLUGIN_MANIFESTS,
     ):
         assert set(table) == set(BUILTIN_HOSTS)
-    assert scan_boundary.HARNESS_NAMES == set(KNOWN_HOSTS) | set(OBSERVER_HOSTS) | {"pi"}
+    assert scan_boundary.HARNESS_NAMES == (
+        set(KNOWN_HOSTS) | set(OBSERVER_HOSTS) | set(SCANNED_ONLY_HOST_NAMES)
+    )
     assert verify_portable.get_declared_hosts() == [
         "grok",
         "codex",
