@@ -128,12 +128,16 @@ candidate → mapped → packaged → verified → supported
 
 A host is supported only after its required capability bindings have static and runtime conformance evidence.
 
-**Recorded status (2026-10-17):** no harness in `profiles/` claims a state above `packaged`.
-The five receipt hosts (grok, codex, omp, opencode, antigravity) each carry a durable
-receipt refreshed statically — canonical, adapter and package `PASS`, runtime and overall
-`UNTESTED` — and every binding row in those profiles is `static-only`; droid stays
-`candidate` with no durable receipt. Treat every earlier `verified`/`supported` label in this
-repository as historical.
+**Recorded status (2026-10-18):** no harness in `profiles/` claims a state above `packaged`.
+Four of the five receipt hosts (grok, codex, opencode, antigravity) carry a durable receipt
+refreshed statically — canonical, adapter and package `PASS`, runtime and overall `UNTESTED`
+— with every binding row `static-only`. The omp receipt is the live exception: run
+`omp-1792295156-c0f6f0a9` records runtime `PASS` with the spawn, cancel and isolation
+settlements as `observed_live`, so `agent.spawn`, `agent.join`, `agent.cancel` and
+`workspace.isolated` are `verified` and pin them, while every other omp row stays
+`static-only` and the host still claims `packaged`. droid stays
+`candidate` with no durable receipt. Treat every earlier `verified`/`supported` label that has
+no live receipt behind it as historical.
 
 ## Port sequence
 
@@ -175,8 +179,12 @@ python3 scripts/verify-portable.py refresh-static --host all
 ```
 
 which re-runs the static doctor planes and records them as each host's durable receipt:
-canonical, adapter and package `PASS`, runtime `UNTESTED`, overall `UNTESTED`. The runtime
-plane returns only from a live run — `python3 scripts/verify-portable.py run --host <host>`
+canonical, adapter and package `PASS`, runtime `UNTESTED`, overall `UNTESTED`. Only omp has
+gone back since: on 2026-10-18 its receipt was rewritten by the supported run path
+(`PSTACK_RUN_OMP_LIVE=1 ... run --host omp`, run `omp-1792295156-c0f6f0a9`) with runtime
+`PASS` and the three `observed_live` settlements, which is what its four promoted rows pin.
+The runtime plane returns from a live run —
+`python3 scripts/verify-portable.py run --host <host>`
 with the host CLI and a model route (`PSTACK_RUN_OMP_LIVE=1` for omp) — which records the
 `observed_live` settlement a `verified` row must pin. Never read a historical label as
 current proof.

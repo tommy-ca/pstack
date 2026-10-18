@@ -82,11 +82,15 @@ def test_compute_surface_revisions_all_fields_present() -> None:
 
 
 def test_durable_receipts_exist_for_all_five_hosts() -> None:
-    """Every receipt host records exactly what a static refresh can prove.
+    """Every receipt host records exactly what its run could prove.
 
-    The durable receipts are written by `refresh-static`: the canonical, adapter and
-    package planes are observed, the model-backed runtime plane stays UNTESTED, and the
-    overall verdict follows the planes instead of being rounded up to PASS.
+    Four durable receipts are written by `refresh-static`: canonical, adapter and package
+    are observed, the model-backed runtime plane stays UNTESTED, and the overall verdict
+    follows the planes instead of being rounded up to PASS. The omp receipt is the
+    exception — it was written by the supported run path (`PSTACK_RUN_OMP_LIVE=1 ...
+    run --host omp`), so its runtime plane is PASS and the three live scenarios it
+    observed are recorded as observed_live settlements. Every receipt still binds the
+    surface it was refreshed against, not the one it replaced.
     """
     assert EVIDENCE_DIR.is_dir()
     index_file = EVIDENCE_DIR / "index.json"
@@ -102,17 +106,39 @@ def test_durable_receipts_exist_for_all_five_hosts() -> None:
         receipt = VerificationReceipt(**data)
         receipt.validate()
         assert receipt.host == host
-        assert receipt.overall_verdict == "UNTESTED"
-        assert receipt.planes == {
-            "canonical": "PASS",
-            "adapter": "PASS",
-            "package": "PASS",
-            "runtime": "UNTESTED",
-        }
 
-        # A static refresh drives no host, so no row may claim a runtime observation.
-        assert [s for s in receipt.scenarios if s.plane == "runtime"] == []
-        assert [s for s in receipt.scenarios if s.evidence_level == "observed_live"] == []
+        live_rows = [s for s in receipt.scenarios if s.evidence_level == "observed_live"]
+        if host == "omp":
+            # The supported run path observed the runtime plane, so omp is the one host
+            # whose receipt is a live PASS rather than a static refresh.
+            assert receipt.overall_verdict == "PASS"
+            assert receipt.planes == {
+                "canonical": "PASS",
+                "adapter": "PASS",
+                "package": "PASS",
+                "runtime": "PASS",
+            }
+            assert {s.id for s in live_rows} == {
+                "runtime-child-spawn-omp",
+                "runtime-child-cancel-omp",
+                "runtime-isolation-omp",
+            }
+            assert all(
+                s.plane == "runtime" and s.verdict == "PASS" and s.settlement is not None
+                for s in live_rows
+            )
+        else:
+            assert receipt.overall_verdict == "UNTESTED"
+            assert receipt.planes == {
+                "canonical": "PASS",
+                "adapter": "PASS",
+                "package": "PASS",
+                "runtime": "UNTESTED",
+            }
+
+            # A static refresh drives no host, so no row may claim a runtime observation.
+            assert [s for s in receipt.scenarios if s.plane == "runtime"] == []
+            assert live_rows == []
 
         # The receipt binds the surface it was refreshed against, not the one it replaced.
         assert receipt.evaluate_plane_staleness(compute_surface_revisions(ROOT, host)) == {
@@ -121,7 +147,7 @@ def test_durable_receipts_exist_for_all_five_hosts() -> None:
 
         assert host in index_data["hosts"]
         entry = index_data["hosts"][host]
-        assert entry["overall_verdict"] == "UNTESTED"
+        assert entry["overall_verdict"] == receipt.overall_verdict
         assert entry["planes"] == receipt.planes
         assert entry["run_id"] == data["run_id"], f"index run_id stale for {host}"
         assert entry["timestamp"] == data["timestamp"], f"index timestamp stale for {host}"
@@ -207,8 +233,15 @@ def _omp_profile(data: dict | None = None) -> HarnessProfile:
 
 
 def test_omp_profile_claims_only_what_its_receipt_settles() -> None:
-    """#289 + refresh-static: omp claims packaged, every row is static-only, and every
-    surviving scenario pin resolves in the refreshed static receipt."""
+    """#289: omp claims packaged, and every verified row pins the live settlement it reads.
+
+    The supported run path settled three live scenarios (spawn, cancel, isolation), which
+    is what the four rows they cover claim: agent.spawn and agent.join read the spawn
+    scenario's successful settlement, agent.cancel its capability-scoped cancelled
+    settlement, and workspace.isolated the isolation scenario. Every other row stays
+    static-only or unverified, so the profile still claims packaged, and the only static
+    pin left is the offline verify row.
+    """
     prof = _omp_profile()
     assert prof.support_state == "packaged"
     assert check_evidence_durability(prof, ROOT, check_freshness=False)["derived_support_state"] == "packaged"
@@ -217,19 +250,41 @@ def test_omp_profile_claims_only_what_its_receipt_settles() -> None:
         **json.loads((EVIDENCE_DIR / "omp-receipt.json").read_text(encoding="utf-8"))
     )
     recorded = {s.id for s in receipt.scenarios}
-    assert receipt.planes["runtime"] == "UNTESTED", "a static refresh observes no runtime behavior"
-    assert not [s for s in receipt.scenarios if s.evidence_level == "observed_live"]
+    assert receipt.planes["runtime"] == "PASS", "the supported run path observed the runtime plane"
+    live = {s.id: s for s in receipt.scenarios if s.evidence_level == "observed_live"}
+    assert set(live) == {
+        "runtime-child-spawn-omp",
+        "runtime-child-cancel-omp",
+        "runtime-isolation-omp",
+    }
 
-    # The static refresh demoted the live rows: nothing claims verified, so nothing may
-    # pin the settlements the refresh dropped.
-    assert not {b.capability for b in prof.bindings if b.verification_status == "verified"}
-    assert {b.verification_status for b in prof.bindings} == {"static-only", "unverified"}
+    # The live run promoted exactly the rows its settlements settle, each pinned to the
+    # scenario that carries that settlement.
+    assert {
+        b.capability: b.scenario_id for b in prof.bindings if b.verification_status == "verified"
+    } == {
+        "agent.spawn": "runtime-child-spawn-omp",
+        "agent.join": "runtime-child-spawn-omp",
+        "agent.cancel": "runtime-child-cancel-omp",
+        "workspace.isolated": "runtime-isolation-omp",
+    }
+    assert {b.verification_status for b in prof.bindings} == {"verified", "static-only", "unverified"}
 
-    pinned = [b for b in prof.bindings if b.scenario_id]
-    assert pinned, "the profile row that does have a static proof must keep its pin"
-    assert not [b for b in pinned if b.scenario_id.startswith("runtime-")]
-    for b in pinned:
+    for b in prof.bindings:
+        if not b.scenario_id:
+            continue
         assert b.scenario_id in recorded, f"{b.capability} pins an unrecorded scenario"
+        assert b.receipt_ref == ".audit/evidence/omp-receipt.json"
+        if b.verification_status == "verified":
+            assert b.scenario_id in live, f"{b.capability} claims verified off a non-live scenario"
+
+    # Nothing else may pin a scenario: the offline verify row keeps its doctor scenario,
+    # and no row claims the live settlements that were not observed.
+    assert {
+        b.capability: b.scenario_id
+        for b in prof.bindings
+        if b.scenario_id and b.verification_status != "verified"
+    } == {"verify": "doctor-profile-omp"}
 
 
 def test_scenario_pin_naming_an_unrecorded_scenario_fails() -> None:
@@ -865,9 +920,12 @@ def test_check_staleness_cli_json_output() -> None:
             assert data[host]["support_state"] == "candidate"
             assert claimed == "candidate"
         else:
-            # The refreshed receipt is current, and it is honest about the plane it
-            # never observed: runtime UNTESTED, overall UNTESTED, claimed packaged.
-            assert data[host]["overall_verdict"] == "UNTESTED"
+            # The receipt is current either way. Four hosts' receipts are refreshed
+            # statically and honest about the plane they never observed (runtime
+            # UNTESTED, overall UNTESTED, claimed packaged); omp's was written by the
+            # supported run path, so its overall verdict is the live PASS.
+            expected_overall = "PASS" if host == "omp" else "UNTESTED"
+            assert data[host]["overall_verdict"] == expected_overall
             assert claimed == "packaged"
 
 
@@ -1393,13 +1451,21 @@ def test_invented_evidence_level_rejects_an_omp_receipt_shaped_scenario(evidence
 
 
 def test_durable_receipts_keep_only_recorded_evidence_levels() -> None:
-    """The refreshed receipts are static: enum-valid levels, and no live label anywhere."""
+    """The receipts keep schema-valid levels, and only omp's carries a live label.
+
+    Four receipts are static refreshes and label nothing live. The omp receipt was
+    written by the supported run path, so it is the one receipt allowed to carry
+    observed_live rows; every host still records its doctor scenario as offline.
+    """
     enum = _receipt_evidence_levels()
     for host in ("grok", "codex", "omp", "opencode", "antigravity"):
         receipt = json.loads((EVIDENCE_DIR / f"{host}-receipt.json").read_text(encoding="utf-8"))
         levels = {s["id"]: s["evidence_level"] for s in receipt["scenarios"]}
         assert set(levels.values()) <= enum, host
-        assert "observed_live" not in set(levels.values()), host
+        if host == "omp":
+            assert "observed_live" in set(levels.values()), host
+        else:
+            assert "observed_live" not in set(levels.values()), host
         assert levels[f"doctor-profile-{host}"] == "offline"
 
 
@@ -1894,40 +1960,35 @@ def test_repeated_refreshes_keep_the_run_that_observed(tmp_path: Path) -> None:
 def test_check_evidence_names_the_omp_live_remedy(tmp_path: Path) -> None:
     """The gate that fails when a claimed live pin has no live settlement must say how to restore it.
 
-    The committed profile is demoted (static-only rows over a static receipt), so the copy
-    re-asserts the live claim the way an unrefreshed edit would and puts the static runtime
-    row back in the receipt next to it: the scenario-pin gate then names the omp remedy.
+    The committed receipt carries the three observed_live settlements the profile's verified
+    rows pin. The copy demotes them the way a static refresh would (evidence_level static,
+    no settlement) while the profile keeps claiming the live pins, so the scenario-pin gate
+    then names the omp remedy.
     """
     copy_root = _disposable_copy(tmp_path)
 
-    profile_path = copy_root / "profiles" / "omp.json"
-    profile = json.loads(profile_path.read_text(encoding="utf-8"))
+    # The committed profile is what claims the live pins; only the copy's receipt is
+    # demoted, so the gate below reacts to the demotion and not to a test-side edit.
+    profile = json.loads((copy_root / "profiles" / "omp.json").read_text(encoding="utf-8"))
     spawn = next(b for b in profile["bindings"] if b["capability"] == "agent.spawn")
-    spawn["verification_status"] = "verified"
-    spawn["evidence_ref"] = {
-        "receipt": ".audit/evidence/omp-receipt.json",
-        "scenario": "runtime-child-spawn-omp",
-    }
-    profile_path.write_text(json.dumps(profile, indent=2) + "\n", encoding="utf-8")
+    assert spawn["verification_status"] == "verified"
+    assert spawn["evidence_ref"]["scenario"] == "runtime-child-spawn-omp"
 
     receipt_path = copy_root / ".audit" / "evidence" / "omp-receipt.json"
     receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
-    assert [s for s in receipt["scenarios"] if s["plane"] == "runtime"] == []
-    receipt["scenarios"].append(
-        {
-            "id": "runtime-child-spawn-omp",
-            "description": "bounded omp rpc v2 child spawn and join",
-            "plane": "runtime",
-            "command": "PSTACK_RUN_OMP_LIVE=1 python -m pytest tests/test_omp_rpc.py",
-            "exit_code": 0,
-            "stdout_snippet": "static evidence",
-            "verdict": "UNTESTED",
-            "duration_s": 0.0,
-            "evidence_level": "static",
-            "settlement": None,
-            "preserved_from": "",
-        }
-    )
+    live_rows = [s for s in receipt["scenarios"] if s["evidence_level"] == "observed_live"]
+    assert {s["id"] for s in live_rows} == {
+        "runtime-child-spawn-omp",
+        "runtime-child-cancel-omp",
+        "runtime-isolation-omp",
+    }
+    # The static refresh keeps the runtime rows but drops what they settled, so the
+    # plane they used to prove reduces back to UNTESTED and the receipt stays valid.
+    for scenario in live_rows:
+        scenario["evidence_level"] = "static"
+        scenario["settlement"] = None
+    receipt["planes"]["runtime"] = "UNTESTED"
+    receipt["overall_verdict"] = "UNTESTED"
     receipt_path.write_text(json.dumps(receipt), encoding="utf-8")
 
     proc = subprocess.run(

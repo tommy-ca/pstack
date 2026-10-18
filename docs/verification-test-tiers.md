@@ -75,8 +75,13 @@ Two suites in this list are tier-limited and a green job is not a pass for them.
 `tests/test_omp_native_package.py` skips without an `omp` binary, so the offline
 job proves nothing about native enrollment; that proof would live in an
 `observed_live` settlement recorded under `.audit/evidence/` and pinned by a
-`profiles/*.json` row. The checked-in durable receipts are static refreshes
-(`refresh-static`), so their runtime plane is `UNTESTED` and they prove no live claim.
+`profiles/*.json` row. Four of the five checked-in durable receipts are static
+refreshes (`refresh-static`), so their runtime plane is `UNTESTED` and they prove
+no live claim. The omp receipt is the exception: it was written by the supported
+run path (`PSTACK_RUN_OMP_LIVE=1 python3 scripts/verify-portable.py run --host omp`,
+run `omp-1792295156-c0f6f0a9`), so its runtime plane is a live `PASS` and the four
+rows those settlements cover (`agent.spawn`, `agent.join`, `agent.cancel`,
+`workspace.isolated`) are `verified` pins into it.
 `tests/test_ci_resource_isolation.py` proves
 only its Python half when `node` is absent.
   
@@ -98,8 +103,9 @@ These checks require locally installed/configured host executables and may fail
 without prerequisites. They currently inspect several static/CLI-help surfaces
 that **must not be classified as observed live model execution**. A live claim
 would rest on an `observed_live` settlement under `.audit/evidence/` plus the
-`profiles/*.json` row that pins it; today's durable receipts are static refreshes
-and carry runtime `UNTESTED`.
+`profiles/*.json` row that pins it; the static-refresh durable receipts carry
+runtime `UNTESTED`, and only the omp receipt's live run carries the settlements
+named above.
 
 The broader `tests/test_verify_portable.py` integration tests invoke OpenSpec,
 harness doctors and other external tools; they are **not** part of the minimal
@@ -200,8 +206,9 @@ Attacks refused by a suite this unit does not own, with where the refusal lives:
 
 ### Six-host offline matrix
 
-Recorded at `6b0a0e9`, re-verified at the land head, and refreshed statically on
-2026-10-17 (receipts bound by surface hash, not commit):
+Recorded at `6b0a0e9`, re-verified at the land head, refreshed statically on
+2026-10-17, and omp re-observed live on 2026-10-18 (receipts bound by surface
+hash, not commit):
 
 ```sh
 python scripts/verify-portable.py check-evidence --host all
@@ -214,13 +221,17 @@ doctor planes for each host and records them as that host's durable receipt,
 leaving the model-backed runtime plane `UNTESTED`. Its exit status is the doctor
 result, so a failing static plane stays `FAIL` instead of riding the `UNTESTED`
 overall verdict out as a pass, and a host whose claimed state is `candidate`
-(droid) gets no durable receipt written at all.
+(droid) gets no durable receipt written at all. For a host that has live rows it
+keeps the runtime rows but drops the settlements they carried, so the runtime
+plane re-reduces to `UNTESTED` and the profile rows that pin those settlements
+fail the scenario-pin gate instead of passing silently; restoring them takes the
+live run path (`PSTACK_RUN_OMP_LIVE=1 ... run --host omp`).
 
 | Host | Binary on PATH | Durable receipt | Stale planes | Derived support state | Offline verdict |
 | --- | --- | --- | --- | --- | --- |
 | grok | present | yes (static refresh) | none | packaged | PASS |
 | codex | present | yes (static refresh) | none | packaged | PASS |
-| omp | present | yes (static refresh) | none | packaged | PASS |
+| omp | present | yes (live run `omp-1792295156-c0f6f0a9`) | none | packaged | PASS |
 | opencode | present | yes (static refresh) | none | packaged | PASS |
 | antigravity | present | yes (static refresh) | none | packaged | PASS |
 | droid | present | no (by design) | n/a | candidate | BLOCKED (ineligible host) |
@@ -238,13 +249,18 @@ the `omp` binary further cases skip instead of passing. Where the upstream cache
 is absent (as in CI), the canonical-index classify-drift arm skips instead as
 contract BLOCKED.
 
-Every checked-in durable receipt is a static refresh: canonical, adapter and
-package `PASS` at the current surface revisions, with runtime and overall
-`UNTESTED` and no `observed_live` row. The OMP settlements observed on 2026-10-13
-(spawn, cancel, isolation) are historical: the static refresh dropped them because
-the runtime surface they proved had moved, and the omp profile now claims
-`packaged` with every row `static-only` (and both its ledger claims marked
-historical). A live claim comes back only from a live run —
+Four of the five checked-in durable receipts are static refreshes: canonical,
+adapter and package `PASS` at the current surface revisions, with runtime and
+overall `UNTESTED` and no `observed_live` row. The omp receipt is the live
+exception — run `omp-1792295156-c0f6f0a9` records the runtime plane `PASS` with
+three `observed_live` settlements (spawn, cancel, isolation), which is what the
+omp profile now pins: `agent.spawn` and `agent.join` into `runtime-child-spawn-omp`,
+`agent.cancel` into its capability-scoped cancelled settlement on
+`runtime-child-cancel-omp`, and `workspace.isolated` into `runtime-isolation-omp`.
+Those four rows are `verified`; every other row stays `static-only` or `unverified`,
+so the profile still claims `packaged` and its ledger records the promotion. The
+2026-10-13 settlements the 2026-10-17 static refresh had dropped are restored, not
+remembered. A live claim comes back only from a live run —
 `PSTACK_RUN_OMP_LIVE=1 python3 scripts/verify-portable.py run --host omp`, or
 `run --host <host>` where the host CLI and a model route exist — which records a
 new `observed_live` settlement for the row that pins it. A host without a receipt
