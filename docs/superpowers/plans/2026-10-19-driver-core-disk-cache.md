@@ -190,10 +190,7 @@ XDG_CACHE_HOME=/home/tommyk/.cache/hc-3/iter5-cache-home /home/tommyk/.cache/hc-
 
 Expected: every run passes. Keep only if the median candidate time is at least 5% below the exact-base median (31.2s; at least 1.56s) and all five paired differences favor the cache; this makes the 5% gain exceed observed run-to-run noise. Otherwise remove the cache code/test and record the reverted hypothesis.
 
-The frozen script runs the full durability module. The POSIX candidate adds nine cache-specific test cases relative to the 104-test merged-main baseline, adding candidate-only overhead; keep the harness and 5% acceptance threshold unchanged.
-
-
-Measured after review fixes: the candidate median was 24.6s versus the exact-base median of 31.2s, a 21.2% reduction. All five pairs favored the cache, and all 113 candidate tests passed.
+The initial full-module runs used different test censuses on base and candidate. They are historical measurements, not the accepted performance comparison. The common-workload remeasurement below supersedes the earlier 21.2% claim without changing the 5% or all-paired-wins gates.
 
 - [x] **Step 3: Review semantic scope and commit implementation**
 
@@ -211,3 +208,25 @@ uv run python scripts/verify-portable.py check-staleness --host all
 ```
 
 Expected: candidate case/control outcomes and verdict remain stable; the probe-scope hash is expected to change with the fingerprinted source and must match the regenerated result. The candidate revision names the implementation commit; both suites and evidence checks pass. Review only the expected receipt/index and candidate fixture deltas, then sign the evidence commit and verify both commits.
+
+## Controlled common-workload result, 2026-10-18
+
+The baseline is `3f4cd124f27cab90865df79d18d376e2f4335b2c`; the candidate is `6b986dcec7fde7899f2d689f481a7b73b69909f1`. Collection with `-k "not driver_core_disk_cache and not driver_core_cache"` produced identical ordered lists of 104 node IDs on both heads. The nine candidate-only cache cases were excluded from timing, not from correctness verification.
+
+The existing `measure.sh` ran five alternating pairs with unique labels and a private `XDG_CACHE_HOME`. The first candidate run populated the cold cache; later runs reused it. Every measured arm passed the common 104 cases.
+
+| Pair | Order | Base seconds | Candidate seconds |
+| --- | --- | ---: | ---: |
+| 1 | Base, candidate | 33.3 | 25.3 |
+| 2 | Candidate, base | 28.6 | 24.2 |
+| 3 | Base, candidate | 30.1 | 21.1 |
+| 4 | Candidate, base | 28.9 | 23.1 |
+| 5 | Base, candidate | 31.6 | 22.9 |
+
+The paired medians are 30.1s and 23.1s, a 23.3% reduction. Every paired difference favors the candidate. The candidate also clears the original 29.64s threshold, so neither acceptance gate was relaxed.
+
+The durable local program store is `~/.claude/orchestrate/pstack-429/`. `common-workload-544.json` records the exact node IDs, `common-measurement-544.json` records commands and cache state, and `common-result-544.json` records every arm and gate result. The machine logs remain under the unique labels in `~/.cache/hc-3/`.
+
+The native OMP `independent-verifier` returned `PASS+NOTES` on the exact base/head and patch-id `ba59fed4a4c0fcd02b85255e66398ef04e750cfa`. Observed verifier model `openai-codex/gpt-6.1-sol` differed from writer `openai-codex/gpt-6-luna`; both are the same family. Runtime checks covered subprocess reuse, invalidation, malformed records, basename semantics, unsafe paths, and configured bounds. The affected durability and DSH regression suites passed. This does not establish multi-family program acceptance.
+
+[PR #544](https://github.com/tommy-ca/pstack/pull/544) landed as `c1d03e521042735e6c76cea1abdde2039cde0c8b` after the server-enforced head check. The accepted cache remains a trusted-user, best-effort optimization, not a transactional concurrent quota.
