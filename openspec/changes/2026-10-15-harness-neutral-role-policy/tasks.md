@@ -309,3 +309,23 @@ Docs-only record on branch `docs/wave-21-record` from main `0e4e0e1`. No code, r
 Gate: `openspec validate --changes --strict` -> 1 passed, 0 failed. Head is this wave's docs commit on `docs/wave-21-record`; diff stat: 1 file changed, insertions only.
 
 No issue state, acceptance criterion or dependency changed in this wave. #495, #473 and #444 all stay OPEN on the rows named above.
+
+## Dated evidence (2026-10-18, wave-23: source reconciliation)
+
+This checkpoint appends current source findings after the historical wave-21 record. It does not change the G0–G8 acceptance criteria, dependencies, or unchecked status.
+
+**Source pins.** The graph audit began at main `3f4cd124f27cab90865df79d18d376e2f4335b2c`. PR #544 head `6b986dcec7fde7899f2d689f481a7b73b69909f1` subsequently landed as `c1d03e521042735e6c76cea1abdde2039cde0c8b` after an exact-head native independent-verifier `PASS+NOTES` and controlled common-workload timing. The verifier model was `openai-codex/gpt-6.1-sol`, different from writer `gpt-6-luna` but the same family. This does not close the multi-family gates. See the controlled result in `docs/superpowers/plans/2026-10-19-driver-core-disk-cache.md`.
+
+**Provenance ledger.** `docs/research/pstack-claude-forks-2026-10-15.json` contains 48 rows, all marked `lane-triaged` with proposed dispositions and review lanes. Per-file diff review and attribution remain open under #434. The older design wording that called all rows pending and unclassified described the earlier inventory state; it is not the current ledger state.
+
+**Host identity.** PR #533's implementation is present in `scripts/host_identity.py` and `schemas/portability/host-id.schema.json`, with host-bearing schemas and Python consumers using the shared identity contract. The six built-in host identities remain distinct from declared external identities. Registry support does not supply external-host drivers or runtime proof, and #446 remains open pending its acceptance and dependencies.
+
+**Runtime evidence boundary.** After #544, the durable index and `.audit/evidence/omp-receipt.json` identify run `omp-1792337990-2b1585ba` on OMP 18.11.3 with observed-live spawn, cancellation, and isolation rows. Direct `check-staleness --host all --json` on that candidate reported no stale planes; `check-evidence --host all` accepted the packaged claims and reported Droid `NOT_COVERED`. The earlier OMP 18.11.2 run remains historical. These observations prove neither Pi parity nor another host's runtime, and they do not bind the unresolved model-catalog/schema/implementation requirements in #444.
+
+**Watcher correction.** Issue #545 tracks the reproduced watcher readiness defect. A clean-check snapshot with unknown GitHub mergeability returns `ready` with a clear mergeability proof through the real reducer/classifier. The reproduction is recorded on #545; no watcher fix is included in this documentation checkpoint.
+
+**Scope and gates.** #502 and #540 remain separate OmO and OMC/OMX proposal programs. #522 remains a separate JEV program. None is absorbed into #429, and no issue is closed here. All G0–G8 boxes above remain unchecked. The current evidence does not establish all-host runtime parity, multi-family verification for this source head, or promotion/archive acceptance. The proposed ADR remains proposed, and the canonical portability spec remains unchanged because this delta is not accepted or archived.
+
+Parent verification command: `openspec validate 2026-10-15-harness-neutral-role-policy --type change --strict`.
+
+Native GitHub parent/sub-issue metadata now mirrors the existing declared hierarchy. The reconciliation read back every parent edge and preserved all issue bodies and open states. #495 remains related, non-blocking lineage rather than an added dependency. #545 is a linked correction, not a silent acceptance dependency.
