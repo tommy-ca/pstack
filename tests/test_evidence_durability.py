@@ -472,20 +472,24 @@ def test_driver_source_change_invalidates_adapter_and_runtime(
     assert compute_surface_revisions(copy_root, "codex") == fresh
 
     # A statement is behaviour: it must stale exactly the planes that depend on
-    # the driver revision.
+    # the driver revision. portability_schema.py additionally feeds
+    # package_driver_revision (its vocabularies branch the package probe), so its
+    # mutation stales the package plane alongside adapter and runtime.
     driver_file.write_bytes(original + b"\nBEHAVIOR_PROBE = 'changed verification behavior'\n")
     edited = compute_surface_revisions(copy_root, "codex")
 
     assert edited.driver_revision != fresh.driver_revision
-    assert replace(edited, driver_revision=fresh.driver_revision) == fresh
+    expected_planes = {"adapter", "runtime"}
+    if relative_path == "scripts/portability_schema.py":
+        assert edited.package_driver_revision != fresh.package_driver_revision
+        expected_planes.add("package")
+    else:
+        assert replace(edited, driver_revision=fresh.driver_revision) == fresh
     stale_map = receipt.evaluate_plane_staleness(edited)
-    assert {plane for plane, reasons in stale_map.items() if reasons} == {
-        "adapter", "runtime"
-    }
+    assert {plane for plane, reasons in stale_map.items() if reasons} == expected_planes
     for plane, dependencies in PLANE_SURFACE_DEPENDENCIES.items():
-        if "driver_revision" in dependencies:
+        if plane in expected_planes:
             assert len(stale_map[plane]) == 1
-            assert stale_map[plane][0].startswith("driver_revision mismatch")
         else:
             assert stale_map[plane] == []
 
@@ -494,15 +498,14 @@ def test_driver_source_change_invalidates_adapter_and_runtime(
 
 
 def test_mutated_model_role_policy_stales_the_package_plane(tmp_path: Path) -> None:
-    """#473 follow-up: the policy `project-package.py --check` reads is a revision input.
+    """#473 follow-up: the policy and planner code `--check` runs are revision inputs.
 
     `check_model_role_plan` loads `examples/portability/model-role-policy.example.json`
-    and returns a per-host verdict built from those bytes, so a one-byte edit to the
-    policy must fail a `packaged` claim closed on the package plane. The planner
-    *modules* stay out of the revision set — they are executed only by a read-only
-    probe and the static preflight — while the policy *input* joins
-    `package_driver_revision`. Measured before the fix: with the modules-only recipe
-    the mutated policy left `check-evidence` and `check-staleness` both exiting 0.
+    and returns a per-host verdict built by `plan_role`/`unproven_catalog_reason`, so
+    a one-byte edit to the policy AND a behavior edit to either planner module must
+    fail a `packaged` claim closed on the package plane. Measured before the fix:
+    with the three-driver recipe the mutated policy left `check-evidence` and
+    `check-staleness` both exiting 0.
     """
     copy_root = _disposable_copy(tmp_path)
     profile_data = json.loads((copy_root / "profiles" / "grok.json").read_text(encoding="utf-8"))
@@ -549,13 +552,103 @@ def test_mutated_model_role_policy_stales_the_package_plane(tmp_path: Path) -> N
     assert "(package)" in str(refused.value)
     assert "package_driver_revision mismatch" in str(refused.value)
 
-    # An unreadable policy degrades to the 'missing' sentinel rather than a hash
-    # of its absence, so the same claim still fails closed instead of silently
-    # matching a receipt computed from bytes that are no longer there.
+    # An unreadable policy moves the digest to a value no receipt carries, so the
+    # same claim still fails closed instead of silently matching a receipt computed
+    # from bytes that are no longer there.
     policy_file.unlink()
-    assert compute_surface_revisions(copy_root, "grok").package_driver_revision == "missing"
+    assert compute_surface_revisions(copy_root, "grok").package_driver_revision != fresh.package_driver_revision
     with pytest.raises(ValidationError, match="evidence is stale for claimed packaged"):
         check_evidence_durability(prof, copy_root)
+
+    # The schema that validates the policy is an input too: deleting it moves the
+    # same digest, so a validation-path change cannot pass as FRESH.
+    schema_file = copy_root / "schemas" / "portability" / "model-role-policy.schema.json"
+    schema_file.unlink()
+    assert compute_surface_revisions(copy_root, "grok").package_driver_revision != fresh.package_driver_revision
+    with pytest.raises(ValidationError, match="evidence is stale for claimed packaged"):
+        check_evidence_durability(prof, copy_root)
+
+def test_mutated_planner_module_stales_the_package_plane(tmp_path: Path) -> None:
+    """The planner *code* `check_model_role_plan` executes is a revision input too.
+
+    Proven 2026-10-19: neutralizing `unproven_catalog_reason` in a disposable copy
+    flips the grok probe verdict DEGRADED -> PLANNED with the policy bytes
+    untouched, while the policy-only digest leaves the package plane FRESH. Both
+    the input and the code that interprets it join `package_driver_revision`.
+    """
+    copy_root = _disposable_copy(tmp_path)
+    profile_data = json.loads((copy_root / "profiles" / "grok.json").read_text(encoding="utf-8"))
+    prof = HarnessProfile(
+        host=profile_data["host"],
+        support_state=profile_data["support_state"],
+        bindings=[Binding(**x) for x in profile_data["bindings"]],
+        skills_dir=profile_data.get("skills_dir"),
+        plugins_dir=profile_data.get("plugins_dir"),
+        plugin_manifest=profile_data.get("plugin_manifest"),
+        evidence_ledger=[Evidence(**x) for x in profile_data.get("evidence_ledger", [])],
+        tool_mappings=profile_data.get("tool_mappings"),
+        skill_order=profile_data.get("skill_order"),
+        runtime_conventions=profile_data.get("runtime_conventions"),
+    )
+    fresh = compute_surface_revisions(copy_root, "grok")
+    receipt_data = json.loads(
+        (copy_root / ".audit" / "evidence" / "grok-receipt.json").read_text(encoding="utf-8")
+    )
+    assert VerificationReceipt(**receipt_data).evaluate_plane_staleness(fresh) == {
+        plane: [] for plane in CONFORMANCE_PLANES
+    }
+
+    resolver = copy_root / "scripts" / "model_role_resolver.py"
+    src = resolver.read_text(encoding="utf-8")
+    anchor = "unproven = unproven_catalog_reason(config)"
+    assert src.count(anchor) == 1
+    resolver.write_text(src.replace(anchor, "unproven = None  # probe mutation"), encoding="utf-8")
+
+    edited = compute_surface_revisions(copy_root, "grok")
+    assert edited.package_driver_revision != fresh.package_driver_revision
+    assert replace(edited, package_driver_revision=fresh.package_driver_revision) == fresh
+    stale_map = VerificationReceipt(**receipt_data).evaluate_plane_staleness(edited)
+    assert {plane for plane, reasons in stale_map.items() if reasons} == {"package"}
+    with pytest.raises(ValidationError, match="evidence is stale for claimed packaged"):
+        check_evidence_durability(prof, copy_root)
+
+def test_mutated_vocabulary_module_stales_the_package_plane(tmp_path: Path) -> None:
+    """The `portability_schema` vocabularies the probe branches on are revision inputs.
+
+    `check_model_role_plan` -> `plan_role` -> `check_model_role_policy` validates the
+    policy against the schema and branches on `VERIFICATION_STATUSES`,
+    `PORTABLE_CAPABILITY_UNIVERSE`, `IMPLEMENTATION_STATUSES` and `ENFORCEMENT_LEVELS`
+    imported from `portability_schema`. A vocabulary rename there moves the probe
+    verdict, so the module joins `package_driver_revision` by AST core alongside the
+    two planner modules. Proven 2026-10-19: the committed #537 recipe hashed the two
+    planner modules but not this one, so a vocab rename passed packaged as FRESH.
+    """
+    copy_root = _disposable_copy(tmp_path)
+    fresh = compute_surface_revisions(copy_root, "grok")
+
+    vocab = copy_root / "scripts" / "portability_schema.py"
+    src = vocab.read_text(encoding="utf-8")
+    anchor = 'VERIFICATION_STATUSES = ("verified", "static-only", "unverified", "stale")'
+    assert src.count(anchor) == 1
+    vocab.write_text(src.replace(anchor, anchor + "  # probe mutation"), encoding="utf-8")
+
+    # A comment is AST-inert by design: the digest must NOT move for it.
+    assert compute_surface_revisions(copy_root, "grok").package_driver_revision == fresh.package_driver_revision
+
+    vocab.write_text(src.replace('"stale"', '"stale-renamed"'), encoding="utf-8")
+    edited = compute_surface_revisions(copy_root, "grok")
+    assert edited.package_driver_revision != fresh.package_driver_revision
+    # portability_schema.py also feeds driver_revision (adapter plane) by design;
+    # the package-plane pin is that nothing EXCEPT driver_revision moves with it.
+    assert replace(edited, package_driver_revision=fresh.package_driver_revision,
+                    driver_revision=fresh.driver_revision) == fresh
+    receipt_data = json.loads(
+        (copy_root / ".audit" / "evidence" / "grok-receipt.json").read_text(encoding="utf-8")
+    )
+    stale_map = VerificationReceipt(**receipt_data).evaluate_plane_staleness(edited)
+    assert "package" in {plane for plane, reasons in stale_map.items() if reasons}
+
+
 
 
 def test_published_module_docstring_moves_the_driver_revision(tmp_path: Path) -> None:
