@@ -302,20 +302,32 @@ activation table are checked against this repo's overlay-gating semantics
 (`select_overlays` in that module), not by executing the external pack: they pin
 the declaration, and profile drift is what reddens the route half. (#444)
 
-### Role modules stay out of the revision inputs (planning-only)
+### Role modules stay out of the revision inputs (planning-only); the policy they read does not
 
 `scripts/model_role_policy.py` and `scripts/model_role_resolver.py` are
 deliberately not revision inputs. `plan_role`
 (`scripts/model_role_resolver.py:151`) has exactly one production caller —
 `project-package.py --check` → `check_model_role_plan`, a read-only per-host
 planning probe over the checked-in example policy — plus the call sites in
-`tests/test_model_role_policy.py`. The only production execution of the policy
+`tests/test_model_role_policy.py`, and that is still the whole set
+(`tests/test_model_role_policy.py::test_plan_role_has_exactly_one_production_caller`
+re-derives it from `scripts/`). The only production execution of the policy
 module itself is the static CI preflight
 (`.github/workflows/portability-offline.yml:54` →
 `scripts/model_role_policy.py:256-258`). Both modules consume the
 `portability_schema` vocabulary without feeding any revision field, so a stale
 copy cannot move a verdict any gate checks. Adding them to `driver_revision`
-would force 5 host re-proofs per behaviour edit; adding them to
-`package_driver_revision` would fail `check-evidence` at the wrong plane.
-Trigger to revisit: the day a recorded scenario depends on either module, name
-it in the revision set then. (#473)
+would force 5 host re-proofs per behaviour edit.
+
+The policy **input** those modules read is a different case, because
+`check_model_role_plan` reads it inside `--check`:
+`examples/portability/model-role-policy.example.json` is folded byte for byte
+into `package_driver_revision`, so a one-byte edit to the policy fails a
+`packaged` claim closed on the package plane — the plane that gates that claim —
+instead of passing silently, and an unreadable policy degrades to the `missing`
+sentinel so the same claim still fails closed. Pinned by
+`tests/test_evidence_durability.py::test_mutated_model_role_policy_stales_the_package_plane`
+(mutated example → `(package)` staleness named by `check-evidence`; absent policy
+→ same refusal; measured before the fix: both gates exited 0 over a mutated
+policy). Trigger to revisit: the day a recorded scenario depends on either
+module, name it in the revision set then. (#473)

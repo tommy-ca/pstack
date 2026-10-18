@@ -939,7 +939,21 @@ def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path
         if p.is_file():
             pkg_hasher.update(fname.encode("utf-8"))
             _update_driver_digest(pkg_hasher, p)
-    package_driver_revision = pkg_hasher.hexdigest()
+    # The policy the package driver *reads* is an input to the package plane even
+    # though the planner modules that parse it are not: `project-package.py
+    # --check` -> `check_model_role_plan` loads these bytes and returns a verdict
+    # built from them, so an edited example policy moves the plane that gates
+    # `packaged` (#473 follow-up). The raw bytes are folded, so a policy edit no
+    # AST could carry still moves the revision. An unreadable policy degrades to
+    # the 'missing' sentinel boundary_driver_revision already uses: a receipt can
+    # never match it, so the gate fails loudly instead of hashing an absence.
+    policy_file = root / "examples" / "portability" / "model-role-policy.example.json"
+    if policy_file.is_file():
+        pkg_hasher.update(b"model-role-policy.example.json")
+        pkg_hasher.update(policy_file.read_bytes())
+        package_driver_revision = pkg_hasher.hexdigest()
+    else:
+        package_driver_revision = "missing"
 
     # 10. boundary driver revision
     bnd_driver_file = root / "scripts" / "scan-host-boundary.py"

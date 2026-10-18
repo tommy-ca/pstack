@@ -493,6 +493,71 @@ def test_driver_source_change_invalidates_adapter_and_runtime(
     assert compute_surface_revisions(copy_root, "codex") == fresh
 
 
+def test_mutated_model_role_policy_stales_the_package_plane(tmp_path: Path) -> None:
+    """#473 follow-up: the policy `project-package.py --check` reads is a revision input.
+
+    `check_model_role_plan` loads `examples/portability/model-role-policy.example.json`
+    and returns a per-host verdict built from those bytes, so a one-byte edit to the
+    policy must fail a `packaged` claim closed on the package plane. The planner
+    *modules* stay out of the revision set — they are executed only by a read-only
+    probe and the static preflight — while the policy *input* joins
+    `package_driver_revision`. Measured before the fix: with the modules-only recipe
+    the mutated policy left `check-evidence` and `check-staleness` both exiting 0.
+    """
+    copy_root = _disposable_copy(tmp_path)
+    profile_data = json.loads((copy_root / "profiles" / "grok.json").read_text(encoding="utf-8"))
+    prof = HarnessProfile(
+        host=profile_data["host"],
+        support_state=profile_data["support_state"],
+        bindings=[Binding(**x) for x in profile_data["bindings"]],
+        skills_dir=profile_data.get("skills_dir"),
+        plugins_dir=profile_data.get("plugins_dir"),
+        plugin_manifest=profile_data.get("plugin_manifest"),
+        evidence_ledger=[Evidence(**x) for x in profile_data.get("evidence_ledger", [])],
+        tool_mappings=profile_data.get("tool_mappings"),
+        skill_order=profile_data.get("skill_order"),
+        runtime_conventions=profile_data.get("runtime_conventions"),
+    )
+    assert prof.support_state == "packaged"
+
+    # Control: the copy itself is legal, so whatever reddens below is the mutation.
+    fresh = compute_surface_revisions(copy_root, "grok")
+    receipt_data = json.loads(
+        (copy_root / ".audit" / "evidence" / "grok-receipt.json").read_text(encoding="utf-8")
+    )
+    assert VerificationReceipt(**receipt_data).evaluate_plane_staleness(fresh) == {
+        plane: [] for plane in CONFORMANCE_PLANES
+    }
+    assert check_evidence_durability(prof, copy_root)["derived_support_state"] == "packaged"
+
+    policy_file = copy_root / "examples" / "portability" / "model-role-policy.example.json"
+    original = policy_file.read_bytes()
+    mutated = original.replace(b'"cursor/plugins"', b'"cursor/pluginx"')
+    assert len(mutated) == len(original) and mutated != original
+    policy_file.write_bytes(mutated)
+
+    edited = compute_surface_revisions(copy_root, "grok")
+    assert edited.package_driver_revision != fresh.package_driver_revision
+    # The policy is a package-plane input only: nothing else may move for it.
+    assert replace(edited, package_driver_revision=fresh.package_driver_revision) == fresh
+    stale_map = VerificationReceipt(**receipt_data).evaluate_plane_staleness(edited)
+    assert {plane for plane, reasons in stale_map.items() if reasons} == {"package"}
+    assert stale_map["package"][0].startswith("package_driver_revision mismatch")
+
+    with pytest.raises(ValidationError, match="evidence is stale for claimed packaged") as refused:
+        check_evidence_durability(prof, copy_root)
+    assert "(package)" in str(refused.value)
+    assert "package_driver_revision mismatch" in str(refused.value)
+
+    # An unreadable policy degrades to the 'missing' sentinel rather than a hash
+    # of its absence, so the same claim still fails closed instead of silently
+    # matching a receipt computed from bytes that are no longer there.
+    policy_file.unlink()
+    assert compute_surface_revisions(copy_root, "grok").package_driver_revision == "missing"
+    with pytest.raises(ValidationError, match="evidence is stale for claimed packaged"):
+        check_evidence_durability(prof, copy_root)
+
+
 def test_published_module_docstring_moves_the_driver_revision(tmp_path: Path) -> None:
     """`--help` text is the module docstring, so a consumed one stays in the fingerprint.
 
