@@ -511,8 +511,39 @@ def test_project_package_check_surfaces_the_planner_verdict(capsys) -> None:
     assert project_package.check_model_role_plan(desc) is True
     out = capsys.readouterr().out
     assert out.count(project_package.PLAN_PROBE_ROLE) == len(PACKAGE["host_targets"])
+    for role in project_package.PLAN_PROBE_ROLES:
+        assert out.count(role) == len(PACKAGE["host_targets"])
     assert "BLOCKED" not in out
     assert "static-planning-only" in out
+
+
+@pytest.mark.parametrize(
+    "tier_to_drop,expected_blocked_role",
+    [
+        ("fast-worker", "how-explorer"),
+        ("strong-judgment", "how-explainer"),
+        ("panel", "architect-runners"),
+        ("strongest", "independent-verifier"),
+    ],
+)
+def test_check_model_role_plan_fails_closed_when_tier_dropped(
+    monkeypatch, tmp_path, capsys, tier_to_drop, expected_blocked_role
+) -> None:
+    """Mutating any probed unconstrained tier out of tier_defaults causes check_model_role_plan to fail closed."""
+    project_package = load_project_package_module()
+    desc, _ = project_package.load_package_descriptor()
+
+    policy_path = ROOT / "examples/portability/model-role-policy.example.json"
+    policy_data = json.loads(policy_path.read_text(encoding="utf-8"))
+
+    del policy_data["hosts"]["codex"]["tier_defaults"][tier_to_drop]
+    mutant_policy_path = tmp_path / "model-role-policy.json"
+    mutant_policy_path.write_text(json.dumps(policy_data), encoding="utf-8")
+
+    monkeypatch.setattr(project_package, "MODEL_ROLE_POLICY", mutant_policy_path)
+    assert project_package.check_model_role_plan(desc) is False
+    out = capsys.readouterr().out
+    assert f"BLOCKED: codex cannot plan {expected_blocked_role}" in out
 
 
 def test_plan_role_has_exactly_one_production_caller() -> None:
