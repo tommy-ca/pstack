@@ -18,6 +18,7 @@ from scripts.portability_schema import (
     SurfaceRevisions,
     VerificationReceipt,
     check_evidence_durability,
+    compute_surface_revisions,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -178,4 +179,86 @@ def check_evidence_action(hosts: List[str], root: Path, allow_stale: bool = Fals
             print(f"[{h}] FAIL: {mismatch}")
             all_ok = False
     return 0 if all_ok else 1
+
+
+def check_staleness_action(
+    hosts: List[str],
+    evidence_dir: Path,
+    root: Path,
+    json_output: bool = False,
+) -> int:
+    staleness_report: Dict[str, Any] = {}
+    all_fresh = True
+    for h in hosts:
+        current_revs = compute_surface_revisions(root, h)
+        receipt_file = evidence_dir / f"{h}-receipt.json"
+        if not _file_or_denied(receipt_file):
+            profile_file = root / "profiles" / f"{h}.json"
+            claimed_state = ""
+            if _file_or_denied(profile_file):
+                try:
+                    claimed_state = json.loads(profile_file.read_text(encoding="utf-8")).get("support_state", "")
+                except Exception:
+                    pass
+            if claimed_state == "candidate":
+                staleness_report[h] = {
+                    "host": h,
+                    "receipt_exists": False,
+                    "needs_regeneration": False,
+                    "stale_planes": [],
+                    "stale_reasons": {},
+                    "support_state": "candidate",
+                }
+                continue
+            staleness_report[h] = {
+                "host": h,
+                "receipt_exists": False,
+                "needs_regeneration": True,
+                "stale_planes": ["canonical", "adapter", "package", "runtime"],
+                "stale_reasons": {"all": [f"Receipt file {receipt_file} not found"]},
+            }
+            all_fresh = False
+            continue
+        try:
+            rdata = json.loads(receipt_file.read_text(encoding="utf-8"))
+            receipt = VerificationReceipt(**rdata)
+            stale_map = receipt.evaluate_plane_staleness(current_revs)
+            stale_planes = [p for p, reasons in stale_map.items() if reasons]
+            needs_regen = bool(stale_planes)
+            if needs_regen:
+                all_fresh = False
+            staleness_report[h] = {
+                "host": h,
+                "receipt_exists": True,
+                "run_id": receipt.run_id,
+                "timestamp": receipt.timestamp,
+                "overall_verdict": receipt.overall_verdict,
+                "needs_regeneration": needs_regen,
+                "stale_planes": stale_planes,
+                "stale_reasons": {p: errs for p, errs in stale_map.items() if errs},
+            }
+        except Exception as err:
+            staleness_report[h] = {
+                "host": h,
+                "receipt_exists": True,
+                "needs_regeneration": True,
+                "stale_planes": ["canonical", "adapter", "package", "runtime"],
+                "stale_reasons": {"error": [str(err)]},
+            }
+            all_fresh = False
+
+    if json_output:
+        print(json.dumps(staleness_report, indent=2))
+    else:
+        print("\n================ Evidence Staleness Report ================")
+        for h, info in staleness_report.items():
+            status = "REGENERATE" if info["needs_regeneration"] else "FRESH"
+            stale_str = ", ".join(info["stale_planes"]) if info["stale_planes"] else "None"
+            print(f"Host: {h:<12} | Status: {status:<10} | Stale Planes: {stale_str}")
+            for p, reasons in info.get("stale_reasons", {}).items():
+                for r in reasons:
+                    print(f"   - [{p}] {r}")
+        print("===========================================================")
+        print(f"Overall Matrix Evidence: {'ALL FRESH' if all_fresh else 'REGENERATION NEEDED'}\n")
+    return 0 if all_fresh else 1
 
