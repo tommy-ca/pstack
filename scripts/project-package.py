@@ -34,8 +34,17 @@ from scripts.portability_schema import PackageDescriptor, ValidationError
 
 PACKAGE_JSON = ROOT / "pstack.package.json"
 MODEL_ROLE_POLICY = ROOT / "examples/portability/model-role-policy.example.json"
-# One probe role with no required capability bindings, so `--check` reports the
-# host/tier/model-mapping verdict instead of re-testing capability opinions.
+# Tier-representative probe roles with no required capability bindings, so
+# `--check` verifies the host/tier/model-mapping verdict across every unconstrained
+# tier (strongest, strong-judgment, fast-worker, panel) rather than only strongest.
+# Capability-constrained roles (fast-verifier, adversarial-panel) require runtime
+# capability opinions which are validated in harness profiles.
+PLAN_PROBE_ROLES = (
+    "independent-verifier",  # strongest
+    "how-explainer",         # strong-judgment
+    "how-explorer",          # fast-worker
+    "architect-runners",     # panel
+)
 PLAN_PROBE_ROLE = "independent-verifier"
 AGENTS_DIR = ROOT / "agents"
 DROIDS_DIR = ROOT / "droids"
@@ -529,17 +538,20 @@ def check_model_role_plan(desc: PackageDescriptor) -> bool:
 
     A BLOCKED probe plan means the checked-in policy cannot map a host the
     descriptor declares, so that host has no planning path at all.
+    Probes all tier-representative roles without capability requirements
+    (covering strongest, strong-judgment, fast-worker, and panel).
     """
     policy = json.loads(MODEL_ROLE_POLICY.read_text(encoding="utf-8"))
     all_ok = True
     for host in desc.host_targets:
-        plan = plan_role(policy, desc.raw_dict, host=host, role=PLAN_PROBE_ROLE)
-        reasons = f": {'; '.join(plan.reasons)}" if plan.reasons else ""
-        if plan.status == "BLOCKED":
-            print(f"BLOCKED: {host} cannot plan {PLAN_PROBE_ROLE}{reasons}")
-            all_ok = False
-        else:
-            print(f"{plan.status}: {host} {PLAN_PROBE_ROLE} <- {plan.source} ({plan.evidence_level}){reasons}")
+        for probe_role in PLAN_PROBE_ROLES:
+            plan = plan_role(policy, desc.raw_dict, host=host, role=probe_role)
+            reasons = f": {'; '.join(plan.reasons)}" if plan.reasons else ""
+            if plan.status == "BLOCKED":
+                print(f"BLOCKED: {host} cannot plan {probe_role}{reasons}")
+                all_ok = False
+            else:
+                print(f"{plan.status}: {host} {probe_role} <- {plan.source} ({plan.evidence_level}){reasons}")
     return all_ok
 def check_claude_plugin(desc: PackageDescriptor) -> bool:
     """.claude-plugin presence, shape and version lockstep.
