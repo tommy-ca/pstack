@@ -52,7 +52,7 @@ FACTORY_PLUGIN_DIR = ROOT / ".factory-plugin"
 CLAUDE_PLUGIN_DIR = ROOT / ".claude-plugin"
 # What a Claude Code install reads out of .claude-plugin/plugin.json, and the
 # type each key must carry: a wrong-typed descriptor is drift, not presence.
-CLAUDE_MANIFEST_SHAPE = {"name": str, "version": str, "skills": str, "agents": str}
+CLAUDE_MANIFEST_SHAPE = {"name": str, "version": str, "skills": str, "agents": (str, list)}
 # Host-local lifecycle hooks (#438) have no implementation on this revision; the
 # probe names the gap and the tracker instead of reporting a silent pass. Hook
 # data would land in a host plugin dir (`.antigravity-plugin/hooks.json`, the
@@ -582,10 +582,11 @@ def check_claude_plugin(desc: PackageDescriptor) -> bool:
         return False
     for key, expected_type in CLAUDE_MANIFEST_SHAPE.items():
         value = plugin.get(key)
-        if not isinstance(value, expected_type) or (isinstance(value, str) and not value):
+        if not isinstance(value, expected_type) or (isinstance(value, (str, list)) and not value):
+            type_label = "/".join(t.__name__ for t in expected_type) if isinstance(expected_type, tuple) else expected_type.__name__
             print(
                 f"DRIFT: .claude-plugin/plugin.json {key!r} must be a non-empty "
-                f"{expected_type.__name__}, got {type(value).__name__}"
+                f"{type_label}, got {type(value).__name__}"
             )
             ok = False
     for key in ("name", "version"):

@@ -1,8 +1,8 @@
 {
-  "run_id": "grok-1792379603-8d751048",
+  "run_id": "grok-1792415947-bc700b03",
   "host": "grok",
-  "host_version": "grok 1.0.52 (0920c8169e27) [stable]",
-  "timestamp": "2026-10-19T03:13:26Z",
+  "host_version": "grok 1.0.62 (1474f9cbdd91) [stable]",
+  "timestamp": "2026-10-19T13:19:11Z",
   "overall_verdict": "UNTESTED",
   "planes": {
     "canonical": "PASS",
@@ -18,8 +18,8 @@
     "profile_hash": "8843a79c3bc719865a29ae9028b91743d7e3c2db18d11ce038f2c51fe62bdf5a",
     "package_descriptor_hash": "52cc6b3ce9b87a80f783362b109cb7b5a6190e7f26d25687b6b2a16f3651a647",
     "manifest_hash": "93708b1bea0284198757f9dab6256027f44e0b464087ce48f6bc96ec12db0fc0",
-    "driver_revision": "7a740bd3257111c092cff2b3f65b7679fd9d45a6d2ac73862831303ee8886658",
-    "package_driver_revision": "47c8baccc736709eed40087d0d497e90166ccc0be7a274ac8c66424eea981dd4",
+    "driver_revision": "c7f9a837dcaea73090d6d0a31b81c844cf85024b838a7399c4bbf894fd486f38",
+    "package_driver_revision": "13b450f40b4757bc405bf6a915e006a1224c0c301433bd8f73c77f895bd5994b",
     "boundary_driver_revision": "d3ffcb533f91281953932f986b5ffea7f727e602548ad0418d4d187dc3fa1291"
   },
   "scenarios": [
@@ -29,9 +29,9 @@
       "plane": "canonical",
       "command": "/home/tommyk/projects/pstack/.venv/bin/python /home/tommyk/projects/pstack/scripts/canonical-index.py --check",
       "exit_code": 0,
-      "stdout_snippet": "Conformance: PASS\nFreshness: DRIFT (70 commits ahead)\nPrinciples: 24 | Playbooks: 23\nArtifacts: 167 (preserved=93, adapted=64, excluded=10, gaps=0)\nPASS: Canonical inventory conforms to pin.",
+      "stdout_snippet": "Conformance: PASS\nFreshness: DRIFT (72 commits ahead)\nPrinciples: 24 | Playbooks: 23\nArtifacts: 167 (preserved=93, adapted=64, excluded=10, gaps=0)\nPASS: Canonical inventory conforms to pin.",
       "verdict": "PASS",
-      "duration_s": 0.082,
+      "duration_s": 0.08,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -44,7 +44,7 @@
       "exit_code": 0,
       "stdout_snippet": "Change '2026-10-15-harness-neutral-role-policy' is valid",
       "verdict": "PASS",
-      "duration_s": 0.449,
+      "duration_s": 1.021,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -57,7 +57,7 @@
       "exit_code": 0,
       "stdout_snippet": "PASS\nplaybooks: 22 named + opening-a-pr\nprinciples: 24\nplugin.json name: pstack",
       "verdict": "PASS",
-      "duration_s": 0.62,
+      "duration_s": 1.301,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -70,7 +70,7 @@
       "exit_code": 0,
       "stdout_snippet": "[scan-host-boundary] PASS: Scanned 139 files across portable surfaces. 0 boundary leaks.",
       "verdict": "PASS",
-      "duration_s": 0.433,
+      "duration_s": 0.399,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -83,7 +83,7 @@
       "exit_code": 0,
       "stdout_snippet": "PASS: grok manifest at .grok-plugin/plugin.json in sync\nPASS: codex manifest at .codex-plugin/plugin.json in sync\nPASS: codex models at .codex-plugin/models.json in sync\nPASS: omp manifest at .omp-plugin/package.json in sync\nPASS: opencode manifest at .opencode-plugin/package.json in sync\nPASS: anti",
       "verdict": "PASS",
-      "duration_s": 0.175,
+      "duration_s": 0.173,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -96,7 +96,7 @@
       "exit_code": 0,
       "stdout_snippet": "[grok] Executing verify...\nPASS: grok manifest at .grok-plugin/plugin.json in sync\nPASS: .claude-plugin manifests present, shaped and in version lockstep\nABSENT: host-local hooks not implemented; nothing claimed (#438)\nDEGRADED: grok independent-verifier <- host-tier (static-planning-only): catalog ",
       "verdict": "PASS",
-      "duration_s": 0.181,
+      "duration_s": 0.191,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -109,14 +109,14 @@
       "exit_code": 0,
       "stdout_snippet": "",
       "verdict": "PASS",
-      "duration_s": 0.069,
+      "duration_s": 0.058,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
     }
   ],
   "artifacts": [
-    "/home/tommyk/projects/pstack/.audit/evidence/grok-1792379603-8d751048/receipt.json",
+    "/home/tommyk/projects/pstack/.audit/evidence/grok-1792415947-bc700b03/receipt.json",
     ".audit/evidence/grok-receipt.json"
   ],
   "claim": "grok 5-harness portability conformance verification",
