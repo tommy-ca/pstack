@@ -16,6 +16,8 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 import tomllib
 
+from scripts.model_role_resolver import resolve_role_source
+
 ROOT = Path(__file__).resolve().parent.parent
 PACKAGE_JSON = ROOT / "pstack.package.json"
 
@@ -169,23 +171,15 @@ def effective_role_precedence(
     user: str | Sequence[str] | None = None,
 ) -> tuple[list[str], str]:
     """Report effective models and winning precedence rung for a role."""
-    if explicit is not None:
-        raw, source = explicit, "explicit"
-    elif project is not None:
-        raw, source = project, "project"
-    elif user is not None:
-        raw, source = user, "user"
-    elif "models" in role_cfg:
-        raw, source = role_cfg["models"], "host-role"
-    elif tier in host_config.get("tier_defaults", {}):
-        raw, source = host_config["tier_defaults"][tier], "host-tier"
-    elif host_config.get("fallback") == "inherit-parent":
-        raw, source = "inherit-parent", "inherit-parent"
-    else:
-        raw, source = [], "fail-closed"
-
-    choices = [raw] if isinstance(raw, str) else list(raw)
-    return choices, source
+    return resolve_role_source(
+        role,
+        tier=tier,
+        host_config=host_config,
+        role_cfg=role_cfg,
+        explicit=explicit,
+        project=project,
+        user=user,
+    )
 
 
 def get_hook_opt_out(host: str, config_dir: Path) -> bool:
