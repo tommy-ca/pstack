@@ -365,7 +365,7 @@ def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path
         except Exception:
             pass
     if manifest_rel is None:
-        from scripts.portability_schema import DEFAULT_PLUGIN_MANIFESTS
+        from scripts.portability_types import DEFAULT_PLUGIN_MANIFESTS
 
         manifest_rel = DEFAULT_PLUGIN_MANIFESTS.get(host)
     manifest_file = root / manifest_rel if manifest_rel else None

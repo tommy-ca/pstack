@@ -79,6 +79,15 @@ CHECK_SELECTION_TABLE: List[tuple] = [
     ("schemas/**", ("tests/test_portability_schemas.py",), ()),
     ("profiles/**", ("tests/test_portability_schemas.py", "tests/test_evidence_durability.py"), ()),
     (
+        "scripts/portability_types.py",
+        (
+            "tests/test_portability_schemas.py",
+            "tests/test_verdict_reduction.py",
+            "tests/test_evidence_durability.py",
+        ),
+        (),
+    ),
+    (
         "scripts/portability_schema.py",
         (
             "tests/test_portability_schemas.py",
