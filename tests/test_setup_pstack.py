@@ -15,7 +15,9 @@ import tomllib
 
 from scripts.setup_pstack import (
     CANONICAL_ROLES,
+    VALID_HOOK_EVENTS,
     effective_role_precedence,
+    evaluate_hook_lifecycle,
     generate_pstack_models_toml,
     get_hook_opt_out,
     load_canonical_roles,
@@ -182,3 +184,44 @@ def test_hook_opt_out_is_host_scoped_and_idempotent(tmp_path: Path) -> None:
     cleared = set_hook_opt_out("grok", False, config_dir)
     assert cleared is True
     assert get_hook_opt_out("grok", config_dir) is False
+
+
+def test_evaluate_hook_lifecycle_events_idempotence_and_honest_negatives(tmp_path: Path) -> None:
+    config_dir = tmp_path / "host-config"
+
+    # 1. Supported events: startup, resume, compact
+    assert VALID_HOOK_EVENTS == {"startup", "resume", "compact"}
+    for event in ("startup", "resume", "compact"):
+        active, msg = evaluate_hook_lifecycle("codex", event, config_dir)
+        assert active is True
+        assert msg == f"hook active for codex on {event}"
+
+        # Idempotence: repeated evaluation yields identical output without side effects
+        active2, msg2 = evaluate_hook_lifecycle("codex", event, config_dir)
+        assert (active2, msg2) == (active, msg)
+
+    # 2. Opt-out behavior across events
+    set_hook_opt_out("codex", True, config_dir)
+    for event in ("startup", "resume", "compact"):
+        active, msg = evaluate_hook_lifecycle("codex", event, config_dir)
+        assert active is False
+        assert msg == "routing hooks opted-out for codex"
+
+    # Clear opt-out
+    set_hook_opt_out("codex", False, config_dir)
+
+    # 3. Missing trust fails honestly
+    active, msg = evaluate_hook_lifecycle("codex", "startup", config_dir, trust_verified=False)
+    assert active is False
+    assert "host environment trust unverified for codex" in msg
+
+    # 4. Conflicting hook fails honestly
+    active, msg = evaluate_hook_lifecycle("codex", "startup", config_dir, conflicting_hook=True)
+    assert active is False
+    assert "conflicting hook detected for codex" in msg
+
+    # 5. Unrecognized event fails honestly
+    active, msg = evaluate_hook_lifecycle("codex", "arbitrary-event", config_dir)
+    assert active is False
+    assert "unsupported hook event: 'arbitrary-event'" in msg
+
