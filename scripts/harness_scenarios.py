@@ -25,6 +25,7 @@ def execute_local_scenarios(verifier: Any, root: Path) -> List[ScenarioResult]:
                 "-c",
                 "import sys, json; from pathlib import Path; r = Path('.'); inv = json.loads((r/'openspec'/'canonical-inventory.json').read_text()); expected = [a['path'] for a in inv.get('artifacts', []) if a.get('category') == 'principle' and a.get('mode') in ('preserve', 'adapt')]; missing = [p for p in expected if not (r/p).is_file()]; sys.exit(1 if missing else 0)",
             ],
+            record=False,
         )
     )
 
@@ -34,6 +35,7 @@ def execute_local_scenarios(verifier: Any, root: Path) -> List[ScenarioResult]:
             "Verify multi-phase plan checking logic",
             "adapter",
             ["bun", "test", str(root / "skills" / "poteto-mode" / "scripts" / "check-plan.test.mjs")],
+            record=False,
         )
     )
 
@@ -43,6 +45,7 @@ def execute_local_scenarios(verifier: Any, root: Path) -> List[ScenarioResult]:
             "Run worktree isolation audit smoke test",
             "adapter",
             ["bash", str(root / "skills" / "poteto-mode" / "scripts" / "worktree-audit.sh"), "."],
+            record=False,
         )
     )
 
@@ -63,6 +66,7 @@ def execute_local_scenarios(verifier: Any, root: Path) -> List[ScenarioResult]:
                 "--target-dir",
                 str(smoke_target),
             ],
+            record=False,
         )
     )
     results.append(
@@ -79,6 +83,7 @@ def execute_local_scenarios(verifier: Any, root: Path) -> List[ScenarioResult]:
                 "--target-dir",
                 str(smoke_target),
             ],
+            record=False,
         )
     )
 
@@ -97,6 +102,7 @@ def execute_local_scenarios(verifier: Any, root: Path) -> List[ScenarioResult]:
                 "--target-dir",
                 str(lifecycle_target),
             ],
+            record=False,
         )
     )
 
@@ -107,6 +113,7 @@ def execute_local_scenarios(verifier: Any, root: Path) -> List[ScenarioResult]:
                 "Verify Codex orch and store compatibility suite",
                 "adapter",
                 ["bun", "test", "./skills/poteto-mode/scripts/orch/orch.test.ts"],
+                record=False,
             )
         )
         results.append(
@@ -115,6 +122,7 @@ def execute_local_scenarios(verifier: Any, root: Path) -> List[ScenarioResult]:
                 "Verify Codex watch-pr policy and CLI suite",
                 "adapter",
                 ["bun", "test", "./skills/poteto-mode/scripts/watch-pr/cli.test.ts", "./skills/poteto-mode/scripts/watch-pr/policy.test.ts"],
+                record=False,
             )
         )
 
@@ -125,6 +133,7 @@ def execute_local_scenarios(verifier: Any, root: Path) -> List[ScenarioResult]:
                 "Verify Antigravity model roles and panel definitions",
                 "package",
                 [sys.executable, "-c", "import json; from pathlib import Path; d = json.loads(Path('.antigravity-plugin/models.json').read_text()); assert d['singleRoleDefault'] == 'pro'; assert len(d['roles']) >= 10"],
+                record=False,
             )
         )
         results.append(
@@ -133,6 +142,7 @@ def execute_local_scenarios(verifier: Any, root: Path) -> List[ScenarioResult]:
                 "Verify Antigravity tool-mapping reference integrity",
                 "adapter",
                 [sys.executable, "-c", "from pathlib import Path; p = Path('skills/poteto-mode/references/antigravity-tools.md'); assert p.is_file(); t = p.read_text(); assert 'invoke_subagent' in t; assert 'ask_question' in t"],
+                record=False,
             )
         )
 

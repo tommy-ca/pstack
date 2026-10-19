@@ -444,3 +444,16 @@ def test_execute_driver_scenarios_in_isolation(tmp_path: Path) -> None:
     assert any(s.id == "runtime-child-cancel-omp" for s in omp_scenarios)
 
 
+def test_execute_local_scenarios_in_isolation(tmp_path: Path) -> None:
+    import scripts.harness_scenarios as hs
+
+    verifier = PortableVerifier(host="grok", evidence_root=tmp_path)
+    verifier.launch()
+    scenarios = hs.execute_local_scenarios(verifier, ROOT)
+    assert len(scenarios) >= 5
+    # Functional purity: verifier.scenarios is not mutated in-place
+    assert len(verifier.scenarios) == 0
+    for s in scenarios:
+        assert s.verdict == "PASS"
+
+
