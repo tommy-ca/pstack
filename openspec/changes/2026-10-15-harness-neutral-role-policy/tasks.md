@@ -423,3 +423,31 @@ Docs-only record from main `ec0a1ab`. No code, receipt, fixture or evidence-inde
 - Independent verification: `pstack-verifier` subagent (tier `pro`) returned `PASS+NOTES` on PR #575 head (`e75c235`), merged to main as `ec0a1ab`.
 
 Issue #440 is fulfilled and CLOSED. All G0–G8 boxes remain unchecked. #434, #441, #442, #443, #444, #445, #473 stay OPEN on the rows named above.
+
+## Dated evidence (2026-10-19, wave-31: claude code native profile, manifest, and driver)
+
+Docs-only record from main `759c0de`. No code, receipt, fixture or evidence-index file is touched: this section is appended and no earlier wave's prose is rewritten.
+
+**Claude Code native profile, manifest, and driver.** PR #577 resolved #441 by implementing the Claude Code native candidate profile, plugin manifest alignment, and driver integration:
+- Profile definition in `profiles/claude.json`:
+  - Conforms strictly to `schemas/portability/profile.schema.json` via JSON Schema validation.
+  - Honors declared host gates: `host == "claude"`, `support_state == "candidate"`, `is_declared_host == True`, and `is_builtin == False`.
+  - Accurately captures security boundaries: models advisory tool-level workspace restrictions (`workspace.readonly` has `enforcement: "advisory"`, noting absence of kernel-level filesystem isolation in Claude Code) versus hard OS sandboxing.
+  - Limits subagent recursion to parent-orchestrated depth (`max_subagent_depth: 1`, `supported_isolation_modes: ["none", "directory-allowlist"]`).
+  - Formulates all 17 capabilities and 14 tool mappings with clean multi-word primitives to prevent host vocabulary boundary leaks.
+- Plugin manifest alignment in `.claude-plugin/plugin.json`:
+  - Explicitly enumerates all 22 `./agents/*.md` paths, satisfying native Claude Code CLI plugin manifest validation (`claude plugin validate . --json` -> `{"success": true}`, 0 errors, 0 warnings).
+- Project packaging in `scripts/project-package.py`:
+  - Updates `CLAUDE_MANIFEST_SHAPE` to permit `agents: (str, list)` with type error formatting.
+- Harness driver implementation in `scripts/drivers/claude.py` & `scripts/drivers/__init__.py`:
+  - Implements `ClaudeDriver(HarnessDriver)` with CLI discovery (`which claude`, `claude plugin validate . --json`), route resolution, subagent spawn/join verification, isolation checks, and evidence capture.
+  - Preserves `BUILTIN_HOSTS` strictly to the 6 canonical hosts (`grok`, `codex`, `omp`, `opencode`, `antigravity`, `droid`) and satisfies `require_builtin_host_keys(DRIVER_REGISTRY)` without pollution. Registers `claude` under `ADAPTER_DRIVERS`.
+- Test coverage in `tests/test_claude_driver.py`:
+  - 5 comprehensive tests validating schema conformance, declared host gates, fail-closed negative gates (forbidden self-promotion to `packaged`/`supported` without live evidence, unverified bindings, prompt-only as hard enforcement), manifest integrity, live CLI plugin validation, and driver scenario execution.
+- Verification & durability:
+  - 146 passed, 7 skipped across `test_setup_pstack.py`, `test_project_package.py`, `test_model_role_policy.py`, `test_host_identity.py`, `test_harness_drivers.py`, `test_claude_driver.py`, and `test_portability_schemas.py`.
+  - Revisions synchronized across receipts and `index.json`. Full durability suite 113 passed.
+  - Boundary scan `scan-host-boundary.py --check` passes with 0 leaks across 139 files.
+  - Independent verification: `pstack-verifier` subagent (tier `pro`) returned `PASS` on PR #577 head (`f1ea5bb`), merged to main as `759c0de`.
+
+Issue #441 is fulfilled and CLOSED. All G0–G8 boxes remain unchecked. #434, #442, #443, #444, #445, #473 stay OPEN on the rows named above.
