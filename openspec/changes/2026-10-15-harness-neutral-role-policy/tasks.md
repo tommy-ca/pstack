@@ -614,6 +614,39 @@ Docs-only record from main `17eb72c`. No code, receipt, fixture or evidence-inde
 
 Gate #445 is fulfilled and CLOSED. With #444, #473, and #445 closed, Sub-epic #433 is fulfilled and CLOSED. With all four sub-epics (#430, #431, #432, #433) closed, Program Epic #429 is fulfilled and CLOSED.
 
+## Dated evidence (2026-10-19, waves 38-41: program #590 code quality and structural remediation)
+
+Docs-only record from main `c94c114`. No code, receipt, fixture or evidence-index file is touched. This section is appended and no earlier wave's prose is rewritten.
+
+**Post-429 code quality and structural remediation complete.** Program #590 delivered four remediations under stacked PRs, verified independently by `pro`-tier verifiers:
+
+- Wave 38 (PR #595 / #591, commit `f6d8d60`):
+  - Fixed normative JSON schema binding in `schemas/portability/binding.schema.json` to accept string and null primitives.
+  - Added strict JSON Schema draft 2020-12 validation test across all declared profiles in `tests/test_portability_schemas.py`.
+  - Added fail-closed negative mutation checks.
+
+- Wave 39 (PR #596 / #592, commit `c55b94e`):
+  - Decoupled policy document schema validation from per-lookup planning in `scripts/model_role_resolver.py`.
+  - Introduced `compile_policy` and `CompiledPolicy` dataclass with cached role mapping.
+  - Optimized `scripts/project-package.py` and `scripts/setup_pstack.py` to eliminate redundant O(N) sweeps.
+  - Preserved identical 6-rung precedence resolution.
+
+- Wave 40 (PR #597 / #593, commit `57fbe71`):
+  - Decomposed `scripts/portability_schema.py` from 1,502 lines down to 784 lines (strict compliance with Rule 1).
+  - Created leaf modules `scripts/surface_revisions.py` (455 lines) and `scripts/evidence_durability.py` (248 lines).
+  - Maintained 100% backward compatibility via PEP 562 dynamic exports and clean boundary decoupling.
+  - Refreshed evidence receipts, index, and DSH candidate scoring table.
+
+- Wave 41 (PR #598 / #594, commit `c94c114`):
+  - Decomposed `scripts/verify-portable.py` from 1,546 lines down to 965 lines (strict compliance with Rule 1).
+  - Created leaf modules `scripts/select_checks.py` (338 lines), `scripts/evidence_index.py` (181 lines), and `scripts/openspec_change.py` (90 lines).
+  - Maintained 100% backward compatibility via symbol re-exports and dynamic active resolver delegation.
+  - Refreshed driver revision hash across evidence receipts and index (`39272678...`).
+  - Added modular decomposition and backward compatibility test in `tests/test_verify_portable.py`.
+
+Program Epic #590 is fulfilled and CLOSED.
+
+
 
 
 
