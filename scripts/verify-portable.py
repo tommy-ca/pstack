@@ -238,7 +238,7 @@ class PortableVerifier:
         # the exact validated target. Only a real change name reaches the child;
         # none/lookup-failed/ambiguous are decided here and recorded as scenarios.
         state, change_name, active_names = resolve_openspec_change(self.change)
-        helper = "import importlib.util, sys; spec = importlib.util.spec_from_file_location('vp_helper', 'scripts/verify-portable.py'); m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m); sys.exit(m.validate_openspec_change(sys.argv[1]))"
+        helper = "import sys; from scripts.openspec_change import validate_openspec_change; sys.exit(validate_openspec_change(sys.argv[1]))"
         if state in ("explicit", "active"):
             assert change_name is not None
             r2 = self.run_command(

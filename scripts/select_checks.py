@@ -131,6 +131,86 @@ CHECK_SELECTION_TABLE: List[tuple] = [
         ),
         (),
     ),
+    (
+        "scripts/surface_revisions.py",
+        ("tests/test_portability_schemas.py", "tests/test_evidence_durability.py"),
+        (),
+    ),
+    (
+        "scripts/evidence_durability.py",
+        ("tests/test_evidence_durability.py", "tests/test_portability_schemas.py"),
+        (),
+    ),
+    (
+        "scripts/select_checks.py",
+        ("tests/test_select_checks.py", "tests/test_verify_portable.py"),
+        (),
+    ),
+    (
+        "scripts/openspec_change.py",
+        ("tests/test_verify_portable.py",),
+        (),
+    ),
+    (
+        "scripts/evidence_index.py",
+        ("tests/test_evidence_durability.py", "tests/test_verify_portable.py"),
+        (),
+    ),
+    (
+        "scripts/model_role_resolver.py",
+        ("tests/test_model_role_policy.py", "tests/test_setup_pstack.py"),
+        (),
+    ),
+    (
+        "scripts/model_role_policy.py",
+        ("tests/test_model_role_policy.py", "tests/test_setup_pstack.py"),
+        (),
+    ),
+    (
+        "scripts/setup_pstack.py",
+        ("tests/test_setup_pstack.py", "tests/test_model_role_policy.py"),
+        (),
+    ),
+    (
+        "scripts/host_identity.py",
+        ("tests/test_host_identity.py", "tests/test_portability_schemas.py"),
+        (),
+    ),
+    (
+        "scripts/effort_ladder.py",
+        ("tests/test_verify_harness.py",),
+        (),
+    ),
+    (
+        "scripts/check-plugin-agents.py",
+        ("tests/test_plugin_agents.py",),
+        (),
+    ),
+    (
+        "scripts/eval_blinded_pstack.py",
+        ("tests/test_eval_blinded_pstack_dsh_candidate.py",),
+        (),
+    ),
+    (
+        "scripts/eval_decision_routing.py",
+        ("tests/test_verify_decision_contract.py",),
+        (),
+    ),
+    (
+        "scripts/decision_adapter.py",
+        ("tests/test_verify_decision_contract.py",),
+        (),
+    ),
+    (
+        "scripts/prove-omp-native-package.py",
+        ("tests/test_omp_native_package.py",),
+        (),
+    ),
+    (
+        "scripts/prove-omp-vertical-slice.py",
+        ("tests/test_omp_vertical_slice.py",),
+        (),
+    ),
     ("scripts/**", ("{offline}",), ()),
 ]
 
