@@ -329,3 +329,15 @@ This checkpoint appends current source findings after the historical wave-21 rec
 Parent verification command: `openspec validate 2026-10-15-harness-neutral-role-policy --type change --strict`.
 
 Native GitHub parent/sub-issue metadata now mirrors the existing declared hierarchy. The reconciliation read back every parent edge and preserved all issue bodies and open states. #495 remains related, non-blocking lineage rather than an added dependency. #545 is a linked correction, not a silent acceptance dependency.
+
+## Dated evidence (2026-10-19, wave-24: ledger guard, side-quest closures, hill-climb evidence)
+
+Docs-only record from main `556b63b`. No code, receipt, fixture or evidence-index file is touched: this section is appended and no earlier wave's prose is rewritten.
+
+**Ledger acceptance test.** PR #560 restored the ledger guard deleted by #550 in reviewed form (`test_reference_fork_ledger_records_completed_source_review` in `tests/test_model_role_policy.py`): pins the three counterpart commits (`94f5ce9`/`1dcc2ba`/`3f4cd12`), 48 unique `source-reviewed` rows, four review fields per row, and the single absent target counterpart. Interrogate verdict `PASS+NOTES` on the PR head with all four mutation axes failing closed. `tests/test_model_role_policy.py` 57 pass, combined with `tests/test_evidence_durability.py` 170 pass on merged main. This covers the row-count/pin half of #434 closure-rule line 1; per-value validation (blob contents) and independent acceptance remain open, and #434 stays OPEN.
+
+**Side-quest closures.** #545 closed by PR #558 (UNKNOWN mergeability waits with `mergeability-unknown` reason; 52 watch-pr bun tests pass). #548 closed by PRs #556/#557 (wrapper mode 100755, exec-bit guard in CI-covered `tests/test_canonical_index.py`, direct launch exits 0). #546 closed by PR #559 (release-tag feature states read-only scope; `tests/test_release.py` 2 pass). Each closure verified live on main HEAD before closing.
+
+**Hill-climb evidence.** #473 evidence comment records live `check-evidence`/`check-staleness` output per residual row at `2641999`: package-plane and omp/droid rows do not reproduce as stated, role-module revision input is folded into `package_driver_revision`, hermeticity parked per #477. #434 evidence comment records 48/48 `source-reviewed` ledger state with blob hash. Neither comment closes its issue.
+
+No issue state, acceptance criterion or dependency changed in this wave beyond the three side-quest closures above. All G0–G8 boxes remain unchecked. #434, #444, #445, #473 stay OPEN on the rows named above.
