@@ -470,11 +470,6 @@ class PortableVerifier:
         )
 
 
-    def cleanup(self) -> None:
-        """Step 6: Cleanup transient files while preserving evidence."""
-        pass
-
-
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("action", choices=["doctor", "drive", "run", "refresh-static", "check-evidence", "check-staleness", "select-checks"], help="Action to execute")
@@ -539,7 +534,6 @@ def main() -> None:
             # capabilities are untested, so a durable PASS is never claimed.
             update_durable = claimed_state != "candidate"
             verifier.evidence(receipt, update_durable=update_durable)
-            verifier.cleanup()
             receipts.append(receipt)
             all_pass = all_pass and (receipt.overall_verdict == "PASS")
 
@@ -559,7 +553,6 @@ def main() -> None:
             # while every mapped/packaged host records the static planes it does prove.
             update_durable = claimed_state != "candidate"
             verifier.evidence(receipt, update_durable=update_durable)
-            verifier.cleanup()
             receipts.append(receipt)
             all_pass = all_pass and ok
 

@@ -11,7 +11,7 @@ import shlex
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any, Dict, Iterable, List, NamedTuple, Optional, Tuple, TypedDict
 
 from scripts.evidence_receipts import (
     can_claim_current_ci,
@@ -30,6 +30,56 @@ SCAN_HOST_BOUNDARY = (sys.executable, "scripts/scan-host-boundary.py")
 CANONICAL_INDEX_CHECK = (sys.executable, "scripts/canonical-index.py", "--check")
 
 
+class CheckRule(NamedTuple):
+    pattern: str
+    module_tokens: Tuple[str, ...]
+    verifier_commands: Tuple[Tuple[str, ...], ...] = ()
+
+    @property
+    def tests(self) -> Tuple[str, ...]:
+        return self.module_tokens
+
+    @property
+    def commands(self) -> Tuple[Tuple[str, ...], ...]:
+        return self.verifier_commands
+
+
+class SelectedCheck(TypedDict):
+    id: str
+    tier: str
+    command: List[str]
+    paths: List[str]
+
+
+CheckEntry = SelectedCheck
+
+
+class CheckSelectionResult(TypedDict):
+    checks: List[SelectedCheck]
+    unmapped_paths: List[str]
+
+
+CheckSelection = CheckSelectionResult
+
+
+class ChangedPathsResult(TypedDict):
+    merge_base: str
+    head_sha: str
+    changed_paths: List[str]
+
+
+class SelectionPlan(TypedDict):
+    base: str
+    head: str
+    merge_base: str
+    head_sha: str
+    patch_id: str
+    changed_paths: List[str]
+    unmapped_paths: List[str]
+    defaulted_to_offline: bool
+    checks: List[SelectedCheck]
+
+
 def offline_contract_tests(root: Path = ROOT) -> List[str]:
     workflow = root / OFFLINE_WORKFLOW
     if not workflow.is_file():
@@ -43,8 +93,10 @@ def offline_contract_tests(root: Path = ROOT) -> List[str]:
     return found
 
 
-CHECK_SELECTION_TABLE: List[tuple] = [
-    ("tests/*.py", ("{changed}",), ()),
+CHECK_SELECTION_TABLE: List[CheckRule] = [
+    CheckRule(*entry)
+    for entry in [
+        ("tests/*.py", ("{changed}",), ()),
     ("docs/**", ("tests/test_verify_docs_sync.py",), ()),
     (
         "skills/**",
@@ -226,6 +278,7 @@ CHECK_SELECTION_TABLE: List[tuple] = [
         (),
     ),
     ("scripts/**", ("{offline}",), ()),
+    ]
 ]
 
 
@@ -269,9 +322,9 @@ def _command_for(token: str) -> List[str]:
 
 def select_checks(
     changed: Iterable[str], offline_tests: Optional[List[str]] = None
-) -> Dict[str, Any]:
+) -> CheckSelectionResult:
     offline = offline_tests if offline_tests is not None else offline_contract_tests()
-    checks: Dict[str, Dict[str, Any]] = {}
+    checks: Dict[str, SelectedCheck] = {}
     unmapped: List[str] = []
 
     def add(command: List[str], tier: str, path: str) -> None:
@@ -283,21 +336,20 @@ def select_checks(
             check["paths"].append(path)
 
     for path in changed:
-        rule = next((r for r in CHECK_SELECTION_TABLE if pattern_matches(path, r[0])), None)
+        rule = next((r for r in CHECK_SELECTION_TABLE if pattern_matches(path, r.pattern)), None)
         if rule is None:
             unmapped.append(path)
-            rule = ("(unmapped)", ("{offline}",), ())
-        _, module_tokens, verifier_commands = rule
-        for token in _expand(module_tokens, path, offline):
+            rule = CheckRule("(unmapped)", ("{offline}",), ())
+        for token in _expand(rule.module_tokens, path, offline):
             add(_command_for(token), _tier(token, offline), path)
-        for command in verifier_commands:
+        for command in rule.verifier_commands:
             add(list(command), "offline", path)
 
     ordered = sorted(checks.values(), key=lambda c: (c["tier"], c["id"]))
     return {"checks": ordered, "unmapped_paths": unmapped}
 
 
-def changed_paths(root: Path, base: str, head: str = "HEAD") -> Dict[str, Any]:
+def changed_paths(root: Path, base: str, head: str = "HEAD") -> ChangedPathsResult:
     merge_base = resolve_merge_base(root, base, head)
     head_sha = resolve_revision(root, head)
     paths = [p for p in _git_lines(root, ["diff", "--name-only", merge_base, head]) if p]
@@ -318,7 +370,7 @@ def _git_lines(root: Path, args: List[str]) -> List[str]:
 
 def select_checks_plan(
     base: str, head: str = "HEAD", root: Path = ROOT, offline_tests: Optional[List[str]] = None
-) -> Dict[str, Any]:
+) -> SelectionPlan:
     offline = offline_tests if offline_tests is not None else offline_contract_tests(root)
     diff = changed_paths(root, base, head)
     selection = select_checks(diff["changed_paths"], offline)
@@ -335,7 +387,7 @@ def select_checks_plan(
     }
 
 
-def _print_selection_plan(plan: Dict[str, Any]) -> None:
+def _print_selection_plan(plan: SelectionPlan) -> None:
     print(
         f"Change scope: {plan['base']}..{plan['head']} "
         f"(merge-base {plan['merge_base'][:8]}, head {plan['head_sha'][:8]}, patch-id {plan['patch_id'][:8]})"

@@ -7,9 +7,29 @@ from __future__ import annotations
 
 import subprocess
 import sys
-from typing import Any, Callable, List, Optional, Tuple
+from dataclasses import dataclass, field
+from typing import Any, Callable, Iterator, List, Literal, Optional, Tuple
 
-ChangeResolution = Tuple[str, Optional[str], List[str]]
+ChangeState = Literal["explicit", "active", "none", "lookup-failed", "ambiguous"]
+
+
+@dataclass(frozen=True)
+class ChangeResolution:
+    state: ChangeState
+    name: Optional[str] = None
+    names: List[str] = field(default_factory=list)
+
+    @property
+    def candidates(self) -> List[str]:
+        return self.names
+
+    def __iter__(self) -> Iterator[Any]:
+        yield self.state
+        yield self.name
+        yield self.names
+
+    def __getitem__(self, index: int | slice) -> Any:
+        return (self.state, self.name, self.names)[index]
 
 
 def _active_openspec_changes() -> list[str] | None:
@@ -56,16 +76,16 @@ def resolve_openspec_change(
     active_resolver: Optional[Callable[[], list[str] | None]] = None,
 ) -> ChangeResolution:
     if change is not None:
-        return "explicit", change, []
+        return ChangeResolution(state="explicit", name=change, names=[])
     resolver = active_resolver if active_resolver is not None else _active_openspec_changes
     active = resolver()
     if active is None:
-        return "lookup-failed", None, []
+        return ChangeResolution(state="lookup-failed", name=None, names=[])
     if active == []:
-        return "none", None, []
+        return ChangeResolution(state="none", name=None, names=[])
     if len(active) == 1:
-        return "active", active[0], []
-    return "ambiguous", None, active
+        return ChangeResolution(state="active", name=active[0], names=[])
+    return ChangeResolution(state="ambiguous", name=None, names=list(active))
 
 
 def validate_openspec_change(
@@ -73,17 +93,17 @@ def validate_openspec_change(
     *,
     active_resolver: Optional[Callable[[], list[str] | None]] = None,
 ) -> int:
-    state, name, names = resolve_openspec_change(change, active_resolver=active_resolver)
-    if state in ("explicit", "active"):
-        assert name is not None
-        return _validate_named_change(name)
-    if state == "none":
+    resolution = resolve_openspec_change(change, active_resolver=active_resolver)
+    if resolution.state in ("explicit", "active"):
+        assert resolution.name is not None
+        return _validate_named_change(resolution.name)
+    if resolution.state == "none":
         return 0
-    if state == "lookup-failed":
+    if resolution.state == "lookup-failed":
         print("ERROR: `openspec list --json` lookup failed; cannot determine active changes.", file=sys.stderr)
         print("Resolve the openspec CLI failure, then rerun.", file=sys.stderr)
         return 1
-    print(f"ERROR: {len(names)} active openspec changes; pass one explicitly via --change.", file=sys.stderr)
-    for entry in names:
+    print(f"ERROR: {len(resolution.names)} active openspec changes; pass one explicitly via --change.", file=sys.stderr)
+    for entry in resolution.names:
         print(f"  - {entry}", file=sys.stderr)
     return 1

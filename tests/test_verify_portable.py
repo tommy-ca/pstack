@@ -523,3 +523,76 @@ def test_write_verification_evidence_in_isolation(tmp_path: Path) -> None:
     assert durable_data2["run_id"] == "test-run-isolated"
 
 
+def test_cleanup_method_eliminated_from_portable_verifier() -> None:
+    """PortableVerifier.cleanup() was a dead no-op method (#615)."""
+    assert not hasattr(PortableVerifier, "cleanup")
+
+
+def test_change_resolution_frozen_dataclass_and_semantics() -> None:
+    """ChangeResolution is a frozen dataclass with Literal states and tuple compatibility (#615)."""
+    from dataclasses import FrozenInstanceError, is_dataclass
+    import scripts.openspec_change as oc
+
+    assert is_dataclass(oc.ChangeResolution)
+
+    res = oc.resolve_openspec_change("explicit-change")
+    assert isinstance(res, oc.ChangeResolution)
+    assert res.state == "explicit"
+    assert res.name == "explicit-change"
+    assert res.names == []
+    assert res.candidates == []
+
+    # Frozen immutability check
+    with pytest.raises(FrozenInstanceError):
+        res.state = "none"  # type: ignore[misc]
+
+    # Tuple unpacking and indexing backwards compatibility
+    state, name, names = res
+    assert (state, name, names) == ("explicit", "explicit-change", [])
+    assert res[0] == "explicit"
+    assert res[1] == "explicit-change"
+    assert res[:2] == ("explicit", "explicit-change")
+
+    # Ambiguous resolution
+    ambig = oc.ChangeResolution(state="ambiguous", name=None, names=["ch1", "ch2"])
+    assert ambig.state == "ambiguous"
+    assert ambig.name is None
+    assert ambig.candidates == ["ch1", "ch2"]
+    assert ambig[2] == ["ch1", "ch2"]
+
+
+def test_check_rules_typed_named_tuple_and_typed_dict() -> None:
+    """CHECK_SELECTION_TABLE rules are typed CheckRule instances (#615)."""
+    import scripts.select_checks as sc
+
+    assert issubclass(sc.CheckRule, tuple)
+    assert len(sc.CHECK_SELECTION_TABLE) > 0
+
+    for rule in sc.CHECK_SELECTION_TABLE:
+        assert isinstance(rule, sc.CheckRule)
+        assert isinstance(rule.pattern, str)
+        assert isinstance(rule.module_tokens, tuple)
+        assert isinstance(rule.verifier_commands, tuple)
+        # Property aliases
+        assert rule.tests == rule.module_tokens
+        assert rule.commands == rule.verifier_commands
+        # Tuple indexing and unpacking
+        pat, tests, cmds = rule
+        assert pat == rule.pattern
+        assert tests == rule.module_tokens
+        assert cmds == rule.verifier_commands
+
+    # TypedDict structure validation
+    plan = sc.select_checks_plan("main", "HEAD")
+    assert "patch_id" in plan
+    assert "checks" in plan
+    assert "unmapped_paths" in plan
+    assert isinstance(plan["checks"], list)
+    if plan["checks"]:
+        first = plan["checks"][0]
+        assert "id" in first
+        assert "tier" in first
+        assert "command" in first
+        assert "paths" in first
+
+
