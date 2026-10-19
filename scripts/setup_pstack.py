@@ -213,3 +213,39 @@ def set_hook_opt_out(host: str, opt_out: bool, config_dir: Path) -> bool:
         opt_out_file.unlink()
         return True
     return False
+
+
+VALID_HOOK_EVENTS = frozenset({"startup", "resume", "compact"})
+
+
+def evaluate_hook_lifecycle(
+    host: str,
+    event: str,
+    config_dir: Path,
+    *,
+    trust_verified: bool = True,
+    conflicting_hook: bool = False,
+) -> tuple[bool, str]:
+    """Evaluate host-local routing hook eligibility for session lifecycle events.
+
+    Guarantees:
+    - Supported events: startup, resume, compact (idempotent evaluation)
+    - Reversible opt-out via host-scoped marker file (.pstack-hooks-disabled-{host})
+    - Fails honestly on unverified host environment trust
+    - Fails honestly when a conflicting hook is detected (prevents double-injection / overwrite)
+    - Fails honestly on unrecognised events
+    """
+    if event not in VALID_HOOK_EVENTS:
+        return False, f"unsupported hook event: {event!r} (must be one of {sorted(VALID_HOOK_EVENTS)})"
+
+    if get_hook_opt_out(host, config_dir):
+        return False, f"routing hooks opted-out for {host}"
+
+    if conflicting_hook:
+        return False, f"conflicting hook detected for {host}; refusing to overwrite or double-inject"
+
+    if not trust_verified:
+        return False, f"host environment trust unverified for {host}; refusing hook injection"
+
+    return True, f"hook active for {host} on {event}"
+
