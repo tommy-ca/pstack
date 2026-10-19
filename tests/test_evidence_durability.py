@@ -1127,9 +1127,9 @@ def test_driver_core_cache_rejects_world_writable_ancestor_before_writing(
 def test_driver_core_disk_cache_prunes_to_record_and_byte_bounds(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    import scripts.portability_schema as schema
+    import scripts.surface_revisions as surface_revisions
 
-    monkeypatch.setattr(schema, "_DRIVER_CORE_CACHE_MAX_RECORDS", 2)
+    monkeypatch.setattr(surface_revisions, "_DRIVER_CORE_CACHE_MAX_RECORDS", 2)
     record_home = tmp_path / "record-bound"
     monkeypatch.setenv("XDG_CACHE_HOME", str(record_home))
     for index in range(3):
@@ -1142,8 +1142,8 @@ def test_driver_core_disk_cache_prunes_to_record_and_byte_bounds(
 
     byte_home = tmp_path / "byte-bound"
     monkeypatch.setenv("XDG_CACHE_HOME", str(byte_home))
-    monkeypatch.setattr(schema, "_DRIVER_CORE_CACHE_MAX_RECORDS", 256)
-    monkeypatch.setattr(schema, "_DRIVER_CORE_CACHE_MAX_BYTES", 2500)
+    monkeypatch.setattr(surface_revisions, "_DRIVER_CORE_CACHE_MAX_RECORDS", 256)
+    monkeypatch.setattr(surface_revisions, "_DRIVER_CORE_CACHE_MAX_BYTES", 2500)
     for index in range(3):
         source = f"VALUE_{index} = {'x' * 1024!r}\n".encode()
         _driver_core(tmp_path / f"byte-bound-{index}.py", source)

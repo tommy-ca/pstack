@@ -121,20 +121,12 @@ def _driver_core_cache_dir() -> Optional[Path]:
         return None
 
 
-def _max_cache_bytes() -> int:
-    return getattr(sys.modules.get("scripts.portability_schema"), "_DRIVER_CORE_CACHE_MAX_BYTES", _DRIVER_CORE_CACHE_MAX_BYTES)
-
-
-def _max_cache_records() -> int:
-    return getattr(sys.modules.get("scripts.portability_schema"), "_DRIVER_CORE_CACHE_MAX_RECORDS", _DRIVER_CORE_CACHE_MAX_RECORDS)
-
-
 def _read_driver_core_cache(
     cache_file: Path, expected: Dict[str, Any]
 ) -> Optional[bytes]:
     try:
         info = cache_file.lstat()
-        if not stat.S_ISREG(info.st_mode) or info.st_size > _max_cache_bytes():
+        if not stat.S_ISREG(info.st_mode) or info.st_size > _DRIVER_CORE_CACHE_MAX_BYTES:
             return None
         if os.name == "posix" and (
             info.st_uid != os.getuid() or info.st_mode & 0o077
@@ -175,8 +167,8 @@ def _prune_driver_core_cache(cache_dir: Path) -> None:
 
         record_count = sum(entry[3] for entry in entries)
         total_bytes = sum(entry[4] for entry in entries)
-        max_records = _max_cache_records()
-        max_bytes = _max_cache_bytes()
+        max_records = _DRIVER_CORE_CACHE_MAX_RECORDS
+        max_bytes = _DRIVER_CORE_CACHE_MAX_BYTES
         for _, _, path, is_record, size in sorted(entries):
             if (
                 record_count <= max_records
@@ -200,7 +192,7 @@ def _write_driver_core_cache(
     temporary: Optional[Path] = None
     try:
         payload = json.dumps(record, sort_keys=True, separators=(",", ":")).encode("utf-8")
-        if len(payload) > _max_cache_bytes():
+        if len(payload) > _DRIVER_CORE_CACHE_MAX_BYTES:
             return
         with tempfile.NamedTemporaryFile(
             mode="wb",
