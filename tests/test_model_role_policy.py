@@ -174,6 +174,13 @@ def test_overrides_are_precedent_but_do_not_silently_replace_unknown_slug() -> N
     project = plan_role(policy, PACKAGE, host="codex", role="swarm-workers",
                         project="model-c", user="model-a", capabilities=capability_bindings())
     assert (project.source, project.seats[0].model) == ("project", "model-c")
+    user = plan_role(policy, PACKAGE, host="codex", role="swarm-workers",
+                     user="model-b", capabilities=capability_bindings())
+    assert (user.source, user.seats[0].model) == ("user", "model-b")
+    policy["hosts"]["codex"]["role_overrides"] = {"swarm-workers": {"models": ["model-c"]}}
+    host_role = plan_role(policy, PACKAGE, host="codex", role="swarm-workers",
+                          capabilities=capability_bindings())
+    assert (host_role.source, host_role.seats[0].model) == ("host-role", "model-c")
     invalid = plan_role(policy, PACKAGE, host="codex", role="swarm-workers",
                         explicit="does-not-exist", capabilities=capability_bindings())
     assert invalid.status == "BLOCKED"
