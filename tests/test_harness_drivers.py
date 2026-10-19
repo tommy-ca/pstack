@@ -15,6 +15,7 @@ if str(ROOT) not in sys.path:
 
 from scripts.drivers import (
     AntigravityDriver,
+    ClaudeDriver,
     CodexDriver,
     GrokDriver,
     HarnessDriver,
@@ -41,6 +42,7 @@ def test_get_driver_factory() -> None:
     assert isinstance(get_driver("codex", ROOT), CodexDriver)
     assert isinstance(get_driver("omp", ROOT), OMPDriver)
     assert isinstance(get_driver("opencode", ROOT), OpenCodeDriver)
+    assert isinstance(get_driver("claude", ROOT), ClaudeDriver)
 
     with pytest.raises(ValueError, match="No native driver registered"):
         get_driver("unsupported_host", ROOT)

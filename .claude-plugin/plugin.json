@@ -16,5 +16,28 @@
     "principles"
   ],
   "skills": "./skills/",
-  "agents": "./agents/"
+  "agents": [
+    "./agents/architect-runners.md",
+    "./agents/arena-cross-judge-pool.md",
+    "./agents/arena-runners.md",
+    "./agents/bug-fix.md",
+    "./agents/comment-sicko.md",
+    "./agents/feature.md",
+    "./agents/hardest-tasks.md",
+    "./agents/hillclimb.md",
+    "./agents/how-critics.md",
+    "./agents/how-explainer.md",
+    "./agents/how-explorer.md",
+    "./agents/independent-verifier.md",
+    "./agents/interrogate-reviewers.md",
+    "./agents/judgment-and-prose.md",
+    "./agents/perf-issue.md",
+    "./agents/poteto-agent.md",
+    "./agents/refactoring.md",
+    "./agents/reflect-judgment.md",
+    "./agents/reflect-tooling.md",
+    "./agents/swarm-workers.md",
+    "./agents/why-investigators.md",
+    "./agents/why-synthesizer.md"
+  ]
 }

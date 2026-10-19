@@ -8,6 +8,7 @@ from typing import Dict, Type
 
 from .antigravity import AntigravityDriver
 from .base import DriverScenarioResult, HarnessDriver
+from .claude import ClaudeDriver
 from .codex import CodexDriver
 from .droid import DroidDriver
 from .grok import GrokDriver
@@ -31,12 +32,19 @@ DRIVER_REGISTRY: Dict[str, Type[HarnessDriver]] = {
 # neighbouring host's driver.
 require_builtin_host_keys(DRIVER_REGISTRY, "DRIVER_REGISTRY")
 
+# Adapter drivers for declared hosts with native integration (#441).
+ADAPTER_DRIVERS: Dict[str, Type[HarnessDriver]] = {
+    "claude": ClaudeDriver,
+}
+
 
 def get_driver(host: str, root: Path) -> HarnessDriver:
     """Instantiate and return the host-native driver for the given harness."""
-    driver_cls = DRIVER_REGISTRY.get(host)
+    driver_cls = DRIVER_REGISTRY.get(host) or ADAPTER_DRIVERS.get(host)
     if not driver_cls:
-        raise ValueError(f"No native driver registered for host '{host}'. Supported: {list(DRIVER_REGISTRY.keys())}")
+        raise ValueError(
+            f"No native driver registered for host '{host}'. Supported: {sorted(set(DRIVER_REGISTRY) | set(ADAPTER_DRIVERS))}"
+        )
     return driver_cls(root)
 
 
@@ -50,4 +58,5 @@ __all__ = [
     "OMPDriver",
     "OpenCodeDriver",
     "DroidDriver",
+    "ClaudeDriver",
 ]
