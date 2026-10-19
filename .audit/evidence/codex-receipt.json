@@ -1,8 +1,8 @@
 {
-  "run_id": "codex-1792337969-1d05934a",
+  "run_id": "codex-1792379606-a5945726",
   "host": "codex",
   "host_version": "codex-cli 0.163.0",
-  "timestamp": "2026-10-18T15:39:31Z",
+  "timestamp": "2026-10-19T03:13:29Z",
   "overall_verdict": "UNTESTED",
   "planes": {
     "canonical": "PASS",
@@ -14,7 +14,7 @@
     "canonical_pin": "1dcc2bacde73ddd284803b7af28164d0436198fc",
     "upstream_head": "1dcc2bacde73ddd284803b7af28164d0436198fc",
     "spec_hash": "f403a35e9ce91413047544cd3cbfc1bba3baf9d56bd90a2e3863432d3fc5bf63",
-    "skills_tree_hash": "0cb3d1855712d5e9aed6ac62d5dbfda4989b57e86723979cb1318c0b292b9710",
+    "skills_tree_hash": "12eca8d718fa6b567c74804f78c67631f8f8dcce2e6176b75fb9be034062e1a0",
     "profile_hash": "6508f23e3fd2e3558706b36bcf9e16a5430cc6d6dea1a793ed1ad62d67710d0c",
     "package_descriptor_hash": "52cc6b3ce9b87a80f783362b109cb7b5a6190e7f26d25687b6b2a16f3651a647",
     "manifest_hash": "b8fb2d730647c4b573bcd4a90d9f1ba666e9bee160ef4da99e560b585da1a886",
@@ -29,9 +29,9 @@
       "plane": "canonical",
       "command": "/home/tommyk/projects/pstack/.venv/bin/python /home/tommyk/projects/pstack/scripts/canonical-index.py --check",
       "exit_code": 0,
-      "stdout_snippet": "Conformance: PASS\nFreshness: DRIFT (62 commits ahead)\nPrinciples: 24 | Playbooks: 23\nArtifacts: 167 (preserved=93, adapted=64, excluded=10, gaps=0)\nPASS: Canonical inventory conforms to pin.",
+      "stdout_snippet": "Conformance: PASS\nFreshness: DRIFT (70 commits ahead)\nPrinciples: 24 | Playbooks: 23\nArtifacts: 167 (preserved=93, adapted=64, excluded=10, gaps=0)\nPASS: Canonical inventory conforms to pin.",
       "verdict": "PASS",
-      "duration_s": 0.089,
+      "duration_s": 0.088,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -44,7 +44,7 @@
       "exit_code": 0,
       "stdout_snippet": "Change '2026-10-15-harness-neutral-role-policy' is valid",
       "verdict": "PASS",
-      "duration_s": 0.483,
+      "duration_s": 0.675,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -57,7 +57,7 @@
       "exit_code": 0,
       "stdout_snippet": "PASS\nplaybooks: 22 named + opening-a-pr\nprinciples: 24\nplugin.json name: pstack",
       "verdict": "PASS",
-      "duration_s": 0.325,
+      "duration_s": 0.999,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -70,7 +70,7 @@
       "exit_code": 0,
       "stdout_snippet": "[scan-host-boundary] PASS: Scanned 139 files across portable surfaces. 0 boundary leaks.",
       "verdict": "PASS",
-      "duration_s": 0.426,
+      "duration_s": 0.524,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -83,7 +83,7 @@
       "exit_code": 0,
       "stdout_snippet": "PASS: grok manifest at .grok-plugin/plugin.json in sync\nPASS: codex manifest at .codex-plugin/plugin.json in sync\nPASS: codex models at .codex-plugin/models.json in sync\nPASS: omp manifest at .omp-plugin/package.json in sync\nPASS: opencode manifest at .opencode-plugin/package.json in sync\nPASS: anti",
       "verdict": "PASS",
-      "duration_s": 0.181,
+      "duration_s": 0.194,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -96,7 +96,7 @@
       "exit_code": 0,
       "stdout_snippet": "[codex] Executing verify...\nPASS: codex manifest at .codex-plugin/plugin.json in sync\nPASS: codex models at .codex-plugin/models.json in sync\nPASS: .claude-plugin manifests present, shaped and in version lockstep\nABSENT: host-local hooks not implemented; nothing claimed (#438)\nDEGRADED: grok indepen",
       "verdict": "PASS",
-      "duration_s": 0.165,
+      "duration_s": 0.186,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
@@ -109,14 +109,14 @@
       "exit_code": 0,
       "stdout_snippet": "",
       "verdict": "PASS",
-      "duration_s": 0.065,
+      "duration_s": 0.063,
       "evidence_level": "offline",
       "settlement": null,
       "preserved_from": ""
     }
   ],
   "artifacts": [
-    "/home/tommyk/projects/pstack/.audit/evidence/codex-1792337969-1d05934a/receipt.json",
+    "/home/tommyk/projects/pstack/.audit/evidence/codex-1792379606-a5945726/receipt.json",
     ".audit/evidence/codex-receipt.json"
   ],
   "claim": "codex 5-harness portability conformance verification",
