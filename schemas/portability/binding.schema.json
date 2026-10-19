@@ -36,7 +36,7 @@
       "enum": ["native", "shim", "version-gated", "gap"]
     },
     "primitive": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "enforcement": {
       "type": "string",
