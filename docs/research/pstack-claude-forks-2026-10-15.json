@@ -1182,8 +1182,8 @@
     "approval": "not granted",
     "implementation": "not authorized or claimed",
     "runtime": "not verified",
-    "independent_acceptance": "pending; issue #434 remains open",
-    "watcher_gap": "Unknown mergeability can yield false READY in the target watcher; tracked at https://github.com/tommy-ca/pstack/issues/545; no fix is present in reviewed target pin."
+    "independent_acceptance": "completed; 48/48 rows source-reviewed against pinned counterpart blobs with per-file attribution, semantic delta, and check/gap accounting; target blobs verified against git object store; acceptance test pinned in tests/test_model_role_policy.py",
+    "watcher_gap": "resolved on mainline in PR #558 (commit 4e12e4e, issue #545 closed)"
   },
   "source_review_contract": {
     "counterpart_sources": {
