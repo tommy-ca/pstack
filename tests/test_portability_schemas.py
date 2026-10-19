@@ -433,5 +433,62 @@ def test_harness_profiles_skill_order_and_runtime_conventions_json_schemas() -> 
             assert k in rc_allowed, f"Host {host} runtime_conventions has unknown key {k}"
 
 
+def test_all_profiles_satisfy_normative_profile_json_schema() -> None:
+    import jsonschema
+    import referencing
+
+    profile_schema_path = SCHEMAS_DIR / "profile.schema.json"
+    assert profile_schema_path.is_file()
+    profile_schema = json.loads(profile_schema_path.read_text(encoding="utf-8"))
+
+    registry = referencing.Registry()
+    for sf in SCHEMAS_DIR.glob("*.json"):
+        resource = referencing.Resource.from_contents(json.loads(sf.read_text(encoding="utf-8")))
+        registry = registry.with_resource(sf.name, resource)
+        registry = registry.with_resource(resource.contents.get("$id", sf.name), resource)
+
+    validator = jsonschema.Draft202012Validator(profile_schema, registry=registry)
+
+    profiles_dir = ROOT / "profiles"
+    profile_files = sorted(profiles_dir.glob("*.json"))
+    assert len(profile_files) >= 7
+
+    for pf in profile_files:
+        data = json.loads(pf.read_text(encoding="utf-8"))
+        errors = list(validator.iter_errors(data))
+        assert not errors, f"Profile {pf.name} violates profile.schema.json: {[e.message for e in errors]}"
+
+
+def test_normative_profile_json_schema_fails_closed_on_invalid_primitive_or_shape() -> None:
+    import jsonschema
+    import referencing
+
+    profile_schema = json.loads((SCHEMAS_DIR / "profile.schema.json").read_text(encoding="utf-8"))
+    registry = referencing.Registry()
+    for sf in SCHEMAS_DIR.glob("*.json"):
+        resource = referencing.Resource.from_contents(json.loads(sf.read_text(encoding="utf-8")))
+        registry = registry.with_resource(sf.name, resource)
+        registry = registry.with_resource(resource.contents.get("$id", sf.name), resource)
+
+    validator = jsonschema.Draft202012Validator(profile_schema, registry=registry)
+
+    # Base valid profile
+    base = json.loads((ROOT / "profiles/codex.json").read_text(encoding="utf-8"))
+    assert list(validator.iter_errors(base)) == []
+
+    # Mutation 1: Non-string, non-null primitive (e.g. integer) must fail closed
+    bad_type = json.loads(json.dumps(base))
+    bad_type["bindings"][0]["primitive"] = 12345
+    errors = list(validator.iter_errors(bad_type))
+    assert errors, "Integer primitive should fail profile.schema.json validation"
+
+    # Mutation 2: Missing required host field must fail closed
+    bad_missing = json.loads(json.dumps(base))
+    del bad_missing["host"]
+    errors = list(validator.iter_errors(bad_missing))
+    assert errors, "Missing required 'host' field should fail schema validation"
+
+
+
 
 
