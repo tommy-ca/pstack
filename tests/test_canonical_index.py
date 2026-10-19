@@ -144,3 +144,12 @@ def test_canonical_index_classify_drift_cli(tmp_path: Path) -> None:
         assert report["entries"], "a classified report lists its entries"
     assert all({"path", "status", "bucket", "mode"} <= set(entry) for entry in report["entries"])
     assert (tracked.read_bytes() if tracked.is_file() else None) == tracked_before
+
+
+def test_vendored_entrypoints_stay_executable() -> None:
+    for path in (
+        "skills/poteto-mode/scripts/watch-pr/watch-pr",
+        "skills/poteto-mode/scripts/worktree-audit.sh",
+    ):
+        mode = (ROOT / path).stat().st_mode
+        assert mode & 0o111, f"{path} must stay executable (mode {oct(mode)})"
