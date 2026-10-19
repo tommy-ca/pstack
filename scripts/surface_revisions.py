@@ -404,8 +404,15 @@ def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path
     driver_revision = hasher.hexdigest()
 
     pkg_hasher = hashlib.sha256()
-    for fname in ("project-package.py", "package-lifecycle.py", "sync-antigravity-plugin.py",
-                  "model_role_policy.py", "model_role_resolver.py", "portability_schema.py"):
+    for fname in (
+        "project-package.py",
+        "package-lifecycle.py",
+        "sync-antigravity-plugin.py",
+        "model_role_policy.py",
+        "model_role_resolver.py",
+        "portability_types.py",
+        "portability_schema.py",
+    ):
         p = root / "scripts" / fname
         if p.is_file():
             pkg_hasher.update(fname.encode("utf-8"))
