@@ -10,7 +10,7 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from scripts.portability_schema import (
+from scripts.portability_types import (
     MANDATORY_SUPPORT_FLOOR,
     PORTABLE_CAPABILITY_UNIVERSE,
     SETTLEMENT_PROMOTIONS,

@@ -125,6 +125,7 @@ class TestCheckSelectionTable:
         decomposed = [
             ("scripts/surface_revisions.py", ["pytest:tests/test_evidence_durability.py", "pytest:tests/test_portability_schemas.py"]),
             ("scripts/evidence_durability.py", ["pytest:tests/test_evidence_durability.py", "pytest:tests/test_portability_schemas.py"]),
+            ("scripts/portability_types.py", ["pytest:tests/test_evidence_durability.py", "pytest:tests/test_portability_schemas.py", "pytest:tests/test_verdict_reduction.py"]),
             ("scripts/select_checks.py", ["pytest:tests/test_select_checks.py", "pytest:tests/test_verify_portable.py"]),
             ("scripts/openspec_change.py", ["pytest:tests/test_verify_portable.py"]),
             ("scripts/evidence_index.py", ["pytest:tests/test_evidence_durability.py", "pytest:tests/test_verify_portable.py"]),
