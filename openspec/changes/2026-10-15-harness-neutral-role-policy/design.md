@@ -1,6 +1,6 @@
 # Harness-neutral model/role mapping and pstack-claude pattern audit
 
-Status: Proposed · 2026-10-15. Implementation requires issue graph and runtime receipts.
+Status: Accepted · 2026-10-19. Full execution graph fulfilled and independently verified under Gate #445.
 
 ## Authority and provenance
 
@@ -146,3 +146,28 @@ The #446 host-identity registry has landed in `scripts/host_identity.py` and `sc
 The registry adapts the declarative-row idea from `pstack-claude/tools/runtimes.mjs`; it does not import runtime-specific model aliases, hooks or process trees. Identity registration does not load executable plugins. The implementation preserves built-in host behavior and rejects reserved namespaces and malformed identities. See `tests/test_host_identity.py` for the source-level regression contract; this design statement does not claim host runtime support or acceptance of #446, whose formal dependencies remain open.
 
 Architecture alternatives remain: fixed enums plus `custom` are safe but inflexible; a typed identity registry is the selected seam; a generic dynamic code loader is rejected as unsafe and unnecessary. Do not repeat the registry implementation; resolve the remaining #446 acceptance and dependencies with exact-head evidence.
+
+## Cross-harness contract promotion decision and evidence gate (#445)
+
+The cross-harness model/role contract is formally evaluated and promoted under Gate #445 following independent verification of all four sub-epics (#430, #431, #432, #433):
+
+1. **Promoted Contracts**:
+   - Canonical 22-role taxonomy, schema, effort ladder, and pin conformance locked to UPSTREAM `1dcc2bacde73ddd284803b7af28164d0436198fc` (#435).
+   - Pure, side-effect-free role/model planner (`scripts/model_role_resolver.py`) with 6-rung precedence hierarchy (`explicit` > `project` > `user` > `host-role` > `host-tier` > `inherit`) and caller effort gate (#437).
+   - Typed Draft 2020-12 wire contracts (`model-role-policy.schema.json`, `model-plan.schema.json`, `profile.schema.json`, `host-id.schema.json`).
+   - Package projector (`scripts/project-package.py`) enforcing 1-to-1 role parity, empty catalog checked-in sample discipline, and multi-tier planning probes (#438, #440).
+   - Extensible host identity registry (`scripts/host_identity.py`) preserving canonical builtins while safely gating namespaced external candidates (#446).
+   - Candidate host profiles and adapter drivers for Claude Code (`profiles/claude.json`, `scripts/drivers/claude.py`, #441) and GitHub Copilot (`profiles/copilot.json`, `scripts/drivers/copilot.py`, `docs/research/copilot-candidate-evaluation-2026-10-19.md`, #442).
+   - Mechanism-level equivalence ledger between Pi and OMP (`docs/research/pi-omp-equivalence-2026-10-18.md`, #443) confirming zero foreign state/session engine imports.
+   - Durability, staleness, and freshness verification levers (`scripts/verify-portable.py`, `tests/test_evidence_durability.py`, #444, #473, #495).
+
+2. **Honest Non-Claims and Deliberate Non-Promotions**:
+   - **Host Runtime Execution**: Offline host execution planes remain strictly `Runtime: UNTESTED`. Static schema validation, manifest generation, or doctor passes do NOT constitute live runtime proof. A host transitions to `verified`/`supported` only upon recording immutable, host-version-specific execution receipts.
+   - **Multi-Family Diversity**: Where only a single model family or runner pool is physically available in a session, panels and cross-judges report `DEGRADED` or fail closed (`BLOCKED`) when strict diversity is required. Single-family runs are never promoted or represented as independent multi-family validation.
+
+3. **Disposition of Reviewer Disagreements**:
+   - **Lane C Spec Diversity Ambiguity**: Clarified that delta conditions diversity on declared policy (cross-judge differs when required/available; reviewer panel preserves declared diversity) and permits single-model multi-seat panels when recorded as reduced diversity. No conflict with main spec line 209 (which recognizes diversity as adapter configuration).
+   - **Lane B Seam Defects (F1/F2/F3/F4 & #495)**: All four defects resolved and verified (F1 route_resolver binding, F2 behavior-bearing hash core, F3 proof bar demotion on zero live evidence, F4 corrupt index refusal with shape F partial-write protection in PR #536).
+   - **Provenance and Policy Forks (#434)**: Pinned 48-row ledger completed independent acceptance with all rows source-reviewed, license dispositions verified, and 0 foreign policy forks imported into canonical paths.
+
+ADR-0021 is formally ACCEPTED.

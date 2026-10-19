@@ -811,3 +811,94 @@ def test_canonical_role_taxonomy_schema_and_pin_audit_contract() -> None:
         assert set(host_cfg["tier_defaults"].keys()) == legal_tiers, f"{host_name} must map all 6 legal tiers"
 
 
+def test_cross_harness_promotion_gate_and_evidence_contract() -> None:
+    """#445 acceptance contract: promotion of cross-harness contract, ADR-0021 acceptance, and evidence gates."""
+    from referencing import Registry, Resource
+    schemas_dir = ROOT / "schemas/portability"
+    registry = Registry().with_resources(
+        [
+            (
+                (schema := json.loads(path.read_text(encoding="utf-8")))["$id"],
+                Resource.from_contents(schema),
+            )
+            for path in sorted(schemas_dir.glob("*.json"))
+        ]
+    )
+
+    # 1. Profile schema validation for candidate profiles and domain model for all profiles
+    profile_schema = json.loads((schemas_dir / "profile.schema.json").read_text(encoding="utf-8"))
+    profile_validator = Draft202012Validator(profile_schema, registry=registry)
+
+    declared_hosts = ["grok", "codex", "omp", "opencode", "antigravity", "droid"]
+    candidate_hosts = ["claude", "copilot"]
+    from scripts.portability_schema import Binding, Evidence, HarnessProfile
+
+    for host in candidate_hosts:
+        p_path = ROOT / "profiles" / f"{host}.json"
+        assert p_path.is_file(), f"missing profile for {host}"
+        data = json.loads(p_path.read_text(encoding="utf-8"))
+        profile_validator.validate(data)
+        assert data["support_state"] == "candidate"
+
+    for host in declared_hosts + candidate_hosts:
+        p_path = ROOT / "profiles" / f"{host}.json"
+        assert p_path.is_file(), f"missing profile for {host}"
+        data = json.loads(p_path.read_text(encoding="utf-8"))
+        bindings = [Binding(**b) for b in data.get("bindings", [])]
+        evidence = [Evidence(**e) for e in data.get("evidence_ledger", [])]
+        profile = HarnessProfile(
+            host=data["host"],
+            support_state=data["support_state"],
+            bindings=bindings,
+            skills_dir=data.get("skills_dir"),
+            plugins_dir=data.get("plugins_dir"),
+            plugin_manifest=data.get("plugin_manifest"),
+            evidence_ledger=evidence,
+            tool_mappings=data.get("tool_mappings"),
+            skill_order=data.get("skill_order"),
+            runtime_conventions=data.get("runtime_conventions"),
+        )
+        profile.validate()
+
+    # 2. Honest non-claims: offline hosts must remain Runtime UNTESTED
+    for host in ("grok", "codex", "opencode", "antigravity"):
+        receipt_file = ROOT / f".audit/evidence/{host}-receipt.json"
+        data = json.loads(receipt_file.read_text(encoding="utf-8"))
+        assert data["planes"]["runtime"] == "UNTESTED", f"{host} must not claim unproven live runtime"
+        assert data["overall_verdict"] == "UNTESTED", f"{host} overall verdict must follow untested runtime"
+
+    # 3. ADR-0021 acceptance contract
+    adr_file = ROOT / "adr/0021-harness-neutral-model-role-policy.md"
+    assert adr_file.is_file(), "ADR-0021 missing"
+    adr_text = adr_file.read_text(encoding="utf-8")
+    assert "Status: **accepted**" in adr_text, "ADR-0021 must be accepted upon gate 445 fulfillment"
+
+    change_adr = ROOT / "openspec/changes/2026-10-15-harness-neutral-role-policy/adr.md"
+    assert "Status: accepted" in change_adr.read_text(encoding="utf-8")
+
+    change_design = ROOT / "openspec/changes/2026-10-15-harness-neutral-role-policy/design.md"
+    assert "Status: Accepted" in change_design.read_text(encoding="utf-8")
+    assert "## Cross-harness contract promotion decision and evidence gate (#445)" in change_design.read_text(encoding="utf-8")
+
+    # 4. OpenSpec tasks G0-G8 completion contract
+    tasks_file = ROOT / "openspec/changes/2026-10-15-harness-neutral-role-policy/tasks.md"
+    tasks_text = tasks_file.read_text(encoding="utf-8")
+    for g in range(9):
+        assert f"- [x] **G{g}**" in tasks_text, f"Gate G{g} must be marked completed in tasks.md"
+    assert "- [ ] **G" not in tasks_text, "no uncompleted G-gates may remain"
+
+    # 5. Wire contract fail-closed gate: model-plan schema rejects forged VERIFIED status
+    plan_schema = json.loads((ROOT / "schemas/portability/model-plan.schema.json").read_text(encoding="utf-8"))
+    wire_validator = Draft202012Validator(plan_schema)
+    fake_wire = {
+        "status": "VERIFIED",
+        "evidence_level": "runtime-verified",
+        "source": "explicit",
+        "seats": [],
+        "reasons": [],
+    }
+    with pytest.raises(JsonSchemaError):
+        wire_validator.validate(fake_wire)
+
+
+

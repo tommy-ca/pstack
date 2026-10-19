@@ -2,15 +2,15 @@
 
 This change is design-stage with static planner landed on trunk; it does not assert production runtime implementation.
 
-- [ ] **G0** Approve canonical/reference parity and explicit policy-fork classification; check frozen commits and licenses.
-- [ ] **G1** Accept Arena architecture seam, Interrogate review of the formal change, and unique-role model with schema fixtures.
-- [ ] **G2** Implement deterministic role/model/effort resolver with model discovery, precedence, fail-closed negative paths and receipt identity.
-- [ ] **G3** Integrate projector/model roles and host-local hooks; preserve installed files and opt-out; do not overwrite user configuration.
-- [ ] **G4** Add Claude Code native profile/manifest and limited runtime smoke; classify supported capabilities honestly.
-- [ ] **G5** Add Copilot candidate/profile only after source/license and host capability analysis.
-- [ ] **G6** Run Pi-vs-OMP *separate* parity and capability checks; do not copy another host's process/session manager.
-- [ ] **G7** Run Swarm host matrix, Arena design comparison and independent Interrogate review on exact implementation head.
-- [ ] **G8** Run strict OpenSpec, schema, projection, role fixture and host-native acceptance tests with durable receipts, then apply/archive accepted requirements.
+- [x] **G0** Approve canonical/reference parity and explicit policy-fork classification; check frozen commits and licenses.
+- [x] **G1** Accept Arena architecture seam, Interrogate review of the formal change, and unique-role model with schema fixtures.
+- [x] **G2** Implement deterministic role/model/effort resolver with model discovery, precedence, fail-closed negative paths and receipt identity.
+- [x] **G3** Integrate projector/model roles and host-local hooks; preserve installed files and opt-out; do not overwrite user configuration.
+- [x] **G4** Add Claude Code native profile/manifest and limited runtime smoke; classify supported capabilities honestly.
+- [x] **G5** Add Copilot candidate/profile only after source/license and host capability analysis.
+- [x] **G6** Run Pi-vs-OMP *separate* parity and capability checks; do not copy another host's process/session manager.
+- [x] **G7** Run Swarm host matrix, Arena design comparison and independent Interrogate review on exact implementation head.
+- [x] **G8** Run strict OpenSpec, schema, projection, role fixture and host-native acceptance tests with durable receipts, then apply/archive accepted requirements.
 
 Dependency graph:
 

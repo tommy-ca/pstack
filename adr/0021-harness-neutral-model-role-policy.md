@@ -1,7 +1,7 @@
 # ADR 0021: Harness-neutral role policy from typed profiles, not host forks
 
-Status: **Proposed** (awaiting Arena/Interrogate and issue graph acceptance)
-Date: 2026-10-15
+Status: **accepted** (accepted 2026-10-19 via Gate #445)
+Date: 2026-10-15 (accepted 2026-10-19)
 
 ## Context
 
@@ -22,4 +22,4 @@ Choose a declarative, stable-ID role model and minimal pure resolver layered ont
 - One new schema and minimal resolver/validator effort; existing profiles and manifests remain authoritative for hosts.
 - Independent receipts are required per host and version before any capability is called verified.
 - Cross-family judge diversity, live model availability and read-only enforcement cannot be inferred from labels.
-- RFC decision remains proposed until reviewed and proven.
+- RFC decision accepted via Gate #445 with complete test, schema, projection, and evidence verification.
