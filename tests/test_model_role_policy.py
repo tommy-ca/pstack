@@ -319,6 +319,114 @@ def test_cross_judge_cannot_claim_multiple_seats() -> None:
         check_model_role_policy(policy, PACKAGE)
 
 
+def test_cross_family_panel_seat_selection_clean_planned() -> None:
+    policy = catalog_plan_policy()
+    plan = plan_role(policy, PACKAGE, host="codex", role="interrogate-reviewers",
+                     explicit=["model-a", "model-b"], capabilities=capability_bindings())
+    assert plan.status == "PLANNED"
+    assert len(plan.seats) == 2
+    assert (plan.seats[0].ordinal, plan.seats[0].model, plan.seats[0].family, plan.seats[0].provider) == (
+        1, "model-a", "alpha", "fixture"
+    )
+    assert (plan.seats[1].ordinal, plan.seats[1].model, plan.seats[1].family, plan.seats[1].provider) == (
+        2, "model-b", "beta", "fixture"
+    )
+    assert plan.reasons == ()
+
+
+def test_panel_strict_family_diversity_blocks_on_single_family_and_passes_on_diverse() -> None:
+    policy = catalog_plan_policy()
+    policy["role_constraints"]["interrogate-reviewers"]["require_distinct_model_families"] = True
+
+    # Diverse families: PASS / PLANNED
+    diverse = plan_role(policy, PACKAGE, host="codex", role="interrogate-reviewers",
+                        explicit=["model-a", "model-b"], capabilities=capability_bindings())
+    assert diverse.status == "PLANNED"
+    assert diverse.reasons == ()
+
+    # Single family across 2 seats: BLOCKED
+    same_family = plan_role(policy, PACKAGE, host="codex", role="interrogate-reviewers",
+                            explicit=["model-a", "model-c"], capabilities=capability_bindings())
+    assert same_family.status == "BLOCKED"
+    assert same_family.reasons == ("required model-family diversity missing",)
+    assert same_family.seats == ()
+
+    # Single seat: cannot prove diversity -> BLOCKED
+    single_seat = plan_role(policy, PACKAGE, host="codex", role="interrogate-reviewers",
+                            explicit=["model-a"], capabilities=capability_bindings())
+    assert single_seat.status == "BLOCKED"
+    assert single_seat.reasons == ("required model-family diversity missing",)
+    assert single_seat.seats == ()
+
+    # Inherit parent: no proven model/family -> BLOCKED
+    inherited = plan_role(policy, PACKAGE, host="codex", role="interrogate-reviewers",
+                          explicit=["inherit-parent"], capabilities=capability_bindings())
+    assert inherited.status == "BLOCKED"
+    assert inherited.reasons == ("required model-family diversity missing",)
+    assert inherited.seats == ()
+
+
+def test_cross_judge_family_diversity_degraded_and_blocked_negatives() -> None:
+    policy = catalog_plan_policy()
+
+    # parent_family is None: diversity unproven -> DEGRADED
+    unproven_parent = plan_role(policy, PACKAGE, host="codex", role="arena-cross-judge-pool",
+                                explicit=["model-a", "model-b"], parent_family=None,
+                                capabilities=capability_bindings())
+    assert unproven_parent.status == "DEGRADED"
+    assert "cross-judge family diversity unproven" in unproven_parent.reasons[0]
+
+    # parent_family is None with strict diversity required -> BLOCKED
+    policy_strict = copy.deepcopy(policy)
+    policy_strict["role_constraints"]["arena-cross-judge-pool"]["require_distinct_model_families"] = True
+    blocked_parent = plan_role(policy_strict, PACKAGE, host="codex", role="arena-cross-judge-pool",
+                               explicit=["model-a", "model-b"], parent_family=None,
+                               capabilities=capability_bindings())
+    assert blocked_parent.status == "BLOCKED"
+    assert "cross-judge model family independence is unproven" in blocked_parent.reasons[0]
+
+    # Inherit parent cross-judge without strict diversity -> DEGRADED
+    inherited = plan_role(policy, PACKAGE, host="codex", role="arena-cross-judge-pool",
+                          explicit=["inherit-parent"], parent_family="alpha",
+                          capabilities=capability_bindings())
+    assert inherited.status == "DEGRADED"
+    assert "cross-judge family diversity unproven" in inherited.reasons[0]
+
+    # Inherit parent cross-judge with strict diversity -> BLOCKED
+    inherited_blocked = plan_role(policy_strict, PACKAGE, host="codex", role="arena-cross-judge-pool",
+                                  explicit=["inherit-parent"], parent_family="alpha",
+                                  capabilities=capability_bindings())
+    assert inherited_blocked.status == "BLOCKED"
+    assert "cross-judge model family independence is unproven" in inherited_blocked.reasons[0]
+
+
+def test_unavailable_model_in_panel_or_cross_judge_blocks_closed() -> None:
+    policy = catalog_plan_policy()
+
+    # Interrogate panel with one missing slug
+    panel_plan = plan_role(policy, PACKAGE, host="codex", role="interrogate-reviewers",
+                           explicit=["model-a", "ghost-model"], capabilities=capability_bindings())
+    assert panel_plan.status == "BLOCKED"
+    assert panel_plan.seats == ()
+    assert any("model 'ghost-model' absent from codex catalog; no silent substitution" in r for r in panel_plan.reasons)
+
+    # Cross-judge with missing slug
+    judge_plan = plan_role(policy, PACKAGE, host="codex", role="arena-cross-judge-pool",
+                           explicit=["ghost-model"], parent_family="alpha",
+                           capabilities=capability_bindings())
+    assert judge_plan.status == "BLOCKED"
+    assert judge_plan.seats == ()
+    assert any("model 'ghost-model' absent from codex catalog; no silent substitution" in r for r in judge_plan.reasons)
+
+    # Arena runners with missing slug
+    runner_plan = plan_role(policy, PACKAGE, host="codex", role="arena-runners",
+                            explicit=["model-a", "ghost-model"], capabilities=capability_bindings())
+    assert runner_plan.status == "BLOCKED"
+    assert runner_plan.seats == ()
+    assert any("model 'ghost-model' absent from codex catalog; no silent substitution" in r for r in runner_plan.reasons)
+
+
+
 
 def test_plan_wire_schema_accepts_pure_planner_and_forbids_fake_runtime_claims() -> None:
     from scripts.model_role_resolver import model_plan_to_wire
