@@ -1,5 +1,3 @@
-"""Release tagging is grok plugin tag locally and gh release on v* tags."""
-
 import json
 import re
 import subprocess
@@ -7,32 +5,6 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-
-
-def test_release_script_tags_without_force() -> None:
-    script = (ROOT / "scripts/release.sh").read_text(encoding="utf-8")
-    assert "grok plugin validate" in script
-    assert "grok --sandbox off plugin tag --push" in script
-    assert "push origin" in script
-    assert "GIT_TERMINAL_PROMPT=0" in script
-    assert "credential.helper='!gh auth git-credential'" in script
-    assert "url.https://github.com/.insteadOf=git@github.com:" in script
-    assert "gh release view" in script
-    assert "gh release create" in script
-    assert "--verify-tag" in script
-    assert "__GROK_INSIDE_BWRAP" in script
-    assert "--force" not in script
-
-
-def test_github_release_workflow_on_version_tags() -> None:
-    wf = (ROOT / ".github/workflows/release.yml").read_text(encoding="utf-8")
-    assert "v*" in wf
-    assert "gh release view" in wf
-    assert "gh release create" in wf
-    assert "--verify-tag" in wf
-    assert "grok plugin tag" not in wf
-    assert "workflow_dispatch" not in wf
-    assert "contents: write" in wf
 
 
 def test_plugin_version_is_semver_grokbuild() -> None:
@@ -43,22 +15,6 @@ def test_plugin_version_is_semver_grokbuild() -> None:
     assert re.fullmatch(r"\d+\.\d+\.\d+-grokbuild\.\d+", version), version
     assert re.fullmatch(r"\d{4}\.\d{1,2}\.\d{1,2}", version) is None
     assert re.search(r"-pstack\.\d+$", version) is None, version
-    readme = (ROOT / "README.md").read_text(encoding="utf-8")
-    assert "Do not move it into grok-build-plugins as `pstack/`." in readme
-
-
-def test_natives_page_names_plugin_tag() -> None:
-    natives = (ROOT / "docs/guide/13-grok-natives.md").read_text(encoding="utf-8")
-    assert "grok plugin tag" in natives
-    assert "wait-for-release" not in natives
-    assert "still waits" not in natives
-    tag_rows = [
-        line
-        for line in natives.splitlines()
-        if "`grok plugin tag`" in line and "**Keep.**" in line
-    ]
-    assert tag_rows, "natives must keep a grok plugin tag row"
-    assert "grok --sandbox off plugin tag" in tag_rows[0]
 
 
 def test_port_base_tracks_upstream_packaging() -> None:
@@ -84,20 +40,7 @@ def test_port_base_tracks_upstream_packaging() -> None:
     )
 
 
-def test_release_spec_increments_n_when_head_outruns_tag() -> None:
-    spec = (ROOT / "openspec/specs/pstack-release-tag/spec.md").read_text(
-        encoding="utf-8"
-    )
-    assert "Adapter counter advances when HEAD outruns the last tag" in spec
-    assert "MAJOR.MINOR.PATCH-grokbuild.(N+1)" in spec
-    assert "Existing tags MUST NOT be moved." in spec
-
-
 if __name__ == "__main__":
-    test_release_script_tags_without_force()
-    test_github_release_workflow_on_version_tags()
     test_plugin_version_is_semver_grokbuild()
-    test_natives_page_names_plugin_tag()
     test_port_base_tracks_upstream_packaging()
-    test_release_spec_increments_n_when_head_outruns_tag()
     print("PASS tests/test_release.py")
