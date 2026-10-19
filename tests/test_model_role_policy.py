@@ -716,8 +716,12 @@ def test_reference_fork_ledger_records_completed_source_review() -> None:
             assert blobs["target"] is None, f"expected absent target blob for {row['path']}"
         else:
             assert hex_pattern.match(blobs["target"]), f"invalid target blob {blobs['target']}"
-            res = subprocess.run(["git", "cat-file", "-e", blobs["target"]], cwd=ROOT)
-            assert res.returncode == 0, f"target blob {blobs['target']} missing from git object store"
+            is_shallow = subprocess.run(
+                ["git", "rev-parse", "--is-shallow-repository"], cwd=ROOT, capture_output=True, text=True
+            ).stdout.strip() == "true"
+            if not is_shallow:
+                res = subprocess.run(["git", "cat-file", "-e", blobs["target"]], cwd=ROOT)
+                assert res.returncode == 0, f"target blob {blobs['target']} missing from git object store"
 
     # Review scope fail-closed and independent acceptance record
     scope = manifest["review_scope"]
