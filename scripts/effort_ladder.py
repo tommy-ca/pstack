@@ -41,6 +41,7 @@ MECHANICAL: tuple[str, ...] = (
     "how-explorer",
     "why-investigators",
     "swarm-workers",
+    "comment-sicko",
 )
 INSTRUCTION: tuple[str, ...] = (
     "bug-fix",
@@ -60,6 +61,7 @@ JUDGMENT: tuple[str, ...] = (
     "arena-cross-judge-pool",
     "architect-runners",
     "interrogate-reviewers",
+    "poteto-agent",
 )
 
 _TOKEN = re.compile(r"[A-Za-z][A-Za-z0-9_]*")

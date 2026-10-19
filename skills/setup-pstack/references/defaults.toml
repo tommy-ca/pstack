@@ -34,6 +34,8 @@ swarm-workers = "grok-4.6"
 architect-runners = ["grok-4.6"]
 interrogate-reviewers = ["grok-4.6"]
 independent-verifier = "grok-4.6"
+comment-sicko = "grok-4.6"
+poteto-agent = "grok-4.6"
 
 [effort]
 feature = "medium"
@@ -56,3 +58,5 @@ swarm-workers = "medium"
 architect-runners = "xhigh"
 interrogate-reviewers = "xhigh"
 independent-verifier = "xhigh"
+comment-sicko = "medium"
+poteto-agent = "xhigh"

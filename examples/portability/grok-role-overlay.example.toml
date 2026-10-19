@@ -1,0 +1,10 @@
+# examples/portability/grok-role-overlay.example.toml
+#
+# Native role overlay example for Grok Build (~/.grok/roles/pstack:feature.toml).
+# Managed by /setup-pstack (#438).
+#
+# Only description and reasoning_effort are written; model is omitted so task.model
+# and pstack-models.toml govern model dispatch.
+
+description = "pstack feature role"
+reasoning_effort = "medium"

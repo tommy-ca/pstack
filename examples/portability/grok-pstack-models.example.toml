@@ -1,0 +1,60 @@
+# examples/portability/grok-pstack-models.example.toml
+#
+# Native user override example for Grok Build (~/.grok/pstack-models.toml).
+# Managed by /setup-pstack (#438).
+#
+# Source precedence:
+# explicit invocation -> project -> user (this file) -> host-role -> host-tier -> fallback.
+#
+# Missing keys or 'inherit-parent' omit model on task spawn.
+# Array keys: panel roles spawning multiple independent seats.
+
+architect-runners = ["grok-4.6"]
+arena-cross-judge-pool = ["grok-4.6"]
+arena-runners = ["grok-4.6"]
+bug-fix = "grok-4.6"
+comment-sicko = "grok-4.6"
+feature = "grok-4.6"
+hardest-tasks = "grok-4.6"
+hillclimb = "grok-4.6"
+how-critics = ["grok-4.6"]
+how-explainer = "grok-4.6"
+how-explorer = "grok-4.6"
+independent-verifier = "grok-4.6"
+interrogate-reviewers = ["grok-4.6"]
+judgment-and-prose = "grok-4.6"
+perf-issue = "grok-4.6"
+poteto-agent = "grok-4.6"
+refactoring = "grok-4.6"
+reflect-judgment = "grok-4.6"
+reflect-tooling = "grok-4.6"
+swarm-workers = "grok-4.6"
+why-investigators = "grok-4.6"
+why-synthesizer = "grok-4.6"
+
+[effort]
+# Reasoning effort per role.
+# Setup projects these to ~/.grok/roles/pstack:<role>.toml.
+# 'inherit-parent' or 'auto' deletes the overlay so frontmatter effort applies.
+architect-runners = "xhigh"
+arena-cross-judge-pool = "xhigh"
+arena-runners = "xhigh"
+bug-fix = "high"
+comment-sicko = "medium"
+feature = "medium"
+hardest-tasks = "xhigh"
+hillclimb = "high"
+how-critics = "xhigh"
+how-explainer = "xhigh"
+how-explorer = "medium"
+independent-verifier = "xhigh"
+interrogate-reviewers = "xhigh"
+judgment-and-prose = "xhigh"
+perf-issue = "high"
+poteto-agent = "xhigh"
+refactoring = "medium"
+reflect-judgment = "xhigh"
+reflect-tooling = "high"
+swarm-workers = "medium"
+why-investigators = "medium"
+why-synthesizer = "xhigh"

@@ -1,6 +1,6 @@
 ---
 name: pstack-poteto-agent
-description: "Delegated subagent worker for tasks executed in poteto's style. The parent session coordinates and owns the playbook todo list. Resume an existing `pstack-poteto-agent` for the conversation rather than spawning a sibling. Reads the `poteto-mode` skill's `SKILL.md` in full before any work, including its inline Principles index. Substituting `worker` skips that read and drifts."
+description: "Delegated subagent worker for tasks executed in poteto's style. The parent session coordinates and owns the playbook todo list. Resume an existing `pstack-poteto-agent` for the conversation rather than spawning a sibling. Reads the `poteto-mode` skill's `SKILL.md` in full before any work, including its inline Principles index. Substituting `worker` skips that read and drifts. Spawned on Droid with `Task` (`subagent_type: pstack-poteto-agent`); the model inherits the parent session and there is no per-spawn effort field."
 model: inherit
 ---
 
