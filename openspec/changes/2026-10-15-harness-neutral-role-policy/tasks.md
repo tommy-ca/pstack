@@ -646,6 +646,38 @@ Docs-only record from main `c94c114`. No code, receipt, fixture or evidence-inde
 
 Program Epic #590 is fulfilled and CLOSED.
 
+## Dated evidence (2026-10-19, waves 42-45: program #600 code quality and architectural seam remediation)
+
+Docs-only record from main `997e2c3`. No code, receipt, fixture or evidence-index file is touched. This section is appended and no earlier wave's prose is rewritten.
+
+**Post-590 code quality and architectural seam remediation complete.** Program #600 delivered four remediations under stacked PRs, verified independently by `pro`-tier verifiers:
+
+- Wave 42 (PR #605 / #601, commit `9c02d54`):
+  - Fixed check selection mapping for decomposed modules (`scripts/surface_revisions.py`, `scripts/evidence_durability.py`, `scripts/select_checks.py`, `scripts/openspec_change.py`, `scripts/evidence_index.py`) in `scripts/select_checks.py` to route to owning tests instead of falling back to the entire `scripts/**` suite.
+  - Replaced `importlib` eval subprocess hack in `scripts/verify-portable.py` with direct helper import.
+  - Hoisted loop-local imports out of iteration in `scripts/evidence_index.py`.
+  - Added explicit `ScenarioResult` type annotation in `scripts/evidence_durability.py`.
+
+- Wave 43 (PR #606 / #602, commit `d19415e`):
+  - Parameterized `resolve_openspec_change` and `validate_openspec_change` in `scripts/openspec_change.py` with callable injection (`active_resolver`), deleting `_active_resolver()`.
+  - Completely eliminated reverse facade lookups via `sys.modules.get` repo-wide.
+  - Deleted `_max_cache_bytes()` and `_max_cache_records()` from `scripts/surface_revisions.py`, utilizing direct constant access.
+
+- Wave 44 (PR #607 / #603, commit `8e8734e`):
+  - Decoupled core domain types, dataclasses, and reduction logic into `scripts/portability_types.py` (664 lines).
+  - Eliminated PEP 562 dynamic `__getattr__` and `globals()` dictionary manipulation in `scripts/portability_schema.py` (reduced to 232 lines), establishing static re-exports and comprehensive `__all__`.
+  - Updated `scripts/evidence_durability.py` and `scripts/surface_revisions.py` to source domain models directly from `scripts.portability_types`.
+  - Mapped `scripts/portability_types.py` in `scripts/select_checks.py` and `tests/test_select_checks.py`.
+
+- Wave 45 (PR #608 / #604, commit `997e2c3`):
+  - Extracted the 6 native harness driver scenarios and repository-local drive scenarios into `scripts/harness_scenarios.py` (245 lines).
+  - Extracted `check_staleness_action` into `scripts/evidence_index.py` (264 lines).
+  - Reduced `scripts/verify-portable.py` from 969 lines down to 688 lines, securing over 310 lines of headroom below Rule 1's 1,000-line budget and well under the 750-line target.
+  - Mapped `scripts/harness_scenarios.py` in `scripts/select_checks.py` and `tests/test_select_checks.py`.
+  - Expanded `tests/test_verify_portable.py` with isolated driver scenario execution tests and sub-750 line assertions.
+
+Program Epic #600 is fulfilled and CLOSED.
+
 
 
 
