@@ -221,4 +221,82 @@ describe("main", () => {
     expect(harness.stdout.join("")).toContain("JSON (NDJSON while polling)");
     expect(reader.calls).toEqual([]);
   });
+
+  const unknownMergeability = () =>
+    fakeReader({ facts: { mergeable: "UNKNOWN", mergeStateStatus: "UNKNOWN" } });
+  const pollArgs = [
+    "--owner",
+    "owner",
+    "--repo",
+    "repo",
+    "--pr",
+    "1",
+    "--timeout",
+    "1",
+    "--interval",
+    "1",
+  ];
+
+  async function runCli(argv: readonly string[], reader: GitHubReader) {
+    const harness = testRuntime(reader);
+    let now = 0;
+    const code = await main([...argv], {
+      ...harness.runtime,
+      clock: {
+        now: () => now,
+        observedAt: () => "2026-07-26T00:00:00.000Z",
+        async sleep(seconds) {
+          now += seconds;
+        },
+      },
+    });
+    return { code, lines: harness.stdout, output: harness.stdout.join("") };
+  }
+
+  it("waits out unknown mergeability, timing out rather than readying", async () => {
+    const json = await runCli(pollArgs, unknownMergeability());
+    expect(json.code).toBe(5);
+    const verdicts = json.lines.map((line) => JSON.parse(line) as unknown);
+    expect(verdicts).toContainEqual(
+      expect.objectContaining({
+        kind: "WAITING",
+        reason: { kind: "mergeability-unknown" },
+      })
+    );
+    expect(verdicts.at(-1)).toMatchObject({
+      kind: "TIMEOUT",
+      reason: { kind: "mergeability-unknown" },
+    });
+
+    const pretty = await runCli(
+      [...pollArgs, "--pretty"],
+      unknownMergeability()
+    );
+    expect(pretty.code).toBe(5);
+    expect(pretty.output).toContain("mergeability unresolved");
+    expect(pretty.output).not.toContain("READY");
+  });
+
+  it("names unknown mergeability in the status table instead of a clear merge cell", async () => {
+    const status = await runCli(
+      [
+        "--owner",
+        "owner",
+        "--repo",
+        "repo",
+        "--pr",
+        "1",
+        "--status-only",
+        "--pretty",
+      ],
+      unknownMergeability()
+    );
+    expect(status.code).toBe(0);
+    const mergeCell = status.output
+      .split("\n")
+      .find((line) => line.startsWith("| [#1]("))
+      ?.split("|")[4];
+    expect(mergeCell).toContain("mergeability unresolved");
+    expect(mergeCell).not.toContain("\u2705");
+  });
 });
