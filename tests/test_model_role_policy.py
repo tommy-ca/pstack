@@ -702,3 +702,28 @@ def test_reference_fork_ledger_records_completed_source_review() -> None:
     assert all(set(r["source_review"]) >= {"counterpart_blobs", "attribution_profile", "semantic_delta", "check_or_gap"} for r in rows)
     absent = manifest["source_review_contract"]["absent_counterparts"]
     assert [(a["side"], a["path"]) for a in absent] == [("target", "skills/poteto-mode/scripts/check-plan.test.ts")]
+
+    # Counterpart blob format and git object store verification
+    import subprocess
+    hex_pattern = re.compile(r"^[0-9a-f]{40}$")
+    absent_target_paths = {a["path"] for a in absent if a.get("side") == "target"}
+    for row in rows:
+        blobs = row["source_review"]["counterpart_blobs"]
+        assert hex_pattern.match(blobs["reference"]), f"invalid reference blob {blobs['reference']}"
+        assert hex_pattern.match(blobs["canonical"]), f"invalid canonical blob {blobs['canonical']}"
+        rel_target = row["path"].removeprefix("plugins/pstack/")
+        if rel_target in absent_target_paths:
+            assert blobs["target"] is None, f"expected absent target blob for {row['path']}"
+        else:
+            assert hex_pattern.match(blobs["target"]), f"invalid target blob {blobs['target']}"
+            res = subprocess.run(["git", "cat-file", "-e", blobs["target"]], cwd=ROOT)
+            assert res.returncode == 0, f"target blob {blobs['target']} missing from git object store"
+
+    # Review scope fail-closed and independent acceptance record
+    scope = manifest["review_scope"]
+    assert scope["approval"] == "not granted"
+    assert scope["implementation"] == "not authorized or claimed"
+    assert scope["runtime"] == "not verified"
+    assert scope["independent_acceptance"].startswith("completed;")
+    assert "resolved on mainline" in scope["watcher_gap"]
+
