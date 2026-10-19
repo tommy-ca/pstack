@@ -18,6 +18,7 @@ from scripts.portability_schema import (
     Binding,
     ChildSettlement,
     HarnessProfile,
+    ScenarioResult,
     ValidationError,
     VerificationReceipt,
     _is_observed_settlement,
@@ -25,7 +26,7 @@ from scripts.portability_schema import (
 from scripts.surface_revisions import SurfaceRevisions, compute_surface_revisions
 
 
-def _is_preservable_settlement(scenario) -> bool:
+def _is_preservable_settlement(scenario: ScenarioResult) -> bool:
     return _is_observed_settlement(scenario) or any(
         _is_observed_settlement(scenario, capability) for capability in SETTLEMENT_PROMOTIONS
     )

@@ -11,8 +11,14 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from scripts.host_identity import BUILTIN_HOSTS
-from scripts.portability_schema import SurfaceRevisions, VerificationReceipt
+from scripts.portability_schema import (
+    Binding,
+    Evidence,
+    HarnessProfile,
+    SurfaceRevisions,
+    VerificationReceipt,
+    check_evidence_durability,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -132,12 +138,6 @@ def check_evidence_action(hosts: List[str], root: Path, allow_stale: bool = Fals
             print(f"[{h}] FAIL: profile {profile_file} is unreadable: {type(err).__name__}: {err}")
             all_ok = False
             continue
-        from scripts.portability_schema import (
-            Binding,
-            Evidence,
-            HarnessProfile,
-            check_evidence_durability,
-        )
 
         b = [Binding(**x) for x in d.get("bindings", [])]
         e = [Evidence(**x) for x in d.get("evidence_ledger", [])]

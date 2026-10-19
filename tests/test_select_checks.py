@@ -121,6 +121,24 @@ class TestCheckSelectionTable:
         assert _ids(result) == ["pytest:tests/test_verify_harness.py"]
         assert _commands(result) == [[PY, "-m", "pytest", "-q", "tests/test_verify_harness.py"]]
 
+    def test_decomposed_scripts_select_owning_modules_rather_than_scripts_fallback(self) -> None:
+        decomposed = [
+            ("scripts/surface_revisions.py", ["pytest:tests/test_evidence_durability.py", "pytest:tests/test_portability_schemas.py"]),
+            ("scripts/evidence_durability.py", ["pytest:tests/test_evidence_durability.py", "pytest:tests/test_portability_schemas.py"]),
+            ("scripts/select_checks.py", ["pytest:tests/test_select_checks.py", "pytest:tests/test_verify_portable.py"]),
+            ("scripts/openspec_change.py", ["pytest:tests/test_verify_portable.py"]),
+            ("scripts/evidence_index.py", ["pytest:tests/test_evidence_durability.py", "pytest:tests/test_verify_portable.py"]),
+            ("scripts/model_role_resolver.py", ["pytest:tests/test_model_role_policy.py", "pytest:tests/test_setup_pstack.py"]),
+            ("scripts/model_role_policy.py", ["pytest:tests/test_model_role_policy.py", "pytest:tests/test_setup_pstack.py"]),
+            ("scripts/setup_pstack.py", ["pytest:tests/test_model_role_policy.py", "pytest:tests/test_setup_pstack.py"]),
+            ("scripts/host_identity.py", ["pytest:tests/test_host_identity.py", "pytest:tests/test_portability_schemas.py"]),
+        ]
+        offline_set = sorted(f"pytest:{m}" for m in OFFLINE_GATE)
+        for path, expected_ids in decomposed:
+            result = vp.select_checks([path])
+            assert sorted(_ids(result)) == sorted(expected_ids)
+            assert _ids(result) != offline_set
+
     def test_skill_markdown_uses_the_skill_rule_not_the_docs_rule(self) -> None:
         result = vp.select_checks(["skills/fix-ci/SKILL.md"])
 
