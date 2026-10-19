@@ -340,3 +340,59 @@ def test_active_changes_empty_list_parses_to_noop(monkeypatch: pytest.MonkeyPatc
     assert verify_portable._active_openspec_changes() == []
     assert verify_portable.validate_openspec_change(None) == 0
 
+
+def test_verify_portable_modular_decomposition_and_backwards_compatibility() -> None:
+    vp_path = ROOT / "scripts" / "verify-portable.py"
+    sc_path = ROOT / "scripts" / "select_checks.py"
+    oc_path = ROOT / "scripts" / "openspec_change.py"
+    ei_path = ROOT / "scripts" / "evidence_index.py"
+    assert len(vp_path.read_text(encoding="utf-8").splitlines()) < 1000
+    assert len(sc_path.read_text(encoding="utf-8").splitlines()) < 1000
+    assert len(oc_path.read_text(encoding="utf-8").splitlines()) < 1000
+    assert len(ei_path.read_text(encoding="utf-8").splitlines()) < 1000
+
+    import scripts.select_checks as sc
+    import scripts.openspec_change as oc
+    import scripts.evidence_index as ei
+
+    for name in (
+        "CHECK_SELECTION_TABLE",
+        "offline_contract_tests",
+        "select_checks",
+        "changed_paths",
+        "select_checks_plan",
+        "select_checks_action",
+    ):
+        assert hasattr(verify_portable, name)
+        assert getattr(verify_portable, name) is getattr(sc, name)
+
+    for name in (
+        "ChangeResolution",
+        "_active_openspec_changes",
+        "_validate_named_change",
+        "resolve_openspec_change",
+        "validate_openspec_change",
+    ):
+        assert hasattr(verify_portable, name)
+        assert getattr(verify_portable, name) is getattr(oc, name)
+
+    for name in (
+        "_file_or_denied",
+        "get_declared_hosts",
+        "evidence_index_row",
+        "rows_from_receipts",
+        "index_row_mismatch",
+        "check_evidence_action",
+    ):
+        assert hasattr(verify_portable, name)
+        assert getattr(verify_portable, name) is getattr(ei, name)
+
+    cmd = [
+        sys.executable,
+        "-c",
+        "import scripts.select_checks; import scripts.openspec_change; import scripts.evidence_index; print('ok')",
+    ]
+    proc = subprocess.run(cmd, cwd=str(ROOT), capture_output=True, text=True, check=True)
+    assert proc.stdout.strip() == "ok"
+
+
