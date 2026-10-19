@@ -116,6 +116,22 @@ def test_wrong_effort_fails_for_named_model() -> None:
     with pytest.raises(ValidationError, match="unsupported effort"):
         check_model_role_policy(policy, PACKAGE)
 
+def test_caller_slug_with_unsupported_effort_blocks_in_planner() -> None:
+    """Validator checks declared models only; caller slugs reach the planner gate."""
+    policy = live_policy()
+    host = policy["hosts"]["codex"]
+    host["model_catalog"] = [
+        {"id": "weak-model", "provider": "test", "family": "fictional",
+         "supported_efforts": ["low"]},
+        {"id": "test-model", "provider": "test", "family": "fictional",
+         "supported_efforts": ["low", "high"]},
+    ]
+    host["role_overrides"] = {"swarm-workers": {"models": ["test-model"], "effort": "high"}}
+    plan = plan_role(policy, PACKAGE, host="codex", role="swarm-workers",
+                     explicit="weak-model", capabilities=capability_bindings())
+    assert plan.status == "BLOCKED"
+    assert "unsupported on model" in plan.reasons[0]
+
 
 def test_package_roles_have_exactly_one_local_agent_definition() -> None:
     # Role IDs are owned by the descriptor. The agent files are host-independent
