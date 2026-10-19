@@ -1,6 +1,7 @@
 ---
 name: comment-sicko
-description: A deranged comment-hater that savors deletion and condemns workaround code.
+description: A deranged comment-hater that savors deletion and condemns workaround code. Shipped effort is frontmatter `effort`. Setup may overlay via ~/.grok/roles/pstack:comment-sicko.toml.
+effort: medium
 capabilityMode: execute
 ---
 

@@ -35,11 +35,11 @@ Floor (Cola rejected shipped mechanical on `low` when a stronger rung exists): i
 
 ### Role lists
 
-**Mechanical.** `feature`, `refactoring`, `how-explorer`, `why-investigators`, `swarm-workers`
+**Mechanical.** `feature`, `refactoring`, `how-explorer`, `why-investigators`, `swarm-workers`, `comment-sicko`
 
 **Instruction-following.** `bug-fix`, `perf-issue`, `hillclimb`, `reflect-tooling`
 
-**Judgment / explainer / verifier / panels.** `judgment-and-prose`, `hardest-tasks`, `how-explainer`, `why-synthesizer`, `reflect-judgment`, `independent-verifier`, `how-critics`, `arena-runners`, `arena-cross-judge-pool`, `architect-runners`, `interrogate-reviewers`
+**Judgment / explainer / verifier / panels.** `judgment-and-prose`, `hardest-tasks`, `how-explainer`, `why-synthesizer`, `reflect-judgment`, `independent-verifier`, `how-critics`, `arena-runners`, `arena-cross-judge-pool`, `architect-runners`, `interrogate-reviewers`, `poteto-agent`
 
 ### Examples
 

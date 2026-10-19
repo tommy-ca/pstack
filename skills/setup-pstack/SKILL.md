@@ -38,7 +38,7 @@ Panel roles (`how-critics`, `arena-runners`, `arena-cross-judge-pool`, `architec
 
 Second question, after models. Detect the live enum first ([`references/effort-ladder.md`](references/effort-ladder.md)). Compute the three-tier split from that list. `questions[].question` is a short how-should-pstack-pick-reasoning-effort line. Options, in this order, and no others:
 
-1. Shipped default (recommended). Name the three resolved tokens this session. Highest detected for `judgment-and-prose`, `hardest-tasks`, `how-explainer`, `why-synthesizer`, `reflect-judgment`, `independent-verifier`, `how-critics`, `arena-runners`, `arena-cross-judge-pool`, `architect-runners`, `interrogate-reviewers`. One step down for `bug-fix`, `perf-issue`, `hillclimb`, `reflect-tooling`. Two steps down for `feature`, `refactoring`, `how-explorer`, `why-investigators`, `swarm-workers` (clamped off the weakest when the enum has three or more levels).
+1. Shipped default (recommended). Name the three resolved tokens this session. Highest detected for `judgment-and-prose`, `hardest-tasks`, `how-explainer`, `why-synthesizer`, `reflect-judgment`, `independent-verifier`, `how-critics`, `arena-runners`, `arena-cross-judge-pool`, `architect-runners`, `interrogate-reviewers`, `poteto-agent`. One step down for `bug-fix`, `perf-issue`, `hillclimb`, `reflect-tooling`. Two steps down for `feature`, `refactoring`, `how-explorer`, `why-investigators`, `swarm-workers`, `comment-sicko` (clamped off the weakest when the enum has three or more levels).
 2. `inherit-parent` for every role. No `~/.grok/roles` overlay. Plugin agent frontmatter stays.
 3. The **highest** detected level for every role. The option label is that token (whatever this session actually detected).
 4. Customize per role.
@@ -146,6 +146,8 @@ swarm-workers = "grok-4.6"
 architect-runners = ["grok-4.6"]
 interrogate-reviewers = ["grok-4.6"]
 independent-verifier = "grok-4.6"
+comment-sicko = "grok-4.6"
+poteto-agent = "grok-4.6"
 
 [effort]
 feature = "medium"
@@ -168,6 +170,8 @@ swarm-workers = "medium"
 architect-runners = "xhigh"
 interrogate-reviewers = "xhigh"
 independent-verifier = "xhigh"
+comment-sicko = "medium"
+poteto-agent = "xhigh"
 ```
 
 ### 6. Confirm

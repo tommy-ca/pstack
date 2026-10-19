@@ -1022,12 +1022,12 @@ def test_effort_frontmatter_matches_ladder() -> None:
             m = re.match(r'^([A-Za-z0-9_-]+)\s*=\s*"([^"]+)"', line)
             if m:
                 parsed[m.group(1)] = m.group(2)
-    for path in (ROOT / "agents").glob("*.md"):
+    agent_paths = sorted((ROOT / "agents").glob("*.md"))
+    assert len(agent_paths) == 22
+    for path in agent_paths:
         fm = path.read_text(encoding="utf-8").split("---", 2)[1]
         m = re.search(r"^effort:\s*(\S+)", fm, re.MULTILINE)
-        if not m:
-            assert path.stem in {"comment-sicko", "poteto-agent"}, path.name
-            continue
+        assert m is not None, f"missing effort frontmatter in {path.name}"
         assert parsed[path.stem] == m.group(1), path.name
     assert not re.search(r"^\[models\]", defaults, re.MULTILINE)
     assert (ROOT / "skills/figure-it-out/SKILL.md").is_file()
