@@ -528,6 +528,7 @@ def test_reference_fork_ledger_records_completed_source_review() -> None:
     assert all(row["why"].strip() for row in rows)
     assert all(row["upstream"] == "not-proposed" for row in rows)
     assert Counter(r["proposed_adoption"] for r in rows) == {"adapt": 36, "preserve": 1, "exclude": 2, "gap": 7, "policy-fork": 2}
+    assert Counter(r["proposed_adoption"] for r in rows) == dict(manifest["review_counts"])
     assert not any(row["proposed_adoption"] == "unclassified" for row in rows)
     per_row = [row for row in rows if "license_disposition" in row]
     assert {row["path"] for row in per_row} == {
