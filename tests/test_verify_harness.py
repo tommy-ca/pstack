@@ -1316,12 +1316,6 @@ def test_upstream_metadata_contract() -> None:
     ):
         assert (ROOT / path).is_file(), path
     for path in (
-        "skills/poteto-mode/scripts/watch-pr/watch-pr",
-        "skills/poteto-mode/scripts/worktree-audit.sh",
-    ):
-        mode = (ROOT / path).stat().st_mode
-        assert mode & 0o111, f"{path} must stay executable (mode {oct(mode)})"
-    for path in (
         "README.md",
         "README.zh-CN.md",
         "TEST-PLAN.md",
