@@ -81,35 +81,39 @@ def _receipt_payload(receipt: VerificationReceipt) -> Dict[str, Any]:
     return data
 
 
-def _file_or_denied(path: Path) -> bool:
-    """`is_file()` that reports a denied stat as present rather than crashing or lying.
-
-    A parent directory this run cannot search makes the stat itself fail with
-    EACCES/EPERM. `Path.is_file()` raises that on 3.12 and swallows it to `False` on
-    3.14, so the raw guard either escaped as a traceback or skipped the refusal and
-    wrote straight through the denial. Reporting "present" sends both into the read
-    that already refuses, naming the file (#495).
-    """
-    try:
-        return stat.S_ISREG(path.stat().st_mode)
-    except PermissionError:
-        return True
-    except OSError:
-        return False
-
-
-def get_declared_hosts() -> List[str]:
-    """Dynamically read declared host targets from package descriptor."""
-    pkg_file = ROOT / "pstack.package.json"
-    if pkg_file.is_file():
-        try:
-            data = json.loads(pkg_file.read_text(encoding="utf-8"))
-            targets = data.get("host_targets", [])
-            if targets and isinstance(targets, list):
-                return [str(t) for t in targets]
-        except Exception:
-            pass
-    return list(BUILTIN_HOSTS)
+from scripts.select_checks import (
+    CANONICAL_INDEX_CHECK,
+    CHECK_SELECTION_TABLE,
+    OFFLINE_WORKFLOW,
+    SCAN_HOST_BOUNDARY,
+    _check_id,
+    _command_for,
+    _expand,
+    _git_lines,
+    _print_selection_plan,
+    _tier,
+    changed_paths,
+    offline_contract_tests,
+    pattern_matches,
+    select_checks,
+    select_checks_action,
+    select_checks_plan,
+)
+from scripts.openspec_change import (
+    ChangeResolution,
+    _active_openspec_changes,
+    _validate_named_change,
+    resolve_openspec_change,
+    validate_openspec_change,
+)
+from scripts.evidence_index import (
+    _file_or_denied,
+    check_evidence_action,
+    evidence_index_row,
+    get_declared_hosts,
+    index_row_mismatch,
+    rows_from_receipts,
+)
 
 
 def get_canonical_root(root: Path) -> Path:
@@ -132,355 +136,6 @@ def get_canonical_root(root: Path) -> Path:
 
 
 DEFAULT_EVIDENCE_DIR = ROOT / ".audit" / "evidence"
-
-
-# --- Change-scoped check selection (#312) ------------------------------------
-#
-# Ownership: the tier inventory stays with its owners — the offline PR gate list
-# is read from .github/workflows/portability-offline.yml, never re-typed here,
-# and docs/verification-test-tiers.md remains the 3-tier classification. This
-# table only maps a changed path to the minimal gate that can fail for it.
-
-OFFLINE_WORKFLOW = Path(".github/workflows/portability-offline.yml")
-# Standalone verifiers selected where they gate the changed surface directly and
-# run offline: the boundary scanner and the canonical-inventory check.
-SCAN_HOST_BOUNDARY = (sys.executable, "scripts/scan-host-boundary.py")
-CANONICAL_INDEX_CHECK = (sys.executable, "scripts/canonical-index.py", "--check")
-
-
-def offline_contract_tests(root: Path = ROOT) -> List[str]:
-    """The offline PR gate's pytest file list, read from the workflow itself."""
-    workflow = root / OFFLINE_WORKFLOW
-    if not workflow.is_file():
-        raise RuntimeError(f"Offline gate workflow not found: {workflow}")
-    found: List[str] = []
-    for match in re.findall(r"tests/[\w./-]+\.py", workflow.read_text(encoding="utf-8")):
-        if match not in found:
-            found.append(match)
-    if not found:
-        raise RuntimeError(f"No pytest files found in {workflow}")
-    return found
-
-
-# (path pattern, pytest module tokens, standalone verifier commands). First match
-# wins, so specific rows must precede their general fallbacks.
-# Tokens: "{changed}" = the changed path itself, "{offline}" = the full offline
-# gate set, "!<module>" = needs the documented host-dependent opt-in env var.
-CHECK_SELECTION_TABLE: List[tuple] = [
-    ("tests/*.py", ("{changed}",), ()),
-    ("docs/**", ("tests/test_verify_docs_sync.py",), ()),
-    (
-        "skills/**",
-        ("tests/test_skill_frontmatter.py", "tests/test_scan_host_boundary.py"),
-        (SCAN_HOST_BOUNDARY,),
-    ),
-    (
-        "agents/**",
-        (
-            "tests/test_plugin_agents.py",
-            "tests/test_scan_host_boundary.py",
-            "tests/test_droid_projection.py",
-            "tests/test_verify_harness.py",
-        ),
-        (SCAN_HOST_BOUNDARY,),
-    ),
-    (
-        "droids/**",
-        (
-            "tests/test_plugin_agents.py",
-            "tests/test_scan_host_boundary.py",
-            "tests/test_droid_projection.py",
-            "tests/test_verify_harness.py",
-        ),
-        (SCAN_HOST_BOUNDARY,),
-    ),
-    # Remaining markdown (root docs, ADRs, openspec prose): the docs-sync gate.
-    # fnmatch needs the explicit root pattern, because `**/*.md` matches only paths
-    # containing a slash and would send todo.md and README.md to the full-set default.
-    ("*.md", ("tests/test_verify_docs_sync.py",), ()),
-    ("**/*.md", ("tests/test_verify_docs_sync.py",), ()),
-    # OpenSpec change/spec artifacts, including .openspec.yaml: prose, not code.
-    ("openspec/**", ("tests/test_verify_docs_sync.py",), ()),
-    ("LICENSE", ("tests/test_verify_docs_sync.py",), ()),
-    (".github/**", ("{offline}",), ()),  # the gate definition itself
-    ("schemas/**", ("tests/test_portability_schemas.py",), ()),
-    ("profiles/**", ("tests/test_portability_schemas.py", "tests/test_evidence_durability.py"), ()),
-    (
-        "scripts/portability_schema.py",
-        (
-            "tests/test_portability_schemas.py",
-            "tests/test_verdict_reduction.py",
-            "tests/test_evidence_durability.py",
-        ),
-        (),
-    ),
-    (
-        "scripts/evidence_receipts.py",
-        ("tests/test_evidence_receipts.py", "tests/test_evidence_durability.py", "tests/test_select_checks.py"),
-        (),
-    ),
-    ("scripts/drivers/**", ("!tests/test_harness_drivers.py", "tests/test_route_resolver.py"), ()),
-    ("scripts/route_resolver.py", ("tests/test_route_resolver.py", "tests/test_droid_routing.py"), ()),
-    (
-        "scripts/verify-portable.py",
-        ("tests/test_verify_portable.py", "tests/test_verdict_reduction.py"),
-        (),
-    ),
-    ("scripts/verify-harness.py", ("tests/test_verify_harness.py",), ()),
-    ("scripts/verify-decision-contract.py", ("tests/test_verify_decision_contract.py",), ()),
-    ("scripts/verify_rollback_equivalence.py", ("tests/test_rollback_equivalence.py",), ()),
-    ("scripts/scan-host-boundary.py", ("tests/test_scan_host_boundary.py",), ()),
-    ("scripts/skill_frontmatter.py", ("tests/test_skill_frontmatter.py",), ()),
-    ("scripts/project-package.py", ("tests/test_project_package.py", "tests/test_droid_projection.py"), ()),
-    (
-        "scripts/package-lifecycle.py",
-        ("tests/test_package_lifecycle.py", "tests/test_package_lifecycle_safety.py"),
-        (),
-    ),
-    ("scripts/canonical-index.py", ("tests/test_canonical_index.py",), ()),
-    ("scripts/scaffold-verification-skill.py", ("tests/test_scaffold_verification_skill.py",), ()),
-    ("scripts/sync-antigravity-plugin.py", ("tests/test_sync_antigravity_plugin.py",), ()),
-    (
-        "references/**",
-        (
-            "tests/test_route_resolver.py",
-            "tests/test_evidence_receipts.py",
-            "tests/test_droid_routing.py",
-        ),
-        (CANONICAL_INDEX_CHECK,),
-    ),
-    (
-        "pstack.package.json",
-        (
-            "tests/test_project_package.py",
-            "tests/test_verify_harness.py",
-            "tests/test_portability_schemas.py",
-        ),
-        (),
-    ),
-    ("scripts/**", ("{offline}",), ()),  # any other script: the full offline set
-]
-
-
-def pattern_matches(path: str, pattern: str) -> bool:
-    if pattern.endswith("/**"):
-        return path == pattern[:-3] or path.startswith(pattern[:-2])
-    return fnmatch.fnmatch(path, pattern)
-
-
-def _check_id(command: List[str]) -> str:
-    if "pytest" in command:
-        return f"pytest:{command[-1]}"
-    script = next((token for token in command if token.endswith(".py")), command[-1])
-    return f"script:{Path(script).name}"
-
-
-def _tier(token: str, offline_tests: List[str]) -> str:
-    if token.startswith("!"):
-        return "host_dependent"  # native smoke behind the documented opt-in
-    return "offline" if token in offline_tests else "outside_gate"
-
-
-def _expand(tokens: Iterable[str], path: str, offline_tests: List[str]) -> List[str]:
-    expanded: List[str] = []
-    for token in tokens:
-        if token == "{changed}":
-            expanded.append(path)
-        elif token == "{offline}":
-            expanded.extend(offline_tests)
-        else:
-            expanded.append(token)
-    return expanded
-
-
-def _command_for(token: str) -> List[str]:
-    run = [sys.executable, "-m", "pytest", "-q", token.lstrip("!")]
-    if token.startswith("!"):
-        return ["env", "PSTACK_RUN_HOST_DEPENDENT_TESTS=1", *run]
-    return run
-
-
-def select_checks(
-    changed: Iterable[str], offline_tests: Optional[List[str]] = None
-) -> Dict[str, Any]:
-    """Minimal check set for the changed paths, plus the unmapped path list.
-
-    Unmapped paths default to the full offline contract set — never to nothing.
-    """
-    offline = offline_tests if offline_tests is not None else offline_contract_tests()
-    checks: Dict[str, Dict[str, Any]] = {}
-    unmapped: List[str] = []
-
-    def add(command: List[str], tier: str, path: str) -> None:
-        check = checks.get(_check_id(command))
-        if check is None:
-            check = {"id": _check_id(command), "tier": tier, "command": command, "paths": []}
-            checks[check["id"]] = check
-        if path not in check["paths"]:
-            check["paths"].append(path)
-
-    for path in changed:
-        rule = next((r for r in CHECK_SELECTION_TABLE if pattern_matches(path, r[0])), None)
-        if rule is None:
-            unmapped.append(path)
-            rule = ("(unmapped)", ("{offline}",), ())
-        _, module_tokens, verifier_commands = rule
-        for token in _expand(module_tokens, path, offline):
-            add(_command_for(token), _tier(token, offline), path)
-        for command in verifier_commands:
-            add(list(command), "offline", path)  # standalone verifier: offline/static evidence
-
-    ordered = sorted(checks.values(), key=lambda c: (c["tier"], c["id"]))
-    return {"checks": ordered, "unmapped_paths": unmapped}
-
-
-def changed_paths(root: Path, base: str, head: str = "HEAD") -> Dict[str, Any]:
-    """Real merge base, committed diff, plus staged/unstaged/untracked context at HEAD."""
-    merge_base = resolve_merge_base(root, base, head)
-    head_sha = resolve_revision(root, head)
-    paths = [p for p in _git_lines(root, ["diff", "--name-only", merge_base, head]) if p]
-    if head == "HEAD":
-        for line in _git_lines(root, ["status", "--porcelain", "-uall"]):
-            entry = line[3:].strip().strip('"')
-            if " -> " in entry:
-                entry = entry.split(" -> ")[-1]
-            if entry and entry not in paths:
-                paths.append(entry)
-    return {"merge_base": merge_base, "head_sha": head_sha, "changed_paths": paths}
-
-
-def _git_lines(root: Path, args: List[str]) -> List[str]:
-    res = subprocess.run(["git", *args], cwd=str(root), capture_output=True, text=True, check=True)
-    return res.stdout.splitlines()
-
-
-def select_checks_plan(
-    base: str, head: str = "HEAD", root: Path = ROOT, offline_tests: Optional[List[str]] = None
-) -> Dict[str, Any]:
-    """Full selection plan: merge base, patch id, changed paths, minimal checks."""
-    offline = offline_tests if offline_tests is not None else offline_contract_tests(root)
-    diff = changed_paths(root, base, head)
-    selection = select_checks(diff["changed_paths"], offline)
-    return {
-        "base": base,
-        "head": head,
-        "merge_base": diff["merge_base"],
-        "head_sha": diff["head_sha"],
-        "patch_id": compute_patch_id(root, diff["merge_base"], head),
-        "changed_paths": diff["changed_paths"],
-        "unmapped_paths": selection["unmapped_paths"],
-        "defaulted_to_offline": bool(selection["unmapped_paths"]),
-        "checks": selection["checks"],
-    }
-
-
-def _print_selection_plan(plan: Dict[str, Any]) -> None:
-    print(
-        f"Change scope: {plan['base']}..{plan['head']} "
-        f"(merge-base {plan['merge_base'][:8]}, head {plan['head_sha'][:8]}, patch-id {plan['patch_id'][:8]})"
-    )
-    print(f"Changed paths: {len(plan['changed_paths'])}")
-    for path in plan["changed_paths"]:
-        print(f"  {path}")
-    if plan["unmapped_paths"]:
-        print(f"Unmapped paths defaulted to the full offline set: {', '.join(plan['unmapped_paths'])}")
-    else:
-        print("Unmapped paths: none")
-    print(f"Selected checks: {len(plan['checks'])}")
-    for check in plan["checks"]:
-        print(f"  [{check['tier']}] {shlex.join(check['command'])}")
-        print(f"      for: {', '.join(check['paths'])}")
-
-
-
-
-def _active_openspec_changes() -> list[str] | None:
-    """Names from structured `openspec list --json`; None when the lookup itself fails."""
-    try:
-        listed = subprocess.run(
-            ["openspec", "list", "--json"], capture_output=True, text=True, check=False
-        )
-        if listed.returncode != 0:
-            return None
-        import json as _json
-
-        payload = _json.loads(listed.stdout or "{}")
-        changes = payload.get("changes") if isinstance(payload, dict) else payload
-        if not isinstance(changes, list):
-            return None
-        parsed: list[str] = []
-        for entry in changes:
-            if not isinstance(entry, dict):
-                return None
-            name = entry.get("name")
-            if not isinstance(name, str) or not name:
-                return None
-            parsed.append(name)
-        return parsed
-    except Exception:
-        return None
-
-
-def _validate_named_change(change: str) -> int:
-    probed = subprocess.run(
-        ["openspec", "validate", change, "--type", "change", "--strict"],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    sys.stdout.write(probed.stdout)
-    sys.stderr.write(probed.stderr)
-    return probed.returncode
-
-
-ChangeResolution = Tuple[str, Optional[str], List[str]]
-
-
-def resolve_openspec_change(change: str | None) -> ChangeResolution:
-    """Resolve the change to validate into one typed observation.
-
-    Returns (state, name, names):
-      "explicit"      - caller named it; name is that exact string
-      "active"        - checkout has exactly one active change; name is it
-      "none"          - checkout has no active change (vacuous, nothing to validate)
-      "lookup-failed" - `openspec list --json` failed or returned an unusable payload
-      "ambiguous"     - two or more active changes; names lists them
-    """
-    if change is not None:
-        return "explicit", change, []
-    active = _active_openspec_changes()
-    if active is None:
-        return "lookup-failed", None, []
-    if active == []:
-        return "none", None, []
-    if len(active) == 1:
-        return "active", active[0], []
-    return "ambiguous", None, active
-
-
-def validate_openspec_change(change: str | None) -> int:
-    """Exit 0 iff the named change validates, or the live checkout intent validates.
-
-    Argv-safe: change travels as subprocess argv, never interpolated
-    into source. A named change always validates exactly that name. None
-    means the caller omitted --change and the checkout decides: no active
-    change is vacuously satisfied; exactly one active change is validated;
-    a failed lookup and a multi-change checkout both FAIL with a diagnostic.
-    """
-    state, name, names = resolve_openspec_change(change)
-    if state in ("explicit", "active"):
-        assert name is not None
-        return _validate_named_change(name)
-    if state == "none":
-        return 0
-    if state == "lookup-failed":
-        print("ERROR: `openspec list --json` lookup failed; cannot determine active changes.", file=sys.stderr)
-        print("Resolve the openspec CLI failure, then rerun.", file=sys.stderr)
-        return 1
-    print(f"ERROR: {len(names)} active openspec changes; pass one explicitly via --change.", file=sys.stderr)
-    for entry in names:
-        print(f"  - {entry}", file=sys.stderr)
-    return 1
 
 
 
@@ -1127,119 +782,6 @@ class PortableVerifier:
         pass
 
 
-def evidence_index_row(host: str, receipt: VerificationReceipt) -> Dict[str, Any]:
-    """One host's index row, derived from the receipt the row names.
-
-    Both paths that write a row — the `evidence()` run and the inventory projection below — derive it
-    here, so a row is a projection of the durable bytes and the two cannot drift (#495).
-    """
-    revisions = receipt.surface_revisions
-    return {
-        "receipt": f".audit/evidence/{host}-receipt.json",
-        "run_id": receipt.run_id,
-        "timestamp": receipt.timestamp,
-        "overall_verdict": receipt.overall_verdict,
-        "planes": receipt.planes,
-        "surface_revisions": asdict(revisions) if isinstance(revisions, SurfaceRevisions) else revisions,
-    }
-
-
-def rows_from_receipts(evidence_root: Path) -> Dict[str, Any]:
-    """Inventory rows rebuilt from the durable receipt bytes on disk (#495).
-
-    A missing index is the F4 remedy ("remove the file") and the crash window between the
-    two writes; re-listing this run's host alone silently drops every other host's row.
-    Bytes a row cannot stand on are left out rather than guessed at: the reader's orphan
-    check reports that host, and a run refuses to rewrite a receipt it cannot read, so a
-    projected row would name bytes nothing can repair.
-    """
-    rows: Dict[str, Any] = {}
-    for host in get_declared_hosts():
-        receipt_file = evidence_root / f"{host}-receipt.json"
-        if not _file_or_denied(receipt_file):
-            continue
-        try:
-            receipt = VerificationReceipt(**json.loads(receipt_file.read_text(encoding="utf-8")))
-            receipt.validate()
-            if receipt.host != host:
-                # A receipt for another host is not this host's bytes: projecting a row from
-                # it would inventory one host's evidence under another host's name (#495).
-                raise ValueError(f"{receipt_file} is the receipt for {receipt.host!r}, not {host!r}")
-        except Exception:
-            continue
-        rows[host] = evidence_index_row(host, receipt)
-    return rows
-
-
-def index_row_mismatch(host: str, index_file: Path, receipt_root: Path) -> Optional[str]:
-    """Cross-check one host's `.audit/evidence/index.json` row against the receipt it names.
-
-    The writer refuses a wrong-shaped or unreadable index and leaves the row alone on a
-    refused durable overwrite, so a mismatch here means the durable bytes and the
-    inventory it is read through moved apart — the write window between the two writes
-    (ENOSPC, SIGINT, a read-only index) that no writer-side guard closes. A host with no
-    row *and* no durable receipt (droid ships none) has nothing to cross-check and
-    returns None; a host that has a durable receipt but no row has an inventory
-    trailing its bytes, so it reports rebuild-required (or a repair, when the orphan
-    bytes are unusable) instead of passing (#495).
-    """
-    try:
-        hosts = json.loads(index_file.read_text(encoding="utf-8")).get("hosts", {})
-    except FileNotFoundError:
-        # Missing inventory is a shape a run repairs, not a dead end: the writer projects
-        # every readable durable receipt's row back into a missing index (#495).
-        return (
-            f"evidence index {index_file} is missing; it is the inventory of every host's "
-            f"durable receipt. Rebuild it with: "
-            f"python3 scripts/verify-portable.py refresh-static --host all."
-        )
-    except Exception as err:
-        return f"evidence index {index_file} unreadable: {type(err).__name__}: {err}"
-    if not isinstance(hosts, dict):
-        return f"evidence index {index_file} has a non-object 'hosts': {type(hosts).__name__}"
-    row = hosts.get(host)
-    if row is None:
-        # Deleting a row (the F4 remedy an operator reaches for, or a crash between the
-        # durable write and the index write) used to pass silently while the receipt it
-        # should describe sat on disk. A host with no durable receipt (droid) still has
-        # nothing to cross-check.
-        durable_file = receipt_root / ".audit" / "evidence" / f"{host}-receipt.json"
-        if not _file_or_denied(durable_file):
-            return None
-        # Read the orphan before prescribing a remedy: bytes a rebuild cannot stand on
-        # are a repair, not a rebuild, and a run that cannot read them refuses to
-        # rewrite them (#495).
-        try:
-            VerificationReceipt(**json.loads(durable_file.read_text(encoding="utf-8"))).validate()
-        except Exception as err:
-            return (
-                f"index {index_file} has no row for {host} and its durable receipt "
-                f"{durable_file} cannot be read as a usable receipt: "
-                f"{type(err).__name__}: {err}. Repair or remove that receipt, then re-run."
-            )
-        return (
-            f"index {index_file} has no row for {host} but its durable receipt "
-            f"{durable_file} exists: the inventory is STALE/REBUILD-REQUIRED. Rebuild "
-            f"the row with: python3 scripts/verify-portable.py refresh-static --host {host} "
-            f"(a host claiming `candidate` writes no durable receipt, so an orphan left by "
-            f"a demotion has to be removed instead)."
-        )
-    if not isinstance(row, dict):
-        return f"index row for {host} in {index_file} is {type(row).__name__}, not an object"
-    receipt_file = receipt_root / str(row.get("receipt") or f".audit/evidence/{host}-receipt.json")
-    try:
-        receipt = json.loads(receipt_file.read_text(encoding="utf-8"))
-    except Exception as err:
-        return f"index row for {host} names {receipt_file}, which cannot be read: {type(err).__name__}: {err}"
-    for field_name in ("run_id", "timestamp", "planes", "surface_revisions"):
-        if row.get(field_name) != receipt.get(field_name):
-            return (
-                f"index row for {host} disagrees with {receipt_file} on {field_name}: "
-                f"row={row.get(field_name)!r} receipt={receipt.get(field_name)!r}"
-            )
-    return None
-
-
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("action", choices=["doctor", "drive", "run", "refresh-static", "check-evidence", "check-staleness", "select-checks"], help="Action to execute")
@@ -1259,61 +801,7 @@ def main() -> None:
     hosts = list(get_declared_hosts()) if args.host == "all" else [args.host]
 
     if args.action == "check-evidence":
-        all_ok = True
-        index_file = ROOT / ".audit" / "evidence" / "index.json"
-        for h in hosts:
-            profile_file = ROOT / "profiles" / f"{h}.json"
-            if not _file_or_denied(profile_file):
-                print(f"[{h}] Profile not found at {profile_file}")
-                all_ok = False
-                continue
-            try:
-                d = json.loads(profile_file.read_text(encoding="utf-8"))
-            except OSError as err:
-                # The guard reads a denied stat as present, so this read is where the
-                # denial lands (#495): name the file, never a false "not found".
-                print(f"[{h}] FAIL: profile {profile_file} is unreadable: {type(err).__name__}: {err}")
-                all_ok = False
-                continue
-            b = [Binding(**x) for x in d.get("bindings", [])]
-            e = [Evidence(**x) for x in d.get("evidence_ledger", [])]
-            prof = HarnessProfile(
-                host=d["host"],
-                support_state=d["support_state"],
-                bindings=b,
-                skills_dir=d.get("skills_dir"),
-                plugins_dir=d.get("plugins_dir"),
-                plugin_manifest=d.get("plugin_manifest"),
-                evidence_ledger=e,
-                tool_mappings=d.get("tool_mappings"),
-                skill_order=d.get("skill_order"),
-                runtime_conventions=d.get("runtime_conventions"),
-            )
-            try:
-                res = check_evidence_durability(prof, ROOT, check_freshness=not args.allow_stale)
-                if res["derived_support_state"] == "candidate":
-                    # #473: a candidate row evaluates no planes, so PASS would
-                    # claim coverage it has none of. Exit stays 0; only the
-                    # label changes. (ponytail: label-only; exit-code split if
-                    # automation ever needs to gate on coverage.)
-                    print(f"[{h}] NOT_COVERED: no planes evaluated, derived support state: candidate (claimed: {res['claimed_support_state']})")
-                else:
-                    print(f"[{h}] PASS: Evidence durable, derived support state: {res['derived_support_state']} (claimed: {res['claimed_support_state']})")
-            except Exception as err:
-                print(f"[{h}] FAIL: {err}")
-                if h == "omp" and "exceeds evidence-derived support state" in str(err):
-                    print(
-                        "       OMP runtime evidence is only observed by a model-backed run: "
-                        "regenerate the durable receipt with PSTACK_RUN_OMP_LIVE=1, then re-check."
-                    )
-                all_ok = False
-            # The inventory must describe the bytes it is read through, not just the
-            # run this process just assembled (#495).
-            mismatch = index_row_mismatch(h, index_file, ROOT)
-            if mismatch:
-                print(f"[{h}] FAIL: {mismatch}")
-                all_ok = False
-        sys.exit(0 if all_ok else 1)
+        sys.exit(check_evidence_action(hosts, ROOT, allow_stale=args.allow_stale))
 
     if args.action == "check-staleness":
         staleness_report: Dict[str, Any] = {}
@@ -1394,76 +882,7 @@ def main() -> None:
         sys.exit(0 if all_fresh else 1)
 
     if args.action == "select-checks":
-        if not args.base:
-            parser.error("select-checks requires --base <ref>")
-        plan = select_checks_plan(args.base, args.head, ROOT)
-
-        if args.record:
-            outcomes = {}
-            for item in args.outcome:
-                check_id, _, verdict = item.partition("=")
-                outcomes[check_id.strip()] = verdict.strip().upper() or "UNTESTED"
-            receipt = create_check_evidence_receipt(
-                ROOT, args.base, [c["id"] for c in plan["checks"]], outcomes, args.head
-            )
-            args.record.parent.mkdir(parents=True, exist_ok=True)
-            args.record.write_text(receipt.to_json() + "\n", encoding="utf-8")
-            print(
-                f"Recorded check evidence: {args.record} "
-                f"(head {receipt.head_sha[:8]}, patch-id {receipt.patch_id[:8]}, verdict {receipt.verdict})"
-            )
-
-        if args.receipt:
-            if not _file_or_denied(args.receipt):
-                print(f"No recorded evidence at {args.receipt}: run the selected checks, then record them.")
-                sys.exit(2)
-            try:
-                receipt = load_check_evidence_receipt(args.receipt)
-            except OSError as err:
-                # Same rule (#495): a denied stat is not an absent receipt. An
-                # unreadable one is no evidence to evaluate, so it is not "missing".
-                print(
-                    f"REFUSING to evaluate unreadable recorded evidence {args.receipt}: "
-                    f"{type(err).__name__}: {err}"
-                )
-                sys.exit(2)
-            stale, reasons = check_check_evidence_staleness(receipt, ROOT, args.base, args.head)
-            claimable, claim_reason = can_claim_current_ci(receipt, ROOT, args.base, args.head)
-            if args.json:
-                print(
-                    json.dumps(
-                        {
-                            **plan,
-                            "receipt_path": str(args.receipt),
-                            "receipt": receipt.to_dict(),
-                            "stale": stale,
-                            "stale_reasons": reasons,
-                            "claimable": claimable,
-                            "claim_reason": claim_reason,
-                        },
-                        indent=2,
-                    )
-                )
-            else:
-                _print_selection_plan(plan)
-                print(f"Recorded evidence: {args.receipt}")
-                print(
-                    f"  head {receipt.head_sha[:8]} patch-id {receipt.patch_id[:8]} "
-                    f"verdict {receipt.verdict} recorded {receipt.created_at}"
-                )
-                if receipt.outcomes:
-                    for check_id, verdict in sorted(receipt.outcomes.items()):
-                        print(f"  outcome {verdict:<10} {check_id}")
-                state = "STALE" if stale else "FRESH"
-                print(f"  {state}: {'; '.join(reasons) if reasons else 'bound to the current patch'}")
-                print(f"  may be quoted as current CI: {'yes' if claimable else 'no'} — {claim_reason}")
-            sys.exit(1 if stale else 0)
-
-        if args.json:
-            print(json.dumps(plan, indent=2))
-        else:
-            _print_selection_plan(plan)
-        sys.exit(0)
+        sys.exit(select_checks_action(args, ROOT))
 
     all_pass = True
     receipts: List[VerificationReceipt] = []
