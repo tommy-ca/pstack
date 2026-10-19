@@ -368,3 +368,18 @@ Docs-only record from main `91e96fa`. No code, receipt, fixture or evidence-inde
 
 No issue state, acceptance criterion or dependency changed in this wave. All G0–G8 boxes remain unchecked. #434, #437, #438, #439, #444, #445, #473 stay OPEN on the rows named above.
 
+## Dated evidence (2026-10-19, wave-28: setup-pstack unification and override precedence)
+
+Docs-only record from main `9959998`. No code, receipt, fixture or evidence-index file is touched: this section is appended and no earlier wave's prose is rewritten.
+
+**Setup-pstack unification and override precedence.** PR #571 resolved #438 by unifying model and effort configuration across all 22 canonical pstack roles:
+- Vocabulary alignment: added `comment-sicko` (tier `fast-worker`, frontmatter `effort: medium`, registered under `MECHANICAL`) and `poteto-agent` (tier `strongest`, frontmatter `effort: xhigh`, registered under `JUDGMENT`) to `agents/`, projected `droids/`, `scripts/effort_ladder.py`, `skills/setup-pstack/SKILL.md`, and references (`defaults.toml`, `effort-ladder.md`, `resolve-effort.md`).
+- Harness verification: updated `tests/test_verify_harness.py#test_effort_frontmatter_matches_ladder` to enforce that all 22 canonical agents have frontmatter effort matching the effort ladder with zero exemptions.
+- Setup script implementation: created `scripts/setup_pstack.py` providing deterministic parsing/formatting of `pstack-models.toml`, targeted warnings on invalid/retired roles without crashing or discarding config, safe creation/removal of `~/.grok/roles/pstack:<role>.toml` overlays while strictly protecting user-owned files, precedence resolution (`explicit` > `project` > `user` > `host-role` > `host-tier` > `inherit-parent` > `fail-closed`), and idempotent host-scoped hook opt-out lifecycle (`.pstack-hooks-disabled-{host}`).
+- Native portability examples: added `examples/portability/grok-pstack-models.example.toml` and `examples/portability/grok-role-overlay.example.toml`.
+- Durable evidence synchronization: refreshed `skills_tree_hash` consistently across all five host receipts and `index.json`.
+- Test suites: added `tests/test_setup_pstack.py` (8 tests passing), full test suite 183 passed, static contract PASS, package check PASS. Independent verifier verdict `PASS` on PR #571 head (`f723ac5`), merged to main as `9959998`.
+
+Issue #438 is fulfilled and CLOSED. All G0–G8 boxes remain unchecked. #434, #437, #439, #441, #442, #443, #444, #445, #446, #473 stay OPEN on the rows named above.
+
+
