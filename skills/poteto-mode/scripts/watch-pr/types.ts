@@ -235,8 +235,22 @@ export type QueryFailure =
       readonly rawValue: string;
     };
 /**
+ * Why the watcher keeps polling. Unresolved mergeability is GitHub saying it
+ * has not computed the merge yet, so it is its own reason rather than a
+ * fabricated pending check.
+ */
+export type PrWaitReason =
+  | {
+      readonly kind: "pending-checks";
+      readonly pending: NonEmpty<PendingCheck>;
+    }
+  | { readonly kind: "mergeability-unknown" };
+export type QueueWaitReason =
+  | PrWaitReason
+  | { readonly kind: "merge-queue"; readonly unmergedCount: number };
+/**
  * `frontier` names the lowest unmerged PR that is actually waiting, and
- * `pending` is that PR's checks only. Pooling every row's pending under the
+ * `reason` is that PR's wait only. Pooling every row's pending under the
  * bottom PR's number misattributed upstack waits to the frontier.
  *
  * This decision serves single and `--stack` mode. Queued mode deliberately
@@ -248,7 +262,7 @@ export type QueryFailure =
 export interface WaitingDecision {
   readonly kind: "waiting";
   readonly frontier: PrContext;
-  readonly pending: NonEmpty<PendingCheck>;
+  readonly reason: PrWaitReason;
 }
 export type PrDecision =
   | { readonly kind: "blocker"; readonly blocker: MergeBlocker }
@@ -289,12 +303,7 @@ export type ProgressVerdict =
     })
   | (Progress<"WAITING"> & {
       readonly frontier: PrContext;
-      readonly reason:
-        | {
-            readonly kind: "pending-checks";
-            readonly pending: NonEmpty<PendingCheck>;
-          }
-        | { readonly kind: "merge-queue"; readonly unmergedCount: number };
+      readonly reason: QueueWaitReason;
     })
   | (Progress<"ADVANCE", "queued-stack"> & {
       readonly merged: PrContext;
@@ -337,10 +346,7 @@ export type BlockerVerdict =
     });
 export type TimeoutVerdict = Terminal<"TIMEOUT", 5> & {
   readonly reason:
-    | {
-        readonly kind: "pending-checks";
-        readonly pending: NonEmpty<PendingCheck>;
-      }
+    | PrWaitReason
     | { readonly kind: "status-unavailable"; readonly failure: QueryFailure }
     | {
         readonly kind: "queued-stack";

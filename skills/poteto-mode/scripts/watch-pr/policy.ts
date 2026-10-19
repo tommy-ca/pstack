@@ -192,6 +192,7 @@ function readyContribution(
     };
   if (
     row.kind !== "open" ||
+    row.facts.mergeable !== "MERGEABLE" ||
     row.ci.kind !== "ci-clean" ||
     row.threads.length !== 0 ||
     conflictBlocker(row) !== null ||
@@ -215,6 +216,32 @@ function readyContribution(
     },
   };
 }
+/**
+ * Wait tiers, scanned tier-major like the blockers: a row with pending checks
+ * outranks any row whose mergeability GitHub has not computed, and neither may
+ * stand in for the other.
+ */
+const WAIT_TIERS: readonly ((row: T.PrSnapshot) => T.PrWaitReason | null)[] = [
+  (row) =>
+    row.kind === "open" && row.ci.kind === "ci-pending"
+      ? { kind: "pending-checks", pending: row.ci.pending }
+      : null,
+  (row) =>
+    row.kind === "open" && row.facts.mergeable === "UNKNOWN"
+      ? { kind: "mergeability-unknown" }
+      : null,
+];
+const waitingDecision = (
+  rows: readonly T.PrSnapshot[]
+): T.WaitingDecision | null => {
+  for (const tier of WAIT_TIERS)
+    for (const row of rows) {
+      const reason = tier(row);
+      if (reason !== null)
+        return { kind: "waiting", frontier: row.context, reason };
+    }
+  return null;
+};
 export function classifyPr(
   row: T.PrSnapshot,
   allowDraft = false
@@ -226,8 +253,8 @@ export function classifyPr(
     gateBlocker(row, allowDraft),
   ])
     if (blocker !== null) return { kind: "blocker", blocker };
-  if (row.kind === "open" && row.ci.kind === "ci-pending")
-    return { kind: "waiting", frontier: row.context, pending: row.ci.pending };
+  const waiting = waitingDecision([row]);
+  if (waiting !== null) return waiting;
   const ready = readyContribution(row, allowDraft);
   if (ready === null) throw new Error("snapshot has no classified decision");
   return ready.kind === "merged-pr"
@@ -247,13 +274,8 @@ export function selectTierMajorStackDecision(
     const blocker = gateBlocker(row, allowDraft);
     if (blocker !== null) return { kind: "blocker", blocker };
   }
-  for (const row of rows)
-    if (row.kind === "open" && row.ci.kind === "ci-pending")
-      return {
-        kind: "waiting",
-        frontier: row.context,
-        pending: row.ci.pending,
-      };
+  const waiting = waitingDecision(rows);
+  if (waiting !== null) return waiting;
   const prs = nonEmpty(
     rows
       .map((row) => readyContribution(row, allowDraft))
@@ -495,7 +517,7 @@ export async function runSimple(args: {
         kind: "WAITING",
         terminal: false,
         frontier: decision.frontier,
-        reason: { kind: "pending-checks", pending: decision.pending },
+        reason: decision.reason,
       })
     );
     return {
@@ -506,7 +528,7 @@ export async function runSimple(args: {
           kind: "TIMEOUT",
           terminal: true,
           exitCode: 5,
-          reason: { kind: "pending-checks", pending: decision.pending },
+          reason: decision.reason,
         }),
     };
   };
@@ -633,12 +655,7 @@ export type QueueEvaluation =
       readonly kind: "waiting";
       readonly state: QueueState;
       readonly frontier: T.PrContext;
-      readonly reason:
-        | {
-            readonly kind: "pending-checks";
-            readonly pending: T.NonEmpty<T.PendingCheck>;
-          }
-        | { readonly kind: "merge-queue"; readonly unmergedCount: number };
+      readonly reason: T.QueueWaitReason;
       readonly emit: boolean;
     };
 export function evaluateQueue(
@@ -686,16 +703,16 @@ export function evaluateQueue(
       unmergedCount: active.length,
     };
   const row = rows[0];
-  const pending =
-    row.kind === "open" && row.ci.kind === "ci-pending" ? row.ci.pending : null;
-  const reason =
-    pending === null
-      ? ({ kind: "merge-queue", unmergedCount: active.length } as const)
-      : ({ kind: "pending-checks", pending } as const);
+  const reason: T.QueueWaitReason = waitingDecision([row])?.reason ?? {
+    kind: "merge-queue",
+    unmergedCount: active.length,
+  };
   const key =
     reason.kind === "pending-checks"
       ? `pending:${frontier.number}:${reason.pending.length}`
-      : `queue:${frontier.number}:${reason.unmergedCount}`;
+      : reason.kind === "mergeability-unknown"
+        ? `mergeability:${frontier.number}`
+        : `queue:${frontier.number}:${reason.unmergedCount}`;
   return {
     kind: "waiting",
     state: { ...state, frontier, lastWaitKey: key },

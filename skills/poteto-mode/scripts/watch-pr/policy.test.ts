@@ -10,6 +10,7 @@ import {
   queryBackoffSeconds,
   readSnapshot,
   runQueued,
+  runSimple,
   selectTierMajorStackDecision,
 } from "./policy.ts";
 import {
@@ -193,7 +194,7 @@ it("attributes a stack wait to the PR whose checks are pending, not the bottom",
   expect(decision).toMatchObject({
     kind: "waiting",
     frontier: { number: 21 },
-    pending: [{ name: "upstack-build" }],
+    reason: { kind: "pending-checks", pending: [{ name: "upstack-build" }] },
   });
 });
 
@@ -218,6 +219,181 @@ it("waits on a draft while checks are pending, then reports the draft gate", asy
   expect(classifyPr(settled)).toMatchObject({
     kind: "blocker",
     blocker: { kind: "merge-gate", reason: "draft-pr" },
+  });
+});
+
+describe("unknown mergeability", () => {
+  const unknown = () =>
+    fakeReader({ facts: { mergeable: "UNKNOWN", mergeStateStatus: "UNKNOWN" } });
+
+  async function unknownSnapshot(pr: PrContext) {
+    return readSnapshot({
+      reader: unknown(),
+      context: pr,
+      pendingHistory: "omit",
+      allowDraft: false,
+    });
+  }
+
+  it("waits instead of readying the #545 repro: mergeable and merge state unknown", async () => {
+    const snapshot = await unknownSnapshot(context(60));
+    expect(classifyPr(snapshot)).toMatchObject({
+      kind: "waiting",
+      frontier: context(60),
+      reason: { kind: "mergeability-unknown" },
+    });
+  });
+
+  it("keeps a MERGEABLE reading eligible when only the merge state is unknown", async () => {
+    const snapshot = await readSnapshot({
+      reader: fakeReader({
+        facts: { mergeable: "MERGEABLE", mergeStateStatus: "UNKNOWN" },
+        fastPath: { kind: "checks", checks: [passingCheck()] },
+      }),
+      context: context(61),
+      pendingHistory: "include",
+      allowDraft: false,
+    });
+    expect(classifyPr(snapshot)).toMatchObject({ kind: "ready" });
+  });
+
+  it("waits in the real reducer until a later read makes mergeability known", async () => {
+    for (const mode of ["single", "stack"] as const) {
+      const base = unknown();
+      let reads = 0;
+      const reader = {
+        ...base,
+        async pullRequest(pr: PrContext) {
+          reads += 1;
+          const facts = await base.pullRequest(pr);
+          return reads === 1
+            ? facts
+            : { ...facts, mergeable: "MERGEABLE" as const };
+        },
+      } satisfies GitHubReader;
+      let now = 0;
+      const progress: ProgressVerdict[] = [];
+      const verdict = await runSimple({
+        dependencies: {
+          reader,
+          clock: {
+            now: () => now,
+            observedAt: () => "2026-07-26T00:00:00.000Z",
+            async sleep(seconds) {
+              now += seconds;
+            },
+          },
+          emit: (event) => progress.push(event),
+        },
+        contexts: [context(62)],
+        mode,
+        statusOnly: false,
+        options,
+      });
+      expect(progress).toContainEqual(
+        expect.objectContaining({
+          kind: "WAITING",
+          frontier: context(62),
+          reason: { kind: "mergeability-unknown" },
+        })
+      );
+      expect(verdict).toMatchObject({ kind: "READY", scope: { kind: mode } });
+    }
+  });
+
+  it("waits in stack mode, keeping blockers and pending checks ahead of it", async () => {
+    expect(
+      selectTierMajorStackDecision([await unknownSnapshot(context(63))])
+    ).toMatchObject({
+      kind: "waiting",
+      frontier: context(63),
+      reason: { kind: "mergeability-unknown" },
+    });
+
+    const pendingUpper = await readSnapshot({
+      reader: fakeReader({
+        facts: { mergeable: "UNKNOWN", mergeStateStatus: "UNKNOWN" },
+        fastPath: { kind: "checks", checks: [pendingCheck("upper-build")] },
+      }),
+      context: context(64),
+      pendingHistory: "omit",
+      allowDraft: false,
+    });
+    expect(
+      selectTierMajorStackDecision([
+        await unknownSnapshot(context(63)),
+        pendingUpper,
+      ])
+    ).toMatchObject({
+      kind: "waiting",
+      frontier: context(64),
+      reason: { kind: "pending-checks", pending: [{ name: "upper-build" }] },
+    });
+
+    const changesRequested = await readSnapshot({
+      reader: fakeReader({
+        facts: {
+          mergeable: "UNKNOWN",
+          mergeStateStatus: "UNKNOWN",
+          reviewDecision: "CHANGES_REQUESTED",
+        },
+      }),
+      context: context(67),
+      pendingHistory: "omit",
+      allowDraft: false,
+    });
+    expect(classifyPr(changesRequested)).toMatchObject({
+      kind: "blocker",
+      blocker: { kind: "merge-gate", reason: "changes-requested" },
+    });
+  });
+
+  it("names unresolved mergeability on the queued frontier without advancing", async () => {
+    const queue = [context(65), context(66)] satisfies NonEmpty<PrContext>;
+    let state = planQueue(createQueueState(queue, 0), 0);
+    state = applyQueueSnapshot(
+      state,
+      await unknownSnapshot(queue[0]),
+      0,
+      options
+    ).state;
+    state = planQueue(state, 0);
+    state = applyQueueSnapshot(
+      state,
+      await readSnapshot({
+        reader: fakeReader(),
+        context: queue[1],
+        pendingHistory: "omit",
+        allowDraft: false,
+      }),
+      0,
+      options
+    ).state;
+    const first = evaluateQueue(state, 0, options);
+    expect(first).toMatchObject({
+      kind: "waiting",
+      frontier: queue[0],
+      reason: { kind: "mergeability-unknown" },
+    });
+    if (first.kind !== "waiting") throw new Error("expected waiting");
+    expect(first.emit).toBe(true);
+
+    const known = applyQueueSnapshot(
+      planQueue(first.state, 10),
+      await readSnapshot({
+        reader: fakeReader(),
+        context: queue[0],
+        pendingHistory: "omit",
+        allowDraft: false,
+      }),
+      10,
+      options
+    ).state;
+    expect(evaluateQueue(known, 10, options)).toMatchObject({
+      kind: "waiting",
+      frontier: queue[0],
+      reason: { kind: "merge-queue", unmergedCount: 2 },
+    });
   });
 });
 
