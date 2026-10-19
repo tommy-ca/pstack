@@ -68,19 +68,6 @@ from scripts.evidence_receipts import (
 
 SUPPORTED_HOSTS = BUILTIN_HOSTS
 
-
-def _receipt_payload(receipt: VerificationReceipt) -> Dict[str, Any]:
-    """Serialized receipt, minus optional keys the schema types as strings.
-
-    `adapter_version` is optional in the receipt schema, so an unset value is an
-    absent key rather than a null a reader would have to special-case (#446).
-    """
-    data = asdict(receipt)
-    if data.get("adapter_version") is None:
-        data.pop("adapter_version", None)
-    return data
-
-
 from scripts.select_checks import (
     CANONICAL_INDEX_CHECK,
     CHECK_SELECTION_TABLE,
@@ -114,12 +101,17 @@ from scripts.evidence_index import (
     evidence_index_row,
     get_declared_hosts,
     index_row_mismatch,
+    receipt_payload,
     rows_from_receipts,
+    write_verification_evidence,
 )
 from scripts.harness_scenarios import (
     execute_driver_scenarios,
     execute_local_scenarios,
 )
+
+# Re-exported from scripts.evidence_index (#613)
+_receipt_payload = receipt_payload
 
 
 def get_canonical_root(root: Path) -> Path:
@@ -469,112 +461,14 @@ class PortableVerifier:
 
     def evidence(self, receipt: VerificationReceipt, update_durable: bool = True) -> Path:
         """Step 5: Write structured run evidence receipt and optionally durable pointer."""
-        self.evidence_root.mkdir(parents=True, exist_ok=True)
-        receipt_file = self.run_dir / "receipt.json"
-        data = _receipt_payload(receipt)
-        receipt_file.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+        return write_verification_evidence(
+            receipt,
+            evidence_root=self.evidence_root,
+            run_dir=self.run_dir,
+            host=self.host,
+            update_durable=update_durable,
+        )
 
-        if update_durable:
-            # Parse the index BEFORE writing anything durable: an unreadable or
-            # wrong-shaped index refuses the whole update, so the receipt file and its
-            # index row keep one run_id instead of the index row trailing the rewritten
-            # receipt (#495).
-            index_file = self.evidence_root / "index.json"
-            index_data: Dict[str, Any] = {"version": 1, "hosts": {}}
-            if _file_or_denied(index_file):
-                try:
-                    index_data = json.loads(index_file.read_text(encoding="utf-8"))
-                    if not isinstance(index_data, dict) or not isinstance(index_data.get("hosts", {}), dict):
-                        # Parses, wrong shape: `[]` and {"version": 1, "hosts": []} both
-                        # reached the row assignment below and died with AttributeError /
-                        # TypeError *after* the durable receipt was rewritten (#495), so
-                        # the index kept naming a run whose bytes were gone. Same refusal
-                        # as the unreadable case: nothing durable is written at all.
-                        raise ValueError(
-                            "expected an object with a 'hosts' object, got "
-                            f"{type(index_data).__name__}"
-                        )
-                except Exception as err:
-                    # index.json is the only inventory of every host's durable receipt.
-                    # Resetting it to a fresh {"hosts": {}} would rewrite the file for
-                    # this host alone and silently un-list every other host, so fail
-                    # loudly and leave the corrupt bytes in place for recovery (#429, #444).
-                    sys.exit(
-                        f"REFUSING to rewrite the unreadable evidence index at {index_file}: "
-                        f"{type(err).__name__}: {err}. The index lists every host's durable "
-                        f"receipt, so resetting it would silently drop the other hosts. Repair "
-                        f"or remove the file, then re-run. This run's receipt is at {receipt_file}."
-                    )
-
-            # The rows follow the receipts on disk: put back the rows a deleted index or a
-            # crash between the two writes left out, so one host's run cannot leave the
-            # inventory listing that host alone. Missing rows only — an existing row is
-            # left for the cross-check to report, and bytes a row cannot stand on are left
-            # for the reader's orphan check instead of being guessed at (#495).
-            index_data.setdefault("hosts", {}).update(
-                {
-                    host: row
-                    for host, row in rows_from_receipts(self.evidence_root).items()
-                    if host not in index_data["hosts"]
-                }
-            )
-
-            # Stable durable receipt copy
-            durable_file = self.evidence_root / f"{self.host}-receipt.json"
-            durable_data = data
-            reusable = True
-            if _file_or_denied(durable_file):
-                try:
-                    previous = VerificationReceipt(**json.loads(durable_file.read_text(encoding="utf-8")))
-                    preserved = preserve_observed_settlements(previous, receipt)
-                except Exception as err:
-                    # The durable receipt is the only place a prior observation lives. A
-                    # file this run cannot read is exactly when it is worth the most, so
-                    # refuse to replace it and let the durability check report the gap.
-                    reusable = False
-                    print(
-                        f"REFUSING to overwrite the durable receipt at {durable_file}: "
-                        f"{type(err).__name__}: {err}. This run's receipt is at {receipt_file}."
-                    )
-                else:
-                    if preserved:
-                        # A preserved settlement is a live scenario this receipt's planes
-                        # never saw, so re-reduce them (and the overall verdict) over the
-                        # final scenario set. Without this the durable receipt carries a
-                        # live settlement row under a runtime UNTESTED plane and demotes
-                        # the host for a reason unrelated to the change (#322, #444).
-                        # FAIL and BLOCKED still win the reduction.
-                        receipt.planes = settle_planes(receipt.scenarios)
-                        receipt.overall_verdict = reduce_verdicts(receipt.planes.values())
-                        durable_data = _receipt_payload(receipt)
-                        print(
-                            f"Preserved prior observed_live settlement(s) from {previous.run_id}: "
-                            f"{', '.join(preserved)}"
-                        )
-            if reusable:
-                durable_file.write_text(json.dumps(durable_data, indent=2) + "\n", encoding="utf-8")
-
-                # The row follows the durable bytes it names: a refused overwrite must not
-                # advance the index onto a run whose receipt was never written (#495).
-                index_data.setdefault("hosts", {})[self.host] = evidence_index_row(self.host, receipt)
-                try:
-                    index_file.write_text(json.dumps(index_data, indent=2) + "\n", encoding="utf-8")
-                except OSError as err:
-                    # A refused index write leaves the inventory trailing the receipt this
-                    # run just wrote (ENOSPC, a read-only index, a denied directory). Name
-                    # it instead of a traceback: the reader cross-check reports the split,
-                    # and no in-process retry can undo a denial (#495).
-                    sys.exit(
-                        f"FAILED to write the evidence index at {index_file}: "
-                        f"{type(err).__name__}: {err}. The durable receipt at {durable_file} is "
-                        f"already written, so the inventory trails it until the file is writable "
-                        f"and this check is re-run."
-                    )
-            print(f"Evidence captured at {receipt_file} (durable: {durable_file})")
-        else:
-            print(f"Evidence captured at {receipt_file}")
-
-        return receipt_file
 
     def cleanup(self) -> None:
         """Step 6: Cleanup transient files while preserving evidence."""

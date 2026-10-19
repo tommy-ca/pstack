@@ -7,10 +7,13 @@ from __future__ import annotations
 
 import json
 import stat
+import sys
 from dataclasses import asdict
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from scripts.evidence_durability import preserve_observed_settlements
+from scripts.host_identity import BUILTIN_HOSTS
 from scripts.portability_schema import (
     Binding,
     Evidence,
@@ -19,6 +22,8 @@ from scripts.portability_schema import (
     VerificationReceipt,
     check_evidence_durability,
     compute_surface_revisions,
+    reduce_verdicts,
+    settle_planes,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -73,6 +78,101 @@ def rows_from_receipts(evidence_root: Path, root: Path = ROOT) -> Dict[str, Any]
             continue
         rows[host] = evidence_index_row(host, receipt)
     return rows
+
+
+def receipt_payload(receipt: VerificationReceipt) -> Dict[str, Any]:
+    """Serialized receipt, minus optional keys the schema types as strings.
+
+    `adapter_version` is optional in the receipt schema, so an unset value is an
+    absent key rather than a null a reader would have to special-case (#446).
+    """
+    data = asdict(receipt)
+    if data.get("adapter_version") is None:
+        data.pop("adapter_version", None)
+    return data
+
+
+def write_verification_evidence(
+    receipt: VerificationReceipt,
+    *,
+    evidence_root: Path,
+    run_dir: Path,
+    host: str,
+    update_durable: bool = True,
+) -> Path:
+    """Write structured run evidence receipt and optionally durable pointer (#613)."""
+    evidence_root.mkdir(parents=True, exist_ok=True)
+    receipt_file = run_dir / "receipt.json"
+    data = receipt_payload(receipt)
+    receipt_file.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+
+    if update_durable:
+        index_file = evidence_root / "index.json"
+        index_data: Dict[str, Any] = {"version": 1, "hosts": {}}
+        if _file_or_denied(index_file):
+            try:
+                index_data = json.loads(index_file.read_text(encoding="utf-8"))
+                if not isinstance(index_data, dict) or not isinstance(index_data.get("hosts", {}), dict):
+                    raise ValueError(
+                        "expected an object with a 'hosts' object, got "
+                        f"{type(index_data).__name__}"
+                    )
+            except Exception as err:
+                sys.exit(
+                    f"REFUSING to rewrite the unreadable evidence index at {index_file}: "
+                    f"{type(err).__name__}: {err}. The index lists every host's durable "
+                    f"receipt, so resetting it would silently drop the other hosts. Repair "
+                    f"or remove the file, then re-run. This run's receipt is at {receipt_file}."
+                )
+
+        index_data.setdefault("hosts", {}).update(
+            {
+                h: row
+                for h, row in rows_from_receipts(evidence_root).items()
+                if h not in index_data["hosts"]
+            }
+        )
+
+        durable_file = evidence_root / f"{host}-receipt.json"
+        durable_data = data
+        reusable = True
+        if _file_or_denied(durable_file):
+            try:
+                previous = VerificationReceipt(**json.loads(durable_file.read_text(encoding="utf-8")))
+                preserved = preserve_observed_settlements(previous, receipt)
+            except Exception as err:
+                reusable = False
+                print(
+                    f"REFUSING to overwrite the durable receipt at {durable_file}: "
+                    f"{type(err).__name__}: {err}. This run's receipt is at {receipt_file}."
+                )
+            else:
+                if preserved:
+                    receipt.planes = settle_planes(receipt.scenarios)
+                    receipt.overall_verdict = reduce_verdicts(receipt.planes.values())
+                    durable_data = receipt_payload(receipt)
+                    print(
+                        f"Preserved prior observed_live settlement(s) from {previous.run_id}: "
+                        f"{', '.join(preserved)}"
+                    )
+        if reusable:
+            durable_file.write_text(json.dumps(durable_data, indent=2) + "\n", encoding="utf-8")
+
+            index_data.setdefault("hosts", {})[host] = evidence_index_row(host, receipt)
+            try:
+                index_file.write_text(json.dumps(index_data, indent=2) + "\n", encoding="utf-8")
+            except OSError as err:
+                sys.exit(
+                    f"FAILED to write the evidence index at {index_file}: "
+                    f"{type(err).__name__}: {err}. The durable receipt at {durable_file} is "
+                    f"already written, so the inventory trails it until the file is writable "
+                    f"and this check is re-run."
+                )
+        print(f"Evidence captured at {receipt_file} (durable: {durable_file})")
+    else:
+        print(f"Evidence captured at {receipt_file}")
+
+    return receipt_file
 
 
 def index_row_mismatch(host: str, index_file: Path, receipt_root: Path) -> Optional[str]:
