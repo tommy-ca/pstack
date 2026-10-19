@@ -580,5 +580,40 @@ Docs-only record from main `0252341`. No code, receipt, fixture or evidence-inde
 
 Issue #437 is fulfilled and CLOSED. With #437, #438, and #439 closed, Sub-epic #431 is fulfilled and CLOSED. All G0–G8 boxes remain unchecked. #444, #445, #473 stay OPEN on the rows named above.
 
+## Dated evidence (2026-10-19, wave-37: cross-harness promotion gate fulfilled, ADR-0021 accepted, and G0-G8 complete)
+
+Docs-only record from main `17eb72c`. No code, receipt, fixture or evidence-index file is touched: this section is appended and no earlier wave's prose is rewritten.
+
+**Cross-harness promotion gate fulfilled, ADR-0021 accepted, and G0–G8 complete.** PR #588 resolved #445 by completing the promotion evaluation, accepting ADR-0021, locking G0–G8 tasks, and codifying the promotion and honest non-claim contracts into a regression suite (merged to main as `17eb72c`):
+- Cross-harness contract promotion decision:
+  - Formally accepts and promotes the canonical 22-role taxonomy, schema, effort ladder, and pin conformance locked to UPSTREAM `1dcc2bacde73ddd284803b7af28164d0436198fc` (#435).
+  - Promotes pure, side-effect-free role/model planner (`scripts/model_role_resolver.py`) with 6-rung precedence hierarchy and caller effort gate (#437).
+  - Promotes typed Draft 2020-12 wire contracts (`model-role-policy.schema.json`, `model-plan.schema.json`, `profile.schema.json`, `host-id.schema.json`).
+  - Promotes package projector (`scripts/project-package.py`) enforcing 1-to-1 role parity, empty catalog checked-in sample discipline, and multi-tier planning probes (#438, #440).
+  - Promotes extensible host identity registry (`scripts/host_identity.py`) preserving canonical builtins while safely gating namespaced external candidates (#446).
+  - Promotes candidate host profiles and adapter drivers for Claude Code (`profiles/claude.json`, `scripts/drivers/claude.py`, #441) and GitHub Copilot (`profiles/copilot.json`, `scripts/drivers/copilot.py`, `docs/research/copilot-candidate-evaluation-2026-10-19.md`, #442).
+  - Promotes mechanism-level equivalence ledger between Pi and OMP (`docs/research/pi-omp-equivalence-2026-10-18.md`, #443) confirming zero foreign state/session engine imports.
+  - Promotes durability, staleness, and freshness verification levers (`scripts/verify-portable.py`, `tests/test_evidence_durability.py`, #444, #473, #495).
+- Honest non-claims and deliberate non-promotions:
+  - Host runtime execution: Offline host execution planes remain strictly `Runtime: UNTESTED`. Static schema validation, manifest generation, or doctor passes do NOT constitute live runtime proof. A host transitions to `verified`/`supported` only upon recording immutable, host-version-specific execution receipts.
+  - Multi-family diversity: Where only a single model family or runner pool is physically available in a session, panels and cross-judges report `DEGRADED` or fail closed (`BLOCKED`) when strict diversity is required. Single-family runs are never promoted or represented as independent multi-family validation.
+- Disposition of reviewer disagreements:
+  - Lane C spec diversity ambiguity: Clarified that delta conditions diversity on declared policy (cross-judge differs when required/available; reviewer panel preserves declared diversity) and permits single-model multi-seat panels when recorded as reduced diversity. No conflict with main spec line 209 (which recognizes diversity as adapter configuration).
+  - Lane B seam defects (F1/F2/F3/F4 & #495): All four defects resolved and verified (F1 route_resolver binding, F2 behavior-bearing hash core, F3 proof bar demotion on zero live evidence, F4 corrupt index refusal with shape F partial-write protection in PR #536).
+  - Provenance and policy forks (#434): Pinned 48-row ledger completed independent acceptance with all rows source-reviewed, license dispositions verified, and 0 foreign policy forks imported into canonical paths.
+- ADR-0021 acceptance:
+  - `adr/0021-harness-neutral-model-role-policy.md` and `openspec/changes/2026-10-15-harness-neutral-role-policy/adr.md` formally marked `accepted`.
+- Acceptance test coverage:
+  - `tests/test_model_role_policy.py::test_cross_harness_promotion_gate_and_evidence_contract` asserts candidate profile schema validation, domain model validation across all 8 profiles, honest non-claims for offline hosts, ADR-0021 acceptance, G0-G8 completeness, and fail-closed wire contract invariants.
+  - 174 passed, 7 skipped across core portability suites.
+- Verification & durability:
+  - Static CLI contract passes (`python -m scripts.model_role_policy`).
+  - Package manifest check `scripts/project-package.py --check` passes.
+  - Boundary scan `scan-host-boundary.py --check` passes with 0 leaks across 139 files.
+  - Independent verification: `pstack-verifier` subagent (tier `pro`) returned `PASS` on PR #588 head (`99a6db4`), merged to main as `17eb72c`.
+
+Gate #445 is fulfilled and CLOSED. With #444, #473, and #445 closed, Sub-epic #433 is fulfilled and CLOSED. With all four sub-epics (#430, #431, #432, #433) closed, Program Epic #429 is fulfilled and CLOSED.
+
+
 
 
