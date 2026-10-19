@@ -17,6 +17,7 @@ from scripts.drivers import (
     AntigravityDriver,
     ClaudeDriver,
     CodexDriver,
+    CopilotDriver,
     GrokDriver,
     HarnessDriver,
     OMPDriver,
@@ -43,6 +44,7 @@ def test_get_driver_factory() -> None:
     assert isinstance(get_driver("omp", ROOT), OMPDriver)
     assert isinstance(get_driver("opencode", ROOT), OpenCodeDriver)
     assert isinstance(get_driver("claude", ROOT), ClaudeDriver)
+    assert isinstance(get_driver("github:copilot", ROOT), CopilotDriver)
 
     with pytest.raises(ValueError, match="No native driver registered"):
         get_driver("unsupported_host", ROOT)

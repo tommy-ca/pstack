@@ -76,6 +76,10 @@ class HarnessDriver(ABC):
     def profile_data(self) -> Dict:
         if self._profile_data is None:
             profile_path = self.root / "profiles" / f"{self.host}.json"
+            if not profile_path.is_file() and ":" in self.host:
+                alt_path = self.root / "profiles" / f"{self.host.split(':')[-1]}.json"
+                if alt_path.is_file():
+                    profile_path = alt_path
             if profile_path.is_file():
                 try:
                     self._profile_data = json.loads(profile_path.read_text(encoding="utf-8"))

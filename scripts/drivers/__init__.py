@@ -10,6 +10,7 @@ from .antigravity import AntigravityDriver
 from .base import DriverScenarioResult, HarnessDriver
 from .claude import ClaudeDriver
 from .codex import CodexDriver
+from .copilot import CopilotDriver
 from .droid import DroidDriver
 from .grok import GrokDriver
 from .omp import OMPDriver
@@ -32,9 +33,10 @@ DRIVER_REGISTRY: Dict[str, Type[HarnessDriver]] = {
 # neighbouring host's driver.
 require_builtin_host_keys(DRIVER_REGISTRY, "DRIVER_REGISTRY")
 
-# Adapter drivers for declared hosts with native integration (#441).
+# Adapter drivers for declared hosts with native integration (#441, #442).
 ADAPTER_DRIVERS: Dict[str, Type[HarnessDriver]] = {
     "claude": ClaudeDriver,
+    "github:copilot": CopilotDriver,
 }
 
 
@@ -59,4 +61,5 @@ __all__ = [
     "OpenCodeDriver",
     "DroidDriver",
     "ClaudeDriver",
+    "CopilotDriver",
 ]
