@@ -514,6 +514,7 @@ def test_reference_fork_ledger_records_completed_source_review() -> None:
     manifest = json.loads(
         (ROOT / "docs/research/pstack-claude-forks-2026-10-15.json").read_text()
     )
+    assert manifest["source_sha"] == "94f5ce95abe8a9dec976967d79941f631cf477cd"
     contract = manifest["source_review_contract"]["counterpart_sources"]
     assert contract["reference"]["pin"] == "94f5ce95abe8a9dec976967d79941f631cf477cd"
     assert contract["canonical"]["pin"] == "1dcc2bacde73ddd284803b7af28164d0436198fc"
@@ -521,8 +522,20 @@ def test_reference_fork_ledger_records_completed_source_review() -> None:
     rows = manifest["entries"]
     assert len(rows) == 48
     assert len({row["path"] for row in rows}) == len(rows)
+    assert sum(row["reference_kind"] == "policy" for row in rows) == 40
+    assert sum(row["reference_kind"] == "port-feature" for row in rows) == 8
     assert all(row["review_state"] == "source-reviewed" for row in rows)
-    assert Counter(r["proposed_adoption"] for r in rows) == dict(manifest["review_counts"])
+    assert all(row["why"].strip() for row in rows)
+    assert all(row["upstream"] == "not-proposed" for row in rows)
+    assert Counter(r["proposed_adoption"] for r in rows) == {"adapt": 36, "preserve": 1, "exclude": 2, "gap": 7, "policy-fork": 2}
+    assert not any(row["proposed_adoption"] == "unclassified" for row in rows)
+    per_row = [row for row in rows if "license_disposition" in row]
+    assert {row["path"] for row in per_row} == {
+        "plugins/pstack/skills/thermo-nuclear-code-quality-review/SKILL.md",
+        "plugins/pstack/skills/poteto-mode/playbooks/orchestrate.md",
+    }
+    assert all(row["proposed_adoption"] == "policy-fork" for row in per_row)
+    assert all(row["license_disposition"]["scope"] == "per-row" for row in per_row)
     assert all(set(r["source_review"]) >= {"counterpart_blobs", "attribution_profile", "semantic_delta", "check_or_gap"} for r in rows)
     absent = manifest["source_review_contract"]["absent_counterparts"]
     assert [(a["side"], a["path"]) for a in absent] == [("target", "skills/poteto-mode/scripts/check-plan.test.ts")]
