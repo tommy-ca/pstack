@@ -500,3 +500,36 @@ Docs-only record from main `5085335`. No code, receipt, fixture or evidence-inde
   - Package manifest check `scripts/project-package.py --check` passes.
 
 Issue #443 is fulfilled and CLOSED. All G0–G8 boxes remain unchecked. #434, #444, #445, #473 stay OPEN on the rows named above.
+
+## Dated evidence (2026-10-19, wave-34: canonical/reference provenance and policy-fork classifications accepted)
+
+Docs-only record from main `009b077`. No code, receipt, fixture or evidence-index file is touched: this section is appended and no earlier wave's prose is rewritten.
+
+**Canonical/reference provenance and policy-fork classifications accepted.** PR #582 resolved #434 by freezing counterpart blob verification and completing independent acceptance on `docs/research/pstack-claude-forks-2026-10-15.json` (merged to main as `009b077`):
+- Pinned comparator & counterpart revisions:
+  - Reference: `michael-denyer/pstack-claude@94f5ce95abe8a9dec976967d79941f631cf477cd` (`tools/forks.json`, 48 comparator-declared paths).
+  - Canonical: `cursor/plugins/pstack@1dcc2bacde73ddd284803b7af28164d0436198fc`.
+  - Target: `tommy-ca/pstack@3f4cd124f27cab90865df79d18d376e2f4335b2c`.
+  - Absent counterpart: `skills/poteto-mode/scripts/check-plan.test.ts` (absent on target; row dispositioned `exclude`).
+- Full 48-row provenance ledger coverage:
+  - 48 rows, 48 unique paths, 40 `policy`, 8 `port-feature`.
+  - `review_state` is `source-reviewed` across all 48 rows.
+  - Proposed adoption distribution: 36 `adapt`, 1 `preserve`, 2 `exclude`, 7 `gap`, 2 `policy-fork`, strictly matching `review_counts`.
+  - Attribution coverage: 48/48 covered under defined attribution profiles (`pstack` and `thermos`), with the two policy-fork rows (`thermo-nuclear-code-quality-review/SKILL.md` and `poteto-mode/playbooks/orchestrate.md`) carrying explicit per-row `license_disposition`.
+  - Evidence coverage: every row carries `source_review` with `counterpart_blobs`, `attribution_profile`, `semantic_delta`, and `check_or_gap`.
+  - Target blob verification: all 47 present target counterpart blobs are verified in the local git object database.
+- Review scope & fail-closed invariants:
+  - `review_scope.independent_acceptance` updated to completed.
+  - `review_scope.watcher_gap` updated to resolved on mainline (ref PR #558 / commit `4e12e4e`, issue #545 closed).
+  - Strict preservation of fail-closed non-claims: `approval: "not granted"`, `implementation: "not authorized or claimed"`, `runtime: "not verified"`.
+- Acceptance test coverage:
+  - `tests/test_model_role_policy.py::test_reference_fork_ledger_records_completed_source_review` asserts counterpart blob formatting, git object store presence (with shallow clone resilience), review scope contracts, and literal row distributions, with 8 negative control mutations proven failing closed.
+  - 66 passed in `tests/test_model_role_policy.py`.
+- Verification & durability:
+  - Static CLI contract passes (`python -m scripts.model_role_policy`).
+  - Package manifest check `scripts/project-package.py --check` passes.
+  - Boundary scan `scan-host-boundary.py --check` passes with 0 leaks across 139 files.
+  - Independent verification: `pstack-verifier` subagent (tier `pro`) returned `PASS` on PR #582 head (`5d11128`), merged to main as `009b077`.
+
+Issue #434 is fulfilled and CLOSED. All G0–G8 boxes remain unchecked. #435, #437, #444, #445, #473 stay OPEN on the rows named above.
+
