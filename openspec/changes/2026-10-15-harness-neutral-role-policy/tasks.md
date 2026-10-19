@@ -533,3 +533,28 @@ Docs-only record from main `009b077`. No code, receipt, fixture or evidence-inde
 
 Issue #434 is fulfilled and CLOSED. All G0–G8 boxes remain unchecked. #435, #437, #444, #445, #473 stay OPEN on the rows named above.
 
+## Dated evidence (2026-10-19, wave-35: canonical role IDs, model policy schema, and pin audit accepted)
+
+Docs-only record from main `ab74848`. No code, receipt, fixture or evidence-index file is touched: this section is appended and no earlier wave's prose is rewritten.
+
+**Canonical role IDs, model policy schema, and pin audit accepted.** PR #584 resolved #435 by locking the canonical 22-role taxonomy, schema, fixtures, and pin inventory audit into a strict regression contract (merged to main as `ab74848`):
+- Package descriptor & role taxonomy:
+  - Validates that `pstack.package.json#/roles` enumerates exactly 22 unique roles with valid kebab-case IDs, non-empty descriptions, and legal `default_model_role` tiers drawn from the 6 observed tiers (`adversarial-panel`, `fast-verifier`, `fast-worker`, `panel`, `strong-judgment`, `strongest`).
+  - Verifies 1-to-1 bijection between the 22 package roles and the 22 agent files in `agents/*.md`.
+- Canonical effort ladder alignment:
+  - Subprocess execution of `scripts/effort_ladder.py --check` confirms returncode 0 and frontmatter alignment.
+- Canonical pin inventory conformance audit:
+  - Audits `openspec/canonical-inventory.json` and git cache root under UPSTREAM pin `1dcc2bacde73ddd284803b7af28164d0436198fc`.
+  - Confirms `pin_conformance: PASS`, `gaps: 0`, and `total_artifacts: 167` (24 principles, 23 playbooks, 93 preserved, 64 adapted, 10 excluded).
+- Checked-in sample discipline:
+  - Asserts that all 6 host targets (`grok`, `codex`, `omp`, `opencode`, `antigravity`, `droid`) in `examples/portability/model-role-policy.example.json` map all 6 legal tiers with strictly empty `model_catalog` (`[]`), preventing fake live model claims.
+- Verification & durability:
+  - 137 passed across `tests/test_model_role_policy.py`, `tests/test_setup_pstack.py`, `tests/test_project_package.py`, `tests/test_verify_harness.py`.
+  - Static CLI contract passes (`python -m scripts.model_role_policy`).
+  - Package manifest check `scripts/project-package.py --check` passes.
+  - Boundary scan `scan-host-boundary.py --check` passes with 0 leaks across 139 files.
+  - Independent verification: `pstack-verifier` subagent (tier `pro`) returned `PASS` on PR #584 head (`eff60dd`), merged to main as `ab74848`.
+
+Issue #435 is fulfilled and CLOSED. With #434, #435, and #436 closed, Sub-epic #430 is fulfilled and CLOSED. All G0–G8 boxes remain unchecked. #437, #444, #445, #473 stay OPEN on the rows named above.
+
+
