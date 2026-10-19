@@ -22,7 +22,7 @@ if str(SCRIPTS) not in sys.path:
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from portability_schema import DEFAULT_SKILLS_DIRS
+from scripts.portability_schema import DEFAULT_SKILLS_DIRS
 from scripts.host_identity import require_builtin_host_keys
 from skill_frontmatter import SKILL_NAME_RE, read_scalar, split_frontmatter, validate_skill_name
 

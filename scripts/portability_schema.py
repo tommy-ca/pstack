@@ -489,6 +489,8 @@ class HarnessProfile:
         check_freshness: bool = True,
         current_revisions: Optional[SurfaceRevisions] = None,
     ) -> Dict[str, Any]:
+        from scripts.evidence_durability import check_evidence_durability
+
         return check_evidence_durability(
             self,
             root,
@@ -497,21 +499,7 @@ class HarnessProfile:
         )
 
 
-@dataclass
-class SurfaceRevisions:
-    canonical_pin: str
-    upstream_head: str
-    spec_hash: str
-    skills_tree_hash: str
-    profile_hash: str
-    package_descriptor_hash: str
-    manifest_hash: str
-    driver_revision: str
-    package_driver_revision: str
-    boundary_driver_revision: str
-
-    def to_dict(self) -> Dict[str, str]:
-        return asdict(self)
+from scripts.surface_revisions import SurfaceRevisions
 
 
 PLANE_SURFACE_DEPENDENCIES: Dict[str, Tuple[str, ...]] = {
@@ -616,6 +604,20 @@ def reduce_verdicts(verdicts: Iterable[str]) -> str:
     if v_set == {"PASS"}:
         return "PASS"
     return "FAIL"
+
+
+def _is_observed_settlement(scenario, capability: Optional[str] = None) -> bool:
+    if not (
+        scenario.plane == "runtime"
+        and scenario.evidence_level == "observed_live"
+        and isinstance(scenario.settlement, ChildSettlement)
+        and scenario.verdict == "PASS"
+    ):
+        return False
+    outcome = scenario.settlement.terminal_outcome
+    if outcome == "success":
+        return True
+    return capability is not None and outcome in SETTLEMENT_PROMOTIONS.get(capability, ())
 
 
 def settle_planes(scenarios: Iterable[ScenarioResult]) -> Dict[str, str]:
@@ -756,13 +758,26 @@ from scripts.surface_revisions import (
     _write_driver_core_cache,
     compute_surface_revisions,
 )
-from scripts.evidence_durability import (
-    _is_observed_settlement,
-    _is_preservable_settlement,
-    _row_level,
-    _row_receipt,
-    check_evidence_durability,
-    check_scenario_pins,
-    derive_support_state,
-    preserve_observed_settlements,
-)
+_EVIDENCE_DURABILITY_SYMBOLS = {
+    "_is_preservable_settlement",
+    "_row_level",
+    "_row_receipt",
+    "check_evidence_durability",
+    "check_scenario_pins",
+    "derive_support_state",
+    "preserve_observed_settlements",
+}
+
+
+def __getattr__(name: str) -> Any:
+    if name in _EVIDENCE_DURABILITY_SYMBOLS:
+        import scripts.evidence_durability as _ed
+
+        val = getattr(_ed, name)
+        globals()[name] = val
+        return val
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+
+def __dir__() -> List[str]:
+    return sorted(list(globals().keys()) + list(_EVIDENCE_DURABILITY_SYMBOLS))

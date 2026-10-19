@@ -15,15 +15,29 @@ import re
 import stat
 import sys
 import tempfile
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
-from scripts.portability_schema import (
-    DEFAULT_PLUGIN_MANIFESTS,
-    SKILLS_HASH_IGNORED_DIRS,
-    SKILLS_HASH_IGNORED_SUFFIXES,
-    SurfaceRevisions,
-)
+SKILLS_HASH_IGNORED_DIRS = frozenset({"__pycache__", "node_modules"})
+SKILLS_HASH_IGNORED_SUFFIXES = (".pyc", ".pyo")
+
+
+@dataclass
+class SurfaceRevisions:
+    canonical_pin: str
+    upstream_head: str
+    spec_hash: str
+    skills_tree_hash: str
+    profile_hash: str
+    package_descriptor_hash: str
+    manifest_hash: str
+    driver_revision: str
+    package_driver_revision: str
+    boundary_driver_revision: str
+
+    def to_dict(self) -> Dict[str, str]:
+        return asdict(self)
 
 
 class RecipeError(RuntimeError):
@@ -350,7 +364,7 @@ def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path
     else:
         package_descriptor_hash = "missing"
 
-    manifest_rel = DEFAULT_PLUGIN_MANIFESTS.get(host)
+    manifest_rel = None
     if profile_path.is_file():
         try:
             pdata = json.loads(profile_path.read_text(encoding="utf-8"))
@@ -358,6 +372,10 @@ def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path
                 manifest_rel = pdata["plugin_manifest"]
         except Exception:
             pass
+    if manifest_rel is None:
+        from scripts.portability_schema import DEFAULT_PLUGIN_MANIFESTS
+
+        manifest_rel = DEFAULT_PLUGIN_MANIFESTS.get(host)
     manifest_file = root / manifest_rel if manifest_rel else None
     if manifest_file and manifest_file.is_file():
         try:

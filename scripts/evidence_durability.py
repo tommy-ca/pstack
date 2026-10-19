@@ -18,25 +18,11 @@ from scripts.portability_schema import (
     Binding,
     ChildSettlement,
     HarnessProfile,
-    SurfaceRevisions,
     ValidationError,
     VerificationReceipt,
+    _is_observed_settlement,
 )
-from scripts.surface_revisions import compute_surface_revisions
-
-
-def _is_observed_settlement(scenario, capability: Optional[str] = None) -> bool:
-    if not (
-        scenario.plane == "runtime"
-        and scenario.evidence_level == "observed_live"
-        and isinstance(scenario.settlement, ChildSettlement)
-        and scenario.verdict == "PASS"
-    ):
-        return False
-    outcome = scenario.settlement.terminal_outcome
-    if outcome == "success":
-        return True
-    return capability is not None and outcome in SETTLEMENT_PROMOTIONS.get(capability, ())
+from scripts.surface_revisions import SurfaceRevisions, compute_surface_revisions
 
 
 def _is_preservable_settlement(scenario) -> bool:

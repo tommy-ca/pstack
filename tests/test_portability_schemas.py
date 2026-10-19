@@ -1,4 +1,5 @@
 import json
+import subprocess
 import sys
 from pathlib import Path
 import pytest
@@ -512,6 +513,10 @@ def test_portability_schema_modular_decomposition_and_backwards_compatibility() 
     assert rev_sr == rev_ps
     assert rev_sr.driver_revision
     assert rev_sr.package_driver_revision
+
+    subprocess.run([sys.executable, "-c", "import scripts.surface_revisions"], check=True, cwd=ROOT)
+    subprocess.run([sys.executable, "-c", "import scripts.evidence_durability"], check=True, cwd=ROOT)
+    subprocess.run([sys.executable, "scripts/scaffold-verification-skill.py", "--help"], check=True, cwd=ROOT)
 
 
 
