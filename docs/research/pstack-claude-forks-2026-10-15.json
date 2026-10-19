@@ -176,7 +176,7 @@
     {
       "path": "plugins/pstack/skills/poteto-mode/playbooks/autopilot-full.md",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "adapt",
       "review_lane": "playbook-policy",
       "source_version": "0.9.39",
@@ -184,12 +184,22 @@
       "why": "Owners stop at merge-ready and the operator clicks every merge, with the patch-id rule governing re-verification if trunk moves first, instead of each owner merging after a clean verdict, and the root writes the program objective into standing orders on the go and re-reads it each tick, arms the tick as a dynamic-mode /loop, proves the live lane through the driver skill, takes the pre-review checks from CLAUDE.md files, states the program's size before the first owner starts and waits for the operator's go above three owners, sends an owner only the findings its diff causes, runs the full swarm in the first round only, and stops a PR at two fix-forwards.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#playbook-policy",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "7ea13151fa19b4f901d5a111601103907f0c0d7d",
+          "canonical": "d5a68c339e25ac016ffad9c51d858f0f6c37937a",
+          "target": "2fca0eb0cef5cfbc53fd2b4a5240fc4aa0f3c4ed"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**Adapt.** Comparator step 1 requires operator explicit go, and its opening policy and steps state the operator reviews/clicks and no owner merges. Canonical step 1 says the owner carries lifecycle through merge (except operator-named items); canonical step 5 explicitly lets the owner merge on clean verdict. Target preserves the operator-named-item exception but otherwise explicitly authorizes the owner to merge after its clean verdict (target steps 1, 5). Thus target relaxes comparator merge authority, rather than strengthening its gate. Other host/runtime and cadence differences remain. Do not conflate `autopilot-stack`, which prohibits owner landing, with `autopilot-full`.",
+        "check_or_gap": "Protocol only: no behavior check proves actual merge authority. The policy text is explicit: comparator requires operator click/no owner merge; canonical/target permit owner merge in autopilot-full after clean verdict, with target retaining the operator-named-item exception."
+      }
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/playbooks/autopilot-stack.md",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "adapt",
       "review_lane": "playbook-policy",
       "source_version": "0.9.34",
@@ -197,12 +207,22 @@
       "why": "Records each verdict's head SHA, base SHA, base branch, and patch-id, cancels pending merges and leases each push against the captured remote head before the root rewrites or retargets the chain, and re-verifies a verdict whose applicability to the new base is uncertain, while the root writes the program objective into standing orders on the go, re-reads it each tick, and arms the tick as a dynamic-mode /loop.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#playbook-policy",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "c4360ddc66601018037f0fee01523cd5ed18ef77",
+          "canonical": "750a7547235ae8eb340285684b9be7c36dff323a",
+          "target": "ba4a8ab36474f44d3d1b56b109b5b13790ed0e4b"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**Adapt.** Both prohibit owner merges and assign topology to the root. Target records verdict head/base/base branch/patch-id and requires re-verification where applicability is uncertain; comparator’s rule is less explicit about base/context applicability. Host scheduling and depth-1 parent-owned spawning replace comparator’s execution model.",
+        "check_or_gap": "Protocol only: no live proof of stack rewrites, leases, or verdict preservation."
+      }
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/playbooks/babysit.md",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "adapt",
       "review_lane": "playbook-policy",
       "source_version": "0.9.39",
@@ -210,12 +230,22 @@
       "why": "Requires confirming that the first status read reports the requested PR or stack, and naming the merge frontier, before acting on it, and reports the watcher's behind-base gate to the branch owner instead of resolving it, as it does a conflict.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#playbook-policy",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "d67b251623610303348d154dda4cddab708d3980",
+          "canonical": "51549ab2da11e5905342bbb3aadb93685c8ac348",
+          "target": "6f91a6ed9a10b3235a8d685dcfa0d4e836c85c69"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**Adapt.** Both confine babysitting to the merge frontier and forbid babysitters from changing topology. Target adds explicit host `monitor` and untrusted-review-comment handling; comparator uses a GitHub watcher or Origin commands. Both route landing to Shipping and do not grant merge authority here.",
+        "check_or_gap": "Protocol only: no evidence here of live watcher output or enforcement of merge boundaries."
+      }
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/playbooks/bug-fix.md",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "adapt",
       "review_lane": "playbook-policy",
       "source_version": "0.9.10",
@@ -223,12 +253,22 @@
       "why": "The reply quotes the decisive failing and passing output trimmed to the assertion and counts, not the whole repro verbatim.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#playbook-policy",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "a2432864e08a018d299caabc37396c59171025c8",
+          "canonical": "eeebc42b7477d435d8ac61d631d84822f908f59c",
+          "target": "414aee72a156cf4ef31563525acee930a5dc1e04"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**Adapt.** Target adds a write-effect state (`none | partial | committed | unknown`) and prohibits blind retries while partial/unknown, assigning recovery declaration to the state owner. It adapts the runtime driver, scheduling, role/model resolution, and repro output format.",
+        "check_or_gap": "Protocol only: no check exercises write-effect recovery or proves reproduction on the real surface."
+      }
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/playbooks/feature.md",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "adapt",
       "review_lane": "playbook-policy",
       "source_version": "0.9.39",
@@ -236,12 +276,22 @@
       "why": "Gives every file-writing delegate its own worktree, based on the branch's HEAD when it builds on unmerged commits, and forbids writing in a worktree a delegate still holds.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#playbook-policy",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "f2d0cd489c8d9c159719a86ae603904c9515d846",
+          "canonical": "79a6bbbe0ce61c3b5ef9af1ee8e3ccdb0557edc6",
+          "target": "f68969ecafaf69d8735d23f0f98a31054fbea98c"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**Adapt.** Core design/checkpoint, shared-state, and matching-surface verification intent is retained. Target assigns spawning to a depth-1 parent and requires review/independent verification; comparator allows delegated work and describes an arena path without the same parent-owned boundary.",
+        "check_or_gap": "Protocol only: no feature-workflow or delegate-isolation proof identified."
+      }
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/playbooks/multi-phase-plan.md",
       "reference_kind": "port-feature",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "adapt",
       "review_lane": "playbook-policy",
       "source_version": "0.9.19",
@@ -249,12 +299,22 @@
       "why": "Plans read skills from the installed plugin, keep the store under ~/.claude/orchestrate, write the program objective into standing orders, run the tick as a dynamic-mode /loop that re-reads that objective, run live lanes in worktrees through the driver skill the Non-negotiables resolve instead of on cloud VMs with control-ui or control-cli, name the configured swarm workers model instead of a placeholder, and leave rebase and merge authority to the execution playbook.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#playbook-policy",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "45359e5b23be2f4c0be5fc94e7276a29f604ab42",
+          "canonical": "f8ed78a6533cc5d738d3a3ec106bf2577d3f98ca",
+          "target": "a34da7ce780a1d0d1ed8db938952d1867152c5c2"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**Adapt.** Both require a structured plan and substantive live verification. Target adapts plugin paths and the runtime driver, names task identifiers/dependencies, and revises the check-plan contract; comparator’s plan skeleton and ten-lane execution assume cloud VMs/control tools.",
+        "check_or_gap": "`skills/poteto-mode/scripts/check-plan.mjs` and its tests check plan structure/dependencies, not whether proposed live lanes ran or passed. No live surface proof from the playbook itself."
+      }
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/playbooks/opening-a-pr.md",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "adapt",
       "review_lane": "playbook-policy",
       "source_version": "0.9.10",
@@ -262,12 +322,22 @@
       "why": "Requires stopping every live agent that holds a worktree before committing, merging, or deploying from it.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#playbook-policy",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "cb14e0dd84b4932269a17429c68c6df8c080b367",
+          "canonical": "fcd00527c6b9fb592aecfc3b1512e3b838146de3",
+          "target": "bb5e0b0002b64224b0d8f09c10f7634b6e0f1c4b"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**Adapt.** Both require worktree discipline, ordered commits, forge resolution, and ready PRs. Target removes the comparator’s optional built-in PR-tool path and assigns post-open interrogate/no-comments work to the parent, consistent with its host/delegation model.",
+        "check_or_gap": "Protocol only: no check proves worktree ownership, PR readiness, or live forge operations."
+      }
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/playbooks/orchestrate.md",
       "reference_kind": "port-feature",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "policy-fork",
       "review_lane": "playbook-policy",
       "source_version": "0.9.29",
@@ -289,12 +359,22 @@
         "local_state": "local skills/poteto-mode/playbooks/orchestrate.md is the canonical-pstack-derived counterpart; local LICENSE is MIT with no NOTICE file",
         "requirement": "NOTICE.md attributes this path to canonical pstack upstream, not thermos; no thermos NOTICE obligation. Provenance stays canonical (Lauren Tan MIT); local divergence is a playbook-policy decision, not a license question",
         "verdict": "not a thermos-chain path; MIT provenance equals the local canonical source, no extra NOTICE obligation"
+      },
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "2f7c2695d02d332fa1e83024e8b7bc8ff2c44dc9",
+          "canonical": "d5b6d008026ff0177f52e22a6fb4b2edae5c87e2",
+          "target": "269afb416e7a3a1ec62ae92c51318d716559342a"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**Policy-fork (accepted host-boundary fork).** Canonical/comparator own durable per-project stores, an orchestration CLI, and nested sub-coordinators; target explicitly forbids a playbook-local store/unshipped CLI and assigns durable state to canonical host task/agent state. Target limits spawning to depth 1 and declares nested track ownership, cancellation, and terminal joins a **gap**, not equivalent behavior. This is not a wholesale comparator state-store import.",
+        "check_or_gap": "Existing target checks verify the forge-neutral `gh`/Origin path and no required `gt` (`tests/test_verify_harness.py`, `test_forge_neutral_pr_path_without_graphite`). That check does **not** prove host state ownership, nested-worker parity, cancellation, or terminal joins; nested parity is explicitly unproven."
       }
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/playbooks/pause-safely.md",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "adapt",
       "review_lane": "playbook-policy",
       "source_version": "0.9.34",
@@ -302,12 +382,22 @@
       "why": "Writes the resume note to the canonical checkpoint directory and preserves artifacts the user asked to keep across the resume.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#playbook-policy",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "da90d0322b63f7a4c209d2d745c050c836fa8526",
+          "canonical": "9d1c5f8303976fff40de099f7f28185909430c11",
+          "target": "00e91700f6f407298f986fad6aad12e7a97c76bc"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**Adapt.** Both require stopping at a safe boundary, preserving work, and producing a resume note. Target uses host cancellation and makes a compaction-trigger note a temporary `/tmp` path; comparator instead specifies canonical checkpoint storage and preserving user-requested artifacts through its publisher. Those are material storage/recovery differences, not tool-name substitutions.",
+        "check_or_gap": "Protocol only: no check proves checkpoint publication, link integrity, or cold-start recoverability."
+      }
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/playbooks/session-pickup.md",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "adapt",
       "review_lane": "playbook-policy",
       "source_version": "0.9.34",
@@ -315,12 +405,22 @@
       "why": "Reads the project checkpoint first and applies the human-rulings epistemics when reconstructing state.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#playbook-policy",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "9ac2af76c17ce018b6ee6079195ae983c7542d19",
+          "canonical": "9b2ed06e0ff8b01bf03b7a0d6a4cbb8ba3a46720",
+          "target": "a3e947bb5c873e91cf2460330d745f5196f5e743"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**Adapt.** Both use prior evidence, reconstruct state, and route remaining work rather than restarting blindly. Target uses host transcript/session locations and removes the comparator’s canonical project-checkpoint-first path; both require checking inherited claims against the goal.",
+        "check_or_gap": "Protocol only: no check demonstrates correct transcript selection or recovery from a real interrupted session."
+      }
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/playbooks/shipping.md",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "adapt",
       "review_lane": "playbook-policy",
       "source_version": "0.9.34",
@@ -328,12 +428,22 @@
       "why": "Lands one PR at a time under the user's landing authority, cancelling pending merges before any chain change, merging only under a service-enforced head condition, arming auto-merge or a queue only behind repository rules that enforce the verdict, and confirming each landing in the destination's history before advancing, with verifiers that drive the real surface through the driver skill in their own worktrees, a matching patch-id that keeps a review only after its applicability to the new base is checked, and the watcher owning blocker classification, with a branch behind its base routed to the topology owner.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#playbook-policy",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "17840114442549e5e321e57c511255b84ff14d14",
+          "canonical": "0f1d41f189222b991734015926a3b22607e1b92f",
+          "target": "889e647630183c6153c540eb2deaa80aa138af42"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**Adapt.** Both require independent per-PR verification and contiguous bottom-up landing. Target adds stricter cancellation/readback before topology changes, service-enforced head conditions, durable verification gates before queued/auto merging, complete landing-revision checks, and destination-history confirmation. Target’s protection against irreversible stale-verdict landing is stronger than comparator’s workflow.",
+        "check_or_gap": "Protocol only: no live proof of service-enforced guards, cancellation, or confirmed destination history."
+      }
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/playbooks/worktree-cleanup.md",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "adapt",
       "review_lane": "playbook-policy",
       "source_version": "0.9.74",
@@ -341,25 +451,45 @@
       "why": "Holds a worktree with untracked files or a git lock instead of calling untracked files safe to drop, names the untracked count and the lock reason the audit prints, says that a worktree with both tracked edits and untracked files prints both counts, names the status call the audit counts from and a diff command that covers submodules, says that an empty diff never means nothing is at stake because a diff leaves untracked files out and a plain one can leave a submodule out, says that a wip line can stand for work inside a submodule, limits the prune step's kept-commits claim to commits on the worktree's branch and says a submodule's commits go with the worktree, and forbids rm -rf around a locked tree.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#playbook-policy",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "622d79323731d1613879174beddcdbdd7295039c",
+          "canonical": "c767ac09ab584070fe3a76ddd754966b0cdf452f",
+          "target": "43a2c2463624f7e451366bf40c1e2e05d5633f21"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**Adapt.** Both treat cleanup as irreversible and require usage checks. Target prohibits deleting untracked state by default, requires explicit confirmation, and uses a dry-run/apply drop tool with expected inventory counts. Comparator calls untracked scratch safe to drop and prescribes forced removal/`rm -rf`; that is a meaningful safety-policy conflict.",
+        "check_or_gap": "Protocol only: no check proves the audit classification, confirmation gate, or that apply removes only the intended paths."
+      }
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/scripts/bootstrap.ts",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
-      "proposed_adoption": "adapt",
+      "review_state": "source-reviewed",
+      "proposed_adoption": "gap",
       "review_lane": "code-contract",
       "source_version": "0.9.11",
       "reference_group": "pstack",
       "why": "Exits with a clear message when run without bun and installs production dependencies without re-executing itself.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#code-contract",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "ea4d5c491b1c4fa48b7b47a38d1386db92665a90",
+          "canonical": "d9c63e2007449a80000abe75ecaf7f2a0bd5826b",
+          "target": "d9c63e2007449a80000abe75ecaf7f2a0bd5826b"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**GAP (#434).** Comparator adds an early Bun-only diagnostic and uses `install --frozen-lockfile --production` without restarting itself (`bootstrap.ts`, comparator lines 6–14, 41–66). Target has neither guard nor production flag and re-executes the command after install (target lines 34–59). Matrix’s “adapt” rationale describes comparator behavior, not target coverage.",
+        "check_or_gap": "No bootstrap test found in the current target package/test inventory. The behavior is untested locally."
+      }
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/scripts/check-plan.mjs",
       "reference_kind": "port-feature",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "preserve",
       "review_lane": "code-contract",
       "source_version": "0.9.19",
@@ -367,12 +497,22 @@
       "why": "Checks for the port's plan skeleton markers (standing orders, installed-plugin reads, an hourly cadence, the configured swarm workers model), requires a box under each program task and under Close the program, opens and closes a code fence at any indentation so a fence inside a list item counts, and strips a leading byte-order mark before parsing.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#code-contract",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "27dae333978389c2b17f888104d0a1878fd1170e",
+          "canonical": "c8626766cee4cc4a2736fe438a1aea5c1f1b28ce",
+          "target": "66f5fcae04dbb3abeb08b841a92e6f47ec188568"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**Preserve.** Target checker intentionally changes plan markers and live-lane policy for this port; it also adds dependency graph validation and identifier checks (target `check-plan.mjs`, especially lines 9–21 and 130–239). Comparator instead strips a BOM and permits broader indentation in fences; target does not. These are semantic parser differences, not just runtime-name changes.",
+        "check_or_gap": "Target `check-plan.test.mjs` exercises checker behavior. The comparator’s `check-plan.test.ts` is not a valid target test: it supplies comparator-specific fixture markers."
+      }
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/scripts/check-plan.test.ts",
       "reference_kind": "port-feature",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "exclude",
       "review_lane": "code-contract",
       "source_version": "0.9.83",
@@ -380,12 +520,22 @@
       "why": "Gives upstream's valid-plan fixture the boxes under each program task and under Close the program, the standing-orders, installed-plugin, and hourly lines, and the configured swarm workers lane line that the port's checker requires.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#code-contract",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "59169bcd5e8081f4c3c28489ef73962ad2fcbc15",
+          "canonical": "fd966c2b5fb6e99c12070c553906765c7bd900d8",
+          "target": null
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**Exclude.** This upstream test encodes a different plan contract and fixture (standing orders, installed-plugin reads, hourly cadence, configured swarm workers). The target has a distinct checker fixture and dependency-graph cases; copying the comparator test would test the wrong contract.",
+        "check_or_gap": "Target `check-plan.test.mjs` covers the target checker, including fence parsing and malformed prose. It does not establish behavior for the comparator’s absent test path or upstream-specific fixture."
+      }
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/scripts/orch/orch.test.ts",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "adapt",
       "review_lane": "code-contract",
       "source_version": "0.9.47",
@@ -393,25 +543,45 @@
       "why": "Covers the guards the port adds to orch/store.ts: nested-paren status rows, leading-dash branch names, single-line table cells, frontier SHAs from exact branch refs, and colour and hyperlink codes in gt output, injecting the fake gt through the store's gt option instead of rewriting PATH and giving the CLI only PATH and ORCH_STORE instead of the whole environment. For the stale-lock takeover it races two processes for a stale lock to show only one replaces it, refuses every writer, forced or not, while a live writer holds the takeover claim, pauses a second process at its unlink of the lock to show a forced writer is refused mid-takeover, pauses a holder at the unlink of its release to show a forced writer is refused there too, kills one there to show the next writer clears its claim, removes the lock there to show the takeover carries on, and pauses one after it has listed a dead claimant to show it leaves alone a claim made since. Kills a writer after every lock call, with and without a stale lock, to show the next writer gets in, fails the hard link to show the exclusive open still refuses a live lock, plants and removes a rival lock between a failed create and the read to show the create is retried, and points the lock at a missing file to show the retry ends. Expects unit add to return ids and tracks as written, round-trips unit cells and inbox pointers that start with a formula or quote character and pins their quoted form on disk, reads rows written before the quote was stripped without dropping a leading quote, and times out gt log and gt info against a gt that ignores SIGTERM, with a budget a saturated machine can meet.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#code-contract",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "2b476c33d4e0db046626b50549b7da6a97d0ee0d",
+          "canonical": "538775e37f3ac6fd2dd128883b7f7fe51c1316d5",
+          "target": "9c234de724991083b4644e906a5f1358f8ef8dcc"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**Adapt.** Comparator tests inject `gt` through the store option and exercise takeover races, killing writers at lock transitions, lock creation/retry failures, timeout behavior, and formula/quote TSV round-trips. Target helper modifies `PATH` and its tests cover basic stale/live lock behavior, but not those comparator safety cases (comparator test lines 1–200 plus later lock cases; target test lines 1–180, 335–374).",
+        "check_or_gap": "Target `orch/orch.test.ts` covers basic store operations, stale-lock recovery, and forced takeover. It does **not** cover the comparator’s race-proof takeover protocol, kill-at-transition cases, timeout, or quoted-cell round-trip."
+      }
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/scripts/orch/store.ts",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
-      "proposed_adoption": "adapt",
+      "review_state": "source-reviewed",
+      "proposed_adoption": "gap",
       "review_lane": "code-contract",
       "source_version": "0.9.13",
       "reference_group": "pstack",
       "why": "Adds guards for temp-file cleanup, single-line status table cells, nested-paren gt status rows, leading-dash branch names, and frontier SHAs resolved from exact local branch refs, runs gt and git without an env override and strips terminal control sequences from gt output instead of setting NO_COLOR, and takes the gt path as an open option so tests can inject a fake. Serializes stale-lock takeovers behind a claim directory that holds one file named for the claimant's pid, staged under a private name and renamed into place. A live claim refuses every other writer, forced or not, and the next writer removes a dead claimant's file by name before it claims. Inside the claim the takeover re-reads the lock, refuses when the holder changed, and carries on when the lock is already gone. The release reads and unlinks its own lock behind the same claim, so a forced takeover cannot replace the lock between the two, and stages a new claim until a live claimant finishes or dies. Creates the lock by writing the pid to a private file and hard-linking it into place, so a writer killed mid-create cannot leave a lock with no pid in it, and falls back to an exclusive open where the link fails for any reason other than an existing lock. Creates the lock again, twice at most, when it vanishes between a failed create and the read of its holder, and reports a lock it cannot read as held by an unknown pid. Quotes a cell that starts with a spreadsheet formula character or a quote only when writing a TSV or an inbox pointer, and strips that quote when reading one, so ids and branches round-trip unchanged. A row written before this change keeps a leading quote unless another quote or a formula character follows it; that is the shape the store writes, so such a row loses its first quote on read. Bounds each gt call with a timeout that kills gt with SIGKILL and that the gtTimeoutMs open option overrides.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#code-contract",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "439c85331b3eb9da89608e572038a27f8c0acfa0",
+          "canonical": "5e6c602fb670a6b5598977f5bf85d717cf797ef7",
+          "target": "5e6c602fb670a6b5598977f5bf85d717cf797ef7"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**GAP (#434).** Comparator adds serialized stale-lock takeover with claimant directory, hard-link lock creation, bounded retries, release serialized against takeover, formula/quote-safe TSV cells, VT-control stripping, exact branch-ref SHA resolution, injectable `gt`, and bounded `gt` calls. Target uses a plain pid lock and `open`-based acquisition; `cleanCell` protects formula prefixes but not quote-prefix round-tripping (target lines 17–20, 296–299; comparator lines 17–24 and store lock/frontier sections). Comparator tests specify the missing boundaries; the target store does not implement them.",
+        "check_or_gap": "Target store tests’ basic lock cases are not proof of the comparator’s concurrency guarantees. Formula-prefix behavior is covered only in a narrow add expectation; no quote round-trip, race, exact-ref SHA, terminal-control, or `gt` timeout check was found."
+      }
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/scripts/package.json",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "adapt",
       "review_lane": "code-contract",
       "source_version": "0.9.23",
@@ -419,12 +589,22 @@
       "why": "Typechecks through the root tsconfig.json so the port-only modules are covered.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#code-contract",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "00eb74ed1faae3e05f6ab1d6d4d3bfbec54f56a8",
+          "canonical": "d8abe49ad0eafd10d302e8c6a9a0a95c5e6fb0ef",
+          "target": "1e9a3281b5e204d5c18c469241ec3ebdbd469ef1"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**Adapt.** Comparator runs the whole scripts tree for typecheck and includes `check-plan.test.ts` in tests. Target narrows typecheck to `watch-pr/tsconfig.json` and invokes target `.mjs` plan tests plus worktree checks (`package.json`, comparator and target scripts).",
+        "check_or_gap": "The package scripts name runnable checks, but none were executed. Target’s typecheck does not establish coverage of all port-only modules."
+      }
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/cli.test.ts",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "adapt",
       "review_lane": "code-contract",
       "source_version": "0.9.34",
@@ -432,25 +612,45 @@
       "why": "Supplies the shared deadline and landing revision the port's watcher requires, and checks that a PR with no checks configured gets a first-sighting status cell and, after one WAITING poll, a READY verdict that names the absence, and that mergeability GitHub has not computed is named in the status table, the WAITING line, and the TIMEOUT line, that a retry after a mid-read change is not called a failed query, that a command that could not run gets an install action, that an --interval longer than one timer can sleep is refused, and the two help lines the port rewrote.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#code-contract",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "e7654c617f66b9e29fde296d95ee9219849c9791",
+          "canonical": "0656b413e6c180858ca42981105944c45caf9dca",
+          "target": "0656b413e6c180858ca42981105944c45caf9dca"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**Adapt.** Comparator tests deadline injection, maximum timer sleep rejection, no-check confirmation wording, and status-only semantics. Target retains argument defaults/mode validation and basic rendering/status-only behavior but omits these newer cases (comparator tests lines 1–25, 158–164, 340–383; target lines 1–24, 88–93, 158 onward).",
+        "check_or_gap": "Target CLI tests cover defaults, usage errors, and status-only, but do not prove deadline or no-check interval behavior."
+      }
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/cli.ts",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
-      "proposed_adoption": "adapt",
+      "review_state": "source-reviewed",
+      "proposed_adoption": "gap",
       "review_lane": "code-contract",
       "source_version": "0.9.24",
       "reference_group": "pstack",
       "why": "Threads one WatchDeadline through discovery, commands, and polling, reports a deadline verdict instead of throwing, rejects an --interval longer than one timer can sleep, and says in its help that --interval does not shorten the 60 second no-checks confirmation and that exit 0 from --status-only does not mean ready.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#code-contract",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "3b937f12b88e9a27fb082d30e44ab77366e8e7c9",
+          "canonical": "ec8a2f27c5ac24866b699e6395e7d1f32e595068",
+          "target": "ec8a2f27c5ac24866b699e6395e7d1f32e595068"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**GAP (#434).** Comparator threads one `WatchDeadline` into context discovery, GitHub commands, retries, and polling; returns a deadline verdict; rejects sleeps longer than the timer limit; and documents no-check confirmation plus status-only’s non-readiness meaning (comparator lines 44–50, 123–126, 174–185). Target lacks deadline wiring, max-sleep validation, and those help clarifications (target `cli.ts`, lines 1–20, 77–108, 139–162).",
+        "check_or_gap": "Target CLI tests cover parsing and status-only but not timeout, command deadline, max timer delay, or no-check confirmation."
+      }
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/fakes.test-helper.ts",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "adapt",
       "review_lane": "code-contract",
       "source_version": "0.9.10",
@@ -458,12 +658,22 @@
       "why": "Extends the fake reader with the base revision, the default branch, and a factsOnReread option for every pullRequest read after the first, parses its facts through the real parsePullRequest, and tags each rollup page, repeating the last one across polls, so a test can replay a head commit with no rollup.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#code-contract",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "97e60e09b2d882d4bc008efecaaea9698f5f1d03",
+          "canonical": "84ccf596b01e03e7fb77e73ea82ec3b1738026ad",
+          "target": "84ccf596b01e03e7fb77e73ea82ec3b1738026ad"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**Adapt.** Comparator fake reader supports base revision, default branch, reread facts, and paginated rollup replay; target reader lacks base-OID/reread support (comparator helper lines 83–117; target helper differs around its fact construction). Those target omissions prevent testing comparator’s snapshot consistency and base movement semantics.",
+        "check_or_gap": "Target watcher tests use the target fake reader for supported cases. No target behavior check for reread changes or base revision was found."
+      }
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/github.test.ts",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "adapt",
       "review_lane": "code-contract",
       "source_version": "0.9.24",
@@ -471,25 +681,45 @@
       "why": "Covers the port's GitHub reader: completed conclusions that gh buckets as pending, a checkout PR paired with a different explicit repository, a full open-PR page refused as a possibly cut stack, a stack that never takes a PR headed at the default branch as parent, child, or seed under the default branch the repository reports, while a fork branch of the same name still stacks, a check-rollup cursor that repeats or returns to an earlier page, a review-thread cursor that repeats, a review-thread page that promises more pages without a cursor, a binary that cannot be spawned, the base revision field, and a no-checks reading that needs both check reads to agree and fails closed otherwise.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#code-contract",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "2bb7ac1cb8120e77b65b0aa06561654c4cc83598",
+          "canonical": "4ef39d2a1d2981e205e948b1707f7db96b750280",
+          "target": "47750b3605d2097c71c826ef1d20a0f9a086f571"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**Adapt.** Comparator tests pagination cursor loops, default-branch stack exclusion, repo/context mismatch, full-page refusal, spawn failure, base-ref parsing, and no-check agreement; target tests cover a subset of thread pagination and baseline query parsing (comparator `github.test.ts`, including lines 200–352; target `github.test.ts`, lines 279–310).",
+        "check_or_gap": "Target tests do not establish the comparator’s no-check, default-branch, repository-boundary, cursor-loop, or non-retryable spawn semantics."
+      }
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/github.ts",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
-      "proposed_adoption": "adapt",
+      "review_state": "source-reviewed",
+      "proposed_adoption": "gap",
       "review_lane": "code-contract",
       "source_version": "0.9.24",
       "reference_group": "pstack",
       "why": "Runs every gh and git call under the shared deadline, reports a binary that cannot be spawned as a non-retryable query failure, reads the base revision, pages through every review thread, refuses a review-thread or check-rollup cursor that does not advance and a review-thread page that promises more pages without a cursor, fails completed conclusions that gh buckets as pending, refuses a checkout PR paired with a different explicit repository, reads the repository's default branch, leaves every PR whose head is that branch in the PR's own repository out of stack ordering as parent, child, and seed, orders a stack only through branches in the PR's own repository, while rejecting duplicate head branches, cycles, and a full open-PR page, and reads a repository with no checks configured as its own result when gh reports none and the head commit has no rollup.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#code-contract",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "d5129fb06d14b3ee5b06e48517414407554d1ee4",
+          "canonical": "cfc3764a03d35fd5ed6c79818b076329bcd08437",
+          "target": "3c5645b6cf6a3bcc9fd5cf622818fcb2493c9372"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**GAP (#434).** Comparator adds command deadlines, spawn-failure classification, review-thread and rollup cursor-progress guards, default-branch and repository-aware stack discovery, base-revision reading, no-check support, and strict in-flight check classification (`github.ts`, comparator lines 51–120, 212–216, 498–543; target `github.ts` lines 1–14, 27–74, 163–180). The comparator’s checks distinguish non-running terminal states from in-flight states; target maps any `bucket === \"pending\"` to pending.",
+        "check_or_gap": "Target `github.test.ts` covers some reader parsing and page walking only. It does not test deadlines, repeated cursors, no-check consistency, or the added stack constraints."
+      }
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/policy.test.ts",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "adapt",
       "review_lane": "code-contract",
       "source_version": "0.9.24",
@@ -497,38 +727,68 @@
       "why": "Covers the review-required and branch-protection merge gates and their wait for pending checks, the behind-base gate that stops without waiting for pending or unreported checks and outranks a required review but not requested changes, the wait while GitHub has not computed mergeability (never ready and never a query error, re-polled at the interval, timing out at the caller's deadline, one status row on a one-shot pass, and blockers that do not depend on it still stopping at once), a PR with no checks configured (waiting in single, stack, and queued mode until the reading has persisted for 60 seconds however short the interval, each PR timed from its own first sighting and unconfirmed when the caller supplies no confirmer, timing out there under a shorter deadline, ready once it has, still stopped by conflicts, threads, and gates, honouring checks that register on the next poll, and failing closed while the head may not have reported), the second facts read in the snapshot plan and the retry when the PR's state, merge time, head branch, gate, review, draft, or conflict state changes between the two reads, except mergeability that the first read had not computed, and the shared deadline in the poll loop.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#code-contract",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "96c15db1877961af63b413d93c8d3d8d2a068151",
+          "canonical": "6dae16da71800fb06eb37a7e3b296a8d27275b08",
+          "target": "6dae16da71800fb06eb37a7e3b296a8d27275b08"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**Adapt.** Comparator adds tests for review-required/behind-base/merge-blocked gates, unknown mergeability waiting, no-check confirmation, mid-read snapshot changes, deadline handling, and queue cadence; target tests readiness truth table and basic stack/queue cases but not those newer semantics (comparator test lines 435–555, 630–760; target lines 1–363).",
+        "check_or_gap": "Target tests demonstrate the old policy, not comparator safety/readiness behavior. No target check for unknown mergeability or mid-read change."
+      }
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/policy.ts",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
-      "proposed_adoption": "adapt",
+      "review_state": "source-reviewed",
+      "proposed_adoption": "gap",
       "review_lane": "code-contract",
       "source_version": "0.9.24",
       "reference_group": "pstack",
       "why": "Stops at the review-required and branch-protection merge gates once checks finish, and at the behind-base gate at once and ahead of a required review, since updating the branch restarts its checks, waits at the poll interval while GitHub has not computed mergeability, never as a query error, and builds a ready proof only from a MERGEABLE reading, re-reads the PR facts after the checks and retries a snapshot whose head, base, mergeability, review, or draft state changed in between, leaving mergeability out of that comparison when the first read had not computed it, reads review threads and checks concurrently, reports a PR with no checks configured as ready only when no commit on it has reported checks and the same head has shown none for 60 seconds of wall time whatever the poll interval, waiting until then as it waits on pending checks, and honours the shared deadline in the poll loop.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#code-contract",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "fcc774060f9d0efa9d2352f8aa6f84fa0c30395a",
+          "canonical": "cabadb9bf96f4d8c4c0426d77d0cbdab80fbe3e5",
+          "target": "cabadb9bf96f4d8c4c0426d77d0cbdab80fbe3e5"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**GAP (#434); correctness defect.** Comparator rereads PR facts after collecting checks, detects changes, compares `baseRefOid`, treats missing expected head rollups as a retryable changed snapshot, recognizes no-check confirmation, waits on unknown mergeability, and gates `REVIEW_REQUIRED`, `BEHIND`, and `BLOCKED` (comparator lines 40–47, 66–90, 176–230, 278–291). Target lacks these safeguards. **Target can produce READY when GitHub reports unknown mergeability:** its `readyContribution` requires clean CI and no other blockers but does not reject `mergeable`/`mergeStateStatus` unknown, while `assessGitHubMerge` allows unknown states (target policy lines 11–34 and readiness path around lines 125–160).",
+        "check_or_gap": "Target policy tests cover the older readiness truth table. They do not cover mid-read races, unknown mergeability, review-required/behind-base gates, or no-check confirmation."
+      }
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/render.ts",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
-      "proposed_adoption": "adapt",
+      "review_state": "source-reviewed",
+      "proposed_adoption": "gap",
       "review_lane": "code-contract",
       "source_version": "0.9.43",
       "reference_group": "pstack",
       "why": "Renders the review-required, behind-base, and merge-blocked states as status cells and as merge-gate blockers with their next action, and shows a PR with no checks configured as a no-checks cell and a checks=none line on its READY verdict, with a first sighting as its own cell, WAITING line, and TIMEOUT line, and mergeability GitHub has not computed as its own Merge cell, WAITING line, and TIMEOUT line, words a retry after the PR changed mid-read as that and not as a failed query, and tells a caller whose command could not run to install it.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#code-contract",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "48e5750f887f370dfbd2a210dfa07e996100be89",
+          "canonical": "0e935839357335f24ab1bbc193d761495646ea99",
+          "target": "0e935839357335f24ab1bbc193d761495646ea99"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**GAP (#434).** Comparator renders explicit no-check first-sighting/timeout, unknown-mergeability wait/timeout, snapshot-changed retry, behind-base action, and install guidance (comparator `render.ts`, lines 131–134, 162–173, 187–192). Target renderer has none of the new verdict variants because target policy/types do not produce them.",
+        "check_or_gap": "Target CLI tests assert baseline JSON and pretty table rendering only; they do not cover the missing verdict explanations or actions."
+      }
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/types.compile.ts",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "adapt",
       "review_lane": "code-contract",
       "source_version": "0.9.34",
@@ -536,20 +796,40 @@
       "why": "Adds the landing revision to the compile-time type fixture and pins that a first sighting of no checks is not readiness proof.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#code-contract",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "3509160c7881c5a6348c01081a33c4a1cfd9267e",
+          "canonical": "1b53279c7f3e5da55703ed17d6ad0616254c5751",
+          "target": "1b53279c7f3e5da55703ed17d6ad0616254c5751"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**Adapt.** Comparator compile fixture encodes landing revision and positive READY proof, with `@ts-expect-error` assertions preventing blocked CI from being represented as clean/ready. Target fixture checks blocked-rollup readiness constraints but has no base revision or no-check first-sighting proof (comparator `types.compile.ts`, lines 43 onward; target file’s `ready` and negative cases).",
+        "check_or_gap": "A compile-only fixture checks type rejection, not runtime readiness. Target fixture does not establish the comparator’s newer proof constraints."
+      }
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/scripts/watch-pr/types.ts",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
-      "proposed_adoption": "adapt",
+      "review_state": "source-reviewed",
+      "proposed_adoption": "gap",
       "review_lane": "code-contract",
       "source_version": "0.9.24",
       "reference_group": "pstack",
       "why": "Adds the review-required, behind-base, and merge-blocked gate reasons, the landing revision on open PR facts and in the ready proof, the head repository of an open PR, the default-branch reader method, deadline, spawn-failed, snapshot-changed, and invalid-stack query failures, the mergeability-unknown wait reason, and the no-checks reading (a none-reported fast path, a no-rollup page, the ci-none state, the ci-unreported first sighting, and the checks-unreported wait reason).",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#code-contract",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "d708d5fc0628e0fcdc47a3e88485fe60cc4c2dc5",
+          "canonical": "6c94e0a687f8e48f91acffd21f725320dd66e659",
+          "target": "66ffa51e12f352cbe7b8e515caa7e288ed124da2"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**GAP (#434).** Comparator types add landing revision/base OID, review-required/behind-base/merge-blocked gates, deadline/spawn/snapshot/stack failures, mergeability-unknown and no-check states (comparator `types.ts`, lines 39–50, 201–219, 247–286). Target only includes the earlier review-decision surface (`types.ts`, lines 38–48).",
+        "check_or_gap": "Target’s compile fixture covers its existing type model only; it cannot validate missing policy variants."
+      }
     },
     {
       "path": "plugins/pstack/skills/poteto-mode/SKILL.md",
@@ -646,7 +926,7 @@
     {
       "path": "plugins/pstack/skills/recall/SKILL.md",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "adapt",
       "review_lane": "skill-policy",
       "source_version": "0.9.2",
@@ -654,12 +934,22 @@
       "why": "Sweeps the locations the project's standing rules name before reporting anything as never recorded and applies the human-rulings epistemics, on top of Claude Code's transcript path.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#skill-policy",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "c8084cdbf4fe3a7d05eea7330d499e3c57e9358b",
+          "canonical": "a70062a3f89a8d68b3391bc71fc4c6cc2dfcf6a4",
+          "target": "a6dd56b5ac97dc14934c0df99278b0a217ec6046"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**adapt**. Comparator gives a Claude transcript path and mandates historical mining, shared-source sweep, and live `git`/`gh` validation. Target defers transcript location to the system prompt and retains the sweep/verification contract; some detailed mining procedures are omitted. Pstack/Lauren MIT; comparator port/Michael Denyer MIT; target MIT, no notice.",
+        "check_or_gap": "No check found for recall’s evidence sweep. **Gap.**"
+      }
     },
     {
       "path": "plugins/pstack/skills/reflect/SKILL.md",
       "reference_kind": "port-feature",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "adapt",
       "review_lane": "skill-policy",
       "source_version": "0.1.0",
@@ -667,12 +957,22 @@
       "why": "Finds the session transcript with the port's find-transcript.mjs under Claude Code's projects directory, keeps the parent's conclusions out of the reviewer prompts (a fallback digest records events without a verdict, and nothing goes beside a transcript path), and drops Cursor's readonly agent mode and inline model column.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#skill-policy",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "49bca6f3b38959d77871d36f91eb3b209618328e",
+          "canonical": "b6bd41afdc831741819b72efa60ef2f10947cc8c",
+          "target": "23dd9add70d016403d48c2da00ffca5b373303f1"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**adapt**. Comparator uses Claude transcript finder, `Agent` calls, and Claude paths. Target uses Grok session history, `task`/Grok roles, and Grok-specific routing. Target retains the three-reviewer synthesis shape but its transcript and model mechanics are not interchangeable with comparator. Pstack/Lauren MIT; comparator port/Michael Denyer MIT; target MIT, no notice.",
+        "check_or_gap": "`tests/test_refresh_hygiene.py` covers reflect-path refresh/hygiene behavior, not transcript selection or reviewer quality. **Gap** for the semantic workflow."
+      }
     },
     {
       "path": "plugins/pstack/skills/setup-pstack/SKILL.md",
       "reference_kind": "port-feature",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "adapt",
       "review_lane": "skill-policy",
       "source_version": "0.9.2",
@@ -680,25 +980,45 @@
       "why": "Writes the override sheet at each runtime's own path, loaded by @-include on Claude Code and pasted into AGENTS.md on Codex since neither has Cursor's always-applied rules, replaces Cursor's budget step with a default effort and per-role effort levels, adds the SessionStart hook toggle and names the Pi extension as a reader of it, lists every runtime's sheet path in a table, and routes GitHub Copilot to copilot.md.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#skill-policy",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "6dd8a25ace99193e2e4485c7a1fe39f105a50027",
+          "canonical": "90a9e575397fb59f4d9a47e6157c2106f4b4a5e2",
+          "target": "e1996351d657cf25e69ef705e6b9ca0621ba20c8"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**adapt**. Target writes Grok model and per-role effort files, detects live effort values, and prevents cross-host configuration writes. Comparator writes a Cursor always-applied model rule and offers Cursor-specific budget choices. Treat this as a runtime port, not a policy-equivalent text transplant. Pstack/Lauren MIT; comparator port/Michael Denyer MIT; target MIT, no notice.",
+        "check_or_gap": "No check found for setup’s choice mapping or file-writing contract in this assigned skill. **Gap.**"
+      }
     },
     {
       "path": "plugins/pstack/skills/show-me-your-work/scripts/log.sh",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
-      "proposed_adoption": "preserve",
+      "review_state": "source-reviewed",
+      "proposed_adoption": "adapt",
       "review_lane": "code-contract",
       "source_version": "0.9.41",
       "reference_group": "pstack",
       "why": "Prefixes a cell opening with a double quote so a spreadsheet or TSV reader cannot parse it as a quoted field, appends each row through one perl syswrite so parallel writers cannot interleave rows longer than the shell's stdio buffer, reports a short or failed write, and falls back to upstream's printf when perl is missing or does not work.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#code-contract",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "004ec8d18fc3a141fd753346c65e6fe9babc4775",
+          "canonical": "052e53b7e1090579eaec1d3d59f7a1cd2f2e452a",
+          "target": "052e53b7e1090579eaec1d3d59f7a1cd2f2e452a"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**Adapt.** Target has the canonical logger: it strips tabs/newlines/CR and prefixes formula-leading cells, but does not escape opening-quote cells or use Perl `syswrite` with short-write reporting/fallback. The comparator adds those two behaviors. Keep the existing target path; assess only those deltas rather than excluding an existing file.",
+        "check_or_gap": "Target counterpart exists at skills/show-me-your-work/scripts/log.sh (blob equals canonical). No targeted test or runnable check found for opening-quote escaping, single-write row append, short-write detection, or Perl fallback; record a test gap."
+      }
     },
     {
       "path": "plugins/pstack/skills/show-me-your-work/SKILL.md",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "adapt",
       "review_lane": "skill-policy",
       "source_version": "0.9.41",
@@ -706,12 +1026,22 @@
       "why": "Documents that log.sh also neutralizes a cell opening with a double quote.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#skill-policy",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "9adafb6c48a185db178e343b1653470e78e11790",
+          "canonical": "d350a150c36ca16382b4aa6d4196b39e67454ad1",
+          "target": "d350a150c36ca16382b4aa6d4196b39e67454ad1"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**adapt**. Comparator quotes the failure content rather than the assertion line and escapes TSV cells beginning with `\"`. Target omits the failure-content detail and its helper’s listed escaping set does not include `\"`. Target still documents TSV sanitation and audit rules. This is a concrete prose-contract delta, not “absent.” Pstack/Lauren MIT; comparator port/Michael Denyer MIT; target MIT, no notice.",
+        "check_or_gap": "`skills/show-me-your-work/scripts/log.sh` is a helper, but no source-backed check was found proving this documented escaping behavior. **Gap.**"
+      }
     },
     {
       "path": "plugins/pstack/skills/tdd/SKILL.md",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "adapt",
       "review_lane": "skill-policy",
       "source_version": "0.9.21",
@@ -719,12 +1049,22 @@
       "why": "Requires quoting the failure content, not the assertion line, as evidence that the new test fails for the intended reason.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#skill-policy",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "67d91899a44c094d999eda716fa9877de245e109",
+          "canonical": "ca6f24c963001d9d518db2936dfe3d12f29b4e94",
+          "target": "9b70811f0ecad51b2d6e977ee5e799a836aac05e"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**adapt**. Comparator requires quoting the failure content to prove the intended failure. Target’s step 4 omits that discriminator; target also adds adjacent validation and explicit impractical-test handling. Keep the exact-failure requirement if it is intended policy. Pstack/Lauren MIT; comparator port/Michael Denyer MIT; target MIT, no notice.",
+        "check_or_gap": "No check found for TDD’s failure-evidence policy. **Gap.**"
+      }
     },
     {
       "path": "plugins/pstack/skills/why/references/epistemics.md",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "adapt",
       "review_lane": "skill-policy",
       "source_version": "0.9.34",
@@ -732,12 +1072,22 @@
       "why": "Adds the Claims about human decisions section that five other files cite for keeping a ruling's original wording and scope.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#skill-policy",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "e483ab1af872548dc69835ddb787101c5eaf310f",
+          "canonical": "b18abf41dfa245ee55e94f1b3a80c0b750eb10cf",
+          "target": "b18abf41dfa245ee55e94f1b3a80c0b750eb10cf"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**adapt**. Comparator includes explicit human-ruling ownership, original wording, dependent evidence-chain, and unavailable-original rules. Target omits that whole section. This is a material epistemic policy gap relative to the comparator, not a runtime-name substitution. Pstack/Lauren MIT; comparator port/Michael Denyer MIT; target MIT, no notice.",
+        "check_or_gap": "No check found enforcing citation or human-ruling epistemics. **Gap.**"
+      }
     },
     {
       "path": "plugins/pstack/skills/why/references/investigator-prompt.md",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "adapt",
       "review_lane": "skill-policy",
       "source_version": "0.9.34",
@@ -745,12 +1095,22 @@
       "why": "Tells investigators to return a human ruling's attributable original wording per the epistemics section.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#skill-policy",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "3f5cbce2389bf8d23ba8a577ace2a21afc1d4172",
+          "canonical": "e1c2bbf52197ff600ba6e4552439e630687b7ae2",
+          "target": "e1c2bbf52197ff600ba6e4552439e630687b7ae2"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**adapt**. Comparator explicitly instructs investigators to preserve original human rulings, distinguish interpretations, and flag missing originals. Target omits those instructions along with the corresponding epistemics link. This weakens the investigator contract. Pstack/Lauren MIT; comparator port/Michael Denyer MIT; target MIT, no notice.",
+        "check_or_gap": "No check found for investigator prompt’s ruling-handling requirements. **Gap.**"
+      }
     },
     {
       "path": "plugins/pstack/skills/why/references/synthesizer-prompt.md",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "adapt",
       "review_lane": "skill-policy",
       "source_version": "0.9.17",
@@ -758,12 +1118,22 @@
       "why": "Adds a step that applies the human-rulings epistemics, and gives the Direct-claim example a URL the link validator resolves.",
       "upstream": "not-proposed",
       "triage_source": "docs/research/pstack-claude-adoption-matrix-2026-10-16.md#skill-policy",
-      "source_note": "pstack-group row in upstream tools/forks.json"
+      "source_note": "pstack-group row in upstream tools/forks.json",
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "0ad6ef7c7dfb07a00a227468167303cf74d9e006",
+          "canonical": "287a350c925c28b44f0e0dc687bb09a843e11100",
+          "target": "287a350c925c28b44f0e0dc687bb09a843e11100"
+        },
+        "attribution_profile": "pstack",
+        "semantic_delta": "**adapt**. Comparator requires applying human-ruling epistemics and preserving attributable scope; target drops those directives. The target still requires confidence tiers and citation checks but is not semantically equivalent on human decisions. Pstack/Lauren MIT; comparator port/Michael Denyer MIT; target MIT, no notice.",
+        "check_or_gap": "No check found for these synthesizer instructions. **Gap.**"
+      }
     },
     {
       "path": "plugins/pstack/skills/thermo-nuclear-code-quality-review/SKILL.md",
       "reference_kind": "policy",
-      "review_state": "lane-triaged",
+      "review_state": "source-reviewed",
       "proposed_adoption": "policy-fork",
       "review_lane": "skill-policy",
       "source_version": "0.9.11",
@@ -787,18 +1157,28 @@
         "local_state": "local skills/thermo-nuclear-code-quality-review/SKILL.md carries no attribution header; local LICENSE is MIT with no NOTICE file",
         "requirement": "thermos is out of canonical pstack scope; any verbatim copy MUST carry the thermos copyright notice and MIT terms (LICENSE-thermos) alongside the local MIT LICENSE",
         "verdict": "no copy authorized by this row; attribution required before any import"
+      },
+      "source_review": {
+        "counterpart_blobs": {
+          "reference": "4d9176be4ac90728c24eb9b29125f45d8d8aecd1",
+          "canonical": "ac76a2bc88bb2d895e83ab1788aa584a82346cfc",
+          "target": "8c1437ede7765c1b410653f3913ef6b757d11ee8"
+        },
+        "attribution_profile": "thermos",
+        "semantic_delta": "**policy-fork**, retaining the target’s substantive adaptation. Comparator adds hard reachability, exact base/head pin, behavior evidence, net obligation, and partial-effect standards absent from canonical thermos source. It also requires producing a layered report on disk; target omits that output requirement. This row belongs to the thermos provenance chain, not canonical pstack. Comparator `NOTICE.md`, `NOTICE-skills.md`, and `LICENSE-thermos` attribute upstream to Cursor thermos, MIT; comparator port edits to Michael Denyer, MIT. Target MIT license with no notice; no import is being proposed here.",
+        "check_or_gap": "Target eval corpus `tests/fixtures/eval_corpus_dsh/cases.json` has artifact/required probes for this skill, including reachability language. This is a bounded content-evaluation contract, not proof of runtime review quality or execution of the skill."
       }
     }
   ],
   "review_counts": {
-    "adapt": 9,
-    "preserve": 0,
-    "exclude": 1,
-    "gap": 0,
-    "policy-fork": 0
+    "adapt": 36,
+    "preserve": 1,
+    "exclude": 2,
+    "gap": 7,
+    "policy-fork": 2
   },
   "review_scope": {
-    "source_review": "reviewed 10/48 comparator paths against pinned comparator, canonical and target blobs; 38 rows remain lane-triaged; check-plan.test.ts is the only absent target counterpart",
+    "source_review": "reviewed 48/48 comparator paths against pinned comparator, canonical and target blobs; 0 rows remain lane-triaged; check-plan.test.ts is the only absent target counterpart",
     "approval": "not granted",
     "implementation": "not authorized or claimed",
     "runtime": "not verified",
