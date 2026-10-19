@@ -359,3 +359,12 @@ Docs-only record from main `2e8e6fa`. No code, receipt, fixture or evidence-inde
 **Caller effort gate.** PR #567 pins the planner per-model effort gate for caller-supplied slugs (`test_caller_slug_with_unsupported_effort_blocks_in_planner`): role declares supporting test-model/high so validation passes, caller passes low-only weak-model through explicit, planner BLOCKEDs with unsupported on model. Suite 58 pass on the branch, CI green, merged. Gate-removal probe fails closed against the new test. The prior cycle-4 unreachable verdict is superseded: the gate is reachable through caller paths the validator never sees, though it stays unreachable through role-override paths the validator pre-empts.
 
 No issue state, acceptance criterion or dependency changed in this wave. All G0–G8 boxes remain unchecked. #434, #437, #444, #445, #473 stay OPEN on the rows named above.
+
+## Dated evidence (2026-10-19, wave-27: planner probe tier coverage)
+
+Docs-only record from main `91e96fa`. No code, receipt, fixture or evidence-index file is touched: this section is appended and no earlier wave's prose is rewritten.
+
+**Planner probe tier coverage.** PR #569 expanded `scripts/project-package.py` planner probe from single role (`independent-verifier` in `strongest`) to `PLAN_PROBE_ROLES` covering all four unconstrained tiers: `independent-verifier` (`strongest`), `how-explainer` (`strong-judgment`), `how-explorer` (`fast-worker`), and `architect-runners` (`panel`). Retained backwards-compatibility alias `PLAN_PROBE_ROLE`. Added parameterized mutation tests (`test_check_model_role_plan_fails_closed_when_tier_dropped`) proving that omitting any unconstrained tier from `tier_defaults` under any host fails closed with `BLOCKED: <host> cannot plan <role>`. Refreshed package driver revision across durable receipts. Suite 62 pass on `test_model_role_policy.py`, 113 pass on `test_evidence_durability.py`, 24 pass on `test_verify_portable.py`, 6-harness doctor matrix PASS. Independent verifier verdict `PASS+NOTES` on the PR head, merged to main as `91e96fa`.
+
+No issue state, acceptance criterion or dependency changed in this wave. All G0–G8 boxes remain unchecked. #434, #437, #438, #439, #444, #445, #473 stay OPEN on the rows named above.
+
