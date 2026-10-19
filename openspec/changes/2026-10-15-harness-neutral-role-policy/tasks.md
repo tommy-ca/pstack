@@ -401,5 +401,25 @@ Docs-only record from main `0df83b4`. No code, receipt, fixture or evidence-inde
 
 Issue #439 is fulfilled and CLOSED. All G0–G8 boxes remain unchecked. #434, #437, #441, #442, #443, #444, #445, #446, #473 stay OPEN on the rows named above.
 
+## Dated evidence (2026-10-19, wave-30: projector hook lifecycle and honest negative gates)
 
+Docs-only record from main `ec0a1ab`. No code, receipt, fixture or evidence-index file is touched: this section is appended and no earlier wave's prose is rewritten.
 
+**Projector hook lifecycle and honest negative gates.** PR #575 resolved #440 by implementing canonical session lifecycle evaluation for host routing hooks with honest degradation and fail-closed security properties:
+- Hook lifecycle evaluation in `scripts/setup_pstack.py`:
+  - `VALID_HOOK_EVENTS = frozenset({"startup", "resume", "compact"})`
+  - `evaluate_hook_lifecycle(host, event, config_dir, *, trust_verified=True, conflicting_hook=False) -> tuple[bool, str]`:
+    - Validates supported lifecycle events (`startup`, `resume`, `compact`) with idempotent, side-effect free evaluation.
+    - Checks host-scoped opt-out marker `.pstack-hooks-disabled-{host}` via `get_hook_opt_out(host, config_dir)`.
+    - Fails honestly and closed if `conflicting_hook=True` to prevent double-injection or overwriting host configuration.
+    - Fails honestly and closed if `trust_verified=False` when host environment trust is not proven.
+    - Fails honestly on unsupported/unrecognized lifecycle event names.
+- Verification in `tests/test_setup_pstack.py`:
+  - `test_evaluate_hook_lifecycle_events_idempotence_and_honest_negatives`: verifies idempotence across repeated event evaluation, opt-out toggling across all three events, honest negative on unverified trust, honest negative on conflicting hooks, and fail-closed rejection on invalid events.
+- Projector integrity:
+  - `scripts/project-package.py --project` and `--check` run cleanly with 0 diff and manifests in sync (`ABSENT: host-local hooks not implemented; nothing claimed (#438)`).
+  - All 96 tests across `tests/test_setup_pstack.py`, `tests/test_project_package.py`, and `tests/test_model_role_policy.py` pass.
+  - All 113 durability tests in `tests/test_evidence_durability.py` pass.
+- Independent verification: `pstack-verifier` subagent (tier `pro`) returned `PASS+NOTES` on PR #575 head (`e75c235`), merged to main as `ec0a1ab`.
+
+Issue #440 is fulfilled and CLOSED. All G0–G8 boxes remain unchecked. #434, #441, #442, #443, #444, #445, #473 stay OPEN on the rows named above.
