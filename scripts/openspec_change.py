@@ -53,11 +53,12 @@ def _validate_named_change(change: str) -> int:
 def resolve_openspec_change(
     change: str | None,
     *,
-    active_resolver: Callable[[], list[str] | None] = _active_openspec_changes,
+    active_resolver: Optional[Callable[[], list[str] | None]] = None,
 ) -> ChangeResolution:
     if change is not None:
         return "explicit", change, []
-    active = active_resolver()
+    resolver = active_resolver if active_resolver is not None else _active_openspec_changes
+    active = resolver()
     if active is None:
         return "lookup-failed", None, []
     if active == []:
@@ -70,7 +71,7 @@ def resolve_openspec_change(
 def validate_openspec_change(
     change: str | None,
     *,
-    active_resolver: Callable[[], list[str] | None] = _active_openspec_changes,
+    active_resolver: Optional[Callable[[], list[str] | None]] = None,
 ) -> int:
     state, name, names = resolve_openspec_change(change, active_resolver=active_resolver)
     if state in ("explicit", "active"):

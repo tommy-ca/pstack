@@ -28,7 +28,7 @@ import sys
 import time
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -103,27 +103,9 @@ from scripts.openspec_change import (
     ChangeResolution,
     _active_openspec_changes,
     _validate_named_change,
-    resolve_openspec_change as _resolve_openspec_change,
-    validate_openspec_change as _validate_openspec_change,
+    resolve_openspec_change,
+    validate_openspec_change,
 )
-
-
-def resolve_openspec_change(
-    change: str | None,
-    *,
-    active_resolver: Optional[Callable[[], list[str] | None]] = None,
-) -> ChangeResolution:
-    resolver = active_resolver if active_resolver is not None else _active_openspec_changes
-    return _resolve_openspec_change(change, active_resolver=resolver)
-
-
-def validate_openspec_change(
-    change: str | None,
-    *,
-    active_resolver: Optional[Callable[[], list[str] | None]] = None,
-) -> int:
-    resolver = active_resolver if active_resolver is not None else _active_openspec_changes
-    return _validate_openspec_change(change, active_resolver=resolver)
 
 from scripts.evidence_index import (
     _file_or_denied,
