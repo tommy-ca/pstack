@@ -38,6 +38,8 @@ jobs:
             tests/test_package_lifecycle.py \
             tests/test_package_lifecycle_safety.py \
             tests/test_evidence_durability.py \
+            tests/test_surface_cache.py \
+            tests/test_evidence_settlement.py \
             tests/test_evidence_receipts.py \
             tests/test_select_checks.py \
             tests/test_scaffold_verification_skill.py \
