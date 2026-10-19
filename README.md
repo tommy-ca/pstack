@@ -140,6 +140,8 @@ Type [`/poteto-mode`](./skills/poteto-mode/SKILL.md) when a playbook matches or 
 
 [`/poteto-mode`](./skills/poteto-mode/SKILL.md) works with grok-build `/loop`, which expands to `scheduler_create`. You can leave a checkable predicate running for hours without sacrificing rigor.
 
+The vendored GitHub watcher is a compatibility utility, not the stack landing controller. With Bun installed, run `skills/poteto-mode/scripts/watch-pr/watch-pr --help` directly on Linux for its options.
+
 ## Skills
 
 [`/poteto-mode`](./skills/poteto-mode/SKILL.md) runs most of these for you when a step needs them (`how`, `why`, `architect`, `arena`, `swarm`, `interrogate`, `unslop`, `no-comments`, `technical-writing`, `tdd`, and the principles). The table below is for when you want one directly:
