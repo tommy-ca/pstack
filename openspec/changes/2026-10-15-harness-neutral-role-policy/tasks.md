@@ -351,3 +351,11 @@ Docs-only record from main `08d76de`. No code, receipt, fixture or evidence-inde
 **Precedence rungs.** PR #565 extends the existing precedence test with the two missing #437 rungs: `user` source and `role_overrides` `host-role` source. Interrogate verdict `PASS+NOTES` on the branch head with branch-removal mutants caught; two weaknesses (degenerate model-b slug, silent setdefault) fixed before merge via amend. Full suite 1070 passed, 10 skipped in 263s during interrogation. No behavior change; planner-level effort gates, purity clause, and native host integration remain uncovered and #437 stays OPEN.
 
 No issue state, acceptance criterion or dependency changed in this wave beyond #563 closed. All G0–G8 boxes remain unchecked. #434, #437, #444, #445, #473 stay OPEN on the rows named above.
+
+## Dated evidence (2026-10-19, wave-26: caller effort gate)
+
+Docs-only record from main `2e8e6fa`. No code, receipt, fixture or evidence-index file is touched: this section is appended and no earlier wave's prose is rewritten.
+
+**Caller effort gate.** PR #567 pins the planner per-model effort gate for caller-supplied slugs (`test_caller_slug_with_unsupported_effort_blocks_in_planner`): role declares supporting test-model/high so validation passes, caller passes low-only weak-model through explicit, planner BLOCKEDs with unsupported on model. Suite 58 pass on the branch, CI green, merged. Gate-removal probe fails closed against the new test. The prior cycle-4 unreachable verdict is superseded: the gate is reachable through caller paths the validator never sees, though it stays unreachable through role-override paths the validator pre-empts.
+
+No issue state, acceptance criterion or dependency changed in this wave. All G0–G8 boxes remain unchecked. #434, #437, #444, #445, #473 stay OPEN on the rows named above.
