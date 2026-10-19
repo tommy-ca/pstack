@@ -147,12 +147,12 @@ CHECK_SELECTION_TABLE: List[tuple] = [
     ),
     (
         "scripts/surface_revisions.py",
-        ("tests/test_portability_schemas.py", "tests/test_evidence_durability.py"),
+        ("tests/test_portability_schemas.py", "tests/test_surface_cache.py"),
         (),
     ),
     (
         "scripts/evidence_durability.py",
-        ("tests/test_evidence_durability.py", "tests/test_portability_schemas.py"),
+        ("tests/test_evidence_durability.py", "tests/test_evidence_settlement.py", "tests/test_portability_schemas.py"),
         (),
     ),
     (
