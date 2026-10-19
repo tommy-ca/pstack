@@ -146,7 +146,13 @@ def test_package_roles_have_exactly_one_local_agent_definition() -> None:
 
 # --- Harness-neutral planning, separated from live dispatch -----------------
 
-from scripts.model_role_resolver import model_plan_to_wire, plan_role
+from scripts.model_role_resolver import (
+    CompiledPolicy,
+    compile_policy,
+    model_plan_to_wire,
+    plan_role,
+    resolve_role_source,
+)
 
 
 def catalog_plan_policy() -> dict:
@@ -899,6 +905,91 @@ def test_cross_harness_promotion_gate_and_evidence_contract() -> None:
     }
     with pytest.raises(JsonSchemaError):
         wire_validator.validate(fake_wire)
+
+
+def test_resolve_role_source_precedence_and_setup_parity() -> None:
+    """Precedence resolution preserves the six-rung ladder and parity with setup_pstack."""
+    from scripts.setup_pstack import effective_role_precedence
+
+    host_config = {
+        "tier_defaults": {
+            "strongest": ["host-tier-model"],
+        },
+        "fallback": "fail-closed",
+    }
+    role_cfg = {
+        "models": ["host-role-model"],
+    }
+
+    choices, src = resolve_role_source("independent-verifier", tier="strongest", host_config=host_config, role_cfg={})
+    assert choices == ["host-tier-model"] and src == "host-tier"
+    assert effective_role_precedence("independent-verifier", tier="strongest", host_config=host_config, role_cfg={}) == (choices, src)
+
+    choices, src = resolve_role_source("independent-verifier", tier="strongest", host_config=host_config, role_cfg=role_cfg)
+    assert choices == ["host-role-model"] and src == "host-role"
+    assert effective_role_precedence("independent-verifier", tier="strongest", host_config=host_config, role_cfg=role_cfg) == (choices, src)
+
+    choices, src = resolve_role_source("independent-verifier", tier="strongest", host_config=host_config, role_cfg=role_cfg, user=["user-custom-model"])
+    assert choices == ["user-custom-model"] and src == "user"
+    assert effective_role_precedence("independent-verifier", tier="strongest", host_config=host_config, role_cfg=role_cfg, user=["user-custom-model"]) == (choices, src)
+
+    choices, src = resolve_role_source("independent-verifier", tier="strongest", host_config=host_config, role_cfg=role_cfg, user=["user-custom-model"], project=["project-model"])
+    assert choices == ["project-model"] and src == "project"
+    assert effective_role_precedence("independent-verifier", tier="strongest", host_config=host_config, role_cfg=role_cfg, user=["user-custom-model"], project=["project-model"]) == (choices, src)
+
+    choices, src = resolve_role_source("independent-verifier", tier="strongest", host_config=host_config, role_cfg=role_cfg, user=["user-custom-model"], project=["project-model"], explicit="cli-model")
+    assert choices == ["cli-model"] and src == "explicit"
+    assert effective_role_precedence("independent-verifier", tier="strongest", host_config=host_config, role_cfg=role_cfg, user=["user-custom-model"], project=["project-model"], explicit="cli-model") == (choices, src)
+
+    inherit_cfg = {"tier_defaults": {}, "fallback": "inherit-parent"}
+    choices, src = resolve_role_source("independent-verifier", tier="strongest", host_config=inherit_cfg, role_cfg={})
+    assert choices == ["inherit-parent"] and src == "inherit-parent"
+    assert effective_role_precedence("independent-verifier", tier="strongest", host_config=inherit_cfg, role_cfg={}) == (choices, src)
+
+    fail_cfg = {"tier_defaults": {}, "fallback": "fail-closed"}
+    choices, src = resolve_role_source("independent-verifier", tier="strongest", host_config=fail_cfg, role_cfg={})
+    assert choices == [] and src == "fail-closed"
+    assert effective_role_precedence("independent-verifier", tier="strongest", host_config=fail_cfg, role_cfg={}) == (choices, src)
+
+    with pytest.raises(ValidationError, match="choices must be unique"):
+        resolve_role_source("independent-verifier", tier="strongest", host_config=host_config, role_cfg={}, explicit=["dup", "dup"])
+
+
+def test_compile_policy_and_decoupled_planner_validation(monkeypatch) -> None:
+    """Compiled policy and validate_policy flag decouple repeated validation."""
+    policy = catalog_plan_policy()
+    compiled = compile_policy(policy, PACKAGE)
+    assert isinstance(compiled, CompiledPolicy)
+    assert compiled.policy == policy
+    assert compiled.descriptor == PACKAGE
+
+    call_count = 0
+    orig_check = check_model_role_policy
+
+    def counting_check(pol, desc):
+        nonlocal call_count
+        call_count += 1
+        return orig_check(pol, desc)
+
+    import scripts.model_role_resolver as resolver_mod
+    monkeypatch.setattr(resolver_mod, "check_model_role_policy", counting_check)
+
+    plan1 = plan_role(compiled, host="codex", role="swarm-workers", capabilities=capability_bindings())
+    assert plan1.status == "PLANNED"
+    assert call_count == 0
+
+    plan2 = plan_role(policy, PACKAGE, host="codex", role="swarm-workers", capabilities=capability_bindings(), validate_policy=False)
+    assert plan2.status == "PLANNED"
+    assert call_count == 0
+
+    plan3 = plan_role(policy, PACKAGE, host="codex", role="swarm-workers", capabilities=capability_bindings())
+    assert plan3.status == "PLANNED"
+    assert call_count == 1
+
+    bad_policy = copy.deepcopy(policy)
+    bad_policy["version"] = 999
+    with pytest.raises(ValidationError, match="model-role policy violates its schema"):
+        compile_policy(bad_policy, PACKAGE)
 
 
 

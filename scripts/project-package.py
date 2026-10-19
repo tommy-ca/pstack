@@ -29,7 +29,7 @@ if str(ROOT) not in sys.path:
 # Sole production caller of the pure planner: a read-only planning check, never
 # a model dispatch path.
 from scripts.host_identity import require_builtin_host_keys
-from scripts.model_role_resolver import plan_role
+from scripts.model_role_resolver import compile_policy, plan_role
 from scripts.portability_schema import PackageDescriptor, ValidationError
 
 PACKAGE_JSON = ROOT / "pstack.package.json"
@@ -542,10 +542,11 @@ def check_model_role_plan(desc: PackageDescriptor) -> bool:
     (covering strongest, strong-judgment, fast-worker, and panel).
     """
     policy = json.loads(MODEL_ROLE_POLICY.read_text(encoding="utf-8"))
+    compiled = compile_policy(policy, desc.raw_dict)
     all_ok = True
     for host in desc.host_targets:
         for probe_role in PLAN_PROBE_ROLES:
-            plan = plan_role(policy, desc.raw_dict, host=host, role=probe_role)
+            plan = plan_role(compiled, host=host, role=probe_role)
             reasons = f": {'; '.join(plan.reasons)}" if plan.reasons else ""
             if plan.status == "BLOCKED":
                 print(f"BLOCKED: {host} cannot plan {probe_role}{reasons}")

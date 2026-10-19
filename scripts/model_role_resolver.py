@@ -58,12 +58,30 @@ def _seat(ordinal: int, slug: str, models: dict[str, dict[str, Any]]) -> ModelSe
     return ModelSeat(ordinal, slug, model["family"], model["provider"])
 
 
-def _resolve_source(
-    host: str, role: str, selection: str, *, tier: str, config: Mapping[str, Any],
-    role_cfg: Mapping[str, Any], explicit: str | Sequence[str] | None,
-    project: str | Sequence[str] | None, user: str | Sequence[str] | None,
-) -> tuple[list[str], str] | ModelPlan:
-    """Caller precedence, then host/tier config, then parent inheritance."""
+@dataclass(frozen=True)
+class CompiledPolicy:
+    """Validated policy and descriptor pair for decoupled evaluation."""
+    policy: dict[str, Any]
+    descriptor: dict[str, Any]
+
+
+def compile_policy(policy: dict[str, Any], descriptor: dict[str, Any]) -> CompiledPolicy:
+    """Validate policy against schema and descriptor once for repeated queries."""
+    check_model_role_policy(policy, descriptor)
+    return CompiledPolicy(policy, descriptor)
+
+
+def resolve_role_source(
+    role: str,
+    *,
+    tier: str,
+    host_config: Mapping[str, Any],
+    role_cfg: Mapping[str, Any],
+    explicit: str | Sequence[str] | None = None,
+    project: str | Sequence[str] | None = None,
+    user: str | Sequence[str] | None = None,
+) -> tuple[list[str], str]:
+    """Report effective models and winning precedence rung for a role."""
     if explicit is not None:
         raw, source = explicit, "explicit"
     elif project is not None:
@@ -72,16 +90,35 @@ def _resolve_source(
         raw, source = user, "user"
     elif "models" in role_cfg:
         raw, source = role_cfg["models"], "host-role"
-    elif tier in config["tier_defaults"]:
-        raw, source = config["tier_defaults"][tier], "host-tier"
-    elif config["fallback"] == "inherit-parent":
+    elif tier in host_config.get("tier_defaults", {}):
+        raw, source = host_config["tier_defaults"][tier], "host-tier"
+    elif host_config.get("fallback") == "inherit-parent":
         raw, source = "inherit-parent", "inherit-parent"
     else:
+        return [], "fail-closed"
+
+    return check_choice_list(source, raw), source
+
+
+def _resolve_source(
+    host: str, role: str, selection: str, *, tier: str, config: Mapping[str, Any],
+    role_cfg: Mapping[str, Any], explicit: str | Sequence[str] | None,
+    project: str | Sequence[str] | None, user: str | Sequence[str] | None,
+) -> tuple[list[str], str] | ModelPlan:
+    """Caller precedence, then host/tier config, then parent inheritance."""
+    choices, source = resolve_role_source(
+        role,
+        tier=tier,
+        host_config=config,
+        role_cfg=role_cfg,
+        explicit=explicit,
+        project=project,
+        user=user,
+    )
+    if source == "fail-closed":
         return _blocked(host, role, selection, "none",
                         f"role {role} has no model mapping and fallback=fail-closed")
-    # One canonical rule for caller- and policy-supplied lists: duplicates are
-    # rejected here rather than planned twice as "independent" seats.
-    return check_choice_list(source, raw), source
+    return choices, source
 
 
 def _gate_capabilities(
@@ -149,8 +186,8 @@ def _members_for(
 
 
 def plan_role(
-    policy: dict[str, Any],
-    descriptor: dict[str, Any],
+    policy: dict[str, Any] | CompiledPolicy,
+    descriptor: dict[str, Any] | None = None,
     *,
     host: str,
     role: str,
@@ -159,6 +196,7 @@ def plan_role(
     user: str | Sequence[str] | None = None,
     parent_family: str | None = None,
     capabilities: Mapping[str, Mapping[str, str]] | None = None,
+    validate_policy: bool = True,
 ) -> ModelPlan:
     """Prepare a static plan, preserving explicit failures and honest gaps.
 
@@ -166,15 +204,25 @@ def plan_role(
     independent context, and enforcement before executing or claiming parity.
     Caller-supplied capability metadata is *advisory input*, never a receipt.
     """
-    check_model_role_policy(policy, descriptor)
-    registry = {r["id"]: r for r in descriptor["roles"]}
+    if isinstance(policy, CompiledPolicy):
+        actual_policy = policy.policy
+        actual_descriptor = policy.descriptor if descriptor is None else descriptor
+    else:
+        if descriptor is None:
+            raise ValueError("descriptor is required when policy is a dict")
+        actual_policy = policy
+        actual_descriptor = descriptor
+        if validate_policy:
+            check_model_role_policy(actual_policy, actual_descriptor)
+
+    registry = {r["id"]: r for r in actual_descriptor["roles"]}
     if role not in registry:
         return _blocked(host, role, "unknown", "none", f"unknown canonical role: {role}")
-    if host not in policy["hosts"]:
+    if host not in actual_policy["hosts"]:
         return _blocked(host, role, "unknown", "none", f"unmapped host: {host}")
 
-    config = policy["hosts"][host]
-    contract = policy.get("role_constraints", {}).get(role, {})
+    config = actual_policy["hosts"][host]
+    contract = actual_policy.get("role_constraints", {}).get(role, {})
     selection = contract.get("selection", "single")
     tier = registry[role]["default_model_role"]
     role_cfg = config.get("role_overrides", {}).get(role, {})
