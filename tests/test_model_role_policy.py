@@ -507,3 +507,22 @@ def test_plan_role_has_exactly_one_production_caller() -> None:
                 importers.add(path.name)
                 break
     assert importers == {"model_role_resolver.py", "project-package.py"}
+
+def test_reference_fork_ledger_records_completed_source_review() -> None:
+    """#434 acceptance line 1: 48 rows source-reviewed against pinned counterparts."""
+    from collections import Counter
+    manifest = json.loads(
+        (ROOT / "docs/research/pstack-claude-forks-2026-10-15.json").read_text()
+    )
+    contract = manifest["source_review_contract"]["counterpart_sources"]
+    assert contract["reference"]["pin"] == "94f5ce95abe8a9dec976967d79941f631cf477cd"
+    assert contract["canonical"]["pin"] == "1dcc2bacde73ddd284803b7af28164d0436198fc"
+    assert contract["target"]["pin"] == "3f4cd124f27cab90865df79d18d376e2f4335b2c"
+    rows = manifest["entries"]
+    assert len(rows) == 48
+    assert len({row["path"] for row in rows}) == len(rows)
+    assert all(row["review_state"] == "source-reviewed" for row in rows)
+    assert Counter(r["proposed_adoption"] for r in rows) == dict(manifest["review_counts"])
+    assert all(set(r["source_review"]) >= {"counterpart_blobs", "attribution_profile", "semantic_delta", "check_or_gap"} for r in rows)
+    absent = manifest["source_review_contract"]["absent_counterparts"]
+    assert [(a["side"], a["path"]) for a in absent] == [("target", "skills/poteto-mode/scripts/check-plan.test.ts")]
