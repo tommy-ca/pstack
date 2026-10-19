@@ -100,14 +100,15 @@ def test_blocked_driver_fallback(tmp_path: Path) -> None:
     # Isolate unavailable-native-driver behavior: the other drive scenarios
     # invoke Bun, shell, and project packaging, none of which is relevant to
     # determining whether an absent host CLI reports BLOCKED.
-    def fake_contract_check(scenario_id, desc, plane, cmd, cwd=None):
+    def fake_contract_check(scenario_id, desc, plane, cmd, cwd=None, **kwargs):
         result = verify_portable.ScenarioResult(
             id=scenario_id, description=desc, plane=plane,
             command="mock-offline-contract", exit_code=0,
             stdout_snippet="simulated contract PASS",
             verdict="PASS", duration_s=0.0,
         )
-        verifier.scenarios.append(result)
+        if kwargs.get("record", True):
+            verifier.scenarios.append(result)
         return result
 
     with (

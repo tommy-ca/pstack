@@ -178,6 +178,7 @@ class PortableVerifier:
         cwd: Optional[Path] = None,
         timeout: float = 60.0,
         evidence_level: str = "offline",
+        record: bool = True,
     ) -> ScenarioResult:
         start = time.time()
         try:
@@ -224,7 +225,8 @@ class PortableVerifier:
             duration_s=duration,
             evidence_level=evidence_level,
         )
-        self.scenarios.append(result)
+        if record:
+            self.scenarios.append(result)
         return result
 
     def doctor(self, check_durability: bool = True, allow_stale: bool = False) -> bool:
@@ -374,9 +376,8 @@ class PortableVerifier:
 
     def drive(self, feature: Optional[str] = None) -> bool:
         """Step 3: Drive representative capability scenarios."""
-        print(f"[{self.host}] Driving capability scenarios...")
-
-        execute_local_scenarios(self, ROOT)
+        local_results = execute_local_scenarios(self, ROOT)
+        self.scenarios.extend(s for s in local_results if isinstance(s, ScenarioResult))
 
         driver = get_driver(self.host, ROOT)
         avail, reason = driver.is_available()
