@@ -402,6 +402,8 @@ def test_verify_portable_modular_decomposition_and_backwards_compatibility() -> 
         "index_row_mismatch",
         "check_evidence_action",
         "check_staleness_action",
+        "receipt_payload",
+        "write_verification_evidence",
     ):
         assert hasattr(verify_portable, name)
         assert getattr(verify_portable, name) is getattr(ei, name)
@@ -455,5 +457,69 @@ def test_execute_local_scenarios_in_isolation(tmp_path: Path) -> None:
     assert len(verifier.scenarios) == 0
     for s in scenarios:
         assert s.verdict == "PASS"
+
+
+def test_write_verification_evidence_in_isolation(tmp_path: Path) -> None:
+    import json
+    import scripts.evidence_index as ei
+    from scripts.surface_revisions import compute_surface_revisions
+
+    receipt = VerificationReceipt(
+        run_id="test-run-isolated",
+        host="grok",
+        host_version="1.0.0",
+        timestamp="2026-10-20T00:00:00Z",
+        overall_verdict="PASS",
+        planes={plane: "PASS" for plane in ("canonical", "adapter", "package", "runtime")},
+        surface_revisions=compute_surface_revisions(ROOT, "grok"),
+        scenarios=[],
+        artifacts=[],
+        claim="grok portability conformance verification",
+        kind="runtime",
+    )
+    evidence_root = tmp_path / "evidence"
+    run_dir = tmp_path / "run"
+    run_dir.mkdir(parents=True)
+
+    # 1. Write with update_durable=True
+    receipt_path = ei.write_verification_evidence(
+        receipt,
+        evidence_root=evidence_root,
+        run_dir=run_dir,
+        host="grok",
+        update_durable=True,
+    )
+    assert receipt_path == run_dir / "receipt.json"
+    assert receipt_path.is_file()
+    payload = json.loads(receipt_path.read_text(encoding="utf-8"))
+    assert payload["run_id"] == "test-run-isolated"
+    assert "adapter_version" not in payload
+
+    durable_path = evidence_root / "grok-receipt.json"
+    assert durable_path.is_file()
+    durable_data = json.loads(durable_path.read_text(encoding="utf-8"))
+    assert durable_data["run_id"] == "test-run-isolated"
+
+    index_path = evidence_root / "index.json"
+    assert index_path.is_file()
+    index_data = json.loads(index_path.read_text(encoding="utf-8"))
+    assert index_data["hosts"]["grok"]["run_id"] == "test-run-isolated"
+
+    # 2. Write with update_durable=False
+    run_dir2 = tmp_path / "run2"
+    run_dir2.mkdir(parents=True)
+    receipt.run_id = "test-run-transient"
+    receipt_path2 = ei.write_verification_evidence(
+        receipt,
+        evidence_root=evidence_root,
+        run_dir=run_dir2,
+        host="grok",
+        update_durable=False,
+    )
+    assert receipt_path2 == run_dir2 / "receipt.json"
+    assert receipt_path2.is_file()
+    # Durable file and index must not be updated to test-run-transient
+    durable_data2 = json.loads(durable_path.read_text(encoding="utf-8"))
+    assert durable_data2["run_id"] == "test-run-isolated"
 
 
