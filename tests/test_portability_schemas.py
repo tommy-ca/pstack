@@ -489,6 +489,31 @@ def test_normative_profile_json_schema_fails_closed_on_invalid_primitive_or_shap
     assert errors, "Missing required 'host' field should fail schema validation"
 
 
+def test_portability_schema_modular_decomposition_and_backwards_compatibility() -> None:
+    """Validate that portability_schema decomposition maintains sub-1000 lines and 100% parity."""
+    import scripts.portability_schema as ps
+    import scripts.surface_revisions as sr
+    import scripts.evidence_durability as ed
+
+    schema_file = ROOT / "scripts" / "portability_schema.py"
+    lines = schema_file.read_text(encoding="utf-8").splitlines()
+    assert len(lines) < 1000, f"portability_schema.py must be under 1,000 lines (got {len(lines)})"
+
+    assert sr.compute_surface_revisions is ps.compute_surface_revisions
+    assert sr._driver_core is ps._driver_core
+    assert sr._strip_docstrings is ps._strip_docstrings
+    assert ed.derive_support_state is ps.derive_support_state
+    assert ed.check_evidence_durability is ps.check_evidence_durability
+    assert ed.check_scenario_pins is ps.check_scenario_pins
+    assert ed.preserve_observed_settlements is ps.preserve_observed_settlements
+
+    rev_sr = sr.compute_surface_revisions(ROOT, "grok")
+    rev_ps = ps.compute_surface_revisions(ROOT, "grok")
+    assert rev_sr == rev_ps
+    assert rev_sr.driver_revision
+    assert rev_sr.package_driver_revision
+
+
 
 
 
