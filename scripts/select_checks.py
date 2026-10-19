@@ -104,6 +104,11 @@ CHECK_SELECTION_TABLE: List[tuple] = [
     ("scripts/drivers/**", ("!tests/test_harness_drivers.py", "tests/test_route_resolver.py"), ()),
     ("scripts/route_resolver.py", ("tests/test_route_resolver.py", "tests/test_droid_routing.py"), ()),
     (
+        "scripts/harness_scenarios.py",
+        ("tests/test_verify_portable.py",),
+        (),
+    ),
+    (
         "scripts/verify-portable.py",
         ("tests/test_verify_portable.py", "tests/test_verdict_reduction.py"),
         (),

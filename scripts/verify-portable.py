@@ -110,10 +110,15 @@ from scripts.openspec_change import (
 from scripts.evidence_index import (
     _file_or_denied,
     check_evidence_action,
+    check_staleness_action,
     evidence_index_row,
     get_declared_hosts,
     index_row_mismatch,
     rows_from_receipts,
+)
+from scripts.harness_scenarios import (
+    execute_driver_scenarios,
+    execute_local_scenarios,
 )
 
 
@@ -371,116 +376,8 @@ class PortableVerifier:
         """Step 3: Drive representative capability scenarios."""
         print(f"[{self.host}] Driving capability scenarios...")
 
-        # Reclassified repository-local static and adapter checks
-        # Canonical: principle discovery
-        self.run_command(
-            "drive-principles-load",
-            "Ensure poteto-mode loads all canonical principles without error",
-            "canonical",
-            [
-                sys.executable,
-                "-c",
-                "import sys, json; from pathlib import Path; r = Path('.'); inv = json.loads((r/'openspec'/'canonical-inventory.json').read_text()); expected = [a['path'] for a in inv.get('artifacts', []) if a.get('category') == 'principle' and a.get('mode') in ('preserve', 'adapt')]; missing = [p for p in expected if not (r/p).is_file()]; sys.exit(1 if missing else 0)",
-            ],
-        )
+        execute_local_scenarios(self, ROOT)
 
-        # Adapter: Plan checker validation
-        self.run_command(
-            "drive-check-plan",
-            "Verify multi-phase plan checking logic",
-            "adapter",
-            ["bun", "test", str(ROOT / "skills" / "poteto-mode" / "scripts" / "check-plan.test.mjs")],
-        )
-
-        # Adapter: Worktree audit isolation check
-        self.run_command(
-            "drive-worktree-audit",
-            "Run worktree isolation audit smoke test",
-            "adapter",
-            ["bash", str(ROOT / "skills" / "poteto-mode" / "scripts" / "worktree-audit.sh"), "."],
-        )
-
-        # Package: Cross-harness verification skill scaffolding and check
-        smoke_target = self.run_dir / "verify-smoke"
-        self.run_command(
-            "drive-verification-skill-scaffold",
-            f"Prove verification skill scaffolding for {self.host}",
-            "package",
-            [
-                sys.executable,
-                str(ROOT / "scripts" / "scaffold-verification-skill.py"),
-                "--host",
-                self.host,
-                "--app",
-                "smoke",
-                "--write",
-                "--target-dir",
-                str(smoke_target),
-            ],
-        )
-        self.run_command(
-            "drive-verification-skill-check",
-            f"Validate generated verification skill structure for {self.host}",
-            "package",
-            [
-                sys.executable,
-                str(ROOT / "scripts" / "scaffold-verification-skill.py"),
-                "--host",
-                self.host,
-                "--check",
-                "--target-dir",
-                str(smoke_target),
-            ],
-        )
-
-        # Package: Native isolated lifecycle proof (install, verify, update convergence, uninstall residue)
-        lifecycle_target = self.run_dir / f"lifecycle-{self.host}"
-        self.run_command(
-            f"drive-package-lifecycle-proof-{self.host}",
-            f"Prove isolated native package lifecycle for {self.host}",
-            "package",
-            [
-                sys.executable,
-                str(ROOT / "scripts" / "package-lifecycle.py"),
-                "prove",
-                "--host",
-                self.host,
-                "--target-dir",
-                str(lifecycle_target),
-            ],
-        )
-
-        # Codex-specific adapter compatibility suites
-        if self.host == "codex":
-            self.run_command(
-                "drive-codex-orch",
-                "Verify Codex orch and store compatibility suite",
-                "adapter",
-                ["bun", "test", "./skills/poteto-mode/scripts/orch/orch.test.ts"],
-            )
-            self.run_command(
-                "drive-codex-watch-pr",
-                "Verify Codex watch-pr policy and CLI suite",
-                "adapter",
-                ["bun", "test", "./skills/poteto-mode/scripts/watch-pr/cli.test.ts", "./skills/poteto-mode/scripts/watch-pr/policy.test.ts"],
-            )
-
-        # Antigravity-specific package/adapter verification scenarios
-        if self.host == "antigravity":
-            self.run_command(
-                "drive-antigravity-models",
-                "Verify Antigravity model roles and panel definitions",
-                "package",
-                [sys.executable, "-c", "import json; from pathlib import Path; d = json.loads(Path('.antigravity-plugin/models.json').read_text()); assert d['singleRoleDefault'] == 'pro'; assert len(d['roles']) >= 10"],
-            )
-            self.run_command(
-                "drive-antigravity-tools-ref",
-                "Verify Antigravity tool-mapping reference integrity",
-                "adapter",
-                [sys.executable, "-c", "from pathlib import Path; p = Path('skills/poteto-mode/references/antigravity-tools.md'); assert p.is_file(); t = p.read_text(); assert 'invoke_subagent' in t; assert 'ask_question' in t"],
-            )
-
-        # Native Harness Driver Live Scenarios (Runtime Plane)
         driver = get_driver(self.host, ROOT)
         avail, reason = driver.is_available()
         if not avail:
@@ -498,109 +395,7 @@ class PortableVerifier:
             )
             return False
 
-        # 1. Native harness discovery
-        sc_disc = driver.discover(self.run_dir)
-        self.scenarios.append(
-            ScenarioResult(
-                id=sc_disc.scenario_id,
-                description=sc_disc.description,
-                plane="runtime",
-                command=sc_disc.command,
-                exit_code=sc_disc.exit_code,
-                stdout_snippet=sc_disc.stdout_snippet,
-                verdict=sc_disc.verdict,
-                duration_s=sc_disc.duration_s,
-                evidence_level=sc_disc.evidence_level,
-            )
-        )
-
-        # 2. Native playbook routing
-        target_playbook = feature or "feature"
-        sc_route = driver.route_playbook(target_playbook, self.run_dir)
-        self.scenarios.append(
-            ScenarioResult(
-                id=sc_route.scenario_id,
-                description=sc_route.description,
-                plane="runtime",
-                command=sc_route.command,
-                exit_code=sc_route.exit_code,
-                stdout_snippet=sc_route.stdout_snippet,
-                verdict=sc_route.verdict,
-                duration_s=sc_route.duration_s,
-                evidence_level=sc_route.evidence_level,
-            )
-        )
-
-        # 3. Native child spawn / subagent contract
-        sc_spawn = driver.child_spawn(self.run_dir)
-        self.scenarios.append(
-            ScenarioResult(
-                id=sc_spawn.scenario_id,
-                description=sc_spawn.description,
-                plane="runtime",
-                command=sc_spawn.command,
-                exit_code=sc_spawn.exit_code,
-                stdout_snippet=sc_spawn.stdout_snippet,
-                verdict=sc_spawn.verdict,
-                duration_s=sc_spawn.duration_s,
-                evidence_level=sc_spawn.evidence_level,
-                settlement=sc_spawn.settlement,
-            )
-        )
-
-        # 4. Native in-flight child cancellation (omp only: the other drivers declare no
-        # cancel surface, so a scenario here would record a host with nothing to drive)
-        if self.host == "omp":
-            sc_cancel = driver.child_cancel(self.run_dir)
-            self.scenarios.append(
-                ScenarioResult(
-                    id=sc_cancel.scenario_id,
-                    description=sc_cancel.description,
-                    plane="runtime",
-                    command=sc_cancel.command,
-                    exit_code=sc_cancel.exit_code,
-                    stdout_snippet=sc_cancel.stdout_snippet,
-                    verdict=sc_cancel.verdict,
-                    duration_s=sc_cancel.duration_s,
-                    evidence_level=sc_cancel.evidence_level,
-                    settlement=sc_cancel.settlement,
-                )
-            )
-
-        # 5. Native workspace isolation contract
-        sc_iso = driver.isolation(self.run_dir)
-        self.scenarios.append(
-            ScenarioResult(
-                id=sc_iso.scenario_id,
-                description=sc_iso.description,
-                plane="runtime",
-                command=sc_iso.command,
-                exit_code=sc_iso.exit_code,
-                stdout_snippet=sc_iso.stdout_snippet,
-                verdict=sc_iso.verdict,
-                duration_s=sc_iso.duration_s,
-                evidence_level=sc_iso.evidence_level,
-                settlement=sc_iso.settlement,
-            )
-        )
-
-        # 6. Native evidence capture contract
-        sc_ev = driver.evidence_capture(self.run_dir)
-        self.scenarios.append(
-            ScenarioResult(
-                id=sc_ev.scenario_id,
-                description=sc_ev.description,
-                plane="runtime",
-                command=sc_ev.command,
-                exit_code=sc_ev.exit_code,
-                stdout_snippet=sc_ev.stdout_snippet,
-                verdict=sc_ev.verdict,
-                duration_s=sc_ev.duration_s,
-                evidence_level=sc_ev.evidence_level,
-                settlement=sc_ev.settlement,
-            )
-        )
-
+        self.scenarios.extend(execute_driver_scenarios(self, driver, feature))
         return all(s.verdict == "PASS" for s in self.scenarios if s.plane == "runtime")
 
     def proof_bar(self) -> VerificationReceipt:
@@ -807,82 +602,7 @@ def main() -> None:
         sys.exit(check_evidence_action(hosts, ROOT, allow_stale=args.allow_stale))
 
     if args.action == "check-staleness":
-        staleness_report: Dict[str, Any] = {}
-        all_fresh = True
-        for h in hosts:
-            current_revs = compute_surface_revisions(ROOT, h)
-            receipt_file = args.evidence_dir / f"{h}-receipt.json"
-            if not _file_or_denied(receipt_file):
-                profile_file = ROOT / "profiles" / f"{h}.json"
-                claimed_state = ""
-                if _file_or_denied(profile_file):
-                    # A denied profile stat is not an absent claim: the read
-                    # below refuses by name instead of defaulting to non-candidate.
-                    try:
-                        claimed_state = json.loads(profile_file.read_text(encoding="utf-8")).get("support_state", "")
-                    except Exception:
-                        pass
-                if claimed_state == "candidate":
-                    staleness_report[h] = {
-                        "host": h,
-                        "receipt_exists": False,
-                        "needs_regeneration": False,
-                        "stale_planes": [],
-                        "stale_reasons": {},
-                        "support_state": "candidate",
-                    }
-                    continue
-                staleness_report[h] = {
-                    "host": h,
-                    "receipt_exists": False,
-                    "needs_regeneration": True,
-                    "stale_planes": ["canonical", "adapter", "package", "runtime"],
-                    "stale_reasons": {"all": [f"Receipt file {receipt_file} not found"]},
-                }
-                all_fresh = False
-                continue
-            try:
-                rdata = json.loads(receipt_file.read_text(encoding="utf-8"))
-                receipt = VerificationReceipt(**rdata)
-                stale_map = receipt.evaluate_plane_staleness(current_revs)
-                stale_planes = [p for p, reasons in stale_map.items() if reasons]
-                needs_regen = bool(stale_planes)
-                if needs_regen:
-                    all_fresh = False
-                staleness_report[h] = {
-                    "host": h,
-                    "receipt_exists": True,
-                    "run_id": receipt.run_id,
-                    "timestamp": receipt.timestamp,
-                    "overall_verdict": receipt.overall_verdict,
-                    "needs_regeneration": needs_regen,
-                    "stale_planes": stale_planes,
-                    "stale_reasons": {p: errs for p, errs in stale_map.items() if errs},
-                }
-            except Exception as err:
-                staleness_report[h] = {
-                    "host": h,
-                    "receipt_exists": True,
-                    "needs_regeneration": True,
-                    "stale_planes": ["canonical", "adapter", "package", "runtime"],
-                    "stale_reasons": {"error": [str(err)]},
-                }
-                all_fresh = False
-
-        if args.json:
-            print(json.dumps(staleness_report, indent=2))
-        else:
-            print("\n================ Evidence Staleness Report ================")
-            for h, info in staleness_report.items():
-                status = "REGENERATE" if info["needs_regeneration"] else "FRESH"
-                stale_str = ", ".join(info["stale_planes"]) if info["stale_planes"] else "None"
-                print(f"Host: {h:<12} | Status: {status:<10} | Stale Planes: {stale_str}")
-                for p, reasons in info.get("stale_reasons", {}).items():
-                    for r in reasons:
-                        print(f"   - [{p}] {r}")
-            print("===========================================================")
-            print(f"Overall Matrix Evidence: {'ALL FRESH' if all_fresh else 'REGENERATION NEEDED'}\n")
-        sys.exit(0 if all_fresh else 1)
+        sys.exit(check_staleness_action(hosts, args.evidence_dir, ROOT, json_output=args.json))
 
     if args.action == "select-checks":
         sys.exit(select_checks_action(args, ROOT))

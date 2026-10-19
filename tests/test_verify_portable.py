@@ -361,14 +361,17 @@ def test_verify_portable_modular_decomposition_and_backwards_compatibility() -> 
     sc_path = ROOT / "scripts" / "select_checks.py"
     oc_path = ROOT / "scripts" / "openspec_change.py"
     ei_path = ROOT / "scripts" / "evidence_index.py"
-    assert len(vp_path.read_text(encoding="utf-8").splitlines()) < 1000
+    hs_path = ROOT / "scripts" / "harness_scenarios.py"
+    assert len(vp_path.read_text(encoding="utf-8").splitlines()) < 750
     assert len(sc_path.read_text(encoding="utf-8").splitlines()) < 1000
     assert len(oc_path.read_text(encoding="utf-8").splitlines()) < 1000
     assert len(ei_path.read_text(encoding="utf-8").splitlines()) < 1000
+    assert len(hs_path.read_text(encoding="utf-8").splitlines()) < 400
 
     import scripts.select_checks as sc
     import scripts.openspec_change as oc
     import scripts.evidence_index as ei
+    import scripts.harness_scenarios as hs
 
     for name in (
         "CHECK_SELECTION_TABLE",
@@ -398,16 +401,46 @@ def test_verify_portable_modular_decomposition_and_backwards_compatibility() -> 
         "rows_from_receipts",
         "index_row_mismatch",
         "check_evidence_action",
+        "check_staleness_action",
     ):
         assert hasattr(verify_portable, name)
         assert getattr(verify_portable, name) is getattr(ei, name)
 
+    for name in (
+        "execute_driver_scenarios",
+        "execute_local_scenarios",
+    ):
+        assert hasattr(verify_portable, name)
+        assert getattr(verify_portable, name) is getattr(hs, name)
+
     cmd = [
         sys.executable,
         "-c",
-        "import scripts.select_checks; import scripts.openspec_change; import scripts.evidence_index; print('ok')",
+        "import scripts.select_checks; import scripts.openspec_change; import scripts.evidence_index; import scripts.harness_scenarios; print('ok')",
     ]
     proc = subprocess.run(cmd, cwd=str(ROOT), capture_output=True, text=True, check=True)
     assert proc.stdout.strip() == "ok"
+
+
+def test_execute_driver_scenarios_in_isolation(tmp_path: Path) -> None:
+    import scripts.harness_scenarios as hs
+    from scripts.drivers import get_driver
+
+    verifier = PortableVerifier(host="grok", evidence_root=tmp_path)
+    verifier.launch()
+    driver = get_driver("grok", ROOT)
+    scenarios = hs.execute_driver_scenarios(verifier, driver, feature="feature")
+    assert len(scenarios) == 5
+    for s in scenarios:
+        assert s.plane == "runtime"
+        assert s.verdict == "PASS"
+        assert s.evidence_level in ("offline", "static", "observed_live", "legacy")
+
+    omp_verifier = PortableVerifier(host="omp", evidence_root=tmp_path)
+    omp_verifier.launch()
+    omp_driver = get_driver("omp", ROOT)
+    omp_scenarios = hs.execute_driver_scenarios(omp_verifier, omp_driver, feature="feature")
+    assert len(omp_scenarios) == 6
+    assert any(s.id == "runtime-child-cancel-omp" for s in omp_scenarios)
 
 
