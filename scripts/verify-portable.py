@@ -376,9 +376,8 @@ class PortableVerifier:
 
     def drive(self, feature: Optional[str] = None) -> bool:
         """Step 3: Drive representative capability scenarios."""
-        print(f"[{self.host}] Driving capability scenarios...")
-
-        self.scenarios.extend(execute_local_scenarios(self, ROOT))
+        local_results = execute_local_scenarios(self, ROOT)
+        self.scenarios.extend(s for s in local_results if isinstance(s, ScenarioResult))
 
         driver = get_driver(self.host, ROOT)
         avail, reason = driver.is_available()
