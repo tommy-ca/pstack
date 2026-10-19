@@ -382,4 +382,24 @@ Docs-only record from main `9959998`. No code, receipt, fixture or evidence-inde
 
 Issue #438 is fulfilled and CLOSED. All G0–G8 boxes remain unchecked. #434, #437, #439, #441, #442, #443, #444, #445, #446, #473 stay OPEN on the rows named above.
 
+## Dated evidence (2026-10-19, wave-29: panel seats, cross-judge family diversity, and honest degradation)
+
+Docs-only record from main `0df83b4`. No code, receipt, fixture or evidence-index file is touched: this section is appended and no earlier wave's prose is rewritten.
+
+**Panel seats, cross-judge family diversity, and honest degradation.** PR #573 resolved #439 by codifying panel cardinality, family identity, discrete child tracking, and honest degradation across review playbooks and model-role policy verification:
+- Playbook codification:
+  - `skills/arena/SKILL.md`: enforces discrete worktree and candidate tracking per seat; honest reporting of single-family generation diversity without claiming cross-family independence; cross-judge family diversity preference with transparent degradation (`DEGRADED` on unproven family diversity, `BLOCKED` on strict diversity requirements); and mandatory `workspace.readonly` on cross-judge execution.
+  - `skills/interrogate/SKILL.md`: enforces discrete reviewer child tracking per panel seat; transparent degradation (`DEGRADED: independent seats do not prove diverse model families` on single-family panels, `BLOCKED: required model-family diversity missing` when policy requires diversity); fail-closed on unavailable catalog models with zero silent substitution; and explicit read-only reviewer enforcement.
+  - `skills/swarm/SKILL.md`: enforces discrete worker lane tracking and isolated workspaces per seat; bounded join deadline; single-family honest degradation.
+- Model role policy verification in `tests/test_model_role_policy.py`:
+  - `test_cross_family_panel_seat_selection_clean_planned`: proves panel with diverse families (`alpha`, `beta`) produces `PLANNED` status with discrete ordinals and zero degradation reasons.
+  - `test_panel_strict_family_diversity_blocks_on_single_family_and_passes_on_diverse`: verifies that strict family diversity requirement (`require_distinct_model_families`) allows diverse families but fails closed (`BLOCKED`) on same-family, single-seat, and inherit-parent configurations.
+  - `test_cross_judge_family_diversity_degraded_and_blocked_negatives`: validates honest degradation (`DEGRADED` vs `BLOCKED`) for unproven parent family and inherit-parent cross-judge selection.
+  - `test_unavailable_model_in_panel_or_cross_judge_blocks_closed`: asserts that any unavailable model slug in a panel or cross-judge selection fails closed (`BLOCKED`) with no silent substitution.
+- Durable evidence synchronization: refreshed `skills_tree_hash` consistently across all five host receipts and `index.json`. Full durability suite 113 passed.
+- Independent verification: `pstack-verifier` subagent (tier `pro`) returned `PASS` on PR #573 head (`809b471`), merged to main as `0df83b4`.
+
+Issue #439 is fulfilled and CLOSED. All G0–G8 boxes remain unchecked. #434, #437, #441, #442, #443, #444, #445, #446, #473 stay OPEN on the rows named above.
+
+
 
