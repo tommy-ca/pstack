@@ -480,3 +480,23 @@ Docs-only record from main `b88b840`. No code, receipt, fixture or evidence-inde
   - Independent verification: `pstack-verifier` subagent (tier `pro`) returned `PASS` on PR #579 head (`9c891be`), merged to main as `b88b840`.
 
 Issue #442 is fulfilled and CLOSED. All G0–G8 boxes remain unchecked. #434, #443, #444, #445, #473 stay OPEN on the rows named above.
+
+## Dated evidence (2026-10-19, wave-33: pi ↔ omp equivalence matrix)
+
+Docs-only record from main `5085335`. No code, receipt, fixture or evidence-index file is touched: this section is appended and no earlier wave's prose is rewritten.
+
+**Pi ↔ OMP equivalence matrix.** PR #532 resolved #443 by delivering the formal mechanism-by-mechanism classification in `docs/research/pi-omp-equivalence-2026-10-18.md` (merged to main as `5960d48`):
+- Equivalence matrix coverage:
+  - Maps all 61 mechanism rows of `michael-denyer/pstack-claude` `docs/pi-equivalence.md` (`origin/main 7bad1eb`) against the target's OMP RPC and native adapter surface (`profiles/omp.json`, `scripts/drivers/omp_rpc.py`, `scripts/drivers/omp.py`, `skills/poteto-mode/references/omp-tools.md`).
+  - Per-capability classification: `same` (13), `different` (47), `unproven` (1, steering), and `n/a` (1, `C03` retired in reference prior to `7bad1eb`).
+  - Explicit settlement strength per row: `host-doc` (31), `static` (21), `static + historical live` (4), `offline receipt` (2), `none` (4).
+  - Steering is truthfully retained as GAP (row T07 / `profiles/omp.json:36-42`, ref #389), noting `steer_subagent` host documentation without bounded runner exposure or settling receipt.
+  - Reusable vs divergent: identifies reusable contract elements (capability vocabulary, binding schema, scenario IDs, four-plane receipt) versus divergent process/state implementations (in-process spawn vs bounded RPC v2 session, host-owned session files vs Pi session store, isolation PAL).
+  - Zero Pi process or session stores imported; zero unverified runtime claims promoted without host-version-specific receipts.
+- Verification & durability:
+  - 149 passed, 7 skipped across core portability, host identity, driver, and role suites.
+  - Full durability suite 113 passed.
+  - Boundary scan `scan-host-boundary.py --check` passes with 0 leaks across 139 files.
+  - Package manifest check `scripts/project-package.py --check` passes.
+
+Issue #443 is fulfilled and CLOSED. All G0–G8 boxes remain unchecked. #434, #444, #445, #473 stay OPEN on the rows named above.
