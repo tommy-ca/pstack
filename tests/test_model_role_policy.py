@@ -182,6 +182,27 @@ def test_role_planner_static_only_even_with_complete_fixture() -> None:
     assert plan.source == "host-tier"
 
 
+def test_plan_role_is_pure_and_performs_no_io(monkeypatch) -> None:
+    """#437 acceptance: plan_role is side-effect-free with zero I/O, network, or subprocess calls."""
+    import builtins
+    import socket
+
+    def denied(*args, **kwargs):
+        raise AssertionError("I/O is forbidden during pure resolution")
+
+    monkeypatch.setattr(builtins, "open", denied)
+    monkeypatch.setattr(subprocess, "run", denied)
+    monkeypatch.setattr(subprocess, "Popen", denied)
+    monkeypatch.setattr(socket, "socket", denied)
+
+    policy = catalog_plan_policy()
+    plan = plan_role(policy, PACKAGE, host="codex", role="swarm-workers", capabilities=capability_bindings())
+    assert plan.status == "PLANNED"
+    assert plan.seats[0].model == "model-a"
+    assert plan.source == "host-tier"
+
+
+
 def test_overrides_are_precedent_but_do_not_silently_replace_unknown_slug() -> None:
     policy = catalog_plan_policy()
     plan = plan_role(policy, PACKAGE, host="codex", role="swarm-workers",
