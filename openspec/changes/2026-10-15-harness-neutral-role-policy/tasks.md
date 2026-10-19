@@ -451,3 +451,32 @@ Docs-only record from main `759c0de`. No code, receipt, fixture or evidence-inde
   - Independent verification: `pstack-verifier` subagent (tier `pro`) returned `PASS` on PR #577 head (`f1ea5bb`), merged to main as `759c0de`.
 
 Issue #441 is fulfilled and CLOSED. All G0–G8 boxes remain unchecked. #434, #442, #443, #444, #445, #473 stay OPEN on the rows named above.
+
+## Dated evidence (2026-10-19, wave-32: github copilot candidate profile, evaluation, and driver)
+
+Docs-only record from main `b88b840`. No code, receipt, fixture or evidence-index file is touched: this section is appended and no earlier wave's prose is rewritten.
+
+**GitHub Copilot candidate profile, evaluation, and driver.** PR #579 resolved #442 by delivering the architectural evaluation, candidate profile, and driver integration for GitHub Copilot under the declared host identity model (#446):
+- Architectural evaluation in `docs/research/copilot-candidate-evaluation-2026-10-19.md`:
+  - Evaluated GitHub Copilot CLI (`gh copilot` / standalone CLI), IDE extensions (VS Code / JetBrains), and Copilot Extensions / Workspace (cloud SSE).
+  - Classified all 17 capabilities in `PORTABLE_CAPABILITY_UNIVERSE` with explicit primitives, enforcement levels, and settlement strength.
+  - Codified core architectural invariants: multi-agent dispatch (`agent.spawn`, `agent.join`, `agent.cancel`, `agent.message`, `agent.resume`) truthfully accounted as GAP; model routing constrained to host-managed `"inherit"` with custom model/effort overrides forbidden; and `workspace.readonly` classified as advisory due to the absence of OS kernel filesystem mount isolation in Copilot CLI.
+- Candidate profile definition in `profiles/copilot.json`:
+  - Conforms strictly to `schemas/portability/profile.schema.json` via JSON Schema Draft 2020-12 validation.
+  - Conforms to declared host gates under `github:copilot`: `is_valid_host_id("github:copilot") == True`, `is_external("github:copilot") == True`, `is_declared_host("github:copilot") == True`, and `is_builtin("github:copilot") == False`.
+  - Truthful capability accounting: multi-agent child dispatch mapped as `gap`, `workspace.readonly` mapped as advisory, `supported_isolation_modes: ["none"]`, and `default_model: "inherit"`.
+  - Multi-word primitive strings preventing host boundary leaks.
+- Driver implementation in `scripts/drivers/copilot.py` & `scripts/drivers/__init__.py`:
+  - Implements `CopilotDriver(HarnessDriver)` with CLI discovery (`which copilot`, `gh extension list`), playbook route resolution, subagent spawn gap validation, isolation contract verification, and evidence capture binding.
+  - Preserves canonical `BUILTIN_HOSTS` strictly intact and registers `github:copilot` under `ADAPTER_DRIVERS`.
+- Profile path resolution in `scripts/portability_schema.py` & `scripts/drivers/base.py`:
+  - Resolves profile paths for namespaced external hosts (e.g. `github:copilot` -> `copilot.json`).
+- Test coverage in `tests/test_copilot_driver.py` & `tests/test_harness_drivers.py`:
+  - Tests validating schema conformance, declared host gates, fail-closed negative gates (refusing bare unnamespaced 'copilot', refusing self-promotion to 'packaged'/'supported' without native evidence, refusing verified status on unverified bindings, refusing prompt-only hard enforcement), driver scenarios, and factory registration.
+- Verification & durability:
+  - 149 passed, 7 skipped across core suites.
+  - Full durability suite 113 passed.
+  - Boundary scan `scan-host-boundary.py --check` passes with 0 leaks across 139 files.
+  - Independent verification: `pstack-verifier` subagent (tier `pro`) returned `PASS` on PR #579 head (`9c891be`), merged to main as `b88b840`.
+
+Issue #442 is fulfilled and CLOSED. All G0–G8 boxes remain unchecked. #434, #443, #444, #445, #473 stay OPEN on the rows named above.
