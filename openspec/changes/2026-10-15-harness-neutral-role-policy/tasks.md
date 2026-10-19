@@ -557,4 +557,28 @@ Docs-only record from main `ab74848`. No code, receipt, fixture or evidence-inde
 
 Issue #435 is fulfilled and CLOSED. With #434, #435, and #436 closed, Sub-epic #430 is fulfilled and CLOSED. All G0–G8 boxes remain unchecked. #437, #444, #445, #473 stay OPEN on the rows named above.
 
+## Dated evidence (2026-10-19, wave-36: pure role/model resolver and purity contract accepted)
+
+Docs-only record from main `0252341`. No code, receipt, fixture or evidence-index file is touched: this section is appended and no earlier wave's prose is rewritten.
+
+**Pure role/model resolver and purity contract accepted.** PR #586 resolved #437 by locking the side-effect-free pure resolution contract into a strict regression test (merged to main as `0252341`):
+- Pure resolution purity clause:
+  - Adds `test_plan_role_is_pure_and_performs_no_io` in `tests/test_model_role_policy.py`, monkeypatching external side-effect gateways (`builtins.open`, `subprocess.run`, `subprocess.Popen`, `socket.socket`) to raise `AssertionError` if invoked.
+  - Proves that `plan_role` executes purely in memory with zero filesystem reads/writes, zero subprocess execution, and zero network calls, returning clean `PLANNED` status.
+- Resolver contract completeness:
+  - Six-rung source precedence: `explicit` > `project` > `user` > `host-role` > `host-tier` > `inherit` (pinned in PR #565 / `08d76de`).
+  - Caller-supplied effort gate failure on unsupported effort (pinned in PR #567 / `2e8e6fa`).
+  - Multi-tier planner probe covering all four unconstrained tiers (`strongest`, `strong-judgment`, `fast-worker`, `panel`) with fail-closed mutation verification (pinned in PR #569 / `91e96fa`).
+  - Fallback and unavailable model handling: missing model slugs fail closed (`BLOCKED`) without silent substitution; unproven catalogs degrade (`DEGRADED`).
+  - ModelPlan Draft 2020-12 wire contract rejects forged `VERIFIED` statuses or fabricated family/provider claims.
+- Verification & durability:
+  - 138 passed across `tests/test_model_role_policy.py`, `tests/test_setup_pstack.py`, `tests/test_project_package.py`, `tests/test_verify_harness.py`.
+  - Static CLI contract passes (`python -m scripts.model_role_policy`).
+  - Package manifest check `scripts/project-package.py --check` passes.
+  - Boundary scan `scan-host-boundary.py --check` passes with 0 leaks across 139 files.
+  - Independent verification: `pstack-verifier` subagent (tier `pro`) returned `PASS+NOTES` on PR #586 head (`2a12590`), merged to main as `0252341`.
+
+Issue #437 is fulfilled and CLOSED. With #437, #438, and #439 closed, Sub-epic #431 is fulfilled and CLOSED. All G0–G8 boxes remain unchecked. #444, #445, #473 stay OPEN on the rows named above.
+
+
 
