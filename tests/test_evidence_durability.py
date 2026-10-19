@@ -742,7 +742,7 @@ def test_mutated_vocabulary_module_stales_the_package_plane(tmp_path: Path) -> N
     copy_root = _disposable_copy(tmp_path)
     fresh = compute_surface_revisions(copy_root, "grok")
 
-    vocab = copy_root / "scripts" / "portability_schema.py"
+    vocab = copy_root / "scripts" / "portability_types.py"
     src = vocab.read_text(encoding="utf-8")
     anchor = 'VERIFICATION_STATUSES = ("verified", "static-only", "unverified", "stale")'
     assert src.count(anchor) == 1
@@ -754,10 +754,8 @@ def test_mutated_vocabulary_module_stales_the_package_plane(tmp_path: Path) -> N
     vocab.write_text(src.replace('"stale"', '"stale-renamed"'), encoding="utf-8")
     edited = compute_surface_revisions(copy_root, "grok")
     assert edited.package_driver_revision != fresh.package_driver_revision
-    # portability_schema.py also feeds driver_revision (adapter plane) by design;
-    # the package-plane pin is that nothing EXCEPT driver_revision moves with it.
-    assert replace(edited, package_driver_revision=fresh.package_driver_revision,
-                    driver_revision=fresh.driver_revision) == fresh
+    # portability_types.py feeds package_driver_revision by design.
+    assert replace(edited, package_driver_revision=fresh.package_driver_revision) == fresh
     receipt_data = json.loads(
         (copy_root / ".audit" / "evidence" / "grok-receipt.json").read_text(encoding="utf-8")
     )
@@ -765,6 +763,22 @@ def test_mutated_vocabulary_module_stales_the_package_plane(tmp_path: Path) -> N
     assert "package" in {plane for plane, reasons in stale_map.items() if reasons}
 
 
+def test_mutated_portability_schema_stales_both_driver_and_package_revisions(tmp_path: Path) -> None:
+    """portability_schema.py feeds both driver_revision (adapter) and package_driver_revision."""
+    copy_root = _disposable_copy(tmp_path)
+    fresh = compute_surface_revisions(copy_root, "grok")
+
+    schema_file = copy_root / "scripts" / "portability_schema.py"
+    original = schema_file.read_bytes()
+    schema_file.write_bytes(original + b"\n# AST inert comment\n")
+    assert compute_surface_revisions(copy_root, "grok") == fresh
+
+    schema_file.write_bytes(original + b"\nSCHEMA_PROBE = 'probe mutation'\n")
+    edited = compute_surface_revisions(copy_root, "grok")
+    assert edited.package_driver_revision != fresh.package_driver_revision
+    assert edited.driver_revision != fresh.driver_revision
+    assert replace(edited, package_driver_revision=fresh.package_driver_revision,
+                    driver_revision=fresh.driver_revision) == fresh
 
 
 def test_published_module_docstring_moves_the_driver_revision(tmp_path: Path) -> None:
