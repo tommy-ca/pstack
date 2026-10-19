@@ -106,6 +106,7 @@ from scripts.openspec_change import (
     resolve_openspec_change,
     validate_openspec_change,
 )
+
 from scripts.evidence_index import (
     _file_or_denied,
     check_evidence_action,
@@ -237,7 +238,9 @@ class PortableVerifier:
         # label and the child validation share one observation, so the receipt binds
         # the exact validated target. Only a real change name reaches the child;
         # none/lookup-failed/ambiguous are decided here and recorded as scenarios.
-        state, change_name, active_names = resolve_openspec_change(self.change)
+        state, change_name, active_names = resolve_openspec_change(
+            self.change, active_resolver=_active_openspec_changes
+        )
         helper = "import sys; from scripts.openspec_change import validate_openspec_change; sys.exit(validate_openspec_change(sys.argv[1]))"
         if state in ("explicit", "active"):
             assert change_name is not None

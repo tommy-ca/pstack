@@ -50,20 +50,15 @@ def _validate_named_change(change: str) -> int:
     return probed.returncode
 
 
-def _active_resolver() -> Any:
-    for name in ("verify_portable", "scripts.verify_portable"):
-        mod = sys.modules.get(name)
-        if mod is not None and hasattr(mod, "_active_openspec_changes"):
-            candidate = getattr(mod, "_active_openspec_changes")
-            if candidate is not _active_openspec_changes:
-                return candidate
-    return _active_openspec_changes
-
-
-def resolve_openspec_change(change: str | None) -> ChangeResolution:
+def resolve_openspec_change(
+    change: str | None,
+    *,
+    active_resolver: Optional[Callable[[], list[str] | None]] = None,
+) -> ChangeResolution:
     if change is not None:
         return "explicit", change, []
-    active = _active_resolver()()
+    resolver = active_resolver if active_resolver is not None else _active_openspec_changes
+    active = resolver()
     if active is None:
         return "lookup-failed", None, []
     if active == []:
@@ -73,8 +68,12 @@ def resolve_openspec_change(change: str | None) -> ChangeResolution:
     return "ambiguous", None, active
 
 
-def validate_openspec_change(change: str | None) -> int:
-    state, name, names = resolve_openspec_change(change)
+def validate_openspec_change(
+    change: str | None,
+    *,
+    active_resolver: Optional[Callable[[], list[str] | None]] = None,
+) -> int:
+    state, name, names = resolve_openspec_change(change, active_resolver=active_resolver)
     if state in ("explicit", "active"):
         assert name is not None
         return _validate_named_change(name)
