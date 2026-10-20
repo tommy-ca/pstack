@@ -185,3 +185,31 @@ def test_claude_driver_scenarios(tmp_path: Path) -> None:
     # 5. Evidence capture
     ev = driver.evidence_capture(tmp_path)
     assert ev.verdict == "PASS"
+
+
+def test_claude_harness_guide_integrity() -> None:
+    guide_path = ROOT / "docs" / "harness" / "claude-code.md"
+    assert guide_path.is_file(), "docs/harness/claude-code.md must exist"
+
+    content = guide_path.read_text(encoding="utf-8")
+
+    # Explicit non-validated status and scope boundary
+    assert "Non-validated harness reference / external adaptation guide" in content
+    assert "declared native host target in `pstack.package.json#host_targets`" in content
+
+    # Six-host matrix preserved in package descriptor
+    pkg_desc = json.loads((ROOT / "pstack.package.json").read_text(encoding="utf-8"))
+    assert pkg_desc["host_targets"] == ["grok", "codex", "omp", "opencode", "antigravity", "droid"]
+    assert "claude" not in pkg_desc["host_targets"], "Claude Code must stay candidate profile (#628)"
+
+    # Native vs Shim vs Gap Taxonomy present
+    assert "Native vs Shim vs Gap Taxonomy" in content
+    assert "Native" in content
+    assert "Shim" in content
+    assert "Gap" in content
+
+    # Unsupported features fail closed
+    assert "Unsupported features (fail-closed gaps)" in content
+    assert "Cursor Automations" in content
+    assert "Bugbot" in content
+
