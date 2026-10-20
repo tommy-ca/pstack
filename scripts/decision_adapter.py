@@ -12,10 +12,12 @@ from __future__ import annotations
 import json
 import os
 import re
+import urllib.error
+import urllib.request
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 
 class EgressClass(str, Enum):
@@ -192,6 +194,52 @@ class SemanticDecisionProvider(ABC):
         pass
 
 
+@dataclass(frozen=True)
+class JevProviderProfile:
+    """Configuration profile for a System One decision endpoint."""
+
+    profile_id: str
+    api_root: str
+    configured_model: str
+    credential_env: str = "OPENCODE_API_KEY"
+    paid: bool = False
+    max_spend_usd: float = 0.0
+
+
+KNOWN_PROFILES: Dict[str, JevProviderProfile] = {
+    "opencode-console": JevProviderProfile(
+        profile_id="opencode-console",
+        api_root="https://opencode.ai/inference/systemone",
+        configured_model="jev-1.13-free",
+        credential_env="OPENCODE_API_KEY",
+        paid=False,
+    ),
+    "opencode-zen": JevProviderProfile(
+        profile_id="opencode-zen",
+        api_root="https://opencode.ai/zen",
+        configured_model="jev-1.13-free",
+        credential_env="OPENCODE_API_KEY",
+        paid=False,
+    ),
+    "openrouter": JevProviderProfile(
+        profile_id="openrouter",
+        api_root="https://openrouter.ai/api",
+        configured_model="typesafe/jev-1.14",
+        credential_env="OPENROUTER_API_KEY",
+        paid=True,
+        max_spend_usd=1.0,
+    ),
+    "typesafe-direct": JevProviderProfile(
+        profile_id="typesafe-direct",
+        api_root="https://api.typesafe.ai",
+        configured_model="jev-1.13",
+        credential_env="TYPESAFE_API_KEY",
+        paid=True,
+        max_spend_usd=1.0,
+    ),
+}
+
+
 class JevDecisionAdapter(SemanticDecisionProvider):
     """Optional Jev decision provider adapter.
 
@@ -203,9 +251,11 @@ class JevDecisionAdapter(SemanticDecisionProvider):
     def __init__(
         self,
         enabled: Optional[bool] = None,
+        profile: Optional[Union[str, JevProviderProfile]] = None,
         provider_identity: str = "typesafe-jev",
         model_identity: str = "jev-pilot-v1",
         timeout_seconds: float = 2.0,
+        transport_fn: Optional[Callable[[str, Dict[str, Any], str], Dict[str, Any]]] = None,
     ) -> None:
         if enabled is not None:
             self._enabled = enabled
@@ -213,9 +263,20 @@ class JevDecisionAdapter(SemanticDecisionProvider):
             # Explicit default-OFF integration gate
             env_val = os.environ.get("PSTACK_JEV_ENABLED", "").strip().lower()
             self._enabled = env_val in ("1", "true", "yes", "on")
+
+        # Resolve provider profile
+        if isinstance(profile, JevProviderProfile):
+            self.profile = profile
+        elif isinstance(profile, str) and profile in KNOWN_PROFILES:
+            self.profile = KNOWN_PROFILES[profile]
+        else:
+            profile_name = os.environ.get("PSTACK_JEV_PROFILE", "").strip()
+            self.profile = KNOWN_PROFILES.get(profile_name, KNOWN_PROFILES["opencode-zen"])
+
         self.provider_identity = provider_identity
         self.model_identity = model_identity
         self.timeout_seconds = timeout_seconds
+        self._transport_fn = transport_fn
 
     @property
     def is_enabled(self) -> bool:
@@ -255,13 +316,148 @@ class JevDecisionAdapter(SemanticDecisionProvider):
             )
 
     def _invoke_provider(self, request: DecisionRequest) -> ProviderObservation:
-        """Internal invocation hook; overridden by concrete adapters or mocks."""
-        # Baseline stub without active wire connection returns abstain or unavailable
+        """Internal invocation hook implementing System One wire protocol."""
+        # Phase 1: Only ChoiceRequest is invoked
+        if not isinstance(request, ChoiceRequest):
+            return ProviderObservation(
+                outcome=DecisionOutcome(status="abstain"),
+                provider_identity=self.provider_identity,
+                model_identity=self.model_identity,
+                confidence=0.0,
+            )
+
+        # Paid consent guard
+        if self.profile.paid:
+            allow_paid = os.environ.get("PSTACK_JEV_ALLOW_PAID", "").strip().lower()
+            if allow_paid not in ("1", "true", "yes", "on"):
+                return ProviderObservation(
+                    outcome=DecisionOutcome(status="unavailable"),
+                    provider_identity=self.provider_identity,
+                    model_identity=self.model_identity,
+                )
+
+        # Check API key credentials
+        api_key = os.environ.get(self.profile.credential_env, "").strip()
+        if not api_key and self._transport_fn is None:
+            # Baseline stub without active wire connection returns abstain or unavailable
+            return ProviderObservation(
+                outcome=DecisionOutcome(status="abstain"),
+                provider_identity=self.provider_identity,
+                model_identity=self.model_identity,
+                confidence=0.0,
+            )
+
+        payload: Dict[str, Any] = {
+            "model": self.profile.configured_model,
+            "state": request.context.content,
+            "questions": [
+                {
+                    "id": request.question_id,
+                    "type": "choice",
+                    "options": [{"id": c.id, "label": c.label} for c in request.choices],
+                }
+            ],
+        }
+
+        base = self.profile.api_root.rstrip("/")
+        url = f"{base}/v1/systemone"
+
+        try:
+            if self._transport_fn is not None:
+                resp_data = self._transport_fn(url, payload, api_key)
+            else:
+                body = json.dumps(payload).encode("utf-8")
+                req = urllib.request.Request(
+                    url=url,
+                    data=body,
+                    headers={
+                        "Content-Type": "application/json",
+                        "Authorization": f"Bearer {api_key}",
+                        "User-Agent": "pstack-jev-client/1.0",
+                    },
+                    method="POST",
+                )
+                with urllib.request.urlopen(req, timeout=self.timeout_seconds) as resp:
+                    resp_bytes = resp.read()
+                    resp_data = json.loads(resp_bytes.decode("utf-8"))
+
+            return self._parse_provider_response(request, resp_data)
+        except urllib.error.HTTPError:
+            return ProviderObservation(
+                outcome=DecisionOutcome(status="unavailable"),
+                provider_identity=self.provider_identity,
+                model_identity=self.model_identity,
+            )
+        except (urllib.error.URLError, TimeoutError, OSError):
+            return ProviderObservation(
+                outcome=DecisionOutcome(status="unavailable"),
+                provider_identity=self.provider_identity,
+                model_identity=self.model_identity,
+            )
+        except Exception:
+            return ProviderObservation(
+                outcome=DecisionOutcome(status="invalid"),
+                provider_identity=self.provider_identity,
+                model_identity=self.model_identity,
+            )
+
+    def _parse_provider_response(
+        self, request: ChoiceRequest, data: Dict[str, Any]
+    ) -> ProviderObservation:
+        """Parse and strictly validate System One JSON response."""
+        if not isinstance(data, dict):
+            return ProviderObservation(
+                outcome=DecisionOutcome(status="invalid"),
+                provider_identity=self.provider_identity,
+                model_identity=self.model_identity,
+            )
+
+        resp_model = str(data.get("model") or self.profile.configured_model)
+        resp_provider = str(data.get("provider") or self.profile.profile_id)
+
+        results = data.get("results")
+        if not isinstance(results, list) or not results:
+            return ProviderObservation(
+                outcome=DecisionOutcome(status="invalid"),
+                provider_identity=resp_provider,
+                model_identity=resp_model,
+            )
+
+        res = results[0]
+        if not isinstance(res, dict):
+            return ProviderObservation(
+                outcome=DecisionOutcome(status="invalid"),
+                provider_identity=resp_provider,
+                model_identity=resp_model,
+            )
+
+        selected = res.get("selected")
+        valid_choice_ids = {c.id for c in request.choices}
+        if selected not in valid_choice_ids:
+            return ProviderObservation(
+                outcome=DecisionOutcome(status="invalid"),
+                provider_identity=resp_provider,
+                model_identity=resp_model,
+            )
+
+        confidence_val = res.get("confidence")
+        confidence = float(confidence_val) if isinstance(confidence_val, (int, float)) else None
+
+        probabilities_val = res.get("probabilities")
+        probabilities: Optional[Dict[str, float]] = None
+        if isinstance(probabilities_val, dict):
+            probabilities = {
+                str(k): float(v)
+                for k, v in probabilities_val.items()
+                if isinstance(v, (int, float))
+            }
+
         return ProviderObservation(
-            outcome=DecisionOutcome(status="abstain"),
-            provider_identity=self.provider_identity,
-            model_identity=self.model_identity,
-            confidence=0.0,
+            outcome=DecisionOutcome(status="decided", kind="choice", value=str(selected)),
+            provider_identity=resp_provider,
+            model_identity=resp_model,
+            confidence=confidence,
+            probabilities=probabilities,
         )
 
 
