@@ -4,9 +4,9 @@
 
 | Role | Source | Frozen revision | Authority |
 | --- | --- | --- | --- |
-| Canonical behavior | `cursor/plugins/pstack` | `88d47514b82e7c44f00f2b2a72ff6dd12158038c` (0.15.29) | Canonical **target to classify**, not yet applied |
-| Applied canonical pin | `tommy-ca/pstack/UPSTREAM` | `1dcc2bacde73ddd284803b7af28164d0436198fc` (0.15.21) | Last applied/published truth |
-| Target | `tommy-ca/pstack` | `e4b75980c7b4499ee64c833e5a4d5de592ccf728` | Existing port implementation |
+| Canonical behavior | `cursor/plugins/pstack` | `88d47514b82e7c44f00f2b2a72ff6dd12158038c` (0.15.29) | Canonical normative source of truth |
+| Applied canonical pin | `tommy-ca/pstack/UPSTREAM` | `88d47514b82e7c44f00f2b2a72ff6dd12158038c` (0.15.29-grokbuild.0) | Promoted and verified in #629 / #642; program #622 closed via #630 / #643 |
+| Target | `tommy-ca/pstack` | `329acf2` | Existing six-host port implementation on main |
 | Reference port | `michael-denyer/pstack-claude` | `88f6d39f228c4f9210d93bbf7e5e40a5c671fd5e` (0.9.95) | Candidate design/test pattern, not normative |
 | Previous reference audit | reference port | `94f5ce95abe8a9dec976967d79941f631cf477cd` | Comparator diff base |
 

@@ -1,6 +1,6 @@
 ## Why
 
-Program #429 closed the initial harness-neutral role/model and pstack-claude parity effort. Since its comparator snapshot (`94f5ce95`), `michael-denyer/pstack-claude` advanced 16 commits to `88f6d39f` (0.9.95). Target `tommy-ca/pstack` remains six-host oriented and currently applies Cursor pstack 0.15.21, while canonical Cursor main is now 0.15.29. These are **two independent upstream and comparator deltas**; merging them into a single sync claim would hide different authorities and proof requirements.
+Program #429 closed the initial harness-neutral role/model and pstack-claude parity effort. Since its comparator snapshot (`94f5ce95`), `michael-denyer/pstack-claude` advanced 16 commits to `88f6d39f` (0.9.95). Target `tommy-ca/pstack` completed canonical 0.15.29 pin synchronization under Program #622 (closed via #630/#643 on main `329acf2`), while maintaining six native host targets (Grok, Codex, OMP, OpenCode, Antigravity, Droid). The comparator pstack-claude delta remains an independent cross-port delta requiring source-pinned classification and negative-test validation without creating runtime forks.
 
 ## What Changes
 

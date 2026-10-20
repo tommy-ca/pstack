@@ -4,9 +4,9 @@
 
 ## Pinned heads
 
-- Target: `tommy-ca/pstack@e4b75980c7b4499ee64c833e5a4d5de592ccf728` (declares six native targets: Grok, Codex, OMP, OpenCode, Antigravity, Droid).
+- Target: `tommy-ca/pstack@329acf2` (declares six native targets: Grok, Codex, OMP, OpenCode, Antigravity, Droid; canonical 0.15.29 pin `88d47514b82e7c44f00f2b2a72ff6dd12158038c` applied and verified via completed program #622).
 - Reference: `michael-denyer/pstack-claude@88f6d39f228c4f9210d93bbf7e5e40a5c671fd5e`, plugin 0.9.95; old reference audit used `94f5ce95abe8a9dec976967d79941f631cf477cd`.
-- Canonical HEAD: `cursor/plugins@88d47514b82e7c44f00f2b2a72ff6dd12158038c`, pstack 0.15.29. **Applied** target pin remains `1dcc2bacde73ddd284803b7af28164d0436198fc` (0.15.21). Follow #622 for actual canonical refresh.
+- Canonical HEAD: `cursor/plugins@88d47514b82e7c44f00f2b2a72ff6dd12158038c`, pstack 0.15.29. Applied target pin promoted to `88d47514...` (0.15.29-grokbuild.0) in #629 / #642; program #622 closed via #630 / #643.
 - Structural skill census `skills/*/SKILL.md`: target **63**, reference **65**, canonical **56** (names only; not a quality score). Target-only relative to canonical includes integrated team-kit leaves, and canonical-only `make-bot-ui`; reference also has `thermos` and `thermo-nuclear-review`.
 
 ## Comparator provenance and changed evidence
