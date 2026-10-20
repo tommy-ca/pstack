@@ -43,7 +43,7 @@ python3 scripts/canonical-index.py --check
 python3 -m pytest -q tests/test_skill_frontmatter.py tests/test_canonical_index.py tests/test_project_package.py
 ```
 
-Check that all four files have the correct frontmatter `name`, appear under shared `skills/`, and contain no literal Cursor Task/AskQuestion or model-role bindings. Build the additional test/proof slices in their respective issues. **No CI or runtime proof is claimed in this document.**
+Check that all four files have the correct frontmatter `name`, appear under shared `skills/`, and contain no literal Cursor task/ask-user primitives or model-role bindings. Build the additional test/proof slices in their respective issues. **No CI or runtime proof is claimed in this document.**
 
 ## Graph
 
