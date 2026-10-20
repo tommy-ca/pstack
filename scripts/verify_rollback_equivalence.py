@@ -83,7 +83,7 @@ def verify_scenario_gate_off(
         q = f["query"]
         base = resolve_skill_order(profile, q, root)
         t0 = time.perf_counter()
-        shadow = resolve_skill_order_with_shadow(profile, q, root, provider=provider, mode="shadow")
+        shadow = resolve_skill_order_with_shadow(profile, q, root, provider=provider, mode="shadow", safe_summary=q)
         lat_ms = (time.perf_counter() - t0) * 1000.0
         latencies.append(lat_ms)
 
@@ -121,7 +121,7 @@ def verify_scenario_provider_unavailable(
         q = f["query"]
         base = resolve_skill_order(profile, q, root)
         t0 = time.perf_counter()
-        shadow = resolve_skill_order_with_shadow(profile, q, root, provider=failing_provider, mode="advisory")
+        shadow = resolve_skill_order_with_shadow(profile, q, root, provider=failing_provider, mode="advisory", safe_summary=q)
         lat_ms = (time.perf_counter() - t0) * 1000.0
         latencies.append(lat_ms)
 
@@ -159,7 +159,7 @@ def verify_scenario_provider_timeout(
         q = f["query"]
         base = resolve_skill_order(profile, q, root)
         t0 = time.perf_counter()
-        shadow = resolve_skill_order_with_shadow(profile, q, root, provider=timeout_provider, mode="advisory")
+        shadow = resolve_skill_order_with_shadow(profile, q, root, provider=timeout_provider, mode="advisory", safe_summary=q)
         lat_ms = (time.perf_counter() - t0) * 1000.0
         latencies.append(lat_ms)
 
@@ -202,7 +202,7 @@ def verify_scenario_malformed_result(
         q = f["query"]
         base = resolve_skill_order(profile, q, root)
         t0 = time.perf_counter()
-        shadow = resolve_skill_order_with_shadow(profile, q, root, provider=provider, mode="advisory")
+        shadow = resolve_skill_order_with_shadow(profile, q, root, provider=provider, mode="advisory", safe_summary=q)
         lat_ms = (time.perf_counter() - t0) * 1000.0
         latencies.append(lat_ms)
 
@@ -246,7 +246,7 @@ def verify_scenario_abstention(
         q = f["query"]
         base = resolve_skill_order(profile, q, root)
         t0 = time.perf_counter()
-        shadow = resolve_skill_order_with_shadow(profile, q, root, provider=provider, mode="advisory")
+        shadow = resolve_skill_order_with_shadow(profile, q, root, provider=provider, mode="advisory", safe_summary=q)
         lat_ms = (time.perf_counter() - t0) * 1000.0
         latencies.append(lat_ms)
 
@@ -290,7 +290,7 @@ def verify_scenario_below_threshold(
         q = f["query"]
         base = resolve_skill_order(profile, q, root)
         t0 = time.perf_counter()
-        shadow = resolve_skill_order_with_shadow(profile, q, root, provider=provider, mode="advisory")
+        shadow = resolve_skill_order_with_shadow(profile, q, root, provider=provider, mode="advisory", safe_summary=q)
         lat_ms = (time.perf_counter() - t0) * 1000.0
         latencies.append(lat_ms)
 
@@ -338,7 +338,7 @@ def verify_scenario_stale_evidence(
             q = f["query"]
             base = resolve_skill_order(profile, q, root)
             t0 = time.perf_counter()
-            shadow = resolve_skill_order_with_shadow(profile, q, root, provider=provider, mode="advisory")
+            shadow = resolve_skill_order_with_shadow(profile, q, root, provider=provider, mode="advisory", safe_summary=q)
             lat_ms = (time.perf_counter() - t0) * 1000.0
             latencies.append(lat_ms)
 
@@ -405,7 +405,7 @@ def verify_scenario_receipt_failure(
             q = f["query"]
             base = resolve_skill_order(profile, q, root)
             t0 = time.perf_counter()
-            shadow = resolve_skill_order_with_shadow(profile, q, root, provider=provider, mode="advisory")
+            shadow = resolve_skill_order_with_shadow(profile, q, root, provider=provider, mode="advisory", safe_summary=q)
             lat_ms = (time.perf_counter() - t0) * 1000.0
             latencies.append(lat_ms)
 

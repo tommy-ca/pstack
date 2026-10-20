@@ -70,7 +70,7 @@ def evaluate_blinded_pair(
     # Run shadow Jev candidate
     provider = FakeDecisionProvider()
     res_shadow = resolve_skill_order_with_shadow(
-        profile, query, root, provider=provider, mode="shadow"
+        profile, query, root, provider=provider, mode="shadow", safe_summary=query
     )
     shadow_suggestion = (
         res_shadow.shadow_observation.outcome.value

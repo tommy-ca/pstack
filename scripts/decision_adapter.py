@@ -26,6 +26,7 @@ class EgressClass(str, Enum):
     LOCAL_ONLY = "local_only"
     SAFE_TO_SEND = "safe_to_send"
     DERIVED_SANITIZED = "derived_sanitized"
+    PUBLIC_BENCHMARK = "public_benchmark"
     PROHIBITED = "prohibited"
 
 

@@ -15,12 +15,13 @@ import re
 from dataclasses import dataclass, field
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set, Union
 
 from scripts.decision_adapter import (
     ChoiceOption,
     ChoiceRequest,
     EgressClass,
+    SafeContext,
     validate_and_create_safe_context,
 )
 from scripts.evidence_receipts import (
@@ -29,7 +30,6 @@ from scripts.evidence_receipts import (
 )
 
 _DROID_DEFINITION_ID = re.compile(r"^pstack-[a-z0-9-]+$")
-DEFAULT_ADVISORY_CONFIDENCE_THRESHOLD = 0.70
 
 # Class-specific confidence calibration thresholds per openspec/specs/pstack-jev-decisions/spec.md
 # Calibration is specific to class and consequence of error; universal thresholds are prohibited.
@@ -289,6 +289,7 @@ def resolve_skill_order_with_shadow(
     root: Path,
     provider: Optional[Any] = None,
     mode: Optional[str] = None,
+    safe_summary: Optional[Union[SafeContext, str]] = None,
 ) -> RouteResolution:
     """Resolve one skill_order row with shadow or advisory decision hook.
 
@@ -298,7 +299,7 @@ def resolve_skill_order_with_shadow(
     the acting route (zero behavior change).
     When mode is 'advisory', promotes provider recommendation ONLY when:
     - Target is a verified low-risk semantic candidate in references/decision-routing.json
-    - Provider outcome is decided with confidence >= 0.70
+    - Provider outcome meets class-specific confidence threshold and margin separation
     - Fresh evidence receipt check passes (no staleness, known provider/model)
     - Deterministic baseline route is not an explicit bypass command or System-Two gate.
     All exceptions, timeouts, and failures fail open safely to the baseline route.
@@ -312,6 +313,25 @@ def resolve_skill_order_with_shadow(
         effective_mode = str(effective_mode).strip().lower()
 
     if provider is None or effective_mode in ("none", "off", "0", "disabled"):
+        return baseline
+
+    # --- Early Bypass & Privacy Guards (P0: #658) ---
+    # 1. Explicit user commands (e.g. slash commands) are deterministic bypasses:
+    # return baseline immediately without constructing provider request or egressing data.
+    if query_str.strip().startswith("/"):
+        return baseline
+
+    # 2. Agent targets and direct slash targets from baseline match:
+    # return baseline immediately without provider construction.
+    if baseline.status == "matched":
+        raw_target = str(baseline.target or "").strip()
+        if raw_target.startswith("/") or baseline.kind in ("agent", "droid-definition"):
+            return baseline
+
+    # 3. Privacy / egress invariant: raw task queries must NEVER be transmitted to provider.
+    # A positively authorized, bounded public summary or benchmark context is required.
+    # Default absence -> fail open to baseline with zero provider call.
+    if not safe_summary:
         return baseline
 
     try:
@@ -330,6 +350,19 @@ def resolve_skill_order_with_shadow(
             elif sel in ("direct", "direct_command_bypass", "system_two"):
                 bypass_playbooks.add(pb)
 
+        # 4. If baseline matched a direct bypass or system_two playbook, return baseline
+        # before constructing provider request or making provider call.
+        if baseline.status == "matched":
+            raw_target = str(baseline.target or "").strip()
+            norm_target = (
+                raw_target.lstrip("/")
+                .replace("playbooks/", "")
+                .removesuffix(".md")
+                .strip()
+            )
+            if norm_target in bypass_playbooks:
+                return baseline
+
         candidates: List[ChoiceOption] = []
         for pb, r in semantic_candidates.items():
             label = str(r.get("class_label", pb)).strip()
@@ -339,8 +372,14 @@ def resolve_skill_order_with_shadow(
         if not candidates:
             return baseline
 
-        # Attempt to build safe context from query
-        safe_ctx = validate_and_create_safe_context(query_str, EgressClass.SAFE_TO_SEND)
+        # Attempt to build safe context from authorized safe_summary
+        if isinstance(safe_summary, SafeContext):
+            if safe_summary.egress_class in (EgressClass.LOCAL_ONLY, EgressClass.PROHIBITED):
+                return baseline
+            safe_ctx = safe_summary
+        else:
+            safe_ctx = validate_and_create_safe_context(str(safe_summary), EgressClass.SAFE_TO_SEND)
+
         req = ChoiceRequest(
             question_id="route_selection",
             context=safe_ctx,
@@ -353,32 +392,11 @@ def resolve_skill_order_with_shadow(
             return baseline
 
         # --- Advisory Promotion Policy Gate ---
-        # 1. Explicit user commands (e.g. slash commands) cannot be promoted by advisory provider
-        if query_str.strip().startswith("/"):
-            return baseline
-
-        # 2. Deterministic baseline safety invariant: explicit direct commands,
-        # system-two playbooks, and agent targets cannot be overridden.
-        if baseline.status == "matched":
-            raw_target = str(baseline.target or "").strip()
-            norm_target = (
-                raw_target.lstrip("/")
-                .replace("playbooks/", "")
-                .removesuffix(".md")
-                .strip()
-            )
-            if (
-                norm_target in bypass_playbooks
-                or raw_target.startswith("/")
-                or baseline.kind in ("agent", "droid-definition")
-            ):
-                return baseline
-
-        # 2. Provider judgment status
+        # 1. Provider judgment status
         if not obs.is_decided() or obs.outcome.kind != "choice":
             return baseline
 
-        # 3. Scope gate: proposed choice must be an eligible semantic candidate
+        # 2. Scope gate: proposed choice must be an eligible semantic candidate
         recommended_pb = str(obs.outcome.value).strip()
         if recommended_pb not in semantic_candidates:
             return baseline
@@ -389,19 +407,22 @@ def resolve_skill_order_with_shadow(
             # Uncalibrated or unknown class cannot be promoted
             return baseline
 
-        # 4. Class-specific confidence calibration threshold
+        # 3. Class-specific confidence calibration threshold
         required_threshold = CLASS_CONFIDENCE_THRESHOLDS[candidate_class]
         confidence = obs.confidence if obs.confidence is not None else 0.0
         if confidence < required_threshold:
             return baseline
 
-        # 5. Margin check: require margin >= 0.10 if multiple probabilities present
+        # 4. Margin check: require winner matches top choice with margin >= 0.10
         if obs.probabilities and len(obs.probabilities) > 1:
             sorted_probs = sorted(obs.probabilities.values(), reverse=True)
+            winner_prob = obs.probabilities.get(recommended_pb)
+            if winner_prob is None or winner_prob != sorted_probs[0]:
+                return baseline
             if sorted_probs[0] - sorted_probs[1] < 0.10:
                 return baseline
 
-        # 6. Mechanical staleness gate: verify evidence receipt freshness
+        # 5. Mechanical staleness gate: verify evidence receipt freshness
         if obs.provider_identity in ("unknown", "none", "") or obs.model_identity in ("unknown", "none", ""):
             return baseline
 

@@ -58,7 +58,7 @@ class TestAdvisoryPromotionPolicy:
         provider = FakeDecisionProvider(canned_observation=obs)
 
         res = resolve_skill_order_with_shadow(
-            grok_profile, query, ROOT, provider=provider, mode="advisory"
+            grok_profile, query, ROOT, provider=provider, mode="advisory", safe_summary=query
         )
 
         assert res.status == "matched"
@@ -83,7 +83,7 @@ class TestAdvisoryPromotionPolicy:
         provider = FakeDecisionProvider(canned_observation=obs)
 
         res = resolve_skill_order_with_shadow(
-            grok_profile, query, ROOT, provider=provider, mode="advisory"
+            grok_profile, query, ROOT, provider=provider, mode="advisory", safe_summary=query
         )
 
         assert res.status == baseline.status
@@ -109,7 +109,7 @@ class TestAdvisoryPromotionPolicy:
         provider = FakeDecisionProvider(canned_observation=obs)
 
         res = resolve_skill_order_with_shadow(
-            grok_profile, query, ROOT, provider=provider, mode="advisory"
+            grok_profile, query, ROOT, provider=provider, mode="advisory", safe_summary=query
         )
 
         # Baseline explicit command MUST be preserved
@@ -134,7 +134,7 @@ class TestAdvisoryPromotionPolicy:
         provider = FakeDecisionProvider(canned_observation=obs)
 
         res = resolve_skill_order_with_shadow(
-            grok_profile, query, ROOT, provider=provider, mode="advisory"
+            grok_profile, query, ROOT, provider=provider, mode="advisory", safe_summary=query
         )
 
         assert res.status == baseline.status
@@ -154,7 +154,7 @@ class TestAdvisoryPromotionPolicy:
         provider = FakeDecisionProvider(canned_observation=obs)
 
         res = resolve_skill_order_with_shadow(
-            grok_profile, query, ROOT, provider=provider, mode="advisory"
+            grok_profile, query, ROOT, provider=provider, mode="advisory", safe_summary=query
         )
 
         assert res.status == baseline.status
@@ -177,7 +177,7 @@ class TestAdvisoryPromotionPolicy:
         provider = FakeDecisionProvider(canned_observation=obs)
 
         res = resolve_skill_order_with_shadow(
-            grok_profile, query, ROOT, provider=provider, mode="advisory"
+            grok_profile, query, ROOT, provider=provider, mode="advisory", safe_summary=query
         )
 
         assert res.status == baseline.status
@@ -199,7 +199,7 @@ class TestAdvisoryPromotionPolicy:
         provider = FakeDecisionProvider(canned_observation=obs)
 
         res = resolve_skill_order_with_shadow(
-            grok_profile, query, ROOT, provider=provider, mode="advisory"
+            grok_profile, query, ROOT, provider=provider, mode="advisory", safe_summary=query
         )
 
         assert res.status == baseline.status
@@ -220,20 +220,20 @@ class TestAdvisoryPromotionPolicy:
 
         # 1. Mode none: provider not called, baseline returned
         monkeypatch.setenv("PSTACK_JEV_MODE", "none")
-        res_none = resolve_skill_order_with_shadow(grok_profile, query, ROOT, provider=provider)
+        res_none = resolve_skill_order_with_shadow(grok_profile, query, ROOT, provider=provider, safe_summary=query)
         assert res_none.advisory_promoted is False
         assert res_none.shadow_observation is None
 
         # 2. Mode shadow: observation captured, no promotion
         monkeypatch.setenv("PSTACK_JEV_MODE", "shadow")
-        res_shadow = resolve_skill_order_with_shadow(grok_profile, query, ROOT, provider=provider)
+        res_shadow = resolve_skill_order_with_shadow(grok_profile, query, ROOT, provider=provider, safe_summary=query)
         assert res_shadow.advisory_promoted is False
         assert res_shadow.shadow_observation is not None
         assert res_shadow.status == "unmatched"
 
         # 3. Mode advisory: promoted
         monkeypatch.setenv("PSTACK_JEV_MODE", "advisory")
-        res_advisory = resolve_skill_order_with_shadow(grok_profile, query, ROOT, provider=provider)
+        res_advisory = resolve_skill_order_with_shadow(grok_profile, query, ROOT, provider=provider, safe_summary=query)
         assert res_advisory.advisory_promoted is True
         assert res_advisory.target == "bug-fix"
         assert res_advisory.status == "matched"
@@ -267,7 +267,7 @@ class TestAdvisoryPromotionPolicy:
         provider = FakeDecisionProvider(canned_observation=obs)
 
         res = resolve_skill_order_with_shadow(
-            grok_profile, query, ROOT, provider=provider, mode="advisory"
+            grok_profile, query, ROOT, provider=provider, mode="advisory", safe_summary=query
         )
 
         assert res.status == baseline.status
@@ -290,7 +290,7 @@ class TestAdvisoryPromotionPolicy:
         provider = FakeDecisionProvider(canned_observation=obs)
 
         res = resolve_skill_order_with_shadow(
-            grok_profile, query, ROOT, provider=provider, mode="advisory"
+            grok_profile, query, ROOT, provider=provider, mode="advisory", safe_summary=query
         )
 
         assert res.status == baseline.status

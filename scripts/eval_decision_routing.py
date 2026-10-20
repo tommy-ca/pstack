@@ -107,7 +107,7 @@ def run_evaluation(
 
         start_time = time.perf_counter()
         res = resolve_skill_order_with_shadow(
-            profile, query, root, provider=provider, mode="shadow"
+            profile, query, root, provider=provider, mode="shadow", safe_summary=query
         )
         elapsed_ms = (time.perf_counter() - start_time) * 1000.0
         latencies_ms.append(elapsed_ms)
