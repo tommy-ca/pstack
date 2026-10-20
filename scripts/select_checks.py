@@ -165,7 +165,16 @@ CHECK_SELECTION_TABLE: List[CheckRule] = [
         ("tests/test_verify_portable.py", "tests/test_verdict_reduction.py"),
         (),
     ),
-    ("scripts/verify-harness.py", ("tests/test_verify_harness.py",), ()),
+    (
+        "scripts/verify-harness.py",
+        (
+            "tests/test_verify_harness.py",
+            "tests/test_verify_harness_archive.py",
+            "tests/test_verify_harness_guides.py",
+            "tests/test_verify_harness_playbooks.py",
+        ),
+        (),
+    ),
     ("scripts/verify-decision-contract.py", ("tests/test_verify_decision_contract.py",), ()),
     ("scripts/verify_rollback_equivalence.py", ("tests/test_rollback_equivalence.py",), ()),
     ("scripts/scan-host-boundary.py", ("tests/test_scan_host_boundary.py",), ()),
@@ -204,7 +213,12 @@ CHECK_SELECTION_TABLE: List[CheckRule] = [
     ),
     (
         "scripts/evidence_durability.py",
-        ("tests/test_evidence_durability.py", "tests/test_evidence_settlement.py", "tests/test_portability_schemas.py"),
+        (
+            "tests/test_evidence_durability.py",
+            "tests/test_evidence_index_resilience.py",
+            "tests/test_evidence_settlement.py",
+            "tests/test_portability_schemas.py",
+        ),
         (),
     ),
     (
@@ -219,7 +233,11 @@ CHECK_SELECTION_TABLE: List[CheckRule] = [
     ),
     (
         "scripts/evidence_index.py",
-        ("tests/test_evidence_durability.py", "tests/test_verify_portable.py"),
+        (
+            "tests/test_evidence_durability.py",
+            "tests/test_evidence_index_resilience.py",
+            "tests/test_verify_portable.py",
+        ),
         (),
     ),
     (
