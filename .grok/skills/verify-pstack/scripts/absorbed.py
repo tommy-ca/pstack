@@ -12,7 +12,7 @@ from pathlib import Path
 PIN_RE = re.compile(r"^tree ([0-9a-f]{40})$", re.M)
 
 PRESENT = (
-    ("docs/guide/07-overnight.md", "starts a round at the owner"),
+    ("docs/guide/07-overnight.md", "checks the owner's code-ready head"),
     ("docs/guide/07-overnight.md", "scheduler_create"),
     ("docs/guide/07-overnight.md", "pstack:comment-sicko"),
     ("skills/show-me-your-work/scripts/log.sh", '[ ! -s "$logfile" ]'),

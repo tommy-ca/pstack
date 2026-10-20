@@ -68,7 +68,7 @@ def test_missing_overnight_sentence_fails(tmp_path: Path) -> None:
     overnight = root / "docs/guide/07-overnight.md"
     overnight.write_text(
         overnight.read_text(encoding="utf-8").replace(
-            "starts a round at the owner", "checks every merge-ready head"
+            "checks the owner's code-ready head", "checks every merge-ready head"
         ),
         encoding="utf-8",
     )
@@ -76,7 +76,7 @@ def test_missing_overnight_sentence_fails(tmp_path: Path) -> None:
     commits.write_text("", encoding="utf-8")
     proc = _run(root, ["--commits-file", str(commits)])
     assert proc.returncode != 0
-    assert "missing docs/guide/07-overnight.md: starts a round at the owner" in proc.stdout
+    assert "missing docs/guide/07-overnight.md: checks the owner's code-ready head" in proc.stdout
     assert "pstack commits after pin" not in proc.stdout
 
 
