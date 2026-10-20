@@ -63,6 +63,8 @@ Two steps.
 
 New here? The [pstack guide](./docs/guide/README.md) walks through a first real task, from setup and prompting through verification and overnight runs.
 
+For the **current harness adapter schemas, native support/evidence status, model-role planning, and optional JEV decision integration**, see the [2026-10-20 implementation map](./docs/architecture/harness-adapters-and-jev-2026-10-20.md). It distinguishes source/fixture validation from actual observed host execution and tracks remaining privacy/promotion gates.
+
 The other skills are situational. The mode skill uses them when a step needs them.
 
 ## Defaults
