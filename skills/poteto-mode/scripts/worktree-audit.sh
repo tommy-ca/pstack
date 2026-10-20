@@ -131,7 +131,8 @@ emit_row() {
 	fi
 
 	# Distinguish real WIP (tracked edits) from disposable untracked scratch.
-	porcelain=$(git -C "$wt" status --porcelain 2>/dev/null)
+	# Pass -uall so repository status.showUntrackedFiles=no cannot hide user data.
+	porcelain=$(git -C "$wt" status --porcelain -uall 2>/dev/null)
 	if [ -z "$porcelain" ]; then dirty=clean
 	elif printf '%s\n' "$porcelain" | grep -qv '^??'; then
 		dirty="wip:$(printf '%s\n' "$porcelain" | grep -cv '^??')"

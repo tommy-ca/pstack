@@ -228,4 +228,34 @@ describe("worktree-audit", () => {
     }
   });
 
+  it("detects untracked files and classifies as scratch even when status.showUntrackedFiles=no is configured", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "worktree-audit-hidden-"));
+    try {
+      const repo = join(directory, "repo");
+      await mkdir(repo);
+      git(repo, ["init", "--initial-branch=main"]);
+      git(repo, ["config", "user.name", "Audit Test"]);
+      git(repo, ["config", "user.email", "audit@example.com"]);
+      await writeFile(join(repo, "main.txt"), "main\n");
+      git(repo, ["add", "."]);
+      git(repo, ["commit", "-m", "main"]);
+
+      const worktree = join(directory, "hidden-scratch");
+      git(repo, ["worktree", "add", "-b", "hidden-scratch", worktree]);
+      git(worktree, ["config", "status.showUntrackedFiles", "no"]);
+      await writeFile(join(worktree, "untracked.txt"), "should not be hidden\n");
+
+      const result = Bun.spawnSync(["bash", SCRIPT, repo]);
+      expect(result.exitCode).toBe(0);
+      const lines = result.stdout.toString().trim().split("\n");
+      const row = lines.find((line) => line.endsWith(`\t${worktree}`));
+      expect(row).toBeDefined();
+      const fields = row?.split("\t") ?? [];
+      expect(fields[3]).toBe("scratch:1");
+      expect(fields[7]).toBe("hold-untracked");
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
 });
