@@ -144,7 +144,7 @@ describe("worktree-audit", () => {
       expect(row).toBeDefined();
       const fields = row?.split("\t") ?? [];
       expect(fields[2]).toBe("unknown");
-      expect(fields[5]).toBe("#123/CLOSED");
+      expect(fields[5].toLowerCase()).toBe("#123/closed");
       expect(fields[7]).toBe("hold-closed-unmerged");
     } finally {
       await rm(directory, { recursive: true, force: true });

@@ -67,10 +67,19 @@ else
 fi
 base_ref="$base"
 
-# PR state by branch, fetched once. Empty if gh is unavailable.
+# PR state by branch, fetched once as [{number, state, head}] with a lowercase
+# state. Origin when its CLI can read this repo's PRs, otherwise gh. Empty when
+# neither can.
 prs=$(mktemp)
-gh pr list --author "@me" --state all --limit 1000 \
-	--json number,state,headRefName 2>/dev/null > "$prs" || echo "[]" > "$prs"
+if command -v origin >/dev/null 2>&1 \
+	&& raw=$(origin pr list --author "@me" --state all --limit 1000 \
+		--json number,status,headRef 2>/dev/null); then
+	printf '%s' "$raw" | jq '[.[] | {number, state: .status, head: .headRef}]' > "$prs" 2>/dev/null
+elif raw=$(gh pr list --author "@me" --state all --limit 1000 \
+	--json number,state,headRefName 2>/dev/null); then
+	printf '%s' "$raw" | jq '[.[] | {number, state: (.state | ascii_downcase), head: .headRefName}]' > "$prs" 2>/dev/null
+fi
+[ -s "$prs" ] || echo "[]" > "$prs"
 
 transcripts="${PSTACK_TRANSCRIPTS_DIR:-}"
 if [ -z "$transcripts" ]; then
@@ -139,7 +148,7 @@ emit_row() {
 	else remote=no-remote; fi
 
 	pr=$([ -n "$branch" ] && jq -r --arg b "$branch" \
-		'.[] | select(.headRefName==$b) | "#\(.number)/\(.state)"' "$prs" 2>/dev/null | head -1)
+		'.[] | select(.head==$b) | "#\(.number)/\(.state)"' "$prs" 2>/dev/null | head -1)
 	[ -z "$pr" ] && pr="-"
 
 	# Most recent chat whose transcript operated in this worktree. Match path
@@ -173,14 +182,14 @@ emit_row() {
 			scratch:*) bucket=hold-untracked ;;
 			*)
 				case "$pr" in
-					*OPEN*) bucket=hold-open-pr ;;
-					*CLOSED*) bucket=hold-closed-unmerged ;;
+					*/open|*/draft|*OPEN*) bucket=hold-open-pr ;;
+					*/closed|*CLOSED*) bucket=hold-closed-unmerged ;;
 					*)
 						case "$remote" in
 							ahead*|no-remote|detached) bucket=hold-unpushed ;;
 							*)
 								if [ "$recent" = yes ]; then bucket=verify-recent-chat
-								elif [ "$merged" = YES ] || [ "${pr##*/}" = MERGED ]; then bucket=safe
+								elif [ "$merged" = YES ] || [ "${pr##*/}" = MERGED ] || [ "${pr##*/}" = merged ]; then bucket=safe
 								else bucket=review; fi
 								;;
 						esac
