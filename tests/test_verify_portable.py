@@ -356,6 +356,47 @@ def test_active_changes_empty_list_parses_to_noop(monkeypatch: pytest.MonkeyPatc
     assert verify_portable.validate_openspec_change(None) == 0
 
 
+def test_active_changes_all_complete_parses_to_none_noop(monkeypatch: pytest.MonkeyPatch) -> None:
+    import json as _json
+    completed_payload = {
+        "changes": [
+            {"name": "change-1", "status": "complete", "completedTasks": 5, "totalTasks": 5},
+            {"name": "change-2", "status": "complete", "completedTasks": 3, "totalTasks": 3},
+        ],
+        "root": {},
+    }
+    monkeypatch.setattr(
+        verify_portable.subprocess, "run",
+        lambda *a, **k: subprocess.CompletedProcess(a, 0, _json.dumps(completed_payload), ""),
+    )
+    assert verify_portable._active_openspec_changes() == []
+    resolution = verify_portable.resolve_openspec_change(None)
+    assert resolution.state == "none"
+    assert resolution.name is None
+    assert resolution.names == []
+    assert verify_portable.validate_openspec_change(None) == 0
+
+
+def test_active_changes_filters_out_completed_when_in_progress_exists(monkeypatch: pytest.MonkeyPatch) -> None:
+    import json as _json
+    mixed_payload = {
+        "changes": [
+            {"name": "change-complete", "status": "complete"},
+            {"name": "change-active", "status": "in-progress"},
+        ],
+        "root": {},
+    }
+    monkeypatch.setattr(
+        verify_portable.subprocess, "run",
+        lambda *a, **k: subprocess.CompletedProcess(a, 0, _json.dumps(mixed_payload), ""),
+    )
+    assert verify_portable._active_openspec_changes() == ["change-active"]
+    resolution = verify_portable.resolve_openspec_change(None)
+    assert resolution.state == "active"
+    assert resolution.name == "change-active"
+    assert resolution.names == []
+
+
 def test_verify_portable_modular_decomposition_and_backwards_compatibility() -> None:
     vp_path = ROOT / "scripts" / "verify-portable.py"
     sc_path = ROOT / "scripts" / "select_checks.py"
