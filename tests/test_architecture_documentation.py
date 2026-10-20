@@ -84,5 +84,5 @@ def test_jev_implementation_caveats_remain_explicit() -> None:
     assert "Choice-only" in doc
     # Every current high-risk JEV caveat must have an owner, rather than appearing
     # to be solved by this documentation change or by a historical closed issue.
-    for issue in ("#658", "#659", "#660", "#663"):
+    for issue in ("#658", "#659", "#660", "#663", "#664"):
         assert issue in doc
