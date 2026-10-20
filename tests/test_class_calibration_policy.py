@@ -81,7 +81,7 @@ class TestClassConfidenceCalibration:
         provider = FakeDecisionProvider(canned_observation=obs)
 
         res = resolve_skill_order_with_shadow(
-            grok_profile, query, ROOT, provider=provider, mode="advisory"
+            grok_profile, query, ROOT, provider=provider, mode="advisory", safe_summary=query
         )
 
         # MUST NOT be promoted
@@ -105,7 +105,7 @@ class TestClassConfidenceCalibration:
         provider = FakeDecisionProvider(canned_observation=obs)
 
         res = resolve_skill_order_with_shadow(
-            grok_profile, query, ROOT, provider=provider, mode="advisory"
+            grok_profile, query, ROOT, provider=provider, mode="advisory", safe_summary=query
         )
 
         assert res.status == "matched"
@@ -128,7 +128,7 @@ class TestClassConfidenceCalibration:
         )
         provider_below = FakeDecisionProvider(canned_observation=obs_below)
         res_below = resolve_skill_order_with_shadow(
-            grok_profile, query, ROOT, provider=provider_below, mode="advisory"
+            grok_profile, query, ROOT, provider=provider_below, mode="advisory", safe_summary=query
         )
         assert res_below.advisory_promoted is False
 
@@ -141,7 +141,7 @@ class TestClassConfidenceCalibration:
         )
         provider_above = FakeDecisionProvider(canned_observation=obs_above)
         res_above = resolve_skill_order_with_shadow(
-            grok_profile, query, ROOT, provider=provider_above, mode="advisory"
+            grok_profile, query, ROOT, provider=provider_above, mode="advisory", safe_summary=query
         )
         assert res_above.advisory_promoted is True
         assert res_above.target == "investigation"
@@ -164,7 +164,7 @@ class TestClassConfidenceCalibration:
         provider_thin = FakeDecisionProvider(canned_observation=obs_thin)
 
         res_thin = resolve_skill_order_with_shadow(
-            grok_profile, query, ROOT, provider=provider_thin, mode="advisory"
+            grok_profile, query, ROOT, provider=provider_thin, mode="advisory", safe_summary=query
         )
         assert res_thin.advisory_promoted is False
 
@@ -179,7 +179,7 @@ class TestClassConfidenceCalibration:
         provider_healthy = FakeDecisionProvider(canned_observation=obs_healthy)
 
         res_healthy = resolve_skill_order_with_shadow(
-            grok_profile, query, ROOT, provider=provider_healthy, mode="advisory"
+            grok_profile, query, ROOT, provider=provider_healthy, mode="advisory", safe_summary=query
         )
         assert res_healthy.advisory_promoted is True
         assert res_healthy.target == "bug-fix"

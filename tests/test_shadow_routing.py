@@ -55,10 +55,11 @@ class TestShadowRoutingInvariants:
         assert shadow_res.shadow_observation is None
 
     def test_baseline_identical_when_provider_disagrees(self, grok_profile: dict) -> None:
-        query = "/tdd"
+        # Non-bypass query with authorized safe_summary
+        query = "Sort invoices by descending date order"
         baseline = resolve_skill_order(grok_profile, query, ROOT)
 
-        # Provider claims "feature" instead of "tdd"
+        # Provider claims "feature"
         fake_obs = ProviderObservation(
             outcome=DecisionOutcome(status="decided", kind="choice", value="feature"),
             provider_identity="fake-provider",
@@ -67,7 +68,9 @@ class TestShadowRoutingInvariants:
         )
         provider = FakeDecisionProvider(canned_observation=fake_obs)
 
-        shadow_res = resolve_skill_order_with_shadow(grok_profile, query, ROOT, provider=provider)
+        shadow_res = resolve_skill_order_with_shadow(
+            grok_profile, query, ROOT, provider=provider, safe_summary=query
+        )
 
         # Acting route remains the baseline route
         assert shadow_res.status == baseline.status
@@ -78,6 +81,14 @@ class TestShadowRoutingInvariants:
         # Shadow observation is captured separately
         assert shadow_res.shadow_observation is not None
         assert shadow_res.shadow_observation.outcome.value == "feature"
+
+        # Explicit slash command bypasses provider completely
+        slash_res = resolve_skill_order_with_shadow(
+            grok_profile, "/tdd", ROOT, provider=provider, safe_summary="/tdd"
+        )
+        assert slash_res.status == "matched"
+        assert slash_res.target == "/tdd"
+        assert slash_res.shadow_observation is None
 
     def test_provider_exception_fails_open_silently(self, grok_profile: dict) -> None:
         query = "/tdd"
@@ -97,7 +108,9 @@ class TestShadowRoutingInvariants:
         baseline = resolve_skill_order(grok_profile, query, ROOT)
 
         adapter = JevDecisionAdapter(enabled=False)
-        shadow_res = resolve_skill_order_with_shadow(grok_profile, query, ROOT, provider=adapter)
+        shadow_res = resolve_skill_order_with_shadow(
+            grok_profile, query, ROOT, provider=adapter, safe_summary=query
+        )
 
         assert shadow_res.status == baseline.status
         assert shadow_res.target == baseline.target
