@@ -586,3 +586,40 @@ def test_print_coverage_uses_classified_comments_not_refresh_range(
     )
     captured = capsys.readouterr()
     assert captured.out == "coverage ok\n"
+
+
+def test_partition_print_coverage_cli_fails_closed_on_unclassified_entry(
+    tmp_path: Path,
+) -> None:
+    mod = load_partition()
+    cache = tmp_path / "cache"
+    pin_sha, tip_sha = _init_cache_with_origin_main(cache)
+    table_path = tmp_path / "table_with_unclassified.tsv"
+    write_table(
+        table_path,
+        f"# pin={pin_sha}\n"
+        f"# tip={tip_sha}\n"
+        "path\tchange\tbucket\tnote\n"
+        "skills/how/SKILL.md\tM\tunclassified\tneeds review\n"
+        "skills/x.md\tM\tport\tkeep\n"
+        "skills/brand.md\tA\tport\tkeep\n",
+    )
+    proc = subprocess.run(
+        [
+            sys.executable,
+            str(SCRIPT),
+            "print",
+            "--coverage",
+            "--cache",
+            str(cache),
+            "--table",
+            str(table_path),
+        ],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert proc.returncode == 2
+    assert "unclassified: skills/how/SKILL.md" in proc.stderr
+
