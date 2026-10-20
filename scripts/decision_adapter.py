@@ -10,6 +10,7 @@ Shared pstack code does not import wire types or provider-specific SDKs.
 from __future__ import annotations
 
 import json
+import math
 import os
 import re
 import urllib.error
@@ -278,6 +279,7 @@ class JevDecisionAdapter(SemanticDecisionProvider):
         self.model_identity = model_identity
         self.timeout_seconds = timeout_seconds
         self._transport_fn = transport_fn
+        self.cumulative_spend_usd = 0.0
 
     @property
     def is_enabled(self) -> bool:
@@ -327,10 +329,22 @@ class JevDecisionAdapter(SemanticDecisionProvider):
                 confidence=0.0,
             )
 
-        # Paid consent guard
+        # Paid consent and budget guards (Issue #660)
         if self.profile.paid:
             allow_paid = os.environ.get("PSTACK_JEV_ALLOW_PAID", "").strip().lower()
             if allow_paid not in ("1", "true", "yes", "on"):
+                return ProviderObservation(
+                    outcome=DecisionOutcome(status="unavailable"),
+                    provider_identity=self.provider_identity,
+                    model_identity=self.model_identity,
+                )
+            if self.profile.max_spend_usd <= 0.0:
+                return ProviderObservation(
+                    outcome=DecisionOutcome(status="unavailable"),
+                    provider_identity=self.provider_identity,
+                    model_identity=self.model_identity,
+                )
+            if self.cumulative_spend_usd >= self.profile.max_spend_usd:
                 return ProviderObservation(
                     outcome=DecisionOutcome(status="unavailable"),
                     provider_identity=self.provider_identity,
@@ -348,16 +362,18 @@ class JevDecisionAdapter(SemanticDecisionProvider):
                 confidence=0.0,
             )
 
+        # Official System One wire format (Issue #664):
+        # questions is a mapping keyed by question ID with type, instructions, criteria
         payload: Dict[str, Any] = {
             "model": self.profile.configured_model,
             "state": request.context.content,
-            "questions": [
-                {
-                    "id": request.question_id,
+            "questions": {
+                request.question_id: {
                     "type": "choice",
-                    "options": [{"id": c.id, "label": c.label} for c in request.choices],
+                    "instructions": "Select the appropriate route candidate",
+                    "criteria": {c.id: c.label for c in request.choices},
                 }
-            ],
+            },
         }
 
         base = self.profile.api_root.rstrip("/")
@@ -382,7 +398,18 @@ class JevDecisionAdapter(SemanticDecisionProvider):
                     resp_bytes = resp.read()
                     resp_data = json.loads(resp_bytes.decode("utf-8"))
 
-            return self._parse_provider_response(request, resp_data)
+            parsed_obs = self._parse_provider_response(request, resp_data)
+            if self.profile.paid and parsed_obs.is_decided():
+                est_cost = 0.001
+                if isinstance(resp_data, dict):
+                    usage = resp_data.get("usage")
+                    if isinstance(usage, dict) and "cost_usd" in usage:
+                        try:
+                            est_cost = float(usage["cost_usd"])
+                        except (ValueError, TypeError):
+                            pass
+                self.cumulative_spend_usd += est_cost
+            return parsed_obs
         except urllib.error.HTTPError:
             return ProviderObservation(
                 outcome=DecisionOutcome(status="unavailable"),
@@ -413,50 +440,118 @@ class JevDecisionAdapter(SemanticDecisionProvider):
                 model_identity=self.model_identity,
             )
 
-        resp_model = str(data.get("model") or self.profile.configured_model)
-        resp_provider = str(data.get("provider") or self.profile.profile_id)
-
-        results = data.get("results")
-        if not isinstance(results, list) or not results:
+        resp_model = data.get("model")
+        resp_provider = data.get("provider")
+        # Require non-empty model and provider identity (Issue #660)
+        if not resp_model or not resp_provider or not str(resp_model).strip() or not str(resp_provider).strip():
             return ProviderObservation(
                 outcome=DecisionOutcome(status="invalid"),
-                provider_identity=resp_provider,
-                model_identity=resp_model,
+                provider_identity=str(resp_provider or "unknown"),
+                model_identity=str(resp_model or "unknown"),
             )
+        resp_model_str = str(resp_model).strip()
+        resp_provider_str = str(resp_provider).strip()
 
-        res = results[0]
-        if not isinstance(res, dict):
+        # Official System One answers format (Issue #664) with legacy results fallback
+        ans: Optional[Dict[str, Any]] = None
+        answers = data.get("answers")
+        if isinstance(answers, dict):
+            if request.question_id in answers and isinstance(answers[request.question_id], dict):
+                ans = answers[request.question_id]
+            else:
+                return ProviderObservation(
+                    outcome=DecisionOutcome(status="invalid"),
+                    provider_identity=resp_provider_str,
+                    model_identity=resp_model_str,
+                )
+        elif isinstance(data.get("results"), list) and data["results"]:
+            cand = data["results"][0]
+            if isinstance(cand, dict):
+                # Verify matching question id if present
+                if "id" in cand and cand["id"] != request.question_id:
+                    return ProviderObservation(
+                        outcome=DecisionOutcome(status="invalid"),
+                        provider_identity=resp_provider_str,
+                        model_identity=resp_model_str,
+                    )
+                ans = cand
+
+        if ans is None or not isinstance(ans, dict):
             return ProviderObservation(
                 outcome=DecisionOutcome(status="invalid"),
-                provider_identity=resp_provider,
-                model_identity=resp_model,
+                provider_identity=resp_provider_str,
+                model_identity=resp_model_str,
             )
 
-        selected = res.get("selected")
+        selected = ans.get("choice") or ans.get("selected")
         valid_choice_ids = {c.id for c in request.choices}
         if selected not in valid_choice_ids:
             return ProviderObservation(
                 outcome=DecisionOutcome(status="invalid"),
-                provider_identity=resp_provider,
-                model_identity=resp_model,
+                provider_identity=resp_provider_str,
+                model_identity=resp_model_str,
             )
 
-        confidence_val = res.get("confidence")
-        confidence = float(confidence_val) if isinstance(confidence_val, (int, float)) else None
+        # Validate finite [0, 1] confidence (Issue #660)
+        confidence_val = ans.get("confidence")
+        confidence: Optional[float] = None
+        if confidence_val is not None:
+            if isinstance(confidence_val, bool) or not isinstance(confidence_val, (int, float)):
+                return ProviderObservation(
+                    outcome=DecisionOutcome(status="invalid"),
+                    provider_identity=resp_provider_str,
+                    model_identity=resp_model_str,
+                )
+            c_float = float(confidence_val)
+            if not math.isfinite(c_float) or c_float < 0.0 or c_float > 1.0:
+                return ProviderObservation(
+                    outcome=DecisionOutcome(status="invalid"),
+                    provider_identity=resp_provider_str,
+                    model_identity=resp_model_str,
+                )
+            confidence = c_float
 
-        probabilities_val = res.get("probabilities")
+        # Validate finite [0, 1] probabilities dictionary (Issue #660)
+        probabilities_val = ans.get("probabilities")
         probabilities: Optional[Dict[str, float]] = None
-        if isinstance(probabilities_val, dict):
-            probabilities = {
-                str(k): float(v)
-                for k, v in probabilities_val.items()
-                if isinstance(v, (int, float))
-            }
+        if probabilities_val is not None:
+            if not isinstance(probabilities_val, dict):
+                return ProviderObservation(
+                    outcome=DecisionOutcome(status="invalid"),
+                    provider_identity=resp_provider_str,
+                    model_identity=resp_model_str,
+                )
+            probabilities = {}
+            for opt_id, p_val in probabilities_val.items():
+                if opt_id not in valid_choice_ids:
+                    return ProviderObservation(
+                        outcome=DecisionOutcome(status="invalid"),
+                        provider_identity=resp_provider_str,
+                        model_identity=resp_model_str,
+                    )
+                if isinstance(p_val, bool) or not isinstance(p_val, (int, float)):
+                    return ProviderObservation(
+                        outcome=DecisionOutcome(status="invalid"),
+                        provider_identity=resp_provider_str,
+                        model_identity=resp_model_str,
+                    )
+                p_float = float(p_val)
+                if not math.isfinite(p_float) or p_float < 0.0 or p_float > 1.0:
+                    return ProviderObservation(
+                        outcome=DecisionOutcome(status="invalid"),
+                        provider_identity=resp_provider_str,
+                        model_identity=resp_model_str,
+                    )
+                probabilities[opt_id] = p_float
 
         return ProviderObservation(
-            outcome=DecisionOutcome(status="decided", kind="choice", value=str(selected)),
-            provider_identity=resp_provider,
-            model_identity=resp_model,
+            outcome=DecisionOutcome(
+                status="decided",
+                kind="choice",
+                value=str(selected),
+            ),
+            provider_identity=resp_provider_str,
+            model_identity=resp_model_str,
             confidence=confidence,
             probabilities=probabilities,
         )
