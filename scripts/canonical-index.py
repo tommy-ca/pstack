@@ -236,6 +236,28 @@ DRIFT_FILE = ROOT / "openspec" / "canonical-drift.json"
 
 def classify_drift_entry(rel_path: str, status: str) -> Dict[str, Any]:
     """Partition upstream changes into Swarm buckets and assess portability impact."""
+    if rel_path in EXCLUSIONS or any(rel_path.startswith(k + "/") for k in EXCLUSIONS):
+        ex = EXCLUSIONS.get(rel_path) or next(v for k, v in EXCLUSIONS.items() if rel_path.startswith(k + "/"))
+        return {
+            "path": rel_path,
+            "status": status,
+            "bucket": "host_cursor" if "cursor" in ex["reason"].lower() else "verification_skills",
+            "mode": "exclude",
+            "note": ex["reason"],
+        }
+    if rel_path in (
+        "skills/create-formal-verification-skill/SKILL.md",
+        "skills/maintain-formal-verification-skill/SKILL.md",
+        "skills/in-your-own-words/SKILL.md",
+        "skills/sharpen/SKILL.md",
+    ):
+        return {
+            "path": rel_path,
+            "status": status,
+            "bucket": "verification_skills",
+            "mode": "preserve",
+            "note": "Source-identical host-neutral leaf skill",
+        }
     if rel_path.startswith(".cursor-plugin/") or rel_path == ".cursor-plugin":
         return {
             "path": rel_path,
@@ -399,6 +421,7 @@ def main() -> None:
     parser.add_argument("--check", action="store_true", help="Check canonical conformance and inventory")
     parser.add_argument("--drift", action="store_true", help="Report upstream drift status")
     parser.add_argument("--classify-drift", action="store_true", help="Generate canonical-drift.json partition classification (scope: upstream-pin-to-upstream-HEAD movement only, not local-checkout-vs-upstream drift)")
+    parser.add_argument("--target", help="Explicit target revision to compare against pin (defaults to upstream HEAD)")
     parser.add_argument("--out", type=Path, help="Write the drift report here instead of openspec/canonical-drift.json")
     parser.add_argument("--json", action="store_true", help="Output raw JSON")
     args = parser.parse_args()
@@ -416,7 +439,8 @@ def main() -> None:
         if cache is None:
             print("FAIL: Upstream cache not found for drift classification", file=sys.stderr)
             sys.exit(1)
-        report = classify_drift_report(cache, inventory["pin"], inventory["upstream_head"])
+        target_head = args.target if args.target else inventory["upstream_head"]
+        report = classify_drift_report(cache, inventory["pin"], target_head)
         out_file = args.out or DRIFT_FILE
         out_file.parent.mkdir(parents=True, exist_ok=True)
         out_file.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
