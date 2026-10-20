@@ -284,7 +284,7 @@ def source_tree_guard(source: Path | None = None) -> str:
             "whether the published content is committed. Pass --force to sync anyway."
         )
 
-    status = _git(source, "status", "--porcelain", "--", *SYNCED_PATHS)
+    status = _git(source, "status", "--porcelain", "-uall", "--", *SYNCED_PATHS)
     if status.returncode != 0:
         return (
             f"Refusing to sync: git status failed in {source}: {status.stderr.strip()}\n"
