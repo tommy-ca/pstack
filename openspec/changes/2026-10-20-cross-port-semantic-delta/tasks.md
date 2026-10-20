@@ -6,10 +6,10 @@ Program: [#636](https://github.com/tommy-ca/pstack/issues/636); leaf audits [#63
 - [x] Verify structural inventory: target 63 shared skill definitions, comparator 65, canonical 56 at checked HEADs; classify *behavior*, not raw file count.
 - [x] Identify comparator changed source families after `94f5ce95`: 16 commits including Pi activity, session, worktree and CLI tests, agent/process state, safety playbooks, generator models and new skills. No test execution claimed.
 - [x] **A / #637** Reconcile all relevant comparator-diff items with current `tools/forks.json` and pinned canonical `pstack/` delta; emit a per-file/semantic-atom decision table and identify source license/NOTICE. Completed #434/#443 are baselines, not TODOs.
-- [ ] **B / #638** Implement only accepted host-scoped negative fixtures for activity-by-call-ID, ephemeral progress, resume, cancellation settlement and hidden worktree files. Run no-op/control first; preserve independent native adapters and keep unsupported features as GAP.
+- [x] **B / #638** Implement only accepted host-scoped negative fixtures for activity-by-call-ID, ephemeral progress, resume, cancellation settlement and hidden worktree files. Run no-op/control first; preserve independent native adapters and keep unsupported features as GAP.
 - [x] **C / #626 #627 #628** Canonical integration completed and verified under normative Program #622 (closed via #630 / #643).
 - [x] **D / #630** Canonical sync exact-head acceptance completed and verified on main `329acf2`.
-- [ ] **E / #636** Reconcile classifications and scoped decisions in the public adoption matrix, update issues, and close the bounded delta only after A and B are proven or descoped with cause. Leave #622 and #429 histories intact.
+- [x] **E / #636** Reconcile classifications and scoped decisions in the public adoption matrix, update issues, and close the bounded delta only after A and B are proven or descoped with cause. Leave #622 and #429 histories intact.
 
 ```mermaid
 flowchart TD
