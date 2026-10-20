@@ -303,3 +303,14 @@ def test_missing_scenario_fails(tmp_path: Path) -> None:
     formal.write_text(SPEC.split("#### Scenario:", 1)[0], encoding="utf-8")
     result, output = run_cli(repo, commit_path, tree_path)
     assert_failure(result, output, "Requirement has no Scenario")
+
+
+def test_archived_spec_fallback_passes(tmp_path: Path) -> None:
+    repo, commit_path, tree_path = make_repo(tmp_path)
+    active_delta = repo / "openspec" / "changes" / "pstack-jev-decision-plane"
+    archive_dir = repo / "openspec" / "changes" / "archive" / "2026-10-13-pstack-jev-decision-plane"
+    archive_dir.parent.mkdir(parents=True, exist_ok=True)
+    shutil.move(str(active_delta), str(archive_dir))
+    result, output = run_cli(repo, commit_path, tree_path)
+    assert result.returncode == 0
+    assert output["verdict"] == "PASS"
