@@ -257,6 +257,12 @@ def inspect_requirements(text: str, label: str) -> None:
 def compare_specs(root: Path) -> str:
     formal_path = root / "openspec" / "specs" / "pstack-jev-decisions" / "spec.md"
     delta_path = root / "openspec" / "changes" / "pstack-jev-decision-plane" / "specs" / "pstack-jev-decisions" / "spec.md"
+    if not delta_path.is_file():
+        archived_matches = sorted(
+            root.glob("openspec/changes/archive/*pstack-jev-decision-plane/specs/pstack-jev-decisions/spec.md")
+        )
+        if archived_matches:
+            delta_path = archived_matches[0]
     try:
         formal = formal_path.read_text(encoding="utf-8")
         delta = delta_path.read_text(encoding="utf-8")
