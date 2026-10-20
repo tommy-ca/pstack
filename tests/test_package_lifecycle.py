@@ -93,12 +93,12 @@ def test_install_and_verify(host: str, tmp_path: Path) -> None:
         assert (agents_dir / "poteto-agent.md").is_file(), f"agents/poteto-agent.md missing for {host}"
         assert len(list(agents_dir.glob("*.md"))) == len(list((ROOT / "agents").glob("*.md")))
 
-    # Manifest must exist and match version 0.16.0
+    # Manifest must exist and match version 0.15.29
     manifest_name = "package.json" if host in ("opencode", "omp") else "plugin.json"
     manifest_path = plugin_dir / manifest_name
     assert manifest_path.is_file()
     m_data = json.loads(manifest_path.read_text(encoding="utf-8"))
-    assert m_data.get("version") == "0.15.21-grokbuild.0"
+    assert m_data.get("version") == "0.15.29-grokbuild.0"
     if host == "omp":
         assert isinstance(m_data.get("omp"), dict), "OMP enrolls a package only through package.json#omp"
 
@@ -128,7 +128,7 @@ def test_update_idempotent_convergence(tmp_path: Path) -> None:
     ok2, errors2 = package_lifecycle.update_plugin("codex", target)
     assert ok2 is True
     m_data = json.loads((plugin_dir / "plugin.json").read_text(encoding="utf-8"))
-    assert m_data.get("version") == "0.15.21-grokbuild.0"
+    assert m_data.get("version") == "0.15.29-grokbuild.0"
 
 
 def test_cli_lifecycle_prove(tmp_path: Path) -> None:

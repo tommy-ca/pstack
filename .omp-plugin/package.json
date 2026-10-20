@@ -1,10 +1,10 @@
 {
   "name": "pstack",
-  "version": "0.15.21-grokbuild.0",
+  "version": "0.15.29-grokbuild.0",
   "description": "pstack for Oh-My-Pi (OMP): portable principles, playbooks, skills, and role agents.",
   "omp": {
     "name": "pstack",
-    "version": "0.15.21-grokbuild.0",
+    "version": "0.15.29-grokbuild.0",
     "description": "pstack for Oh-My-Pi (OMP): portable principles, playbooks, skills, and role agents."
   }
 }

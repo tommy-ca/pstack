@@ -1,10 +1,10 @@
 Official pstack (discipline source)
 https://github.com/cursor/plugins/tree/main/pstack
-tree 1dcc2bacde73ddd284803b7af28164d0436198fc
-Verified against upstream `main`: 2026-10-12; commit timestamp: 2026-10-12.
-Upstream tree SHA: 64832e22b439e519c8ea0b38353ab87253d500ed
-Cursor plugin version on cursor/plugins main at refresh: 0.15.21. This port stays 0.15.21-grokbuild.0.
-Pstack-specific delta after df58112: 0.15.21 distill and section cuts (token-cut 00b14f1, section-cuts 08bd59b), ketchup skill (978ca6e, visuals ea32d95), poteto-agent delegate contract (2bd5dd4, 364a77e), create-verification-skill readiness (c49b37a), Agent Plugins v1 root manifest reference-only (e5a02f8), check-plan fence handling (87c8103), watch-pr pagination (ff8f83d), worktree-audit default-branch base (cf9a111), Comment Sicko id rename (de2dba6), unslop description (bc697d0), version bumps 0.15.20 (1b6d44f) and 0.15.21 (997ffc7). Packaging, logo, and the separate Cursor-only `advisor` plugin stay excluded.
+tree 88d47514b82e7c44f00f2b2a72ff6dd12158038c
+Verified against upstream `main`: 2026-10-19; commit timestamp: 2026-10-19 19:24:33 -0700.
+Upstream tree SHA: 34a0b817e5ea92375bb10f20b15cf750d4e8095a
+Cursor plugin version on cursor/plugins main at refresh: 0.15.29. This port stays 0.15.29-grokbuild.0.
+Pstack-specific delta after df58112: 0.15.21 distill and section cuts (token-cut 00b14f1, section-cuts 08bd59b), ketchup skill (978ca6e, visuals ea32d95), poteto-agent delegate contract (2bd5dd4, 364a77e), create-verification-skill readiness (c49b37a), Agent Plugins v1 root manifest reference-only (e5a02f8), check-plan fence handling (87c8103), watch-pr pagination (ff8f83d), worktree-audit default-branch base (cf9a111), Comment Sicko id rename (de2dba6), unslop description (bc697d0), version bumps 0.15.20 (1b6d44f), 0.15.21 (997ffc7), and 0.15.29 (88d4751). 0.15.29 upstream delta reconciled across Program #622: 4 canonical leaf skills (create/maintain formal verification skill, in-your-own-words, sharpen), 6 principle leaves, multi-forge orchestrator/watch-pr/worktree-audit, 6-step shipping with forge resolution and test safety matrix, Claude Code candidate adapter guide, and canonical inventory promotion. Packaging, logo, and the separate Cursor-only `advisor` plugin stay excluded.
 
 Grok adapter ancestor
 https://github.com/aa2246740/pstack-grokbuild
@@ -17,7 +17,7 @@ https://github.com/ericlitman/open-pstack
 
 This port
 https://github.com/tommy-ca/pstack
-version 0.15.21-grokbuild.0
+version 0.15.29-grokbuild.0
 
 One shared skills/ tree. Host maps:
 - Grok Build: skills/poteto-mode/references/grok-tools.md
@@ -27,4 +27,4 @@ One shared skills/ tree. Host maps:
 Sync: python3 scripts/sync-from-upstream.py --pin && python3 scripts/sync-from-upstream.py --log
 Then copy intent files, run scripts/adapt-harness.py, hand-fix depth-1 and overnight, then python3 .grok/skills/verify-pstack/scripts/verify.py run --root .
 Cursor-only `.cursor-plugin/`, `assets/logo.png`, and the separate `advisor` plugin stay out of this host adapter. Retained `scripts/orch`, `scripts/watch-pr`, `check-plan.mjs`, and `worktree-audit.sh` are audited Codex compatibility surfaces, not blind-copy targets.
-The current compare is official pstack packaging 0.15.5 at tree `4b4d98e5e3b3c139f63dbc1ce4b538954c8f2f52` against the previous tree `7366ac128bdf95f45e6734f412b49a4031800169` and pin `93b00b89`. Classify with `skills/swarm/references/classification.tsv` and `skills/swarm/scripts/partition.py`. Pack interrogate prompts with `skills/interrogate/scripts/pack.py`.
+The current compare is official pstack packaging 0.15.29 at commit 88d47514b82e7c44f00f2b2a72ff6dd12158038c (tree 34a0b817e5ea92375bb10f20b15cf750d4e8095a) against the previous tree 64832e22b439e519c8ea0b38353ab87253d500ed and pin 1dcc2bacde73ddd284803b7af28164d0436198fc. Classify with `skills/swarm/references/classification.tsv` and `skills/swarm/scripts/partition.py`. Pack interrogate prompts with `skills/interrogate/scripts/pack.py`.
