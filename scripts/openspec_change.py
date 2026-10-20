@@ -46,6 +46,7 @@ def _active_openspec_changes() -> list[str] | None:
         if not isinstance(changes, list):
             return None
         parsed: list[str] = []
+        in_progress: list[str] = []
         for entry in changes:
             if not isinstance(entry, dict):
                 return None
@@ -53,7 +54,9 @@ def _active_openspec_changes() -> list[str] | None:
             if not isinstance(name, str) or not name:
                 return None
             parsed.append(name)
-        return parsed
+            if entry.get("status") != "complete":
+                in_progress.append(name)
+        return in_progress if in_progress else parsed
     except Exception:
         return None
 
