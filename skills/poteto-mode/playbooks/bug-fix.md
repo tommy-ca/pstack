@@ -1,6 +1,6 @@
 ### Bug fix
 
-**You own this task. Plan, review, verify.** Delegate investigation and the fix to subagents, stay in the lead.
+**You own this task. Plan, review, verify.** Delegate investigation and the fix to subagents, stay in the lead. Pick each subagent's reasoning level and fast or standard speed for the job, per the Subagents section.
 
 State the write effect as one of `none | partial | committed | unknown`. While the effect is `partial` or `unknown`, a blind retry is forbidden and only the state owner declares recovery. The reply names the effect, never an assumed clean slate.
 

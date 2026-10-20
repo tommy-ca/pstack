@@ -32,6 +32,46 @@ The port-only paths include native harness descriptors, profiles, drivers, issue
 - **Keep truthful metadata:** no bump of `UPSTREAM`, package pin or canonical inventory while unclassified/untested semantic deltas remain. See [#623](https://github.com/tommy-ca/pstack/issues/623) and [#629](https://github.com/tommy-ca/pstack/issues/629).
 - **Final gate:** independent exact-head Swarm / Interrogate, conditional Arena, evidence by harness at [#630](https://github.com/tommy-ca/pstack/issues/630). An offline contract pass never certifies native spawn/join.
 
+## Shipping and autopilot safety gates (#627)
+
+### Before / after capability matrix
+
+| Capability / Gate | Upstream 0.15.21 / Previous Port | Canonical 0.15.29 / Reconciled Port (#627) |
+| --- | --- | --- |
+| **Shipping flow structure** | 9-step verbose sequence with separate frontier and prep stages | Condensed 6-step flow (`shipping.md`): resolve forge, contiguous run, patch-id/build-noise re-check, bottom-up land, leave stack alone, stop at ceiling |
+| **Forge integration** | Hardcoded or ambiguous Graphite `gt` legacy in orchestrate | Portable `gh` (default) and `origin pr` (when available) linear base-chain querying; zero `gt` requirements |
+| **Verdict validity under rebase** | Head SHA match check only; rebases invalidated all verdicts | `git patch-id` comparison and build-noise validation: older verdicts survive branch rebases if patch-id matches or diff is verified non-functional noise |
+| **Autopilot-full swarm cadence** | Full swarm re-verified every push and every rebase | Swarm once at code-ready head; single verifier for rebase, conflict resolution, or minor fix; full swarm reserved for new behavior/redesign |
+| **Autopilot audit loop** | Unbounded polling or Cursor `/loop` | Host-neutral `schedule` / `monitor` (1-hour tick); probes children by side effects (`children.tsv` / store); catches operator up via `/ketchup` |
+| **Stack delivery** | Ambiguous multi-agent landing | Single writer on topology (`autopilot-stack.md`); hands-off during landing; clean base-chain retargeting |
+
+### Acceptance examples for safety gates
+
+1. **Red check:**
+   - *Condition:* CI checks conclude `failure` or `cancelled`.
+   - *Outcome:* Immediate `BLOCKED` status; no auto-merge armed; landing rejected.
+2. **Stale verdict:**
+   - *Condition:* Head SHA changed and `git patch-id` changed beyond build noise.
+   - *Outcome:* `BLOCKED` status; verdict invalidated; fresh verifier dispatched before landing can proceed.
+3. **Head moved (clean patch):**
+   - *Condition:* Head SHA changed due to parent branch rebase, but `git patch-id` is identical or differences are verified build noise.
+   - *Outcome:* `PASS`; older code verdict stands; only mergeability/CI at current head verified fresh.
+4. **Dropped reviewer:**
+   - *Condition:* Verifier subagent times out, crashes, or drops out without a structured report.
+   - *Outcome:* `DROPOUT` / `GAP` in synthesis; never converted to `PASS`; stack landing stops below that PR.
+5. **Closed / merged PR:**
+   - *Condition:* PR was closed without merging or merged out-of-band on the forge.
+   - *Outcome:* `BLOCKED`; double-merge prevented; stack frontier recomputed.
+6. **Missing native host capability:**
+   - *Condition:* Runtime host lacks background scheduling or event-monitoring primitives.
+   - *Outcome:* Stated `GAP`; agent does not claim automated background execution; requests operator checkpointing.
+7. **Cancellation:**
+   - *Condition:* Operator or parent issues cancellation/hold order.
+   - *Outcome:* Immediate zero-writes hold; settled as `DROPOUT` / cancelled; never converted to `PASS`.
+8. **Dirty worktree:**
+   - *Condition:* Uncommitted edits exist in current worktree (`git status` dirty).
+   - *Outcome:* Landing halted immediately; no branches switched or reset until clean.
+
 ## Verification and acceptance
 
 Run from a checkout of the candidate PR:

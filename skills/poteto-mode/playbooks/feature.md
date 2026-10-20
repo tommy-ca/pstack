@@ -1,6 +1,6 @@
 ### Feature
 
-**You own the design. Plan, review, verify.** Delegate implementation. Stay in the lead.
+**You own the design. Plan, review, verify.** Delegate implementation. Stay in the lead. Pick each subagent's reasoning level and fast or standard speed for the job, per the Subagents section.
 
 1. `how` over the affected subsystem.
 2. `architect` for parallel design exploration. Skipping stays as `architect skipped: <reason>`. Do not fold the design decision silently into implementation.

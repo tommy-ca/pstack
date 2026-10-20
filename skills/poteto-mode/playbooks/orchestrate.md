@@ -14,7 +14,7 @@ Open a todolist with the steps below copied in verbatim. A step you skip stays l
 
 #### Roles and placement
 
-- **Coordinator (this chat).** Local. Frames, authors briefs, drains the canonical host inbox, owns the human report, makes judgment calls. It never authors or edits code: conflicted merges, restacks, and code changes are always tasks. Mechanically landing a verified unit (fast-forward or clean cherry-pick of a worker's commit, then push) is bookkeeping the coordinator may do itself on repos where local git is cheap; queueing finished work behind an idle stacker is how a deadline harvests nothing. The loop is agentic end to end. Agents are spawned, resumed, and drained only through the host's agent spawn and communication capabilities. Durable state reads and writes use the host's canonical task and agent state. This playbook does not create a second scheduler, database, or session manager.
+- **Coordinator (this chat).** Local. Frames, authors briefs, drains the canonical host inbox, owns the human report, makes judgment calls. It never authors or edits code: conflicted merges, chain rebases, and code changes are always tasks. Mechanically landing a verified unit (fast-forward or clean cherry-pick of a worker's commit, then push) is bookkeeping the coordinator may do itself on repos where local git is cheap; queueing finished work behind an idle stacker is how a deadline harvests nothing. The loop is agentic end to end. Agents are spawned, resumed, and drained only through the host's agent spawn and communication capabilities. Pick each subagent's reasoning level and fast or standard speed for the job, per the Subagents section. Durable state reads and writes use the host's canonical task and agent state. This playbook does not create a second scheduler, database, or session manager.
 - **Track boards.** Partitions belong in canonical host state, not nested spawners. Subagent depth is 1, so this coordinator chat owns every subagent spawn call. A child that calls it fails. When the program exceeds one drain, keep per-track units, briefs, and rollups in host state and still spawn workers and verifiers from here. Workspace isolation uses isolated worktrees (`agent.spawn` with worktree isolation). Cap in-flight children at what one drain can process, roughly ten, as a rolling window; never as blocking batches, which cost the slowest child of every batch.
 - **Worker / verifier.** Always `isolation: "worktree"` unless the task needs this machine: driving a local app or CLI; reading local transcripts; simulators; auth that exists only here. Worktree children cannot see unsynced local-only state, so their briefs inline what they need or point at repo paths. Prefer fewer, broader workers; one writer per worktree or branch (principle-separate-before-serializing-shared-state). Run a unit's verifier as `independent-verifier` on a different `model` from its worker.
 
@@ -38,7 +38,8 @@ CONTEXT      pointers to files and PRs; upstream reports pasted in full when thi
 ACCEPTANCE   checkable criteria, one per line
 VERIFY       exact commands or a project verify-* skill path, plus known gotchas
 TIMEBOX      rough cap on runtime; on expiry, return partial findings and stop rather than run on
-FORBIDDEN    no gt, no rebase, no force-push, no fixes outside scope, plus unit-specific bans
+FORBIDDEN    no PR retargets or merges, no rebase, no force-push, no fixes outside scope,
+             plus unit-specific bans
 REPORT       status, branch, head SHA, PRs, verdict, what you actually ran, deviations,
              suggested follow-ups
 STANDING     <standing-orders register pasted verbatim>
@@ -71,9 +72,9 @@ A dependency is a context relay, not just ordering: undeclared upstream context 
 
 #### Stack safety
 
-- The frontier is a computed host-state object, never narrative. Canonical host state remains the store. After every merge and stack mutation, refresh that object from the resolved forge because GitHub base refs drift mid-restack: ordered PR list, branch names, head SHAs, a generation number, and the lowest unmerged PR. Resolve the forge once per [`github-pr-fallback.md`](../references/github-pr-fallback.md). GitHub CLI (`gh`) is the default. If `command -v origin` succeeds and Origin resolves the repository, use `origin pr list` / `origin pr view`. Otherwise use `gh pr list` / `gh pr view`. A checkout that never saw the submits reports no PRs and the command errors rather than guessing.
-- Exactly one stacker per stack may restack, serialized within its stack; record the holder in the standing orders. Restacks run in a worktree child or locally with `git fetch` and `git rebase` onto the selected parent branch, then view the PR through the resolved forge. This host has no cloud VMs.
-- Workers never rebase and never restack. Babysitters follow `playbooks/babysit.md`, one per stack, scoped to one immutable frontier generation; they report conflicts to the stacker rather than restacking.
+- The frontier is a computed host-state object, never narrative. Canonical host state remains the store. After every merge and stack mutation, refresh that object from the resolved forge because base refs drift mid-restack: ordered PR list, branch names, head SHAs, a generation number, and the lowest unmerged PR. The command walks the PR base chain through the checkout's current branch, so chain order and PR states come from the forge. It uses `gh` by default. Pass `--forge origin` when the program resolved the forge to Origin. Head SHAs come from local branch refs, so resolve it from the stacker's clone. A checkout that never saw the submits reports no PRs and the command errors rather than guessing.
+- Exactly one stacker per stack may mutate topology (chain rebases, force-pushes, base retargets, merges), serialized within its stack; record the holder in the standing orders. Chain rebases run in a worktree child or locally with `git fetch` and `git rebase` onto the selected parent branch, then view the PR through the resolved forge. This host has no cloud VMs.
+- Workers never rebase and never retarget or merge PRs. Babysitters follow `playbooks/babysit.md`, one per stack, scoped to one immutable frontier generation; they report conflicts to the stacker rather than rebasing.
 - PR closes and retargets go through the stacker only; closing a base PR orphans every chain above it. Merges and stack surgery are units with briefs like any other.
 - One retro watcher follows merged PRs for reverts, post-merge CI breaks, and orphaned follow-ups.
 
@@ -99,7 +100,7 @@ A unit is not done until its output is externalized the moment it lands, never b
 
 Reaches the human, batched into canonical host gates rather than per item: irreversible actions (force-push to shared branches, deploys, deletions, closing someone else's PR), genuine product or preference calls no experiment settles, a standing order that contradicts observed reality, a program-level dead end that survived a replan. Park each as a host gate before asking, and route work around it.
 
-Never reaches the human: frontier nudges, restack mechanics, retries, CI flake triage, review-thread triage, format fixes, scope the brief already forbids (refuse and continue), and "should I keep going". When in doubt, act and log; deferring is the measured failure mode.
+Never reaches the human: frontier nudges, rebase mechanics, retries, CI flake triage, review-thread triage, format fixes, scope the brief already forbids (refuse and continue), and "should I keep going". When in doubt, act and log; deferring is the measured failure mode.
 
 Mid-run discoveries fix only what blocks the frontier. Everything else parks in follow-ups; at this fan-out a small scope leak multiplies into PRs nobody asked for.
 
