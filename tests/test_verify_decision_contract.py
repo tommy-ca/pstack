@@ -314,3 +314,63 @@ def test_archived_spec_fallback_passes(tmp_path: Path) -> None:
     result, output = run_cli(repo, commit_path, tree_path)
     assert result.returncode == 0
     assert output["verdict"] == "PASS"
+
+
+def test_applied_upstream_pin_matches_passes(tmp_path: Path) -> None:
+    repo, commit_path, tree_path = make_repo(tmp_path)
+    (repo / "pstack.package.json").write_text(json.dumps({"upstream_pin": A}), encoding="utf-8")
+    (repo / "UPSTREAM").write_text(f"tree {A}\n", encoding="utf-8")
+    result, output = run_cli(repo, commit_path, tree_path)
+    assert result.returncode == 0
+    assert output["verdict"] == "PASS"
+
+
+def test_applied_upstream_pin_mismatch_fails(tmp_path: Path) -> None:
+    repo, commit_path, tree_path = make_repo(tmp_path)
+    (repo / "pstack.package.json").write_text(json.dumps({"upstream_pin": "f" * 40}), encoding="utf-8")
+    result, output = run_cli(repo, commit_path, tree_path)
+    assert_failure(result, output, "does not match pstack.package.json upstream_pin")
+
+
+def test_upstream_file_pin_mismatch_fails(tmp_path: Path) -> None:
+    repo, commit_path, tree_path = make_repo(tmp_path)
+    (repo / "UPSTREAM").write_text(f"tree {'f' * 40}\n", encoding="utf-8")
+    result, output = run_cli(repo, commit_path, tree_path)
+    assert_failure(result, output, "does not match UPSTREAM pin")
+
+
+def test_live_tree_conforms_to_canonical_pin_and_inventory(tmp_path: Path) -> None:
+    upstream_repo = ROOT / ".worktrees" / "upstream-cursor-plugins"
+    if not (upstream_repo / ".git").exists() and not (upstream_repo / "HEAD").exists():
+        pytest.skip("upstream worktree not available")
+    rev = "88d47514b82e7c44f00f2b2a72ff6dd12158038c"
+    tree_sha = subprocess.check_output(["git", "-C", str(upstream_repo), "rev-parse", f"{rev}^{{tree}}"], text=True).strip()
+    commit_obj = {"sha": rev, "tree": {"sha": tree_sha}}
+    lines = subprocess.check_output(["git", "-C", str(upstream_repo), "ls-tree", "-r", tree_sha], text=True).strip().splitlines()
+    tree_entries = []
+    for line in lines:
+        parts = line.split()
+        mode, kind, sha = parts[0], parts[1], parts[2]
+        path = line.split("\t", 1)[1]
+        tree_entries.append({"path": path, "type": kind, "sha": sha, "mode": mode})
+    tree_obj = {"sha": tree_sha, "truncated": False, "tree": tree_entries}
+
+    commit_path = tmp_path / "commit.json"
+    tree_path = tmp_path / "tree.json"
+    commit_path.write_text(json.dumps(commit_obj), encoding="utf-8")
+    tree_path.write_text(json.dumps(tree_obj), encoding="utf-8")
+
+    res = subprocess.run([
+        sys.executable,
+        str(SCRIPT),
+        "--root", str(ROOT),
+        "--upstream-commit", str(commit_path),
+        "--upstream-tree", str(tree_path),
+    ], capture_output=True, text=True)
+    assert res.returncode == 0
+    data = json.loads(res.stdout)
+    assert data["verdict"] == "PASS"
+    assert data["canonical_route_count"] == 23
+    assert data["source"]["revision"] == rev
+
+

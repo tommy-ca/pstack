@@ -98,6 +98,137 @@ class DecisionReceipt:
         return json.dumps(self.to_dict(), indent=indent, sort_keys=True)
 
 
+@dataclass(frozen=True)
+class CalibratedEvidenceReceipt:
+    """Separately persisted, pre-existing calibrated evidence receipt required for route promotion (#659)."""
+
+    receipt_type: str  # "calibrated_routing_evidence"
+    status: str  # "valid"
+    review_decision: str  # "accepted" or "promoted"
+    source_revision: str  # upstream canonical pin or git commit
+    canonical_mapping_revision: str  # sha256 of references/decision-routing.json
+    provider_identity: str
+    model_identity: str
+    policy_revision: str
+    class_thresholds: Dict[str, float]
+    eval_evidence: Dict[str, Any]
+    created_at: str
+    expires_at: str
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+    def to_json(self, indent: int = 2) -> str:
+        return json.dumps(self.to_dict(), indent=indent, sort_keys=True)
+
+
+def load_calibrated_evidence_receipt(path: Optional[Path]) -> Optional[CalibratedEvidenceReceipt]:
+    """Safely load and parse a persisted CalibratedEvidenceReceipt from disk."""
+    if path is None or not path.is_file():
+        return None
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(raw, dict):
+            return None
+        return CalibratedEvidenceReceipt(
+            receipt_type=str(raw.get("receipt_type", "")),
+            status=str(raw.get("status", "")),
+            review_decision=str(raw.get("review_decision", "")),
+            source_revision=str(raw.get("source_revision", "")),
+            canonical_mapping_revision=str(raw.get("canonical_mapping_revision", "")),
+            provider_identity=str(raw.get("provider_identity", "")),
+            model_identity=str(raw.get("model_identity", "")),
+            policy_revision=str(raw.get("policy_revision", "")),
+            class_thresholds=dict(raw.get("class_thresholds", {})),
+            eval_evidence=dict(raw.get("eval_evidence", {})),
+            created_at=str(raw.get("created_at", "")),
+            expires_at=str(raw.get("expires_at", "")),
+            metadata=dict(raw.get("metadata", {})),
+        )
+    except Exception:
+        return None
+
+
+def validate_calibrated_evidence(
+    receipt: CalibratedEvidenceReceipt,
+    current_root: Path,
+    expected_provider: str,
+    expected_model: str,
+    candidate_class: str,
+    confidence: float,
+) -> Tuple[bool, List[str]]:
+    """Mechanically validate a persisted calibrated evidence receipt for advisory route promotion (#659).
+
+    Enforces:
+    1. Valid receipt_type and status ('calibrated_routing_evidence' and 'valid')
+    2. Durable accepted review decision ('accepted' or 'promoted')
+    3. Positive match against expected provider and model identity snapshots
+    4. Exact match of canonical mapping revision against current references/decision-routing.json
+    5. Receipt freshness: must not be expired relative to current UTC time
+    6. Non-empty evaluation evidence payload with performance indicators
+    7. Calibrated per-class threshold satisfied by confidence
+    """
+    reasons: List[str] = []
+
+    if receipt.receipt_type != "calibrated_routing_evidence":
+        reasons.append(
+            f"Invalid receipt_type: '{receipt.receipt_type}' (expected 'calibrated_routing_evidence')"
+        )
+
+    if receipt.status != "valid":
+        reasons.append(f"Receipt status is '{receipt.status}', not 'valid'")
+
+    if receipt.review_decision not in ("accepted", "promoted"):
+        reasons.append(
+            f"Receipt review_decision is '{receipt.review_decision}', not 'accepted' or 'promoted'"
+        )
+
+    if not receipt.provider_identity or receipt.provider_identity != expected_provider:
+        reasons.append(
+            f"Provider mismatch: receipt has '{receipt.provider_identity}', expected '{expected_provider}'"
+        )
+
+    if not receipt.model_identity or receipt.model_identity != expected_model:
+        reasons.append(
+            f"Model mismatch: receipt has '{receipt.model_identity}', expected '{expected_model}'"
+        )
+
+    routing_file = current_root / "references" / "decision-routing.json"
+    if not routing_file.is_file():
+        reasons.append("Canonical routing file references/decision-routing.json is missing")
+    else:
+        current_mapping_rev = compute_file_sha256(routing_file)
+        if receipt.canonical_mapping_revision != current_mapping_rev:
+            reasons.append(
+                f"Canonical mapping drift: receipt {receipt.canonical_mapping_revision[:8]} != current {current_mapping_rev[:8]}"
+            )
+
+    try:
+        raw_exp = receipt.expires_at.replace("Z", "+00:00")
+        expires_dt = datetime.fromisoformat(raw_exp)
+        now_dt = datetime.now(timezone.utc)
+        if expires_dt <= now_dt:
+            reasons.append(f"Receipt expired at {receipt.expires_at}")
+    except Exception as exc:
+        reasons.append(f"Invalid or unparseable expires_at timestamp: {exc}")
+
+    if not receipt.eval_evidence:
+        reasons.append("Receipt contains no eval_evidence holdout metrics")
+
+    if candidate_class not in receipt.class_thresholds:
+        reasons.append(f"Class '{candidate_class}' has no calibrated threshold in receipt")
+    else:
+        threshold = float(receipt.class_thresholds[candidate_class])
+        if confidence < threshold:
+            reasons.append(
+                f"Confidence {confidence:.2f} below calibrated threshold {threshold:.2f} for class '{candidate_class}'"
+            )
+
+    is_valid = len(reasons) == 0
+    return is_valid, reasons
+
+
 def create_decision_receipt(
     root: Path,
     source: str,

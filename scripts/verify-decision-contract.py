@@ -189,6 +189,35 @@ def validate_commit(raw: Any, revision: str, tree: str) -> None:
         raise VerificationError(f"upstream commit tree {tree_sha!r} does not match source.tree {tree}")
 
 
+def check_applied_pin(root: Path, registry_revision: str) -> None:
+    pkg_path = root / "pstack.package.json"
+    if pkg_path.is_file():
+        try:
+            pkg = json.loads(pkg_path.read_text(encoding="utf-8"))
+            upstream_pin = pkg.get("upstream_pin")
+            if upstream_pin and upstream_pin != registry_revision:
+                raise VerificationError(
+                    f"registry source revision {registry_revision} does not match pstack.package.json upstream_pin {upstream_pin}"
+                )
+        except VerificationError:
+            raise
+        except Exception:
+            pass
+    upstream_file = root / "UPSTREAM"
+    if upstream_file.is_file():
+        try:
+            text = upstream_file.read_text(encoding="utf-8")
+            match = re.search(r"^tree\s+([0-9a-f]{40})", text, re.MULTILINE)
+            if match and match.group(1) != registry_revision:
+                raise VerificationError(
+                    f"registry source revision {registry_revision} does not match UPSTREAM pin {match.group(1)}"
+                )
+        except VerificationError:
+            raise
+        except Exception:
+            pass
+
+
 def canonical_inventory(scoped: dict[str, str]) -> dict[str, str]:
     inventory: dict[str, str] = {}
     for path, blob in scoped.items():
@@ -332,6 +361,7 @@ def verify(args: argparse.Namespace) -> dict[str, Any]:
         }
         validate_commit(load_json(commit_path), registry.source.revision, registry.source.tree)
         result["upstream_commit_digest"] = digest_file(commit_path)
+        check_applied_pin(root, registry.source.revision)
         tree = parse_tree(load_json(tree_path), registry.source.tree)
         result["upstream_tree_digest"] = digest_file(tree_path)
         compare_registry_to_source(registry, tree)

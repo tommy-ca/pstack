@@ -67,7 +67,8 @@ jobs:
             tests/test_rollback_equivalence.py \
             tests/test_verify_decision_contract.py \
             tests/test_eval_decision_routing.py \
-            tests/test_jev_privacy_and_bypass.py
+            tests/test_jev_privacy_and_bypass.py \
+            tests/test_jev_mapping_and_calibrated_evidence.py
       - name: Validate checked-in model policy against canonical role registry
         run: python -m scripts.model_role_policy
       # Native host spawn/join/isolation are intentionally NOT covered here.
