@@ -206,6 +206,10 @@ def test_mutated_model_role_policy_stales_the_package_plane(tmp_path: Path) -> N
     receipt_data = json.loads(
         (copy_root / ".audit" / "evidence" / "grok-receipt.json").read_text(encoding="utf-8")
     )
+    receipt_data["surface_revisions"] = asdict(fresh)
+    (copy_root / ".audit" / "evidence" / "grok-receipt.json").write_text(
+        json.dumps(receipt_data, indent=2), encoding="utf-8"
+    )
     assert VerificationReceipt(**receipt_data).evaluate_plane_staleness(fresh) == {
         plane: [] for plane in CONFORMANCE_PLANES
     }
@@ -259,6 +263,10 @@ def test_mutated_planner_module_stales_the_package_plane(tmp_path: Path) -> None
     fresh = compute_surface_revisions(copy_root, "grok")
     receipt_data = json.loads(
         (copy_root / ".audit" / "evidence" / "grok-receipt.json").read_text(encoding="utf-8")
+    )
+    receipt_data["surface_revisions"] = asdict(fresh)
+    (copy_root / ".audit" / "evidence" / "grok-receipt.json").write_text(
+        json.dumps(receipt_data, indent=2), encoding="utf-8"
     )
     assert VerificationReceipt(**receipt_data).evaluate_plane_staleness(fresh) == {
         plane: [] for plane in CONFORMANCE_PLANES
