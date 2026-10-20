@@ -4,6 +4,8 @@ Official pstack at the immutable pin in [`UPSTREAM`](../../UPSTREAM) is canonica
 
 The host map is the primary adapter document, defined under the cross-harness contract [`pstack-portability`](../../openspec/specs/pstack-portability/spec.md).
 
+**Current implementation snapshot (2026-10-20):** [Harness adapter schemas, model-role resolution, JEV decision boundary and issue-level safety gaps](../architecture/harness-adapters-and-jev-2026-10-20.md). This source-pinned map complements the historical porting evidence below; only scenario-pinned native receipts establish a live capability.
+
 ## Keep the pstack meaning
 
 Preserve the canonical principles, skills, router behavior, playbook intent, role boundaries, ordering, and verification rules. Focus on less code, not loc. Port host-dependent mechanisms only.
@@ -163,7 +165,7 @@ Evidence gathered during the Codex pilot reconciled core contract expectations:
 
 A port that copies another port's host calls is not portable pstack. A thin adapter with strong evidence is.
 
-## Batch 2 acceptance matrix (5 harnesses)
+## Historical Batch 2 acceptance matrix (5 harnesses; not current proof)
 
 Batch 2 expanded the host matrix to 5 harnesses across 3 verification planes (Canonical, Adapter, Runtime):
 1. **Grok Build** (`grok`): Reference host. Subagent tree with depth 2 and shared workspace.
