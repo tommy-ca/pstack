@@ -805,10 +805,10 @@ def test_canonical_role_taxonomy_schema_and_pin_audit_contract() -> None:
     spec.loader.exec_module(mod)
     cache = mod.get_git_cache_root()
     inventory = mod.compute_inventory(cache)
-    assert inventory["pin"] == "1dcc2bacde73ddd284803b7af28164d0436198fc", "canonical pin mismatch"
+    assert inventory["pin"] == "88d47514b82e7c44f00f2b2a72ff6dd12158038c", "canonical pin mismatch"
     assert inventory["pin_conformance"] == "PASS", f"canonical conformance failed: {inventory['counts']}"
     assert inventory["counts"]["gaps"] == 0, "canonical inventory must contain 0 unclassified gaps"
-    assert inventory["counts"]["total_artifacts"] == 167, f"expected 167 artifacts, got {inventory['counts']['total_artifacts']}"
+    assert inventory["counts"]["total_artifacts"] == 172, f"expected 172 artifacts, got {inventory['counts']['total_artifacts']}"
 
     # 5. Checked-in example policy strictly avoids fake live models
     assert len(EXAMPLE["hosts"]) == 6, "all 6 host targets must be declared"

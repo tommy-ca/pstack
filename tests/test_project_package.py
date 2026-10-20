@@ -18,7 +18,7 @@ loader.loader.exec_module(project_package)
 def test_load_package_descriptor() -> None:
     desc, raw = project_package.load_package_descriptor()
     assert desc.id == "pstack"
-    assert desc.version == "0.15.21-grokbuild.0"
+    assert desc.version == "0.15.29-grokbuild.0"
     assert "grok" in desc.host_targets
     assert "codex" in desc.host_targets
     assert "omp" in desc.host_targets
@@ -26,7 +26,7 @@ def test_load_package_descriptor() -> None:
     assert "antigravity" in desc.host_targets
     assert "droid" in desc.host_targets
     assert "grok" in desc.host_adapters
-    assert desc.host_adapters["grok"]["version"] == "0.15.21-grokbuild.0"
+    assert desc.host_adapters["grok"]["version"] == "0.15.29-grokbuild.0"
 
 
 def test_generate_manifests() -> None:
@@ -166,10 +166,10 @@ def test_check_claude_plugin_presence_shape_and_lockstep() -> None:
     [
         ["not", "an", "object"],
         {"name": "pstack", "version": "0.0.1-stale", "skills": "./skills/", "agents": "./agents/"},
-        {"name": "renamed-fork", "version": "0.15.21-grokbuild.0", "skills": "./skills/", "agents": "./agents/"},
-        {"name": "pstack", "version": "0.15.21-grokbuild.0", "skills": 42, "agents": "./agents/"},
-        {"name": "pstack", "version": "0.15.21-grokbuild.0", "skills": "./skills/", "agents": []},
-        {"name": "pstack", "version": "0.15.21-grokbuild.0", "skills": "./skills/"},
+        {"name": "renamed-fork", "version": "0.15.29-grokbuild.0", "skills": "./skills/", "agents": "./agents/"},
+        {"name": "pstack", "version": "0.15.29-grokbuild.0", "skills": 42, "agents": "./agents/"},
+        {"name": "pstack", "version": "0.15.29-grokbuild.0", "skills": "./skills/", "agents": []},
+        {"name": "pstack", "version": "0.15.29-grokbuild.0", "skills": "./skills/"},
     ],
 )
 def test_claude_plugin_check_refuses_wrong_shaped_descriptors(tmp_path, monkeypatch, plugin_payload) -> None:
