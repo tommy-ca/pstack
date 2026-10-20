@@ -27,6 +27,8 @@ from scripts.decision_adapter import (
 from scripts.evidence_receipts import (
     check_receipt_staleness,
     create_decision_receipt,
+    load_calibrated_evidence_receipt,
+    validate_calibrated_evidence,
 )
 
 _DROID_DEFINITION_ID = re.compile(r"^pstack-[a-z0-9-]+$")
@@ -44,12 +46,38 @@ CLASS_CONFIDENCE_THRESHOLDS: Dict[str, float] = {
 }
 
 
+@lru_cache(maxsize=16)
+def _get_applied_canonical_pin(root_str: str) -> Optional[str]:
+    root_path = Path(root_str)
+    pkg_path = root_path / "pstack.package.json"
+    if pkg_path.is_file():
+        try:
+            obj = json.loads(pkg_path.read_text(encoding="utf-8"))
+            pin = obj.get("upstream_pin")
+            if pin and isinstance(pin, str) and len(pin.strip()) == 40:
+                return pin.strip().lower()
+        except Exception:
+            pass
+    upstream_file = root_path / "UPSTREAM"
+    if upstream_file.is_file():
+        try:
+            for line in upstream_file.read_text(encoding="utf-8").splitlines():
+                if line.startswith("tree "):
+                    return line.split()[1].strip().lower()
+        except Exception:
+            pass
+    return None
+
+
 @lru_cache(maxsize=8)
 def _load_decision_routing(routing_path_str: str) -> Dict[str, Any]:
     path = Path(routing_path_str)
     if not path.is_file():
         return {}
-    return json.loads(path.read_text(encoding="utf-8"))
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
 
 
 @dataclass
@@ -290,6 +318,7 @@ def resolve_skill_order_with_shadow(
     provider: Optional[Any] = None,
     mode: Optional[str] = None,
     safe_summary: Optional[Union[SafeContext, str]] = None,
+    calibrated_evidence_path: Optional[Union[Path, str]] = None,
 ) -> RouteResolution:
     """Resolve one skill_order row with shadow or advisory decision hook.
 
@@ -300,7 +329,7 @@ def resolve_skill_order_with_shadow(
     When mode is 'advisory', promotes provider recommendation ONLY when:
     - Target is a verified low-risk semantic candidate in references/decision-routing.json
     - Provider outcome meets class-specific confidence threshold and margin separation
-    - Fresh evidence receipt check passes (no staleness, known provider/model)
+    - Persisted calibrated evidence receipt exists, is valid, unexpired, and matches provider/model
     - Deterministic baseline route is not an explicit bypass command or System-Two gate.
     All exceptions, timeouts, and failures fail open safely to the baseline route.
     """
@@ -337,8 +366,18 @@ def resolve_skill_order_with_shadow(
     try:
         routing_file = root / "references" / "decision-routing.json"
         data = _load_decision_routing(str(routing_file.resolve()))
-        if not data:
+        if not data or not isinstance(data, dict):
             return baseline
+
+        # --- Canonical Mapping Freshness Verification (#663) ---
+        # Fail closed to deterministic baseline when mapping pin, router blob, or routes drift.
+        source_info = data.get("source", {})
+        applied_pin = _get_applied_canonical_pin(str(root.resolve()))
+        if applied_pin and source_info.get("revision") != applied_pin:
+            return baseline
+        if source_info.get("router_blob") != "21993f546032ca37671d5f1caf39c9a82ab4fa9d":
+            return baseline
+
         semantic_candidates: Dict[str, Dict[str, Any]] = {}
         bypass_playbooks: Set[str] = set()
 
@@ -422,10 +461,35 @@ def resolve_skill_order_with_shadow(
             if sorted_probs[0] - sorted_probs[1] < 0.10:
                 return baseline
 
-        # 5. Mechanical staleness gate: verify evidence receipt freshness
+        # 5. Persisted Calibrated Evidence Gate (#659)
+        # Disallow synthetic self-receipt authorization; require pre-existing durable receipt
         if obs.provider_identity in ("unknown", "none", "") or obs.model_identity in ("unknown", "none", ""):
             return baseline
 
+        cal_path: Optional[Path] = None
+        if calibrated_evidence_path:
+            cal_path = Path(calibrated_evidence_path)
+        elif "PSTACK_JEV_CALIBRATED_EVIDENCE" in os.environ:
+            cal_path = Path(os.environ["PSTACK_JEV_CALIBRATED_EVIDENCE"])
+        else:
+            cal_path = root / "references" / "calibrated-evidence.json"
+
+        cal_receipt = load_calibrated_evidence_receipt(cal_path)
+        if cal_receipt is None:
+            return baseline
+
+        is_valid, _ = validate_calibrated_evidence(
+            receipt=cal_receipt,
+            current_root=root,
+            expected_provider=obs.provider_identity,
+            expected_model=obs.model_identity,
+            candidate_class=candidate_class,
+            confidence=confidence,
+        )
+        if not is_valid:
+            return baseline
+
+        # Staleness and receipt persistence hook
         receipt = create_decision_receipt(
             root=root,
             source="semantic_provider",

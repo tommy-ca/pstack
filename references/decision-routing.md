@@ -12,14 +12,31 @@ The production route seam is the unresolved point in `/poteto-mode` immediately 
 
 ## Source capture
 
-The inventory follows the official `cursor/plugins` source at commit `d0ef80d86795816da932a153458c5dbe192d294e`. Its resolved Git tree is `ef1c6ab4b7f1016cfbd4fbdb2e25cfa5ceecaa55`. `source.revision` identifies the commit; `source.tree` identifies its tree. The recorded router blob supports drift checks, and each playbook row records its own canonical blob hash.
+The inventory follows the official `cursor/plugins` source at commit `88d47514b82e7c44f00f2b2a72ff6dd12158038c` (v0.15.29). Its resolved Git tree is `6e60624e2f172e2d8d796d6e644695ff5591e29f`. `source.revision` identifies the commit; `source.tree` identifies its root tree. The recorded router blob `21993f546032ca37671d5f1caf39c9a82ab4fa9d` (`skills/poteto-mode/SKILL.md`) supports drift checks, and each playbook row records its own canonical blob hash.
 
 Capture the commit object and its resolved tree with:
 
 ```sh
-gh api 'repos/cursor/plugins/commits/d0ef80d86795816da932a153458c5dbe192d294e' > upstream-commit.json
-gh api 'repos/cursor/plugins/git/trees/ef1c6ab4b7f1016cfbd4fbdb2e25cfa5ceecaa55?recursive=1' > upstream-tree.json
-jq -e '.sha == "d0ef80d86795816da932a153458c5dbe192d294e" and .commit.tree.sha == "ef1c6ab4b7f1016cfbd4fbdb2e25cfa5ceecaa55"' upstream-commit.json
+gh api 'repos/cursor/plugins/commits/88d47514b82e7c44f00f2b2a72ff6dd12158038c' > upstream-commit.json
+gh api 'repos/cursor/plugins/git/trees/6e60624e2f172e2d8d796d6e644695ff5591e29f?recursive=1' > upstream-tree.json
+jq -e '.sha == "88d47514b82e7c44f00f2b2a72ff6dd12158038c" and .commit.tree.sha == "6e60624e2f172e2d8d796d6e644695ff5591e29f"' upstream-commit.json
 ```
 
-The commit response binds the source revision to the separate tree identity recorded in the registry. The complete API export used for this registry reported `truncated: false`. The local `UPSTREAM` pin still reflects an older source revision. Refreshing it belongs to #209. This registry does not claim to represent a newer source state or to prove provider behavior, runtime integration, evaluation quality, calibration, or promotion readiness. Skill suggestions are not exposed because they lack grounded taxonomy and callers.
+The commit response binds the source revision to the separate tree identity recorded in the registry. The complete API export used for this registry reports `truncated: false`. The local `UPSTREAM` pin and `pstack.package.json#upstream_pin` match `88d47514b82e7c44f00f2b2a72ff6dd12158038c`.
+
+### Playbook Classification Rationales (23 Playbooks)
+
+- **Semantic Candidates (7)**:
+  - `bug-fix` (`defect`): Low-risk, focused unit/regression repair with hermetic test verification.
+  - `investigation` (`explain`): Read-mostly codebase and architectural explanation with zero mutations.
+  - `perf-issue` (`performance`): Isolated bottleneck profiling and optimization with benchmark verification.
+  - `prototype` (`prototype`): Disposable, bounded exploratory spike code.
+  - `refactoring` (`refactor`): Semantics-preserving code reorganization under test invariant protection.
+  - `runtime-forensics` (`runtime_diagnosis`): Diagnostic reproduction and log inspection without mutation.
+  - `trace-forensics` (`trace_diagnosis`): Trace inspection and stack analysis without state modification.
+
+- **Direct Deterministic (6)**:
+  - `autonomous-run`, `autopilot-full`, `autopilot-stack`, `babysit`, `pause-safely`, `session-pickup`: Explicit session life-cycle commands with deterministic execution boundaries.
+
+- **System-Two Gateways (10)**:
+  - `authoring-a-skill`, `eval`, `feature`, `hillclimb`, `multi-phase-plan`, `opening-a-pr`, `orchestrate`, `shipping`, `visual-parity`, `worktree-cleanup`: Multi-step, architecturally consequential, safety-critical, irreversible, or forge/PR interacting workflows requiring human-in-the-loop or System-Two planning.

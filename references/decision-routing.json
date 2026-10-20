@@ -3,9 +3,9 @@
   "source": {
     "repository": "cursor/plugins",
     "path_prefix": "pstack/",
-    "revision": "d0ef80d86795816da932a153458c5dbe192d294e",
-    "tree": "ef1c6ab4b7f1016cfbd4fbdb2e25cfa5ceecaa55",
-    "router_blob": "de51c56164ff3da8f958437e207d14cec7d7fe99"
+    "revision": "88d47514b82e7c44f00f2b2a72ff6dd12158038c",
+    "tree": "6e60624e2f172e2d8d796d6e644695ff5591e29f",
+    "router_blob": "21993f546032ca37671d5f1caf39c9a82ab4fa9d"
   },
   "fallback": "baseline",
   "routes": [
@@ -16,43 +16,43 @@
     },
     {
       "playbook": "autonomous-run",
-      "canonical_blob": "12c3a7d84effcacf3550cb893be67498d7b28a4a",
+      "canonical_blob": "e6b88703cf327a76bcdd424429345ac0efeca67e",
       "selection": "direct"
     },
     {
       "playbook": "autopilot-full",
-      "canonical_blob": "d5a68c339e25ac016ffad9c51d858f0f6c37937a",
+      "canonical_blob": "068882379d9bdc2298052e7762d67ac795715baf",
       "selection": "direct"
     },
     {
       "playbook": "autopilot-stack",
-      "canonical_blob": "750a7547235ae8eb340285684b9be7c36dff323a",
+      "canonical_blob": "d7bdc289e045e8bc7da97b4ddfccc8d6c9ed0800",
       "selection": "direct"
     },
     {
       "playbook": "babysit",
-      "canonical_blob": "683cf0ba889789cbe2d880fce667c75349f9ed12",
+      "canonical_blob": "51549ab2da11e5905342bbb3aadb93685c8ac348",
       "selection": "direct"
     },
     {
       "playbook": "bug-fix",
-      "canonical_blob": "eeebc42b7477d435d8ac61d631d84822f908f59c",
+      "canonical_blob": "b5de0bfa63add6ed38a38a8bd668cf36ac009c61",
       "selection": "semantic_candidate",
       "class": "defect"
     },
     {
       "playbook": "eval",
-      "canonical_blob": "3dae34e2ef0cbdd9bafa5ab372da5ea143d48452",
+      "canonical_blob": "768a894e275b1e9b198e83ceb6b46964e3f9d6db",
       "selection": "system_two"
     },
     {
       "playbook": "feature",
-      "canonical_blob": "79a6bbbe0ce61c3b5ef9af1ee8e3ccdb0557edc6",
+      "canonical_blob": "eb1040cb2631f3eeacd8f9f6469d7e97277f24ef",
       "selection": "system_two"
     },
     {
       "playbook": "hillclimb",
-      "canonical_blob": "c6441b92d30a71489d88eae5bfa8dc457da55cb1",
+      "canonical_blob": "e9cf267908a9737236b3a8a8a5a99fe9066f7554",
       "selection": "system_two"
     },
     {
@@ -63,17 +63,17 @@
     },
     {
       "playbook": "multi-phase-plan",
-      "canonical_blob": "f8ed78a6533cc5d738d3a3ec106bf2577d3f98ca",
+      "canonical_blob": "27e99947bd20575e2ff503dbfba985a4f0fa298e",
       "selection": "system_two"
     },
     {
       "playbook": "opening-a-pr",
-      "canonical_blob": "4e25989729174580e48ce36e265f298231c6de7f",
+      "canonical_blob": "d729a7a06c5b67e406b081e1777114bc03b66f4a",
       "selection": "system_two"
     },
     {
       "playbook": "orchestrate",
-      "canonical_blob": "d5b6d008026ff0177f52e22a6fb4b2edae5c87e2",
+      "canonical_blob": "4ccb24d76c5e190125cecc99d4a9b5c9eb2932d9",
       "selection": "system_two"
     },
     {
@@ -83,7 +83,7 @@
     },
     {
       "playbook": "perf-issue",
-      "canonical_blob": "405c7a4362bedbd4194a5ef234553adf0dff78c9",
+      "canonical_blob": "46dcc9963366992016dfb1d59ccaae977930f982",
       "selection": "semantic_candidate",
       "class": "performance"
     },
@@ -95,29 +95,29 @@
     },
     {
       "playbook": "refactoring",
-      "canonical_blob": "df2a863b531906c64f92b9f9d8feb62f8c7a8665",
+      "canonical_blob": "c04b07eeb8b8fa651d080729363466ab73d2fe40",
       "selection": "semantic_candidate",
       "class": "refactor"
     },
     {
       "playbook": "runtime-forensics",
-      "canonical_blob": "ba659bfe1c4c2f956f3285974bfdc941120f9948",
+      "canonical_blob": "6bf64240d1a890df290b98c632ad374d20ca9fd4",
       "selection": "semantic_candidate",
       "class": "runtime_diagnosis"
     },
     {
       "playbook": "session-pickup",
-      "canonical_blob": "9b2ed06e0ff8b01bf03b7a0d6a4cbb8ba3a46720",
+      "canonical_blob": "876b1433828ccc7c874123cdf300240abb285dd9",
       "selection": "direct"
     },
     {
       "playbook": "shipping",
-      "canonical_blob": "0f1d41f189222b991734015926a3b22607e1b92f",
+      "canonical_blob": "0a0c3cfde8948e3aa8ee80c6f3f9ce7e3e64fcba",
       "selection": "system_two"
     },
     {
       "playbook": "trace-forensics",
-      "canonical_blob": "48ed6b2f690215027eda96a1897ed98212bbd07a",
+      "canonical_blob": "bf1b003786503623d91ca173fc97a6e54eee3acf",
       "selection": "semantic_candidate",
       "class": "trace_diagnosis"
     },
@@ -128,7 +128,7 @@
     },
     {
       "playbook": "worktree-cleanup",
-      "canonical_blob": "39c9ef9f368ac63b0e4245503302a4c174e846d6",
+      "canonical_blob": "45e1af693cc40d0271249a0e98f15bfc815af615",
       "selection": "system_two"
     }
   ]
