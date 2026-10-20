@@ -5,6 +5,7 @@
 ## Authority and architecture
 
 - **Canonical behavior:** [cursor/plugins/pstack](https://github.com/cursor/plugins/tree/main/pstack), as pinned in `UPSTREAM` and `pstack.package.json#upstream_pin` (`88d47514b82e7c44f00f2b2a72ff6dd12158038c`, upstream plugin 0.15.29).
+- **Port release:** `pstack.package.json#version = 0.15.29-grokbuild.0`; that suffix denotes a portability release, not a newer upstream canonical contract.
 - **Portability implementation:** this repository. `skills/` owns shared semantic intent; `profiles/`, `scripts/drivers/`, host tool references, projected native manifests and receipts own host-specific mechanics.
 - **Role identity:** `pstack.package.json#/roles` is the unique shipped role ID/tier registry. `examples/portability/model-role-policy.example.json` demonstrates typed host choices, **not** an independent role registry or a live availability claim.
 - **Execution/control:** host runtime owns spawn/join/cancel, workspaces, session persistence and durable orchestration. Do not introduce a pstack scheduler, generic agent gateway, workflow DSL, role database or second model registry.
