@@ -715,6 +715,54 @@ Docs-only record from main `16752c9`. No code, receipt, fixture or evidence-inde
 
 Program Epic #610 is fulfilled and CLOSED.
 
+## Dated evidence (2026-10-20, waves 51-57: program #622 upstream 0.15.29 canonical synchronization)
+
+Docs-only record from main `090a0e8`. No code, receipt, fixture or evidence-index file is touched. This section is appended and no earlier wave's prose is rewritten.
+
+**Upstream 0.15.29 canonical synchronization complete.** Program #622 reconciled the canonical upstream delta (`cursor/plugins@88d47514b82e7c44f00f2b2a72ff6dd12158038c`, version 0.15.29) into `tommy-ca/pstack` across seven stacked waves, preserving the six-harness architecture, host boundary discipline, and durable evidence integrity:
+
+- Wave 51 (PR #633 / #623, commit `9277916`):
+  - Root diff freeze: classified all 70 upstream changed paths between applied pin `1dcc2bacde73ddd284803b7af28164d0436198fc` and tip `88d47514b82e7c44f00f2b2a72ff6dd12158038c` in `skills/swarm/references/classification.tsv`.
+  - Added `--target` CLI parameter to `scripts/canonical-index.py` for target drift assessment.
+  - Added fail-closed coverage test in `tests/test_swarm_partition.py` (`test_partition_print_coverage_cli_fails_closed_on_unclassified_entry`).
+
+- Wave 52 (PR #631 / #624, #632, commit `885be1a`):
+  - Adopted 4 canonical leaf skills: `skills/create-formal-verification-skill/SKILL.md`, `skills/maintain-formal-verification-skill/SKILL.md`, `skills/in-your-own-words/SKILL.md`, `skills/sharpen/SKILL.md`.
+  - Added upstream synchronization research and capability audit in `docs/research/upstream-0.15.29-sync-2026-10-20.md`.
+  - Resolved candidate eval provenance regression (#632) by isolating synthetic receipt mutations in `tests/test_surface_cache.py` to disposable directories and decoupling durability staleness assertions from candidate drift in `tests/test_evidence_durability.py`.
+
+- Wave 53 (PR #634 / #625, commit `29ecf6f`):
+  - Reconciled 6 principle leaves: `skills/principle-attack-the-premise/SKILL.md`, `skills/principle-fix-root-causes/SKILL.md`, `skills/principle-make-operations-idempotent/SKILL.md`, `skills/principle-migrate-callers-then-delete-legacy-apis/SKILL.md`, `skills/principle-test-behavior-not-implementation/SKILL.md`, `skills/principle-type-system-discipline/SKILL.md`, strictly preserving tracked upstream defect exception #474.
+  - Reconciled review and router skills: `skills/interrogate/references/lead-judgment.md`, `skills/interrogate/SKILL.md`, `skills/ketchup/SKILL.md`, `skills/poteto-help/SKILL.md`, `skills/poteto-help/references/recipes.md`, `skills/swarm/SKILL.md`, `skills/arena/SKILL.md`, `skills/poteto-mode/SKILL.md`.
+  - Preserved boundary isolation with zero hardcoded Cursor-specific models or primitives in shared skills.
+
+- Wave 54 (PR #635 / #626, commit `e4b7598`):
+  - Reconciled `skills/poteto-mode/scripts/orch/{store.ts,orch.ts,orch.test.ts}`: replaced external Graphite (`gt`) CLI dependency with native forge linear base-chain querying (`gh` and `origin`) featuring loop detection and linear chain validation.
+  - Reconciled `skills/poteto-mode/scripts/watch-pr` (`Code Review Gate` reclassification on `ACTION_REQUIRED` status).
+  - Reconciled `skills/poteto-mode/scripts/worktree-audit.sh` (multi-forge support with `ascii_downcase` state normalization).
+
+- Wave 55 (PR #639 / #627, commit `3fd1c69`):
+  - Reconciled playbooks: `skills/poteto-mode/playbooks/shipping.md` (condensed 6-step flow with forge resolution, contiguous verified run, `git patch-id` validation, bottom-up landing, host `schedule`/`monitor` capabilities); `skills/poteto-mode/playbooks/autopilot-full.md` (1-hour tick, ketchup catchup); `skills/poteto-mode/playbooks/autopilot-stack.md` (single topology writer); `skills/poteto-mode/playbooks/orchestrate.md` (base-chain querying); and subagent reasoning/speed guidance across 12 playbooks.
+  - Added `tests/test_shipping_safety.py` with 14 unit and invariant tests rejecting false shipping PASS across 8 negative scenarios.
+
+- Wave 56 (PR #641 / #628, commit `3257d23`):
+  - Reconciled Claude Code harness guide in `docs/harness/claude-code.md` with explicit non-validated status warning (candidate adapter, NOT a declared native host target in `pstack.package.json#host_targets`).
+  - Added `test_claude_harness_guide_integrity` in `tests/test_claude_driver.py` asserting six-host matrix preservation and guide contracts.
+
+- Wave 57 (PR #642 / #629, commit `090a0e8`):
+  - Promoted `UPSTREAM` pin to tree `88d47514b82e7c44f00f2b2a72ff6dd12158038c`, upstream tree SHA `34a0b817e5ea92375bb10f20b15cf750d4e8095a`, version `0.15.29-grokbuild.0`, and replaced stale 0.15.5 compare text.
+  - Bumped `pstack.package.json` version to `0.15.29-grokbuild.0`, `upstream_pin` to `88d47514b82e7c44f00f2b2a72ff6dd12158038c`, and all 6 host adapters.
+  - Projected package descriptor across `.grok-plugin`, `.codex-plugin`, `.omp-plugin`, `.opencode-plugin`, `.antigravity-plugin`, `.factory-plugin`, `.claude-plugin`, `.claude-plugin/marketplace.json`, and `.agents/plugins/marketplace.json`.
+  - Regenerated `openspec/canonical-inventory.json` (172 artifacts, PASS conformance, CURRENT freshness, 0 gaps, 0 commits ahead).
+  - Synced live Antigravity plugin installation via `scripts/sync-antigravity-plugin.py --sync --force` and verified zero drift.
+  - Restamped durable evidence receipts across all 5 durable hosts (`.audit/evidence/*-receipt.json`) and refreshed `index.json` to `ALL FRESH`.
+  - Refreshed DSH candidate scoring table (`tests/fixtures/eval_corpus_dsh/scoring_table_candidate.json`) with live probe scope hash.
+  - Updated tests for package descriptor, lifecycle, model role policy, and harness verification.
+  - Independently verified by `pstack-verifier` (`pro`) on PR #642 (Verdict: PASS) and merged to `main` (`090a0e8`). Closed #629.
+
+Program Epic #622 is fulfilled and CLOSED.
+
+
 
 
 
