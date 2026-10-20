@@ -199,6 +199,9 @@ def test_stop_cancel_requires_native_settlement_and_does_not_kill_unrelated_proc
     stale_or_changed_pid = real_pid + 999999
 
     def safe_terminate_process(target_pid: int, expected_owner_token: str, actual_token: Optional[str]) -> bool:
+        if target_pid <= 1:
+            # Never signal non-positive PIDs (0=process group, negative=broadcast) or init (1)
+            return False
         if actual_token != expected_owner_token:
             # PID reuse or mismatch: REFUSE to kill
             return False
@@ -207,6 +210,11 @@ def test_stop_cancel_requires_native_settlement_and_does_not_kill_unrelated_proc
     # Attempting to kill with mismatched process token fails closed
     assert not safe_terminate_process(stale_or_changed_pid, "owner-session-123", "owner-session-456")
     assert safe_terminate_process(stale_or_changed_pid, "owner-session-123", "owner-session-123")
+
+    # Guard against non-positive or system PIDs (0, 1, negative)
+    assert not safe_terminate_process(0, "owner-session-123", "owner-session-123")
+    assert not safe_terminate_process(1, "owner-session-123", "owner-session-123")
+    assert not safe_terminate_process(-1, "owner-session-123", "owner-session-123")
 
 
 # ---------------------------------------------------------------------------

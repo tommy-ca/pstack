@@ -140,7 +140,7 @@ def _isolation_residue(repo: Path, worktree_base: Path) -> Dict[str, Any]:
     sentinel = repo / ISOLATION_SENTINEL_FILE
     sentinel_intact = sentinel.is_file() and sentinel.read_text(encoding="utf-8") == ISOLATION_SENTINEL_BODY
     child_file_absent = not (repo / ISOLATION_CHILD_FILE).exists()
-    status_code, status_out = _git(repo, "status", "--porcelain")
+    status_code, status_out = _git(repo, "status", "--porcelain", "-uall")
     tree_clean = status_code == 0 and not status_out.strip()
     _, worktrees_out = _git(repo, "worktree", "list", "--porcelain")
     worktree_count = len([ln for ln in worktrees_out.splitlines() if ln.startswith("worktree ")])

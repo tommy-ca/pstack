@@ -355,3 +355,25 @@ def test_omp_isolation_live_requires_the_gate(tmp_path: Path, monkeypatch: pytes
     result = driver.isolation(tmp_path)
     assert result.evidence_level == "static"
     assert result.settlement is None
+
+
+def test_omp_isolation_residue_detects_untracked_files_with_show_untracked_files_no(tmp_path: Path) -> None:
+    import subprocess
+    from scripts.drivers.omp import _isolation_residue
+
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    subprocess.run(["git", "init", "--initial-branch=main"], cwd=repo, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.name", "Test"], cwd=repo, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=repo, check=True, capture_output=True)
+    (repo / "initial.txt").write_text("initial\n", encoding="utf-8")
+    subprocess.run(["git", "add", "."], cwd=repo, check=True, capture_output=True)
+    subprocess.run(["git", "commit", "-m", "init"], cwd=repo, check=True, capture_output=True)
+
+    # Set status.showUntrackedFiles = no
+    subprocess.run(["git", "config", "status.showUntrackedFiles", "no"], cwd=repo, check=True, capture_output=True)
+    # Child drops an untracked file into parent repo
+    (repo / "child_scratch.txt").write_text("leaked scratch\n", encoding="utf-8")
+
+    residue = _isolation_residue(repo, tmp_path / "worktrees")
+    assert residue["tree_clean"] is False, "Untracked child file must prevent tree_clean even when showUntrackedFiles=no"
