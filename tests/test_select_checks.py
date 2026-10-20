@@ -98,7 +98,9 @@ class TestCheckSelectionTable:
         result = vp.select_checks(["tests/test_shadow_routing.py"])
 
         assert _commands(result) == [[PY, "-m", "pytest", "-q", "tests/test_shadow_routing.py"]]
-        assert result["checks"][0]["tier"] == "outside_gate"
+        # The JEV offline suite is now required by the PR workflow, not an
+        # out-of-gate opt-in. Check selection must mirror that live policy.
+        assert result["checks"][0]["tier"] == "offline"
 
     def test_offline_listed_module_keeps_the_offline_tier_without_opt_in(self) -> None:
         result = vp.select_checks(["tests/test_route_resolver.py"])
