@@ -142,14 +142,14 @@ class TestJevTransportAndGuards:
             return {
                 "model": "typesafe/jev-1.14@20261017",
                 "provider": "openrouter",
-                "results": [
-                    {
-                        "id": "route_selection",
-                        "selected": "bug-fix",
+                "answers": {
+                    "route_selection": {
+                        "type": "choice",
+                        "choice": "bug-fix",
                         "confidence": 0.94,
                         "probabilities": {"bug-fix": 0.94, "investigation": 0.04, "perf-issue": 0.02},
                     }
-                ],
+                },
             }
 
         adapter = JevDecisionAdapter(enabled=True, profile="openrouter", transport_fn=mock_transport)
@@ -161,11 +161,16 @@ class TestJevTransportAndGuards:
         assert obs.provider_identity == "openrouter"
         assert obs.model_identity == "typesafe/jev-1.14@20261017"
 
-        # Verify wire payload structure
+        # Verify wire payload structure (official System One mapping contract, #664)
         assert captured["url"] == "https://openrouter.ai/api/v1/systemone"
         assert captured["payload"]["model"] == "typesafe/jev-1.14"
         assert captured["payload"]["state"] == "Fix null pointer in auth handler"
-        assert len(captured["payload"]["questions"][0]["options"]) == 3
+        assert isinstance(captured["payload"]["questions"], dict)
+        assert "route_selection" in captured["payload"]["questions"]
+        q_spec = captured["payload"]["questions"]["route_selection"]
+        assert q_spec["type"] == "choice"
+        assert len(q_spec["criteria"]) == 3
+        assert q_spec["criteria"]["bug-fix"] == "Bug fix"
 
     def test_opencode_free_wire_contract(
         self, sample_request: ChoiceRequest, monkeypatch: pytest.MonkeyPatch
@@ -180,14 +185,14 @@ class TestJevTransportAndGuards:
             return {
                 "model": "jev-1.13-free@20261017",
                 "provider": "opencode",
-                "results": [
-                    {
-                        "id": "route_selection",
-                        "selected": "investigation",
+                "answers": {
+                    "route_selection": {
+                        "type": "choice",
+                        "choice": "investigation",
                         "confidence": 0.89,
                         "probabilities": {"investigation": 0.89, "bug-fix": 0.11},
                     }
-                ],
+                },
             }
 
         adapter = JevDecisionAdapter(enabled=True, profile="opencode-zen", transport_fn=mock_transport)
@@ -273,3 +278,143 @@ class TestJevTransportAndGuards:
         assert not transport_called
         assert obs.outcome.status == "abstain"
         assert not obs.is_decided()
+
+    @pytest.mark.parametrize("bad_conf", [float("nan"), float("inf"), float("-inf"), -0.1, 1.1, True, False, "0.9"])
+    def test_nonfinite_confidence_rejected_as_invalid(
+        self, sample_request: ChoiceRequest, bad_conf: Any, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setenv("OPENCODE_API_KEY", "opencode-key")
+
+        def mock_transport(url: str, payload: Dict[str, Any], api_key: str) -> Dict[str, Any]:
+            return {
+                "model": "jev-1.13-free",
+                "provider": "opencode",
+                "answers": {
+                    "route_selection": {
+                        "type": "choice",
+                        "choice": "bug-fix",
+                        "confidence": bad_conf,
+                    }
+                },
+            }
+
+        adapter = JevDecisionAdapter(enabled=True, profile="opencode-zen", transport_fn=mock_transport)
+        obs = adapter.decide(sample_request)
+        assert obs.outcome.status == "invalid"
+        assert not obs.is_decided()
+
+    @pytest.mark.parametrize("bad_prob", [float("nan"), float("inf"), float("-inf"), -0.05, 1.2, True, False, "high"])
+    def test_nonfinite_probabilities_rejected_as_invalid(
+        self, sample_request: ChoiceRequest, bad_prob: Any, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setenv("OPENCODE_API_KEY", "opencode-key")
+
+        def mock_transport(url: str, payload: Dict[str, Any], api_key: str) -> Dict[str, Any]:
+            return {
+                "model": "jev-1.13-free",
+                "provider": "opencode",
+                "answers": {
+                    "route_selection": {
+                        "type": "choice",
+                        "choice": "bug-fix",
+                        "confidence": 0.90,
+                        "probabilities": {"bug-fix": bad_prob},
+                    }
+                },
+            }
+
+        adapter = JevDecisionAdapter(enabled=True, profile="opencode-zen", transport_fn=mock_transport)
+        obs = adapter.decide(sample_request)
+        assert obs.outcome.status == "invalid"
+        assert not obs.is_decided()
+
+    def test_unmatched_question_id_rejected_as_invalid(
+        self, sample_request: ChoiceRequest, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setenv("OPENCODE_API_KEY", "opencode-key")
+
+        def mock_transport(url: str, payload: Dict[str, Any], api_key: str) -> Dict[str, Any]:
+            return {
+                "model": "jev-1.13-free",
+                "provider": "opencode",
+                "answers": {
+                    "unrelated_question_id": {
+                        "type": "choice",
+                        "choice": "bug-fix",
+                        "confidence": 0.95,
+                    }
+                },
+            }
+
+        adapter = JevDecisionAdapter(enabled=True, profile="opencode-zen", transport_fn=mock_transport)
+        obs = adapter.decide(sample_request)
+        assert obs.outcome.status == "invalid"
+
+    def test_missing_model_or_provider_rejected_as_invalid(
+        self, sample_request: ChoiceRequest, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setenv("OPENCODE_API_KEY", "opencode-key")
+
+        def mock_transport(url: str, payload: Dict[str, Any], api_key: str) -> Dict[str, Any]:
+            return {
+                # missing model and provider
+                "answers": {
+                    "route_selection": {
+                        "type": "choice",
+                        "choice": "bug-fix",
+                        "confidence": 0.95,
+                    }
+                },
+            }
+
+        adapter = JevDecisionAdapter(enabled=True, profile="opencode-zen", transport_fn=mock_transport)
+        obs = adapter.decide(sample_request)
+        assert obs.outcome.status == "invalid"
+
+    def test_paid_spend_budget_enforcement(
+        self, sample_request: ChoiceRequest, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setenv("PSTACK_JEV_ALLOW_PAID", "1")
+        monkeypatch.setenv("OPENROUTER_API_KEY", "sk-mock-key")
+
+        call_count = 0
+
+        def mock_transport(url: str, payload: Dict[str, Any], api_key: str) -> Dict[str, Any]:
+            nonlocal call_count
+            call_count += 1
+            return {
+                "model": "typesafe/jev-1.14",
+                "provider": "openrouter",
+                "usage": {"cost_usd": 0.005},
+                "answers": {
+                    "route_selection": {
+                        "type": "choice",
+                        "choice": "bug-fix",
+                        "confidence": 0.95,
+                    }
+                },
+            }
+
+        # Budget of 0.010 allows exactly 2 calls at 0.005 each
+        custom_profile = JevProviderProfile(
+            profile_id="openrouter-test",
+            api_root="https://openrouter.ai/api",
+            configured_model="typesafe/jev-1.14",
+            credential_env="OPENROUTER_API_KEY",
+            paid=True,
+            max_spend_usd=0.010,
+        )
+        adapter = JevDecisionAdapter(enabled=True, profile=custom_profile, transport_fn=mock_transport)
+
+        # Call 1: spend 0.005 -> cumulative 0.005 <= 0.010
+        obs1 = adapter.decide(sample_request)
+        assert obs1.is_decided()
+
+        # Call 2: spend 0.005 -> cumulative 0.010 <= 0.010
+        obs2 = adapter.decide(sample_request)
+        assert obs2.is_decided()
+
+        # Call 3: cumulative 0.010 >= max_spend_usd 0.010 -> blocked before transport
+        obs3 = adapter.decide(sample_request)
+        assert obs3.outcome.status == "unavailable"
+        assert call_count == 2
