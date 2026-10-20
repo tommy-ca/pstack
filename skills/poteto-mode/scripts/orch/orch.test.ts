@@ -648,6 +648,23 @@ describe("Store", () => {
     await expect(store.units.list()).rejects.toThrow("store is closed");
     await expect(store.status.render()).rejects.toBeInstanceOf(UserError);
   });
+
+  it("decomposes orch modules cleanly below 500 lines each", async () => {
+    const modules = [
+      "types.ts",
+      "lock.ts",
+      "frontier.ts",
+      "report.ts",
+      "tables.ts",
+      "store.ts",
+    ];
+    for (const mod of modules) {
+      const file = join(import.meta.dir, mod);
+      const content = await readFile(file, "utf8");
+      const lines = content.split("\n").length;
+      expect(lines).toBeLessThan(500);
+    }
+  });
 });
 
 describe("orch CLI", () => {
