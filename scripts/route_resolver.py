@@ -31,6 +31,18 @@ from scripts.evidence_receipts import (
 _DROID_DEFINITION_ID = re.compile(r"^pstack-[a-z0-9-]+$")
 DEFAULT_ADVISORY_CONFIDENCE_THRESHOLD = 0.70
 
+# Class-specific confidence calibration thresholds per openspec/specs/pstack-jev-decisions/spec.md
+# Calibration is specific to class and consequence of error; universal thresholds are prohibited.
+CLASS_CONFIDENCE_THRESHOLDS: Dict[str, float] = {
+    "defect": 0.85,
+    "explain": 0.75,
+    "performance": 0.80,
+    "prototype": 0.70,
+    "refactor": 0.80,
+    "runtime_diagnosis": 0.85,
+    "trace_diagnosis": 0.85,
+}
+
 
 @lru_cache(maxsize=8)
 def _load_decision_routing(routing_path_str: str) -> Dict[str, Any]:
@@ -366,17 +378,30 @@ def resolve_skill_order_with_shadow(
         if not obs.is_decided() or obs.outcome.kind != "choice":
             return baseline
 
-        # 3. Class-specific confidence threshold (>= 0.70)
-        confidence = obs.confidence if obs.confidence is not None else 0.0
-        if confidence < DEFAULT_ADVISORY_CONFIDENCE_THRESHOLD:
-            return baseline
-
-        # 4. Scope gate: proposed choice must be an eligible semantic candidate
+        # 3. Scope gate: proposed choice must be an eligible semantic candidate
         recommended_pb = str(obs.outcome.value).strip()
         if recommended_pb not in semantic_candidates:
             return baseline
 
-        # 5. Mechanical staleness gate: verify evidence receipt freshness
+        candidate_route = semantic_candidates[recommended_pb]
+        candidate_class = str(candidate_route.get("class", "")).strip()
+        if not candidate_class or candidate_class not in CLASS_CONFIDENCE_THRESHOLDS:
+            # Uncalibrated or unknown class cannot be promoted
+            return baseline
+
+        # 4. Class-specific confidence calibration threshold
+        required_threshold = CLASS_CONFIDENCE_THRESHOLDS[candidate_class]
+        confidence = obs.confidence if obs.confidence is not None else 0.0
+        if confidence < required_threshold:
+            return baseline
+
+        # 5. Margin check: require margin >= 0.10 if multiple probabilities present
+        if obs.probabilities and len(obs.probabilities) > 1:
+            sorted_probs = sorted(obs.probabilities.values(), reverse=True)
+            if sorted_probs[0] - sorted_probs[1] < 0.10:
+                return baseline
+
+        # 6. Mechanical staleness gate: verify evidence receipt freshness
         if obs.provider_identity in ("unknown", "none", "") or obs.model_identity in ("unknown", "none", ""):
             return baseline
 
