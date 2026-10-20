@@ -118,18 +118,28 @@ class TestCheckSelectionTable:
     def test_specific_script_rule_beats_the_scripts_fallback(self) -> None:
         result = vp.select_checks(["scripts/verify-harness.py"])
 
-        assert _ids(result) == ["pytest:tests/test_verify_harness.py"]
-        assert _commands(result) == [[PY, "-m", "pytest", "-q", "tests/test_verify_harness.py"]]
+        assert _ids(result) == [
+            "pytest:tests/test_verify_harness.py",
+            "pytest:tests/test_verify_harness_archive.py",
+            "pytest:tests/test_verify_harness_guides.py",
+            "pytest:tests/test_verify_harness_playbooks.py",
+        ]
+        assert _commands(result) == [
+            [PY, "-m", "pytest", "-q", "tests/test_verify_harness.py"],
+            [PY, "-m", "pytest", "-q", "tests/test_verify_harness_archive.py"],
+            [PY, "-m", "pytest", "-q", "tests/test_verify_harness_guides.py"],
+            [PY, "-m", "pytest", "-q", "tests/test_verify_harness_playbooks.py"],
+        ]
 
     def test_decomposed_scripts_select_owning_modules_rather_than_scripts_fallback(self) -> None:
         decomposed = [
             ("scripts/surface_revisions.py", ["pytest:tests/test_portability_schemas.py", "pytest:tests/test_surface_cache.py"]),
-            ("scripts/evidence_durability.py", ["pytest:tests/test_evidence_durability.py", "pytest:tests/test_evidence_settlement.py", "pytest:tests/test_portability_schemas.py"]),
+            ("scripts/evidence_durability.py", ["pytest:tests/test_evidence_durability.py", "pytest:tests/test_evidence_index_resilience.py", "pytest:tests/test_evidence_settlement.py", "pytest:tests/test_portability_schemas.py"]),
             ("scripts/portability_types.py", ["pytest:tests/test_evidence_durability.py", "pytest:tests/test_portability_schemas.py", "pytest:tests/test_verdict_reduction.py"]),
             ("scripts/harness_scenarios.py", ["pytest:tests/test_verify_portable.py"]),
             ("scripts/select_checks.py", ["pytest:tests/test_select_checks.py", "pytest:tests/test_verify_portable.py"]),
             ("scripts/openspec_change.py", ["pytest:tests/test_verify_portable.py"]),
-            ("scripts/evidence_index.py", ["pytest:tests/test_evidence_durability.py", "pytest:tests/test_verify_portable.py"]),
+            ("scripts/evidence_index.py", ["pytest:tests/test_evidence_durability.py", "pytest:tests/test_evidence_index_resilience.py", "pytest:tests/test_verify_portable.py"]),
             ("scripts/model_role_resolver.py", ["pytest:tests/test_model_role_policy.py", "pytest:tests/test_setup_pstack.py"]),
             ("scripts/model_role_policy.py", ["pytest:tests/test_model_role_policy.py", "pytest:tests/test_setup_pstack.py"]),
             ("scripts/setup_pstack.py", ["pytest:tests/test_model_role_policy.py", "pytest:tests/test_setup_pstack.py"]),
