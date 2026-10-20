@@ -678,6 +678,43 @@ Docs-only record from main `997e2c3`. No code, receipt, fixture or evidence-inde
 
 Program Epic #600 is fulfilled and CLOSED.
 
+## Dated evidence (2026-10-20, waves 46-50: program #610 structural hygiene and test suite decomposition)
+
+Docs-only record from main `16752c9`. No code, receipt, fixture or evidence-index file is touched. This section is appended and no earlier wave's prose is rewritten.
+
+**Post-600 structural hygiene and test suite decomposition complete.** Program #610 delivered five remediations across stacked PRs, verified independently by `pro`-tier verifiers:
+
+- Wave 46 (PR #616 / #611, commit `eca23ad`):
+  - Deduplicated vocabulary constants into `scripts/portability_types.py` (single source of truth), replacing 19 redundant string definitions in `scripts/portability_schema.py`.
+  - Sealed `package_driver_revision` blindspot by adding `portability_types.py` to `compute_surface_revisions` in `scripts/surface_revisions.py`.
+  - Added test `test_mutated_vocabulary_module_stales_the_package_plane` and verified package plane cache invalidation.
+
+- Wave 47 (PR #617 / #612, commit `0028b53`):
+  - Unified local and driver scenario execution in `scripts/harness_scenarios.py` with pure return semantics (`results: List[ScenarioResult]`).
+  - Added `record: bool = True` parameter to `PortableVerifier.run_command`, preventing accidental verifier state mutation when driving scenarios.
+  - Added `test_execute_local_scenarios_in_isolation` proving functional purity.
+
+- Wave 48 (PR #618 / #613, commit `8ad943a`):
+  - Extracted `receipt_payload()` and `write_verification_evidence()` into `scripts/evidence_index.py`.
+  - Reduced `scripts/verify-portable.py` from 690 lines to 583 lines (well under 750 target budget).
+  - Maintained 100% backward compatibility via alias re-export.
+  - Added unit test `test_write_verification_evidence_in_isolation` in `tests/test_verify_portable.py`.
+
+- Wave 49 (PR #619 / #614, commit `96a28e6`):
+  - Decomposed monolithic `tests/test_evidence_durability.py` (3,038 lines) into three focused suites:
+    - `tests/test_surface_cache.py` (701 lines): AST stripping, core surface revisions, disk cache memoization, POSIX permission checks.
+    - `tests/test_evidence_settlement.py` (1,003 lines): scenario pins, child settlement preservation, verdict reduction, evidence levels.
+    - `tests/test_evidence_durability.py` (1,009 lines): 5/6-host durable receipts, index freshness, stat denied checks, doctor flows.
+  - Updated `CHECK_SELECTION_TABLE` in `scripts/select_checks.py`, offline workflow in `.github/workflows/portability-offline.yml`, and `tests/test_select_checks.py`.
+
+- Wave 50 (PR #620 / #615, commit `16752c9`):
+  - Upgraded `ChangeResolution` in `scripts/openspec_change.py` from untyped 3-tuple to `@dataclass(frozen=True)` with `Literal["explicit", "active", "none", "lookup-failed", "ambiguous"]` and full tuple backwards compatibility.
+  - Eliminated dead `PortableVerifier.cleanup()` no-op method and call sites from `scripts/verify-portable.py` (576 lines).
+  - Introduced `CheckRule(NamedTuple)` and `TypedDict` annotations (`SelectedCheck`, `CheckSelectionResult`, `ChangedPathsResult`, `SelectionPlan`) in `scripts/select_checks.py` (484 lines).
+  - Added unit tests in `tests/test_verify_portable.py` for immutability, tuple compatibility, cleanup removal, and rule typing.
+
+Program Epic #610 is fulfilled and CLOSED.
+
 
 
 
