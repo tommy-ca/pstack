@@ -47,6 +47,23 @@ def test_worktree_audit_classifies_untracked_files_as_hold_untracked(tmp_path: P
     assert bucket != "safe"
 
 
+def test_worktree_audit_classifies_hidden_untracked_files_as_hold_untracked(tmp_path: Path) -> None:
+    repo, wt = _init_repo(tmp_path)
+    _run_cmd(["git", "config", "status.showUntrackedFiles", "no"], cwd=wt)
+    (wt / "hidden_output.txt").write_text("precious hidden data\n", encoding="utf-8")
+
+    proc = _run_cmd([str(AUDIT_SCRIPT), str(repo)])
+    assert proc.returncode == 0, proc.stderr
+    lines = [ln for ln in proc.stdout.splitlines() if str(wt) in ln]
+    assert len(lines) == 1, proc.stdout
+    row = lines[0].split("\t")
+    bucket = row[7]
+    dirty = row[3]
+    assert "scratch:1" in dirty
+    assert bucket == "hold-untracked"
+    assert bucket != "safe"
+
+
 def test_worktree_audit_classifies_tracked_wip_as_hold_wip(tmp_path: Path) -> None:
     repo, wt = _init_repo(tmp_path)
     (wt / "README.md").write_text("# Modified\n", encoding="utf-8")
