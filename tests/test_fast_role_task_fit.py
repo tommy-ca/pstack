@@ -27,6 +27,7 @@ from scripts.eval_fast_role_task_fit import (
     FAST_WORKER_ELIGIBLE_ROLES,
     HOLDOUT_CORPUS,
     HoldoutTask,
+    _validated_calibrated_evidence,
     evaluate_task_baseline,
     evaluate_task_deterministic,
     evaluate_task_semantic,
@@ -202,6 +203,12 @@ class TestFastRoleTaskFitInvariants:
         # Without calibrated evidence, executed tier remains baseline
         assert outcome.assigned_tier == "strongest"
         assert "shadow observation" in outcome.notes
+
+    def test_unverified_fixture_does_not_authorize_promotion(self) -> None:
+        """Checked-in specimen fixture keeps the gate SHADOW, never ACTIVE."""
+        assert _validated_calibrated_evidence(ROOT, ROOT / "references" / "calibrated-evidence.json") is False
+        results = run_benchmark(ROOT, host="antigravity")
+        assert results["calibrated_evidence_loaded"] is False
 
     def test_complete_holdout_benchmark_runs_cleanly(self) -> None:
         """Verify the full 3-way benchmark executes with 0 violations."""
