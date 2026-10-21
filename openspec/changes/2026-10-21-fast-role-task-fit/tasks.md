@@ -46,8 +46,8 @@
 
 ## 4. Packaging, Verification & Ship
 
-- [ ] Commit changes to `feat/jev-fast-worker-task-fit`.
-- [ ] Push branch and open PR for Issue #670.
-- [ ] Dispatch `independent-verifier-exec` to independently verify diff and test execution.
-- [ ] Merge PR into `main` and close Issue #670.
-- [ ] Update Issue #517 with holdout evaluation findings and complete goal.
+- [x] Commit changes to `feat/jev-fast-worker-task-fit` (landed as `a737926` via PR #673, merged 2026-10-21).
+- [x] Push branch and open PR for Issue #670 (PR #673, MERGED).
+- [x] Dispatch `independent-verifier-exec` to independently verify diff and test execution (post-implementation thermo review recorded in `6664808`).
+- [x] Merge PR into `main` and close Issue #670 (CLOSED).
+- [x] Update Issue #517 with holdout evaluation findings and complete goal (both #517 and #670 CLOSED).
