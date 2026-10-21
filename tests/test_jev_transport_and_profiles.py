@@ -96,6 +96,93 @@ class TestJevProviderProfiles:
         adapter_custom = JevDecisionAdapter(enabled=True, profile=custom_prof)
         assert adapter_custom.profile.profile_id == "custom-profile"
 
+    def test_reject_insecure_http_scheme(self) -> None:
+        with pytest.raises(ValueError, match="must use 'https' scheme"):
+            JevProviderProfile(
+                profile_id="insecure-profile",
+                api_root="http://api.example.com",
+                configured_model="jev-v1",
+            )
+
+    def test_reject_loopback_origins(self) -> None:
+        for bad_url in ("https://127.0.0.1", "https://localhost", "https://app.localhost", "https://[::1]"):
+            with pytest.raises(ValueError, match="disallowed loopback"):
+                JevProviderProfile(
+                    profile_id="loopback-profile",
+                    api_root=bad_url,
+                    configured_model="jev-v1",
+                )
+
+    def test_reject_cloud_metadata_origins(self) -> None:
+        for bad_url in (
+            "https://169.254.169.254",
+            "https://metadata.google.internal",
+            "https://instance-data",
+            "https://metadata.azure.com",
+        ):
+            with pytest.raises(ValueError, match="disallowed"):
+                JevProviderProfile(
+                    profile_id="metadata-profile",
+                    api_root=bad_url,
+                    configured_model="jev-v1",
+                )
+
+    def test_reject_private_ip_origins(self) -> None:
+        for bad_url in ("https://10.0.0.1", "https://192.168.1.1", "https://172.16.0.1"):
+            with pytest.raises(ValueError, match="disallowed private IP"):
+                JevProviderProfile(
+                    profile_id="private-ip-profile",
+                    api_root=bad_url,
+                    configured_model="jev-v1",
+                )
+
+    def test_reject_sensitive_credential_envs(self) -> None:
+        for bad_env in ("AWS_SECRET_ACCESS_KEY", "GITHUB_TOKEN", "SSH_AUTH_SOCK", "DATABASE_URL", "PATH"):
+            with pytest.raises(ValueError, match="sensitive system/cloud credential"):
+                JevProviderProfile(
+                    profile_id="credential-leak-profile",
+                    api_root="https://api.example.com",
+                    configured_model="jev-v1",
+                    credential_env=bad_env,
+                )
+
+    def test_reject_unprefixed_credential_envs(self) -> None:
+        with pytest.raises(ValueError, match="does not match allowed provider prefixes"):
+            JevProviderProfile(
+                profile_id="unknown-env-profile",
+                api_root="https://api.example.com",
+                configured_model="jev-v1",
+                credential_env="MY_ARBITRARY_TOKEN",
+            )
+
+    def test_allow_insecure_origins_flag_for_test_harness(self) -> None:
+        # Insecure origin permitted only when explicit allow_insecure_origins=True
+        prof = JevProviderProfile(
+            profile_id="test-harness",
+            api_root="http://127.0.0.1:8080",
+            configured_model="jev-test",
+            allow_insecure_origins=True,
+        )
+        assert prof.api_root == "http://127.0.0.1:8080"
+
+    def test_paid_profile_validation_guards(self) -> None:
+        with pytest.raises(ValueError, match="max_spend_usd must be non-negative"):
+            JevProviderProfile(
+                profile_id="bad-paid-spend",
+                api_root="https://api.example.com",
+                configured_model="jev-v1",
+                paid=True,
+                max_spend_usd=-1.0,
+            )
+        with pytest.raises(ValueError, match="reservation_usd must be positive"):
+            JevProviderProfile(
+                profile_id="bad-reservation",
+                api_root="https://api.example.com",
+                configured_model="jev-v1",
+                paid=True,
+                reservation_usd=0.0,
+            )
+
 
 class TestJevTransportAndGuards:
     """Tests for wire execution, paid guards, failure modes, and response parsing."""

@@ -171,11 +171,62 @@ class TestPaidBudgetConcurrency:
         assert adapter.cumulative_spend_usd == 0.005
         assert adapter.reserved_spend_usd == 0.0
 
+    def test_actual_cost_exceeding_reservation_records_overshoot_and_fails_closed(#682
+        self, sample_choice_request: ChoiceRequest, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Provider billing more than reserved must be recorded truthfully and block further calls (#682)."""
+        monkeypatch.setenv("PSTACK_JEV_ALLOW_PAID", "1")
+        monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
+
+        # Provider returns unexpected actual charge of $0.025 (higher than $0.005 reservation and $0.010 cap)
+        def mock_transport(url: str, payload: Dict[str, Any], api_key: str) -> Dict[str, Any]:
+            return {
+                "model": "typesafe/jev-1.14",
+                "provider": "openrouter",
+                "usage": {"cost_usd": 0.025},
+                "answers": {
+                    "route_selection": {
+                        "type": "choice",
+                        "choice": "bug-fix",
+                        "confidence": 0.90,
+                    }
+                },
+            }
+
+        profile = JevProviderProfile(
+            profile_id="openrouter-test",
+            api_root="https://openrouter.ai/api",
+            configured_model="typesafe/jev-1.14",
+            credential_env="OPENROUTER_API_KEY",
+            paid=True,
+            max_spend_usd=0.010,
+            reservation_usd=0.005,
+        )
+        adapter = JevDecisionAdapter(enabled=True, profile=profile, transport_fn=mock_transport)
+
+        obs1 = adapter.decide(sample_choice_request)
+        assert obs1.is_decided()
+        assert adapter.cumulative_spend_usd == 0.025
+        assert adapter.spend_ledger.overshoot_count == 1
+        assert adapter.spend_ledger.is_overspent is True
+
+        # Second request must fail closed immediately without dispatch
+        obs2 = adapter.decide(sample_choice_request)
+        assert obs2.outcome.status == "unavailable"
+        assert adapter.cumulative_spend_usd == 0.025
+
 
 class TestPaidBudgetFormalInterleavingModel:
-    """Source-mapped state-machine exploration model checker (#680)."""
+    """Source-mapped state-machine exploration model checker (#680, #682)."""
 
-    def _explore_state_space(self, ledger_cls, cap: float, reservation: float, max_depth: int) -> Tuple[int, Optional[str]]:
+    def _explore_state_space(
+        self,
+        ledger_cls,
+        cap: float,
+        reservation: float,
+        max_depth: int,
+        allow_unbounded_charge: bool = False,
+    ) -> Tuple[int, Optional[str]]:
         """Exhaustively explore interleaved request transitions and check safety invariants."""
         # State: (spent, reserved, tuple of request states for 3 request slots)
         # Request slot state in: "IDLE", "RESERVED", "SETTLED"
@@ -215,8 +266,13 @@ class TestPaidBudgetFormalInterleavingModel:
                         new_reqs[req_idx] = "RESERVED"
                         queue.append((ledger.cumulative_spend_usd, ledger.reserved_spend_usd, tuple(new_reqs), depth + 1))
                 elif req_state == "RESERVED":
-                    # Transition 1: SETTLE with actual cost bounded by reservation
-                    for actual in (reservation * 0.5, reservation):
+                    # Transition 1: SETTLE with actual cost
+                    actual_charges = [reservation * 0.5, reservation]
+                    if allow_unbounded_charge:
+                        # Rogue provider returning cost exceeding reservation (#682)
+                        actual_charges.append(reservation * 2.5)
+
+                    for actual in actual_charges:
                         ledger.reset(cumulative_spend_usd=spent, reserved_spend_usd=reserved)
                         ledger.settle(reserved_amount=reservation, actual_cost=actual)
                         new_reqs = list(reqs)
@@ -239,15 +295,27 @@ class TestPaidBudgetFormalInterleavingModel:
 
         return states_explored, counterexample
 
-    def test_state_machine_exploration_proves_budget_safety(self) -> None:
-        """Prove safety across all reachable states with SpendLedger."""
+    def test_state_machine_exploration_proves_budget_safety_under_provider_bound(self) -> None:
+        """Prove safety across all reachable states when provider honors reservation ceiling (#680)."""
         cap = 0.010
         reservation = 0.005
         states_count, counterexample = self._explore_state_space(
-            SpendLedger, cap=cap, reservation=reservation, max_depth=6
+            SpendLedger, cap=cap, reservation=reservation, max_depth=6, allow_unbounded_charge=False
         )
         assert counterexample is None, counterexample
         assert states_count > 10, f"Expected rich state exploration, explored {states_count}"
+
+    def test_unbounded_provider_charge_demonstrates_need_for_provider_ceiling(#682
+        self,
+    ) -> None:
+        """Demonstrate that without provider-side ceiling, actual charges can exceed cap (#682)."""
+        cap = 0.010
+        reservation = 0.005
+        states_count, counterexample = self._explore_state_space(
+            SpendLedger, cap=cap, reservation=reservation, max_depth=6, allow_unbounded_charge=True
+        )
+        assert counterexample is not None
+        assert "Safety violated" in counterexample
 
     def test_negative_mutation_control_trips_counterexample(self) -> None:
         """Mutant: remove reservation check, checker must catch the overspend violation (#680)."""

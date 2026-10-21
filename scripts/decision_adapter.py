@@ -9,12 +9,14 @@ Shared pstack code does not import wire types or provider-specific SDKs.
 
 from __future__ import annotations
 
+import ipaddress
 import json
 import math
 import os
 import re
 import threading
 import urllib.error
+import urllib.parse
 import urllib.request
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
@@ -197,6 +199,86 @@ class SemanticDecisionProvider(ABC):
         pass
 
 
+ALLOWED_CREDENTIAL_PREFIXES: Tuple[str, ...] = ("OPENCODE_", "OPENROUTER_", "TYPESAFE_", "JEV_", "PSTACK_")
+DISALLOWED_CREDENTIAL_ENVS: frozenset[str] = frozenset({
+    "AWS_SECRET_ACCESS_KEY",
+    "AWS_ACCESS_KEY_ID",
+    "AWS_SESSION_TOKEN",
+    "GITHUB_TOKEN",
+    "GH_TOKEN",
+    "SSH_AUTH_SOCK",
+    "SSH_PRIVATE_KEY",
+    "DATABASE_URL",
+    "DB_PASSWORD",
+    "PATH",
+    "HOME",
+    "USER",
+    "SHELL",
+    "TERM",
+})
+DISALLOWED_HOSTS: frozenset[str] = frozenset({
+    "localhost",
+    "instance-data",
+    "metadata.google.internal",
+    "metadata.azure.com",
+    "metadata.packet.net",
+    "metadata",
+})
+
+
+def validate_provider_api_root(api_root: str, allow_insecure_origins: bool = False) -> None:
+    """Validate that provider api_root uses HTTPS and targets a permitted remote origin (#683)."""
+    raw = api_root.strip()
+    if not raw:
+        raise ValueError("Provider api_root cannot be empty")
+
+    parsed = urllib.parse.urlparse(raw)
+    if not allow_insecure_origins and parsed.scheme != "https":
+        raise ValueError(
+            f"Provider api_root must use 'https' scheme (got '{parsed.scheme}://'). "
+            "Plaintext HTTP is rejected to prevent credential leakage."
+        )
+
+    hostname = (parsed.hostname or "").strip().lower()
+    if not hostname:
+        raise ValueError(f"Provider api_root '{raw}' lacks a valid hostname")
+
+    if not allow_insecure_origins:
+        if hostname in DISALLOWED_HOSTS or hostname.endswith(".localhost"):
+            raise ValueError(
+                f"Provider api_root hostname '{hostname}' is a disallowed loopback or cloud metadata target (#683)"
+            )
+
+        try:
+            ip = ipaddress.ip_address(hostname)
+            if ip.is_loopback:
+                raise ValueError(f"Provider api_root IP '{hostname}' is a disallowed loopback address (#683)")
+            if ip.is_private:
+                raise ValueError(f"Provider api_root IP '{hostname}' is a disallowed private IP address (#683)")
+            if ip.is_link_local:
+                raise ValueError(f"Provider api_root IP '{hostname}' is a disallowed link-local/cloud-metadata IP address (#683)")
+            if ip.is_unspecified or ip.is_multicast or ip.is_reserved:
+                raise ValueError(f"Provider api_root IP '{hostname}' is a disallowed reserved/multicast IP address (#683)")
+        except ValueError as exc:
+            if "disallowed" in str(exc):
+                raise
+
+
+def validate_credential_env_name(env_name: str) -> None:
+    """Ensure credential environment variable name conforms to provider allowlist (#683)."""
+    raw = env_name.strip()
+    if not raw:
+        raise ValueError("credential_env cannot be empty")
+    if raw in DISALLOWED_CREDENTIAL_ENVS:
+        raise ValueError(
+            f"credential_env '{raw}' is a sensitive system/cloud credential and cannot be transmitted to provider endpoints (#683)"
+        )
+    if not any(raw.startswith(prefix) for prefix in ALLOWED_CREDENTIAL_PREFIXES):
+        raise ValueError(
+            f"credential_env '{raw}' does not match allowed provider prefixes: {ALLOWED_CREDENTIAL_PREFIXES} (#683)"
+        )
+
+
 @dataclass(frozen=True)
 class JevProviderProfile:
     """Configuration profile for a System One decision endpoint."""
@@ -208,16 +290,28 @@ class JevProviderProfile:
     paid: bool = False
     max_spend_usd: float = 0.0
     reservation_usd: float = 0.005
+    allow_insecure_origins: bool = False
+
+    def __post_init__(self) -> None:
+        validate_provider_api_root(self.api_root, allow_insecure_origins=self.allow_insecure_origins)
+        validate_credential_env_name(self.credential_env)
+        if self.paid:
+            if self.max_spend_usd < 0.0 or not math.isfinite(self.max_spend_usd):
+                raise ValueError(f"Paid provider profile max_spend_usd must be non-negative finite float (got {self.max_spend_usd})")
+            if self.reservation_usd <= 0.0 or not math.isfinite(self.reservation_usd):
+                raise ValueError(f"Paid provider profile reservation_usd must be positive finite float (got {self.reservation_usd})")
 
 
 class SpendLedger:
-    """Thread-safe atomic budget reservation and settlement ledger (#677, #680).
+    """Thread-safe atomic budget reservation and settlement ledger (#677, #680, #682).
 
-    Invariants:
-    1. 0.0 <= cumulative_spend_usd + reserved_spend_usd <= max_spend_usd
-    2. Atomic reservation before network egress
-    3. Mandatory settlement on all terminal outcomes (decided, abstain, invalid, error)
-    4. Conservative upper-bound charging when actual cost cannot be verified from provider usage
+    Distinction:
+    This ledger provides local, process-level thread-safe admission control based on preflight
+    reservation. It guarantees that local requests will not be dispatched if local estimated
+    spend exceeds max_spend_usd.
+
+    However, without a provider-enforced account-level quota or hard provider charge ceiling,
+    an external provider may return actual usage exceeding the reservation.
     """
 
     def __init__(self, max_spend_usd: float, reservation_usd: float = 0.005) -> None:
@@ -225,7 +319,14 @@ class SpendLedger:
         self.reservation_usd = float(reservation_usd)
         self.cumulative_spend_usd = 0.0
         self.reserved_spend_usd = 0.0
+        self.overshoot_count = 0
         self._lock = threading.Lock()
+
+    @property
+    def is_overspent(self) -> bool:
+        """Return True if cumulative spend has exceeded max_spend_usd (#682)."""
+        with self._lock:
+            return self.cumulative_spend_usd > self.max_spend_usd + 1e-9
 
     def reserve(self, amount: Optional[float] = None) -> bool:
         amt = self.reservation_usd if amount is None else float(amount)
@@ -245,6 +346,11 @@ class SpendLedger:
                 cost = amt
             else:
                 cost = float(actual_cost)
+
+            # Record overshoot if provider billed more than reserved amount (#682)
+            if cost > amt + 1e-9:
+                self.overshoot_count += 1
+
             self.cumulative_spend_usd += cost
             return cost
 
@@ -258,6 +364,7 @@ class SpendLedger:
         with self._lock:
             self.cumulative_spend_usd = float(cumulative_spend_usd)
             self.reserved_spend_usd = float(reserved_spend_usd)
+            self.overshoot_count = 0
 
     def set_cumulative_spend(self, val: float) -> None:
         """Thread-safe setter for cumulative spend (#677, #680)."""
