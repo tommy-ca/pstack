@@ -13,6 +13,7 @@ import json
 import math
 import os
 import re
+import threading
 import urllib.error
 import urllib.request
 from abc import ABC, abstractmethod
@@ -206,6 +207,51 @@ class JevProviderProfile:
     credential_env: str = "OPENCODE_API_KEY"
     paid: bool = False
     max_spend_usd: float = 0.0
+    reservation_usd: float = 0.005
+
+
+class SpendLedger:
+    """Thread-safe atomic budget reservation and settlement ledger (#677, #680).
+
+    Invariants:
+    1. 0.0 <= cumulative_spend_usd + reserved_spend_usd <= max_spend_usd
+    2. Atomic reservation before network egress
+    3. Mandatory settlement on all terminal outcomes (decided, abstain, invalid, error)
+    4. Conservative upper-bound charging when actual cost cannot be verified from provider usage
+    """
+
+    def __init__(self, max_spend_usd: float, reservation_usd: float = 0.005) -> None:
+        self.max_spend_usd = float(max_spend_usd)
+        self.reservation_usd = float(reservation_usd)
+        self.cumulative_spend_usd = 0.0
+        self.reserved_spend_usd = 0.0
+        self._lock = threading.Lock()
+
+    def reserve(self, amount: Optional[float] = None) -> bool:
+        amt = self.reservation_usd if amount is None else float(amount)
+        if amt <= 0.0 or not math.isfinite(amt):
+            return False
+        with self._lock:
+            if self.cumulative_spend_usd + self.reserved_spend_usd + amt > self.max_spend_usd + 1e-9:
+                return False
+            self.reserved_spend_usd += amt
+            return True
+
+    def settle(self, reserved_amount: Optional[float] = None, actual_cost: Optional[float] = None) -> float:
+        amt = self.reservation_usd if reserved_amount is None else float(reserved_amount)
+        with self._lock:
+            self.reserved_spend_usd = max(0.0, self.reserved_spend_usd - amt)
+            if actual_cost is None or not math.isfinite(actual_cost) or actual_cost < 0.0:
+                cost = amt
+            else:
+                cost = float(actual_cost)
+            self.cumulative_spend_usd += cost
+            return cost
+
+    def release(self, reserved_amount: Optional[float] = None) -> None:
+        amt = self.reservation_usd if reserved_amount is None else float(reserved_amount)
+        with self._lock:
+            self.reserved_spend_usd = max(0.0, self.reserved_spend_usd - amt)
 
 
 KNOWN_PROFILES: Dict[str, JevProviderProfile] = {
@@ -276,6 +322,7 @@ class JevDecisionAdapter(SemanticDecisionProvider):
         model_identity: str = "jev-pilot-v1",
         timeout_seconds: float = 2.0,
         transport_fn: Optional[Callable[[str, Dict[str, Any], str], Dict[str, Any]]] = None,
+        spend_ledger: Optional[SpendLedger] = None,
     ) -> None:
         if enabled is not None:
             self._enabled = enabled
@@ -297,7 +344,28 @@ class JevDecisionAdapter(SemanticDecisionProvider):
         self.model_identity = model_identity
         self.timeout_seconds = timeout_seconds
         self._transport_fn = transport_fn
-        self.cumulative_spend_usd = 0.0
+
+        if spend_ledger is not None:
+            self.spend_ledger = spend_ledger
+        else:
+            reservation = getattr(self.profile, "reservation_usd", 0.005)
+            self.spend_ledger = SpendLedger(
+                max_spend_usd=self.profile.max_spend_usd,
+                reservation_usd=reservation,
+            )
+
+    @property
+    def cumulative_spend_usd(self) -> float:
+        return self.spend_ledger.cumulative_spend_usd
+
+    @cumulative_spend_usd.setter
+    def cumulative_spend_usd(self, val: float) -> None:
+        with self.spend_ledger._lock:
+            self.spend_ledger.cumulative_spend_usd = float(val)
+
+    @property
+    def reserved_spend_usd(self) -> float:
+        return self.spend_ledger.reserved_spend_usd
 
     @property
     def is_enabled(self) -> bool:
@@ -347,7 +415,19 @@ class JevDecisionAdapter(SemanticDecisionProvider):
                 confidence=0.0,
             )
 
-        # Paid consent and budget guards (Issue #660)
+        # Check API key credentials before reservation
+        api_key = os.environ.get(self.profile.credential_env, "").strip()
+        if not api_key and self._transport_fn is None:
+            # Baseline stub without active wire connection returns abstain or unavailable
+            return ProviderObservation(
+                outcome=DecisionOutcome(status="abstain"),
+                provider_identity=self.provider_identity,
+                model_identity=self.model_identity,
+                confidence=0.0,
+            )
+
+        # Paid consent and atomic budget reservation guards (Issue #660, #677)
+        is_reserved = False
         if self.profile.paid:
             allow_paid = os.environ.get("PSTACK_JEV_ALLOW_PAID", "").strip().lower()
             if allow_paid not in ("1", "true", "yes", "on"):
@@ -362,23 +442,13 @@ class JevDecisionAdapter(SemanticDecisionProvider):
                     provider_identity=self.provider_identity,
                     model_identity=self.model_identity,
                 )
-            if self.cumulative_spend_usd >= self.profile.max_spend_usd:
+            if not self.spend_ledger.reserve():
                 return ProviderObservation(
                     outcome=DecisionOutcome(status="unavailable"),
                     provider_identity=self.provider_identity,
                     model_identity=self.model_identity,
                 )
-
-        # Check API key credentials
-        api_key = os.environ.get(self.profile.credential_env, "").strip()
-        if not api_key and self._transport_fn is None:
-            # Baseline stub without active wire connection returns abstain or unavailable
-            return ProviderObservation(
-                outcome=DecisionOutcome(status="abstain"),
-                provider_identity=self.provider_identity,
-                model_identity=self.model_identity,
-                confidence=0.0,
-            )
+            is_reserved = True
 
         # Official System One wire format (Issue #664):
         # questions is a mapping keyed by question ID with type, instructions, criteria
@@ -397,6 +467,7 @@ class JevDecisionAdapter(SemanticDecisionProvider):
         base = self.profile.api_root.rstrip("/")
         url = f"{base}/v1/systemone"
 
+        actual_cost: Optional[float] = None
         try:
             if self._transport_fn is not None:
                 resp_data = self._transport_fn(url, payload, api_key)
@@ -417,16 +488,15 @@ class JevDecisionAdapter(SemanticDecisionProvider):
                     resp_data = json.loads(resp_bytes.decode("utf-8"))
 
             parsed_obs = self._parse_provider_response(request, resp_data)
-            if self.profile.paid and parsed_obs.is_decided():
-                est_cost = 0.001
-                if isinstance(resp_data, dict):
-                    usage = resp_data.get("usage")
-                    if isinstance(usage, dict) and "cost_usd" in usage:
-                        try:
-                            est_cost = float(usage["cost_usd"])
-                        except (ValueError, TypeError):
-                            pass
-                self.cumulative_spend_usd += est_cost
+            if isinstance(resp_data, dict):
+                usage = resp_data.get("usage")
+                if isinstance(usage, dict) and "cost_usd" in usage:
+                    try:
+                        c = float(usage["cost_usd"])
+                        if math.isfinite(c) and c >= 0.0:
+                            actual_cost = c
+                    except (ValueError, TypeError):
+                        pass
             return parsed_obs
         except urllib.error.HTTPError:
             return ProviderObservation(
@@ -446,6 +516,9 @@ class JevDecisionAdapter(SemanticDecisionProvider):
                 provider_identity=self.provider_identity,
                 model_identity=self.model_identity,
             )
+        finally:
+            if self.profile.paid and is_reserved:
+                self.spend_ledger.settle(actual_cost=actual_cost)
 
     def _parse_provider_response(
         self, request: ChoiceRequest, data: Dict[str, Any]

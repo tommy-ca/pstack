@@ -292,7 +292,7 @@ class TestPersistedCalibratedEvidenceGate:
         receipt = CalibratedEvidenceReceipt(
             receipt_type="calibrated_routing_evidence",
             status="valid",
-            review_decision="accepted",
+            review_decision="promoted",
             source_revision="88d47514b82e7c44f00f2b2a72ff6dd12158038c",
             canonical_mapping_revision="0000000000000000000000000000000000000000000000000000000000000000",
             provider_identity="typesafe-jev",
@@ -300,6 +300,12 @@ class TestPersistedCalibratedEvidenceGate:
             policy_revision="1.0.0",
             class_thresholds={"defect": 0.70},
             eval_evidence={"pass_rate": 0.95},
+            provenance={
+                "kind": "provenance_receipt",
+                "evaluator_run_id": "eval-run-2026-10-21-001",
+                "reviewer": "security-reviewer@typesafe.ai",
+                "dataset_digest": "4c4dfc8ef30f8b88eb744883907c122a2bfd38b695da7864f7c220f4f9f688e1",
+            },
             created_at="2026-10-21T00:00:00Z",
             expires_at="2028-10-21T00:00:00Z",
         )
@@ -318,9 +324,30 @@ class TestPersistedCalibratedEvidenceGate:
         assert is_valid is False
         assert any("Canonical mapping drift" in r for r in reasons)
 
-    def test_known_good_fixture_promotes_under_explicitly_promoted_policy(
+    def test_default_specimen_fixture_fails_closed_without_explicit_provenance(
         self, grok_profile: Dict[str, Any], valid_candidate_observation: ProviderObservation
     ) -> None:
+        """The default checked-in specimen fixture must never authorize live promotion (#676)."""
+        query = "Fix null pointer exception in auth handler"
+        baseline = resolve_skill_order(grok_profile, query, ROOT)
+        assert baseline.status == "unmatched"
+
+        provider = FakeDecisionProvider(canned_observation=valid_candidate_observation)
+        res = resolve_skill_order_with_shadow(
+            grok_profile,
+            query,
+            ROOT,
+            provider=provider,
+            mode="advisory",
+            safe_summary=query,
+        )
+        assert res.advisory_promoted is False
+        assert res.status == baseline.status
+
+    def test_known_good_fixture_promotes_under_explicitly_promoted_policy(
+        self, grok_profile: Dict[str, Any], valid_candidate_observation: ProviderObservation, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setenv("PSTACK_JEV_ALLOW_FIXTURE_EVIDENCE", "1")
         query = "Fix null pointer exception in auth handler"
         baseline = resolve_skill_order(grok_profile, query, ROOT)
         assert baseline.status == "unmatched"
@@ -338,3 +365,90 @@ class TestPersistedCalibratedEvidenceGate:
         assert res.status == "matched"
         assert res.target == "bug-fix"
         assert res.kind == "playbook"
+
+    def test_promoted_provenance_receipt_authorizes_advisory_promotion(
+        self, grok_profile: Dict[str, Any], valid_candidate_observation: ProviderObservation, tmp_path: Path
+    ) -> None:
+        """A genuine signed provenance receipt authorizes advisory promotion (#676)."""
+        receipt_path = tmp_path / "provenance-receipt.json"
+        mapping_file = ROOT / "references" / "decision-routing.json"
+        mapping_hash = compute_file_sha256(mapping_file)
+
+        receipt = CalibratedEvidenceReceipt(
+            receipt_type="calibrated_routing_evidence",
+            status="valid",
+            review_decision="promoted",
+            source_revision="88d47514b82e7c44f00f2b2a72ff6dd12158038c",
+            canonical_mapping_revision=mapping_hash,
+            provider_identity="typesafe-jev",
+            model_identity="jev-pilot-v1",
+            policy_revision="1.0.0",
+            class_thresholds={"defect": 0.70},
+            eval_evidence={"dataset": "eval_corpus_dsh", "samples": 120, "pass_rate": 0.958},
+            provenance={
+                "kind": "provenance_receipt",
+                "evaluator_run_id": "eval-run-2026-10-21-001",
+                "reviewer": "independent-verifier@typesafe.ai",
+                "dataset_digest": "4c4dfc8ef30f8b88eb744883907c122a2bfd38b695da7864f7c220f4f9f688e1",
+            },
+            created_at="2026-10-21T00:00:00Z",
+            expires_at="2028-10-21T00:00:00Z",
+        )
+        receipt_path.write_text(receipt.to_json(), encoding="utf-8")
+
+        query = "Fix null pointer exception in auth handler"
+        provider = FakeDecisionProvider(canned_observation=valid_candidate_observation)
+        res = resolve_skill_order_with_shadow(
+            grok_profile,
+            query,
+            ROOT,
+            provider=provider,
+            mode="advisory",
+            safe_summary=query,
+            calibrated_evidence_path=receipt_path,
+        )
+        assert res.advisory_promoted is True
+        assert res.status == "matched"
+        assert res.target == "bug-fix"
+
+    def test_unverified_or_synthetic_provenance_rejected(self, tmp_path: Path) -> None:
+        """Synthetic evaluator or unverified reviewer must be rejected (#676)."""
+        receipt_path = tmp_path / "fake-receipt.json"
+        mapping_file = ROOT / "references" / "decision-routing.json"
+        mapping_hash = compute_file_sha256(mapping_file)
+
+        receipt = CalibratedEvidenceReceipt(
+            receipt_type="calibrated_routing_evidence",
+            status="valid",
+            review_decision="promoted",
+            source_revision="88d47514b82e7c44f00f2b2a72ff6dd12158038c",
+            canonical_mapping_revision=mapping_hash,
+            provider_identity="typesafe-jev",
+            model_identity="jev-pilot-v1",
+            policy_revision="1.0.0",
+            class_thresholds={"defect": 0.70},
+            eval_evidence={"pass_rate": 0.95},
+            provenance={
+                "kind": "provenance_receipt",
+                "evaluator_run_id": "fixture:synthetic-eval-001",
+                "reviewer": "unverified",
+                "dataset_digest": "short",
+            },
+            created_at="2026-10-21T00:00:00Z",
+            expires_at="2028-10-21T00:00:00Z",
+        )
+        receipt_path.write_text(receipt.to_json(), encoding="utf-8")
+        loaded = load_calibrated_evidence_receipt(receipt_path)
+        assert loaded is not None
+        is_valid, reasons = validate_calibrated_evidence(
+            receipt=loaded,
+            current_root=ROOT,
+            expected_provider="typesafe-jev",
+            expected_model="jev-pilot-v1",
+            candidate_class="defect",
+            confidence=0.90,
+        )
+        assert is_valid is False
+        assert any("evaluator_run_id" in r for r in reasons)
+        assert any("reviewer" in r for r in reasons)
+        assert any("dataset" in r for r in reasons)

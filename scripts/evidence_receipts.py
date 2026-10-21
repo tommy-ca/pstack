@@ -132,11 +132,11 @@ class DecisionReceipt(ReceiptBase):
 
 @dataclass(frozen=True)
 class CalibratedEvidenceReceipt(ReceiptBase):
-    """Separately persisted, pre-existing calibrated evidence receipt required for route promotion (#659)."""
+    """Separately persisted, pre-existing calibrated evidence receipt required for route promotion (#659, #676)."""
 
     receipt_type: str  # "calibrated_routing_evidence"
-    status: str  # "valid"
-    review_decision: str  # "accepted" or "promoted"
+    status: str  # "valid" or "specimen_fixture"
+    review_decision: str  # "accepted", "promoted", or "specimen_fixture"
     source_revision: str  # upstream canonical pin or git commit
     canonical_mapping_revision: str  # sha256 of references/decision-routing.json
     provider_identity: str
@@ -146,6 +146,7 @@ class CalibratedEvidenceReceipt(ReceiptBase):
     eval_evidence: Dict[str, Any]
     created_at: str
     expires_at: str
+    provenance: Optional[Dict[str, Any]] = None
     metadata: Dict[str, Any] = field(default_factory=dict)
 
 
@@ -161,12 +162,17 @@ def validate_calibrated_evidence(
     expected_model: str,
     candidate_class: str,
     confidence: float,
+    allow_fixture: bool = False,
 ) -> Tuple[bool, List[str]]:
-    """Mechanically validate a persisted calibrated evidence receipt for advisory route promotion (#659).
+    """Mechanically validate a persisted calibrated evidence receipt for advisory route promotion (#659, #676).
 
     Enforces:
-    1. Valid receipt_type and status ('calibrated_routing_evidence' and 'valid')
-    2. Durable accepted review decision ('accepted' or 'promoted')
+    1. Valid receipt_type ('calibrated_routing_evidence')
+    2. Distinction between specimen fixture and promoted provenance receipt (#676):
+       - Specimen fixtures (status='specimen_fixture' or review_decision='specimen_fixture')
+         require explicit allow_fixture=True (or PSTACK_JEV_ALLOW_FIXTURE_EVIDENCE=1)
+         and cannot authorize live advisory promotion by default.
+       - Promoted receipts require immutable evaluator_run_id, reviewer_identity, and dataset_digest.
     3. Positive match against expected provider and model identity snapshots
     4. Exact match of canonical mapping revision against current references/decision-routing.json
     5. Receipt freshness: must not be expired relative to current UTC time
@@ -175,18 +181,48 @@ def validate_calibrated_evidence(
     """
     reasons: List[str] = []
 
+    if os.environ.get("PSTACK_JEV_ALLOW_FIXTURE_EVIDENCE") == "1":
+        allow_fixture = True
+
     if receipt.receipt_type != "calibrated_routing_evidence":
         reasons.append(
             f"Invalid receipt_type: '{receipt.receipt_type}' (expected 'calibrated_routing_evidence')"
         )
 
-    if receipt.status != "valid":
-        reasons.append(f"Receipt status is '{receipt.status}', not 'valid'")
+    is_fixture = (
+        receipt.status == "specimen_fixture"
+        or receipt.review_decision == "specimen_fixture"
+        or (isinstance(receipt.provenance, dict) and receipt.provenance.get("kind") == "fixture")
+        or receipt.metadata.get("is_specimen_fixture") is True
+    )
 
-    if receipt.review_decision not in ("accepted", "promoted"):
+    if is_fixture and not allow_fixture:
         reasons.append(
-            f"Receipt review_decision is '{receipt.review_decision}', not 'accepted' or 'promoted'"
+            "Checked-in specimen fixture cannot authorize live advisory promotion without independent provenance"
         )
+    elif not is_fixture:
+        if receipt.status != "valid":
+            reasons.append(f"Receipt status is '{receipt.status}', not 'valid'")
+
+        if receipt.review_decision not in ("accepted", "promoted"):
+            reasons.append(
+                f"Receipt review_decision is '{receipt.review_decision}', not 'accepted' or 'promoted'"
+            )
+
+        prov = receipt.provenance or receipt.metadata.get("provenance")
+        if not isinstance(prov, dict):
+            reasons.append("Receipt lacks required provenance metadata for live promotion")
+        else:
+            run_id = str(prov.get("evaluator_run_id", "")).strip()
+            reviewer = str(prov.get("reviewer", "")).strip()
+            digest = str(prov.get("dataset_digest", "")).strip()
+
+            if not run_id or (run_id.startswith("fixture:") and not allow_fixture):
+                reasons.append(f"Invalid or synthetic evaluator_run_id: '{run_id}'")
+            if not reviewer or reviewer.lower() in ("unverified", "none", "placeholder", "unknown"):
+                reasons.append(f"Unverified reviewer identity: '{reviewer}'")
+            if not digest or len(digest) < 16:
+                reasons.append("Missing or invalid dataset immutable digest in provenance")
 
     if not receipt.provider_identity or receipt.provider_identity != expected_provider:
         reasons.append(
