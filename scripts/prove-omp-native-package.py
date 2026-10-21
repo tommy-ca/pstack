@@ -434,6 +434,13 @@ def prove(package_dir: Optional[Path], live: bool, agent: str, keep: bool) -> Di
     config_root = config_root_for(config_dirname)
     if config_root.exists():
         raise OSError(f"disposable config root already exists: {config_root}")
+    ambient_agent = Path.home() / ".omp" / "agent"
+    agent_dir = config_root / "agent"
+    agent_dir.mkdir(parents=True, exist_ok=True)
+    for cfg_name in ("models.yml", "config.yml"):
+        src = ambient_agent / cfg_name
+        if src.is_file():
+            shutil.copy(src, agent_dir / cfg_name)
     work_dir = temp_root / "work"
     work_dir.mkdir(parents=True)
     try:
