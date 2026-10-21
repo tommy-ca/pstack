@@ -209,8 +209,7 @@ class TestPaidBudgetFormalInterleavingModel:
             for req_idx, req_state in enumerate(reqs):
                 if req_state == "IDLE":
                     # Transition: RESERVE
-                    ledger.cumulative_spend_usd = spent
-                    ledger.reserved_spend_usd = reserved
+                    ledger.reset(cumulative_spend_usd=spent, reserved_spend_usd=reserved)
                     if ledger.reserve():
                         new_reqs = list(reqs)
                         new_reqs[req_idx] = "RESERVED"
@@ -218,24 +217,21 @@ class TestPaidBudgetFormalInterleavingModel:
                 elif req_state == "RESERVED":
                     # Transition 1: SETTLE with actual cost bounded by reservation
                     for actual in (reservation * 0.5, reservation):
-                        ledger.cumulative_spend_usd = spent
-                        ledger.reserved_spend_usd = reserved
+                        ledger.reset(cumulative_spend_usd=spent, reserved_spend_usd=reserved)
                         ledger.settle(reserved_amount=reservation, actual_cost=actual)
                         new_reqs = list(reqs)
                         new_reqs[req_idx] = "SETTLED"
                         queue.append((ledger.cumulative_spend_usd, ledger.reserved_spend_usd, tuple(new_reqs), depth + 1))
 
                     # Transition 2: FAIL / TIMEOUT (settle with reserved amount)
-                    ledger.cumulative_spend_usd = spent
-                    ledger.reserved_spend_usd = reserved
+                    ledger.reset(cumulative_spend_usd=spent, reserved_spend_usd=reserved)
                     ledger.settle(reserved_amount=reservation, actual_cost=None)
                     new_reqs = list(reqs)
                     new_reqs[req_idx] = "SETTLED"
                     queue.append((ledger.cumulative_spend_usd, ledger.reserved_spend_usd, tuple(new_reqs), depth + 1))
 
                     # Transition 3: CANCEL before dispatch (release)
-                    ledger.cumulative_spend_usd = spent
-                    ledger.reserved_spend_usd = reserved
+                    ledger.reset(cumulative_spend_usd=spent, reserved_spend_usd=reserved)
                     ledger.release(reserved_amount=reservation)
                     new_reqs = list(reqs)
                     new_reqs[req_idx] = "IDLE"
