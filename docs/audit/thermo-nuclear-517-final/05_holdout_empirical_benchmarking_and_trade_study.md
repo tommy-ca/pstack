@@ -1,7 +1,10 @@
 # Thermo-Nuclear Review: Holdout Empirical Benchmarking & Trade Study
 
+> **2026-10-21 evidence correction:** All prices and end-to-end latencies presented below are **simulated** from constants in `scripts/eval_fast_role_task_fit.py` (12 predeclared task fixtures). The 21.3% and 16.1% modeled cost savings and 350.1/395.0ms modeled latencies are a deterministic **trade-study sensitivity analysis**, not observed live API spend, real provider roundtrips, wall-clock measurements, blinded independent field performance, or generalizable financial savings. Acceptance work: [#678](https://github.com/tommy-ca/pstack/issues/678). Do not use this simulation to authorize JEV advisory decisions or paid calls.
+
+
 - **Subsystem**: Empirical Holdout Benchmarking & Model-Choice Trade Study  
-- **Primary Source**: Issue [#517](https://github.com/tommy-ca/pstack/issues/517), [`scripts/eval_fast_role_task_fit.py`](file:///home/tommyk/projects/pstack/scripts/eval_fast_role_task_fit.py)  
+- **Primary Source**: Issue [#517](https://github.com/tommy-ca/pstack/issues/517), [`scripts/eval_fast_role_task_fit.py`](https://github.com/tommy-ca/pstack/blob/66648081fbd7b4642f38ba0b273417a8891026ba/scripts/eval_fast_role_task_fit.py)  
 - **Crosslinks**: `qstack#1786`, `qstack#1789`, `qstack#1790`, `qstack#1791`  
 - **Base Revision**: `dea54d5cd723e06aa6a3afb78f9c3a79e82abb32`  
 - **Head Revision**: `a737926189ea73dfcb3d1685764d8a57ba8d2f2b`  
@@ -18,7 +21,7 @@ Issue [#517](https://github.com/tommy-ca/pstack/issues/517) mandated an empirica
 3. **Semantic JEV (C)**: Opt-in closed-set suggestions from a System One provider, gated behind class thresholds and persisted calibrated evidence receipts.
 
 ### Holdout Task Fixture Corpus
-The evaluation corpus in [`scripts/eval_fast_role_task_fit.py`](file:///home/tommyk/projects/pstack/scripts/eval_fast_role_task_fit.py#L97-L225) consists of 12 versioned tasks representing both core maintenance and quant trading workloads (from `qstack#1791`):
+The evaluation corpus in [`scripts/eval_fast_role_task_fit.py`](https://github.com/tommy-ca/pstack/blob/66648081fbd7b4642f38ba0b273417a8891026ba/scripts/eval_fast_role_task_fit.py#L97-L225) consists of 12 versioned tasks representing both core maintenance and quant trading workloads (from `qstack#1791`):
 
 | Task ID | Domain | Role | Diff LOC | Tests | Consequence | Optimal Tier |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
