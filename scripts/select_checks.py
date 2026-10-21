@@ -242,17 +242,32 @@ CHECK_SELECTION_TABLE: List[CheckRule] = [
     ),
     (
         "scripts/model_role_resolver.py",
-        ("tests/test_model_role_policy.py", "tests/test_setup_pstack.py"),
+        (
+            "tests/test_model_role_schema.py",
+            "tests/test_model_role_constraints.py",
+            "tests/test_model_role_profiles.py",
+            "tests/test_setup_pstack.py",
+        ),
         (),
     ),
     (
         "scripts/model_role_policy.py",
-        ("tests/test_model_role_policy.py", "tests/test_setup_pstack.py"),
+        (
+            "tests/test_model_role_schema.py",
+            "tests/test_model_role_constraints.py",
+            "tests/test_model_role_profiles.py",
+            "tests/test_setup_pstack.py",
+        ),
         (),
     ),
     (
         "scripts/setup_pstack.py",
-        ("tests/test_setup_pstack.py", "tests/test_model_role_policy.py"),
+        (
+            "tests/test_setup_pstack.py",
+            "tests/test_model_role_schema.py",
+            "tests/test_model_role_constraints.py",
+            "tests/test_model_role_profiles.py",
+        ),
         (),
     ),
     (
