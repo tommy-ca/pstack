@@ -465,8 +465,8 @@ def _validated_calibrated_evidence(root: Path, evidence_file: Path) -> bool:
     valid, _ = validate_calibrated_evidence(
         receipt=receipt,
         current_root=root,
-        expected_provider=receipt.provider_identity,
-        expected_model=receipt.model_identity,
+        expected_provider="typesafe-jev",
+        expected_model="jev-pilot-v1",
         candidate_class="refactor",
         confidence=1.0,
     )
