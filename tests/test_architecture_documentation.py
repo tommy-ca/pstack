@@ -88,7 +88,6 @@ def test_jev_implementation_caveats_remain_explicit() -> None:
         assert issue in doc
 
 
-
 def test_localized_readmes_agree_on_portable_authority_and_host_scope() -> None:
     """Both entry points distinguish a six-host descriptor from Grok-only setup."""
     english = (ROOT / "README.md").read_text(encoding="utf-8")
