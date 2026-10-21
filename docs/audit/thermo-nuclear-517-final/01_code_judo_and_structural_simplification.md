@@ -1,7 +1,7 @@
 # Thermo-Nuclear Review: Code Judo & Structural Simplification
 
 - **Subsystem**: Core Decision Pipeline & Fast-Worker Task-Fit  
-- **Primary Sources**: [`scripts/route_resolver.py`](file:///home/tommyk/projects/pstack/scripts/route_resolver.py), [`scripts/decision_adapter.py`](file:///home/tommyk/projects/pstack/scripts/decision_adapter.py), [`scripts/evidence_receipts.py`](file:///home/tommyk/projects/pstack/scripts/evidence_receipts.py), [`scripts/eval_fast_role_task_fit.py`](file:///home/tommyk/projects/pstack/scripts/eval_fast_role_task_fit.py)  
+- **Primary Sources**: [`scripts/route_resolver.py`](https://github.com/tommy-ca/pstack/blob/66648081fbd7b4642f38ba0b273417a8891026ba/scripts/route_resolver.py), [`scripts/decision_adapter.py`](https://github.com/tommy-ca/pstack/blob/66648081fbd7b4642f38ba0b273417a8891026ba/scripts/decision_adapter.py), [`scripts/evidence_receipts.py`](https://github.com/tommy-ca/pstack/blob/66648081fbd7b4642f38ba0b273417a8891026ba/scripts/evidence_receipts.py), [`scripts/eval_fast_role_task_fit.py`](https://github.com/tommy-ca/pstack/blob/66648081fbd7b4642f38ba0b273417a8891026ba/scripts/eval_fast_role_task_fit.py)  
 - **Base Revision**: `dea54d5cd723e06aa6a3afb78f9c3a79e82abb32`  
 - **Head Revision**: `a737926189ea73dfcb3d1685764d8a57ba8d2f2b`  
 - **Severity**: Comprehensive Assessment (Rule 0 & Rule 3)
@@ -19,7 +19,7 @@ Under **Rule 0 (Be ambitious about structural simplification)** and **Rule 3 (Bi
 ## 2. Code Judo Moves Executed in Waves 1–3
 
 ### A. Decoupling Route Resolution into a 3-Stage Pipeline (PR #671)
-In [`scripts/route_resolver.py`](file:///home/tommyk/projects/pstack/scripts/route_resolver.py), the function `resolve_skill_order_with_shadow` previously sprawled across 180 lines with 13 inline conditionals and 14 disparate return points. 
+In [`scripts/route_resolver.py`](https://github.com/tommy-ca/pstack/blob/66648081fbd7b4642f38ba0b273417a8891026ba/scripts/route_resolver.py), the function `resolve_skill_order_with_shadow` previously sprawled across 180 lines with 13 inline conditionals and 14 disparate return points. 
 
 The Code Judo restructuring factored this flow into three pure, single-responsibility helper stages:
 1. `_is_egress_bypassed`: Evaluates caller explicit commands, slash commands, direct needs, and System-Two playbooks in zero I/O time without constructing providers or sending bytes.
@@ -29,17 +29,17 @@ The Code Judo restructuring factored this flow into three pure, single-responsib
 This restructuring reduced `resolve_skill_order_with_shadow` from 180 lines of tangled branching down to ~80 lines of clean linear execution. All 8 rollback equivalence scenarios and 12 decision routing fixtures continue to pass with zero behavioral delta.
 
 ### B. Unit-Interval Parsing & Invalid Observation Factory (PR #671)
-In [`scripts/decision_adapter.py`](file:///home/tommyk/projects/pstack/scripts/decision_adapter.py), parsing responses from System One providers required validating that floats for confidence and probabilities were finite numbers in `[0.0, 1.0]`, explicitly rejecting boolean types. Previously, 25 lines of duplicate float and range checks were copy-pasted across `confidence` and `probabilities` parsing, and the fallback invalid observation structure was instantiated verbatim 8 times.
+In [`scripts/decision_adapter.py`](https://github.com/tommy-ca/pstack/blob/66648081fbd7b4642f38ba0b273417a8891026ba/scripts/decision_adapter.py), parsing responses from System One providers required validating that floats for confidence and probabilities were finite numbers in `[0.0, 1.0]`, explicitly rejecting boolean types. Previously, 25 lines of duplicate float and range checks were copy-pasted across `confidence` and `probabilities` parsing, and the fallback invalid observation structure was instantiated verbatim 8 times.
 
 Extracting a pure helper `_parse_unit_interval` and an internal factory method `self._invalid_obs` deleted ~35 lines of duplicate boilerplate, eliminated incidental branching, and guaranteed consistent validation semantics across all provider response fields.
 
 ### C. Polymorphic Receipt Lifecycle Consolidation (PR #671)
-In [`scripts/evidence_receipts.py`](file:///home/tommyk/projects/pstack/scripts/evidence_receipts.py), three distinct cryptographic receipts (`DecisionReceipt`, `CalibratedEvidenceReceipt`, `CheckEvidenceReceipt`) independently implemented `to_dict`, `to_json`, and varying flavors of deserialization. 
+In [`scripts/evidence_receipts.py`](https://github.com/tommy-ca/pstack/blob/66648081fbd7b4642f38ba0b273417a8891026ba/scripts/evidence_receipts.py), three distinct cryptographic receipts (`DecisionReceipt`, `CalibratedEvidenceReceipt`, `CheckEvidenceReceipt`) independently implemented `to_dict`, `to_json`, and varying flavors of deserialization. 
 
 Introducing `ReceiptBase` as a frozen mixin consolidated serialization and safe deserialization (with automatic field filtering) across all three receipt types. This eliminated duplicate boilerplate while making receipt serialization structurally identical across the codebase.
 
 ### D. Deterministic Fast-Worker Task-Fit (PR #673)
-In implementing Issue [#517](https://github.com/tommy-ca/pstack/issues/517) and [#670](https://github.com/tommy-ca/pstack/issues/670) via [`scripts/eval_fast_role_task_fit.py`](file:///home/tommyk/projects/pstack/scripts/eval_fast_role_task_fit.py), rather than bolting a dynamic runtime model dispatch mechanism or external framework onto pstack, the implementation adhered strictly to static planning via [`scripts/model_role_resolver.py`](file:///home/tommyk/projects/pstack/scripts/model_role_resolver.py).
+In implementing Issue [#517](https://github.com/tommy-ca/pstack/issues/517) and [#670](https://github.com/tommy-ca/pstack/issues/670) via [`scripts/eval_fast_role_task_fit.py`](https://github.com/tommy-ca/pstack/blob/66648081fbd7b4642f38ba0b273417a8891026ba/scripts/eval_fast_role_task_fit.py), rather than bolting a dynamic runtime model dispatch mechanism or external framework onto pstack, the implementation adhered strictly to static planning via [`scripts/model_role_resolver.py`](https://github.com/tommy-ca/pstack/blob/66648081fbd7b4642f38ba0b273417a8891026ba/scripts/model_role_resolver.py).
 
 The evaluator demonstrated that a purely deterministic task-feature routing approach (inspecting diff lines, test coverage, and role risk) outperforms semantic LLM decision routing on cost and latency:
 - **Cost**: 21.3% cost reduction vs baseline (compared to 16.1% for semantic JEV).
