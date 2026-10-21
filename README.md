@@ -14,7 +14,7 @@ The installation, first-session, model defaults and CLI command examples below a
 
 ## Credits
 
-The upstream playbooks and principles are [poteto](https://x.com/poteto)'s, from [official pstack](https://github.com/cursor/plugins/tree/main/pstack). This repository is **`tommy-ca/pstack`**, adapted from [aa2246740/pstack-grokbuild](https://github.com/aa2246740/pstack-grokbuild). Harness calls use Grok Build tools named in [grok-tools.md](./skills/poteto-mode/references/grok-tools.md). This port did not author those playbooks or principles.
+The upstream playbooks and principles are [poteto](https://x.com/poteto)'s, from [official pstack](https://github.com/cursor/plugins/tree/main/pstack). This repository is **`tommy-ca/pstack`**, adapted from [aa2246740/pstack-grokbuild](https://github.com/aa2246740/pstack-grokbuild). The Grok Build adapter uses the native tools in [grok-tools.md](./skills/poteto-mode/references/grok-tools.md); other hosts use their own profiles and references. This port did not author those playbooks or principles.
 
 poteto's idea is less slop, go deep first, and parallelize only after one agent can be trusted to write verifiable code. That philosophy is theirs. This README does not speak as poteto.
 
