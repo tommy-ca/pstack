@@ -1,7 +1,7 @@
 # Thermo-Nuclear Review: Architectural Containment & Zero External Bloat
 
 - **Subsystem**: Cross-Repository Architectural Boundary & Host Catalog Confinement  
-- **Primary Sources**: [`scripts/eval_fast_role_task_fit.py`](file:///home/tommyk/projects/pstack/scripts/eval_fast_role_task_fit.py), [`tests/test_fast_role_task_fit.py`](file:///home/tommyk/projects/pstack/tests/test_fast_role_task_fit.py), [`tests/test_context_overlays.py`](file:///home/tommyk/projects/pstack/tests/test_context_overlays.py)  
+- **Primary Sources**: [`scripts/eval_fast_role_task_fit.py`](https://github.com/tommy-ca/pstack/blob/66648081fbd7b4642f38ba0b273417a8891026ba/scripts/eval_fast_role_task_fit.py), [`tests/test_fast_role_task_fit.py`](https://github.com/tommy-ca/pstack/blob/66648081fbd7b4642f38ba0b273417a8891026ba/tests/test_fast_role_task_fit.py), [`tests/test_context_overlays.py`](https://github.com/tommy-ca/pstack/blob/66648081fbd7b4642f38ba0b273417a8891026ba/tests/test_context_overlays.py)  
 - **Base Revision**: `dea54d5cd723e06aa6a3afb78f9c3a79e82abb32`  
 - **Head Revision**: `a737926189ea73dfcb3d1685764d8a57ba8d2f2b`  
 - **Severity**: Architectural Discipline & Invariant Enforcement (Rule 6)
@@ -27,7 +27,7 @@ there was an acute risk that:
 ### Invariant 1: Complete PStack Containment & Zero External Bloat
 All decision transports, provider adapters, role resolvers, cryptographic receipts, and benchmark replay harnesses reside **100% inside `pstack`**. 
 
-This boundary is mechanically enforced by [`tests/test_context_overlays.py`](file:///home/tommyk/projects/pstack/tests/test_context_overlays.py#L360-L365):
+This boundary is mechanically enforced by [`tests/test_context_overlays.py`](https://github.com/tommy-ca/pstack/blob/66648081fbd7b4642f38ba0b273417a8891026ba/tests/test_context_overlays.py#L360-L365):
 ```python
 coupled = sorted(
     path.relative_to(ROOT).as_posix()
@@ -42,7 +42,7 @@ assert not coupled, f"pstack must not own a qstack router or model namespace: {c
 - The test suite passes with `0` coupled files.
 
 ### Invariant 2: Host Catalog Confinement (Contract #429)
-Candidate models evaluated for role fit must be sourced exclusively from actual host catalogs via `/setup-pstack` (such as [`.antigravity-plugin/models.json`](file:///home/tommyk/projects/pstack/.antigravity-plugin/models.json) or host profile catalogs).
+Candidate models evaluated for role fit must be sourced exclusively from actual host catalogs via `/setup-pstack` (such as [`.antigravity-plugin/models.json`](https://github.com/tommy-ca/pstack/blob/66648081fbd7b4642f38ba0b273417a8891026ba/.antigravity-plugin/models.json) or host profile catalogs).
 - Invented model identifiers (e.g. `gpt-fictional-fast`) are rejected with `BLOCKED` status and flagged as `unmapped_model_violation`.
 - Enforced by `load_host_model_catalog(host, root)` and verified in `tests/test_fast_role_task_fit.py::test_catalog_confinement_contract_429`.
 
