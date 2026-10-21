@@ -431,10 +431,6 @@ def _evaluate_advisory_promotion(
     if cal_receipt is None:
         return None
 
-    allow_fixture = (
-        os.environ.get("PSTACK_JEV_ALLOW_FIXTURE_EVIDENCE") == "1"
-        or os.environ.get("PSTACK_JEV_ALLOW_FIXTURE_PROMOTION") == "1"
-    )
     is_valid, _ = validate_calibrated_evidence(
         receipt=cal_receipt,
         current_root=root,
@@ -442,7 +438,6 @@ def _evaluate_advisory_promotion(
         expected_model=obs.model_identity,
         candidate_class=candidate_class,
         confidence=confidence,
-        allow_fixture=allow_fixture,
     )
     if not is_valid:
         return None

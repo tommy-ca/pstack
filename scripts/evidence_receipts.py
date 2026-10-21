@@ -149,6 +149,18 @@ class CalibratedEvidenceReceipt(ReceiptBase):
     provenance: Optional[Dict[str, Any]] = None
     metadata: Dict[str, Any] = field(default_factory=dict)
 
+    def __post_init__(self) -> None:
+        if self.provenance is None and "provenance" in self.metadata:
+            self.provenance = self.metadata.get("provenance")
+
+
+def is_fixture_evidence_allowed() -> bool:
+    """Return whether specimen fixture evidence is permitted to authorize live advisory routes (#676)."""
+    return (
+        os.environ.get("PSTACK_JEV_ALLOW_FIXTURE_EVIDENCE") == "1"
+        or os.environ.get("PSTACK_JEV_ALLOW_FIXTURE_PROMOTION") == "1"
+    )
+
 
 def load_calibrated_evidence_receipt(path: Optional[Union[Path, str]]) -> Optional[CalibratedEvidenceReceipt]:
     """Safely load and parse a persisted CalibratedEvidenceReceipt from disk."""
@@ -162,7 +174,7 @@ def validate_calibrated_evidence(
     expected_model: str,
     candidate_class: str,
     confidence: float,
-    allow_fixture: bool = False,
+    allow_fixture: Optional[bool] = None,
 ) -> Tuple[bool, List[str]]:
     """Mechanically validate a persisted calibrated evidence receipt for advisory route promotion (#659, #676).
 
@@ -181,8 +193,8 @@ def validate_calibrated_evidence(
     """
     reasons: List[str] = []
 
-    if os.environ.get("PSTACK_JEV_ALLOW_FIXTURE_EVIDENCE") == "1":
-        allow_fixture = True
+    if allow_fixture is None:
+        allow_fixture = is_fixture_evidence_allowed()
 
     if receipt.receipt_type != "calibrated_routing_evidence":
         reasons.append(
@@ -209,13 +221,12 @@ def validate_calibrated_evidence(
                 f"Receipt review_decision is '{receipt.review_decision}', not 'accepted' or 'promoted'"
             )
 
-        prov = receipt.provenance or receipt.metadata.get("provenance")
-        if not isinstance(prov, dict):
+        if not isinstance(receipt.provenance, dict):
             reasons.append("Receipt lacks required provenance metadata for live promotion")
         else:
-            run_id = str(prov.get("evaluator_run_id", "")).strip()
-            reviewer = str(prov.get("reviewer", "")).strip()
-            digest = str(prov.get("dataset_digest", "")).strip()
+            run_id = str(receipt.provenance.get("evaluator_run_id", "")).strip()
+            reviewer = str(receipt.provenance.get("reviewer", "")).strip()
+            digest = str(receipt.provenance.get("dataset_digest", "")).strip()
 
             if not run_id or (run_id.startswith("fixture:") and not allow_fixture):
                 reasons.append(f"Invalid or synthetic evaluator_run_id: '{run_id}'")

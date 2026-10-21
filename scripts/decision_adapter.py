@@ -253,6 +253,17 @@ class SpendLedger:
         with self._lock:
             self.reserved_spend_usd = max(0.0, self.reserved_spend_usd - amt)
 
+    def reset(self, cumulative_spend_usd: float = 0.0, reserved_spend_usd: float = 0.0) -> None:
+        """Reset ledger state with internal synchronization (#677, #680)."""
+        with self._lock:
+            self.cumulative_spend_usd = float(cumulative_spend_usd)
+            self.reserved_spend_usd = float(reserved_spend_usd)
+
+    def set_cumulative_spend(self, val: float) -> None:
+        """Thread-safe setter for cumulative spend (#677, #680)."""
+        with self._lock:
+            self.cumulative_spend_usd = float(val)
+
 
 KNOWN_PROFILES: Dict[str, JevProviderProfile] = {
     "opencode-console": JevProviderProfile(
@@ -314,6 +325,15 @@ class JevDecisionAdapter(SemanticDecisionProvider):
             model_identity=model,
         )
 
+    def _obs(self, status: str, confidence: float = 0.0) -> ProviderObservation:
+        """Helper to construct self-bound ProviderObservation instances."""
+        return ProviderObservation(
+            outcome=DecisionOutcome(status=status),
+            provider_identity=self.provider_identity,
+            model_identity=self.model_identity,
+            confidence=confidence,
+        )
+
     def __init__(
         self,
         enabled: Optional[bool] = None,
@@ -360,8 +380,7 @@ class JevDecisionAdapter(SemanticDecisionProvider):
 
     @cumulative_spend_usd.setter
     def cumulative_spend_usd(self, val: float) -> None:
-        with self.spend_ledger._lock:
-            self.spend_ledger.cumulative_spend_usd = float(val)
+        self.spend_ledger.set_cumulative_spend(val)
 
     @property
     def reserved_spend_usd(self) -> float:
@@ -408,46 +427,24 @@ class JevDecisionAdapter(SemanticDecisionProvider):
         """Internal invocation hook implementing System One wire protocol."""
         # Phase 1: Only ChoiceRequest is invoked
         if not isinstance(request, ChoiceRequest):
-            return ProviderObservation(
-                outcome=DecisionOutcome(status="abstain"),
-                provider_identity=self.provider_identity,
-                model_identity=self.model_identity,
-                confidence=0.0,
-            )
+            return self._obs("abstain")
 
         # Check API key credentials before reservation
         api_key = os.environ.get(self.profile.credential_env, "").strip()
         if not api_key and self._transport_fn is None:
             # Baseline stub without active wire connection returns abstain or unavailable
-            return ProviderObservation(
-                outcome=DecisionOutcome(status="abstain"),
-                provider_identity=self.provider_identity,
-                model_identity=self.model_identity,
-                confidence=0.0,
-            )
+            return self._obs("abstain")
 
         # Paid consent and atomic budget reservation guards (Issue #660, #677)
         is_reserved = False
         if self.profile.paid:
             allow_paid = os.environ.get("PSTACK_JEV_ALLOW_PAID", "").strip().lower()
             if allow_paid not in ("1", "true", "yes", "on"):
-                return ProviderObservation(
-                    outcome=DecisionOutcome(status="unavailable"),
-                    provider_identity=self.provider_identity,
-                    model_identity=self.model_identity,
-                )
+                return self._obs("unavailable")
             if self.profile.max_spend_usd <= 0.0:
-                return ProviderObservation(
-                    outcome=DecisionOutcome(status="unavailable"),
-                    provider_identity=self.provider_identity,
-                    model_identity=self.model_identity,
-                )
+                return self._obs("unavailable")
             if not self.spend_ledger.reserve():
-                return ProviderObservation(
-                    outcome=DecisionOutcome(status="unavailable"),
-                    provider_identity=self.provider_identity,
-                    model_identity=self.model_identity,
-                )
+                return self._obs("unavailable")
             is_reserved = True
 
         # Official System One wire format (Issue #664):
@@ -498,24 +495,10 @@ class JevDecisionAdapter(SemanticDecisionProvider):
                     except (ValueError, TypeError):
                         pass
             return parsed_obs
-        except urllib.error.HTTPError:
-            return ProviderObservation(
-                outcome=DecisionOutcome(status="unavailable"),
-                provider_identity=self.provider_identity,
-                model_identity=self.model_identity,
-            )
-        except (urllib.error.URLError, TimeoutError, OSError):
-            return ProviderObservation(
-                outcome=DecisionOutcome(status="unavailable"),
-                provider_identity=self.provider_identity,
-                model_identity=self.model_identity,
-            )
+        except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, OSError):
+            return self._obs("unavailable")
         except Exception:
-            return ProviderObservation(
-                outcome=DecisionOutcome(status="invalid"),
-                provider_identity=self.provider_identity,
-                model_identity=self.model_identity,
-            )
+            return self._obs("invalid")
         finally:
             if self.profile.paid and is_reserved:
                 self.spend_ledger.settle(actual_cost=actual_cost)
