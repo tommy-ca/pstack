@@ -2,15 +2,23 @@
 
 [English](README.md) · [简体中文](README.zh-CN.md)
 
-这是 official pstack 的 Grok Build 移植。玩法和原则来自 poteto 的 official pstack；调用层换成 grok-build 工具。
+本仓库是 [Cursor 官方 pstack](https://github.com/cursor/plugins/tree/main/pstack) 的**多 Agent Harness 可移植参考实现**。上游拥有原则、原子技能和 Playbook 的规范语义；本仓库维护各宿主的 profile、原生适配器和插件投影。**Grok Build 是其中一个宿主适配器，不是公共执行模型。**
+
+## 架构与支持范围
+
+请先阅读[宿主无关的权责划分与验证要求](./docs/architecture/harness-neutral-authority-2026-10-21.md)和[当前适配器/JEV 实现映射](./docs/architecture/harness-adapters-and-jev-2026-10-20.md)。
+
+当前包描述符列出了 **Grok、Codex、OMP（oh-my-pi）、OpenCode、Antigravity、Droid** 六个宿主目标，但仅有宿主声明或插件投影**不能证明真正执行过原生 Agent**；Droid 仍为候选状态，各宿主的验证证据也不同。运行时应读取 `profiles/<host>.json` 与对应的宿主工具映射；不支持的能力必须明确标为 GAP，不能借用 Grok 的调用方式。Claude/Copilot 的映射资料不等于已交付的宿主目标。
+
+下文的安装命令、首次会话、默认模型与 CLI 说明，除非另有注明，**只适用于 Grok Build**，不能作为跨宿主的规范配置。
 
 ## 来源
 
-22 个玩法（playbooks）和 23 条原则（principles）是 [poteto](https://x.com/poteto) 写的，出自 [official pstack](https://github.com/cursor/plugins/tree/main/pstack)。本仓库是 **`tommy-ca/pstack`**，适配自 [aa2246740/pstack-grokbuild](https://github.com/aa2246740/pstack-grokbuild)。调用层用 [grok-tools.md](./skills/poteto-mode/references/grok-tools.md) 里的 Grok Build 工具名。玩法和原则不是本仓库写的。
+这些玩法（playbooks）和原则（principles）是 [poteto](https://x.com/poteto) 写的，出自 [official pstack](https://github.com/cursor/plugins/tree/main/pstack)。本仓库是 **`tommy-ca/pstack`**，适配自 [aa2246740/pstack-grokbuild](https://github.com/aa2246740/pstack-grokbuild)。调用层用 [grok-tools.md](./skills/poteto-mode/references/grok-tools.md) 里的 Grok Build 工具名。玩法和原则不是本仓库写的。
 
 poteto 的判断是：少写 slop；想快就先做深；当你能信一个 agent 写出可核验的代码，才谈得上放心并行。那是 poteto 的想法，下面按来源引用，不当成本仓库作者的自述。
 
-## 安装
+## Grok Build 安装
 
 ```bash
 grok plugin install tommy-ca/pstack --trust
@@ -38,7 +46,7 @@ droid plugin install pstack@<basename> --scope user
 
 Droid 角色名是 `pstack-<role>`（`pstack-feature`，不是 `pstack:feature`）。spawn 契约、倒置的技能优先级（个人/项目技能会遮蔽插件技能）和能力缺口见 [droid-tools.md](./skills/poteto-mode/references/droid-tools.md)。离线检查（`droid doctor`、插件生命周期）只证明打包和工具面。自定义角色投喂和模型选择未经测试。
 
-## 第一次会话
+## Grok Build 第一次会话
 
 1. `grok plugin enable pstack` 若对 `config.toml` 报 EROFS，到**宿主 shell** 跑：
 
