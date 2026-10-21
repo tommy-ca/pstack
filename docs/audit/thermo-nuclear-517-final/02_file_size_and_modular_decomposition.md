@@ -1,7 +1,7 @@
 # Thermo-Nuclear Review: File Size & Modular Decomposition
 
 - **Subsystem**: Repository File Structure & Test Suites  
-- **Primary Sources**: [`tests/test_model_role_*.py`](file:///home/tommyk/projects/pstack/tests/), [`scripts/eval_fast_role_task_fit.py`](file:///home/tommyk/projects/pstack/scripts/eval_fast_role_task_fit.py), [`tests/test_fast_role_task_fit.py`](file:///home/tommyk/projects/pstack/tests/test_fast_role_task_fit.py)  
+- **Primary Sources**: [`tests/test_model_role_*.py`](https://github.com/tommy-ca/pstack/blob/66648081fbd7b4642f38ba0b273417a8891026ba/tests/), [`scripts/eval_fast_role_task_fit.py`](https://github.com/tommy-ca/pstack/blob/66648081fbd7b4642f38ba0b273417a8891026ba/scripts/eval_fast_role_task_fit.py), [`tests/test_fast_role_task_fit.py`](https://github.com/tommy-ca/pstack/blob/66648081fbd7b4642f38ba0b273417a8891026ba/tests/test_fast_role_task_fit.py)  
 - **Base Revision**: `dea54d5cd723e06aa6a3afb78f9c3a79e82abb32`  
 - **Head Revision**: `a737926189ea73dfcb3d1685764d8a57ba8d2f2b`  
 - **Severity**: Critical Standard Enforcement (Rule 1)
@@ -13,7 +13,7 @@
 **Rule 1** states:
 > *"Do not let a PR push a file from under 1k lines to over 1k lines without a very strong reason. Prefer extracting helpers, subcomponents, modules, or local abstractions instead of letting a file sprawl past 1000 lines."*
 
-Prior to Wave 2, [`tests/test_model_role_policy.py`](file:///home/tommyk/projects/pstack/tests/test_model_role_policy.py) had grown to **995 lines**. It combined schema validation, capability constraint checking, host profile discovery parsing, and role resolver planning tests in a single monolithic file. Adding fast-worker task-fit tests or role-choice test coverage directly into this file would have immediately breached the 1,000-line ceiling.
+Prior to Wave 2, [`tests/test_model_role_policy.py`](https://github.com/tommy-ca/pstack/blob/66648081fbd7b4642f38ba0b273417a8891026ba/tests/test_model_role_policy.py) had grown to **995 lines**. It combined schema validation, capability constraint checking, host profile discovery parsing, and role resolver planning tests in a single monolithic file. Adding fast-worker task-fit tests or role-choice test coverage directly into this file would have immediately breached the 1,000-line ceiling.
 
 ---
 
@@ -30,8 +30,8 @@ tests/test_model_role_policy.py (995 lines) [DELETED]
 ```
 
 In **PR #673 (Wave 3)**, the new fast-role holdout evaluator and test suite were authored with strict file size bounds:
-- [`scripts/eval_fast_role_task_fit.py`](file:///home/tommyk/projects/pstack/scripts/eval_fast_role_task_fit.py): **561 lines** (including 12 detailed holdout fixtures, three evaluation pipelines, and formatted CLI output).
-- [`tests/test_fast_role_task_fit.py`](file:///home/tommyk/projects/pstack/tests/test_fast_role_task_fit.py): **214 lines** (invariant assertions, catalog confinement, and boundary tests).
+- [`scripts/eval_fast_role_task_fit.py`](https://github.com/tommy-ca/pstack/blob/66648081fbd7b4642f38ba0b273417a8891026ba/scripts/eval_fast_role_task_fit.py): **561 lines** (including 12 detailed holdout fixtures, three evaluation pipelines, and formatted CLI output).
+- [`tests/test_fast_role_task_fit.py`](https://github.com/tommy-ca/pstack/blob/66648081fbd7b4642f38ba0b273417a8891026ba/tests/test_fast_role_task_fit.py): **214 lines** (invariant assertions, catalog confinement, and boundary tests).
 
 ---
 
@@ -76,7 +76,7 @@ A full line count audit of all Python scripts and test files in `pstack` confirm
 
 ## 4. CI Workflow Integration
 
-The decomposed test files and new fast-role test suite were integrated into [.github/workflows/portability-offline.yml](file:///home/tommyk/projects/pstack/.github/workflows/portability-offline.yml) and [`scripts/select_checks.py`](file:///home/tommyk/projects/pstack/scripts/select_checks.py):
+The decomposed test files and new fast-role test suite were integrated into [.github/workflows/portability-offline.yml](https://github.com/tommy-ca/pstack/blob/66648081fbd7b4642f38ba0b273417a8891026ba/.github/workflows/portability-offline.yml) and [`scripts/select_checks.py`](https://github.com/tommy-ca/pstack/blob/66648081fbd7b4642f38ba0b273417a8891026ba/scripts/select_checks.py):
 - Check selection rules map changes in `scripts/` to the decomposed test modules.
 - CI offline gate executes all decomposed suites hermetically.
 - Zero test coverage was lost; 100% of the original 47 model-role policy tests and 6 new fast-role tests pass.
