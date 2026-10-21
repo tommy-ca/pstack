@@ -44,6 +44,10 @@ def grok_profile() -> Dict[str, Any]:
 class TestClassConfidenceCalibration:
     """Tests for per-class thresholds and margin gates."""
 
+    @pytest.fixture(autouse=True)
+    def allow_fixture_evidence(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("PSTACK_JEV_ALLOW_FIXTURE_EVIDENCE", "1")
+
     def test_class_confidence_threshold_registry(self) -> None:
         expected_classes = {
             "defect",

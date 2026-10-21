@@ -4,7 +4,9 @@
 
 - Code-level exhaustive finite-state exploration over **135 cases** (5 query classes × 3 summary classes × 3 modes × 3 provider outcomes) against the real `resolve_skill_order_with_shadow`.
 - Early bypass/zero provider invocation, safe-summary-only context egress, shadow/off baseline equivalence, and no unauthorized advisory promotion.
-- Mutation negative control that temporarily replaces `_is_egress_bypassed` with a disabled gate; the actual invariant checker must detect forbidden egress. Python `monkeypatch` restores the production function.
+- Provenance-backed calibration verification gate distinguishing specimen fixtures from promoted receipts (#676); default specimen fixtures cannot authorize live advisory promotion without independent provenance.
+- Thread-safe atomic spend reservation and settlement ledger (`SpendLedger`) with model-checked state interleaving and negative mutation control (#677, #680).
+- Mutation negative controls that temporarily replace `_is_egress_bypassed` with a disabled gate and disable `SpendLedger` budget bounds; the actual invariant checkers must detect forbidden egress and overspend. Python `monkeypatch` restores the production functions.
 - Source sync record and bounded scope are in `../SKILL.md`; no fictional `TLA+`/Lean proof or model-family independence claim.
 
 ## How to get to it (user POV)

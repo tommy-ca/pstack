@@ -42,6 +42,30 @@ def grok_profile() -> dict:
 class TestAdvisoryPromotionPolicy:
     """Test suite for advisory promotion gates, safety invariants, and reversibility."""
 
+    @pytest.fixture(autouse=True)
+    def allow_fixture_evidence(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("PSTACK_JEV_ALLOW_FIXTURE_EVIDENCE", "1")
+
+    def test_default_specimen_fixture_fails_closed_without_override(
+        self, grok_profile: dict, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """The checked-in specimen fixture alone must not self-promote in production (#676)."""
+        monkeypatch.delenv("PSTACK_JEV_ALLOW_FIXTURE_EVIDENCE", raising=False)
+        monkeypatch.delenv("PSTACK_JEV_ALLOW_FIXTURE_PROMOTION", raising=False)
+        query = "The auth endpoint returns 500 when username contains plus sign"
+        obs = ProviderObservation(
+            outcome=DecisionOutcome(status="decided", kind="choice", value="bug-fix"),
+            provider_identity="typesafe-jev",
+            model_identity="jev-pilot-v1",
+            confidence=0.88,
+        )
+        provider = FakeDecisionProvider(canned_observation=obs)
+        res = resolve_skill_order_with_shadow(
+            grok_profile, query, ROOT, provider=provider, mode="advisory", safe_summary=query
+        )
+        assert res.advisory_promoted is False
+        assert res.status == "unmatched"
+
     def test_promotes_eligible_semantic_candidate_when_confident_and_fresh(
         self, grok_profile: dict
     ) -> None:

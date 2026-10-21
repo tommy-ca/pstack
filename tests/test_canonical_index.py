@@ -137,9 +137,11 @@ def test_canonical_index_classify_drift_cli(tmp_path: Path) -> None:
     report = json.loads(out.read_text(encoding="utf-8"))
     assert sum(report["buckets"].values()) == report["total_changed_files"]
     assert len(report["entries"]) == report["total_changed_files"]
-    if report["total_changed_files"] == 0:
+    if report["pin"] == report["upstream_head"]:
         # A pin landing exactly on upstream HEAD classifies no drift.
-        assert report["pin"] == report["upstream_head"]
+        assert report["total_changed_files"] == 0
+    elif report["total_changed_files"] == 0:
+        assert not report["entries"]
     else:
         assert report["entries"], "a classified report lists its entries"
     assert all({"path", "status", "bucket", "mode"} <= set(entry) for entry in report["entries"])

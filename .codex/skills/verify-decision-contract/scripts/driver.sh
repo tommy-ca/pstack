@@ -25,6 +25,7 @@ case "${1:-doctor}" in
     ;;
   doctor)
     run_bounded "bounded real-router invariants and mutation probe" python3 -m pytest -q tests/test_decision_bounded_invariants.py
+    run_bounded "atomic paid budget reservation and model-checked interleavings" python3 -m pytest -q tests/test_paid_budget_concurrency.py
     run_bounded "decision contract, privacy, evidence and wire regressions" python3 -m pytest -q \
       tests/test_verify_decision_contract.py \
       tests/test_jev_privacy_and_bypass.py \

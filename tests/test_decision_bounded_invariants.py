@@ -10,7 +10,12 @@ from __future__ import annotations
 
 from itertools import product
 import json
+import sys
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 import pytest
 
@@ -20,8 +25,6 @@ from scripts.decision_adapter import (
     ProviderObservation,
     SemanticDecisionProvider,
 )
-
-ROOT = Path(__file__).resolve().parents[1]
 
 # 5 input route classes x 3 summary classes x 3 modes x 3 observations =
 # 135 reachable combinations over the pinned Grok profile and canonical mapping.

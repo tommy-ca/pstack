@@ -78,6 +78,10 @@ def grok_profile() -> dict:
 class TestJevPrivacyAndBypassGuards:
     """Verifies that provider is never called on bypass routes or without positive safe context."""
 
+    @pytest.fixture(autouse=True)
+    def allow_fixture_evidence(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("PSTACK_JEV_ALLOW_FIXTURE_EVIDENCE", "1")
+
     def test_zero_provider_calls_on_explicit_slash_command(self, grok_profile: dict) -> None:
         spy = SpyDecisionProvider()
         query = "/tdd fix failing test in user auth"
