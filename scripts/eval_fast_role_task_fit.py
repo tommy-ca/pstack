@@ -31,7 +31,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from scripts.evidence_receipts import load_calibrated_evidence_receipt
+from scripts.evidence_receipts import load_calibrated_evidence_receipt, validate_calibrated_evidence
 
 # Cognitive Frontier Roles: immutable frontier tier, zero demotion permitted
 COGNITIVE_FRONTIER_ROLES: frozenset[str] = frozenset({
@@ -457,6 +457,21 @@ def compute_metrics(name: str, outcomes: List[PlanOutcome], tasks: Tuple[Holdout
     )
 
 
+def _validated_calibrated_evidence(root: Path, evidence_file: Path) -> bool:
+    """Gate promotion on a validated receipt, never on file presence alone."""
+    receipt = load_calibrated_evidence_receipt(evidence_file)
+    if receipt is None:
+        return False
+    valid, _ = validate_calibrated_evidence(
+        receipt=receipt,
+        current_root=root,
+        expected_provider=receipt.provider_identity,
+        expected_model=receipt.model_identity,
+        candidate_class="refactor",
+        confidence=1.0,
+    )
+    return valid
+
 def run_benchmark(
     root: Path,
     host: str = "antigravity",
@@ -466,7 +481,7 @@ def run_benchmark(
     catalog = load_host_model_catalog(host, root)
 
     evidence_file = calibrated_evidence_path or (root / "references" / "calibrated-evidence.json")
-    has_calibrated_evidence = evidence_file.is_file()
+    has_calibrated_evidence = _validated_calibrated_evidence(root, evidence_file)
 
     baseline_outcomes = [evaluate_task_baseline(t, catalog) for t in HOLDOUT_CORPUS]
     deterministic_outcomes = [evaluate_task_deterministic(t, catalog) for t in HOLDOUT_CORPUS]
