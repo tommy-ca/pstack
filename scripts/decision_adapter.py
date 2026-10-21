@@ -251,6 +251,10 @@ def validate_provider_api_root(api_root: str, allow_insecure_origins: bool = Fal
 
         try:
             ip = ipaddress.ip_address(hostname)
+        except ValueError:
+            ip = None
+
+        if ip is not None:
             if ip.is_loopback:
                 raise ValueError(f"Provider api_root IP '{hostname}' is a disallowed loopback address (#683)")
             if ip.is_private:
@@ -259,9 +263,6 @@ def validate_provider_api_root(api_root: str, allow_insecure_origins: bool = Fal
                 raise ValueError(f"Provider api_root IP '{hostname}' is a disallowed link-local/cloud-metadata IP address (#683)")
             if ip.is_unspecified or ip.is_multicast or ip.is_reserved:
                 raise ValueError(f"Provider api_root IP '{hostname}' is a disallowed reserved/multicast IP address (#683)")
-        except ValueError as exc:
-            if "disallowed" in str(exc):
-                raise
 
 
 def validate_credential_env_name(env_name: str) -> None:
@@ -314,6 +315,8 @@ class SpendLedger:
     an external provider may return actual usage exceeding the reservation.
     """
 
+    _FLOAT_TOLERANCE: float = 1e-9
+
     def __init__(self, max_spend_usd: float, reservation_usd: float = 0.005) -> None:
         self.max_spend_usd = float(max_spend_usd)
         self.reservation_usd = float(reservation_usd)
@@ -322,42 +325,46 @@ class SpendLedger:
         self.overshoot_count = 0
         self._lock = threading.Lock()
 
+    def _unreserve_locked(self, amount: Optional[float] = None) -> float:
+        """Helper to decrement active reservations under lock."""
+        amt = self.reservation_usd if amount is None else float(amount)
+        self.reserved_spend_usd = max(0.0, self.reserved_spend_usd - amt)
+        return amt
+
     @property
     def is_overspent(self) -> bool:
         """Return True if cumulative spend has exceeded max_spend_usd (#682)."""
         with self._lock:
-            return self.cumulative_spend_usd > self.max_spend_usd + 1e-9
+            return self.cumulative_spend_usd > self.max_spend_usd + self._FLOAT_TOLERANCE
 
     def reserve(self, amount: Optional[float] = None) -> bool:
         amt = self.reservation_usd if amount is None else float(amount)
         if amt <= 0.0 or not math.isfinite(amt):
             return False
         with self._lock:
-            if self.cumulative_spend_usd + self.reserved_spend_usd + amt > self.max_spend_usd + 1e-9:
+            if self.cumulative_spend_usd + self.reserved_spend_usd + amt > self.max_spend_usd + self._FLOAT_TOLERANCE:
                 return False
             self.reserved_spend_usd += amt
             return True
 
     def settle(self, reserved_amount: Optional[float] = None, actual_cost: Optional[float] = None) -> float:
-        amt = self.reservation_usd if reserved_amount is None else float(reserved_amount)
         with self._lock:
-            self.reserved_spend_usd = max(0.0, self.reserved_spend_usd - amt)
+            amt = self._unreserve_locked(reserved_amount)
             if actual_cost is None or not math.isfinite(actual_cost) or actual_cost < 0.0:
                 cost = amt
             else:
                 cost = float(actual_cost)
 
             # Record overshoot if provider billed more than reserved amount (#682)
-            if cost > amt + 1e-9:
+            if cost > amt + self._FLOAT_TOLERANCE:
                 self.overshoot_count += 1
 
             self.cumulative_spend_usd += cost
             return cost
 
     def release(self, reserved_amount: Optional[float] = None) -> None:
-        amt = self.reservation_usd if reserved_amount is None else float(reserved_amount)
         with self._lock:
-            self.reserved_spend_usd = max(0.0, self.reserved_spend_usd - amt)
+            self._unreserve_locked(reserved_amount)
 
     def reset(self, cumulative_spend_usd: float = 0.0, reserved_spend_usd: float = 0.0) -> None:
         """Reset ledger state with internal synchronization (#677, #680)."""
