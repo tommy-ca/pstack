@@ -132,6 +132,25 @@ def get_canonical_root(root: Path) -> Path:
             pass
     return root
 
+def _rooted_active_changes(root: Path) -> list[str] | None:
+    """List in-progress OpenSpec changes from the repo root, not the caller cwd."""
+    import os
+    from scripts.openspec_change import _active_openspec_changes
+    try:
+        old = os.getcwd()
+    except OSError:
+        return None
+    try:
+        os.chdir(root)
+        return _active_openspec_changes()
+    except Exception:
+        return None
+    finally:
+        try:
+            os.chdir(old)
+        except OSError:
+            pass
+
 
 DEFAULT_EVIDENCE_DIR = ROOT / ".audit" / "evidence"
 
@@ -238,7 +257,7 @@ class PortableVerifier:
         # the exact validated target. Only a real change name reaches the child;
         # none/lookup-failed/ambiguous are decided here and recorded as scenarios.
         state, change_name, active_names = resolve_openspec_change(
-            self.change, active_resolver=_active_openspec_changes
+            self.change, active_resolver=lambda: _rooted_active_changes(ROOT)
         )
         helper = "import sys; from scripts.openspec_change import validate_openspec_change; sys.exit(validate_openspec_change(sys.argv[1]))"
         if state in ("explicit", "active"):
