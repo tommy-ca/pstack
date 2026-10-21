@@ -1,7 +1,7 @@
 # Thermo-Nuclear Review: Spaghetti Control & Type Boundary Integrity
 
 - **Subsystem**: Type Safety, Egress Boundaries & Error Defenses  
-- **Primary Sources**: [`scripts/decision_adapter.py`](file:///home/tommyk/projects/pstack/scripts/decision_adapter.py), [`scripts/route_resolver.py`](file:///home/tommyk/projects/pstack/scripts/route_resolver.py), [`scripts/evidence_receipts.py`](file:///home/tommyk/projects/pstack/scripts/evidence_receipts.py)  
+- **Primary Sources**: [`scripts/decision_adapter.py`](https://github.com/tommy-ca/pstack/blob/66648081fbd7b4642f38ba0b273417a8891026ba/scripts/decision_adapter.py), [`scripts/route_resolver.py`](https://github.com/tommy-ca/pstack/blob/66648081fbd7b4642f38ba0b273417a8891026ba/scripts/route_resolver.py), [`scripts/evidence_receipts.py`](https://github.com/tommy-ca/pstack/blob/66648081fbd7b4642f38ba0b273417a8891026ba/scripts/evidence_receipts.py)  
 - **Base Revision**: `dea54d5cd723e06aa6a3afb78f9c3a79e82abb32`  
 - **Head Revision**: `a737926189ea73dfcb3d1685764d8a57ba8d2f2b`  
 - **Severity**: Critical Design & Safety Standards (Rule 2 & Rule 5)
@@ -20,7 +20,7 @@ Prior to the resilience remediation, the boundary between deterministic routing 
 ## 2. Spaghetti Control & Boundary Refactoring
 
 ### A. Egress Boundary Isolation via `SafeContext` & `EgressClass` (Rule 5)
-In [`scripts/decision_adapter.py`](file:///home/tommyk/projects/pstack/scripts/decision_adapter.py#L42-L75), context transmission is protected by a strong, non-nullable type boundary:
+In [`scripts/decision_adapter.py`](https://github.com/tommy-ca/pstack/blob/66648081fbd7b4642f38ba0b273417a8891026ba/scripts/decision_adapter.py#L42-L75), context transmission is protected by a strong, non-nullable type boundary:
 ```python
 class EgressClass(str, Enum):
     LOCAL_ONLY = "local_only"
@@ -32,7 +32,7 @@ class SafeContext:
     egress_class: EgressClass
 ```
 - A raw string query cannot be transmitted over the wire without passing through `validate_and_create_safe_context`.
-- If `safe_summary` is absent or classifies as `LOCAL_ONLY`, `_is_egress_bypassed` in [`scripts/route_resolver.py`](file:///home/tommyk/projects/pstack/scripts/route_resolver.py#L328) immediately terminates execution with zero I/O and zero provider construction.
+- If `safe_summary` is absent or classifies as `LOCAL_ONLY`, `_is_egress_bypassed` in [`scripts/route_resolver.py`](https://github.com/tommy-ca/pstack/blob/66648081fbd7b4642f38ba0b273417a8891026ba/scripts/route_resolver.py#L328) immediately terminates execution with zero I/O and zero provider construction.
 - No ad-hoc `if` statements are scattered in transport routines; the type contract enforces safety structurally.
 
 ### B. Unit-Interval Invariant Enforcement (Rule 2 & Rule 5)
@@ -52,7 +52,7 @@ def _parse_unit_interval(val: Any) -> Optional[float]:
 - Applied uniformly across `confidence` and every entry in the `probabilities` mapping.
 
 ### C. Safe Deserialization & Extra-Key Filtering (Rule 5)
-In [`scripts/evidence_receipts.py`](file:///home/tommyk/projects/pstack/scripts/evidence_receipts.py#L85-L95), `ReceiptBase.from_dict` introduces defensive schema filtering:
+In [`scripts/evidence_receipts.py`](https://github.com/tommy-ca/pstack/blob/66648081fbd7b4642f38ba0b273417a8891026ba/scripts/evidence_receipts.py#L85-L95), `ReceiptBase.from_dict` introduces defensive schema filtering:
 ```python
 @classmethod
 def from_dict(cls: Type[T], data: Dict[str, Any]) -> Optional[T]:
@@ -68,7 +68,7 @@ def from_dict(cls: Type[T], data: Dict[str, Any]) -> Optional[T]:
 Extraneous or maliciously injected fields are stripped prior to instantiation, while missing required fields safely fail to `None` rather than raising uncaught runtime exceptions.
 
 ### D. Bounded Fail-Open Error Trap (Rule 4)
-In [`scripts/route_resolver.py`](file:///home/tommyk/projects/pstack/scripts/route_resolver.py#L555-L558), provider communication is wrapped in a strict fail-open boundary:
+In [`scripts/route_resolver.py`](https://github.com/tommy-ca/pstack/blob/66648081fbd7b4642f38ba0b273417a8891026ba/scripts/route_resolver.py#L555-L558), provider communication is wrapped in a strict fail-open boundary:
 ```python
     except Exception:
         # Strict fail-open: no provider exception escapes to caller
