@@ -102,3 +102,30 @@ def test_cli_execution():
     assert proc.returncode == 0
     assert "violations_count" in proc.stdout
     assert '"violations_count": 0' in proc.stdout
+
+
+def test_portable_router_selects_the_active_host_not_grok() -> None:
+    """Shared router must not impose Grok setup or skill order on other hosts."""
+    router = (ROOT / "skills/poteto-mode/SKILL.md").read_text(encoding="utf-8")
+    skill_order = router.split("- **Skill order.**", 1)[1].split("\n", 1)[0]
+    assert "profiles/<host>.json" in skill_order
+    assert "references/<host>-tools.md" in skill_order
+    assert "current host" in skill_order
+    for inherited_default in (
+        "profiles/grok.json",
+        "references/grok-tools.md",
+        "~/.grok/skills",
+        "Grok Build's",
+        "Grok Build:",
+    ):
+        assert inherited_default not in router, inherited_default
+    assert "playbooks/authoring-a-skill.md" in router
+    assert "undeclared or unproven native capability is a GAP" in router
+
+
+def test_grok_setup_is_explicitly_adapter_scoped() -> None:
+    """A shared skill name may expose Grok setup only with a visible native guard."""
+    setup = (ROOT / "skills/setup-pstack/SKILL.md").read_text(encoding="utf-8")
+    assert "**Host scope: Grok Build adapter only.**" in setup
+    assert "do not run Grok probes or create `~/.grok/` files" in setup
+    assert "profiles/<host>.json" in setup
