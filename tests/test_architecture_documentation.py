@@ -86,3 +86,21 @@ def test_jev_implementation_caveats_remain_explicit() -> None:
     # to be solved by this documentation change or by a historical closed issue.
     for issue in ("#658", "#659", "#660", "#663", "#664"):
         assert issue in doc
+
+
+
+def test_localized_readmes_agree_on_portable_authority_and_host_scope() -> None:
+    """Both entry points distinguish a six-host descriptor from Grok-only setup."""
+    english = (ROOT / "README.md").read_text(encoding="utf-8")
+    chinese = (ROOT / "README.zh-CN.md").read_text(encoding="utf-8")
+    guide = "docs/architecture/harness-neutral-authority-2026-10-21.md"
+    assert guide in english
+    assert guide in chinese
+    assert "multi-harness reference port" in english
+    assert "多 Agent Harness 可移植参考实现" in chinese
+    assert "Grok Build is one host adapter" in english
+    assert "Grok Build 是其中一个宿主适配器" in chinese
+    assert "## Grok Build installation" in english
+    assert "## Grok Build 安装" in chinese
+    assert "## Grok Build 默认模型与 effort" in chinese
+    assert "Droid" in chinese
