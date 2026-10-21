@@ -44,7 +44,7 @@ export PSTACK_DECISION_EVIDENCE_DIR=/path/to/durable/evidence
 bash .codex/skills/verify-decision-contract/scripts/driver.sh drive
 ```
 
-The driver returns **BLOCKED (exit 2)** when either snapshot path is missing. It invokes `scripts/verify-decision-contract.py --require-clean` only for explicitly requested clean-tree checks; working on a branch with edits normally omits that flag. Use `features/README.md` sweep order for broad coverage.
+The driver returns **BLOCKED (exit 2)** when either snapshot path is missing. It intentionally does **not** pass `--require-clean` for in-progress PR verification. For release-grade proof from a clean checkout, invoke `scripts/verify-decision-contract.py` separately with the same independent snapshots and `--require-clean`, then record the exact HEAD. Use `features/README.md` sweep order for broad coverage.
 
 ## Proof bar
 
