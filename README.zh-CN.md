@@ -14,7 +14,7 @@
 
 ## 来源
 
-这些玩法（playbooks）和原则（principles）是 [poteto](https://x.com/poteto) 写的，出自 [official pstack](https://github.com/cursor/plugins/tree/main/pstack)。本仓库是 **`tommy-ca/pstack`**，适配自 [aa2246740/pstack-grokbuild](https://github.com/aa2246740/pstack-grokbuild)。调用层用 [grok-tools.md](./skills/poteto-mode/references/grok-tools.md) 里的 Grok Build 工具名。玩法和原则不是本仓库写的。
+这些玩法（playbooks）和原则（principles）是 [poteto](https://x.com/poteto) 写的，出自 [official pstack](https://github.com/cursor/plugins/tree/main/pstack)。本仓库是 **`tommy-ca/pstack`**，适配自 [aa2246740/pstack-grokbuild](https://github.com/aa2246740/pstack-grokbuild)。Grok Build 适配器采用 [grok-tools.md](./skills/poteto-mode/references/grok-tools.md) 的原生工具映射；其他宿主各用自己的 profile 与参考文档。玩法和原则不是本仓库写的。
 
 poteto 的判断是：少写 slop；想快就先做深；当你能信一个 agent 写出可核验的代码，才谈得上放心并行。那是 poteto 的想法，下面按来源引用，不当成本仓库作者的自述。
 
