@@ -161,7 +161,10 @@ class TestJevDecisionAdapter:
         assert obs.outcome.status == "unavailable"
         assert obs.model_identity == "none"
 
-    def test_explicit_enabled_gate(self) -> None:
+    def test_explicit_enabled_gate(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        for var in ("OPENCODE_API_KEY", "OPENCODE_API_KEY_1", "OPENROUTER_API_KEY",
+                    "TYPESAFE_API_KEY", "PSTACK_JEV_PROFILE"):
+            monkeypatch.delenv(var, raising=False)
         adapter = JevDecisionAdapter(enabled=True)
         assert adapter.is_enabled
 
