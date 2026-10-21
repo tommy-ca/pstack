@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
-"""Read-only check that this port kept pstack discipline and grok-build harness names.
+"""Read-only static doctor for shared pstack structure and Grok adapter compatibility.
 
-Does not edit files. Exit 0 on pass.
+This legacy script intentionally checks the *Grok* root plugin manifest and
+Grok effort defaults in addition to portable skill structure. Its exit 0 is
+NOT a six-host native conformance verdict, an observed multi-model run or a
+fresh evidence receipt. Use verify-portable.py and per-host observed evidence
+for capability/runtime claims. Does not edit files.
 """
 
 from __future__ import annotations
@@ -312,10 +316,12 @@ def main() -> None:
         if "Weak assertions that fail on `undefined`" not in tb_text:
             fail("principle-test-behavior-not-implementation must distinguish weak assertions from non-discriminating assertions")
 
+    # The root manifest is a Grok compatibility surface, not the canonical
+    # six-host package descriptor (pstack.package.json).
     plugin = json.loads((ROOT / "plugin.json").read_text(encoding="utf-8"))
     name = plugin.get("name", "")
     if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", name) or len(name) > 64:
-        fail(f"plugin.json name {name!r} is not grok-build kebab-case")
+        fail(f"Grok root plugin.json name {name!r} is not compatible kebab-case")
     skills_field = plugin.get("skills")
     if isinstance(skills_field, str):
         skill_paths = [skills_field]

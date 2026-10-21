@@ -4,6 +4,12 @@ The test suite has separate **offline contract checks**, **host-dependent CLI
 checks**, and **actual observed model-backed runtime proof**. Treat these as
 distinct scopes, not interchangeable PASS signals.
 
+## Legacy Grok doctor is not cross-host runtime proof
+
+`scripts/verify-harness.py` remains a **static shared-structure plus Grok root-manifest/effort compatibility checker**. Its name is historical: passing it does not verify native Codex, OMP, OpenCode, Antigravity or Droid execution, nor does it produce a current-host receipt. The root `plugin.json` and `skills/setup-pstack/references/defaults.toml` are Grok adapter surfaces. Portable capabilities, role identities and host support are defined by `pstack.package.json`, `schemas/portability/`, `profiles/<host>.json` and `scripts/verify-portable.py`.
+
+`skills/maintain-verification-skill/SKILL.md` must keep structural/source verification distinct from observed live feature coverage. The external [Thermos correctness/security](https://github.com/cursor/plugins/tree/main/thermos/skills/thermo-nuclear-review) and [code-quality](https://github.com/cursor/plugins/tree/main/thermos/skills/thermo-nuclear-code-quality-review) reviews apply to the actual patch; applying their checklists oneself is not independent multi-model Swarm/Arena/Interrogate evidence. A static CI green, source review or simulated scenario must never be recorded as a native `observed_live` PASS.
+
 ## Required pull-request gate (offline)
 
 `.github/workflows/portability-offline.yml` executes Python 3.12/pytest

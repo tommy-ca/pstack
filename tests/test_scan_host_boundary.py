@@ -129,3 +129,18 @@ def test_grok_setup_is_explicitly_adapter_scoped() -> None:
     assert "**Host scope: Grok Build adapter only.**" in setup
     assert "do not run Grok probes or create `~/.grok/` files" in setup
     assert "profiles/<host>.json" in setup
+
+
+def test_legacy_grok_doctor_does_not_claim_native_host_proof() -> None:
+    doctor = (ROOT / "scripts/verify-harness.py").read_text(encoding="utf-8")
+    tiers = (ROOT / "docs/verification-test-tiers.md").read_text(encoding="utf-8")
+    maintain = (ROOT / "skills/maintain-verification-skill/SKILL.md").read_text(
+        encoding="utf-8"
+    )
+    assert "static doctor for shared pstack structure and Grok adapter compatibility" in doctor
+    assert "NOT a six-host native conformance verdict" in doctor
+    assert "Legacy Grok doctor is not cross-host runtime proof" in tiers
+    assert "scripts/verify-portable.py" in tiers
+    assert "thermo-nuclear-review" in maintain
+    assert "thermo-nuclear-code-quality-review" in maintain
+    assert "independent verifier has not actually checked the current patch" in maintain
