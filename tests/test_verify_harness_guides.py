@@ -253,7 +253,12 @@ def test_first_session_names_sandbox_reload_and_slash() -> None:
     setup = (ROOT / "docs/guide/01-setup.md").read_text(encoding="utf-8")
     assert not (ROOT / "commands").exists()
     for text in (en, zh, setup):
-        assert "## First session" in text or "## Grok Build first session" in text or "## 第一次会话" in text
+        assert (
+            "## First session" in text
+            or "## Grok Build first session" in text
+            or "## 第一次会话" in text
+            or "## Grok Build 第一次会话" in text
+        )
         assert "grok --sandbox off plugin enable pstack" in text
         assert "pstack:how-explorer" in text
         assert "/poteto-mode" in text

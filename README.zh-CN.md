@@ -73,7 +73,7 @@ Droid 角色名是 `pstack-<role>`（`pstack-feature`，不是 `pstack:feature`�
 
 其余技能是按需的。`/poteto-mode` 会在步骤需要时自己去调。
 
-## 默认模型与 effort
+## Grok Build 默认模型与 effort
 
 装完就能用，不必先 `/setup-pstack`。
 
@@ -83,7 +83,7 @@ Droid 角色名是 `pstack-<role>`（`pstack-feature`，不是 `pstack:feature`�
 
 没有覆盖文件就用上述出厂值。toml 里缺键、`inherit-parent` 或 `auto` 时，省略 `model`。`/setup-pstack` 会按当前 CLI 的 `use one of:` 再探测一遍；若分层变了就重写。二进制以后多出新档位，要再跑一次 setup。子 skill 看不到新 enum。
 
-## 这不是 Cursor 插件
+## Grok Build 与 Cursor 使用不同的配置路径
 
 这里的 [`/setup-pstack`](./skills/setup-pstack/SKILL.md) 只给 Grok Build 配模型和 effort。官方 Cursor `/setup-pstack`（Cursor 里，或 Grok Bot 里那份）是另一个插件。那份会写 `~/.cursor/rules`，并用 Cursor 的模型名。不要在 Grok Build 上跑那份，也不会在这里生效。
 
