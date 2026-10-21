@@ -207,8 +207,8 @@ class TestFastRoleTaskFitInvariants:
         """Verify the full 3-way benchmark executes with 0 violations."""
         results = run_benchmark(ROOT, host="antigravity")
         assert results["holdout_tasks_count"] == 12
-        assert results["qstack_tasks_count"] == 4
+        assert results["quant_tasks_count"] == 4
         assert results["invariants"]["cognitive_frontier_demotions"] == 0
         assert results["invariants"]["unmapped_model_violations"] == 0
-        assert results["invariants"]["zero_qstack_bloat_enforced"] is True
+        assert results["invariants"]["zero_external_bloat_enforced"] is True
         assert results["cost_savings"]["deterministic_vs_baseline_pct"] > 15.0

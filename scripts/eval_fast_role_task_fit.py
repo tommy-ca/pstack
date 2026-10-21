@@ -8,7 +8,7 @@ Compares:
   (C) Opt-in closed-set System One (JEV) suggestions for low-risk fast workers
 
 Enforces:
-  1. Zero Bloat to QStack: Logic resides 100% in pstack; QStack is a thin consumer.
+  1. Zero External Bloat: Logic resides 100% in pstack; external consumers are thin.
   2. Catalog Confinement (Contract #429): Candidate models must exist in host catalog.
   3. Cognitive Tier Protection: High-capability roles (architect, independent-verifier,
      arena-cross-judge-pool, judgment-and-prose, feature) cannot be demoted.
@@ -84,7 +84,7 @@ class HoldoutTask:
     """Holdout task specification representing realistic developer and quant workloads."""
     id: str
     description: str
-    domain: str  # "pstack-core" | "qstack-quant"
+    domain: str  # "pstack-core" | "quant-domain"
     target_role: str
     diff_loc: int
     has_test_coverage: bool
@@ -93,7 +93,7 @@ class HoldoutTask:
     expected_optimal_tier: str
 
 
-# Versioned holdout fixtures (including QStack replay/OMS tasks from qstack#1791)
+# Versioned holdout fixtures (including quant replay/OMS tasks from external benchmark #1791)
 HOLDOUT_CORPUS: Tuple[HoldoutTask, ...] = (
     HoldoutTask(
         id="core_comment_cleanup",
@@ -173,9 +173,9 @@ HOLDOUT_CORPUS: Tuple[HoldoutTask, ...] = (
         expected_optimal_tier="strongest",
     ),
     HoldoutTask(
-        id="qstack_oms_order_parser_opt",
-        description="Optimize memory allocations in FIX protocol order parser (qstack#1791)",
-        domain="qstack-quant",
+        id="quant_oms_order_parser_opt",
+        description="Optimize memory allocations in FIX protocol order parser (bench #1791)",
+        domain="quant-domain",
         target_role="refactoring",
         diff_loc=45,
         has_test_coverage=True,
@@ -184,9 +184,9 @@ HOLDOUT_CORPUS: Tuple[HoldoutTask, ...] = (
         expected_optimal_tier="fast-worker",
     ),
     HoldoutTask(
-        id="qstack_oms_risk_limits_audit",
-        description="Verify portfolio margin limit invariants against holdout orders (qstack#1791)",
-        domain="qstack-quant",
+        id="quant_oms_risk_limits_audit",
+        description="Verify portfolio margin limit invariants against holdout orders (bench #1791)",
+        domain="quant-domain",
         target_role="independent-verifier",
         diff_loc=85,
         has_test_coverage=True,
@@ -195,9 +195,9 @@ HOLDOUT_CORPUS: Tuple[HoldoutTask, ...] = (
         expected_optimal_tier="strongest",
     ),
     HoldoutTask(
-        id="qstack_quant_log_explorer",
-        description="Scan replay logs for fill slippage anomalies (qstack#1791)",
-        domain="qstack-quant",
+        id="quant_log_explorer",
+        description="Scan replay logs for fill slippage anomalies (bench #1791)",
+        domain="quant-domain",
         target_role="how-explorer",
         diff_loc=0,
         has_test_coverage=True,
@@ -206,9 +206,9 @@ HOLDOUT_CORPUS: Tuple[HoldoutTask, ...] = (
         expected_optimal_tier="fast-worker",
     ),
     HoldoutTask(
-        id="qstack_portfolio_covariance_refactor",
-        description="Refactor sparse matrix factorization in risk model (qstack#1791)",
-        domain="qstack-quant",
+        id="quant_portfolio_covariance_refactor",
+        description="Refactor sparse matrix factorization in risk model (bench #1791)",
+        domain="quant-domain",
         target_role="refactoring",
         diff_loc=310,
         has_test_coverage=True,
@@ -491,7 +491,7 @@ def run_benchmark(
     return {
         "host": host,
         "holdout_tasks_count": len(HOLDOUT_CORPUS),
-        "qstack_tasks_count": sum(1 for t in HOLDOUT_CORPUS if t.domain == "qstack-quant"),
+        "quant_tasks_count": sum(1 for t in HOLDOUT_CORPUS if t.domain == "quant-domain"),
         "calibrated_evidence_loaded": has_calibrated_evidence,
         "pipelines": {
             "baseline": asdict(baseline_metrics),
@@ -509,7 +509,7 @@ def run_benchmark(
             "unmapped_model_violations": (
                 deterministic_metrics.unmapped_model_violations + semantic_metrics.unmapped_model_violations
             ),
-            "zero_qstack_bloat_enforced": True,
+            "zero_external_bloat_enforced": True,
         },
     }
 
@@ -531,7 +531,7 @@ def main() -> int:
     print("FAST-WORKER ROLE & LEAF SKILL TASK-FIT HOLDOUT BENCHMARK")
     print("=" * 76)
     print(f"Host Catalog:             {results['host']} (Contract #429 Bound)")
-    print(f"Total Holdout Tasks:      {results['holdout_tasks_count']} ({results['qstack_tasks_count']} QStack OMS holdouts)")
+    print(f"Total Holdout Tasks:      {results['holdout_tasks_count']} ({results['quant_tasks_count']} Quant OMS holdouts)")
     print(f"Calibrated Evidence Gate: {'ACTIVE' if results['calibrated_evidence_loaded'] else 'SHADOW ONLY'}")
     print("-" * 76)
 
@@ -549,7 +549,7 @@ def main() -> int:
     print("INVARIANT CHECKS:")
     print(f"  • Cognitive Frontier Demotions:   {results['invariants']['cognitive_frontier_demotions']} (MUST BE 0)")
     print(f"  • Unmapped Model Slugs:           {results['invariants']['unmapped_model_violations']} (MUST BE 0)")
-    print(f"  • Zero QStack Bloat:              {'PASS' if results['invariants']['zero_qstack_bloat_enforced'] else 'FAIL'}")
+    print(f"  • Zero External Bloat:            {'PASS' if results['invariants']['zero_external_bloat_enforced'] else 'FAIL'}")
     print("=" * 76)
 
     if results["invariants"]["cognitive_frontier_demotions"] > 0 or results["invariants"]["unmapped_model_violations"] > 0:
