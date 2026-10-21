@@ -15,7 +15,7 @@ import re
 from dataclasses import dataclass, field
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 from scripts.decision_adapter import (
     ChoiceOption,
@@ -311,6 +311,172 @@ def resolve_skill_order(profile: Dict[str, Any], query_str: str, root: Path) -> 
     )
 
 
+def _is_egress_bypassed(
+    baseline: RouteResolution,
+    query_str: str,
+    safe_summary: Optional[Union[SafeContext, str]],
+    bypass_playbooks: Optional[Set[str]] = None,
+) -> bool:
+    """Determine if query or baseline must bypass provider egress entirely (Issue #658)."""
+    # 1. Explicit slash command query
+    if query_str.strip().startswith("/"):
+        return True
+
+    # 2. Baseline agent, droid, or direct slash targets
+    if baseline.status == "matched":
+        raw_target = str(baseline.target or "").strip()
+        if raw_target.startswith("/") or baseline.kind in ("agent", "droid-definition"):
+            return True
+        if bypass_playbooks:
+            norm_target = (
+                raw_target.lstrip("/")
+                .replace("playbooks/", "")
+                .removesuffix(".md")
+                .strip()
+            )
+            if norm_target in bypass_playbooks:
+                return True
+
+    # 3. Privacy guard: safe_summary required, no raw query egress
+    if not safe_summary:
+        return True
+    if isinstance(safe_summary, SafeContext) and safe_summary.egress_class in (
+        EgressClass.LOCAL_ONLY,
+        EgressClass.PROHIBITED,
+    ):
+        return True
+
+    return False
+
+
+def _load_semantic_candidates(root: Path) -> Tuple[Dict[str, Dict[str, Any]], Set[str]]:
+    """Load, validate canonical pins, and extract semantic candidates from references/decision-routing.json."""
+    routing_file = root / "references" / "decision-routing.json"
+    data = _load_decision_routing(str(routing_file.resolve()))
+    if not data or not isinstance(data, dict):
+        return {}, set()
+
+    # Canonical mapping freshness verification (Issue #663)
+    source_info = data.get("source", {})
+    applied_pin = _get_applied_canonical_pin(str(root.resolve()))
+    if applied_pin and source_info.get("revision") != applied_pin:
+        return {}, set()
+    if source_info.get("router_blob") != "21993f546032ca37671d5f1caf39c9a82ab4fa9d":
+        return {}, set()
+
+    semantic_candidates: Dict[str, Dict[str, Any]] = {}
+    bypass_playbooks: Set[str] = set()
+
+    for route in data.get("routes", []):
+        pb = str(route.get("playbook", "")).strip()
+        sel = route.get("selection")
+        if sel == "semantic_candidate":
+            semantic_candidates[pb] = route
+        elif sel in ("direct", "direct_command_bypass", "system_two"):
+            bypass_playbooks.add(pb)
+
+    return semantic_candidates, bypass_playbooks
+
+
+def _evaluate_advisory_promotion(
+    baseline: RouteResolution,
+    obs: Any,
+    semantic_candidates: Dict[str, Dict[str, Any]],
+    root: Path,
+    calibrated_evidence_path: Optional[Union[Path, str]] = None,
+) -> Optional[RouteResolution]:
+    """Evaluate all promotion gates for an advisory decision (Issue #659, #660, #663)."""
+    # 1. Provider judgment status
+    if not obs.is_decided() or obs.outcome.kind != "choice":
+        return None
+
+    # 2. Scope gate: proposed choice must be an eligible semantic candidate
+    recommended_pb = str(obs.outcome.value).strip()
+    if recommended_pb not in semantic_candidates:
+        return None
+
+    candidate_route = semantic_candidates[recommended_pb]
+    candidate_class = str(candidate_route.get("class", "")).strip()
+    if not candidate_class or candidate_class not in CLASS_CONFIDENCE_THRESHOLDS:
+        return None
+
+    # 3. Class-specific confidence calibration threshold
+    required_threshold = CLASS_CONFIDENCE_THRESHOLDS[candidate_class]
+    confidence = obs.confidence if obs.confidence is not None else 0.0
+    if confidence < required_threshold:
+        return None
+
+    # 4. Margin check: require winner matches top choice with margin >= 0.10
+    if obs.probabilities and len(obs.probabilities) > 1:
+        sorted_probs = sorted(obs.probabilities.values(), reverse=True)
+        winner_prob = obs.probabilities.get(recommended_pb)
+        if winner_prob is None or winner_prob != sorted_probs[0]:
+            return None
+        if sorted_probs[0] - sorted_probs[1] < 0.10:
+            return None
+
+    # 5. Persisted Calibrated Evidence Gate (#659)
+    if obs.provider_identity in ("unknown", "none", "") or obs.model_identity in ("unknown", "none", ""):
+        return None
+
+    cal_path: Optional[Path] = None
+    if calibrated_evidence_path:
+        cal_path = Path(calibrated_evidence_path)
+    elif "PSTACK_JEV_CALIBRATED_EVIDENCE" in os.environ:
+        cal_path = Path(os.environ["PSTACK_JEV_CALIBRATED_EVIDENCE"])
+    else:
+        cal_path = root / "references" / "calibrated-evidence.json"
+
+    cal_receipt = load_calibrated_evidence_receipt(cal_path)
+    if cal_receipt is None:
+        return None
+
+    is_valid, _ = validate_calibrated_evidence(
+        receipt=cal_receipt,
+        current_root=root,
+        expected_provider=obs.provider_identity,
+        expected_model=obs.model_identity,
+        candidate_class=candidate_class,
+        confidence=confidence,
+    )
+    if not is_valid:
+        return None
+
+    # Staleness and receipt persistence hook
+    receipt = create_decision_receipt(
+        root=root,
+        source="semantic_provider",
+        mode="advisory",
+        provider_identity=obs.provider_identity,
+        model_identity=obs.model_identity,
+        outcome_status=obs.outcome.status,
+        outcome_value=recommended_pb,
+        confidence=confidence,
+    )
+    is_stale, _ = check_receipt_staleness(
+        receipt,
+        current_root=root,
+        expected_provider=obs.provider_identity,
+        expected_model=obs.model_identity,
+    )
+    if is_stale:
+        return None
+
+    # All gates passed: promote candidate
+    promoted_artifact = resolve_primary_artifact(recommended_pb, root)
+    return RouteResolution(
+        status="matched",
+        kind="playbook",
+        need=baseline.need or f"advisory-{recommended_pb}",
+        target=recommended_pb,
+        artifact=promoted_artifact,
+        notes=f"Advisory decision promoted via {obs.provider_identity}:{obs.model_identity} (confidence: {confidence:.2f})",
+        matched_rows=baseline.matched_rows,
+        shadow_observation=obs,
+        advisory_promoted=True,
+    )
+
+
 def resolve_skill_order_with_shadow(
     profile: Dict[str, Any],
     query_str: str,
@@ -344,63 +510,14 @@ def resolve_skill_order_with_shadow(
     if provider is None or effective_mode in ("none", "off", "0", "disabled"):
         return baseline
 
-    # --- Early Bypass & Privacy Guards (P0: #658) ---
-    # 1. Explicit user commands (e.g. slash commands) are deterministic bypasses:
-    # return baseline immediately without constructing provider request or egressing data.
-    if query_str.strip().startswith("/"):
-        return baseline
-
-    # 2. Agent targets and direct slash targets from baseline match:
-    # return baseline immediately without provider construction.
-    if baseline.status == "matched":
-        raw_target = str(baseline.target or "").strip()
-        if raw_target.startswith("/") or baseline.kind in ("agent", "droid-definition"):
-            return baseline
-
-    # 3. Privacy / egress invariant: raw task queries must NEVER be transmitted to provider.
-    # A positively authorized, bounded public summary or benchmark context is required.
-    # Default absence -> fail open to baseline with zero provider call.
-    if not safe_summary:
+    # Early bypass & privacy guards: query or target bypass without I/O
+    if _is_egress_bypassed(baseline, query_str, safe_summary):
         return baseline
 
     try:
-        routing_file = root / "references" / "decision-routing.json"
-        data = _load_decision_routing(str(routing_file.resolve()))
-        if not data or not isinstance(data, dict):
+        semantic_candidates, bypass_playbooks = _load_semantic_candidates(root)
+        if not semantic_candidates or _is_egress_bypassed(baseline, query_str, safe_summary, bypass_playbooks):
             return baseline
-
-        # --- Canonical Mapping Freshness Verification (#663) ---
-        # Fail closed to deterministic baseline when mapping pin, router blob, or routes drift.
-        source_info = data.get("source", {})
-        applied_pin = _get_applied_canonical_pin(str(root.resolve()))
-        if applied_pin and source_info.get("revision") != applied_pin:
-            return baseline
-        if source_info.get("router_blob") != "21993f546032ca37671d5f1caf39c9a82ab4fa9d":
-            return baseline
-
-        semantic_candidates: Dict[str, Dict[str, Any]] = {}
-        bypass_playbooks: Set[str] = set()
-
-        for route in data.get("routes", []):
-            pb = str(route.get("playbook", "")).strip()
-            sel = route.get("selection")
-            if sel == "semantic_candidate":
-                semantic_candidates[pb] = route
-            elif sel in ("direct", "direct_command_bypass", "system_two"):
-                bypass_playbooks.add(pb)
-
-        # 4. If baseline matched a direct bypass or system_two playbook, return baseline
-        # before constructing provider request or making provider call.
-        if baseline.status == "matched":
-            raw_target = str(baseline.target or "").strip()
-            norm_target = (
-                raw_target.lstrip("/")
-                .replace("playbooks/", "")
-                .removesuffix(".md")
-                .strip()
-            )
-            if norm_target in bypass_playbooks:
-                return baseline
 
         candidates: List[ChoiceOption] = []
         for pb, r in semantic_candidates.items():
@@ -411,10 +528,7 @@ def resolve_skill_order_with_shadow(
         if not candidates:
             return baseline
 
-        # Attempt to build safe context from authorized safe_summary
         if isinstance(safe_summary, SafeContext):
-            if safe_summary.egress_class in (EgressClass.LOCAL_ONLY, EgressClass.PROHIBITED):
-                return baseline
             safe_ctx = safe_summary
         else:
             safe_ctx = validate_and_create_safe_context(str(safe_summary), EgressClass.SAFE_TO_SEND)
@@ -430,98 +544,14 @@ def resolve_skill_order_with_shadow(
         if effective_mode != "advisory":
             return baseline
 
-        # --- Advisory Promotion Policy Gate ---
-        # 1. Provider judgment status
-        if not obs.is_decided() or obs.outcome.kind != "choice":
-            return baseline
-
-        # 2. Scope gate: proposed choice must be an eligible semantic candidate
-        recommended_pb = str(obs.outcome.value).strip()
-        if recommended_pb not in semantic_candidates:
-            return baseline
-
-        candidate_route = semantic_candidates[recommended_pb]
-        candidate_class = str(candidate_route.get("class", "")).strip()
-        if not candidate_class or candidate_class not in CLASS_CONFIDENCE_THRESHOLDS:
-            # Uncalibrated or unknown class cannot be promoted
-            return baseline
-
-        # 3. Class-specific confidence calibration threshold
-        required_threshold = CLASS_CONFIDENCE_THRESHOLDS[candidate_class]
-        confidence = obs.confidence if obs.confidence is not None else 0.0
-        if confidence < required_threshold:
-            return baseline
-
-        # 4. Margin check: require winner matches top choice with margin >= 0.10
-        if obs.probabilities and len(obs.probabilities) > 1:
-            sorted_probs = sorted(obs.probabilities.values(), reverse=True)
-            winner_prob = obs.probabilities.get(recommended_pb)
-            if winner_prob is None or winner_prob != sorted_probs[0]:
-                return baseline
-            if sorted_probs[0] - sorted_probs[1] < 0.10:
-                return baseline
-
-        # 5. Persisted Calibrated Evidence Gate (#659)
-        # Disallow synthetic self-receipt authorization; require pre-existing durable receipt
-        if obs.provider_identity in ("unknown", "none", "") or obs.model_identity in ("unknown", "none", ""):
-            return baseline
-
-        cal_path: Optional[Path] = None
-        if calibrated_evidence_path:
-            cal_path = Path(calibrated_evidence_path)
-        elif "PSTACK_JEV_CALIBRATED_EVIDENCE" in os.environ:
-            cal_path = Path(os.environ["PSTACK_JEV_CALIBRATED_EVIDENCE"])
-        else:
-            cal_path = root / "references" / "calibrated-evidence.json"
-
-        cal_receipt = load_calibrated_evidence_receipt(cal_path)
-        if cal_receipt is None:
-            return baseline
-
-        is_valid, _ = validate_calibrated_evidence(
-            receipt=cal_receipt,
-            current_root=root,
-            expected_provider=obs.provider_identity,
-            expected_model=obs.model_identity,
-            candidate_class=candidate_class,
-            confidence=confidence,
-        )
-        if not is_valid:
-            return baseline
-
-        # Staleness and receipt persistence hook
-        receipt = create_decision_receipt(
+        promoted = _evaluate_advisory_promotion(
+            baseline=baseline,
+            obs=obs,
+            semantic_candidates=semantic_candidates,
             root=root,
-            source="semantic_provider",
-            mode="advisory",
-            provider_identity=obs.provider_identity,
-            model_identity=obs.model_identity,
-            outcome_status=obs.outcome.status,
-            outcome_value=recommended_pb,
-            confidence=confidence,
+            calibrated_evidence_path=calibrated_evidence_path,
         )
-        is_stale, _ = check_receipt_staleness(
-            receipt,
-            current_root=root,
-            expected_provider=obs.provider_identity,
-            expected_model=obs.model_identity,
-        )
-        if is_stale:
-            return baseline
-
-        # All gates passed: promote candidate
-        promoted_artifact = resolve_primary_artifact(recommended_pb, root)
-        return RouteResolution(
-            status="matched",
-            kind="playbook",
-            need=baseline.need or f"advisory-{recommended_pb}",
-            target=recommended_pb,
-            artifact=promoted_artifact,
-            notes=f"Advisory decision promoted via {obs.provider_identity}:{obs.model_identity} (confidence: {confidence:.2f})",
-            matched_rows=baseline.matched_rows,
-            shadow_observation=obs,
-            advisory_promoted=True,
-        )
+        return promoted or baseline
     except Exception:
         # Strict fail-open: no provider exception escapes to caller
         pass

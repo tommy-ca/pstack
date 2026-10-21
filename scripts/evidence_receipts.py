@@ -19,10 +19,12 @@ import json
 import os
 import stat
 import subprocess
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, fields
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar, Union
+
+T = TypeVar("T", bound="ReceiptBase")
 
 
 @lru_cache(maxsize=128)
@@ -70,8 +72,44 @@ def get_git_revision_and_tree(root: Path) -> Tuple[str, str]:
     return _cached_git_revision_and_tree(str(root.resolve()))
 
 
+class ReceiptBase:
+    """Standardized serialization and safe deserialization for revision-bound receipts."""
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+    def to_json(self, indent: int = 2) -> str:
+        return json.dumps(self.to_dict(), indent=indent, sort_keys=True)
+
+    @classmethod
+    def from_dict(cls: Type[T], data: Dict[str, Any]) -> Optional[T]:
+        """Safely instantiate dataclass from dict, ignoring extraneous keys."""
+        if not isinstance(data, dict):
+            return None
+        valid_fields = {f.name for f in fields(cls)}
+        filtered = {k: v for k, v in data.items() if k in valid_fields}
+        try:
+            return cls(**filtered)
+        except Exception:
+            return None
+
+    @classmethod
+    def load(cls: Type[T], path: Optional[Union[Path, str]]) -> Optional[T]:
+        """Load and parse receipt from a JSON file path."""
+        if path is None:
+            return None
+        p = Path(path)
+        if not p.is_file():
+            return None
+        try:
+            raw = json.loads(p.read_text(encoding="utf-8"))
+            return cls.from_dict(raw)
+        except Exception:
+            return None
+
+
 @dataclass(frozen=True)
-class DecisionReceipt:
+class DecisionReceipt(ReceiptBase):
     """Durable receipt binding a decision judgment to exact system revisions."""
 
     source: str  # "deterministic", "semantic_provider", "system_two", "human", "observation"
@@ -91,15 +129,9 @@ class DecisionReceipt:
     )
     metadata: Dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
-        return asdict(self)
-
-    def to_json(self, indent: int = 2) -> str:
-        return json.dumps(self.to_dict(), indent=indent, sort_keys=True)
-
 
 @dataclass(frozen=True)
-class CalibratedEvidenceReceipt:
+class CalibratedEvidenceReceipt(ReceiptBase):
     """Separately persisted, pre-existing calibrated evidence receipt required for route promotion (#659)."""
 
     receipt_type: str  # "calibrated_routing_evidence"
@@ -116,38 +148,10 @@ class CalibratedEvidenceReceipt:
     expires_at: str
     metadata: Dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
-        return asdict(self)
 
-    def to_json(self, indent: int = 2) -> str:
-        return json.dumps(self.to_dict(), indent=indent, sort_keys=True)
-
-
-def load_calibrated_evidence_receipt(path: Optional[Path]) -> Optional[CalibratedEvidenceReceipt]:
+def load_calibrated_evidence_receipt(path: Optional[Union[Path, str]]) -> Optional[CalibratedEvidenceReceipt]:
     """Safely load and parse a persisted CalibratedEvidenceReceipt from disk."""
-    if path is None or not path.is_file():
-        return None
-    try:
-        raw = json.loads(path.read_text(encoding="utf-8"))
-        if not isinstance(raw, dict):
-            return None
-        return CalibratedEvidenceReceipt(
-            receipt_type=str(raw.get("receipt_type", "")),
-            status=str(raw.get("status", "")),
-            review_decision=str(raw.get("review_decision", "")),
-            source_revision=str(raw.get("source_revision", "")),
-            canonical_mapping_revision=str(raw.get("canonical_mapping_revision", "")),
-            provider_identity=str(raw.get("provider_identity", "")),
-            model_identity=str(raw.get("model_identity", "")),
-            policy_revision=str(raw.get("policy_revision", "")),
-            class_thresholds=dict(raw.get("class_thresholds", {})),
-            eval_evidence=dict(raw.get("eval_evidence", {})),
-            created_at=str(raw.get("created_at", "")),
-            expires_at=str(raw.get("expires_at", "")),
-            metadata=dict(raw.get("metadata", {})),
-        )
-    except Exception:
-        return None
+    return CalibratedEvidenceReceipt.load(path)
 
 
 def validate_calibrated_evidence(
@@ -421,7 +425,7 @@ def compute_worktree_digest(root: Path) -> str:
 
 
 @dataclass(frozen=True)
-class CheckEvidenceReceipt:
+class CheckEvidenceReceipt(ReceiptBase):
     """Binds a selected check set and its outcomes to one exact head revision.
 
     `patch_id` is the stable id of the merge-base..head diff, so a pure rebase
@@ -440,12 +444,6 @@ class CheckEvidenceReceipt:
     created_at: str = field(
         default_factory=lambda: datetime.now(timezone.utc).isoformat()
     )
-
-    def to_dict(self) -> Dict[str, Any]:
-        return asdict(self)
-
-    def to_json(self, indent: int = 2) -> str:
-        return json.dumps(self.to_dict(), indent=indent, sort_keys=True)
 
 
 def _reduce_outcomes(outcomes: Dict[str, str]) -> str:
@@ -483,8 +481,11 @@ def create_check_evidence_receipt(
     )
 
 
-def load_check_evidence_receipt(path: Path) -> CheckEvidenceReceipt:
-    return CheckEvidenceReceipt(**json.loads(path.read_text(encoding="utf-8")))
+def load_check_evidence_receipt(path: Union[Path, str]) -> CheckEvidenceReceipt:
+    receipt = CheckEvidenceReceipt.load(path)
+    if receipt is None:
+        raise ValueError(f"Failed to load CheckEvidenceReceipt from {path}")
+    return receipt
 
 
 def check_check_evidence_staleness(
