@@ -242,6 +242,16 @@ KNOWN_PROFILES: Dict[str, JevProviderProfile] = {
 }
 
 
+def _parse_unit_interval(val: Any) -> Optional[float]:
+    """Parse and strictly validate a finite float in [0.0, 1.0], rejecting booleans."""
+    if isinstance(val, bool) or not isinstance(val, (int, float)):
+        return None
+    num = float(val)
+    if not math.isfinite(num) or num < 0.0 or num > 1.0:
+        return None
+    return num
+
+
 class JevDecisionAdapter(SemanticDecisionProvider):
     """Optional Jev decision provider adapter.
 
@@ -249,6 +259,14 @@ class JevDecisionAdapter(SemanticDecisionProvider):
     Maps all provider communication, transport failures, and timeouts to
     the neutral outcome contract without raising exceptions to the caller.
     """
+
+    @staticmethod
+    def _invalid_obs(provider: str = "unknown", model: str = "unknown") -> ProviderObservation:
+        return ProviderObservation(
+            outcome=DecisionOutcome(status="invalid"),
+            provider_identity=provider,
+            model_identity=model,
+        )
 
     def __init__(
         self,
@@ -434,21 +452,13 @@ class JevDecisionAdapter(SemanticDecisionProvider):
     ) -> ProviderObservation:
         """Parse and strictly validate System One JSON response."""
         if not isinstance(data, dict):
-            return ProviderObservation(
-                outcome=DecisionOutcome(status="invalid"),
-                provider_identity=self.provider_identity,
-                model_identity=self.model_identity,
-            )
+            return self._invalid_obs(self.provider_identity, self.model_identity)
 
         resp_model = data.get("model")
         resp_provider = data.get("provider")
         # Require non-empty model and provider identity (Issue #660)
         if not resp_model or not resp_provider or not str(resp_model).strip() or not str(resp_provider).strip():
-            return ProviderObservation(
-                outcome=DecisionOutcome(status="invalid"),
-                provider_identity=str(resp_provider or "unknown"),
-                model_identity=str(resp_model or "unknown"),
-            )
+            return self._invalid_obs(str(resp_provider or "unknown"), str(resp_model or "unknown"))
         resp_model_str = str(resp_model).strip()
         resp_provider_str = str(resp_provider).strip()
 
@@ -459,89 +469,44 @@ class JevDecisionAdapter(SemanticDecisionProvider):
             if request.question_id in answers and isinstance(answers[request.question_id], dict):
                 ans = answers[request.question_id]
             else:
-                return ProviderObservation(
-                    outcome=DecisionOutcome(status="invalid"),
-                    provider_identity=resp_provider_str,
-                    model_identity=resp_model_str,
-                )
+                return self._invalid_obs(resp_provider_str, resp_model_str)
         elif isinstance(data.get("results"), list) and data["results"]:
             cand = data["results"][0]
             if isinstance(cand, dict):
                 # Verify matching question id if present
                 if "id" in cand and cand["id"] != request.question_id:
-                    return ProviderObservation(
-                        outcome=DecisionOutcome(status="invalid"),
-                        provider_identity=resp_provider_str,
-                        model_identity=resp_model_str,
-                    )
+                    return self._invalid_obs(resp_provider_str, resp_model_str)
                 ans = cand
 
         if ans is None or not isinstance(ans, dict):
-            return ProviderObservation(
-                outcome=DecisionOutcome(status="invalid"),
-                provider_identity=resp_provider_str,
-                model_identity=resp_model_str,
-            )
+            return self._invalid_obs(resp_provider_str, resp_model_str)
 
         selected = ans.get("choice") or ans.get("selected")
         valid_choice_ids = {c.id for c in request.choices}
         if selected not in valid_choice_ids:
-            return ProviderObservation(
-                outcome=DecisionOutcome(status="invalid"),
-                provider_identity=resp_provider_str,
-                model_identity=resp_model_str,
-            )
+            return self._invalid_obs(resp_provider_str, resp_model_str)
 
         # Validate finite [0, 1] confidence (Issue #660)
         confidence_val = ans.get("confidence")
         confidence: Optional[float] = None
         if confidence_val is not None:
-            if isinstance(confidence_val, bool) or not isinstance(confidence_val, (int, float)):
-                return ProviderObservation(
-                    outcome=DecisionOutcome(status="invalid"),
-                    provider_identity=resp_provider_str,
-                    model_identity=resp_model_str,
-                )
-            c_float = float(confidence_val)
-            if not math.isfinite(c_float) or c_float < 0.0 or c_float > 1.0:
-                return ProviderObservation(
-                    outcome=DecisionOutcome(status="invalid"),
-                    provider_identity=resp_provider_str,
-                    model_identity=resp_model_str,
-                )
-            confidence = c_float
+            confidence = _parse_unit_interval(confidence_val)
+            if confidence is None:
+                return self._invalid_obs(resp_provider_str, resp_model_str)
 
         # Validate finite [0, 1] probabilities dictionary (Issue #660)
         probabilities_val = ans.get("probabilities")
         probabilities: Optional[Dict[str, float]] = None
         if probabilities_val is not None:
             if not isinstance(probabilities_val, dict):
-                return ProviderObservation(
-                    outcome=DecisionOutcome(status="invalid"),
-                    provider_identity=resp_provider_str,
-                    model_identity=resp_model_str,
-                )
+                return self._invalid_obs(resp_provider_str, resp_model_str)
             probabilities = {}
             for opt_id, p_val in probabilities_val.items():
                 if opt_id not in valid_choice_ids:
-                    return ProviderObservation(
-                        outcome=DecisionOutcome(status="invalid"),
-                        provider_identity=resp_provider_str,
-                        model_identity=resp_model_str,
-                    )
-                if isinstance(p_val, bool) or not isinstance(p_val, (int, float)):
-                    return ProviderObservation(
-                        outcome=DecisionOutcome(status="invalid"),
-                        provider_identity=resp_provider_str,
-                        model_identity=resp_model_str,
-                    )
-                p_float = float(p_val)
-                if not math.isfinite(p_float) or p_float < 0.0 or p_float > 1.0:
-                    return ProviderObservation(
-                        outcome=DecisionOutcome(status="invalid"),
-                        provider_identity=resp_provider_str,
-                        model_identity=resp_model_str,
-                    )
+                    return self._invalid_obs(resp_provider_str, resp_model_str)
+                p_float = _parse_unit_interval(p_val)
+                if p_float is None:
+                    return self._invalid_obs(resp_provider_str, resp_model_str)
                 probabilities[opt_id] = p_float
 
         return ProviderObservation(
