@@ -15,7 +15,7 @@ without installing proprietary agent harness binaries:
   host-bearing schemas reference that one definition, and a declared host stays
   candidate/GAP while a collision, an unknown name and an unattributed receipt all
   fail closed.
-- `tests/test_model_role_policy.py`: static model-role policy, pure planner, and fork-index pins. The gate also runs `python -m scripts.model_role_policy` as a checked-in policy preflight.
+- `tests/test_model_role_schema.py`, `tests/test_model_role_constraints.py`, `tests/test_model_role_profiles.py`: static model-role policy, pure planner, and fork-index pins. The gate also runs `python -m scripts.model_role_policy` as a checked-in policy preflight.
 - `tests/test_droid_integration.py`: descriptor, profile, lifecycle and
   shape validation. The optional CLI-backed Droid scenarios skip when the
   Droid executable is absent; a skip is **not** a runtime PASS.
@@ -322,8 +322,8 @@ the declaration, and profile drift is what reddens the route half. (#444)
 
 `plan_role` (`scripts/model_role_resolver.py:151`) has exactly one production caller —
 `project-package.py --check` → `check_model_role_plan`, a read-only per-host planning
-probe — plus the call sites in `tests/test_model_role_policy.py`, and that is still the
-whole set (`tests/test_model_role_policy.py::test_plan_role_has_exactly_one_production_caller`
+probe — plus the call sites in `tests/test_model_role_profiles.py`, and that is still the
+whole set (`tests/test_model_role_profiles.py::test_plan_role_has_exactly_one_production_caller`
 re-derives it from `scripts/`). The only other production execution of the policy module
 is the static CI preflight (`.github/workflows/portability-offline.yml:54` →
 `scripts/model_role_policy.py:256-258`). Because that probe builds its verdict from the

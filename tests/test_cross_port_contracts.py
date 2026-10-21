@@ -265,7 +265,7 @@ def test_worktree_cleanup_preserves_hidden_untracked_files(tmp_path: Path) -> No
 def test_reference_model_alias_cannot_claim_native_host_capability() -> None:
     """A foreign model alias/provider in a reference generator cannot promote native host capabilities."""
     from scripts.model_role_resolver import plan_role
-    from tests.test_model_role_policy import PACKAGE, catalog_plan_policy, capability_bindings
+    from tests.model_role_helpers import PACKAGE, catalog_plan_policy, capability_bindings
 
     policy = catalog_plan_policy()
 
@@ -290,7 +290,7 @@ def test_reference_model_alias_cannot_claim_native_host_capability() -> None:
 def test_single_model_family_panel_reports_degraded_diversity() -> None:
     """Panel with multiple seats sharing one model family honestly reports degraded diversity or blocks."""
     from scripts.model_role_resolver import plan_role
-    from tests.test_model_role_policy import PACKAGE, catalog_plan_policy, capability_bindings
+    from tests.model_role_helpers import PACKAGE, catalog_plan_policy, capability_bindings
 
     # Case 1: Standard panel with single family degrades diversity honestly
     policy_standard = catalog_plan_policy()
