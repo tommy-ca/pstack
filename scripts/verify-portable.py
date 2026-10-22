@@ -270,14 +270,17 @@ class PortableVerifier:
     @contextmanager
     def _fixture_home(self) -> Iterator[Path]:
         if self.fixture_home is not None:
-            fixture_home = self.fixture_home
+            fixture_home = self.fixture_home.resolve()
             fixture_home.mkdir(parents=True, exist_ok=True)
             yield fixture_home
             return
         with tempfile.TemporaryDirectory(
             prefix=f"pstack-doctor-{self.host}-", ignore_cleanup_errors=True
         ) as tmp:
-            yield Path(tmp)
+            # Resolve before installing: package-lifecycle refuses a target under a
+            # symlinked ancestor (macOS /var -> /private/var), which would fail the
+            # doctor closed on a host whose TMPDIR is a link.
+            yield Path(tmp).resolve()
 
     def _doctor_checks(self, fixture_home: Path, check_durability: bool = True, allow_stale: bool = False) -> bool:
         """Doctor scenarios 1-7; every command runs under fixture_home."""
