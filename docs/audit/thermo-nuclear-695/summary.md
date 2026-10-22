@@ -31,11 +31,13 @@ Remedy: return `(preserved, dropped)` from the canonical traversal and branch on
 
 Full analysis: [`04_evidence_truth.md`](04_evidence_truth.md), corroborated by [`03_tests_quality.md`](03_tests_quality.md).
 
-### Finding 2. PR #718 rewrote a claim inside a restamp
+### Finding 2. A canonical PASS row reports drift
 
-The commit says `chore(evidence): restamp durable receipts from merged head`. In `omp-receipt.json` the `doctor-canonical-index` stdout moved from `Freshness: CURRENT (0 commits ahead)` to `Freshness: DRIFT (34 commits ahead)` while `verdict` stayed `PASS`, and `surface_revisions.upstream_head` still equals `canonical_pin`. A restamp that changes meaning is a claim change, and nothing in the machine fields carries the drift, so `evaluate_plane_staleness` can never stale the canonical plane.
+The restamp is faithful. In `omp-receipt.json` the `doctor-canonical-index` stdout moved from `Freshness: CURRENT (0 commits ahead)` to `Freshness: DRIFT (34 commits ahead)`, and that text is the command's own output, which also prints `Conformance: PASS` and `PASS: Canonical inventory conforms to pin.` So PR #718 recorded what the doctor said and did not invent the claim.
 
-Verified by me by diffing `main...pr-718`. Remedy: record upstream freshness in `SurfaceRevisions` and fail or mark `UNTESTED` on `DRIFT`, or split the restamp into a claim PR with its own evidence.
+The defect is the verdict policy underneath it. A row reports `verdict: PASS` while its own stdout says the canonical inventory is 34 commits ahead of the pin, and `surface_revisions.upstream_head` still equals `canonical_pin`, so `evaluate_plane_staleness` can never stale the canonical plane. A reader of the index sees PASS and cannot see the drift in any machine field.
+
+Verified by me by diffing `main...pr-718` and reading the row. Remedy, against the doctor rather than the chore. Record upstream freshness in `SurfaceRevisions` and fail or mark `UNTESTED` on `DRIFT`, and restamp the receipts once with the corrected verdict.
 
 Full analysis: [`04_evidence_truth.md`](04_evidence_truth.md).
 

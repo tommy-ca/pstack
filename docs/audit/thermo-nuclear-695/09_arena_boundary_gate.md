@@ -30,9 +30,11 @@ Measured by the candidate and by me. Scanner 385 lines. Test file 20 items, all 
 | 1 detection preserved | routing 10 of 10 phrasings, 2 of 8 false positives on legal mentions | routing 8 of 10 phrasings, 7 of 8 false positives on legal mentions |
 | 2 no line key | allowance short-circuits the line, so `Hand the loop to Grok Build.` on the sanctioned line passes | per-occurrence accounting, sanctioned plus a directive still flags |
 | 3 migrating surface | fail, `skills/setup-pstack/**` still exempt with a Grok-only reason | fail, same exemption with the same stale reason |
-| 4 fail closed | passes by raising on a corrupt profile | fails, catches and continues |
+| 4 fail closed | fail, both silently continue on a corrupt profile and lose that host's vocabulary | fail, same measurement |
 | 5 profile-derived vocabulary | derives every `plugins_dir`, including absolute paths | derives only home-relative `plugins_dir` |
 | 6 size against proofs | 446 lines, 30 tests | 385 lines, 20 tests |
+
+Criterion 4 was measured by the cross-judge by corrupting `profiles/bad.json` and running each candidate. My first read of candidate A inferred fail-closed from the absence of a blanket `except`, and that inference was wrong. Both candidates swallow the parse error. Neither candidate's result is final. The base and the two grafts are plan steps in `boundary-gate`, not an applied artifact, so the synthesized scanner does not exist yet and nothing here claims it does.
 
 ## Decision
 

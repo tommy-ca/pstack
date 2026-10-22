@@ -136,10 +136,12 @@ Each live lane runs in its own isolated worktree child at the PR head and drives
 - [ ] Edit `scripts/scan-host-boundary.py`.
 - [ ] Edit `scripts/host_identity.py`.
 - [ ] Edit `tests/test_scan_host_boundary.py`.
+- [ ] Edit `skills/reflect/SKILL.md` and `skills/automate-me/SKILL.md`, for the two lines the stricter detector flags.
 - [ ] Add fixtures under `tests/fixtures/boundary/`.
 
 **Build.**
 
+- [ ] Base this branch on `feat/703-setup-projection` (PR #719), which already rewrites `scripts/scan-host-boundary.py`. Do not open a parallel scanner change against main.
 - [ ] Replace the scanner body with candidate A from the arena, keeping `run_scan`, `scan_file`, `is_exempt`, `extract_forbidden_vocabulary`, `Violation`, `Exemption`, `DEFAULT_EXEMPTIONS`, and `main`.
 - [ ] Graft candidate B's per-occurrence allowance accounting, so an allowance cannot shelter a directive elsewhere on the same line.
 - [ ] Graft candidate B's CLI test that asserts a non-zero exit on a real leak.
@@ -147,6 +149,7 @@ Each live lane runs in its own isolated worktree child at the PR head and drives
 - [ ] Move the display name to `scripts/host_identity.py`, and iterate every declared host instead of the one hardcoded name.
 - [ ] Express the reviewed prohibition as data that survives a line move. Delete `QUOTED_PROHIBITION_CARVE_OUTS` and the `ValueError` drift branch.
 - [ ] Derive install and overlay paths from `profiles/*/setup` and `plugins_dir`, including `~/.grok/roles`, and delete `HOST_INSTALL_PATHS`.
+- [ ] Replace the Grok native command at `skills/reflect/SKILL.md:56` and the same route at `skills/automate-me/SKILL.md:67` with the host-neutral `create-skill` form those files already use below. Both candidates had to make this edit to reach a clean tree, so it belongs in the PR that tightens the detector, not in a later sweep.
 - [ ] Fail closed on an unparsable profile and on an unreadable in-scope file.
 - [ ] Delete `ROUTING_IMPERATIVES`, and either make `--check` meaningful or delete the flag.
 
@@ -201,8 +204,8 @@ Each live lane runs in its own isolated worktree child at the PR head and drives
 
 **Build.**
 
-- [ ] Point `skills/reflect/SKILL.md` step 5 at `playbooks/authoring-a-skill.md` and delete the Grok native command.
-- [ ] Name the transcript pattern in `skills/reflect/SKILL.md:23` and state which hosts have a reference, instead of naming the one file that exists.
+- [ ] Name the transcript pattern in `skills/reflect/SKILL.md:23` and state which hosts have a reference, instead of naming the one file that exists. Line 56 belongs to `boundary-gate`, which must make the gate green first.
+- [ ] Replace the Grok sandbox diagnostic paths in `skills/how/SKILL.md:64-66` with the active host's reference, since the tightened gate does not yet detect a sandbox events file.
 - [ ] Redirect every `../setup-pstack/SKILL.md` model reference to `../setup-pstack-grok/references/resolve-model.md`, or rewrite it in projection language with no toml key.
 - [ ] Replace the doc-sentence asserts in `tests/test_architecture_documentation.py` with a host-set equality check and a link check over both READMEs.
 
@@ -256,6 +259,7 @@ Each live lane runs in its own isolated worktree child at the PR head and drives
 
 **Build.**
 
+- [ ] Base this branch on `fix/709-hermetic-doctor` (PR #717), which already rewrites `scripts/verify-portable.py` and `tests/test_verify_portable.py`. Do not open a parallel portable change against main.
 - [ ] Land the #717 fixture-home work, then fix the remaining ambient read at `tests/test_verify_portable.py:301` by providing a fake `openspec` on PATH that answers only from the repository root.
 - [ ] Make the OMP native package tests independent of suite order by allocating a unique disposable directory per run and by refusing to read an ambient plugin mirror.
 - [ ] Localize the OMP failure that the full offline selection reproduces, since the same file passes alone and in the portable pair.
