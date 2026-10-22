@@ -64,7 +64,7 @@ The **poteto-mode** skill shows the shape. Read it for granularity. Don't copy i
 
 ### 4. Draft the skill
 
-Use Grok Build's `/create-skill` to author the skill. Placement:
+Use `create-skill` to author the skill. Placement:
 
 - Path: preserve an existing mode skill's category. For a new mode, use `.grok/skills/<handle>/<handle>-mode/SKILL.md` when the repo has an established personal category for that handle; otherwise default to `.grok/skills/<handle>-mode/SKILL.md` in the project (or `~/.grok/skills/<handle>-mode/` if the user prefers a personal skill).
 - Handle: the user's first name or chosen identifier.
