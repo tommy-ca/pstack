@@ -1,6 +1,6 @@
 ---
 name: how-explorer
-description: pstack how explorer. Same posture as the pstack role of this name. Shipped effort is frontmatter `effort`. Setup may overlay via ~/.grok/roles/pstack:how-explorer.toml.
+description: pstack how explorer. Same posture as the pstack role of this name. Shipped effort is frontmatter `effort`. Setup may overlay per-role values using the overlay path the active host declares in `profiles/<host>.json`.
 effort: medium
 capabilityMode: execute
 inheritSkills: false

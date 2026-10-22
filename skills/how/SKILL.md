@@ -61,9 +61,9 @@ Present the explainer's output. Light edits for clarity or context from the conv
 
 The explanation uses the sections defined in `references/explainer-prompt.md`, dropping any that do not apply: Overview, Key Concepts, How It Works, Where Things Live, Gotchas.
 
-**Gotchas (Grok sandbox).** Config `[sandbox] profile` and nested `grok inspect` are not this TUI. Measure `argv`, `__GROK_INSIDE_BWRAP`, session `summary.json` `sandbox_profile`, `/proc/self/mountinfo`, and `~/.grok/sandbox-events.jsonl`.
+**Gotchas (sandbox).** The active host's configured sandbox profile is not this TUI's process. Measure this process's `argv`, session `summary.json` `sandbox_profile`, and `/proc/self/mountinfo`; host-specific probes and the sandbox event log belong in the active host's `../poteto-mode/references/<host>-tools.md`, when it has a sandbox section. A nested host inspection command does not observe this process.
 
-**Gotchas (skill provenance).** Resolve the symlink and inspect `source.path` before calling a `~/.grok/skills` path a personal skill. A `collidesWith` row is not provenance. Do not copy plugin skills into `~/.grok/skills`.
+**Gotchas (skill provenance).** Resolve the symlink and inspect `source.path` before calling a path in the active host's personal skill directory a personal skill; the host reference names that directory. A `collidesWith` row is not provenance. Do not copy plugin skills into it.
 
 ## Critique Mode
 

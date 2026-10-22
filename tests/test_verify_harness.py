@@ -326,8 +326,9 @@ def test_plugin_manifest_matches_grok_parsed_fields() -> None:
         assert "permissionMode: bypassPermissions" not in text, path.name
         assert "mcpServers:" not in text.split("---", 2)[1], path.name
         assert "background: true" not in text.split("---", 2)[1], path.name
-        if "Setup may overlay via" in text:
-            assert "~/.grok/roles/pstack:" in text, path.name
+        assert "Setup may overlay" in text, f"{path.name} drops the host overlay contract"
+        assert "profiles/<host>.json" in text, f"{path.name} names no host profile overlay"
+        assert "~/.grok/roles" not in text, path.name
 
 
 def test_agent_and_droid_schema_parity() -> None:

@@ -20,7 +20,7 @@ Skip when the conversation is trivial, off-topic, or already covered by an exist
 
 ## 1. Locate the active transcript
 
-Before fanning out, resolve the active host and find this conversation's transcript in the host's own reference (`references/grok-transcript.md` on the Grok adapter). Do not use another host's transcript paths. If no host reference covers the active transcript, pass a tight digest of the session instead.
+Before fanning out, resolve the active host and find this conversation's transcript in the host's own reference, `references/<host>-transcript.md` in this skill's directory. Do not use another host's transcript paths. Grok is the only host that ships one today (`references/grok-transcript.md`); if no host reference covers the active transcript, pass a tight digest of the session instead.
 
 ## 2. Spawn three reviewers in parallel
 

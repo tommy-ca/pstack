@@ -1,6 +1,6 @@
 ---
 name: poteto-agent
-description: Delegated subagent worker for tasks executed in poteto's style. The parent session coordinates and owns the playbook todo list. Resume an existing `poteto-agent` for the conversation rather than spawning a sibling. Reads the `poteto-mode` skill's `SKILL.md` in full before any work, including its inline Principles index. Substituting `general-purpose` skips that read and drifts. Shipped effort is frontmatter `effort`. Setup may overlay via ~/.grok/roles/pstack:poteto-agent.toml.
+description: Delegated subagent worker for tasks executed in poteto's style. The parent session coordinates and owns the playbook todo list. Resume an existing `poteto-agent` for the conversation rather than spawning a sibling. Reads the `poteto-mode` skill's `SKILL.md` in full before any work, including its inline Principles index. Substituting `general-purpose` skips that read and drifts. Shipped effort is frontmatter `effort`. Setup may overlay per-role values using the overlay path the active host declares in `profiles/<host>.json`.
 effort: xhigh
 ---
 
