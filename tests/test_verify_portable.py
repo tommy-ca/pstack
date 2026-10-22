@@ -208,8 +208,8 @@ def test_validate_default_change_fallback_branches(monkeypatch: pytest.MonkeyPat
 
     validate = verify_portable.validate_openspec_change
 
-    monkeypatch.setattr(oc, "_active_openspec_changes", lambda: ["only-active"])
-    monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda: ["only-active"])
+    monkeypatch.setattr(oc, "_active_openspec_changes", lambda *a, **k: ["only-active"])
+    monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda *a, **k: ["only-active"])
     seen: dict[str, list[str]] = {}
     def _fake_run(*a: object, **k: object) -> subprocess.CompletedProcess[str]:
         seen["argv"] = list(a[0]) if a else []
@@ -218,16 +218,16 @@ def test_validate_default_change_fallback_branches(monkeypatch: pytest.MonkeyPat
     assert validate(None) == 0
     assert seen.get("argv", [])[2] == "only-active"
 
-    monkeypatch.setattr(oc, "_active_openspec_changes", lambda: [])
-    monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda: [])
+    monkeypatch.setattr(oc, "_active_openspec_changes", lambda *a, **k: [])
+    monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda *a, **k: [])
     assert validate(None) == 0
 
-    monkeypatch.setattr(oc, "_active_openspec_changes", lambda: None)
-    monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda: None)
+    monkeypatch.setattr(oc, "_active_openspec_changes", lambda *a, **k: None)
+    monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda *a, **k: None)
     assert validate(None) == 1
 
-    monkeypatch.setattr(oc, "_active_openspec_changes", lambda: ["a", "b"])
-    monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda: ["a", "b"])
+    monkeypatch.setattr(oc, "_active_openspec_changes", lambda *a, **k: ["a", "b"])
+    monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda *a, **k: ["a", "b"])
     assert validate(None) == 1
 
 
@@ -249,17 +249,17 @@ def test_resolution_states_are_distinct(monkeypatch: pytest.MonkeyPatch) -> None
     import scripts.openspec_change as oc
 
     resolve = verify_portable.resolve_openspec_change
-    monkeypatch.setattr(oc, "_active_openspec_changes", lambda: None)
-    monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda: None)
+    monkeypatch.setattr(oc, "_active_openspec_changes", lambda *a, **k: None)
+    monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda *a, **k: None)
     assert resolve(None)[0] == "lookup-failed"
-    monkeypatch.setattr(oc, "_active_openspec_changes", lambda: [])
-    monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda: [])
+    monkeypatch.setattr(oc, "_active_openspec_changes", lambda *a, **k: [])
+    monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda *a, **k: [])
     assert resolve(None)[0] == "none"
-    monkeypatch.setattr(oc, "_active_openspec_changes", lambda: ["one"])
-    monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda: ["one"])
+    monkeypatch.setattr(oc, "_active_openspec_changes", lambda *a, **k: ["one"])
+    monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda *a, **k: ["one"])
     assert resolve(None)[:2] == ("active", "one")
-    monkeypatch.setattr(oc, "_active_openspec_changes", lambda: ["a", "b"])
-    monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda: ["a", "b"])
+    monkeypatch.setattr(oc, "_active_openspec_changes", lambda *a, **k: ["a", "b"])
+    monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda *a, **k: ["a", "b"])
     state, name, names = resolve(None)
     assert (state, name, names) == ("ambiguous", None, ["a", "b"])
     assert resolve("explicit-name")[:2] == ("explicit", "explicit-name")
@@ -271,8 +271,8 @@ def test_doctor_labels_each_resolution_state(
     import scripts.openspec_change as oc
 
     def scenarios_for(state_values: list[str] | None, **kwargs: object) -> list:
-        monkeypatch.setattr(oc, "_active_openspec_changes", lambda: state_values)
-        monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda: state_values)
+        monkeypatch.setattr(oc, "_active_openspec_changes", lambda *a, _sv=state_values, **k: _sv)
+        monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda *a, _sv=state_values, **k: _sv)
         verifier = PortableVerifier(host="grok", evidence_root=tmp_path, **kwargs)  # type: ignore[arg-type]
         verifier.launch()
         verifier.doctor(check_durability=False)
@@ -297,6 +297,18 @@ def test_doctor_labels_each_resolution_state(
     assert len(active_matches) == 1
     assert "only-active" in active_matches[0].description
 
+
+def test_doctor_resolves_openspec_from_repo_root_not_caller_cwd(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Doctor must find the OpenSpec root even when invoked from a foreign cwd."""
+    monkeypatch.chdir(tmp_path)
+    verifier = PortableVerifier(host="grok", evidence_root=tmp_path)
+    assert verifier.launch()
+    assert verifier.doctor(check_durability=False) is True
+    matched = [s for s in verifier.scenarios if s.id == "doctor-openspec-validation"]
+    assert len(matched) == 1
+    assert matched[0].verdict == "PASS"
 
 def test_change_named_like_a_flag_still_validates_as_a_name(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch

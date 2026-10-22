@@ -32,10 +32,11 @@ class ChangeResolution:
         return (self.state, self.name, self.names)[index]
 
 
-def _active_openspec_changes() -> list[str] | None:
+def _active_openspec_changes(cwd: Optional[str] = None) -> list[str] | None:
     try:
         listed = subprocess.run(
-            ["openspec", "list", "--json"], capture_output=True, text=True, check=False
+            ["openspec", "list", "--json"], capture_output=True, text=True, check=False,
+            cwd=cwd,
         )
         if listed.returncode != 0:
             return None
@@ -59,12 +60,18 @@ def _active_openspec_changes() -> list[str] | None:
         return None
 
 
-def _validate_named_change(change: str) -> int:
+def _repo_root() -> str:
+    from pathlib import Path as _Path
+    return str(_Path(__file__).resolve().parents[1])
+
+
+def _validate_named_change(change: str, cwd: Optional[str] = None) -> int:
     probed = subprocess.run(
         ["openspec", "validate", change, "--type", "change", "--strict"],
         capture_output=True,
         text=True,
         check=False,
+        cwd=cwd if cwd is not None else _repo_root(),
     )
     sys.stdout.write(probed.stdout)
     sys.stderr.write(probed.stderr)
