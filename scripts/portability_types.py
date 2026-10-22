@@ -519,6 +519,7 @@ class ScenarioResult:
     evidence_level: Optional[str] = "offline"
     settlement: Optional[ChildSettlement | Dict[str, Any]] = None
     preserved_from: str = ""
+    live_attempted: bool = False
 
     def validate(self) -> None:
         if not self.id:

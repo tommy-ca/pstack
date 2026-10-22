@@ -168,6 +168,7 @@ def execute_driver_scenarios(
             verdict=sc_disc.verdict,
             duration_s=sc_disc.duration_s,
             evidence_level=sc_disc.evidence_level,
+            live_attempted=sc_disc.live_attempted,
         )
     )
 
@@ -184,6 +185,7 @@ def execute_driver_scenarios(
             verdict=sc_route.verdict,
             duration_s=sc_route.duration_s,
             evidence_level=sc_route.evidence_level,
+            live_attempted=sc_route.live_attempted,
         )
     )
 
@@ -200,6 +202,7 @@ def execute_driver_scenarios(
             duration_s=sc_spawn.duration_s,
             evidence_level=sc_spawn.evidence_level,
             settlement=sc_spawn.settlement,
+            live_attempted=sc_spawn.live_attempted,
         )
     )
 
@@ -217,6 +220,7 @@ def execute_driver_scenarios(
                 duration_s=sc_cancel.duration_s,
                 evidence_level=sc_cancel.evidence_level,
                 settlement=sc_cancel.settlement,
+                live_attempted=sc_cancel.live_attempted,
             )
         )
 
@@ -233,6 +237,7 @@ def execute_driver_scenarios(
             duration_s=sc_iso.duration_s,
             evidence_level=sc_iso.evidence_level,
             settlement=sc_iso.settlement,
+            live_attempted=sc_iso.live_attempted,
         )
     )
 
@@ -249,6 +254,7 @@ def execute_driver_scenarios(
             duration_s=sc_ev.duration_s,
             evidence_level=sc_ev.evidence_level,
             settlement=sc_ev.settlement,
+            live_attempted=sc_ev.live_attempted,
         )
     )
 

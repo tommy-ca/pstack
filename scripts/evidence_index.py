@@ -6,13 +6,14 @@ Separated from verify-portable.py for modular decomposition.
 from __future__ import annotations
 
 import json
+import os
 import stat
 import sys
 from dataclasses import asdict
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, NoReturn, Optional
 
-from scripts.evidence_durability import _is_preservable_settlement, preserve_observed_settlements
+from scripts.evidence_durability import preserve_observed_settlements
 from scripts.host_identity import BUILTIN_HOSTS
 from scripts.portability_schema import (
     Binding,
@@ -36,6 +37,20 @@ def _file_or_denied(path: Path) -> bool:
         return True
     except OSError:
         return False
+
+
+def _fail(message: str) -> NoReturn:
+    sys.exit(message)
+
+
+def _write_json(path: Path, data: Dict[str, Any]) -> None:
+    tmp = path.with_name(f"{path.name}.tmp")
+    tmp.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+    try:
+        os.replace(tmp, path)
+    except OSError:
+        tmp.unlink(missing_ok=True)
+        raise
 
 
 def get_declared_hosts(root: Path = ROOT) -> List[str]:
@@ -118,7 +133,7 @@ def write_verification_evidence(
                         f"{type(index_data).__name__}"
                     )
             except Exception as err:
-                sys.exit(
+                _fail(
                     f"REFUSING to rewrite the unreadable evidence index at {index_file}: "
                     f"{type(err).__name__}: {err}. The index lists every host's durable "
                     f"receipt, so resetting it would silently drop the other hosts. Repair "
@@ -135,54 +150,44 @@ def write_verification_evidence(
 
         durable_file = evidence_root / f"{host}-receipt.json"
         durable_data = data
-        reusable = True
         if _file_or_denied(durable_file):
             try:
                 previous = VerificationReceipt(**json.loads(durable_file.read_text(encoding="utf-8")))
-                preserved = preserve_observed_settlements(previous, receipt)
+                preservation = preserve_observed_settlements(previous, receipt)
             except Exception as err:
-                reusable = False
-                print(
+                _fail(
                     f"REFUSING to overwrite the durable receipt at {durable_file}: "
                     f"{type(err).__name__}: {err}. This run's receipt is at {receipt_file}."
                 )
-            else:
-                prior = {s.id: s for s in previous.scenarios if _is_preservable_settlement(s)}
-                current_by_id = {c.id: c for c in receipt.scenarios}
-                dropped = [
-                    sid
-                    for sid, prev in prior.items()
-                    if sid not in current_by_id or not _is_preservable_settlement(current_by_id[sid])
-                ]
-                if dropped:
-                    sys.exit(
-                        f"REFUSING to overwrite the durable receipt at {durable_file}: "
-                        f"prior observed_live settlement(s) {', '.join(dropped)} from {previous.run_id} "
-                        f"cannot be re-observed by a static refresh. Re-run live proof with "
-                        f"PSTACK_RUN_OMP_LIVE=1 python3 scripts/verify-portable.py run --host {host}, "
-                        f"or refresh a host with no live rows. This run's receipt is at {receipt_file}."
-                    )
-                elif preserved:
-                    receipt.planes = settle_planes(receipt.scenarios)
-                    receipt.overall_verdict = reduce_verdicts(receipt.planes.values())
-                    durable_data = receipt_payload(receipt)
-                    print(
-                        f"Preserved prior observed_live settlement(s) from {previous.run_id}: "
-                        f"{', '.join(preserved)}"
-                    )
-        if reusable:
-            durable_file.write_text(json.dumps(durable_data, indent=2) + "\n", encoding="utf-8")
-
-            index_data.setdefault("hosts", {})[host] = evidence_index_row(host, receipt)
-            try:
-                index_file.write_text(json.dumps(index_data, indent=2) + "\n", encoding="utf-8")
-            except OSError as err:
-                sys.exit(
-                    f"FAILED to write the evidence index at {index_file}: "
-                    f"{type(err).__name__}: {err}. The durable receipt at {durable_file} is "
-                    f"already written, so the inventory trails it until the file is writable "
-                    f"and this check is re-run."
+            if preservation.dropped:
+                _fail(
+                    f"REFUSING to overwrite the durable receipt at {durable_file}: "
+                    f"prior observed_live settlement(s) {', '.join(preservation.dropped)} from "
+                    f"{previous.run_id} would be lost with no live attempt at the same id. Re-run "
+                    f"live proof with PSTACK_RUN_OMP_LIVE=1 python3 scripts/verify-portable.py run "
+                    f"--host {host}, or refresh a host with no live rows. This run's receipt is at "
+                    f"{receipt_file}."
                 )
+            if preservation.preserved:
+                receipt.planes = settle_planes(receipt.scenarios)
+                receipt.overall_verdict = reduce_verdicts(receipt.planes.values())
+                durable_data = receipt_payload(receipt)
+                print(
+                    f"Preserved prior observed_live settlement(s) from {previous.run_id}: "
+                    f"{', '.join(preservation.preserved)}"
+                )
+        _write_json(durable_file, durable_data)
+
+        index_data.setdefault("hosts", {})[host] = evidence_index_row(host, receipt)
+        try:
+            _write_json(index_file, index_data)
+        except OSError as err:
+            _fail(
+                f"FAILED to write the evidence index at {index_file}: "
+                f"{type(err).__name__}: {err}. The durable receipt at {durable_file} is "
+                f"already written, so the inventory trails it until the file is writable "
+                f"and this check is re-run."
+            )
         print(f"Evidence captured at {receipt_file} (durable: {durable_file})")
     else:
         print(f"Evidence captured at {receipt_file}")

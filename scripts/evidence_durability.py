@@ -6,7 +6,7 @@ Separated from portability_schema.py for modular decomposition (#593).
 from __future__ import annotations
 
 import json
-from dataclasses import replace
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -32,25 +32,47 @@ def _is_preservable_settlement(scenario: ScenarioResult) -> bool:
     )
 
 
+@dataclass(frozen=True)
+class Preservation:
+    """What a durable write keeps, and which prior settlements it would lose."""
+
+    preserved: List[str]
+    dropped: List[str]
+
+
 def preserve_observed_settlements(
     previous: VerificationReceipt,
     current: VerificationReceipt,
-) -> List[str]:
+) -> Preservation:
+    """Carry prior live settlements into `current`, and name the ones it would lose.
+
+    `dropped` holds prior settlements the new receipt neither preserves nor
+    re-observes through an attempted live gate. A live attempt that failed still
+    produced evidence, so its row is written instead of counted as a loss.
+    """
     if previous.host != current.host:
-        return []
+        return Preservation([], [])
     previous.validate()
     current.validate()
-    if previous.evaluate_plane_staleness(current.surface_revisions).get("runtime"):
-        return []
     prior = {s.id: s for s in previous.scenarios if _is_preservable_settlement(s)}
     preserved: List[str] = []
-    for i, scenario in enumerate(current.scenarios):
-        candidate = prior.get(scenario.id)
-        if candidate is None or _is_preservable_settlement(scenario) or scenario.verdict != "PASS":
-            continue
-        current.scenarios[i] = replace(candidate, preserved_from=candidate.preserved_from or previous.run_id)
-        preserved.append(scenario.id)
-    return preserved
+    if not previous.evaluate_plane_staleness(current.surface_revisions).get("runtime"):
+        for i, scenario in enumerate(current.scenarios):
+            candidate = prior.get(scenario.id)
+            if candidate is None or _is_preservable_settlement(scenario) or scenario.verdict != "PASS":
+                continue
+            current.scenarios[i] = replace(
+                candidate, preserved_from=candidate.preserved_from or previous.run_id
+            )
+            preserved.append(scenario.id)
+    current_by_id = {s.id: s for s in current.scenarios}
+    dropped = [
+        sid
+        for sid in prior
+        if sid not in current_by_id
+        or not (_is_preservable_settlement(current_by_id[sid]) or current_by_id[sid].live_attempted)
+    ]
+    return Preservation(preserved, dropped)
 
 
 def _row_receipt(binding: Binding, root: Path) -> Optional[VerificationReceipt]:

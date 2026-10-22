@@ -105,10 +105,12 @@ def test_a_stat_denied_durable_receipt_is_refused_not_crashed(tmp_path: Path) ->
 
     second, second_receipt = _proof_bar_refresh(root, evidence_root)
     try:
-        second.evidence(second_receipt, update_durable=True)
+        with pytest.raises(SystemExit) as exit_info:
+            second.evidence(second_receipt, update_durable=True)
     finally:
         denied.chmod(0o755)
 
+    assert "REFUSING to overwrite the durable receipt" in str(exit_info.value.code)
     assert durable.read_bytes() == durable_before
     assert index_file.read_bytes() == index_before
     assert (second.run_dir / "receipt.json").is_file()
@@ -205,7 +207,9 @@ def test_check_evidence_names_the_omp_live_remedy(tmp_path: Path) -> None:
         scenario["evidence_level"] = "static"
         scenario["settlement"] = None
     receipt["planes"]["runtime"] = "UNTESTED"
-    receipt["overall_verdict"] = "UNTESTED"
+    receipt["overall_verdict"] = (
+        "FAIL" if "FAIL" in receipt["planes"].values() else "UNTESTED"
+    )
     receipt_path.write_text(json.dumps(receipt), encoding="utf-8")
 
     proc = subprocess.run(
@@ -341,20 +345,19 @@ def test_a_missing_row_comes_back_from_the_receipt_on_the_next_run(tmp_path: Pat
 def test_a_denied_index_write_is_named_not_raised(tmp_path: Path) -> None:
     copy_root = _disposable_copy(tmp_path)
     command = [sys.executable, str(copy_root / "scripts" / "verify-portable.py")]
-    index_file = copy_root / ".audit" / "evidence" / "index.json"
-    before = index_file.read_bytes()
+    evidence_root = copy_root / ".audit" / "evidence"
+    index_file = evidence_root / "index.json"
+    index_file.unlink()
+    index_file.mkdir()
+    (index_file / "occupied").write_text("not an index", encoding="utf-8")
 
-    index_file.chmod(0o444)
-    try:
-        denied = subprocess.run(command + ["refresh-static", "--host", "grok"], capture_output=True, text=True, cwd=copy_root)
-    finally:
-        index_file.chmod(0o644)
+    denied = subprocess.run(command + ["refresh-static", "--host", "grok"], capture_output=True, text=True, cwd=copy_root)
 
     output = denied.stdout + denied.stderr
     assert denied.returncode == 1, output
     assert "FAILED to write the evidence index" in output
     assert "Traceback" not in output
-    assert index_file.read_bytes() == before
+    assert (evidence_root / "grok-receipt.json").is_file()
     assert "grok-receipt.json" in output
 
 
@@ -371,3 +374,29 @@ def test_a_same_id_non_live_row_does_not_overwrite_prior_live_settlement(
     assert "REFUSING to overwrite the durable receipt" in str(exit_info.value.code)
     assert "runtime-child-spawn-omp" in str(exit_info.value.code)
     assert durable.read_bytes() == durable_before
+
+
+@pytest.mark.parametrize("evidence_level", ["static", "offline"])
+def test_a_failed_live_attempt_replaces_the_prior_live_settlement(
+    tmp_path: Path, evidence_level: str
+) -> None:
+    root, prof, evidence_root, _ = _omp_live_root(tmp_path)
+    durable = evidence_root / "omp-receipt.json"
+    verifier, receipt = _proof_bar_refresh(
+        root,
+        evidence_root,
+        verdict="FAIL",
+        live_attempted=True,
+        evidence_level=evidence_level,
+    )
+
+    verifier.evidence(receipt, update_durable=True)
+
+    durable_receipt = json.loads(durable.read_text(encoding="utf-8"))
+    recorded = next(s for s in durable_receipt["scenarios"] if s["id"] == "runtime-child-spawn-omp")
+    assert recorded["verdict"] == "FAIL"
+    assert recorded["evidence_level"] == evidence_level
+    assert recorded["live_attempted"] is True
+    assert recorded["preserved_from"] == ""
+    assert durable_receipt["run_id"] == receipt.run_id
+    assert durable_receipt["planes"]["runtime"] == "FAIL"

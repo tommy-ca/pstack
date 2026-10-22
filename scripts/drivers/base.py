@@ -26,6 +26,7 @@ class DriverScenarioResult:
     duration_s: float
     evidence_level: str = "offline"
     settlement: Optional[Dict[str, str]] = None
+    live_attempted: bool = False
 
     @property
     def stdout_snippet(self) -> str:

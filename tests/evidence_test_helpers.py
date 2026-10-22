@@ -200,7 +200,9 @@ def _synthetic_evidence_root(
     return tmp_path, prof
 
 
-def _omp_spawn_scenario(evidence_level: str, verdict: str = "PASS", settlement=None) -> ScenarioResult:
+def _omp_spawn_scenario(
+    evidence_level: str, verdict: str = "PASS", settlement=None, live_attempted: bool = False
+) -> ScenarioResult:
     return ScenarioResult(
         id="runtime-child-spawn-omp",
         description="bounded omp rpc v2 child spawn and join",
@@ -212,6 +214,7 @@ def _omp_spawn_scenario(evidence_level: str, verdict: str = "PASS", settlement=N
         duration_s=19.1,
         evidence_level=evidence_level,
         settlement=settlement,
+        live_attempted=live_attempted,
     )
 
 
@@ -278,7 +281,14 @@ def _portable_verifier(evidence_root: Path, root: Path | None = None):
     return verifier
 
 
-def _proof_bar_refresh(root: Path, evidence_root: Path, *, verdict: str = "PASS") -> tuple:
+def _proof_bar_refresh(
+    root: Path,
+    evidence_root: Path,
+    *,
+    verdict: str = "PASS",
+    live_attempted: bool = False,
+    evidence_level: str = "static",
+) -> tuple:
     verifier = _portable_verifier(evidence_root, root=root)
     verifier.scenarios = [
         ScenarioResult(
@@ -293,7 +303,9 @@ def _proof_bar_refresh(root: Path, evidence_root: Path, *, verdict: str = "PASS"
         )
         for plane in ("canonical", "adapter", "package")
     ]
-    verifier.scenarios.append(_omp_spawn_scenario("static", verdict=verdict))
+    verifier.scenarios.append(
+        _omp_spawn_scenario(evidence_level, verdict=verdict, live_attempted=live_attempted)
+    )
     return verifier, verifier.proof_bar()
 
 
