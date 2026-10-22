@@ -1,0 +1,11 @@
+{
+  "host": "overlay-host",
+  "plugins_dir": "~/.overlay-host/plugins",
+  "setup": {
+    "source": "host-cli",
+    "skill": "setup-overlay-host",
+    "catalog": "~/.overlay-host/pstack-models.toml",
+    "overlay": "~/.overlay-host/roles",
+    "effort": "live-enum"
+  }
+}

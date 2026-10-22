@@ -1,0 +1,4 @@
+{
+  "host": "plain-host",
+  "plugins_dir": "~/.plain-host/plugins"
+}
