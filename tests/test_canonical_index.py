@@ -41,6 +41,15 @@ def test_canonical_inventory_file_exists_and_conforms() -> None:
 
 
 def test_canonical_index_cli_check_exits_zero() -> None:
+    freshness = json.loads(
+        subprocess.run(
+            [sys.executable, str(SCRIPT), "--json"],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout
+    )["upstream_freshness"]
     proc = subprocess.run(
         [sys.executable, str(SCRIPT), "--check"],
         cwd=ROOT,
@@ -48,6 +57,11 @@ def test_canonical_index_cli_check_exits_zero() -> None:
         text=True,
         check=False,
     )
+    if freshness == "DRIFT":
+        assert proc.returncode == 2, proc.stdout + proc.stderr
+        assert "UNTESTED: canonical pin" in proc.stdout
+        assert "PASS: Canonical inventory conforms to pin." not in proc.stdout
+        return
     assert proc.returncode == 0, proc.stderr or proc.stdout
     assert "PASS: Canonical inventory conforms to pin." in proc.stdout
     data = json.loads(INVENTORY.read_text(encoding="utf-8"))

@@ -192,7 +192,9 @@ class PortableVerifier:
             duration = round(time.time() - start, 3)
             stdout_snip = proc.stdout.strip()[:300]
             stderr_snip = proc.stderr.strip()[:300]
-            verdict = "PASS" if proc.returncode == 0 else "FAIL"
+            # Exit 2 is the untested convention: the check ran and settled nothing
+            # (canonical-index.py reports stale upstream freshness this way).
+            verdict = {0: "PASS", 2: "UNTESTED"}.get(proc.returncode, "FAIL")
             exit_code = proc.returncode
         except subprocess.TimeoutExpired:
             duration = round(time.time() - start, 3)
@@ -275,11 +277,15 @@ class PortableVerifier:
         # 2. OpenSpec change integrity (argv-safe helper above). Resolve once: the
         # label and the child validation share one observation, so the receipt binds
         # the exact validated target. Only a real change name reaches the child;
-        # none/lookup-failed/ambiguous are decided here and recorded as scenarios.
+        # lookup-failed/ambiguous are decided here and recorded as scenarios. A
+        # checkout with no active change appends no row, because a row that executed
+        # nothing is not evidence and the canonical plane still reduces from the
+        # canonical-index row.
         state, change_name, active_names = resolve_openspec_change(
             self.change, active_resolver=lambda: _active_openspec_changes(cwd=str(ROOT))
         )
         helper = "import sys; from scripts.openspec_change import validate_openspec_change; sys.exit(validate_openspec_change(sys.argv[1]))"
+        r2: Optional[ScenarioResult] = None
         if state in ("explicit", "active"):
             assert change_name is not None
             r2 = self.run_command(
@@ -288,18 +294,6 @@ class PortableVerifier:
                 "canonical",
                 [sys.executable, "-c", helper, change_name],
             )
-        elif state == "none":
-            r2 = ScenarioResult(
-                id="doctor-openspec-validation",
-                description="No active OpenSpec change; nothing to validate (vacuous)",
-                plane="canonical",
-                command="openspec list --json -> no active changes",
-                exit_code=0,
-                stdout_snippet="no active changes; no change was validated",
-                verdict="PASS",
-                duration_s=0.0,
-            )
-            self.scenarios.append(r2)
         elif state == "lookup-failed":
             r2 = ScenarioResult(
                 id="doctor-openspec-validation",
@@ -312,7 +306,7 @@ class PortableVerifier:
                 duration_s=0.0,
             )
             self.scenarios.append(r2)
-        else:
+        elif state == "ambiguous":
             r2 = ScenarioResult(
                 id="doctor-openspec-validation",
                 description=f"{len(active_names)} active OpenSpec changes; pass one via --change",
@@ -359,7 +353,11 @@ class PortableVerifier:
             env={"HOME": str(fixture_home)},
         )
 
-        doctor_pass = all(r.verdict == "PASS" for r in (r1, r2, r3, r3b, r4, r4b))
+        doctor_pass = all(
+            r.verdict in ("PASS", "UNTESTED")
+            for r in (r1, r2, r3, r3b, r4, r4b)
+            if r is not None
+        )
 
         # 5. Optional typed harness profile validation
         profile_file = ROOT / "profiles" / f"{self.host}.json"
@@ -479,6 +477,7 @@ class PortableVerifier:
                     duration_s=s.duration_s,
                     evidence_level=getattr(s, "evidence_level", "offline"),
                     settlement=getattr(s, "settlement", None),
+                    live_attempted=getattr(s, "live_attempted", False),
                 ))
             else:
                 scenarios.append(s)
@@ -601,7 +600,9 @@ def main() -> None:
         print(f"\n================ Verification Summary ================")
         for r in receipts:
             if args.action in ("doctor", "refresh-static"):
-                status = "PASS" if (r.planes.get("canonical") == "PASS" and r.planes.get("adapter") == "PASS" and r.planes.get("package") == "PASS") else "FAIL"
+                status = reduce_verdicts(
+                    r.planes.get(p, "UNTESTED") for p in ("canonical", "adapter", "package")
+                )
             elif args.action == "drive":
                 status = "PASS" if (r.planes.get("runtime") == "PASS") else "FAIL"
             else:

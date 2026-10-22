@@ -10,6 +10,10 @@ Usage:
     python3 scripts/canonical-index.py --generate
     python3 scripts/canonical-index.py --drift
     python3 scripts/canonical-index.py --json
+
+`--check` exits 0 when conformance holds on a current pin, 1 on a conformance
+gap, and 2 when conformance holds but the pin lags upstream (`DRIFT`): the
+inventory conforms to the pin, yet its freshness is untested.
 """
 
 from __future__ import annotations
@@ -24,6 +28,11 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from scripts.surface_revisions import observe_upstream_freshness
+
 UPSTREAM = ROOT / "UPSTREAM"
 INVENTORY_FILE = ROOT / "openspec" / "canonical-inventory.json"
 PIN_RE = re.compile(r"^tree ([0-9a-f]{40})$", re.M)
@@ -359,31 +368,10 @@ def compute_inventory(cache: Optional[Path]) -> Dict[str, Any]:
     blobs = list_tree_artifacts(cache, pstack_tree)
     classified = [classify_artifact(b["path"], b["hash"]) for b in blobs]
 
-    # Check upstream head for drift
-    head_proc = subprocess.run(
-        ["git", "-C", str(cache), "rev-parse", "HEAD"],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    if head_proc.returncode != 0:
-        upstream_head = "unknown"
-        freshness = "UNKNOWN"
-        drift_count = -1
-    else:
-        upstream_head = head_proc.stdout.strip()
-        drift_proc = subprocess.run(
-            ["git", "-C", str(cache), "rev-list", f"{pin_sha}..HEAD", "--count"],
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-        if drift_proc.returncode == 0 and drift_proc.stdout.strip().isdigit():
-            drift_count = int(drift_proc.stdout.strip())
-            freshness = "DRIFT" if drift_count > 0 else "CURRENT"
-        else:
-            drift_count = -1
-            freshness = "UNKNOWN"
+    observed = observe_upstream_freshness(ROOT, pin_sha, cache)
+    upstream_head = observed.upstream_head
+    freshness = observed.freshness
+    drift_count = observed.commits_ahead
 
     principles_count = sum(1 for c in classified if c["category"] == "principle" and c["mode"] in ("preserve", "adapt"))
     playbooks_count = sum(1 for c in classified if c["category"] == "playbook" and c["mode"] in ("preserve", "adapt"))
@@ -490,6 +478,14 @@ def main() -> None:
         if issue_id not in surf_text:
             print(f"FAIL: Defect exception #{issue_id} not referenced in {exc_data['surface']}", file=sys.stderr)
             sys.exit(1)
+
+    if freshness == "DRIFT":
+        print(
+            f"UNTESTED: canonical pin {inventory['pin']} is {inventory['commits_ahead']} commits behind "
+            f"upstream HEAD {inventory['upstream_head']}; conformance holds for the pin, but its freshness "
+            f"is untested until the pin is regenerated.",
+        )
+        sys.exit(2)
 
     print("PASS: Canonical inventory conforms to pin.")
     sys.exit(0)

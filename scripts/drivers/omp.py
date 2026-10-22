@@ -220,6 +220,12 @@ class OMPDriver(HarnessDriver):
         super().__init__("omp", root)
         self._binary: Optional[Path] = None
 
+    @staticmethod
+    def _attempted(result: DriverScenarioResult) -> DriverScenarioResult:
+        """Mark a row as produced by an attempted live gate arm, not a static contract check."""
+        result.live_attempted = True
+        return result
+
     def get_binary_path(self) -> Optional[Path]:
         if self._binary is None:
             extra = [
@@ -299,7 +305,7 @@ class OMPDriver(HarnessDriver):
             return self.blocked_result("runtime-child-spawn-omp", "OMP child subagent spawn contract", reason)
 
         if os.environ.get(LIVE_GATE_ENV) == "1":
-            return self._child_spawn_live(run_dir)
+            return self._attempted(self._child_spawn_live(run_dir))
 
         # OMP native subagent tool is 'task'
         tm = self.profile_data.get("tool_mappings", {})
@@ -434,7 +440,7 @@ class OMPDriver(HarnessDriver):
             return self.blocked_result("runtime-child-cancel-omp", "OMP in-flight child cancellation over RPC", reason)
 
         if os.environ.get(LIVE_GATE_ENV) == "1":
-            return self._child_cancel_live(run_dir)
+            return self._attempted(self._child_cancel_live(run_dir))
 
         binding = next(
             (b for b in self.profile_data.get("bindings", []) if b.get("capability") == "agent.cancel"),
@@ -622,7 +628,7 @@ class OMPDriver(HarnessDriver):
             return self.blocked_result("runtime-isolation-omp", "OMP worktree isolation check", reason)
 
         if os.environ.get(LIVE_GATE_ENV) == "1":
-            return self._isolation_live(run_dir)
+            return self._attempted(self._isolation_live(run_dir))
 
         bin_path = self.get_binary_path()
         assert bin_path is not None

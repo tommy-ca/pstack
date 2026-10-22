@@ -72,7 +72,9 @@
         "manifest_hash": { "type": "string" },
         "driver_revision": { "type": "string" },
         "package_driver_revision": { "type": "string" },
-        "boundary_driver_revision": { "type": "string" }
+        "boundary_driver_revision": { "type": "string" },
+        "upstream_freshness": { "type": "string" },
+        "commits_ahead": { "type": "integer" }
       },
       "additionalProperties": false
     },
@@ -111,6 +113,10 @@
           "preserved_from": {
             "type": "string",
             "description": "run_id whose observed_live scenario was carried into a later refresh because the runtime surface it proved had not moved. Empty on a scenario this run observed itself."
+          },
+          "live_attempted": {
+            "type": "boolean",
+            "description": "True when the live gate arm actually ran for this scenario, including a run that failed or was blocked mid-attempt. It separates a failed live observation, which must be published, from a static refresh that never attempted the live gate."
           }
         },
         "additionalProperties": false

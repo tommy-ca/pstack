@@ -330,18 +330,6 @@ def test_durable_refresh_drops_a_settlement_once_the_runtime_surface_moved(tmp_p
     assert durable_file.read_bytes() == durable_before
 
 
-def test_durable_refresh_does_not_paper_over_a_failing_run(tmp_path: Path) -> None:
-    root, prof, evidence_root, _ = _omp_live_root(tmp_path)
-    durable_file = evidence_root / "omp-receipt.json"
-    durable_before = durable_file.read_bytes()
-    verifier, receipt = _proof_bar_refresh(root, evidence_root, verdict="FAIL")
-    with pytest.raises(SystemExit) as exit_info:
-        verifier.evidence(receipt, update_durable=True)
-    assert "REFUSING to overwrite the durable receipt" in str(exit_info.value.code)
-    assert "runtime-child-spawn-omp" in str(exit_info.value.code)
-    assert durable_file.read_bytes() == durable_before
-
-
 def test_an_unreadable_durable_receipt_is_not_overwritten(tmp_path: Path) -> None:
     root, prof, evidence_root, _ = _omp_live_root(tmp_path)
     durable = evidence_root / "omp-receipt.json"
@@ -354,8 +342,11 @@ def test_an_unreadable_durable_receipt_is_not_overwritten(tmp_path: Path) -> Non
 
     durable.write_text("{ not json at all", encoding="utf-8")
     second, second_receipt = _proof_bar_refresh(root, evidence_root)
-    second.evidence(second_receipt, update_durable=True)
+    with pytest.raises(SystemExit) as exit_info:
+        second.evidence(second_receipt, update_durable=True)
 
+    assert "REFUSING to overwrite the durable receipt" in str(exit_info.value.code)
+    assert str(durable) in str(exit_info.value.code)
     assert durable.read_text(encoding="utf-8") == "{ not json at all"
     assert (second.run_dir / "receipt.json").is_file()
     assert json.loads(index_file.read_text(encoding="utf-8"))["hosts"]["omp"] == row_before
@@ -460,7 +451,7 @@ def test_a_settled_cancellation_survives_a_durable_refresh() -> None:
     current = replace(previous, run_id="refresh-run", scenarios=[downgraded])
     current.validate()
 
-    assert preserve_observed_settlements(previous, current) == [scenario_id]
+    assert preserve_observed_settlements(previous, current).preserved == [scenario_id]
     assert current.scenarios[0].evidence_level == "observed_live"
     assert current.scenarios[0].preserved_from == previous.run_id
 
@@ -469,7 +460,7 @@ def test_a_settled_cancellation_survives_a_durable_refresh() -> None:
     )
     timed_out_current = replace(timed_out_previous, run_id="refresh-run", scenarios=[downgraded])
     timed_out_current.validate()
-    assert preserve_observed_settlements(timed_out_previous, timed_out_current) == []
+    assert preserve_observed_settlements(timed_out_previous, timed_out_current).preserved == []
 
 
 def test_a_cancellation_only_receipt_never_derives_verified(tmp_path: Path) -> None:
