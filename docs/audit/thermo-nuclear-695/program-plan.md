@@ -12,6 +12,44 @@ The program runs `skills/poteto-mode/playbooks/autopilot-stack.md`. The root mer
 
 Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
+## Outcome
+
+Executed 2026-10-22. The sections below are the pre-execution plan and their boxes stay unchecked on purpose. This section and the epic's completion comment are the record.
+
+| order | id | PR | merged | commit |
+| --- | --- | --- | --- | --- |
+| 0 | audit and plan | #721 | 18:25Z | `aa5027e` |
+| 1 | hermetic base | #717 | 18:26Z | `17f6ab7` |
+| 2 | `boundary-gate` | #722 | 18:56Z | `c12cd37` |
+| 3 | `evidence-truth` | #724 | 19:40Z | `74fc592` |
+| 4 | `host-authority-sweep` | #723 | 19:56Z | `2ff377d` |
+| 5 | `setup-projection` | #719 | 20:22Z | `5d8caac` |
+| 6 | `hermetic-doctor` | #727 | 20:30Z | `88c3e5e` |
+| 7 | receipt restamp | #731 | 20:40Z | `d1d3a93` |
+
+The order differs from the plan because the file sets overlap. `evidence-truth` owns `portability_types.py`, which `setup-projection` also edits, and `boundary-gate` owns the scanner, which `setup-projection` also edits. So the roots landed first, then the sweep, then the projection, then the last hermetic slice. Each PR was rebased onto current `main` and got a fresh check run before merge.
+
+### What a consumer can now rely on
+
+`refresh-static` refuses a downgrade and names what it would lose, and a live attempt that fails is written rather than refused, so a regression is publishable. The boundary gate fails on a possessive routing directive, on a directive after an unrelated negated sentence, and on a host install path, and it aborts on a corrupt profile instead of narrowing. The declared per-host setup projection has production callers, so a profile is no longer advice a writer may ignore. Every doctor result is independent of the machine that ran it.
+
+Its exit contract is proved rather than asserted. A leak exits 1, a clean tree exits 0, and a typed input error exits 2.
+
+### How this was verified, plainly
+
+Per PR, a diff audit by me, targeted probes on the exact property the PR changes, and the real offline gate in CI. The final gate at `88c3e5e` is 1064 passed and 10 skipped, run by me. This is not the plan's ten live lanes per PR and the perf boxes were not completed. Two mutation proofs are owner-reported because my two replication attempts timed out.
+
+### Deferred, with an issue each
+
+- #725. The isolation probe disagreed with itself across two identical runs, so `workspace.isolated` should read UNPROVEN.
+- #726. `refresh-static --host all` cannot succeed for a host holding live rows.
+- #728. `tests/test_omp_native_package.py` still reads the developer's home.
+- #729. A BLOCKED live attempt overwrites a good observed_live PASS.
+- #730. The frozen DSH table re-records on almost every PR.
+- #699. The SemVer migration stays with the operator because it changes a published identity.
+
+`check-staleness --host all` read `REGENERATION NEEDED` at `88c3e5e` while `check-evidence` read five PASS, because they enforce different planes. #731 closed that gap for the merged head, and any PR that edits a hashed driver must now run both.
+
 ## Program checklist
 
 ### Arm the program
