@@ -534,10 +534,12 @@ def test_refresh_static_is_partial_and_never_rounds_a_failure_up(
         return False
 
     monkeypatch.setattr(module, "resolve_openspec_change", lambda change: ("none", None, []))
+    # grok carries no observed_live rows, so a static refresh stays a pure
+    # plane restamp; omp is covered by the refusal test below.
     monkeypatch.setattr(
         sys,
         "argv",
-        ["verify-portable.py", "refresh-static", "--host", "omp", "--evidence-dir", str(evidence_root)],
+        ["verify-portable.py", "refresh-static", "--host", "grok", "--evidence-dir", str(evidence_root)],
     )
 
     monkeypatch.setattr(module.PortableVerifier, "doctor", static_doctor)
@@ -545,7 +547,7 @@ def test_refresh_static_is_partial_and_never_rounds_a_failure_up(
         module.main()
     assert exit_info.value.code == 0
 
-    refreshed = json.loads((evidence_root / "omp-receipt.json").read_text(encoding="utf-8"))
+    refreshed = json.loads((evidence_root / "grok-receipt.json").read_text(encoding="utf-8"))
     receipt = VerificationReceipt(**refreshed)
     receipt.validate()
     assert receipt.planes == {
@@ -556,20 +558,20 @@ def test_refresh_static_is_partial_and_never_rounds_a_failure_up(
     }
     assert receipt.overall_verdict == "UNTESTED"
     assert [s for s in receipt.scenarios if s.plane == "runtime"] == []
-    assert receipt.evaluate_plane_staleness(compute_surface_revisions(ROOT, "omp")) == {
+    assert receipt.evaluate_plane_staleness(compute_surface_revisions(ROOT, "grok")) == {
         plane: [] for plane in CONFORMANCE_PLANES
     }
 
     for host in receipt_hosts:
-        if host == "omp":
+        if host == "grok":
             continue
         assert (evidence_root / f"{host}-receipt.json").read_bytes() == untouched[f"{host}-receipt.json"]
     index_after = json.loads((evidence_root / "index.json").read_text(encoding="utf-8"))
     assert sorted(index_after["hosts"]) == sorted(index_before["hosts"])
-    assert index_after["hosts"]["omp"]["run_id"] == refreshed["run_id"]
-    assert index_after["hosts"]["omp"]["overall_verdict"] == "UNTESTED"
+    assert index_after["hosts"]["grok"]["run_id"] == refreshed["run_id"]
+    assert index_after["hosts"]["grok"]["overall_verdict"] == "UNTESTED"
     for host in receipt_hosts:
-        if host == "omp":
+        if host == "grok":
             continue
         assert index_after["hosts"][host] == index_before["hosts"][host]
 
@@ -578,8 +580,55 @@ def test_refresh_static_is_partial_and_never_rounds_a_failure_up(
         module.main()
     assert failing_exit.value.code == 1
 
-    failed = json.loads((evidence_root / "omp-receipt.json").read_text(encoding="utf-8"))
+    failed = json.loads((evidence_root / "grok-receipt.json").read_text(encoding="utf-8"))
     assert failed["planes"]["package"] == "FAIL"
     assert failed["overall_verdict"] == "FAIL"
 
+
+
+def test_refresh_static_refuses_when_prior_live_rows_cannot_be_reobserved(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    module = _load_verify_portable_module()
+    evidence_root = tmp_path / "evidence"
+    evidence_root.mkdir()
+    for name in ("omp-receipt.json", "index.json"):
+        shutil.copy2(EVIDENCE_DIR / name, evidence_root / name)
+    durable_before = (evidence_root / "omp-receipt.json").read_bytes()
+    live_ids = {
+        s["id"]
+        for s in json.loads(durable_before)["scenarios"]
+        if s.get("evidence_level") == "observed_live"
+    }
+    assert live_ids, "checked-in omp receipt must carry live rows for this guard"
+
+    def static_doctor(self, check_durability: bool = True, allow_stale: bool = False) -> bool:
+        for plane in ("canonical", "adapter", "package"):
+            self.scenarios.append(
+                module.ScenarioResult(
+                    id=f"doctor-{plane}-stub",
+                    description=f"stub static {plane} plane",
+                    plane=plane,
+                    command="stub",
+                    exit_code=0,
+                    stdout_snippet="stub",
+                    verdict="PASS",
+                    duration_s=0.0,
+                )
+            )
+        return True
+
+    monkeypatch.setattr(module, "resolve_openspec_change", lambda change: ("none", None, []))
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["verify-portable.py", "refresh-static", "--host", "omp", "--evidence-dir", str(evidence_root)],
+    )
+    monkeypatch.setattr(module.PortableVerifier, "doctor", static_doctor)
+    with pytest.raises(SystemExit) as exit_info:
+        module.main()
+    assert "REFUSING to overwrite the durable receipt" in str(exit_info.value.code)
+    assert "runtime-child-spawn-omp" in str(exit_info.value.code)
+    assert "PSTACK_RUN_OMP_LIVE=1" in str(exit_info.value.code)
+    assert (evidence_root / "omp-receipt.json").read_bytes() == durable_before
 
