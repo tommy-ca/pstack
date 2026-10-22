@@ -229,7 +229,7 @@ class PortableVerifier:
             id=scenario_id,
             description=desc,
             plane=plane,
-            command=" ".join(cmd),
+            command=self._recorded_command(cmd, env),
             exit_code=exit_code,
             stdout_snippet=stdout_snip or stderr_snip,
             verdict=verdict,
@@ -239,6 +239,17 @@ class PortableVerifier:
         if record:
             self.scenarios.append(result)
         return result
+
+    @staticmethod
+    def _recorded_command(cmd: List[str], env: Optional[Dict[str, str]]) -> str:
+        """Record the HOME a command ran under, so a receipt says which home decided it.
+
+        Without it a hermetic run and a run against the developer's live mirrors store
+        byte-identical command strings (#709).
+        """
+        command = " ".join(cmd)
+        home = (env or {}).get("HOME")
+        return command if home is None else f"{command} [HOME={home}]"
 
     def doctor(self, check_durability: bool = True, allow_stale: bool = False) -> bool:
         """Step 2: Doctor checks bound to a fixture HOME (#709).

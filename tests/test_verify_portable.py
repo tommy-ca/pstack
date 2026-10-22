@@ -1,6 +1,7 @@
 import importlib.util
 import json
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -147,6 +148,7 @@ def test_doctor_is_hermetic_against_ambient_plugin_mirrors(
         lambda *a, **k: verify_portable.ChangeResolution(state="none", name=None, names=[]),
     )
     hosts = ("omp", "antigravity")
+    fixture_home = tmp_path / "fixture-home"
     mirrors = _host_plugin_rel_paths()
 
     def snapshot(home: Path) -> dict[str, bytes]:
@@ -156,7 +158,10 @@ def test_doctor_is_hermetic_against_ambient_plugin_mirrors(
         monkeypatch.setenv("HOME", str(home))
         records: dict[str, list[tuple[str, str, str, str]]] = {}
         for host in hosts:
-            verifier = PortableVerifier(host=host, evidence_root=tmp_path / "evidence")
+            shutil.rmtree(fixture_home, ignore_errors=True)
+            verifier = PortableVerifier(
+                host=host, evidence_root=tmp_path / "evidence", fixture_home=fixture_home
+            )
             assert verifier.launch()
             assert verifier.doctor(check_durability=False) is True
             records[host] = [(s.id, s.verdict, s.command, s.stdout_snippet) for s in verifier.scenarios]
@@ -179,6 +184,8 @@ def test_doctor_is_hermetic_against_ambient_plugin_mirrors(
     for host in hosts:
         ambient = {row[0]: row[1] for row in stale[host]}
         assert ambient[f"doctor-package-lifecycle-{host}"] == "PASS"
+        lifecycle = next(row for row in stale[host] if row[0] == f"doctor-package-lifecycle-{host}")
+        assert f"[HOME={fixture_home.resolve()}]" in lifecycle[2]
     assert {row[0]: row[1] for row in stale["antigravity"]}["doctor-antigravity-sync"] == "PASS"
 
 
