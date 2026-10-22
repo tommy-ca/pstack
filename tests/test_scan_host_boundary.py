@@ -103,6 +103,48 @@ def test_cli_execution():
     assert "violations_count" in proc.stdout
     assert '"violations_count": 0' in proc.stdout
 
+def test_install_path_flags_shared_surface_without_prohibition(tmp_path: Path) -> None:
+    """A host install path action on a shared surface is a violation, no intent needed."""
+    f = tmp_path / "skills" / "sample" / "SKILL.md"
+    f.parent.mkdir(parents=True, exist_ok=True)
+    f.write_text("Open `~/.grok/installed-plugins/pstack-foo/skills/x/SKILL.md` to route.\n", encoding="utf-8")
+    vs = scan_file(f, tmp_path, extract_forbidden_vocabulary(PROFILES_DIR))
+    assert any(v.token == "~/.grok/installed-plugins" for v in vs)
+
+
+def test_negated_install_path_still_flags(tmp_path: Path) -> None:
+    """#707's own repro: a negated install-path sentence is flagged outside the carve-out."""
+    f = tmp_path / "skills" / "poteto-mode" / "SKILL.md"
+    f.parent.mkdir(parents=True, exist_ok=True)
+    f.write_text("Do not open `~/.grok/installed-plugins/pstack-foo/skills/x/`.\n", encoding="utf-8")
+    vs = scan_file(f, tmp_path, extract_forbidden_vocabulary(PROFILES_DIR))
+    assert any(v.token == "~/.grok/installed-plugins" for v in vs)
+
+
+def test_carved_prohibition_line_passes_only_with_exact_sentence() -> None:
+    """The real SKILL.md:129 carve-out passes the reviewed sentence and fails drift closed."""
+    import tempfile
+    from pathlib import Path as P
+    root = P(tempfile.mkdtemp())
+    target = root / "skills" / "poteto-mode"
+    target.mkdir(parents=True)
+    legit = (ROOT / "skills" / "poteto-mode" / "SKILL.md").read_text(encoding="utf-8").splitlines()[128]
+    assert "Do not open" in legit and "~/.grok/installed-plugins" in legit
+    target.joinpath("SKILL.md").write_text("\n".join(["f"] * 128 + [legit]) + "\n", encoding="utf-8")
+    assert scan_file(target / "SKILL.md", root, {}) == []
+    target.joinpath("SKILL.md").write_text("\n".join(["f"] * 128 + [legit + " Also open `~/.grok/installed-plugins/evil/`."]) + "\n", encoding="utf-8")
+    assert any(v.token == "~/.grok/installed-plugins" for v in scan_file(target / "SKILL.md", root, {}))
+
+
+def test_prefixed_install_path_before_prohibition_still_flags(tmp_path: Path) -> None:
+    """A second actionable path ahead of the carved sentence is not suppressed."""
+    f = tmp_path / "skills" / "poteto-mode" / "SKILL.md"
+    f.parent.mkdir(parents=True, exist_ok=True)
+    legit = (ROOT / "skills" / "poteto-mode" / "SKILL.md").read_text(encoding="utf-8").splitlines()[128]
+    f.write_text("Open `~/.grok/installed-plugins/evil/` to route. " + legit + "\n", encoding="utf-8")
+    vs = scan_file(f, tmp_path, extract_forbidden_vocabulary(PROFILES_DIR))
+    assert any(v.token == "~/.grok/installed-plugins" for v in vs)
+
 
 def test_portable_router_selects_the_active_host_not_grok() -> None:
     """Shared router must not impose Grok setup or skill order on other hosts."""

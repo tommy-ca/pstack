@@ -20,22 +20,7 @@ Skip when the conversation is trivial, off-topic, or already covered by an exist
 
 ## 1. Locate the active transcript
 
-Before fanning out, find this conversation's transcript.
-
-**Grok Build.** Use `~/.grok/sessions/<urlencoded-cwd>/<session-id>/chat_history.jsonl`. Sidecars in that directory include `summary.json`, `events.jsonl`, and `subagents/`. Confirm the first user `user_query` matches this conversation's opener. Do not glob Cursor `agent-transcripts/` or `~/.cursor/projects/*/`.
-
-**Cursor host.** The system prompt names the workspace `agent-transcripts/` directory. Use that path. Do not glob across `~/.cursor/projects/*/`.
-
-```bash
-# Grok Build
-ls -t ~/.grok/sessions/*/"$GROK_SESSION_ID"/chat_history.jsonl 2>/dev/null | head -5
-# Cursor host
-ls -t <agent-transcripts>/*.jsonl <agent-transcripts>/*/*.jsonl <agent-transcripts>/*/subagents/*.jsonl 2>/dev/null | head -10
-```
-
-Cursor layouts: legacy flat (`<id>.jsonl`), current nested (`<id>/<id>.jsonl`), and subagent (`<parent>/subagents/<child>.jsonl`).
-
-If none matches, pass a tight digest of the session instead.
+Before fanning out, resolve the active host and find this conversation's transcript in the host's own reference: `references/grok-transcript.md` on the Grok adapter. Do not use another host's transcript paths.
 
 ## 2. Spawn three reviewers in parallel
 

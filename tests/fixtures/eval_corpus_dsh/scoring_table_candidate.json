@@ -2,7 +2,7 @@
   "corpus_version": "1.0.0-dsh-candidate",
   "phase": "candidate",
   "source": "openspec/changes/archive/2026-10-11-deepseek-skill-portability/qualification-and-eval.md#corpus-positive-and-negative-examples",
-  "pstack_revision": "ec1270e84dab1c483095157447aeaa27024f4f85",
+  "pstack_revision": "bd72158499d1de8660533e4247f21e8fc189f1b4",
   "model_route": null,
   "provider": "deterministic-offline",
   "provenance": {
@@ -24,7 +24,7 @@
         "E04#1"
       ]
     },
-    "probe_scope_hash": "ddf12d017de84f255bd259564a352dc35ae3108f15b115c0c1dd79f3f19438f1",
+    "probe_scope_hash": "0b8eca42011012700f6bc8ed998839f4d12a9f5c642fbe3b37a97b8657b348f7",
     "provider": "deterministic-offline"
   },
   "total_cases": 14,
