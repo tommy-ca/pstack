@@ -147,6 +147,57 @@ def load_profiles(profiles_dir: Path) -> List[Dict]:
     return profiles
 
 
+HOST_INSTALL_PATHS: Dict[str, str] = {
+    "~/.grok/installed-plugins": "Grok Build plugin installation path",
+}
+
+ROUTING_IMPERATIVES = ("open", "read", "use", "route")
+
+NEGATION_GAP = r"(?:do\s+not|don[\u2019']t|never|avoid|refuse)\s+(?:\w+\s+){0,2}?"
+
+QUOTED_PROHIBITION_CARVE_OUTS: Tuple[Tuple[str, int, str], ...] = (
+    ("skills/poteto-mode/SKILL.md", 129, "~/.grok/installed-plugins"),
+)
+
+
+def is_host_routing_directive(line: str) -> Optional[str]:
+    """Detect a host-routing instruction, never a mere host mention."""
+    m = re.search(r"\bGrok Build\b(?![\u2019']s?\b)(?!:)", line)
+    if m and _affirmative_imperative(line):
+        return "Grok Build host routing name"
+    return None
+
+
+def _affirmative_imperative(line: str) -> bool:
+    """True when an imperative routing verb appears in the same clause without negation."""
+    m = re.search(r"\b(open|read|use|route)\b", line, re.IGNORECASE)
+    if not m:
+        return False
+    if re.search(NEGATION_GAP + r"\b(open|read|use|route)\b", line, re.IGNORECASE):
+        return False
+    if re.search(r"`[^`]*\buse one of\b[^`]*`", line):
+        return False
+    return True
+
+
+def _is_carved_prohibition(rel_path: str, line_number: int, token: str, scanned_line: str) -> bool:
+    """Exact-sentence carve-out: the reviewed Do-not-open prohibition and nothing else."""
+    if (rel_path, line_number, token) != (
+        "skills/poteto-mode/SKILL.md", 129, "~/.grok/installed-plugins"
+    ):
+        return False
+    expected = (
+        "Do not open `~/.grok/installed-plugins/pstack-*/skills/poteto-mode/playbooks/`."
+    )
+    if scanned_line.count("~/.grok/installed-plugins") != 1:
+        if "~/.grok/installed-plugins" not in scanned_line:
+            raise ValueError("carve-out literal drifted at skills/poteto-mode/SKILL.md:129")
+        return False
+    if scanned_line.count(expected) != 1:
+        raise ValueError("carve-out content drifted at skills/poteto-mode/SKILL.md:129")
+    return True
+
+
 def extract_forbidden_vocabulary(profiles_dir: Path) -> Dict[str, str]:
     vocab = dict(KNOWN_HOST_PRIMITIVES)
     profiles = load_profiles(profiles_dir)
@@ -226,6 +277,28 @@ def scan_file(
                         line_number=idx,
                         token=token,
                         category=category,
+                        snippet=line.strip()[:160],
+                    )
+                )
+        directive = is_host_routing_directive(line)
+        if directive is not None:
+            violations.append(
+                Violation(
+                    file_path=rel_path,
+                    line_number=idx,
+                    token="Grok Build",
+                    category=directive,
+                    snippet=line.strip()[:160],
+                )
+            )
+        for path, label in HOST_INSTALL_PATHS.items():
+            if path in line and not _is_carved_prohibition(rel_path, idx, path, line):
+                violations.append(
+                    Violation(
+                        file_path=rel_path,
+                        line_number=idx,
+                        token=path,
+                        category=label,
                         snippet=line.strip()[:160],
                     )
                 )
