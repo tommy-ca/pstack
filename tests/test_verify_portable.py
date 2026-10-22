@@ -68,6 +68,14 @@ def test_doctor_is_hermetic_against_ambient_plugin_mirrors(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """#709: the doctor verdict must not change when the live mirrors change."""
+    # The doctor's OpenSpec step shells out to a CLI the offline gate does not
+    # install; pin it to "no active change" so this case exercises only the
+    # HOME-bound install/verify path (#717 follow-up).
+    monkeypatch.setattr(
+        verify_portable,
+        "resolve_openspec_change",
+        lambda *a, **k: verify_portable.ChangeResolution(state="none", name=None, names=[]),
+    )
     hosts = ("omp", "antigravity")
     mirrors = {
         "omp": Path(".omp/plugins/pstack"),
@@ -106,6 +114,26 @@ def test_doctor_is_hermetic_against_ambient_plugin_mirrors(
         ambient = {row[0]: row[1] for row in stale[host]}
         assert ambient[f"doctor-package-lifecycle-{host}"] == "PASS"
     assert {row[0]: row[1] for row in stale["antigravity"]}["doctor-antigravity-sync"] == "PASS"
+
+
+def test_doctor_fails_closed_when_fixture_install_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """#709 follow-up: a refused fixture install must fail the doctor, not pass vacuously."""
+    home = tmp_path / "home"
+    (tmp_path / "foreign" / "plugins").mkdir(parents=True)
+    home.mkdir()
+    (home / ".omp").symlink_to(tmp_path / "foreign")  # symlinked mirror: install refuses
+    monkeypatch.setenv("PSTACK_DOCTOR_HOME", str(home))
+
+    verifier = PortableVerifier(host="omp", evidence_root=tmp_path / "evidence")
+    assert verifier.launch()
+    assert verifier.doctor(check_durability=False) is False
+
+    seed = [s for s in verifier.scenarios if s.id == "doctor-fixture-install-omp"]
+    assert len(seed) == 1
+    assert seed[0].verdict == "FAIL"
+    assert seed[0].exit_code != 0
 
 
 def test_portable_verifier_droid(tmp_path: Path) -> None:
@@ -359,8 +387,13 @@ def test_change_named_like_a_flag_still_validates_as_a_name(
 ) -> None:
     seen: list[list[str]] = []
     def _fake_run(*a: object, **k: object) -> subprocess.CompletedProcess[str]:
-        seen.append(list(a[0]) if a else [])
-        return subprocess.CompletedProcess(a, 1, "", "invalid change")
+        argv = list(a[0]) if a else []
+        seen.append(argv)
+        # A failed seed install now fails the doctor closed, so script exactly that
+        # step to succeed; every other probe keeps the original fail-everything
+        # shape so the openspec scenario still records FAIL.
+        seed = len(argv) > 2 and argv[2] == "install"
+        return subprocess.CompletedProcess(a, 0 if seed else 1, "", "" if seed else "invalid change")
     monkeypatch.setattr(verify_portable.subprocess, "run", _fake_run)
     verifier = PortableVerifier(host="grok", evidence_root=tmp_path, change="--no-active-change")
     verifier.launch()

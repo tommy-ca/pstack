@@ -242,7 +242,7 @@ class PortableVerifier:
         fixture_home = Path(injected) if injected else Path(tempfile.mkdtemp(prefix=f"pstack-doctor-{self.host}-"))
         fixture_home.mkdir(parents=True, exist_ok=True)
         try:
-            self.run_command(
+            seed = self.run_command(
                 f"doctor-fixture-install-{self.host}",
                 f"Install {self.host} package into fixture HOME for hermetic doctor checks",
                 "package",
@@ -250,6 +250,11 @@ class PortableVerifier:
                 env={"HOME": str(fixture_home)},
                 record=False,
             )
+            if seed.verdict != "PASS":
+                # Fail closed: with an empty fixture the downstream mirrors read as
+                # missing drift, not real state, so a green doctor would be vacuous.
+                self.scenarios.append(seed)
+                return False
             return self._doctor_checks(fixture_home, check_durability=check_durability, allow_stale=allow_stale)
         finally:
             if not injected:
