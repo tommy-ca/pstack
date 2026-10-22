@@ -336,6 +336,7 @@ Required **skill** names (hyphen-normalized, case-insensitive), source tied to p
 
 - `poteto-mode` (frontmatter `name: poteto-mode`)
 - `setup-pstack`
+- `setup-pstack-grok`
 - `how`
 - `unslop`
 
@@ -415,7 +416,7 @@ Re-run the live `toolName` extract on Gate 5, Gate 6, and Gate 7 streams. One Cu
 
 ## Gate 4. Detect live `spawn_subagent.model` slugs
 
-`setup-pstack/SKILL.md` step 1. Enumerate slugs accepted by the TUI `spawn_subagent` `model` field (wire aliases `task` / `Task`) in this session. Prefer a rejected spawn-model error that names valid slugs. Use `grok models` if the CLI exposes it. Use `grok inspect --json` only if that JSON actually lists models. Never write a slug you have not confirmed. `inherit-parent` and `auto` are always valid and are not slugs. Omit `model` on `spawn_subagent` so the child inherits.
+`setup-pstack-grok/SKILL.md` step 1. Enumerate slugs accepted by the TUI `spawn_subagent` `model` field (wire aliases `task` / `Task`) in this session. Prefer a rejected spawn-model error that names valid slugs. Use `grok models` if the CLI exposes it. Use `grok inspect --json` only if that JSON actually lists models. Never write a slug you have not confirmed. `inherit-parent` and `auto` are always valid and are not slugs. Omit `model` on `spawn_subagent` so the child inherits.
 
 `InspectReport` (`inspect/mod.rs`) has **no models catalog**. Do not pretend inspect listed slugs if the JSON has no such field.
 
@@ -467,7 +468,7 @@ On EDITH's Linux Grok Build the live set has been `grok-4.5` and `grok-4.6`. Rec
 
 ### Gate 4 also. Detect the live effort enum
 
-`setup-pstack` step 1b / [`effort-ladder.md`](./skills/setup-pstack/references/effort-ladder.md). Probe an invalid `--reasoning-effort`. Parse **`use one of:`** from the runtime validator. Do **not** use `Effort::VALID_VALUES` or FromStr `expected one of:` (those include reserved `max`). Do **not** send `reasoning_effort` on the spawn call.
+`setup-pstack-grok` step 1b / [`effort-ladder.md`](./skills/setup-pstack-grok/references/effort-ladder.md). Probe an invalid `--reasoning-effort`. Parse **`use one of:`** from the runtime validator. Do **not** use `Effort::VALID_VALUES` or FromStr `expected one of:` (those include reserved `max`). Do **not** send `reasoning_effort` on the spawn call.
 
 ```bash
 # Invalid effort probe. Capture the live `use one of:` list.
@@ -503,7 +504,7 @@ Gate 1 writes `PLUGIN_PATH.txt`. If this block runs before that file exists, use
 
 On grok 1.0.13 the live line is `use one of: xhigh, high, medium, low`. After orient, expected tiers are judgment `xhigh`, instruction `high`, mechanical `medium`.
 
-**PASS.** `gate4-detected-efforts.txt` is non-empty, has no `none`/`minimal`/`deep`, and does not contain a token this session invented (`ultra` / `max` only if `use one of:` named them). `gate4-expected-tiers.txt` has `judgment:`, `instruction:`, `mechanical:` matching [`effort-ladder.md`](./skills/setup-pstack/references/effort-ladder.md).
+**PASS.** `gate4-detected-efforts.txt` is non-empty, has no `none`/`minimal`/`deep`, and does not contain a token this session invented (`ultra` / `max` only if `use one of:` named them). `gate4-expected-tiers.txt` has `judgment:`, `instruction:`, `mechanical:` matching [`effort-ladder.md`](./skills/setup-pstack-grok/references/effort-ladder.md).
 
 **FAIL.** The file lists `max` or `ultra` with no `use one of:` evidence, includes `none`/`minimal`/`deep` as a pstack ladder token, or was built from `Effort::VALID_VALUES` / `expected one of:` instead of the live CLI.
 
@@ -520,7 +521,7 @@ claude-opus-5-thinking-xhigh
 
 ## Gate 4a. Accept-defaults (follow step 5)
 
-Instruct the session to follow `setup-pstack` **step 5** and accept the shipped defaults: `grok-4.6` for models, and the **computed** three-tier `[effort]` table from this session's live `use one of:` list ([`effort-ladder.md`](./skills/setup-pstack/references/effort-ladder.md), values in `gate4-expected-tiers.txt`). Do **not** tell it to write inherit-parent for every role as a shortcut. Do **not** tell it to copy `Effort::VALID_VALUES` or to write `max` unless the live CLI listed it.
+Instruct the session to follow `setup-pstack-grok` **step 5** and accept the shipped defaults: `grok-4.6` for models, and the **computed** three-tier `[effort]` table from this session's live `use one of:` list ([`effort-ladder.md`](./skills/setup-pstack-grok/references/effort-ladder.md), values in `gate4-expected-tiers.txt`). Do **not** tell it to write inherit-parent for every role as a shortcut. Do **not** tell it to copy `Effort::VALID_VALUES` or to write `max` unless the live CLI listed it.
 
 **Commands**
 
@@ -530,12 +531,12 @@ if [ -f "$HOME/.grok/pstack-models.toml" ]; then
 fi
 
 # Preferred: TUI. ask_user_question can hang headless.
-#   /setup-pstack
+#   /setup-pstack-grok
 # Follow step 5. Accept the shipped defaults. Substitute inherit-parent for
 # grok-4.6 only if grok-4.6 is not in gate4-detected-slugs.txt.
 # Decline the verify-* skill offer.
 
-timeout 180s grok -p '/setup-pstack
+timeout 180s grok -p '/setup-pstack-grok
 Follow step 5 in the skill. Accept the shipped defaults for models and for [effort].
 Write grok-4.6 in every model key if it is in the DETECTED list. Otherwise inherit-parent for models.
 Detect the live effort enum from `use one of:` (grok --reasoning-effort not-a-real-effort). Apply effort-ladder.md. Do not use VALID_VALUES. Do not write max unless the live CLI listed it. Do not invent ultra.
@@ -750,7 +751,7 @@ echo $? | tee "$EVIDENCE/gate4d-toml-exists.exit"
 
 ## Gate 4e. Live effort ladder writes grok-build role files
 
-`spawn_subagent` has no `reasoning_effort` field. Prove setup detected the live enum, applied [`effort-ladder.md`](./skills/setup-pstack/references/effort-ladder.md), and wrote `SubagentRole.reasoning_effort` in `~/.grok/roles/pstack:<key>.toml`.
+`spawn_subagent` has no `reasoning_effort` field. Prove setup detected the live enum, applied [`effort-ladder.md`](./skills/setup-pstack-grok/references/effort-ladder.md), and wrote `SubagentRole.reasoning_effort` in `~/.grok/roles/pstack:<key>.toml`.
 
 **Commands**
 
@@ -762,9 +763,9 @@ if [ -d "$HOME/.grok/roles" ]; then
   cp -a "$HOME/.grok/roles" "$EVIDENCE/gate4e-roles.pre"
 fi
 
-timeout 180s grok -p '/setup-pstack
+timeout 180s grok -p '/setup-pstack-grok
 Keep every model key inherit-parent.
-Detect the live effort enum from `use one of:` (not VALID_VALUES). Apply skills/setup-pstack/references/effort-ladder.md.
+Detect the live effort enum from `use one of:` (not VALID_VALUES). Apply skills/setup-pstack-grok/references/effort-ladder.md.
 Do not write max unless the live CLI listed it. Do not invent ultra.
 Write the computed three-tier [effort] split:
 highest for judgment/explainer/verifier/panels;

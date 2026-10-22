@@ -50,6 +50,10 @@
     "runtime_conventions": {
       "$ref": "runtime-conventions.schema.json",
       "description": "Host-specific execution constraints, isolation modes, and model spawn fields."
+    },
+    "setup": {
+      "$ref": "setup-projection.schema.json",
+      "description": "Where this host declares its model and reasoning-effort setup surface, and which skill owns the host-specific steps. Absent means no declared setup surface (a GAP for /setup-pstack), never another host's fallback."
     }
   },
   "additionalProperties": false

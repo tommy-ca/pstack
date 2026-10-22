@@ -84,3 +84,54 @@ def unproven_catalog_policy(status: str) -> dict:
     policy = catalog_plan_policy()
     policy["hosts"]["codex"]["verification_status"] = status
     return policy
+
+
+def _tiered_catalog_policy(discovery: str, status: str) -> dict:
+    """Every tier names one catalog slug, so a planner outcome reflects the catalog state."""
+    policy = copy.deepcopy(EXAMPLE)
+    host = policy["hosts"]["codex"]
+    host["discovery"] = discovery
+    host["verification_status"] = status
+    host["model_catalog"] = [
+        {
+            "id": "model-a",
+            "provider": "fixture",
+            "family": "alpha",
+            "supported_efforts": ["low", "high"],
+        },
+    ]
+    host["tier_defaults"] = {tier: ["model-a"] for tier in host["tier_defaults"]}
+    return policy
+
+
+def available_catalog_policy() -> dict:
+    """Non-empty catalog plus live-observed discovery: the only dispatch-grade shape."""
+    policy = _tiered_catalog_policy("live", "verified")
+    policy["hosts"]["codex"]["catalog_observation"] = {
+        "host_version": "test-fixture-only",
+        "observed_at": "2026-10-22T00:00:00Z",
+        "receipt": ".audit/test-fixture-no-runtime-claim.json",
+        "implementation_revision": "0" * 40,
+    }
+    return policy
+
+
+def missing_catalog_policy() -> dict:
+    """Empty catalog with inherit-parent tiers: a caller slug then has nowhere to resolve."""
+    policy = copy.deepcopy(EXAMPLE)
+    host = policy["hosts"]["codex"]
+    host["discovery"] = "unverified"
+    host["verification_status"] = "unverified"
+    host["model_catalog"] = []
+    host["fallback"] = "fail-closed"
+    host["tier_defaults"] = {tier: ["inherit-parent"] for tier in host["tier_defaults"]}
+    return policy
+
+
+def invalid_catalog_policy() -> dict:
+    """Tiers naming a slug the catalog dropped: the policy checker refuses the drift."""
+    policy = _tiered_catalog_policy("catalog", "static-only")
+    policy["hosts"]["codex"]["model_catalog"] = [
+        {"id": "model-b", "provider": "fixture", "family": "beta"},
+    ]
+    return policy

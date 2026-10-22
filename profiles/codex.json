@@ -4,6 +4,13 @@
   "skills_dir": ".codex/skills",
   "plugins_dir": "~/.codex/plugins",
   "plugin_manifest": ".codex-plugin/plugin.json",
+  "setup": {
+    "source": "host-catalog",
+    "skill": null,
+    "catalog": ".codex-plugin/models.json",
+    "overlay": null,
+    "effort": "none"
+  },
   "bindings": [
     {
       "host": "codex",

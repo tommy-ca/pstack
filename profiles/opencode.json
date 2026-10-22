@@ -4,6 +4,13 @@
   "skills_dir": ".opencode/skills",
   "plugins_dir": "~/.opencode/plugins",
   "plugin_manifest": ".opencode-plugin/package.json",
+  "setup": {
+    "source": "none",
+    "skill": null,
+    "catalog": null,
+    "overlay": null,
+    "effort": "none"
+  },
   "bindings": [
     {
       "host": "opencode",

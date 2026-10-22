@@ -1,9 +1,10 @@
-"""setup-pstack model/effort sheet unification, safe override precedence, and hook lifecycle (#438).
+"""setup-pstack model/effort sheet unification, host setup projection, precedence, and hook lifecycle (#438, #703).
 
 Provides:
-- Deterministic parsing and generation of ~/.grok/pstack-models.toml.
+- Resolution of a host's declared setup projection from profiles/<host>.json.
+- Deterministic parsing and generation of the top-level role model sheet.
 - Targeted warnings for invalid rows or retired/unrecognized roles.
-- Safe synchronization of Grok role overlays (~/.grok/roles/pstack:<key>.toml)
+- Safe synchronization of the Grok role overlay declared by `profiles/grok.json#setup`
   while strictly preserving user-owned files.
 - Effective config and source precedence inspection across canonical roles.
 - Host-scoped, idempotent hook opt-out lifecycle management.
@@ -13,13 +14,76 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, Mapping, Sequence
+from typing import Any, Mapping, Optional, Sequence
 import tomllib
 
+from scripts.host_identity import is_valid_host_id
 from scripts.model_role_resolver import resolve_role_source
+from scripts.portability_types import SetupProjection, ValidationError
 
 ROOT = Path(__file__).resolve().parent.parent
 PACKAGE_JSON = ROOT / "pstack.package.json"
+PROFILES_DIR = ROOT / "profiles"
+
+
+def _declared_profile(host: str, profiles_dir: Path) -> dict[str, Any]:
+    """The profile whose `host` field is exactly `host`.
+
+    The argument is a host id, never a filename stem: `profiles/copilot.json`
+    declares `github:copilot`, and a stem lookup would also let `../profiles/grok`
+    resolve another host's write targets. Both are refused here.
+    """
+    if not is_valid_host_id(host):
+        raise ValidationError(f"Invalid host id {host!r}")
+    for path in sorted(profiles_dir.glob("*.json")):
+        try:
+            profile = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as exc:
+            raise ValidationError(f"Unreadable harness profile {path.name}: {exc}") from exc
+        if isinstance(profile, dict) and profile.get("host") == host:
+            return profile
+    raise ValidationError(f"No harness profile for host {host!r}")
+
+
+def resolve_setup_projection(
+    host: str, profiles_dir: Path = PROFILES_DIR, root: Path = ROOT
+) -> Optional[SetupProjection]:
+    """Return the host's declared setup projection, or None when it declares none.
+
+    `None` is a GAP to report, never a reason to reuse another host's setup. The
+    structural matrix (source/effort/field coherence) lives on the typed model;
+    this resolver adds the repo-level checks the profile cannot make on its own:
+    a declared skill must exist, and a repo-relative catalog must be projected.
+    The writers read it instead of hardcoding the same paths, so a host that
+    changes its setup surface changes exactly one declaration.
+    """
+    profile = _declared_profile(host, profiles_dir)
+    raw = profile.get("setup")
+    if raw is None:
+        return None
+    if not isinstance(raw, dict):
+        raise ValidationError(f"setup block for {host!r} must be an object")
+    # A CLI-probing surface writes host-home config, so it needs proven bindings.
+    # A passive declaration (inherit/none/host-catalog) is layout, not capability.
+    if raw.get("source") == "host-cli" and profile.get("support_state") == "candidate":
+        raise ValidationError(
+            f"Candidate host {host!r} must not declare a CLI-probing setup surface before native evidence"
+        )
+    try:
+        projection = SetupProjection(**raw)
+    except TypeError as exc:
+        raise ValidationError(f"setup block for {host!r} does not match SetupProjection: {exc}") from exc
+    projection.validate()
+    if projection.skill is not None and not (root / "skills" / projection.skill / "SKILL.md").is_file():
+        raise ValidationError(
+            f"setup skill {projection.skill!r} for {host!r} has no skills/{projection.skill}/SKILL.md"
+        )
+    # A `~` catalog is a host-home write target that need not exist yet; everything
+    # else is a repo artifact this tree must already project.
+    if projection.catalog is not None and not projection.catalog.startswith("~"):
+        if not (root / projection.catalog).exists():
+            raise ValidationError(f"setup catalog {projection.catalog!r} for {host!r} is not projected")
+    return projection
 
 
 def load_canonical_roles(package_path: Path = PACKAGE_JSON) -> dict[str, dict[str, Any]]:
@@ -126,17 +190,26 @@ def generate_pstack_models_toml(
 
 def sync_grok_role_overlays(
     effort_map: Mapping[str, str],
-    roles_dir: Path,
+    roles_dir: Path | None = None,
     canonical_roles: Mapping[str, Any] | None = None,
 ) -> tuple[list[Path], list[Path]]:
-    """Synchronize ~/.grok/roles/pstack:<role>.toml files.
+    """Synchronize `pstack:<role>.toml` in `profiles/grok.json#setup.overlay`.
 
     - If effort is inherit-parent, auto, or empty, removes pstack:<role>.toml if present.
     - If effort is a real token, writes description + reasoning_effort.
     - Retains user-owned non-pstack files (files not starting with 'pstack:').
 
+    `roles_dir` overrides the declared overlay, for a caller installing into a
+    temporary home.
+
     Returns (written_paths, removed_paths).
     """
+    if roles_dir is None:
+        projection = resolve_setup_projection("grok")
+        overlay = projection.overlay if projection is not None else None
+        if overlay is None:
+            raise ValidationError("profiles/grok.json#setup declares no overlay to write")
+        roles_dir = Path(overlay).expanduser()
     roles_dir.mkdir(parents=True, exist_ok=True)
     valid_roles = set(canonical_roles.keys()) if canonical_roles is not None else set(CANONICAL_ROLES.keys())
 

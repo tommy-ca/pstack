@@ -26,6 +26,10 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from skill_frontmatter import is_scalar_key, read_scalar, split_frontmatter, validate_skill_name
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from scripts.setup_pstack import resolve_setup_projection  # noqa: E402
 
 SKIP_DIRS = {".git", "automations", ".superpowers", ".worktrees", "openspec", ".audit"}
 SKIP_FILES = {
@@ -41,7 +45,11 @@ SKIP_FILES = {
 TEXT_SUFFIXES = {".md", ".toml", ".json", ".ts", ".sh", ".mjs"}
 
 CURSOR_MODELS_PATH = "~/.cursor/rules/pstack-models.mdc"
-GROK_MODELS_PATH = "~/.grok/pstack-models.toml"
+# The rewrite target is the Grok profile's declared setup catalog, not a constant.
+GROK_SETUP = resolve_setup_projection("grok")
+if GROK_SETUP is None or GROK_SETUP.catalog is None:
+    raise SystemExit("profiles/grok.json#setup declares no catalog to rewrite Cursor paths onto")
+GROK_MODELS_PATH = GROK_SETUP.catalog
 
 REPLACEMENTS: list[tuple[str, str]] = [
     (CURSOR_MODELS_PATH, GROK_MODELS_PATH),

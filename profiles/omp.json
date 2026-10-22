@@ -4,6 +4,13 @@
   "skills_dir": ".omp/skills",
   "plugins_dir": "~/.omp/plugins",
   "plugin_manifest": ".omp-plugin/package.json",
+  "setup": {
+    "source": "none",
+    "skill": null,
+    "catalog": null,
+    "overlay": null,
+    "effort": "none"
+  },
   "bindings": [
     {
       "host": "omp",

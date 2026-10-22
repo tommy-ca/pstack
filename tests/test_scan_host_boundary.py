@@ -122,13 +122,15 @@ def test_detects_forbidden_primitives_in_fixture(tmp_path: Path):
 def test_typed_exemptions():
     """Exemptions must protect adapter references, profiles, and tests while leaving skills unexempt."""
     assert is_exempt("skills/poteto-mode/references/grok-tools.md") is not None
-    assert is_exempt("skills/setup-pstack/SKILL.md") is not None
+    assert is_exempt("skills/setup-pstack-grok/SKILL.md") is not None
+    assert is_exempt("skills/setup-pstack-grok/references/effort-ladder.md") is not None
     assert is_exempt("profiles/grok.json") is not None
     assert is_exempt("tests/test_scan_host_boundary.py") is not None
     assert is_exempt("scripts/scan-host-boundary.py") is not None
     assert is_exempt("skills/poteto-mode/scripts/node_modules/typescript/README.md") is not None
 
-    # Portable shared surfaces must NOT be exempt
+    # Portable shared surfaces must NOT be exempt, including the setup entry
+    assert is_exempt("skills/setup-pstack/SKILL.md") is None
     assert is_exempt("skills/poteto-mode/SKILL.md") is None
     assert is_exempt("skills/poteto-mode/playbooks/feature.md") is None
     assert is_exempt("skills/swarm/SKILL.md") is None
@@ -277,12 +279,28 @@ def test_portable_router_selects_the_active_host_not_grok() -> None:
     assert "undeclared or unproven native capability is a GAP" in router
 
 
-def test_grok_setup_is_explicitly_adapter_scoped() -> None:
-    """A shared skill name may expose Grok setup only with a visible native guard."""
-    setup = (ROOT / "skills/setup-pstack/SKILL.md").read_text(encoding="utf-8")
-    assert "**Host scope: Grok Build adapter only.**" in setup
-    assert "do not run Grok probes or create `~/.grok/` files" in setup
-    assert "profiles/<host>.json" in setup
+def test_setup_entry_is_host_neutral_and_dispatches() -> None:
+    """The shared setup name must dispatch from the profile, never carry one host's body."""
+    entry = (ROOT / "skills/setup-pstack/SKILL.md").read_text(encoding="utf-8")
+    grok = (ROOT / "skills/setup-pstack-grok/SKILL.md").read_text(encoding="utf-8")
+    for host_owned in ("~/.grok/", "grok-4.6", "pstack-models.toml", "Grok Build"):
+        assert host_owned not in entry, host_owned
+    assert "profiles/<host>.json#setup" in entry
+    assert "skills/<setup.skill>/SKILL.md" in entry
+    assert "Never substitute one host's setup for another." in entry
+    assert "pstack.package.json#roles" in entry
+    # The Grok body lives in the namespaced adapter skill and stays scannable there.
+    assert "~/.grok/pstack-models.toml" in grok
+    assert "../setup-pstack/SKILL.md" in grok
+
+
+def test_setup_write_target_flags_shared_surface(tmp_path: Path) -> None:
+    """A host setup write target on a shared surface is a violation."""
+    f = tmp_path / "skills" / "sample" / "SKILL.md"
+    f.parent.mkdir(parents=True, exist_ok=True)
+    f.write_text("Write `~/.grok/pstack-models.toml` with every role.\n", encoding="utf-8")
+    vs = scan_file(f, tmp_path, extract_forbidden_vocabulary(PROFILES_DIR))
+    assert any(v.token == "~/.grok/pstack-models.toml" for v in vs)
 
 
 def test_legacy_grok_doctor_does_not_claim_native_host_proof() -> None:

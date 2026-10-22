@@ -4,6 +4,13 @@
   "skills_dir": ".factory/skills",
   "plugins_dir": "~/.factory/plugins",
   "plugin_manifest": ".factory-plugin/plugin.json",
+  "setup": {
+    "source": "inherit",
+    "skill": null,
+    "catalog": null,
+    "overlay": null,
+    "effort": "inherit-parent"
+  },
   "bindings": [],
   "evidence_ledger": [],
   "tool_mappings": {

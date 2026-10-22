@@ -113,7 +113,7 @@ def test_host_manifests_keep_grok_parity_and_adapter_asymmetry() -> None:
 
 def test_grok_spawn_types_are_plugin_qualified() -> None:
     effort = (
-        ROOT / "skills/setup-pstack/references/resolve-effort.md"
+        ROOT / "skills/setup-pstack-grok/references/resolve-effort.md"
     ).read_text(encoding="utf-8")
     harness = (ROOT / "skills" / "poteto-mode" / "references" / "grok-tools.md").read_text(encoding="utf-8")
     how = (ROOT / "skills/how/SKILL.md").read_text(encoding="utf-8")
@@ -255,14 +255,14 @@ def test_effort_frontmatter_matches_ladder() -> None:
         check=False,
     )
     assert proc.returncode == 0, proc.stderr + proc.stdout
-    ladder = (ROOT / "skills/setup-pstack/references/effort-ladder.md").read_text(
+    ladder = (ROOT / "skills/setup-pstack-grok/references/effort-ladder.md").read_text(
         encoding="utf-8"
     )
     defaults = (
-        ROOT / "skills/setup-pstack/references/defaults.toml"
+        ROOT / "skills/setup-pstack-grok/references/defaults.toml"
     ).read_text(encoding="utf-8")
     resolve = (
-        ROOT / "skills/setup-pstack/references/resolve-effort.md"
+        ROOT / "skills/setup-pstack-grok/references/resolve-effort.md"
     ).read_text(encoding="utf-8")
     harness = (ROOT / "skills" / "poteto-mode" / "references" / "grok-tools.md").read_text(encoding="utf-8")
     assert "use one of: xhigh, high, medium, low" in ladder

@@ -67,7 +67,7 @@ Droid 角色名是 `pstack-<role>`（`pstack-feature`，不是 `pstack:feature`�
 两步。
 
 1. 要做事、要严谨，直接用 [`/poteto-mode`](./skills/poteto-mode/SKILL.md)。不用先跑 setup。
-2. 只有想改模型或 effort 时，才跑 [`/setup-pstack`](./skills/setup-pstack/SKILL.md)。它是可选的、全局的，写入 `~/.grok/pstack-models.toml` 和 `~/.grok/roles/pstack:<role>.toml`。
+2. 只有想改模型或 effort 时，才跑 [`/setup-pstack`](./skills/setup-pstack/SKILL.md)。它是可选的、全局的，且与宿主无关：读 `profiles/<host>.json#setup` 再分发。在 Grok Build 上会分发给 [`/setup-pstack-grok`](./skills/setup-pstack-grok/SKILL.md)，由它写入 `~/.grok/pstack-models.toml` 和 `~/.grok/roles/pstack:<role>.toml`。
 
 第一次用可以看 [pstack 指南](./docs/guide/README.md)：安装、提问、核验、过夜跑。指南是英文。
 
@@ -81,11 +81,11 @@ Droid 角色名是 `pstack-<role>`（`pstack-feature`，不是 `pstack:feature`�
 
 **effort.** 以 grok 1.0.13 现场 CLI 为准。`use one of: xhigh, high, medium, low`。本仓库出厂分层是判断 / 解释 / 核对 / 评审组 `xhigh`，跟指令（bug-fix、perf-issue、hillclimb、reflect-tooling）`high`，机械活（feature、refactoring、how-explorer、why-investigators、swarm-workers）`medium`。不默认 `max`。这个 CLI 不认 `max`。skill 从不在 `spawn_subagent` 上发送 `reasoning_effort`。
 
-没有覆盖文件就用上述出厂值。toml 里缺键、`inherit-parent` 或 `auto` 时，省略 `model`。`/setup-pstack` 会按当前 CLI 的 `use one of:` 再探测一遍；若分层变了就重写。二进制以后多出新档位，要再跑一次 setup。子 skill 看不到新 enum。
+没有覆盖文件就用上述出厂值。toml 里缺键、`inherit-parent` 或 `auto` 时，省略 `model`。[`/setup-pstack-grok`](./skills/setup-pstack-grok/SKILL.md) 会按当前 CLI 的 `use one of:` 再探测一遍；若分层变了就重写。二进制以后多出新档位，要再跑一次 setup。子 skill 看不到新 enum。
 
 ## Grok Build 与 Cursor 使用不同的配置路径
 
-这里的 [`/setup-pstack`](./skills/setup-pstack/SKILL.md) 只给 Grok Build 配模型和 effort。官方 Cursor `/setup-pstack`（Cursor 里，或 Grok Bot 里那份）是另一个插件。那份会写 `~/.cursor/rules`，并用 Cursor 的模型名。不要在 Grok Build 上跑那份，也不会在这里生效。
+这里的 [`/setup-pstack-grok`](./skills/setup-pstack-grok/SKILL.md) 只给 Grok Build 配模型和 effort。官方 Cursor `/setup-pstack`（Cursor 里，或 Grok Bot 里那份）是另一个插件。那份会写 `~/.cursor/rules`，并用 Cursor 的模型名。不要在 Grok Build 上跑那份，也不会在这里生效。
 
 ## 用法
 
@@ -175,7 +175,8 @@ morning.
 | [`/swarm`](./skills/swarm/SKILL.md) | you want N parallel workers across different slices or races, then one aggregated report. |
 | [`/interrogate`](./skills/interrogate/SKILL.md) | you have a diff and want several different models to try to break it, including a strict code-quality lens. |
 | [`/automate-me`](./skills/automate-me/SKILL.md) | you want your own `-mode` skill, drafted from how you've actually worked. |
-| [`/setup-pstack`](./skills/setup-pstack/SKILL.md) | override the shipped `grok-4.6` + per-role effort default. detects your models and writes `~/.grok/pstack-models.toml` plus `~/.grok/roles/pstack:<role>.toml`. |
+| [`/setup-pstack`](./skills/setup-pstack/SKILL.md) | host-neutral setup entry, reads `profiles/<host>.json#setup` and dispatches to the setup skill that host declares. |
+| [`/setup-pstack-grok`](./skills/setup-pstack-grok/SKILL.md) | Grok Build setup: override the shipped `grok-4.6` + per-role effort default. detects your models and writes `~/.grok/pstack-models.toml` plus `~/.grok/roles/pstack:<role>.toml`. |
 | [`/reflect`](./skills/reflect/SKILL.md) | a long task landed and you want the recipe captured as a skill edit. |
 | [`/teach`](./skills/teach/SKILL.md) | you want to actually understand a change or subsystem, not just have it summarized. runs how + why and weaves one plain explanation, built up diagram by diagram. |
 | [`/tdd`](./skills/tdd/SKILL.md) | you're fixing a bug and there's a cheap local test path. write the failing test first, then the fix. |
@@ -298,7 +299,7 @@ grok-build 自带 `plan` agent 类型。pstack 仍然默认不规划。最好的
 
 输入 [`/automate-me`](./skills/automate-me/SKILL.md)。它从你最近的 transcript 里挖习惯，起草一个 `<your-name>-mode` skill，底层仍走 pstack。pstack 当底座，旁边多一个你自己的路由 skill。
 
-Grok Build 默认仍是 `grok-4.6` 加按角色的 effort。只有要改的时候才跑 [`/setup-pstack`](./skills/setup-pstack/SKILL.md)。它探测 `spawn_subagent` 能收的 slug，按角色问 reasoning effort，写入 `~/.grok/pstack-models.toml` 和由本插件管理的 `~/.grok/roles/pstack:<role>.toml`。它不会写 `~/.cursor/rules`。这不是 Cursor 插件。
+Grok Build 默认仍是 `grok-4.6` 加按角色的 effort。只有要改的时候才跑 [`/setup-pstack`](./skills/setup-pstack/SKILL.md)；在 Grok Build 上它会分发给 [`/setup-pstack-grok`](./skills/setup-pstack-grok/SKILL.md)。它探测 `spawn_subagent` 能收的 slug，按角色问 reasoning effort，写入 `~/.grok/pstack-models.toml` 和由本插件管理的 `~/.grok/roles/pstack:<role>.toml`。它不会写 `~/.cursor/rules`。这不是 Cursor 插件。
 
 ## 自动化
 
