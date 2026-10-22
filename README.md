@@ -8,13 +8,13 @@ This is a **multi-harness reference port** of [official Cursor pstack](https://g
 
 The source-of-truth boundary and outstanding conformance gaps are documented in [Harness-neutral authority and verification](./docs/architecture/harness-neutral-authority-2026-10-21.md). The [implementation map](./docs/architecture/harness-adapters-and-jev-2026-10-20.md) records the current schemas, adapters, optional JEV decision boundary and independently verified evidence.
 
-The package descriptor currently targets **Grok, Codex, OMP (oh-my-pi), OpenCode, Antigravity and Droid**. A declared target or projected manifest is **not proof of native execution**; Droid remains a candidate and evidence differs by host. Read `profiles/<host>.json` and the matching host-owned tool reference before executing any harness-specific step. Claude/Copilot mappings are not automatically shipped host targets.
+The package descriptor currently targets **Grok, Codex, OMP (oh-my-pi), OpenCode, Antigravity and Droid**. A declared target or projected manifest is **not proof of native execution**; Droid remains a candidate and evidence differs by host. Read `profiles/<host>.json` and the matching host-owned tool reference before executing any harness-specific step. An unsupported capability must be labelled GAP and must not borrow Grok's invocation method. Claude/Copilot mappings are not automatically shipped host targets.
 
 The installation, first-session, model defaults and CLI command examples below are **Grok Build-specific** unless a heading explicitly says otherwise. They do not define portable routing or model policy.
 
 ## Credits
 
-The upstream playbooks and principles are [poteto](https://x.com/poteto)'s, from [official pstack](https://github.com/cursor/plugins/tree/main/pstack). This repository is **`tommy-ca/pstack`**, adapted from [aa2246740/pstack-grokbuild](https://github.com/aa2246740/pstack-grokbuild). Harness calls use Grok Build tools named in [grok-tools.md](./skills/poteto-mode/references/grok-tools.md). This port did not author those playbooks or principles.
+The upstream playbooks and principles are [poteto](https://x.com/poteto)'s, from [official pstack](https://github.com/cursor/plugins/tree/main/pstack). This repository is **`tommy-ca/pstack`**, adapted from [aa2246740/pstack-grokbuild](https://github.com/aa2246740/pstack-grokbuild). The Grok Build adapter uses the native tools in [grok-tools.md](./skills/poteto-mode/references/grok-tools.md); other hosts use their own profiles and references. This port did not author those playbooks or principles.
 
 poteto's idea is less slop, go deep first, and parallelize only after one agent can be trusted to write verifiable code. That philosophy is theirs. This README does not speak as poteto.
 
