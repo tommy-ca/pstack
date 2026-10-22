@@ -22,15 +22,15 @@ import os
 import re
 import secrets
 import shlex
-import shutil
 import stat
 import subprocess
 import sys
 import tempfile
 import time
+from contextlib import contextmanager
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Iterable, Iterator, List, Optional, Tuple
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -140,10 +140,20 @@ DEFAULT_EVIDENCE_DIR = ROOT / ".audit" / "evidence"
 
 
 class PortableVerifier:
-    def __init__(self, host: str, evidence_root: Path, change: str | None = None):
+    def __init__(
+        self,
+        host: str,
+        evidence_root: Path,
+        change: str | None = None,
+        fixture_home: Path | None = None,
+    ):
         self.host = host
         self.evidence_root = evidence_root
         self.change = change
+        # Caller-owned fixture HOME for the doctor phase (#709). When None the doctor
+        # allocates and removes its own; supplying one pins the exact home whose
+        # mirrors the verdict is allowed to see.
+        self.fixture_home = fixture_home
         self.run_id = f"{host}-{int(time.time())}-{secrets.token_hex(4)}"
         # The raw run dir has to outlive the checkout that made it: a lane runs in a
         # linked worktree that is pruned after merge, while the durable receipt it
@@ -219,7 +229,7 @@ class PortableVerifier:
             id=scenario_id,
             description=desc,
             plane=plane,
-            command=" ".join(cmd),
+            command=self._recorded_command(cmd, env),
             exit_code=exit_code,
             stdout_snippet=stdout_snip or stderr_snip,
             verdict=verdict,
@@ -230,20 +240,29 @@ class PortableVerifier:
             self.scenarios.append(result)
         return result
 
+    @staticmethod
+    def _recorded_command(cmd: List[str], env: Optional[Dict[str, str]]) -> str:
+        """Record the HOME a command ran under, so a receipt says which home decided it.
+
+        Without it a hermetic run and a run against the developer's live mirrors store
+        byte-identical command strings (#709).
+        """
+        command = " ".join(cmd)
+        home = (env or {}).get("HOME")
+        return command if home is None else f"{command} [HOME={home}]"
+
     def doctor(self, check_durability: bool = True, allow_stale: bool = False) -> bool:
         """Step 2: Doctor checks bound to a fixture HOME (#709).
 
         `package-lifecycle.py verify` and `sync-antigravity-plugin.py --check` read
         `$HOME` plugin mirrors, so whatever a developer has installed live could
-        decide the verdict. The host package is installed into a fixture HOME first,
-        so both checks still observe a real native projection while the ambient
-        mirrors stay out of the result. PSTACK_DOCTOR_HOME is caller-owned and kept;
-        otherwise the fixture is a disposable temp dir removed afterwards.
+        decide the verdict. Every doctor command therefore runs under one fixture
+        HOME: the host package is installed into it first, so the checks still
+        observe a real native projection while the ambient mirrors stay out of the
+        result. `fixture_home` is caller-owned; otherwise the fixture is a
+        disposable temp dir removed afterwards.
         """
-        injected = os.environ.get("PSTACK_DOCTOR_HOME")
-        fixture_home = Path(injected) if injected else Path(tempfile.mkdtemp(prefix=f"pstack-doctor-{self.host}-"))
-        fixture_home.mkdir(parents=True, exist_ok=True)
-        try:
+        with self._fixture_home() as fixture_home:
             seed = self.run_command(
                 f"doctor-fixture-install-{self.host}",
                 f"Install {self.host} package into fixture HOME for hermetic doctor checks",
@@ -258,13 +277,26 @@ class PortableVerifier:
                 self.scenarios.append(seed)
                 return False
             return self._doctor_checks(fixture_home, check_durability=check_durability, allow_stale=allow_stale)
-        finally:
-            if not injected:
-                shutil.rmtree(fixture_home, ignore_errors=True)
+
+    @contextmanager
+    def _fixture_home(self) -> Iterator[Path]:
+        if self.fixture_home is not None:
+            fixture_home = self.fixture_home.resolve()
+            fixture_home.mkdir(parents=True, exist_ok=True)
+            yield fixture_home
+            return
+        with tempfile.TemporaryDirectory(
+            prefix=f"pstack-doctor-{self.host}-", ignore_cleanup_errors=True
+        ) as tmp:
+            # Resolve before installing: package-lifecycle refuses a target under a
+            # symlinked ancestor (macOS /var -> /private/var), which would fail the
+            # doctor closed on a host whose TMPDIR is a link.
+            yield Path(tmp).resolve()
 
     def _doctor_checks(self, fixture_home: Path, check_durability: bool = True, allow_stale: bool = False) -> bool:
-        """Doctor scenarios 1-7; ambient-HOME readers are bound to fixture_home."""
+        """Doctor scenarios 1-7; every command runs under fixture_home."""
         print(f"[{self.host}] Running Doctor checks...")
+        env = {"HOME": str(fixture_home)}
 
         # 1. Canonical conformance
         r1 = self.run_command(
@@ -272,6 +304,7 @@ class PortableVerifier:
             "Verify canonical inventory conforms to pin",
             "canonical",
             [sys.executable, str(ROOT / "scripts" / "canonical-index.py"), "--check"],
+            env=env,
         )
 
         # 2. OpenSpec change integrity (argv-safe helper above). Resolve once: the
@@ -293,6 +326,7 @@ class PortableVerifier:
                 f"Verify {change_name} openspec change passes schema checks",
                 "canonical",
                 [sys.executable, "-c", helper, change_name],
+                env=env,
             )
         elif state == "lookup-failed":
             r2 = ScenarioResult(
@@ -326,6 +360,7 @@ class PortableVerifier:
             "Verify static harness names and discipline",
             "adapter",
             [sys.executable, str(ROOT / "scripts" / "verify-harness.py")],
+            env=env,
         )
 
         # 3b. Host-neutral adapter boundary scanner
@@ -334,6 +369,7 @@ class PortableVerifier:
             "Verify shared skills and playbooks maintain host-neutral adapter boundary",
             "adapter",
             [sys.executable, str(ROOT / "scripts" / "scan-host-boundary.py"), "--check"],
+            env=env,
         )
 
         # 4. Package descriptor and native manifest projection integrity
@@ -342,6 +378,7 @@ class PortableVerifier:
             "Verify package descriptor and projected native harness manifests",
             "package",
             [sys.executable, str(ROOT / "scripts" / "project-package.py"), "--check"],
+            env=env,
         )
 
         # 4b. Native package lifecycle verification
@@ -350,7 +387,7 @@ class PortableVerifier:
             f"Verify native package lifecycle contract for {self.host}",
             "package",
             [sys.executable, str(ROOT / "scripts" / "package-lifecycle.py"), "verify", "--host", self.host],
-            env={"HOME": str(fixture_home)},
+            env=env,
         )
 
         doctor_pass = all(
@@ -367,6 +404,7 @@ class PortableVerifier:
                 f"Validate typed harness profile for {self.host}",
                 "adapter",
                 [sys.executable, "-c", f"import json; from pathlib import Path; from scripts.portability_schema import HarnessProfile, Binding, Evidence; d = json.loads(Path('{profile_file}').read_text()); b = [Binding(**x) for x in d.get('bindings', [])]; e = [Evidence(**x) for x in d.get('evidence_ledger', [])]; HarnessProfile(host=d['host'], support_state=d['support_state'], bindings=b, skills_dir=d.get('skills_dir'), plugins_dir=d.get('plugins_dir'), plugin_manifest=d.get('plugin_manifest'), evidence_ledger=e, tool_mappings=d.get('tool_mappings'), skill_order=d.get('skill_order'), runtime_conventions=d.get('runtime_conventions'), setup=d.get('setup')).validate()"],
+                env=env,
             )
             doctor_pass = doctor_pass and (r5.verdict == "PASS")
 
@@ -377,7 +415,7 @@ class PortableVerifier:
                 "Verify live Antigravity plugin synchronization",
                 "package",
                 [sys.executable, str(ROOT / "scripts" / "sync-antigravity-plugin.py"), "--check"],
-                env={"HOME": str(fixture_home)},
+                env=env,
             )
             doctor_pass = doctor_pass and (r6.verdict == "PASS")
 
@@ -400,6 +438,7 @@ class PortableVerifier:
                 f"Verify evidence durability and support-state derivation for {self.host}",
                 "adapter",
                 chk_cmd,
+                env=env,
             )
             doctor_pass = doctor_pass and (r7.verdict == "PASS")
 
