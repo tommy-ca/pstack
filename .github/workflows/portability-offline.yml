@@ -46,6 +46,7 @@ jobs:
             tests/test_project_package.py \
             tests/test_skill_frontmatter.py \
             tests/test_scan_host_boundary.py \
+            tests/test_setup_projection.py \
             tests/test_package_lifecycle.py \
             tests/test_package_lifecycle_safety.py \
             tests/test_evidence_durability.py \
