@@ -35,6 +35,12 @@ def snapshot(root: Path) -> dict[str, tuple[bytes | None, int]]:
 
 @pytest.fixture
 def plugin(tmp_path, monkeypatch):
+    # The module derives LIVE_PLUGIN_DIR from HOME at import, so bind a fixture
+    # home before executing it: the developer's installed plugin is never the
+    # mirror under test.
+    home = tmp_path / "home"
+    home.mkdir()
+    monkeypatch.setenv("HOME", str(home))
     spec = importlib.util.spec_from_file_location("sync_antigravity_test", SCRIPT)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
