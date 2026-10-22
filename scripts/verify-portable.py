@@ -22,15 +22,15 @@ import os
 import re
 import secrets
 import shlex
-import shutil
 import stat
 import subprocess
 import sys
 import tempfile
 import time
+from contextlib import contextmanager
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Iterable, Iterator, List, Optional, Tuple
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -140,10 +140,20 @@ DEFAULT_EVIDENCE_DIR = ROOT / ".audit" / "evidence"
 
 
 class PortableVerifier:
-    def __init__(self, host: str, evidence_root: Path, change: str | None = None):
+    def __init__(
+        self,
+        host: str,
+        evidence_root: Path,
+        change: str | None = None,
+        fixture_home: Path | None = None,
+    ):
         self.host = host
         self.evidence_root = evidence_root
         self.change = change
+        # Caller-owned fixture HOME for the doctor phase (#709). When None the doctor
+        # allocates and removes its own; supplying one pins the exact home whose
+        # mirrors the verdict is allowed to see.
+        self.fixture_home = fixture_home
         self.run_id = f"{host}-{int(time.time())}-{secrets.token_hex(4)}"
         # The raw run dir has to outlive the checkout that made it: a lane runs in a
         # linked worktree that is pruned after merge, while the durable receipt it
@@ -235,15 +245,13 @@ class PortableVerifier:
 
         `package-lifecycle.py verify` and `sync-antigravity-plugin.py --check` read
         `$HOME` plugin mirrors, so whatever a developer has installed live could
-        decide the verdict. The host package is installed into a fixture HOME first,
-        so both checks still observe a real native projection while the ambient
-        mirrors stay out of the result. PSTACK_DOCTOR_HOME is caller-owned and kept;
-        otherwise the fixture is a disposable temp dir removed afterwards.
+        decide the verdict. Every doctor command therefore runs under one fixture
+        HOME: the host package is installed into it first, so the checks still
+        observe a real native projection while the ambient mirrors stay out of the
+        result. `fixture_home` is caller-owned; otherwise the fixture is a
+        disposable temp dir removed afterwards.
         """
-        injected = os.environ.get("PSTACK_DOCTOR_HOME")
-        fixture_home = Path(injected) if injected else Path(tempfile.mkdtemp(prefix=f"pstack-doctor-{self.host}-"))
-        fixture_home.mkdir(parents=True, exist_ok=True)
-        try:
+        with self._fixture_home() as fixture_home:
             seed = self.run_command(
                 f"doctor-fixture-install-{self.host}",
                 f"Install {self.host} package into fixture HOME for hermetic doctor checks",
@@ -258,9 +266,18 @@ class PortableVerifier:
                 self.scenarios.append(seed)
                 return False
             return self._doctor_checks(fixture_home, check_durability=check_durability, allow_stale=allow_stale)
-        finally:
-            if not injected:
-                shutil.rmtree(fixture_home, ignore_errors=True)
+
+    @contextmanager
+    def _fixture_home(self) -> Iterator[Path]:
+        if self.fixture_home is not None:
+            fixture_home = self.fixture_home
+            fixture_home.mkdir(parents=True, exist_ok=True)
+            yield fixture_home
+            return
+        with tempfile.TemporaryDirectory(
+            prefix=f"pstack-doctor-{self.host}-", ignore_cleanup_errors=True
+        ) as tmp:
+            yield Path(tmp)
 
     def _doctor_checks(self, fixture_home: Path, check_durability: bool = True, allow_stale: bool = False) -> bool:
         """Doctor scenarios 1-7; every command runs under fixture_home."""

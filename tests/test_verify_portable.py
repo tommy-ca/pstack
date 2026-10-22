@@ -99,7 +99,6 @@ def test_doctor_is_hermetic_against_ambient_plugin_mirrors(
 
     def doctor_records(home: Path) -> dict[str, list[tuple[str, str, str, str]]]:
         monkeypatch.setenv("HOME", str(home))
-        monkeypatch.delenv("PSTACK_DOCTOR_HOME", raising=False)
         records: dict[str, list[tuple[str, str, str, str]]] = {}
         for host in hosts:
             verifier = PortableVerifier(host=host, evidence_root=tmp_path / "evidence")
@@ -128,17 +127,14 @@ def test_doctor_is_hermetic_against_ambient_plugin_mirrors(
     assert {row[0]: row[1] for row in stale["antigravity"]}["doctor-antigravity-sync"] == "PASS"
 
 
-def test_doctor_fails_closed_when_fixture_install_fails(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_doctor_fails_closed_when_fixture_install_fails(tmp_path: Path) -> None:
     """#709 follow-up: a refused fixture install must fail the doctor, not pass vacuously."""
     home = tmp_path / "home"
     (tmp_path / "foreign" / "plugins").mkdir(parents=True)
     home.mkdir()
     (home / ".omp").symlink_to(tmp_path / "foreign")  # symlinked mirror: install refuses
-    monkeypatch.setenv("PSTACK_DOCTOR_HOME", str(home))
 
-    verifier = PortableVerifier(host="omp", evidence_root=tmp_path / "evidence")
+    verifier = PortableVerifier(host="omp", evidence_root=tmp_path / "evidence", fixture_home=home)
     assert verifier.launch()
     assert verifier.doctor(check_durability=False) is False
 
