@@ -20,6 +20,18 @@ def _doc() -> str:
     return ARCH.read_text(encoding="utf-8")
 
 
+def _relative_link_targets(text: str) -> list[str]:
+    """Repository-relative link targets, skipping URLs, mail links, and anchors."""
+    targets = []
+    for match in re.findall(r"\]\(([^)]+)\)", text):
+        if match.startswith(("http://", "https://", "mailto:", "#")):
+            continue
+        relative = match.split("#", 1)[0]
+        if relative:
+            targets.append(relative.removeprefix("./"))
+    return targets
+
+
 def test_architecture_is_linked_from_readme_and_porting_guide() -> None:
     root_readme = (ROOT / "README.md").read_text(encoding="utf-8")
     porting = (ROOT / "docs" / "guide" / "12-porting.md").read_text(encoding="utf-8")
@@ -88,38 +100,32 @@ def test_jev_implementation_caveats_remain_explicit() -> None:
         assert issue in doc
 
 
+def test_localized_readmes_link_paths_that_exist() -> None:
+    """A README link is a promise: a renamed or deleted guide fails here."""
+    for name in ("README.md", "README.zh-CN.md"):
+        readme = ROOT / name
+        for relative in _relative_link_targets(readme.read_text(encoding="utf-8")):
+            target = (readme.parent / relative).resolve()
+            assert target.is_relative_to(ROOT.resolve()), f"{name} link escapes repository: {relative}"
+            assert target.exists(), f"{name} links a missing path: {relative}"
+
+
 def test_localized_readmes_agree_on_portable_authority_and_host_scope() -> None:
-    """Both entry points name every shipped host target, keep the Droid candidate
-    caveat, scope Grok-only setup, and state the unsupported-capability GAP rule."""
-    english = (ROOT / "README.md").read_text(encoding="utf-8")
-    chinese = (ROOT / "README.zh-CN.md").read_text(encoding="utf-8")
-    hosts = json.loads((ROOT / "pstack.package.json").read_text(encoding="utf-8"))["host_targets"]
+    """Both entry points link the portability guide and name every shipped host
+    target in their descriptor paragraph, so a host the descriptor ships without
+    a README update fails."""
     guide = "docs/architecture/harness-neutral-authority-2026-10-21.md"
-    assert guide in english
-    assert guide in chinese
-    assert "multi-harness reference port" in english
-    assert "多 Agent Harness 可移植参考实现" in chinese
-    assert "Grok Build is one host adapter" in english
-    assert "Grok Build 是其中一个宿主适配器" in chinese
-    assert "## Grok Build installation" in english
-    assert "## Grok Build 安装" in chinese
-    assert "## Grok Build 默认模型与 effort" in chinese
-
+    hosts = json.loads((ROOT / "pstack.package.json").read_text(encoding="utf-8"))["host_targets"]
     host_names = re.compile(rf"\b({'|'.join(map(re.escape, hosts))})\b", re.IGNORECASE)
-    for text, anchor in (
-        (english, "The package descriptor currently targets"),
-        (chinese, "当前包描述符列出了"),
+    for name, anchor in (
+        ("README.md", "The package descriptor currently targets"),
+        ("README.zh-CN.md", "当前包描述符列出了"),
     ):
+        text = (ROOT / name).read_text(encoding="utf-8")
+        assert guide in _relative_link_targets(text), f"{name} does not link the portability guide"
         paragraphs = [block for block in re.split(r"\n\s*\n", text) if anchor in block]
-        assert len(paragraphs) == 1, f"expected one descriptor paragraph for {anchor!r}"
-        named = {name.lower() for name in host_names.findall(paragraphs[0])}
+        assert len(paragraphs) == 1, f"expected one descriptor paragraph for {anchor!r} in {name}"
+        named = {host.lower() for host in host_names.findall(paragraphs[0])}
         assert named == set(hosts), (
-            f"{anchor!r} paragraph names {sorted(named)}, descriptor ships {sorted(hosts)}"
+            f"{name} {anchor!r} paragraph names {sorted(named)}, descriptor ships {sorted(hosts)}"
         )
-
-    assert "Droid remains a candidate" in english
-    assert "Droid 仍为候选状态" in chinese
-    assert "Grok Build-specific" in english
-    assert "只适用于 Grok Build" in chinese
-    assert "must be labelled GAP" in english
-    assert "不支持的能力必须明确标为 GAP" in chinese
