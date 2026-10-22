@@ -5,6 +5,8 @@ description: Configure which models and reasoning effort pstack uses per role. D
 
 # Setup pstack
 
+**Host scope: Grok Build adapter only.** These concrete CLI/overlay steps configure Grok. On another host, resolve the declared model/effort catalog and native setup through `profiles/<host>.json` and its host reference; do not run Grok probes or create `~/.grok/` files as a cross-host fallback. The portable role registry and planner stay in `pstack.package.json` and `scripts/model_role_resolver.py`. A projected profile does not establish that the native host supports a model or child lifecycle operation.
+
 Write `~/.grok/pstack-models.toml` (model slugs and `[effort]`) and pstack-managed overlay files `~/.grok/roles/pstack:<key>.toml`. This is an **override layer**. A fresh install with no setup already uses the shipped default: `grok-4.6` plus per-role `effort` on the plugin agents (ship-time three-tier split in [`references/effort-ladder.md`](references/effort-ladder.md)). See [`references/defaults.toml`](references/defaults.toml), [`references/resolve-model.md`](references/resolve-model.md), and [`references/resolve-effort.md`](references/resolve-effort.md).
 
 On Google Antigravity, model tiers are configured natively via `.antigravity-plugin/models.json` (and `~/.gemini/config/plugins/pstack/models.json`) binding roles to `pro`, `flash`, `flash_lite`, and `inherit`. On Codex, OMP, and OpenCode, model configurations are bound in projected plugin manifests (`.codex-plugin/plugin.json`, `.omp-plugin/package.json`, `.opencode-plugin/package.json`).
