@@ -14,9 +14,10 @@ if str(ROOT) not in sys.path:
 
 import pytest
 
+from scripts.host_identity import BUILTIN_HOSTS
 from scripts.model_role_policy import check_model_role_policy
 from scripts.model_role_resolver import plan_role
-from scripts.portability_schema import SetupProjection, ValidationError
+from scripts.portability_types import SetupProjection, ValidationError
 from scripts.setup_pstack import PACKAGE_JSON, resolve_setup_projection
 from tests.model_role_helpers import (
     available_catalog_policy,
@@ -27,54 +28,83 @@ from tests.model_role_helpers import (
 ENTRY_SKILL = ROOT / "skills" / "setup-pstack" / "SKILL.md"
 GROK_SKILL = ROOT / "skills" / "setup-pstack-grok" / "SKILL.md"
 
-# The six built-in hosts, each with the surface its profile declares. A golden
-# per host is what keeps a second registry from appearing: only the profile
-# moves when a host's setup surface changes.
-GOLDEN = {
-    "grok": {
-        "source": "host-cli",
-        "effort": "live-enum",
-        "skill": "setup-pstack-grok",
-        "catalog": "~/.grok/pstack-models.toml",
-        "overlay": "~/.grok/roles",
-    },
-    "codex": {
-        "source": "host-catalog",
-        "effort": "none",
-        "skill": None,
-        "catalog": ".codex-plugin/models.json",
-        "overlay": None,
-    },
-    "antigravity": {
-        "source": "host-catalog",
-        "effort": "none",
-        "skill": None,
-        "catalog": ".antigravity-plugin/models.json",
-        "overlay": None,
-    },
-    "droid": {
-        "source": "inherit",
-        "effort": "inherit-parent",
-        "skill": None,
-        "catalog": None,
-        "overlay": None,
-    },
-    "omp": {"source": "none", "effort": "none", "skill": None, "catalog": None, "overlay": None},
-    "opencode": {"source": "none", "effort": "none", "skill": None, "catalog": None, "overlay": None},
-}
+
+def _profile(host: str) -> dict:
+    return json.loads((ROOT / "profiles" / f"{host}.json").read_text(encoding="utf-8"))
 
 
-@pytest.mark.parametrize("host", sorted(GOLDEN))
-def test_golden_setup_projection_per_builtin_host(host: str) -> None:
+@pytest.mark.parametrize("host", BUILTIN_HOSTS)
+def test_every_builtin_profile_resolves_against_the_tree_it_ships_with(host: str) -> None:
+    """A shipped profile whose skill or repo catalog is missing fails here, not silently.
+
+    Deleting a guide, moving a projected catalog or dropping a setup skill is a
+    repository defect the resolver names; the test exists so the defect is caught
+    by a suite rather than by whoever next runs `/setup-pstack`.
+    """
     projection = resolve_setup_projection(host)
-    assert projection is not None
-    assert asdict(projection) == GOLDEN[host]
+    assert projection is not None, host
+    projection.validate()
+
+
+def test_host_catalog_hosts_name_a_host_specific_file_that_exists() -> None:
+    """Two hosts pointing at one catalog is the second registry this design forbids."""
+    declared: dict[Path, str] = {}
+    for host in BUILTIN_HOSTS:
+        projection = resolve_setup_projection(host)
+        assert projection is not None
+        if projection.source != "host-catalog":
+            continue
+        catalog = ROOT / str(projection.catalog)
+        assert catalog.is_file(), f"{host} declares a catalog that is not projected: {catalog}"
+        assert catalog not in declared, f"{host} and {declared[catalog]} share one catalog"
+        declared[catalog] = host
+    assert declared, "no host-catalog host: the invariant would pass vacuously"
+
+
+def test_inherit_hosts_inherit_the_parent_model_instead_of_overriding_it() -> None:
+    """`inherit` is a claim about the spawn call, so the profile must agree with it."""
+    checked = 0
+    for host in BUILTIN_HOSTS:
+        projection = resolve_setup_projection(host)
+        assert projection is not None
+        if projection.source != "inherit":
+            continue
+        conventions = _profile(host).get("runtime_conventions", {})
+        assert conventions.get("default_model") == "inherit", host
+        assert "model" in conventions.get("forbidden_spawn_fields", []), host
+        checked += 1
+    assert checked, "no inherit host: the invariant would pass vacuously"
+
+
+def test_host_cli_hosts_name_a_setup_skill_that_exists() -> None:
+    checked = 0
+    for host in BUILTIN_HOSTS:
+        projection = resolve_setup_projection(host)
+        assert projection is not None
+        if projection.source != "host-cli":
+            continue
+        assert (ROOT / "skills" / str(projection.skill) / "SKILL.md").is_file(), host
+        checked += 1
+    assert checked, "no host-cli host: the invariant would pass vacuously"
+
+
+def test_grok_is_the_one_cli_probing_surface() -> None:
+    """The one host whose setup writes host-home config, pinned explicitly."""
+    assert resolve_setup_projection("grok") == SetupProjection(
+        source="host-cli",
+        effort="live-enum",
+        skill="setup-pstack-grok",
+        catalog="~/.grok/pstack-models.toml",
+        overlay="~/.grok/roles",
+    )
 
 
 @pytest.mark.parametrize("host", ["codex", "antigravity", "droid", "omp", "opencode"])
 def test_non_grok_projection_carries_no_grok_path(host: str) -> None:
     """Negative control: a non-Grok host must never inherit Grok's write targets."""
-    rendered = repr(asdict(resolve_setup_projection(host)))
+    projection = resolve_setup_projection(host)
+    assert projection is not None
+    rendered = repr(asdict(projection))
     assert "~/.grok" not in rendered
     assert "grok" not in rendered
     assert "pstack-models.toml" not in rendered
@@ -88,10 +118,13 @@ def test_inherit_parent_projection_declares_no_write_target() -> None:
     assert projection.catalog is None and projection.overlay is None and projection.skill is None
 
 
-def test_candidate_profiles_declare_no_setup_surface() -> None:
-    """A candidate host cannot point at a setup surface it has no evidence for."""
-    for host in ("claude", "copilot"):
-        assert resolve_setup_projection(host) is None
+def test_candidate_hosts_declare_a_passive_surface_or_none() -> None:
+    """A candidate may declare `inherit`/`none`, never a surface it has no evidence for."""
+    droid = resolve_setup_projection("droid")
+    assert droid is not None and droid.source == "inherit"
+    # A declared alias and a namespaced id with no setup block are both GAPs.
+    assert resolve_setup_projection("claude") is None
+    assert resolve_setup_projection("github:copilot") is None
 
 
 def test_entry_skill_names_no_host_path_or_slug() -> None:
@@ -111,7 +144,8 @@ def test_grok_skill_owns_the_adapter_body() -> None:
     assert text.startswith("---\nname: setup-pstack-grok\n")
     assert "../setup-pstack/SKILL.md" in text
     for reference in ("defaults.toml", "effort-ladder.md", "resolve-effort.md", "resolve-model.md"):
-        assert (GROK_SKILL.parent / "references" / reference).is_file(), reference
+        path = GROK_SKILL.parent / "references" / reference
+        assert path.is_file(), f"deleted guide: {path.relative_to(ROOT)}"
     assert "use one of:" in text
 
 
@@ -147,7 +181,7 @@ def test_setup_projection_rejects_incoherent_shapes(block: dict) -> None:
         SetupProjection(**block).validate()
 
 
-def _write_profile(directory: Path, host: str, support_state: str, setup: dict) -> None:
+def _write_profile(directory: Path, host: str, support_state: str, setup: object) -> None:
     directory.mkdir(parents=True, exist_ok=True)
     (directory / f"{host}.json").write_text(
         json.dumps(
@@ -186,16 +220,18 @@ def test_resolver_requires_a_projected_repo_catalog(tmp_path: Path) -> None:
         resolve_setup_projection("acme:beta", tmp_path / "profiles", tmp_path)
 
 
-def test_resolver_tolerates_an_absent_home_catalog(tmp_path: Path) -> None:
-    """A host-home write target need not exist yet; only repo artifacts must."""
+def test_resolver_tolerates_a_host_home_catalog(tmp_path: Path) -> None:
+    """Only a `~` write target is late-bound; a repo artifact must already exist."""
     _write_profile(
         tmp_path / "profiles",
         "acme:gamma",
         "mapped",
-        {"source": "host-catalog", "effort": "none", "catalog": str(tmp_path / "models.json")},
+        {"source": "host-cli", "effort": "live-enum", "skill": "gamma", "catalog": "~/.acme/models.toml"},
     )
+    (tmp_path / "skills" / "gamma").mkdir(parents=True)
+    (tmp_path / "skills" / "gamma" / "SKILL.md").write_text("---\nname: gamma\n---\n", encoding="utf-8")
     projection = resolve_setup_projection("acme:gamma", tmp_path / "profiles", tmp_path)
-    assert projection is not None and projection.catalog == str(tmp_path / "models.json")
+    assert projection is not None and projection.catalog == "~/.acme/models.toml"
 
 
 def test_candidate_host_cannot_declare_a_cli_probe(tmp_path: Path) -> None:
@@ -218,9 +254,45 @@ def test_candidate_host_cannot_declare_a_cli_probe(tmp_path: Path) -> None:
     assert projection is not None and projection.effort == "inherit-parent"
 
 
+def test_the_host_argument_is_the_declared_id_not_a_filename_stem() -> None:
+    """`profiles/copilot.json` declares `github:copilot`, so the stem is not an id."""
+    with pytest.raises(ValidationError, match="Invalid host id"):
+        resolve_setup_projection("copilot")
+    assert resolve_setup_projection("github:copilot") is None
+
+
+@pytest.mark.parametrize("host", ["../profiles/grok", "profiles/grok", "grok/../codex", "", "grok\n"])
+def test_host_argument_cannot_address_a_path(host: str) -> None:
+    """A path, a stem or a trailing newline must never select another host's targets."""
+    with pytest.raises(ValidationError, match="Invalid host id"):
+        resolve_setup_projection(host)
+
+
 def test_unknown_host_is_not_a_silent_default() -> None:
-    with pytest.raises(ValidationError, match="No harness profile"):
+    with pytest.raises(ValidationError, match="Invalid host id"):
         resolve_setup_projection("no-such-host")
+    with pytest.raises(ValidationError, match="No harness profile"):
+        resolve_setup_projection("acme:absent")
+
+
+def test_boundary_failures_are_validation_errors(tmp_path: Path) -> None:
+    """One exception type at the profile boundary, whatever the malformed shape."""
+    _write_profile(
+        tmp_path / "profiles",
+        "acme:typo",
+        "mapped",
+        {"source": "none", "effort": "none", "overlay_dir": "~/.acme/roles"},
+    )
+    with pytest.raises(ValidationError, match="does not match SetupProjection"):
+        resolve_setup_projection("acme:typo", tmp_path / "profiles", tmp_path)
+
+    _write_profile(tmp_path / "profiles", "acme:shape", "mapped", "host-cli")
+    with pytest.raises(ValidationError, match="must be an object"):
+        resolve_setup_projection("acme:shape", tmp_path / "profiles", tmp_path)
+
+    (tmp_path / "profiles" / "broken.json").write_text("{", encoding="utf-8")
+    with pytest.raises(ValidationError, match="Unreadable harness profile"):
+        resolve_setup_projection("acme:anything", tmp_path / "profiles", tmp_path)
 
 
 def test_catalog_states_gate_the_planner() -> None:
@@ -286,14 +358,3 @@ def test_malformed_catalog_entry_is_rejected_by_the_schema() -> None:
     policy["hosts"]["codex"]["model_catalog"] = [{"id": "model-a", "provider": "fixture"}]
     with pytest.raises(ValidationError, match="violates its schema"):
         check_model_role_policy(policy, descriptor)
-
-
-def test_every_builtin_profile_setup_block_is_typed() -> None:
-    """The profile's declared block must match the typed model, key for key."""
-    from scripts.host_identity import BUILTIN_HOSTS
-
-    for host in BUILTIN_HOSTS:
-        data = json.loads((ROOT / "profiles" / f"{host}.json").read_text(encoding="utf-8"))
-        projection = SetupProjection(**data["setup"])
-        projection.validate()
-        assert asdict(projection) == GOLDEN[host]

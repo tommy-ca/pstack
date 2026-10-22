@@ -31,6 +31,7 @@ if str(ROOT) not in sys.path:
 from scripts.host_identity import require_builtin_host_keys
 from scripts.model_role_resolver import compile_policy, plan_role
 from scripts.portability_schema import PackageDescriptor, ValidationError
+from scripts.setup_pstack import resolve_setup_projection
 
 PACKAGE_JSON = ROOT / "pstack.package.json"
 MODEL_ROLE_POLICY = ROOT / "examples/portability/model-role-policy.example.json"
@@ -493,6 +494,20 @@ TARGET_MAP = {
 require_builtin_host_keys(TARGET_MAP, "TARGET_MAP")
 
 
+def projected_model_catalog(host: str) -> Path:
+    """The repo path `profiles/<host>.json#setup` declares for its model catalog.
+
+    The profile is the declaration; this function is how a projection reads it, so
+    a host that moves its catalog edits one file instead of the writer and a check.
+    """
+    projection = resolve_setup_projection(host)
+    if projection is None or projection.catalog is None:
+        raise ValidationError(f"{host} declares no setup catalog to project")
+    if projection.catalog.startswith("~"):
+        raise ValidationError(f"{host} declares a host-home catalog, not a repo projection")
+    return ROOT / projection.catalog
+
+
 def project_all(desc: PackageDescriptor, hosts: List[str] | None = None) -> None:
     targets = hosts or list(TARGET_MAP.keys())
     for host in targets:
@@ -504,18 +519,18 @@ def project_all(desc: PackageDescriptor, hosts: List[str] | None = None) -> None
         dest_file.write_text(json.dumps(content, indent=2) + "\n", encoding="utf-8")
         print(f"Projected {host} -> {dest_file.relative_to(ROOT)}")
         if host == "antigravity":
-            models_file = ROOT / ".antigravity-plugin" / "models.json"
+            models_file = projected_model_catalog(host)
             models_file.write_text(json.dumps(generate_antigravity_models(desc), indent=2) + "\n", encoding="utf-8")
             print(f"Projected antigravity models -> {models_file.relative_to(ROOT)}")
 
-            cmds_dir = ROOT / ".antigravity-plugin" / "commands"
+            cmds_dir = models_file.parent / "commands"
             cmds_dir.mkdir(parents=True, exist_ok=True)
             for fname, toml_str in generate_antigravity_commands(desc).items():
                 (cmds_dir / fname).write_text(toml_str, encoding="utf-8")
             print(f"Projected {len(desc.commands)} antigravity commands -> {cmds_dir.relative_to(ROOT)}")
 
         if host == "codex":
-            models_file = ROOT / ".codex-plugin" / "models.json"
+            models_file = projected_model_catalog(host)
             models_file.write_text(json.dumps(generate_codex_models(desc), indent=2) + "\n", encoding="utf-8")
             print(f"Projected codex models -> {models_file.relative_to(ROOT)}")
 
@@ -671,7 +686,7 @@ def check_all(desc: PackageDescriptor, hosts: List[str] | None = None) -> bool:
             print(f"PASS: {host} manifest at {dest_file.relative_to(ROOT)} in sync")
 
         if host == "antigravity":
-            models_file = ROOT / ".antigravity-plugin" / "models.json"
+            models_file = projected_model_catalog(host)
             try:
                 expected_models = generate_antigravity_models(desc)
             except ValidationError as e:
@@ -694,7 +709,7 @@ def check_all(desc: PackageDescriptor, hosts: List[str] | None = None) -> bool:
                     print(f"ERROR: {models_file.relative_to(ROOT)} failed to parse: {e}")
                     all_ok = False
 
-            cmds_dir = ROOT / ".antigravity-plugin" / "commands"
+            cmds_dir = models_file.parent / "commands"
             expected_cmds = generate_antigravity_commands(desc)
             if not cmds_dir.is_dir() and expected_cmds:
                 print(f"MISSING: antigravity commands directory not found at {cmds_dir.relative_to(ROOT)}")
@@ -715,7 +730,7 @@ def check_all(desc: PackageDescriptor, hosts: List[str] | None = None) -> bool:
                     print(f"PASS: {len(expected_cmds)} antigravity commands at {cmds_dir.relative_to(ROOT)} in sync")
 
         if host == "codex":
-            models_file = ROOT / ".codex-plugin" / "models.json"
+            models_file = projected_model_catalog(host)
             try:
                 expected_models = generate_codex_models(desc)
             except ValidationError as e:
