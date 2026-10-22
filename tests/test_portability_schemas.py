@@ -20,6 +20,7 @@ from scripts.portability_schema import (
     PackageDescriptor,
     PORTABLE_CAPABILITY_UNIVERSE,
     RuntimeConventions,
+    SetupProjection,
     SkillOrderItem,
     ToolMapping,
     ValidationError,
@@ -221,6 +222,7 @@ def test_antigravity_profile_conformance() -> None:
         tool_mappings=data.get("tool_mappings"),
         skill_order=data.get("skill_order"),
         runtime_conventions=data.get("runtime_conventions"),
+        setup=data.get("setup"),
     )
     profile.validate()
     assert isinstance(profile.tool_mappings, ToolMapping)
@@ -262,10 +264,12 @@ def test_all_harness_profiles_conform_to_layout_and_model() -> None:
             tool_mappings=data.get("tool_mappings"),
             skill_order=data.get("skill_order"),
             runtime_conventions=data.get("runtime_conventions"),
+            setup=data.get("setup"),
         )
         profile.validate()
         assert isinstance(profile.tool_mappings, ToolMapping)
         assert isinstance(profile.runtime_conventions, RuntimeConventions)
+        assert isinstance(profile.setup, SetupProjection)
         assert profile.skill_order is not None and len(profile.skill_order) > 0
 
 

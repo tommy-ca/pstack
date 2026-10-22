@@ -1,7 +1,8 @@
-"""setup-pstack model/effort sheet unification, safe override precedence, and hook lifecycle (#438).
+"""setup-pstack model/effort sheet unification, host setup projection, precedence, and hook lifecycle (#438, #703).
 
 Provides:
-- Deterministic parsing and generation of ~/.grok/pstack-models.toml.
+- Resolution of a host's declared setup projection from profiles/<host>.json.
+- Deterministic parsing and generation of the top-level role model sheet.
 - Targeted warnings for invalid rows or retired/unrecognized roles.
 - Safe synchronization of Grok role overlays (~/.grok/roles/pstack:<key>.toml)
   while strictly preserving user-owned files.
@@ -13,13 +14,52 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, Mapping, Sequence
+from typing import Any, Mapping, Optional, Sequence
 import tomllib
 
 from scripts.model_role_resolver import resolve_role_source
+from scripts.portability_schema import SetupProjection, ValidationError
 
 ROOT = Path(__file__).resolve().parent.parent
 PACKAGE_JSON = ROOT / "pstack.package.json"
+PROFILES_DIR = ROOT / "profiles"
+
+
+def resolve_setup_projection(
+    host: str, profiles_dir: Path = PROFILES_DIR, root: Path = ROOT
+) -> Optional[SetupProjection]:
+    """Return the host's declared setup projection, or None when it declares none.
+
+    `None` is a GAP to report, never a reason to reuse another host's setup. The
+    structural matrix (source/effort/field coherence) lives on the typed model;
+    this resolver adds the repo-level checks the profile cannot make on its own:
+    a declared skill must exist, and a repo-relative catalog must be projected.
+    """
+    profile_path = profiles_dir / f"{host}.json"
+    if not profile_path.is_file():
+        raise ValidationError(f"No harness profile for host {host!r}")
+    profile = json.loads(profile_path.read_text(encoding="utf-8"))
+    raw = profile.get("setup")
+    if raw is None:
+        return None
+    # A CLI-probing surface writes host-home config, so it needs proven bindings.
+    # A passive declaration (inherit/none/host-catalog) is layout, not capability.
+    if raw.get("source") == "host-cli" and profile.get("support_state") == "candidate":
+        raise ValidationError(
+            f"Candidate host {host!r} must not declare a CLI-probing setup surface before native evidence"
+        )
+    projection = SetupProjection(**raw)
+    projection.validate()
+    skill_path = root / "skills" / str(projection.skill) / "SKILL.md"
+    if projection.skill and not skill_path.is_file():
+        raise ValidationError(
+            f"setup skill {projection.skill!r} for {host!r} has no skills/{projection.skill}/SKILL.md"
+        )
+    catalog = projection.catalog
+    if catalog and not catalog.startswith("~") and not Path(catalog).is_absolute():
+        if not (root / catalog).exists():
+            raise ValidationError(f"setup catalog {catalog!r} for {host!r} is not projected")
+    return projection
 
 
 def load_canonical_roles(package_path: Path = PACKAGE_JSON) -> dict[str, dict[str, Any]]:

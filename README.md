@@ -67,7 +67,7 @@ Tool mapping is in [grok-tools.md](./skills/poteto-mode/references/grok-tools.md
 Two steps.
 
 1. Use [`/poteto-mode`](./skills/poteto-mode/SKILL.md) for work that needs rigor. No setup required.
-2. Optionally run [`/setup-pstack`](./skills/setup-pstack/SKILL.md) to change models or effort. It is optional and global. It writes `~/.grok/pstack-models.toml` plus `~/.grok/roles/pstack:<role>.toml`.
+2. Optionally run [`/setup-pstack`](./skills/setup-pstack/SKILL.md) to change models or effort. It is optional and global, and it is host-neutral: it reads `profiles/<host>.json#setup` and dispatches. On Grok Build that dispatches to [`/setup-pstack-grok`](./skills/setup-pstack-grok/SKILL.md), which writes `~/.grok/pstack-models.toml` plus `~/.grok/roles/pstack:<role>.toml`.
 
 New here? The [pstack guide](./docs/guide/README.md) walks through a first real task, from setup and prompting through verification and overnight runs.
 
@@ -83,11 +83,11 @@ A fresh install is usable without `/setup-pstack`.
 
 **effort.** Effort follows the live grok 1.0.13 CLI. `use one of: xhigh, high, medium, low`. Shipped split is judgment / explainer / verifier / panels `xhigh`, instruction-following `high`, mechanical `medium`. Do not ship `max`. This CLI rejects `max`. Skills never send `reasoning_effort` on `spawn_subagent`.
 
-A missing override file uses the shipped default. A missing key, `inherit-parent`, or `auto` omits `model`. [`/setup-pstack`](./skills/setup-pstack/SKILL.md) re-detects from live `use one of:` and rewrites the split if it changed. Spawn skills cannot see a later enum. Run setup again if the binary grew a new level.
+A missing override file uses the shipped default. A missing key, `inherit-parent`, or `auto` omits `model`. [`/setup-pstack-grok`](./skills/setup-pstack-grok/SKILL.md) re-detects from live `use one of:` and rewrites the split if it changed. Spawn skills cannot see a later enum. Run setup again if the binary grew a new level.
 
 ## Grok Build and Cursor use separate setup paths
 
-[`/setup-pstack`](./skills/setup-pstack/SKILL.md) in this repo configures model and effort for grok-build. Official Cursor `/setup-pstack` (inside Cursor, or the copy inside Grok Bot) is a different plugin. That copy writes `~/.cursor/rules` and uses Cursor slugs. Do not run it on Grok Build. It will not work here.
+[`/setup-pstack-grok`](./skills/setup-pstack-grok/SKILL.md) in this repo configures model and effort for grok-build. Official Cursor `/setup-pstack` (inside Cursor, or the copy inside Grok Bot) is a different plugin. That copy writes `~/.cursor/rules` and uses Cursor slugs. Do not run it on Grok Build. It will not work here.
 
 ## Usage
 
@@ -179,7 +179,8 @@ The vendored GitHub watcher is a compatibility utility, not the stack landing co
 | [`/swarm`](./skills/swarm/SKILL.md) | you want N parallel workers across different slices or races, then one aggregated report. |
 | [`/interrogate`](./skills/interrogate/SKILL.md) | you have a diff and want several different models to try to break it, including a strict code-quality lens. |
 | [`/automate-me`](./skills/automate-me/SKILL.md) | you want your own `-mode` skill, drafted from how you've actually worked. |
-| [`/setup-pstack`](./skills/setup-pstack/SKILL.md) | override the shipped `grok-4.6` + per-role effort default. detects your models and writes `~/.grok/pstack-models.toml` plus `~/.grok/roles/pstack:<role>.toml`. |
+| [`/setup-pstack`](./skills/setup-pstack/SKILL.md) | host-neutral setup entry, reads `profiles/<host>.json#setup` and dispatches to the setup skill that host declares. |
+| [`/setup-pstack-grok`](./skills/setup-pstack-grok/SKILL.md) | Grok Build setup: override the shipped `grok-4.6` + per-role effort default. detects your models and writes `~/.grok/pstack-models.toml` plus `~/.grok/roles/pstack:<role>.toml`. |
 | [`/reflect`](./skills/reflect/SKILL.md) | a long task landed and you want the recipe captured as a skill edit. |
 | [`/teach`](./skills/teach/SKILL.md) | you want to actually understand a change or subsystem, not just have it summarized. runs how + why and weaves one plain explanation, built up diagram by diagram. |
 | [`/tdd`](./skills/tdd/SKILL.md) | you're fixing a bug and there's a cheap local test path. write the failing test first, then the fix. |
@@ -302,7 +303,7 @@ grok-build has a built-in `plan` agent type. pstack still does not default to pl
 
 Type [`/automate-me`](./skills/automate-me/SKILL.md). It mines recent transcripts, drafts a `<your-name>-mode` skill from how you have actually worked, and routes through pstack underneath. You keep pstack as the base and end up with your own routing skill alongside `poteto-mode`.
 
-The Grok Build default is `grok-4.6` plus per-role effort. Type [`/setup-pstack`](./skills/setup-pstack/SKILL.md) only if you want to change that. It detects slugs `spawn_subagent` accepts, asks for reasoning effort per role, and writes `~/.grok/pstack-models.toml` plus pstack-managed `~/.grok/roles/pstack:<role>.toml`. It will not write `~/.cursor/rules`. This is not the Cursor plugin.
+The Grok Build default is `grok-4.6` plus per-role effort. Type [`/setup-pstack`](./skills/setup-pstack/SKILL.md) only if you want to change that; on Grok Build it dispatches to [`/setup-pstack-grok`](./skills/setup-pstack-grok/SKILL.md). It detects slugs `spawn_subagent` accepts, asks for reasoning effort per role, and writes `~/.grok/pstack-models.toml` plus pstack-managed `~/.grok/roles/pstack:<role>.toml`. It will not write `~/.cursor/rules`. This is not the Cursor plugin.
 
 ## Automations
 

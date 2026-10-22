@@ -89,8 +89,8 @@ class Violation:
 DEFAULT_EXEMPTIONS: Tuple[Exemption, ...] = (
     Exemption("skills/*/references/**", "Per-host adapter tool matrix and reference documentation"),
     Exemption(
-        "skills/setup-pstack/**",
-        "Host-specific setup skill for Grok CLI configuration",
+        "skills/setup-pstack-grok/**",
+        "Grok Build setup adapter: owns the host paths and model keys it writes",
     ),
     Exemption("**/node_modules/**", "External vendor dependencies in scripts"),
     Exemption(

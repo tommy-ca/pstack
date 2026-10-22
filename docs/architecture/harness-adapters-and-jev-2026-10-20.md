@@ -72,7 +72,8 @@ All schemas are under `schemas/portability/`, Draft 2020-12. JSON-schema validat
 | `host-id.schema.json` | Built-ins `grok`, `codex`, `omp`, `opencode`, `antigravity`, `droid`; compatibility aliases `claude`, `custom`; external ID `namespace:name`. Host identity alone grants no capability |
 | `capability.schema.json` | Semantic capability ID and nonempty `required_postconditions` |
 | `binding.schema.json` | `host`, `capability`, `implementation_status` (`native|shim|version-gated|gap`), `enforcement` (`hard|soft|advisory`), `verification_status` (`verified|static-only|unverified|stale`), optional `primitive` and scenario-pinned `evidence_ref` |
-| `profile.schema.json` | `host`, `support_state`, `bindings`, `skills_dir`, `plugin_manifest`; optional `plugins_dir`, `tool_mappings`, `skill_order`, `runtime_conventions`, `evidence_ledger` |
+| `profile.schema.json` | `host`, `support_state`, `bindings`, `skills_dir`, `plugin_manifest`; optional `plugins_dir`, `tool_mappings`, `skill_order`, `runtime_conventions`, `setup`, `evidence_ledger` |
+| `setup-projection.schema.json` | `source` (`host-cli|host-catalog|inherit|none`), `effort` (`live-enum|inherit-parent|none`), optional `skill`/`catalog`/`overlay`; the host's setup surface declaration, never a capability or runtime claim |
 | `tool-mapping.schema.json` | Host-native names for reading/writing, shell, agent spawn/join, plan update and user question, with optional fanout/message/background/search |
 | `runtime-conventions.schema.json` | Per-host execution/isolation/model spawn conventions; do not interpret as cross-host guarantees |
 | `skill-order.schema.json` | Ordered pstack/user/builtin skill resolution rows and fallbacks |

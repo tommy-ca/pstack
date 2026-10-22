@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pstack.dev/schemas/portability/setup-projection.schema.json",
+  "title": "SetupProjection",
+  "description": "Where a harness host declares its model and reasoning-effort setup surface and which skill owns the host-specific steps. A declaration of surface, never a capability or runtime claim.",
+  "type": "object",
+  "required": ["source", "effort"],
+  "properties": {
+    "source": {
+      "type": "string",
+      "enum": ["host-cli", "host-catalog", "inherit", "none"],
+      "description": "host-cli: the host CLI enumerates models and effort and a host-home config is written. host-catalog: role-to-model bindings ship in a repo-projected catalog. inherit: children inherit the parent session model. none: no model or effort setup surface."
+    },
+    "skill": {
+      "type": ["string", "null"],
+      "description": "Skill name under skills/ that owns this host's setup steps. Only host-cli declares one."
+    },
+    "catalog": {
+      "type": ["string", "null"],
+      "description": "File the host reads role-to-model bindings from. A ~ path is a host-home write target; a repo-relative path must exist."
+    },
+    "overlay": {
+      "type": ["string", "null"],
+      "description": "Per-role overlay directory the setup writes, or null when the host has no per-role overlay."
+    },
+    "effort": {
+      "type": "string",
+      "enum": ["live-enum", "inherit-parent", "none"],
+      "description": "live-enum: probe the host CLI for its usable levels. inherit-parent: no per-role level. none: the host exposes no per-role effort."
+    }
+  },
+  "additionalProperties": false
+}

@@ -24,7 +24,7 @@ Before fanning out, resolve the active host and find this conversation's transcr
 
 ## 2. Spawn three reviewers in parallel
 
-One message, three subagent spawn calls. Judgment and divergent lenses use `subagent_type: "pstack:reflect-judgment"`. Tooling uses `subagent_type: "pstack:reflect-tooling"`. [`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md). Resolve `model` per `../setup-pstack/references/resolve-model.md`. Do not send `reasoning_effort` on spawn. Reviewers need MCP access to look up the tickets, chat threads, and observability traces the transcript references. The prompt forbids file writes; the parent applies edits.
+One message, three subagent spawn calls. Judgment and divergent lenses use `subagent_type: "pstack:reflect-judgment"`. Tooling uses `subagent_type: "pstack:reflect-tooling"`. [`../setup-pstack/SKILL.md`](../setup-pstack/SKILL.md). Resolve `model` per `../setup-pstack/SKILL.md`. Do not send `reasoning_effort` on spawn. Reviewers need MCP access to look up the tickets, chat threads, and observability traces the transcript references. The prompt forbids file writes; the parent applies edits.
 
 | Lens | toml key | Prompt template |
 |---|---|---|

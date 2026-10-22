@@ -26,6 +26,18 @@ ADAPTATION_MODES = ("preserve", "adapt", "exclude", "gap")
 HOSTS = KNOWN_HOSTS
 CONFORMANCE_PLANES = ("canonical", "adapter", "package", "runtime")
 
+SETUP_SOURCES = ("host-cli", "host-catalog", "inherit", "none")
+SETUP_EFFORT_MODES = ("live-enum", "inherit-parent", "none")
+# Closed matrix per setup source: (declares a skill, declares a catalog, declares
+# an overlay, required effort mode). Only a CLI-enumerated surface may pin a
+# per-role level, because an offline catalog has no observed effort vocabulary.
+SETUP_SHAPES: Dict[str, Tuple[bool, bool, bool, str]] = {
+    "host-cli": (True, True, True, "live-enum"),
+    "host-catalog": (False, True, False, "none"),
+    "inherit": (False, False, False, "inherit-parent"),
+    "none": (False, False, False, "none"),
+}
+
 SKILLS_HASH_IGNORED_DIRS = frozenset({"__pycache__", "node_modules"})
 SKILLS_HASH_IGNORED_SUFFIXES = (".pyc", ".pyo")
 
@@ -336,6 +348,42 @@ class PackageDescriptor:
 
 
 @dataclass
+class SetupProjection:
+    """Where a host declares its setup surface, and which skill owns the steps.
+
+    A declaration only: a projected profile or a written config file is not
+    evidence that the host accepted a model or a level.
+    """
+
+    source: str
+    effort: str = "none"
+    skill: Optional[str] = None
+    catalog: Optional[str] = None
+    overlay: Optional[str] = None
+
+    def validate(self) -> None:
+        if self.source not in SETUP_SOURCES:
+            raise ValidationError(f"Invalid setup source: {self.source!r}")
+        if self.effort not in SETUP_EFFORT_MODES:
+            raise ValidationError(f"Invalid setup effort mode: {self.effort!r}")
+        declares_skill, declares_catalog, allows_overlay, effort = SETUP_SHAPES[self.source]
+        for required, name, value in (
+            (declares_skill, "skill", self.skill),
+            (declares_catalog, "catalog", self.catalog),
+        ):
+            if required and not (isinstance(value, str) and value.strip()):
+                raise ValidationError(f"setup source {self.source!r} must name a {name}")
+            if not required and value is not None:
+                raise ValidationError(f"setup source {self.source!r} must not name a {name}")
+        if not allows_overlay and self.overlay is not None:
+            raise ValidationError(f"setup source {self.source!r} declares no per-role overlay")
+        if self.effort != effort:
+            raise ValidationError(
+                f"setup source {self.source!r} requires effort {effort!r}, not {self.effort!r}"
+            )
+
+
+@dataclass
 class HarnessProfile:
     host: str
     support_state: str
@@ -348,6 +396,7 @@ class HarnessProfile:
     tool_mappings: Optional[ToolMapping | Dict[str, Any]] = None
     skill_order: Optional[List[SkillOrderItem] | List[Dict[str, Any]]] = None
     runtime_conventions: Optional[RuntimeConventions | Dict[str, Any]] = None
+    setup: Optional[SetupProjection | Dict[str, Any]] = None
 
     def __post_init__(self) -> None:
         if self.skills_dir is None and self.host in DEFAULT_SKILLS_DIRS:
@@ -377,6 +426,11 @@ class HarnessProfile:
                 self.runtime_conventions = RuntimeConventions(**self.runtime_conventions)
             except TypeError as err:
                 raise ValidationError(f"Invalid runtime_conventions: {err}") from err
+        if isinstance(self.setup, dict):
+            try:
+                self.setup = SetupProjection(**self.setup)
+            except TypeError as err:
+                raise ValidationError(f"Invalid setup: {err}") from err
 
     def validate(self) -> None:
         if not is_valid_host_id(self.host):
@@ -443,6 +497,9 @@ class HarnessProfile:
 
         if self.runtime_conventions is not None:
             self.runtime_conventions.validate()
+
+        if self.setup is not None:
+            self.setup.validate()
 
     def validate_evidence(
         self,

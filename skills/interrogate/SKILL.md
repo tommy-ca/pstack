@@ -26,10 +26,10 @@ Before spawning reviewers, state the intent in one clear paragraph from the user
 
 ## Step 3, Spawn Reviewers
 
-Launch all reviewers in a single message using the host's `agent.spawn` primitive (per active harness profile and host references). Use toml array `interrogate-reviewers` per `../setup-pstack/references/resolve-model.md` (or active profile model configuration), one reviewer per entry. If the configuration is absent, spawn **one** reviewer with the host default model resolved from the active profile. Every panel seat maps to a real tracked child agent and evidence; never claim N independent models from one repeated alias or without verified spawn.
+Launch all reviewers in a single message using the host's `agent.spawn` primitive (per active harness profile and host references). Use toml array `interrogate-reviewers` per `../setup-pstack/SKILL.md` (or active profile model configuration), one reviewer per entry. If the configuration is absent, spawn **one** reviewer with the host default model resolved from the active profile. Every panel seat maps to a real tracked child agent and evidence; never claim N independent models from one repeated alias or without verified spawn.
 
 For each reviewer:
-- role / `subagent_type`: `pstack:interrogate-reviewers` ([`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md))
+- role / `subagent_type`: `pstack:interrogate-reviewers` ([`../setup-pstack/SKILL.md`](../setup-pstack/SKILL.md))
 - `model`: that entry when it is a detected slug; omit when the entry is `inherit-parent`/`auto`. Configuration absent: host default model resolved from active profile. Do not send `reasoning_effort` on spawn.
 
 If the host rejects a slug, omit `model` or retry only with a slug the error text named that is already in this session's detected set. Do not pick a closest family equivalent. If the configured value is `inherit-parent` or `auto`, omit `model`; never treat those aliases as broken slugs.

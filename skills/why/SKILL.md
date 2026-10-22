@@ -47,8 +47,8 @@ Source control is always available through git and `gh`. For the other six, clas
 Spawn one investigator per category that has a matching MCP, all in a single message using the host's `agent.spawn` primitive so they run concurrently, each owning exactly one tool or MCP. Don't ask one agent to cover multiple MCPs.
 
 Subagent config (each):
-- `subagent_type` / `Role`: `pstack:why-investigators` ([`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md))
-- `model`: toml key `why-investigators` per `../setup-pstack/references/resolve-model.md` (or host configuration). Missing key omits; absent config sends host default model resolved from active profile. Do not send `reasoning_effort` on spawn unless supported.
+- `subagent_type` / `Role`: `pstack:why-investigators` ([`../setup-pstack/SKILL.md`](../setup-pstack/SKILL.md))
+- `model`: toml key `why-investigators` per `../setup-pstack/SKILL.md` (or host configuration). Missing key omits; absent config sends host default model resolved from active profile. Do not send `reasoning_effort` on spawn unless supported.
 - MCP-backed work: spawn `pstack:why-investigators` using the host's `agent.spawn` primitive and forbid writes in the prompt. Do not send `readonly` on spawn unless supported.
 
 Each investigator's prompt is `references/investigator-prompt.md` filled in, plus:
@@ -81,8 +81,8 @@ If your scope assessment suggests a single-commit trivial target where the PR de
 
 Spawn one synthesizer.
 
-- `subagent_type`: `pstack:why-synthesizer` ([`../setup-pstack/references/resolve-effort.md`](../setup-pstack/references/resolve-effort.md))
-- `model`: toml key `why-synthesizer` per `../setup-pstack/references/resolve-model.md`. Per that file: no toml sends host default model resolved from active profile (omit if rejected); inherit-parent/auto/missing key omits. Do not send `reasoning_effort` on spawn unless supported.
+- `subagent_type`: `pstack:why-synthesizer` ([`../setup-pstack/SKILL.md`](../setup-pstack/SKILL.md))
+- `model`: toml key `why-synthesizer` per `../setup-pstack/SKILL.md`. Per that file: no toml sends host default model resolved from active profile (omit if rejected); inherit-parent/auto/missing key omits. Do not send `reasoning_effort` on spawn unless supported.
 - MCP-backed work: spawn `pstack:why-synthesizer` and forbid writes in the prompt. Do not send `readonly` on spawn unless supported.
 
 It gets:

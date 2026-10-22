@@ -4,6 +4,13 @@
   "skills_dir": ".agents/skills",
   "plugins_dir": "~/.gemini/config/plugins",
   "plugin_manifest": ".antigravity-plugin/plugin.json",
+  "setup": {
+    "source": "host-catalog",
+    "skill": null,
+    "catalog": ".antigravity-plugin/models.json",
+    "overlay": null,
+    "effort": "none"
+  },
   "bindings": [
     {
       "host": "antigravity",
