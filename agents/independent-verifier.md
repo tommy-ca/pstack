@@ -1,6 +1,6 @@
 ---
 name: independent-verifier
-description: Read-only independent verifier. Use when pstack needs a second spawn that did not write the diff. Different model from the writer. Does not edit files. Shipped effort is frontmatter `effort`. Setup may overlay via ~/.grok/roles/pstack:independent-verifier.toml.
+description: Read-only independent verifier. Use when pstack needs a second spawn that did not write the diff. Different model from the writer. Does not edit files. Shipped effort is frontmatter `effort`. Setup may overlay per-role values using the overlay path the active host declares in `profiles/<host>.json`.
 effort: xhigh
 capabilityMode: execute
 ---

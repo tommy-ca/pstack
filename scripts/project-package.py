@@ -61,10 +61,13 @@ CLAUDE_MANIFEST_SHAPE = {"name": str, "version": str, "skills": str, "agents": (
 HOOKS_TRACKER = "#438"
 HOOKS_SURFACE_GLOB = ".*-plugin/hooks*"
 
-# Grok-native role frontmatter sentence, replaced with the Droid-native spawn
-# contract. The overlay path is Grok-only; Droid has no per-role toml overlay.
-GROK_OVERLAY_SENTENCE = re.compile(
-    r"Shipped effort is frontmatter `effort`\. Setup may overlay via ~/\.grok/roles/pstack:[a-z0-9-]+\.toml\."
+# Host-neutral role contract sentence in agents/*.md: shipped effort is agent
+# frontmatter, and the overlay path is declared per host in profiles/<host>.json.
+# Both are replaced with the Droid-native spawn contract, because Droid has
+# neither a per-spawn effort field nor a per-role overlay.
+AGENT_ROLE_CONTRACT = (
+    "Shipped effort is frontmatter `effort`. Setup may overlay per-role values"
+    " using the overlay path the active host declares in `profiles/<host>.json`."
 )
 
 # Generation-time guards. Mirrors scan-host-boundary.py's host primitives and
@@ -400,10 +403,10 @@ def _split_frontmatter(text: str) -> tuple[Dict[str, str], str]:
 
 
 def adapt_droid_description(description: str, source_name: str, droid_name: str) -> str:
-    adapted = GROK_OVERLAY_SENTENCE.sub(
+    adapted = description.replace(
+        AGENT_ROLE_CONTRACT,
         f"Spawned on Droid with `Task` (`subagent_type: {droid_name}`);"
         " the model inherits the parent session and there is no per-spawn effort field.",
-        description,
     )
     adapted = adapted.replace("`general-purpose`", "`worker`")
     adapted = adapted.replace(f"`{source_name}`", f"`{droid_name}`")
@@ -440,6 +443,8 @@ def validate_droid_role(droid_name: str, content: str) -> None:
     lowered = content.lower()
     if "grok" in lowered or "~/.grok" in lowered:
         raise ValidationError(f"generated droid {droid_name} pins Grok vocabulary or slugs")
+    if AGENT_ROLE_CONTRACT in content:
+        raise ValidationError(f"generated droid {droid_name} retains the unadapted agent overlay sentence")
     if "reasoningEffort" in content or "reasoning_effort" in content:
         raise ValidationError(f"generated droid {droid_name} carries an effort override")
     desc_match = re.search(r"(?m)^description: (.+)$", content)

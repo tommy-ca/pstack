@@ -1,6 +1,6 @@
 ---
 name: judgment-and-prose
-description: pstack judgment and prose writer. Same posture as the pstack role of this name. Shipped effort is frontmatter `effort`. Setup may overlay via ~/.grok/roles/pstack:judgment-and-prose.toml.
+description: pstack judgment and prose writer. Same posture as the pstack role of this name. Shipped effort is frontmatter `effort`. Setup may overlay per-role values using the overlay path the active host declares in `profiles/<host>.json`.
 effort: xhigh
 ---
 
