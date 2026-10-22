@@ -5,8 +5,8 @@ The drive does not exercise tagging, pushing, GitHub release creation, or runtim
 
 ## Sub-features
 
-- `release-version-grokbuild` checks that `plugin.json` uses `N.N.N-grokbuild.N`, not CalVer or `-pstack.N`.
-- `release-port-base` runs the read-only `sync-from-upstream.py --recipe` command and checks that the `plugin.json` version uses its packaging base and a `grokbuild.N` suffix.
+- `release-version-prerelease` checks that `plugin.json` uses `N.N.N-<neutral-label>.N`, not CalVer and not `-pstack.N`.
+- `release-port-base` runs the read-only `sync-from-upstream.py --recipe` command and checks that the `plugin.json` version uses its packaging base and a neutral prerelease suffix.
 
 ## How to get to it (user POV)
 
