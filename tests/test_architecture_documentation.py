@@ -89,9 +89,11 @@ def test_jev_implementation_caveats_remain_explicit() -> None:
 
 
 def test_localized_readmes_agree_on_portable_authority_and_host_scope() -> None:
-    """Both entry points distinguish a six-host descriptor from Grok-only setup."""
+    """Both entry points name every shipped host target, keep the Droid candidate
+    caveat, scope Grok-only setup, and state the unsupported-capability GAP rule."""
     english = (ROOT / "README.md").read_text(encoding="utf-8")
     chinese = (ROOT / "README.zh-CN.md").read_text(encoding="utf-8")
+    hosts = json.loads((ROOT / "pstack.package.json").read_text(encoding="utf-8"))["host_targets"]
     guide = "docs/architecture/harness-neutral-authority-2026-10-21.md"
     assert guide in english
     assert guide in chinese
@@ -102,4 +104,22 @@ def test_localized_readmes_agree_on_portable_authority_and_host_scope() -> None:
     assert "## Grok Build installation" in english
     assert "## Grok Build 安装" in chinese
     assert "## Grok Build 默认模型与 effort" in chinese
-    assert "Droid" in chinese
+
+    host_names = re.compile(rf"\b({'|'.join(map(re.escape, hosts))})\b", re.IGNORECASE)
+    for text, anchor in (
+        (english, "The package descriptor currently targets"),
+        (chinese, "当前包描述符列出了"),
+    ):
+        paragraphs = [block for block in re.split(r"\n\s*\n", text) if anchor in block]
+        assert len(paragraphs) == 1, f"expected one descriptor paragraph for {anchor!r}"
+        named = {name.lower() for name in host_names.findall(paragraphs[0])}
+        assert named == set(hosts), (
+            f"{anchor!r} paragraph names {sorted(named)}, descriptor ships {sorted(hosts)}"
+        )
+
+    assert "Droid remains a candidate" in english
+    assert "Droid 仍为候选状态" in chinese
+    assert "Grok Build-specific" in english
+    assert "只适用于 Grok Build" in chinese
+    assert "must be labelled GAP" in english
+    assert "不支持的能力必须明确标为 GAP" in chinese

@@ -8,7 +8,7 @@ This is a **multi-harness reference port** of [official Cursor pstack](https://g
 
 The source-of-truth boundary and outstanding conformance gaps are documented in [Harness-neutral authority and verification](./docs/architecture/harness-neutral-authority-2026-10-21.md). The [implementation map](./docs/architecture/harness-adapters-and-jev-2026-10-20.md) records the current schemas, adapters, optional JEV decision boundary and independently verified evidence.
 
-The package descriptor currently targets **Grok, Codex, OMP (oh-my-pi), OpenCode, Antigravity and Droid**. A declared target or projected manifest is **not proof of native execution**; Droid remains a candidate and evidence differs by host. Read `profiles/<host>.json` and the matching host-owned tool reference before executing any harness-specific step. Claude/Copilot mappings are not automatically shipped host targets.
+The package descriptor currently targets **Grok, Codex, OMP (oh-my-pi), OpenCode, Antigravity and Droid**. A declared target or projected manifest is **not proof of native execution**; Droid remains a candidate and evidence differs by host. Read `profiles/<host>.json` and the matching host-owned tool reference before executing any harness-specific step. An unsupported capability must be labelled GAP and must not borrow Grok's invocation method. Claude/Copilot mappings are not automatically shipped host targets.
 
 The installation, first-session, model defaults and CLI command examples below are **Grok Build-specific** unless a heading explicitly says otherwise. They do not define portable routing or model policy.
 
