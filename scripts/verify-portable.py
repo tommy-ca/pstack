@@ -238,7 +238,7 @@ class PortableVerifier:
         # the exact validated target. Only a real change name reaches the child;
         # none/lookup-failed/ambiguous are decided here and recorded as scenarios.
         state, change_name, active_names = resolve_openspec_change(
-            self.change, active_resolver=_active_openspec_changes
+            self.change, active_resolver=lambda: _active_openspec_changes(cwd=str(ROOT))
         )
         helper = "import sys; from scripts.openspec_change import validate_openspec_change; sys.exit(validate_openspec_change(sys.argv[1]))"
         if state in ("explicit", "active"):
