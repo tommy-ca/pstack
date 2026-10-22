@@ -26,6 +26,7 @@ Executed 2026-10-22. The sections below are the pre-execution plan and their box
 | 5 | `setup-projection` | #719 | 20:22Z | `5d8caac` |
 | 6 | `hermetic-doctor` | #727 | 20:30Z | `88c3e5e` |
 | 7 | receipt restamp | #731 | 20:40Z | `d1d3a93` |
+| 8 | version identity | #733 | 22:14Z | `015b071` |
 
 The order differs from the plan because the file sets overlap. `evidence-truth` owns `portability_types.py`, which `setup-projection` also edits, and `boundary-gate` owns the scanner, which `setup-projection` also edits. So the roots landed first, then the sweep, then the projection, then the last hermetic slice. Each PR was rebased onto current `main` and got a fresh check run before merge.
 
@@ -46,7 +47,8 @@ Per PR, a diff audit by me, targeted probes on the exact property the PR changes
 - #728. `tests/test_omp_native_package.py` still reads the developer's home.
 - #729. A BLOCKED live attempt overwrites a good observed_live PASS.
 - #730. The frozen DSH table re-records on almost every PR.
-- #699. The SemVer migration stays with the operator because it changes a published identity.
+
+The version identity shipped after an explicit operator approval, which is what `version-identity`'s review gate existed for. The published label is `0.15.29-preview.0` rather than the `0.15.30-preview.0` this plan first suggested, because the numeric triple must equal upstream packaging and dragging that guard into the PR would have been the wrong trade. `upstream_pin` is unchanged, the compatibility stance is an explicit breaking upgrade with a named error, and a host still carrying the retired label is told so and pointed at the update command.
 
 `check-staleness --host all` read `REGENERATION NEEDED` at `88c3e5e` while `check-evidence` read five PASS, because they enforce different planes. #731 closed that gap for the merged head, and any PR that edits a hashed driver must now run both.
 

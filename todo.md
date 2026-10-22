@@ -265,4 +265,4 @@
 - [x] Receipt restamp at the merged head, after `check-staleness` showed REGENERATION NEEDED while `check-evidence` showed five PASS. `check-staleness --host all` now reads ALL FRESH. PR #731.
 - [x] Merge gate: full offline gate at `88c3e5e` is 1064 passed, 10 skipped.
 - [ ] Deferred with an issue: #725 isolation nondeterminism, #726 `refresh-static --host all`, #728 ambient OMP test, #729 BLOCKED overwrites PASS, #730 DSH probe scope churn.
-- [ ] Operator gate: #699 SemVer identity migration, held for approval because it changes a published version.
+- [x] Operator gate: #699 SemVer identity migration, approved and shipped as #733. Published label `0.15.29-preview.0` on the descriptor and all six adapters, `upstream_pin` unchanged, explicit breaking upgrade with a named retired-version error, receipts requalified with both checks clean.
