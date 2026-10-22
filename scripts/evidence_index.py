@@ -12,7 +12,7 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from scripts.evidence_durability import preserve_observed_settlements
+from scripts.evidence_durability import _is_preservable_settlement, preserve_observed_settlements
 from scripts.host_identity import BUILTIN_HOSTS
 from scripts.portability_schema import (
     Binding,
@@ -147,7 +147,20 @@ def write_verification_evidence(
                     f"{type(err).__name__}: {err}. This run's receipt is at {receipt_file}."
                 )
             else:
-                if preserved:
+                dropped = [
+                    s.id
+                    for s in previous.scenarios
+                    if _is_preservable_settlement(s) and s.id not in {c.id for c in receipt.scenarios}
+                ]
+                if dropped:
+                    sys.exit(
+                        f"REFUSING to overwrite the durable receipt at {durable_file}: "
+                        f"prior observed_live settlement(s) {', '.join(dropped)} from {previous.run_id} "
+                        f"cannot be re-observed by a static refresh. Re-run live proof with "
+                        f"PSTACK_RUN_OMP_LIVE=1 python3 scripts/verify-portable.py run --host {host}, "
+                        f"or refresh a host with no live rows. This run's receipt is at {receipt_file}."
+                    )
+                elif preserved:
                     receipt.planes = settle_planes(receipt.scenarios)
                     receipt.overall_verdict = reduce_verdicts(receipt.planes.values())
                     durable_data = receipt_payload(receipt)
