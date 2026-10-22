@@ -263,8 +263,9 @@ class PortableVerifier:
                 shutil.rmtree(fixture_home, ignore_errors=True)
 
     def _doctor_checks(self, fixture_home: Path, check_durability: bool = True, allow_stale: bool = False) -> bool:
-        """Doctor scenarios 1-7; ambient-HOME readers are bound to fixture_home."""
+        """Doctor scenarios 1-7; every command runs under fixture_home."""
         print(f"[{self.host}] Running Doctor checks...")
+        env = {"HOME": str(fixture_home)}
 
         # 1. Canonical conformance
         r1 = self.run_command(
@@ -272,6 +273,7 @@ class PortableVerifier:
             "Verify canonical inventory conforms to pin",
             "canonical",
             [sys.executable, str(ROOT / "scripts" / "canonical-index.py"), "--check"],
+            env=env,
         )
 
         # 2. OpenSpec change integrity (argv-safe helper above). Resolve once: the
@@ -293,6 +295,7 @@ class PortableVerifier:
                 f"Verify {change_name} openspec change passes schema checks",
                 "canonical",
                 [sys.executable, "-c", helper, change_name],
+                env=env,
             )
         elif state == "lookup-failed":
             r2 = ScenarioResult(
@@ -326,6 +329,7 @@ class PortableVerifier:
             "Verify static harness names and discipline",
             "adapter",
             [sys.executable, str(ROOT / "scripts" / "verify-harness.py")],
+            env=env,
         )
 
         # 3b. Host-neutral adapter boundary scanner
@@ -334,6 +338,7 @@ class PortableVerifier:
             "Verify shared skills and playbooks maintain host-neutral adapter boundary",
             "adapter",
             [sys.executable, str(ROOT / "scripts" / "scan-host-boundary.py"), "--check"],
+            env=env,
         )
 
         # 4. Package descriptor and native manifest projection integrity
@@ -342,6 +347,7 @@ class PortableVerifier:
             "Verify package descriptor and projected native harness manifests",
             "package",
             [sys.executable, str(ROOT / "scripts" / "project-package.py"), "--check"],
+            env=env,
         )
 
         # 4b. Native package lifecycle verification
@@ -350,7 +356,7 @@ class PortableVerifier:
             f"Verify native package lifecycle contract for {self.host}",
             "package",
             [sys.executable, str(ROOT / "scripts" / "package-lifecycle.py"), "verify", "--host", self.host],
-            env={"HOME": str(fixture_home)},
+            env=env,
         )
 
         doctor_pass = all(
@@ -367,6 +373,7 @@ class PortableVerifier:
                 f"Validate typed harness profile for {self.host}",
                 "adapter",
                 [sys.executable, "-c", f"import json; from pathlib import Path; from scripts.portability_schema import HarnessProfile, Binding, Evidence; d = json.loads(Path('{profile_file}').read_text()); b = [Binding(**x) for x in d.get('bindings', [])]; e = [Evidence(**x) for x in d.get('evidence_ledger', [])]; HarnessProfile(host=d['host'], support_state=d['support_state'], bindings=b, skills_dir=d.get('skills_dir'), plugins_dir=d.get('plugins_dir'), plugin_manifest=d.get('plugin_manifest'), evidence_ledger=e, tool_mappings=d.get('tool_mappings'), skill_order=d.get('skill_order'), runtime_conventions=d.get('runtime_conventions'), setup=d.get('setup')).validate()"],
+                env=env,
             )
             doctor_pass = doctor_pass and (r5.verdict == "PASS")
 
@@ -377,7 +384,7 @@ class PortableVerifier:
                 "Verify live Antigravity plugin synchronization",
                 "package",
                 [sys.executable, str(ROOT / "scripts" / "sync-antigravity-plugin.py"), "--check"],
-                env={"HOME": str(fixture_home)},
+                env=env,
             )
             doctor_pass = doctor_pass and (r6.verdict == "PASS")
 
@@ -400,6 +407,7 @@ class PortableVerifier:
                 f"Verify evidence durability and support-state derivation for {self.host}",
                 "adapter",
                 chk_cmd,
+                env=env,
             )
             doctor_pass = doctor_pass and (r7.verdict == "PASS")
 
