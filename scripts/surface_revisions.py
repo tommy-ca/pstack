@@ -13,6 +13,7 @@ import json
 import os
 import re
 import stat
+import subprocess
 import sys
 import tempfile
 from dataclasses import asdict, dataclass
@@ -35,9 +36,66 @@ class SurfaceRevisions:
     driver_revision: str
     package_driver_revision: str
     boundary_driver_revision: str
+    upstream_freshness: str = "UNKNOWN"
+    commits_ahead: int = -1
 
-    def to_dict(self) -> Dict[str, str]:
+    def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
+
+
+@dataclass(frozen=True)
+class UpstreamFreshness:
+    upstream_head: str
+    freshness: str
+    commits_ahead: int
+
+
+def _upstream_cache(root: Path) -> Optional[Path]:
+    proc = subprocess.run(
+        ["git", "-C", str(root), "rev-parse", "--git-common-dir"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if proc.returncode == 0:
+        common = Path(proc.stdout.strip())
+        common = common.resolve() if common.is_absolute() else (root / common).resolve()
+        parent = common.parent if common.name == ".git" else common
+        candidate = parent / ".worktrees" / "upstream-cursor-plugins"
+        if candidate.is_dir():
+            return candidate
+    fallback = root / ".worktrees" / "upstream-cursor-plugins"
+    return fallback if fallback.is_dir() else None
+
+
+def observe_upstream_freshness(
+    root: Path, pin: str, cache: Optional[Path] = None
+) -> UpstreamFreshness:
+    """Observe how far the upstream cache HEAD has moved past the pin."""
+    cache = cache or _upstream_cache(root)
+    if cache is None:
+        return UpstreamFreshness("unknown", "UNKNOWN", -1)
+    head = subprocess.run(
+        ["git", "-C", str(cache), "rev-parse", "HEAD"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if head.returncode != 0:
+        return UpstreamFreshness("unknown", "UNKNOWN", -1)
+    upstream_head = head.stdout.strip()
+    drift = subprocess.run(
+        ["git", "-C", str(cache), "rev-list", f"{pin}..HEAD", "--count"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if drift.returncode != 0 or not drift.stdout.strip().isdigit():
+        return UpstreamFreshness(upstream_head, "UNKNOWN", -1)
+    commits_ahead = int(drift.stdout.strip())
+    return UpstreamFreshness(
+        upstream_head, "DRIFT" if commits_ahead else "CURRENT", commits_ahead
+    )
 
 
 class RecipeError(RuntimeError):
@@ -300,6 +358,10 @@ def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path
         except Exception:
             pass
 
+    observed = observe_upstream_freshness(root, canonical_pin)
+    if observed.upstream_head != "unknown":
+        upstream_head = observed.upstream_head
+
     spec_file = root / "openspec" / "specs" / "pstack-portability" / "spec.md"
     spec_hash = hashlib.sha256(spec_file.read_bytes()).hexdigest() if spec_file.is_file() else "missing"
 
@@ -450,4 +512,6 @@ def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path
         driver_revision=driver_revision,
         package_driver_revision=package_driver_revision,
         boundary_driver_revision=boundary_driver_revision,
+        upstream_freshness=observed.freshness,
+        commits_ahead=observed.commits_ahead,
     )
