@@ -22,9 +22,11 @@ import os
 import re
 import secrets
 import shlex
+import shutil
 import stat
 import subprocess
 import sys
+import tempfile
 import time
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
@@ -171,8 +173,12 @@ class PortableVerifier:
         timeout: float = 60.0,
         evidence_level: str = "offline",
         record: bool = True,
+        env: Optional[Dict[str, str]] = None,
     ) -> ScenarioResult:
         start = time.time()
+        # `env` layers on the inherited environment: HOME is the lever (#709), not a
+        # wholesale replacement that would strip PATH/PYTHONPATH from the child.
+        child_env = None if env is None else {**os.environ, **env}
         try:
             proc = subprocess.run(
                 cmd,
@@ -181,6 +187,7 @@ class PortableVerifier:
                 text=True,
                 check=False,
                 timeout=timeout,
+                env=child_env,
             )
             duration = round(time.time() - start, 3)
             stdout_snip = proc.stdout.strip()[:300]
@@ -222,7 +229,34 @@ class PortableVerifier:
         return result
 
     def doctor(self, check_durability: bool = True, allow_stale: bool = False) -> bool:
-        """Step 2: Doctor static prerequisites, canonical conformance, and schema validity."""
+        """Step 2: Doctor checks bound to a fixture HOME (#709).
+
+        `package-lifecycle.py verify` and `sync-antigravity-plugin.py --check` read
+        `$HOME` plugin mirrors, so whatever a developer has installed live could
+        decide the verdict. The host package is installed into a fixture HOME first,
+        so both checks still observe a real native projection while the ambient
+        mirrors stay out of the result. PSTACK_DOCTOR_HOME is caller-owned and kept;
+        otherwise the fixture is a disposable temp dir removed afterwards.
+        """
+        injected = os.environ.get("PSTACK_DOCTOR_HOME")
+        fixture_home = Path(injected) if injected else Path(tempfile.mkdtemp(prefix=f"pstack-doctor-{self.host}-"))
+        fixture_home.mkdir(parents=True, exist_ok=True)
+        try:
+            self.run_command(
+                f"doctor-fixture-install-{self.host}",
+                f"Install {self.host} package into fixture HOME for hermetic doctor checks",
+                "package",
+                [sys.executable, str(ROOT / "scripts" / "package-lifecycle.py"), "install", "--host", self.host],
+                env={"HOME": str(fixture_home)},
+                record=False,
+            )
+            return self._doctor_checks(fixture_home, check_durability=check_durability, allow_stale=allow_stale)
+        finally:
+            if not injected:
+                shutil.rmtree(fixture_home, ignore_errors=True)
+
+    def _doctor_checks(self, fixture_home: Path, check_durability: bool = True, allow_stale: bool = False) -> bool:
+        """Doctor scenarios 1-7; ambient-HOME readers are bound to fixture_home."""
         print(f"[{self.host}] Running Doctor checks...")
 
         # 1. Canonical conformance
@@ -317,6 +351,7 @@ class PortableVerifier:
             f"Verify native package lifecycle contract for {self.host}",
             "package",
             [sys.executable, str(ROOT / "scripts" / "package-lifecycle.py"), "verify", "--host", self.host],
+            env={"HOME": str(fixture_home)},
         )
 
         doctor_pass = all(r.verdict == "PASS" for r in (r1, r2, r3, r3b, r4, r4b))
@@ -339,6 +374,7 @@ class PortableVerifier:
                 "Verify live Antigravity plugin synchronization",
                 "package",
                 [sys.executable, str(ROOT / "scripts" / "sync-antigravity-plugin.py"), "--check"],
+                env={"HOME": str(fixture_home)},
             )
             doctor_pass = doctor_pass and (r6.verdict == "PASS")
 

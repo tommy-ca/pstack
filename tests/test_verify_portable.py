@@ -64,6 +64,50 @@ def test_portable_verifier_antigravity(tmp_path: Path) -> None:
     assert receipt.planes["runtime"] == "UNTESTED"
 
 
+def test_doctor_is_hermetic_against_ambient_plugin_mirrors(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """#709: the doctor verdict must not change when the live mirrors change."""
+    hosts = ("omp", "antigravity")
+    mirrors = {
+        "omp": Path(".omp/plugins/pstack"),
+        "antigravity": Path(".gemini/config/plugins/pstack"),
+    }
+
+    def snapshot(home: Path) -> dict[str, bytes]:
+        return {p.relative_to(home).as_posix(): p.read_bytes() for p in sorted(home.rglob("*")) if p.is_file()}
+
+    def doctor_records(home: Path) -> dict[str, list[tuple[str, str, str, str]]]:
+        monkeypatch.setenv("HOME", str(home))
+        monkeypatch.delenv("PSTACK_DOCTOR_HOME", raising=False)
+        records: dict[str, list[tuple[str, str, str, str]]] = {}
+        for host in hosts:
+            verifier = PortableVerifier(host=host, evidence_root=tmp_path / "evidence")
+            assert verifier.launch()
+            assert verifier.doctor(check_durability=False) is True
+            records[host] = [(s.id, s.verdict, s.command, s.stdout_snippet) for s in verifier.scenarios]
+        return records
+
+    clean_home = tmp_path / "clean-home"
+    clean_home.mkdir()
+    clean = doctor_records(clean_home)
+
+    stale_home = tmp_path / "stale-home"
+    for rel in mirrors.values():
+        (stale_home / rel / "skills").mkdir(parents=True)
+        (stale_home / rel / "plugin.json").write_text('{"stale": true}\n', encoding="utf-8")
+        (stale_home / rel / "skills" / "stale-skill.md").write_text("stale\n", encoding="utf-8")
+    stale_before = snapshot(stale_home)
+    stale = doctor_records(stale_home)
+
+    assert stale == clean
+    assert snapshot(stale_home) == stale_before
+    for host in hosts:
+        ambient = {row[0]: row[1] for row in stale[host]}
+        assert ambient[f"doctor-package-lifecycle-{host}"] == "PASS"
+    assert {row[0]: row[1] for row in stale["antigravity"]}["doctor-antigravity-sync"] == "PASS"
+
+
 def test_portable_verifier_droid(tmp_path: Path) -> None:
     verifier = PortableVerifier(host="droid", evidence_root=tmp_path)
     assert verifier.launch()
