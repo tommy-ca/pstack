@@ -2,15 +2,23 @@
 
 [English](README.md) · [简体中文](README.zh-CN.md)
 
-This is a Grok Build port of official pstack. Playbooks and principles are poteto's; only the harness call layer is swapped.
+This is a **multi-harness reference port** of [official Cursor pstack](https://github.com/cursor/plugins/tree/main/pstack). Canonical principles, skills and playbook intent remain upstream-owned; host profiles, native adapters and package projections are maintained here. **Grok Build is one host adapter, not the shared execution model.**
+
+## Architecture and support
+
+The source-of-truth boundary and outstanding conformance gaps are documented in [Harness-neutral authority and verification](./docs/architecture/harness-neutral-authority-2026-10-21.md). The [implementation map](./docs/architecture/harness-adapters-and-jev-2026-10-20.md) records the current schemas, adapters, optional JEV decision boundary and independently verified evidence.
+
+The package descriptor currently targets **Grok, Codex, OMP (oh-my-pi), OpenCode, Antigravity and Droid**. A declared target or projected manifest is **not proof of native execution**; Droid remains a candidate and evidence differs by host. Read `profiles/<host>.json` and the matching host-owned tool reference before executing any harness-specific step. Claude/Copilot mappings are not automatically shipped host targets.
+
+The installation, first-session, model defaults and CLI command examples below are **Grok Build-specific** unless a heading explicitly says otherwise. They do not define portable routing or model policy.
 
 ## Credits
 
-The 22 playbooks and 23 principles are [poteto](https://x.com/poteto)'s, from [official pstack](https://github.com/cursor/plugins/tree/main/pstack). This repository is **`tommy-ca/pstack`**, adapted from [aa2246740/pstack-grokbuild](https://github.com/aa2246740/pstack-grokbuild). Harness calls use Grok Build tools named in [grok-tools.md](./skills/poteto-mode/references/grok-tools.md). This port did not author those playbooks or principles.
+The upstream playbooks and principles are [poteto](https://x.com/poteto)'s, from [official pstack](https://github.com/cursor/plugins/tree/main/pstack). This repository is **`tommy-ca/pstack`**, adapted from [aa2246740/pstack-grokbuild](https://github.com/aa2246740/pstack-grokbuild). Harness calls use Grok Build tools named in [grok-tools.md](./skills/poteto-mode/references/grok-tools.md). This port did not author those playbooks or principles.
 
 poteto's idea is less slop, go deep first, and parallelize only after one agent can be trusted to write verifiable code. That philosophy is theirs. This README does not speak as poteto.
 
-## Install
+## Grok Build installation
 
 ```bash
 grok plugin install tommy-ca/pstack --trust
@@ -38,7 +46,7 @@ droid plugin install pstack@<basename> --scope user
 
 Droid roles are `pstack-<role>` (`pstack-feature`, not `pstack:feature`). The spawn contract, inverted skill precedence (personal and project skills shadow plugin skills), and capability gaps are in [droid-tools.md](./skills/poteto-mode/references/droid-tools.md). Offline checks (`droid doctor`, plugin lifecycle) prove packaging and the tool surface only. Custom-role serving and model selection are untested.
 
-## First session
+## Grok Build first session
 
 1. Enable from a **host shell** if `grok plugin enable pstack` hits EROFS on `config.toml`:
 
@@ -67,7 +75,7 @@ For the **current harness adapter schemas, native support/evidence status, model
 
 The other skills are situational. The mode skill uses them when a step needs them.
 
-## Defaults
+## Grok Build defaults
 
 A fresh install is usable without `/setup-pstack`.
 
@@ -77,7 +85,7 @@ A fresh install is usable without `/setup-pstack`.
 
 A missing override file uses the shipped default. A missing key, `inherit-parent`, or `auto` omits `model`. [`/setup-pstack`](./skills/setup-pstack/SKILL.md) re-detects from live `use one of:` and rewrites the split if it changed. Spawn skills cannot see a later enum. Run setup again if the binary grew a new level.
 
-## Not the Cursor plugin
+## Grok Build and Cursor use separate setup paths
 
 [`/setup-pstack`](./skills/setup-pstack/SKILL.md) in this repo configures model and effort for grok-build. Official Cursor `/setup-pstack` (inside Cursor, or the copy inside Grok Bot) is a different plugin. That copy writes `~/.cursor/rules` and uses Cursor slugs. Do not run it on Grok Build. It will not work here.
 
