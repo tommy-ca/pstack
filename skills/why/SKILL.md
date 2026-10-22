@@ -48,7 +48,7 @@ Spawn one investigator per category that has a matching MCP, all in a single mes
 
 Subagent config (each):
 - `subagent_type` / `Role`: `pstack:why-investigators` ([`../setup-pstack/SKILL.md`](../setup-pstack/SKILL.md))
-- `model`: toml key `why-investigators` per `../setup-pstack/SKILL.md` (or host configuration). Missing key omits; absent config sends host default model resolved from active profile. Do not send `reasoning_effort` on spawn unless supported.
+- `model`: canonical role key `why-investigators` in the host's setup projection per [`../setup-pstack/SKILL.md`](../setup-pstack/SKILL.md) §5 (or host configuration). Missing key omits; absent config sends host default model resolved from active profile. Do not send `reasoning_effort` on spawn unless supported.
 - MCP-backed work: spawn `pstack:why-investigators` using the host's `agent.spawn` primitive and forbid writes in the prompt. Do not send `readonly` on spawn unless supported.
 
 Each investigator's prompt is `references/investigator-prompt.md` filled in, plus:
@@ -82,7 +82,7 @@ If your scope assessment suggests a single-commit trivial target where the PR de
 Spawn one synthesizer.
 
 - `subagent_type`: `pstack:why-synthesizer` ([`../setup-pstack/SKILL.md`](../setup-pstack/SKILL.md))
-- `model`: toml key `why-synthesizer` per `../setup-pstack/SKILL.md`. Per that file: no toml sends host default model resolved from active profile (omit if rejected); inherit-parent/auto/missing key omits. Do not send `reasoning_effort` on spawn unless supported.
+- `model`: canonical role key `why-synthesizer` in the host's setup projection per [`../setup-pstack/SKILL.md`](../setup-pstack/SKILL.md) §5. No projected model sends host default model resolved from active profile (omit if rejected); inherit-parent/auto/missing key omits. Do not send `reasoning_effort` on spawn unless supported.
 - MCP-backed work: spawn `pstack:why-synthesizer` and forbid writes in the prompt. Do not send `readonly` on spawn unless supported.
 
 It gets:

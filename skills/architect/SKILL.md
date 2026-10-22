@@ -28,7 +28,7 @@ Skip Phase A only when the work is genuinely greenfield with no surrounding syst
 
 Run the **arena** skill with the design-sketch task and the Phase A grounding artifacts. Pass `references/runner-prompt.md` as each runner's prompt.
 
-Use toml array `architect-runners` per `../setup-pstack/SKILL.md` (or host configuration). If the configuration is absent, spawn **two** arena runners using the host's `agent.spawn` primitive with the host default model resolved from the active profile. Two sketches, not a four-model panel. Each runner's role/type is `pstack:architect-runners` ([`../setup-pstack/SKILL.md`](../setup-pstack/SKILL.md)). Do not send `reasoning_effort` on spawn unless supported.
+Use canonical role key `architect-runners` in the host's setup projection per [`../setup-pstack/SKILL.md`](../setup-pstack/SKILL.md) §5 (or host configuration). If the configuration is absent, spawn **two** arena runners using the host's `agent.spawn` primitive with the host default model resolved from the active profile. Two sketches, not a four-model panel. Each runner's role/type is `pstack:architect-runners` ([`../setup-pstack/SKILL.md`](../setup-pstack/SKILL.md)). Do not send `reasoning_effort` on spawn unless supported.
 
 Design it twice. Require at least two structurally distinct candidates before synthesis, even when the first looks sufficient. This is the **exhaust-the-design-space** principle skill made concrete. Whole-shape alternatives, not point fixes inside one shape.
 

@@ -26,7 +26,7 @@ Before spawning reviewers, state the intent in one clear paragraph from the user
 
 ## Step 3, Spawn Reviewers
 
-Launch all reviewers in a single message using the host's `agent.spawn` primitive (per active harness profile and host references). Use toml array `interrogate-reviewers` per `../setup-pstack/SKILL.md` (or active profile model configuration), one reviewer per entry. If the configuration is absent, spawn **one** reviewer with the host default model resolved from the active profile. Every panel seat maps to a real tracked child agent and evidence; never claim N independent models from one repeated alias or without verified spawn.
+Launch all reviewers in a single message using the host's `agent.spawn` primitive (per active harness profile and host references). Use canonical role key `interrogate-reviewers` in the host's setup projection per [`../setup-pstack/SKILL.md`](../setup-pstack/SKILL.md) §5 (or active profile model configuration), one reviewer per entry. If the configuration is absent, spawn **one** reviewer with the host default model resolved from the active profile. Every panel seat maps to a real tracked child agent and evidence; never claim N independent models from one repeated alias or without verified spawn.
 
 For each reviewer:
 - role / `subagent_type`: `pstack:interrogate-reviewers` ([`../setup-pstack/SKILL.md`](../setup-pstack/SKILL.md))
