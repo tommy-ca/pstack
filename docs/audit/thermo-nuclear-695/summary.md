@@ -123,7 +123,9 @@ Full analysis: [`03_tests_quality.md`](03_tests_quality.md).
 
 ### Finding 11. Reflect routes every host to a Grok native command
 
-`skills/reflect/SKILL.md:56` sends substantive skill edits to `Grok Build's /create-skill`. The same train moved the router to `playbooks/authoring-a-skill.md` (`skills/poteto-mode/SKILL.md:29`), and that playbook already exists and is mapped for Grok and Codex. Line 23 also names `references/grok-transcript.md` inline, and no other host has a transcript reference, so the only satisfiable branch is Grok.
+`skills/reflect/SKILL.md:56` sends substantive skill edits to `Grok Build's /create-skill`. The same train moved the router to `playbooks/authoring-a-skill.md` (`skills/poteto-mode/SKILL.md:29`), and that playbook already exists and is mapped for Grok and Codex. Line 23 names `references/grok-transcript.md` inline, which is a host filename in a canonical skill.
+
+Line 23 is not an unsatisfiable branch. Its next sentence supplies a digest fallback when no host reference covers the transcript, so the mechanism works on the other five hosts. The defect is the inlined host filename in a shared surface, not a dead end. Severity is lower than the command leak on line 56.
 
 Verified by me. Remedy: point step 5 at the playbook, and name the transcript pattern rather than the one filename that exists.
 

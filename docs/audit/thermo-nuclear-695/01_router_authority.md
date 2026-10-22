@@ -221,3 +221,13 @@ direction.
 - `.venv/bin/python scripts/scan-host-boundary.py -v` (expect it to fail on
   `automate-me`/`reflect` until step 1 lands, which is the point of step 2)
 - `grep -rn "models.json" profiles/ skills/poteto-mode/references/` after step 4
+
+---
+
+## Coordinator correction, 2026-10-22
+
+This lane's first finding says no other host has a transcript reference, so the only satisfiable branch in `skills/reflect/SKILL.md:23` is Grok. That conclusion is wrong and the review does not adopt it.
+
+Line 23 is followed by a digest fallback. "If no host reference covers the active transcript, pass a tight digest of the session instead." The mechanism therefore works on every host. The surviving defect is narrower, an inlined host filename in a canonical skill rather than a dead end, and `summary.md` Finding 11 records it that way.
+
+The rest of this lane's findings stand as written and were verified independently.
