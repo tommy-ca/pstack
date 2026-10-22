@@ -49,11 +49,13 @@ def test_autopilot_is_parent_fanout_and_skips_goal() -> None:
 
 def test_poteto_mode_first_todo_requires_host_map() -> None:
     skill = (ROOT / "skills/poteto-mode/SKILL.md").read_text(encoding="utf-8")
-    assert "grok-tools.md" in skill
-    assert "codex-tools.md" in skill
-    assert "current host" in skill
     head = skill.split("## Principles", 1)[0]
-    assert "mapping file for the current host" in head
+    first_todo = head.split("Remaining triggers:", 1)[0]
+    assert "identify the active host" in first_todo
+    assert "`profiles/<host>.json`" in first_todo
+    assert "`references/<host>-tools.md`" in first_todo
+    assert "current host" in skill
+    assert re.search(r"[A-Za-z0-9]+-tools\.md", skill) is None
 
 
 def test_codex_map_matches_grok_call_sites() -> None:
