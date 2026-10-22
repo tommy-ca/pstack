@@ -1,6 +1,6 @@
 {
   "id": "pstack",
-  "version": "0.15.29-grokbuild.0",
+  "version": "0.15.29-preview.0",
   "description": "pstack extension for OpenCode harness.",
   "skills": "./skills",
   "namespace": "pstack",

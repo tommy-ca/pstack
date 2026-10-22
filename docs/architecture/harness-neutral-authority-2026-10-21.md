@@ -23,7 +23,7 @@ Do not add a second scheduler, role registry, top-level orchestration state DB o
 
 ## Grok compatibility (not shared authority)
 
-This repo originated from a Grok port, and the root `plugin.json`, `.grok-plugin/`, `scripts/setup_pstack.py`, `automations/benny-grok/` and Grok tool reference continue to serve that adapter. Historical Grok decisions remain in dated ADRs/archived OpenSpec records and must not be silently rewritten. The shared package version currently has a `-grokbuild.0` suffix, including across non-Grok adapters; issue [#699](https://github.com/tommy-ca/pstack/issues/699) owns a **separate compatibility-safe migration**, not a blind renaming that breaks manifests or stales receipts.
+This repo originated from a Grok port, and the root `plugin.json`, `.grok-plugin/`, `scripts/setup_pstack.py`, `automations/benny-grok/` and Grok tool reference continue to serve that adapter. Historical Grok decisions remain in dated ADRs/archived OpenSpec records and must not be silently rewritten. The shared package version is host-neutral (`0.15.29-preview.0`) across every adapter, delivered as an explicit breaking release by [#699](https://github.com/tommy-ca/pstack/issues/699): `scripts/package-lifecycle.py#RETIRED_VERSIONS` names the retired Grok-specific label, and `verify` refuses a tree that still carries it with the upgrade command instead of a bare mismatch.
 
 The source-level consistency defects in [#696](https://github.com/tommy-ca/pstack/issues/696) and [#698](https://github.com/tommy-ca/pstack/issues/698) should be closed by small, tested changes, not exemptions masking violations.
 

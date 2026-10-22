@@ -93,12 +93,13 @@ def test_install_and_verify(host: str, tmp_path: Path) -> None:
         assert (agents_dir / "poteto-agent.md").is_file(), f"agents/poteto-agent.md missing for {host}"
         assert len(list(agents_dir.glob("*.md"))) == len(list((ROOT / "agents").glob("*.md")))
 
-    # Manifest must exist and match version 0.15.29
+    # Manifest must exist and publish the descriptor's identity
     manifest_name = "package.json" if host in ("opencode", "omp") else "plugin.json"
     manifest_path = plugin_dir / manifest_name
     assert manifest_path.is_file()
     m_data = json.loads(manifest_path.read_text(encoding="utf-8"))
-    assert m_data.get("version") == "0.15.29-grokbuild.0"
+    desc, _ = package_lifecycle.load_package_descriptor()
+    assert m_data.get("version") == desc.version
     if host == "omp":
         assert isinstance(m_data.get("omp"), dict), "OMP enrolls a package only through package.json#omp"
 
@@ -116,6 +117,46 @@ def test_verify_detects_corrupt_manifest(tmp_path: Path) -> None:
     assert any("corrupt" in e.lower() for e in errors)
 
 
+def test_verify_names_a_retired_version(tmp_path: Path) -> None:
+    """Tooth: a tree still carrying a retired identity gets the named refusal.
+
+    The breaking upgrade path is explicit (#699): the operator is told which label
+    retired and which command converges the tree, not handed a bare mismatch.
+    """
+    target = tmp_path / "retired"
+    plugin_dir = package_lifecycle.install_plugin("grok", target)
+    manifest_path = plugin_dir / "plugin.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    retired = next(iter(package_lifecycle.RETIRED_VERSIONS))
+    manifest["version"] = retired
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    ok, errors = package_lifecycle.verify_plugin("grok", target)
+    assert ok is False
+    assert any(f"retired version {retired}" in e for e in errors), errors
+    assert any("update --host grok" in e for e in errors), errors
+
+
+def test_verify_reports_a_wrong_typed_version_as_a_mismatch(tmp_path: Path) -> None:
+    """Tooth: a non-string version is a mismatch, not a corrupt-manifest crash.
+
+    `RETIRED_VERSIONS` is a dict, so the lookup needs a string. A malformed
+    manifest must still produce the precise diagnostic instead of falling through
+    to the generic corruption handler.
+    """
+    target = tmp_path / "typed"
+    plugin_dir = package_lifecycle.install_plugin("grok", target)
+    manifest_path = plugin_dir / "plugin.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["version"] = ["not", "a", "version"]
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+    ok, errors = package_lifecycle.verify_plugin("grok", target)
+    assert ok is False
+    assert any("Manifest version mismatch" in e for e in errors), errors
+    assert not any("corrupt" in e.lower() for e in errors), errors
+
+
 def test_update_idempotent_convergence(tmp_path: Path) -> None:
     target = tmp_path / "conv"
     ok, errors = package_lifecycle.update_plugin("codex", target)
@@ -128,7 +169,8 @@ def test_update_idempotent_convergence(tmp_path: Path) -> None:
     ok2, errors2 = package_lifecycle.update_plugin("codex", target)
     assert ok2 is True
     m_data = json.loads((plugin_dir / "plugin.json").read_text(encoding="utf-8"))
-    assert m_data.get("version") == "0.15.29-grokbuild.0"
+    desc, _ = package_lifecycle.load_package_descriptor()
+    assert m_data.get("version") == desc.version
 
 
 def test_cli_lifecycle_prove(tmp_path: Path) -> None:

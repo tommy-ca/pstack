@@ -79,6 +79,15 @@ class ForeignSourceError(RuntimeError):
     """Raised when a write would clobber a deploy tree pstack does not own."""
 
 
+# The one record of the retired Grok-specific release label (#699). A tree that
+# still carries it is not silently accepted and not reported as a generic
+# mismatch: the check names the retirement and the upgrade command that
+# converges it. Entries are permanent history; never delete one.
+RETIRED_VERSIONS = {
+    "0.15.29-grokbuild.0": "the Grok-specific release label; the package identity is now host-neutral",
+}
+
+
 def _traverses_symlink(path: Path) -> bool:
     """True when `path` or any of its ancestors is a symlink.
 
@@ -412,8 +421,16 @@ def verify_plugin_at_dir(host: str, plugin_dir: Path, desc: Any) -> Tuple[bool, 
                     errors.append(f"Manifest name mismatch: {m_data.get('name')} != {desc.name}")
                 if host == "omp" and not isinstance(m_data.get("omp"), dict):
                     errors.append("OMP manifest is missing the package.json#omp key OMP enrolls packages with")
-            if m_data.get("version") != desc.version:
-                errors.append(f"Manifest version mismatch: {m_data.get('version')} != {desc.version}")
+            installed = m_data.get("version")
+            # A malformed manifest can carry a non-string here; only a string can
+            # name a retired identity, and the dict lookup would raise on the rest.
+            if isinstance(installed, str) and installed in RETIRED_VERSIONS:
+                errors.append(
+                    f"{host} carries retired version {installed} ({RETIRED_VERSIONS[installed]});"
+                    f" run `package-lifecycle.py update --host {host}` to converge on {desc.version}"
+                )
+            elif installed != desc.version:
+                errors.append(f"Manifest version mismatch: {installed} != {desc.version}")
         except Exception as e:
             errors.append(f"Manifest file corrupt: {e}")
 

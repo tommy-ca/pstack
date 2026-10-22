@@ -60,7 +60,7 @@ The no-write set is exactly `how-explorer`, `how-explainer`, `how-critics`, `int
 Feature: pstack-plugin-schema
 Rule: one adapter version across every tracked manifest surface
 
-The repository MUST keep the version in root `plugin.json`, `.grok-plugin/plugin.json`, `.codex-plugin/plugin.json`, and `.claude-plugin/plugin.json` equal. The first `pstack` entry in `.claude-plugin/marketplace.json` and `.agents/plugins/marketplace.json` MUST declare that same version. The root `plugin.json` version is authoritative; the contract MUST remain `MAJOR.MINOR.PATCH-grokbuild.N` and MUST NOT hardcode a historical version in the verification rule.
+The repository MUST keep the version in root `plugin.json`, `.grok-plugin/plugin.json`, `.codex-plugin/plugin.json`, and `.claude-plugin/plugin.json` equal. The first `pstack` entry in `.claude-plugin/marketplace.json` and `.agents/plugins/marketplace.json` MUST declare that same version. The root `plugin.json` version is authoritative; the contract MUST remain `MAJOR.MINOR.PATCH-LABEL.N` with a host-neutral `LABEL` and MUST NOT hardcode a historical version in the verification rule.
 
 #### Scenario: all tracked manifests match the root version
 
@@ -78,7 +78,7 @@ The repository MUST keep the version in root `plugin.json`, `.grok-plugin/plugin
 
 #### Scenario: version bumps update all surfaces without a historical constant
 
-- **GIVEN** root `plugin.json` changes to a new valid `MAJOR.MINOR.PATCH-grokbuild.N` version
+- **GIVEN** root `plugin.json` changes to a new valid `MAJOR.MINOR.PATCH-LABEL.N` version
 - **WHEN** the manifest verification test runs
 - **THEN** every tracked manifest must use the new root version
 - **AND** the test does not require a literal version string tied to one release

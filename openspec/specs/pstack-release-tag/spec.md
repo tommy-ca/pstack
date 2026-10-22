@@ -66,26 +66,27 @@ Rule: tag name is `v` plus `plugin.json` version at HEAD
 - **AND** a GitHub Release for that tag exists
 - **AND** the Release author is not required to be `github-actions`
 
-### Requirement: Version is SemVer with grokbuild adapter identity
+### Requirement: Version is SemVer with a host-neutral prerelease identity
 
 Feature: pstack-release-tag
 Rule: TagName is v plus plugin.json version
-Rule: identity is adapter lineage, not ship day
+Rule: identity is port lineage, not ship day and not one harness
 
-`plugin.json` version MUST match `MAJOR.MINOR.PATCH-grokbuild.N` (SemVer 2.0 prerelease). MAJOR.MINOR.PATCH tracks Cursor pstack when that is the overlay base. N is the grok-build adapter counter. The version MUST NOT be calendar-only (`YYYY.MM.DD`, `YYYY.MM.MICRO`) and MUST NOT use a date as the uniqueness key. Ship day belongs in GitHub Release notes (`--generate-notes`). Existing tags MUST NOT be moved.
+`plugin.json` version MUST match `MAJOR.MINOR.PATCH-LABEL.N` where `LABEL` is a lowercase host-neutral prerelease identifier (SemVer 2.0 prerelease). MAJOR.MINOR.PATCH tracks Cursor pstack when that is the overlay base. N is the port's own release counter. `LABEL` MUST NOT name a single harness: the package publishes one identity for every hosted adapter, so a harness token there makes that adapter globally normative (#699). The version MUST NOT be calendar-only (`YYYY.MM.DD`, `YYYY.MM.MICRO`) and MUST NOT use a date as the uniqueness key. Ship day belongs in GitHub Release notes (`--generate-notes`). Existing tags MUST NOT be moved.
 
-#### Scenario: live version encodes adapter lineage
+#### Scenario: live version encodes port lineage
 
 - **GIVEN** `plugin.json`
 - **WHEN** version is read
-- **THEN** it matches `MAJOR.MINOR.PATCH-grokbuild.N`
+- **THEN** it matches `MAJOR.MINOR.PATCH-LABEL.N`
+- **AND** `LABEL` is not the name of a single harness
 - **AND** it does not match a date-only CalVer string
 
 #### Scenario: date is not the tag identity
 
 - **GIVEN** a pstack release
 - **WHEN** the operator reads the version
-- **THEN** the string names grokbuild adapter identity
+- **THEN** the string names port lineage, not one harness and not the ship day
 - **AND** the ship day is on the GitHub Release, not required in the version
 
 ### Requirement: Adapter identity is not catalog sibling identity
@@ -94,20 +95,21 @@ Feature: pstack-release-tag
 Rule: one plugin, Cursor overlay lineage
 Rule: do not copy catalog name-in-version
 
-`plugin.json` version MUST remain `MAJOR.MINOR.PATCH-grokbuild.N`. It MUST NOT use catalog sibling grammar `MAJOR.MINOR.PATCH-<plugin-name>.N` and MUST NOT use `-pstack.N`. pstack is one plugin in one git repo. The grokbuild token is adapter lineage, not a package-name namespace. Catalog uniqueness is a different problem (many local plugins, one tag namespace) and MUST NOT be solved here. Existing tags MUST NOT be moved.
+`plugin.json` version MUST keep a host-neutral prerelease label. It MUST NOT use catalog sibling grammar `MAJOR.MINOR.PATCH-<plugin-name>.N` and MUST NOT use `-pstack.N`. pstack is one plugin in one git repo. The label is port lineage: not a package-name namespace and not a harness namespace. Catalog uniqueness is a different problem (many local plugins, one tag namespace) and MUST NOT be solved here. Existing tags MUST NOT be moved.
 
-#### Scenario: live version is grokbuild, not pstack-name
+#### Scenario: live version is host-neutral, not pstack-name
 
 - **GIVEN** `plugin.json`
 - **WHEN** version is read
-- **THEN** it matches `MAJOR.MINOR.PATCH-grokbuild.N`
+- **THEN** it matches `MAJOR.MINOR.PATCH-LABEL.N`
+- **AND** `LABEL` is not the name of a single harness
 - **AND** it does not end with `-pstack.N`
 
 #### Scenario: catalog grammar is not copied
 
 - **GIVEN** a later change that would unify with grok-build-plugins
 - **WHEN** pstack version is considered
-- **THEN** the grammar stays `MAJOR.MINOR.PATCH-grokbuild.N`
+- **THEN** the grammar stays `MAJOR.MINOR.PATCH-LABEL.N`
 - **AND** existing tags are not moved
 
 ### Requirement: pstack is a single-plugin git repo
@@ -123,7 +125,7 @@ pstack MUST remain the `tommy-ca/pstack` repository with `plugin.json` at the re
 - **GIVEN** `plugin.json` at the repository root
 - **WHEN** `grok plugin tag` runs from this checkout
 - **THEN** the tag is created in `tommy-ca/pstack`
-- **AND** the version grammar stays `MAJOR.MINOR.PATCH-grokbuild.N`
+- **AND** the version grammar stays `MAJOR.MINOR.PATCH-LABEL.N`
 
 #### Scenario: catalog nest is rejected
 
@@ -135,22 +137,22 @@ pstack MUST remain the `tommy-ca/pstack` repository with `plugin.json` at the re
 ### Requirement: Adapter counter advances when HEAD outruns the last tag
 
 Feature: pstack-release-tag
-Rule: never move an existing grokbuild tag
+Rule: never move an existing release tag
 Rule: later adapter work on the same Cursor base increments N
 
-When origin already has `vMAJOR.MINOR.PATCH-grokbuild.N` and `main` has later adapter work, the next release MUST set `plugin.json` to `MAJOR.MINOR.PATCH-grokbuild.(N+1)` and MUST tag that new version. The existing tag MUST stay on its original commit. The six tracked manifest surfaces MUST keep lockstep with the new root version. Nested grok MUST NOT be the tagger.
+When origin already has `vMAJOR.MINOR.PATCH-LABEL.N` and `main` has later adapter work, the next release MUST set `plugin.json` to `MAJOR.MINOR.PATCH-LABEL.(N+1)` and MUST tag that new version. The existing tag MUST stay on its original commit. The six tracked manifest surfaces MUST keep lockstep with the new root version. Nested grok MUST NOT be the tagger.
 
 #### Scenario: bump N instead of moving the last tag
 
-- **GIVEN** origin has tag `vMAJOR.MINOR.PATCH-grokbuild.N`
+- **GIVEN** origin has tag `vMAJOR.MINOR.PATCH-LABEL.N`
 - **AND** `main` has later adapter commits
 - **WHEN** the next pstack release is prepared
-- **THEN** root `plugin.json` version is `MAJOR.MINOR.PATCH-grokbuild.(N+1)`
-- **AND** tag `vMAJOR.MINOR.PATCH-grokbuild.N` still points at the commit it already had
+- **THEN** root `plugin.json` version is `MAJOR.MINOR.PATCH-LABEL.(N+1)`
+- **AND** tag `vMAJOR.MINOR.PATCH-LABEL.N` still points at the commit it already had
 
 #### Scenario: lockstep follows the new adapter counter
 
-- **GIVEN** root `plugin.json` is the new `MAJOR.MINOR.PATCH-grokbuild.(N+1)`
+- **GIVEN** root `plugin.json` is the new `MAJOR.MINOR.PATCH-LABEL.(N+1)`
 - **WHEN** the manifest verification test reads the six tracked version surfaces
 - **THEN** every surface equals the new root version
 
