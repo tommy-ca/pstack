@@ -320,31 +320,26 @@ def test_durable_refresh_drops_a_settlement_once_the_runtime_surface_moved(tmp_p
     previous = json.loads(durable_file.read_text(encoding="utf-8"))
     previous["surface_revisions"] = asdict(moved)
     durable_file.write_text(json.dumps(previous), encoding="utf-8")
+    durable_before = durable_file.read_bytes()
 
     verifier, receipt = _proof_bar_refresh(root, evidence_root)
-    verifier.evidence(receipt, update_durable=True)
-
-    durable = json.loads((evidence_root / "omp-receipt.json").read_text(encoding="utf-8"))
-    scenario = next(s for s in durable["scenarios"] if s["id"] == "runtime-child-spawn-omp")
-    assert scenario["evidence_level"] == "static"
-    assert scenario["settlement"] is None
-    assert scenario["preserved_from"] == ""
-    assert durable["planes"]["runtime"] == "UNTESTED"
-    assert derive_support_state(prof, root) == "packaged"
+    with pytest.raises(SystemExit) as exit_info:
+        verifier.evidence(receipt, update_durable=True)
+    assert "REFUSING to overwrite the durable receipt" in str(exit_info.value.code)
+    assert "runtime-child-spawn-omp" in str(exit_info.value.code)
+    assert durable_file.read_bytes() == durable_before
 
 
 def test_durable_refresh_does_not_paper_over_a_failing_run(tmp_path: Path) -> None:
     root, prof, evidence_root, _ = _omp_live_root(tmp_path)
+    durable_file = evidence_root / "omp-receipt.json"
+    durable_before = durable_file.read_bytes()
     verifier, receipt = _proof_bar_refresh(root, evidence_root, verdict="FAIL")
-    verifier.evidence(receipt, update_durable=True)
-
-    durable = json.loads((evidence_root / "omp-receipt.json").read_text(encoding="utf-8"))
-    scenario = next(s for s in durable["scenarios"] if s["id"] == "runtime-child-spawn-omp")
-    assert scenario["verdict"] == "FAIL"
-    assert scenario["evidence_level"] == "static"
-    assert scenario["preserved_from"] == ""
-    assert durable["planes"]["runtime"] == "FAIL"
-    assert derive_support_state(prof, root) == "packaged"
+    with pytest.raises(SystemExit) as exit_info:
+        verifier.evidence(receipt, update_durable=True)
+    assert "REFUSING to overwrite the durable receipt" in str(exit_info.value.code)
+    assert "runtime-child-spawn-omp" in str(exit_info.value.code)
+    assert durable_file.read_bytes() == durable_before
 
 
 def test_an_unreadable_durable_receipt_is_not_overwritten(tmp_path: Path) -> None:
