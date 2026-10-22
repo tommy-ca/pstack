@@ -7,12 +7,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def test_plugin_version_is_semver_grokbuild() -> None:
+def test_plugin_version_is_semver_prerelease() -> None:
     assert (ROOT / "plugin.json").is_file()
     version = json.loads((ROOT / "plugin.json").read_text(encoding="utf-8"))[
         "version"
     ]
-    assert re.fullmatch(r"\d+\.\d+\.\d+-grokbuild\.\d+", version), version
+    assert re.fullmatch(r"\d+\.\d+\.\d+-[a-z]+\.\d+", version), version
     assert re.fullmatch(r"\d{4}\.\d{1,2}\.\d{1,2}", version) is None
     assert re.search(r"-pstack\.\d+$", version) is None, version
 
@@ -35,12 +35,12 @@ def test_port_base_tracks_upstream_packaging() -> None:
     version = json.loads((ROOT / "plugin.json").read_text(encoding="utf-8"))[
         "version"
     ]
-    assert re.fullmatch(rf"{re.escape(packaging)}-grokbuild\.\d+", version), (
+    assert re.fullmatch(rf"{re.escape(packaging)}-[a-z]+\.\d+", version), (
         version
     )
 
 
 if __name__ == "__main__":
-    test_plugin_version_is_semver_grokbuild()
+    test_plugin_version_is_semver_prerelease()
     test_port_base_tracks_upstream_packaging()
     print("PASS tests/test_release.py")

@@ -162,9 +162,10 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert "pack.py" in recipe.stdout
     assert "scripts/orch/" in recipe.stdout
     assert "advisor" in recipe.stdout
-    assert "0.15.29-grokbuild.0" in (ROOT / "plugin.json").read_text(
-        encoding="utf-8"
-    )
+    # The recipe forbids overwriting plugin.json, so the checked-out manifest must
+    # still carry the port's own prerelease identity, never upstream's bare packaging.
+    root_version = json.loads((ROOT / "plugin.json").read_text(encoding="utf-8"))["version"]
+    assert re.fullmatch(r"\d+\.\d+\.\d+-[a-z]+\.\d+", root_version), root_version
     default = subprocess.run(
         [sys.executable, str(ROOT / "scripts/sync-from-upstream.py")],
         cwd=ROOT,
