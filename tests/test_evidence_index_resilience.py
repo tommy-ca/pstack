@@ -356,3 +356,18 @@ def test_a_denied_index_write_is_named_not_raised(tmp_path: Path) -> None:
     assert "Traceback" not in output
     assert index_file.read_bytes() == before
     assert "grok-receipt.json" in output
+
+
+def test_a_same_id_non_live_row_does_not_overwrite_prior_live_settlement(
+    tmp_path: Path,
+) -> None:
+    root, prof, evidence_root, _ = _omp_live_root(tmp_path)
+    durable = evidence_root / "omp-receipt.json"
+    durable_before = durable.read_bytes()
+    verifier, receipt = _proof_bar_refresh(root, evidence_root, verdict="FAIL")
+    assert any(s.id == "runtime-child-spawn-omp" and not s.evidence_level == "observed_live" for s in receipt.scenarios)
+    with pytest.raises(SystemExit) as exit_info:
+        verifier.evidence(receipt, update_durable=True)
+    assert "REFUSING to overwrite the durable receipt" in str(exit_info.value.code)
+    assert "runtime-child-spawn-omp" in str(exit_info.value.code)
+    assert durable.read_bytes() == durable_before

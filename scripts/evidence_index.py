@@ -147,10 +147,12 @@ def write_verification_evidence(
                     f"{type(err).__name__}: {err}. This run's receipt is at {receipt_file}."
                 )
             else:
+                prior = {s.id: s for s in previous.scenarios if _is_preservable_settlement(s)}
+                current_by_id = {c.id: c for c in receipt.scenarios}
                 dropped = [
-                    s.id
-                    for s in previous.scenarios
-                    if _is_preservable_settlement(s) and s.id not in {c.id for c in receipt.scenarios}
+                    sid
+                    for sid, prev in prior.items()
+                    if sid not in current_by_id or not _is_preservable_settlement(current_by_id[sid])
                 ]
                 if dropped:
                     sys.exit(
