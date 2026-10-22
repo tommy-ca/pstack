@@ -140,11 +140,13 @@ Each live lane runs in its own isolated worktree child at the PR head and drives
 
 **Build.**
 
-- [ ] Replace the scanner body with the arena winner recorded in Appendix A, keeping `run_scan`, `scan_file`, `is_exempt`, `extract_forbidden_vocabulary`, `Violation`, `Exemption`, `DEFAULT_EXEMPTIONS`, and `main`.
+- [ ] Replace the scanner body with candidate A from the arena, keeping `run_scan`, `scan_file`, `is_exempt`, `extract_forbidden_vocabulary`, `Violation`, `Exemption`, `DEFAULT_EXEMPTIONS`, and `main`.
+- [ ] Graft candidate B's per-occurrence allowance accounting, so an allowance cannot shelter a directive elsewhere on the same line.
+- [ ] Graft candidate B's CLI test that asserts a non-zero exit on a real leak.
 - [ ] Scope the negation test to the sentence that names the host, and delete the possessive and colon shape exemptions.
 - [ ] Move the display name to `scripts/host_identity.py`, and iterate every declared host instead of the one hardcoded name.
 - [ ] Express the reviewed prohibition as data that survives a line move. Delete `QUOTED_PROHIBITION_CARVE_OUTS` and the `ValueError` drift branch.
-- [ ] Derive install paths from `profiles/*/plugins_dir` and delete `HOST_INSTALL_PATHS`.
+- [ ] Derive install and overlay paths from `profiles/*/setup` and `plugins_dir`, including `~/.grok/roles`, and delete `HOST_INSTALL_PATHS`.
 - [ ] Fail closed on an unparsable profile and on an unreadable in-scope file.
 - [ ] Delete `ROUTING_IMPERATIVES`, and either make `--check` meaningful or delete the flag.
 
@@ -256,6 +258,8 @@ Each live lane runs in its own isolated worktree child at the PR head and drives
 
 - [ ] Land the #717 fixture-home work, then fix the remaining ambient read at `tests/test_verify_portable.py:301` by providing a fake `openspec` on PATH that answers only from the repository root.
 - [ ] Make the OMP native package tests independent of suite order by allocating a unique disposable directory per run and by refusing to read an ambient plugin mirror.
+- [ ] Localize the OMP failure that the full offline selection reproduces, since the same file passes alone and in the portable pair.
+- [ ] Remove the live antigravity mirror read in `tests/test_sync_antigravity_plugin.py`, which fails when paired with the OMP file because the repository carries skills the installed mirror lacks.
 - [ ] Add the order probe to CI so the interaction cannot return silently.
 
 **You see.**
@@ -314,6 +318,8 @@ Each live lane runs in its own isolated worktree child at the PR head and drives
 - [ ] Validate the host argument against the profile's declared host and reject path traversal.
 - [ ] Coerce the three boundary exceptions into `ValidationError`.
 - [ ] Drop the `effort` field where it is a pure function of `source`, or state why it stays.
+- [ ] Register `tests/test_setup_projection.py` in `.github/workflows/portability-offline.yml`, because a green gate currently says nothing about the new type.
+- [ ] Restamp every durable receipt this PR invalidates, or land after `evidence-truth` and restamp once, since the PR edits `portability_types.py` and the profiles that are hashed into `package_driver_revision`, `profile_hash`, and `skills_tree_hash`.
 
 **You see.**
 
@@ -477,11 +483,17 @@ Each live lane runs in its own isolated worktree child at the PR head and drives
 
 ## Appendix A. Prototype evidence
 
-The arena ran on the boundary gate at `1002590` with two candidates in separate worktrees, `arena/bnd-a` and `arena/bnd-b`, plus one cross-judge. The synthesis note records the base, the grafts, the rejected directions, and the verification result. The winning shape is the one `boundary-gate` builds.
+The arena ran on the boundary gate at `1002590` with two candidates in separate worktrees, `arena/bnd-a` and `arena/bnd-b`, and one cross-judge. Base is candidate A. A holds detection best, with 10 of 10 routing phrasings caught against 8 of 10, and 2 of 8 false positives on legal verb-bearing mentions against 7 of 8. Candidate B had the smaller surface, 385 lines against A's 446, and my first read picked B. The cross-judge picked A and the disagreement resolved on detection, which the rubric ranks first.
 
-The omp native package probe is the other prototype. `tests/test_omp_native_package.py` failed twice inside the full offline selection and passed twice in isolation, then passed after pairing with `tests/test_verify_portable.py` in the follow-up probe. That is the order dependence `hermetic-doctor` removes, and the raw runs are recorded in `04_evidence_truth.md` and in the program log.
+Two grafts from B into A. B's per-occurrence allowance accounting, because A's allowance shelters the whole line and lets `Hand the loop to Grok Build.` pass beside the sanctioned sentence. B's CLI leak test, because A's suite never proves a non-zero exit.
 
-Unproven and carried as open. Whether the harness can accept a model override per child, because the host rejected the field on this run. Whether the six-host runtime claims survive a live run on this machine, because no live run was attempted.
+Neither candidate met two rubric criteria, so both are build steps rather than grafts. Fail closed on an unparsable profile and an unreadable file. Narrow or delete the `skills/setup-pstack/**` exemption.
+
+Both candidates independently found and fixed the same two real directives, `skills/reflect/SKILL.md:56` and `skills/automate-me/SKILL.md:67`. Two independent attempts converging on the same leak is corroboration that the old gate was blind to it.
+
+The omp native package probe is the other prototype. `tests/test_omp_native_package.py` failed inside the full offline selection, passed twice alone, and passed when paired with `tests/test_verify_portable.py`. The pair with `tests/test_sync_antigravity_plugin.py` failed one test instead, and its dump shows repository skills missing from the live antigravity mirror. So there are two ambient defects, not one, and the OMP one is not yet localized. `hermetic-doctor` owns both.
+
+Unproven and carried as open. Whether the harness accepts a per-child model override, because this host rejected the field, which is why arena and panel family diversity is `DEGRADED`. Whether the six-host runtime claims survive a live run on this machine, because none was attempted.
 
 ## Appendix B. Alternatives rejected
 

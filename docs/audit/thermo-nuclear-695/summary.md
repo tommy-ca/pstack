@@ -57,6 +57,8 @@ The routing detector matches phrasing. `"hand to Grok Build's /create-skill and 
 
 The negation check spans the whole line. `"Do not use host emulation. Open Grok Build plugins first."` returns `None`, so a live directive passes whenever an unrelated negated verb appears earlier in the line.
 
+The vocabulary misses the overlay path the setup skill writes. `~/.grok/roles` is not in the 31-item vocabulary at `1002590`, and the file that names it, `skills/setup-pstack/SKILL.md`, is exempt from the scan. A panel seat wrote a `~/.grok/roles/pstack:feature.toml` write instruction into a shared surface and the gate exited 0. So the gate cannot see the write path that the setup skill exists to make.
+
 Verified by me. Consumer search: `tests/test_scan_host_boundary.py` imports the module through `importlib` and calls `run_scan`, `scan_file`, `is_exempt`, `extract_forbidden_vocabulary`. `scripts/verify-portable.py` doctor calls the CLI. Behavior pin: the gate still fails on an install path, a bare routing directive, a per-host primitive, and a concrete default model.
 
 Full analysis: [`02_boundary_gate.md`](02_boundary_gate.md).
@@ -82,6 +84,8 @@ Full analysis: [`02_boundary_gate.md`](02_boundary_gate.md).
 `profiles/*.json#setup` now declares `catalog`, `overlay`, and `skill` per host, and `resolve_setup_projection` is the only reader. `git grep` on `pr-719` shows zero production callers: the tests call it, and `skills/setup-pstack/SKILL.md:30` documents the command. The writers still hardcode the same paths in four places (`adapt-harness.py:44`, `scan-host-boundary.py:152`, `setup_pstack.py:172-193`, `project-package.py`), so the declaration and the writes can disagree without any test noticing. A new host requires hand edits in four files while the profile claims to be the single source.
 
 Verified by me by grepping callers and the literals. Remedy: derive the install-path table and the projection targets from `profiles/*/setup`, and delete the four literal sites. Net obligation removed: one declaration that no code obeys.
+
+Two consequences follow. First, `tests/test_setup_projection.py` is the only suite covering the new type and it appears in no workflow, so a green #719 says nothing about the feature it adds. Confirmed by `grep -rn test_setup_projection .github/workflows/`, which is empty. Second, the PR edits files that are hashed into `package_driver_revision`, `profile_hash`, and `skills_tree_hash`, so it invalidates every durable receipt while `refresh-static --host omp` refuses to repair them. Any `setup-projection` PR must restamp receipts in the same change or land after the evidence fix.
 
 Full analysis: [`05_pr719_setup_core.md`](05_pr719_setup_core.md).
 
@@ -155,8 +159,24 @@ The recursive plan carries the identifiers and dependencies. Order by dependency
 6. `gate-reconcile` last. Restate #706 against the merged heads and record the independent verdicts this run produced.
 7. `version-identity` stays outside the ceiling. #699 needs a SemVer decision that is the operator's.
 
-## 5. Evidence status
+## 5. Method and evidence
 
-Baseline at `1002590` with the CI gate selection, run by me. 836 passed, 2 failed, 10 skipped. The two failures are `tests/test_omp_native_package.py`, which passes in isolation twice and after the pair probe. That is an order-dependent gate, not a broken commit, and it belongs to the hermeticity section.
+The review ran eight read-only lanes, each on one seam, at the pinned revision. Seven returned and their reports are this directory's detail files. The eighth, on PR #717, returned after the first summary draft and its report is `08_pr717_hermetic.md`.
 
-Lane reports are the detail files in this directory. Each carries the commands and the probes its findings rest on. Findings marked verified by me were re-run or re-read by me at the cited revision. Findings marked lane-verified carry one lane's probe and no replication, and the plan treats them as work to confirm before merge.
+An arena ran on the boundary gate with two candidates in separate worktrees and one cross-judge. The cross-judge picked candidate A and I had picked B on a first read. The disagreement resolved on detection quality, which the rubric ranks first, so the base is A with two grafts from B. The record is `09_arena_boundary_gate.md`.
+
+Two adversarial seats ran the same frozen pack. Both independently reproduced the evidence refusal and the gate's token-list blind spot. The synthesis is `10_interrogate_panel.md`.
+
+Family diversity is `DEGRADED` for the arena and the panel. This host rejected a per-child model override, so candidates, judge, and reviewers ran on one model family. The head count of independent contexts is real. The claim of cross-family independence is not made.
+
+## 6. Evidence status
+
+Baseline at `1002590` with the CI gate selection, run by me. 836 passed, 2 failed, 10 skipped, in 149 seconds. Both failures are in `tests/test_omp_native_package.py`.
+
+The same SHA does not always produce the same result, and I probed it four ways.
+
+The OMP package file alone passed twice, 5 passed and 2 skipped each run. The OMP package file paired with `tests/test_verify_portable.py` passed, 39 passed and 2 skipped, in 606 seconds. The OMP package file paired with `tests/test_sync_antigravity_plugin.py` failed one test, 40 passed and 2 skipped, and the failure dump shows skill entries present in the repository and absent from the live antigravity mirror.
+
+That last result localizes a second ambient defect rather than the OMP one. `test_sync_antigravity_plugin.py` compares the repository against a live install under the developer home, which is the #709 defect class in a file the #709 fix did not touch. The OMP failure in the full selection remains order-dependent and not yet localized, which is enough to say the gate is nondeterministic at a fixed SHA. Both are carried in `hermetic-doctor`, and the plan requires the localization before that PR ships.
+
+Lane reports are the detail files in this directory. Each carries the commands and the probes its findings rest on. Findings marked verified by me were re-run or re-read by me at the cited revision. Findings marked lane-verified or panel-verified carry one reader's probe and no replication, and the plan treats them as work to confirm before merge.
