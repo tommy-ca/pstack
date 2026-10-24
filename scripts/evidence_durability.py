@@ -80,6 +80,77 @@ def preserve_observed_settlements(
     return Preservation(preserved, dropped)
 
 
+def get_live_remedy(host: str) -> str:
+    """Return the recommended command to run live verification for a host."""
+    if host == "omp":
+        return f"PSTACK_RUN_OMP_LIVE=1 python3 scripts/verify-portable.py run --host {host}"
+    return f"python3 scripts/verify-portable.py run --host {host}"
+
+
+@dataclass(frozen=True)
+class SettlementUpdateDecision:
+    """Decision on how to update durable evidence given prior and current receipts."""
+
+    action: str  # "write" | "keep_live" | "refuse"
+    preserved: List[str]
+    dropped: List[str]
+    message: Optional[str] = None
+    previous: Optional[VerificationReceipt] = None
+
+
+def evaluate_durable_settlement_update(
+    durable_file: Path,
+    current: VerificationReceipt,
+    receipt_file: Path,
+    *,
+    allow_keep_live: bool = False,
+) -> SettlementUpdateDecision:
+    """Evaluate durable receipt settlement preservation and return a settlement update decision."""
+    try:
+        previous = VerificationReceipt(**json.loads(durable_file.read_text(encoding="utf-8")))
+        preservation = preserve_observed_settlements(previous, current)
+    except Exception as err:
+        return SettlementUpdateDecision(
+            action="refuse",
+            preserved=[],
+            dropped=[],
+            message=(
+                f"REFUSING to overwrite the durable receipt at {durable_file}: "
+                f"{type(err).__name__}: {err}. This run's receipt is at {receipt_file}."
+            ),
+        )
+
+    if preservation.dropped:
+        if allow_keep_live:
+            return SettlementUpdateDecision(
+                action="keep_live",
+                preserved=preservation.preserved,
+                dropped=preservation.dropped,
+                previous=previous,
+            )
+        remedy = get_live_remedy(current.host)
+        return SettlementUpdateDecision(
+            action="refuse",
+            preserved=preservation.preserved,
+            dropped=preservation.dropped,
+            message=(
+                f"REFUSING to overwrite the durable receipt at {durable_file}: "
+                f"prior observed_live settlement(s) {', '.join(preservation.dropped)} from "
+                f"{previous.run_id} would be lost with no live attempt at the same id. Re-run "
+                f"live proof with {remedy}, or refresh a host with no live rows. This run's receipt is at "
+                f"{receipt_file}."
+            ),
+            previous=previous,
+        )
+
+    return SettlementUpdateDecision(
+        action="write",
+        preserved=preservation.preserved,
+        dropped=[],
+        previous=previous,
+    )
+
+
 def _row_receipt(binding: Binding, root: Path) -> Optional[VerificationReceipt]:
     if binding.verification_status != "verified":
         return None
