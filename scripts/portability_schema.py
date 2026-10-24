@@ -7,8 +7,13 @@ statically for modular decomposition and backwards compatibility (#603).
 from __future__ import annotations
 
 import os
+import sys
 from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional, Tuple
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from scripts.host_identity import (
     KNOWN_HOSTS,
@@ -59,6 +64,7 @@ from scripts.portability_types import (
     _is_observed_settlement,
     reduce_verdicts,
     settle_planes,
+    validate_profile_file,
 )
 from scripts.surface_revisions import (
     DOCSTRING_CONSUMED_DRIVERS,
@@ -157,4 +163,35 @@ __all__ = [
     "reduce_verdicts",
     "require_builtin_host_keys",
     "settle_planes",
+    "validate_profile_file",
 ]
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = sys.argv[1:] if argv is None else argv
+    if not args:
+        print("Usage: python3 scripts/portability_schema.py validate <profile-path>", file=sys.stderr)
+        return 2
+
+    cmd = args[0]
+    target = args[1] if len(args) > 1 else None
+    if cmd == "validate" and target:
+        profile_path = target
+    elif cmd != "validate":
+        profile_path = cmd
+    else:
+        print("Usage: python3 scripts/portability_schema.py validate <profile-path>", file=sys.stderr)
+        return 2
+
+    try:
+        validate_profile_file(profile_path)
+        print(f"PASS: {profile_path} is a valid harness profile")
+        return 0
+    except Exception as err:
+        print(f"ERROR: Invalid harness profile at {profile_path}: {err}", file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+

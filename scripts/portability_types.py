@@ -516,6 +516,66 @@ class HarnessProfile:
             current_revisions=current_revisions,
         )
 
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> HarnessProfile:
+        if not isinstance(data, dict):
+            raise ValidationError(f"Profile data must be a dict, got {type(data).__name__}")
+        if "host" not in data or "support_state" not in data:
+            raise ValidationError("Profile data must contain 'host' and 'support_state'")
+
+        try:
+            bindings = [
+                b if isinstance(b, Binding) else Binding(**b)
+                for b in data.get("bindings", [])
+            ]
+            evidence_ledger = [
+                e if isinstance(e, Evidence) else Evidence(**e)
+                for e in data.get("evidence_ledger", [])
+            ]
+            pkg_desc = data.get("package_descriptor")
+            if isinstance(pkg_desc, dict):
+                pkg_desc = PackageDescriptor(**pkg_desc)
+        except TypeError as err:
+            raise ValidationError(f"Malformed profile nested structure: {err}") from err
+
+        return cls(
+            host=data["host"],
+            support_state=data["support_state"],
+            bindings=bindings,
+            skills_dir=data.get("skills_dir"),
+            plugins_dir=data.get("plugins_dir"),
+            plugin_manifest=data.get("plugin_manifest"),
+            package_descriptor=pkg_desc,
+            evidence_ledger=evidence_ledger,
+            tool_mappings=data.get("tool_mappings"),
+            skill_order=data.get("skill_order"),
+            runtime_conventions=data.get("runtime_conventions"),
+            setup=data.get("setup"),
+        )
+
+    @classmethod
+    def from_file(cls, path: str | Path) -> HarnessProfile:
+        import json
+
+        p = Path(path)
+        if not p.is_file():
+            raise ValidationError(f"Profile file not found: {p}")
+        try:
+            data = json.loads(p.read_text(encoding="utf-8"))
+        except Exception as err:
+            raise ValidationError(f"Corrupt or unreadable profile at {p}: {err}") from err
+        if not isinstance(data, dict):
+            raise ValidationError(f"Profile JSON at {p} must be an object")
+        return cls.from_dict(data)
+
+
+def validate_profile_file(path: str | Path) -> HarnessProfile:
+    """Validate that a profile JSON file exists, parses, and conforms to schema."""
+    profile = HarnessProfile.from_file(path)
+    profile.validate()
+    return profile
+
+
 
 PLANE_SURFACE_DEPENDENCIES: Dict[str, Tuple[str, ...]] = {
     "canonical": (

@@ -36,7 +36,7 @@ def _active_openspec_changes(cwd: Optional[str] = None) -> list[str] | None:
     try:
         listed = subprocess.run(
             ["openspec", "list", "--json"], capture_output=True, text=True, check=False,
-            cwd=cwd,
+            cwd=cwd if cwd is not None else _repo_root(),
         )
         if listed.returncode != 0:
             return None
@@ -115,3 +115,22 @@ def validate_openspec_change(
     for entry in resolution.names:
         print(f"  - {entry}", file=sys.stderr)
     return 1
+
+
+def main(argv: Optional[List[str]] = None) -> int:
+    args = sys.argv[1:] if argv is None else argv
+    if args and args[0] in ("-h", "--help"):
+        print("Usage: python3 scripts/openspec_change.py [--change] [CHANGE]", file=sys.stdout)
+        return 0
+    if args and args[0] == "--change":
+        change = args[1] if len(args) > 1 else None
+    elif args and args[0] == "validate":
+        change = args[1] if len(args) > 1 else None
+    else:
+        change = args[0] if args else None
+    return validate_openspec_change(change)
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+

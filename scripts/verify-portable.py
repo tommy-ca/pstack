@@ -369,7 +369,6 @@ class PortableVerifier:
         state, change_name, active_names = resolve_openspec_change(
             self.change, active_resolver=lambda: _active_openspec_changes(cwd=str(ROOT))
         )
-        helper = "import sys; from scripts.openspec_change import validate_openspec_change; sys.exit(validate_openspec_change(sys.argv[1]))"
         r2: Optional[ScenarioResult] = None
         if state in ("explicit", "active"):
             assert change_name is not None
@@ -377,7 +376,7 @@ class PortableVerifier:
                 "doctor-openspec-validation",
                 f"Verify {change_name} openspec change passes schema checks",
                 "canonical",
-                [sys.executable, "-c", helper, change_name],
+                [sys.executable, str(ROOT / "scripts" / "openspec_change.py"), change_name],
                 env=env,
             )
         elif state == "lookup-failed":
@@ -459,7 +458,7 @@ class PortableVerifier:
                 f"doctor-profile-{self.host}",
                 f"Validate typed harness profile for {self.host}",
                 "adapter",
-                [sys.executable, "-c", f"import json; from pathlib import Path; from scripts.portability_schema import HarnessProfile, Binding, Evidence; d = json.loads(Path('{profile_file}').read_text()); b = [Binding(**x) for x in d.get('bindings', [])]; e = [Evidence(**x) for x in d.get('evidence_ledger', [])]; HarnessProfile(host=d['host'], support_state=d['support_state'], bindings=b, skills_dir=d.get('skills_dir'), plugins_dir=d.get('plugins_dir'), plugin_manifest=d.get('plugin_manifest'), evidence_ledger=e, tool_mappings=d.get('tool_mappings'), skill_order=d.get('skill_order'), runtime_conventions=d.get('runtime_conventions'), setup=d.get('setup')).validate()"],
+                [sys.executable, str(ROOT / "scripts" / "portability_schema.py"), "validate", str(profile_file)],
                 env=env,
             )
             passed = passed and (r5.verdict == "PASS")
