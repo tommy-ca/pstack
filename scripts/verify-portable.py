@@ -538,7 +538,12 @@ class PortableVerifier:
         )
         return receipt
 
-    def evidence(self, receipt: VerificationReceipt, update_durable: bool = True) -> Path:
+    def evidence(
+        self,
+        receipt: VerificationReceipt,
+        update_durable: bool = True,
+        allow_keep_live: bool = False,
+    ) -> Path:
         """Step 5: Write structured run evidence receipt and optionally durable pointer."""
         return write_verification_evidence(
             receipt,
@@ -546,6 +551,7 @@ class PortableVerifier:
             run_dir=self.run_dir,
             host=self.host,
             update_durable=update_durable,
+            allow_keep_live=allow_keep_live,
         )
 
 
@@ -631,7 +637,8 @@ def main() -> None:
             # Same rule as `run`: a candidate host has no durable receipt to refresh,
             # while every mapped/packaged host records the static planes it does prove.
             update_durable = claimed_state != "candidate"
-            verifier.evidence(receipt, update_durable=update_durable)
+            allow_keep_live = (args.host == "all")
+            verifier.evidence(receipt, update_durable=update_durable, allow_keep_live=allow_keep_live)
             receipts.append(receipt)
             all_pass = all_pass and ok
 
