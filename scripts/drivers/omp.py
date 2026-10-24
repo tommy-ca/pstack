@@ -222,8 +222,14 @@ class OMPDriver(HarnessDriver):
 
     @staticmethod
     def _attempted(result: DriverScenarioResult) -> DriverScenarioResult:
-        """Mark a row as produced by an attempted live gate arm, not a static contract check."""
-        result.live_attempted = True
+        """Mark a row as produced by an attempted live gate arm, not a static contract check.
+
+        Only a run that actually executed against a live model or provider is marked attempted;
+        an environmental or route-missing BLOCKED result is not an attempt and must not overwrite
+        prior observed_live settlements (#729).
+        """
+        if result.verdict != "BLOCKED":
+            result.live_attempted = True
         return result
 
     def get_binary_path(self) -> Optional[Path]:
