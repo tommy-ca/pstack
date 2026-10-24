@@ -156,106 +156,24 @@ def execute_driver_scenarios(
 ) -> List[ScenarioResult]:
     results: List[ScenarioResult] = []
 
-    sc_disc = driver.discover(verifier.run_dir)
-    results.append(
-        ScenarioResult(
-            id=sc_disc.scenario_id,
-            description=sc_disc.description,
-            plane="runtime",
-            command=sc_disc.command,
-            exit_code=sc_disc.exit_code,
-            stdout_snippet=sc_disc.stdout_snippet,
-            verdict=sc_disc.verdict,
-            duration_s=sc_disc.duration_s,
-            evidence_level=sc_disc.evidence_level,
-            live_attempted=sc_disc.live_attempted,
-        )
-    )
+    results.append(ScenarioResult.from_driver_result(driver.discover(verifier.run_dir)))
 
     target_playbook = feature or "feature"
-    sc_route = driver.route_playbook(target_playbook, verifier.run_dir)
     results.append(
-        ScenarioResult(
-            id=sc_route.scenario_id,
-            description=sc_route.description,
-            plane="runtime",
-            command=sc_route.command,
-            exit_code=sc_route.exit_code,
-            stdout_snippet=sc_route.stdout_snippet,
-            verdict=sc_route.verdict,
-            duration_s=sc_route.duration_s,
-            evidence_level=sc_route.evidence_level,
-            live_attempted=sc_route.live_attempted,
+        ScenarioResult.from_driver_result(
+            driver.route_playbook(target_playbook, verifier.run_dir)
         )
     )
 
-    sc_spawn = driver.child_spawn(verifier.run_dir)
-    results.append(
-        ScenarioResult(
-            id=sc_spawn.scenario_id,
-            description=sc_spawn.description,
-            plane="runtime",
-            command=sc_spawn.command,
-            exit_code=sc_spawn.exit_code,
-            stdout_snippet=sc_spawn.stdout_snippet,
-            verdict=sc_spawn.verdict,
-            duration_s=sc_spawn.duration_s,
-            evidence_level=sc_spawn.evidence_level,
-            settlement=sc_spawn.settlement,
-            live_attempted=sc_spawn.live_attempted,
-        )
-    )
+    results.append(ScenarioResult.from_driver_result(driver.child_spawn(verifier.run_dir)))
 
     if verifier.host == "omp":
-        sc_cancel = driver.child_cancel(verifier.run_dir)
         results.append(
-            ScenarioResult(
-                id=sc_cancel.scenario_id,
-                description=sc_cancel.description,
-                plane="runtime",
-                command=sc_cancel.command,
-                exit_code=sc_cancel.exit_code,
-                stdout_snippet=sc_cancel.stdout_snippet,
-                verdict=sc_cancel.verdict,
-                duration_s=sc_cancel.duration_s,
-                evidence_level=sc_cancel.evidence_level,
-                settlement=sc_cancel.settlement,
-                live_attempted=sc_cancel.live_attempted,
-            )
+            ScenarioResult.from_driver_result(driver.child_cancel(verifier.run_dir))
         )
 
-    sc_iso = driver.isolation(verifier.run_dir)
-    results.append(
-        ScenarioResult(
-            id=sc_iso.scenario_id,
-            description=sc_iso.description,
-            plane="runtime",
-            command=sc_iso.command,
-            exit_code=sc_iso.exit_code,
-            stdout_snippet=sc_iso.stdout_snippet,
-            verdict=sc_iso.verdict,
-            duration_s=sc_iso.duration_s,
-            evidence_level=sc_iso.evidence_level,
-            settlement=sc_iso.settlement,
-            live_attempted=sc_iso.live_attempted,
-        )
-    )
+    results.append(ScenarioResult.from_driver_result(driver.isolation(verifier.run_dir)))
 
-    sc_ev = driver.evidence_capture(verifier.run_dir)
-    results.append(
-        ScenarioResult(
-            id=sc_ev.scenario_id,
-            description=sc_ev.description,
-            plane="runtime",
-            command=sc_ev.command,
-            exit_code=sc_ev.exit_code,
-            stdout_snippet=sc_ev.stdout_snippet,
-            verdict=sc_ev.verdict,
-            duration_s=sc_ev.duration_s,
-            evidence_level=sc_ev.evidence_level,
-            settlement=sc_ev.settlement,
-            live_attempted=sc_ev.live_attempted,
-        )
-    )
+    results.append(ScenarioResult.from_driver_result(driver.evidence_capture(verifier.run_dir)))
 
     return results

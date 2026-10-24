@@ -377,3 +377,39 @@ def test_omp_isolation_residue_detects_untracked_files_with_show_untracked_files
 
     residue = _isolation_residue(repo, tmp_path / "worktrees")
     assert residue["tree_clean"] is False, "Untracked child file must prevent tree_clean even when showUntrackedFiles=no"
+
+
+def test_driver_scenario_result_to_scenario_result_mapping() -> None:
+    from scripts.drivers.base import DriverScenarioResult
+    from scripts.portability_types import ScenarioResult
+
+    driver_res = DriverScenarioResult(
+        scenario_id="runtime-child-spawn-omp",
+        description="Prove native child spawn",
+        command="omp spawn",
+        exit_code=0,
+        stdout="child spawned successfully",
+        stderr="",
+        verdict="PASS",
+        duration_s=1.23,
+        evidence_level="observed_live",
+        settlement={"child_id": "c-123", "terminal_outcome": "success"},
+        live_attempted=True,
+    )
+
+    sc = ScenarioResult.from_driver_result(driver_res)
+    assert sc.id == "runtime-child-spawn-omp"
+    assert sc.description == "Prove native child spawn"
+    assert sc.plane == "runtime"
+    assert sc.command == "omp spawn"
+    assert sc.exit_code == 0
+    assert sc.stdout_snippet == "child spawned successfully"
+    assert sc.verdict == "PASS"
+    assert sc.duration_s == 1.23
+    assert sc.evidence_level == "observed_live"
+    assert sc.settlement == {"child_id": "c-123", "terminal_outcome": "success"}
+    assert sc.live_attempted is True
+
+    sc2 = driver_res.to_scenario_result(plane="runtime")
+    assert sc2 == sc
+
