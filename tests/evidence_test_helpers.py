@@ -221,8 +221,8 @@ def _omp_spawn_scenario(
 def _omp_live_root(tmp_path: Path) -> tuple:
     root = tmp_path / "repo"
     (root / ".omp-plugin").mkdir(parents=True)
-    (root / "pstack.package.json").write_text("{}", encoding="utf-8")
-    (root / ".omp-plugin" / "package.json").write_text("{}", encoding="utf-8")
+    (root / "pstack.package.json").write_text(json.dumps({"version": "0.15.29"}), encoding="utf-8")
+    (root / ".omp-plugin" / "package.json").write_text(json.dumps({"version": "0.15.29"}), encoding="utf-8")
     evidence_root = root / ".audit" / "evidence"
     evidence_root.mkdir(parents=True)
     revisions = compute_surface_revisions(root, "omp")

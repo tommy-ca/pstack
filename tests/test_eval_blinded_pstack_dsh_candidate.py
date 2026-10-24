@@ -143,7 +143,13 @@ class TestDshCandidatePhase:
         assert recorded["corpus_version"] == live["corpus_version"]
         assert recorded["phase"] == live["phase"]
         assert recorded["verdict"] == live["verdict"]
-        assert recorded["provenance"]["probe_scope_hash"] == live["provenance"]["probe_scope_hash"] == _probe_scope_hash(ROOT), "recorded table must match the probe scope it reproduces"
+        expected_hash = _probe_scope_hash(ROOT)
+        re_record_cmd = "python3 scripts/eval_blinded_pstack.py --record-dsh"
+        assert recorded["provenance"]["probe_scope_hash"] == live["provenance"]["probe_scope_hash"] == expected_hash, (
+            f"recorded table must match the probe scope it reproduces. "
+            f"Candidate table has {recorded['provenance']['probe_scope_hash']}, live is {live['provenance']['probe_scope_hash']}, "
+            f"expected {expected_hash}. To update the recorded candidate table, run: `{re_record_cmd}`"
+        )
         assert recorded["provenance"] == live["provenance"]
         keys = (
             "total_cases",
@@ -282,3 +288,14 @@ def test_probe_scope_hash_fails_closed_on_an_unparseable_script(tmp_path: Path) 
 
     with pytest.raises(RecipeError, match="unparseable driver"):
         _probe_scope_hash(copy_root)
+
+
+def test_candidate_scope_hash_mismatch_message_names_record_dsh_command() -> None:
+    """#730: A probe scope hash mismatch failure message explicitly names the remediation command."""
+    re_record_cmd = "python3 scripts/eval_blinded_pstack.py --record-dsh"
+    with pytest.raises(AssertionError) as exc_info:
+        assert "hash_a" == "hash_b", (
+            f"recorded table must match the probe scope it reproduces. To update the recorded candidate table, run: `{re_record_cmd}`"
+        )
+    assert re_record_cmd in str(exc_info.value)
+
