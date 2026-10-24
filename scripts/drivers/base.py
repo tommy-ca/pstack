@@ -54,28 +54,9 @@ class DriverScenarioResult:
         )
 
 
-from scripts.portability_types import ScenarioResult
-
-if not hasattr(ScenarioResult, "from_driver_result"):
-    @classmethod
-    def _from_driver_result(cls: Any, res: Any, plane: str = "runtime") -> Any:
-        if hasattr(res, "to_scenario_result"):
-            return res.to_scenario_result(plane=plane)
-        return cls(
-            id=getattr(res, "scenario_id", getattr(res, "id", "")),
-            description=res.description,
-            plane=plane,
-            command=res.command,
-            exit_code=res.exit_code,
-            stdout_snippet=res.stdout_snippet,
-            verdict=res.verdict,
-            duration_s=res.duration_s,
-            evidence_level=getattr(res, "evidence_level", "offline"),
-            settlement=getattr(res, "settlement", None),
-            live_attempted=getattr(res, "live_attempted", False),
-        )
-
-    setattr(ScenarioResult, "from_driver_result", _from_driver_result)
+def to_scenario_result(result: DriverScenarioResult, plane: str = "runtime") -> Any:
+    """Convert a DriverScenarioResult to a ScenarioResult."""
+    return result.to_scenario_result(plane=plane)
 
 
 def find_executable(name: str, extra_search_dirs: Optional[List[Path]] = None) -> Optional[Path]:

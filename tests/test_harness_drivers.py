@@ -380,8 +380,7 @@ def test_omp_isolation_residue_detects_untracked_files_with_show_untracked_files
 
 
 def test_driver_scenario_result_to_scenario_result_mapping() -> None:
-    from scripts.drivers.base import DriverScenarioResult
-    from scripts.portability_types import ScenarioResult
+    from scripts.drivers.base import DriverScenarioResult, to_scenario_result
 
     driver_res = DriverScenarioResult(
         scenario_id="runtime-child-spawn-omp",
@@ -397,7 +396,7 @@ def test_driver_scenario_result_to_scenario_result_mapping() -> None:
         live_attempted=True,
     )
 
-    sc = ScenarioResult.from_driver_result(driver_res)
+    sc = driver_res.to_scenario_result(plane="runtime")
     assert sc.id == "runtime-child-spawn-omp"
     assert sc.description == "Prove native child spawn"
     assert sc.plane == "runtime"
@@ -410,6 +409,7 @@ def test_driver_scenario_result_to_scenario_result_mapping() -> None:
     assert sc.settlement == {"child_id": "c-123", "terminal_outcome": "success"}
     assert sc.live_attempted is True
 
-    sc2 = driver_res.to_scenario_result(plane="runtime")
+    sc2 = to_scenario_result(driver_res, plane="runtime")
     assert sc2 == sc
+
 
