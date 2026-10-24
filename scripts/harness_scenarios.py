@@ -156,24 +156,20 @@ def execute_driver_scenarios(
 ) -> List[ScenarioResult]:
     results: List[ScenarioResult] = []
 
-    results.append(ScenarioResult.from_driver_result(driver.discover(verifier.run_dir)))
+    results.append(driver.discover(verifier.run_dir).to_scenario_result())
 
     target_playbook = feature or "feature"
     results.append(
-        ScenarioResult.from_driver_result(
-            driver.route_playbook(target_playbook, verifier.run_dir)
-        )
+        driver.route_playbook(target_playbook, verifier.run_dir).to_scenario_result()
     )
 
-    results.append(ScenarioResult.from_driver_result(driver.child_spawn(verifier.run_dir)))
+    results.append(driver.child_spawn(verifier.run_dir).to_scenario_result())
 
     if verifier.host == "omp":
-        results.append(
-            ScenarioResult.from_driver_result(driver.child_cancel(verifier.run_dir))
-        )
+        results.append(driver.child_cancel(verifier.run_dir).to_scenario_result())
 
-    results.append(ScenarioResult.from_driver_result(driver.isolation(verifier.run_dir)))
+    results.append(driver.isolation(verifier.run_dir).to_scenario_result())
 
-    results.append(ScenarioResult.from_driver_result(driver.evidence_capture(verifier.run_dir)))
+    results.append(driver.evidence_capture(verifier.run_dir).to_scenario_result())
 
     return results
