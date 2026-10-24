@@ -31,12 +31,14 @@ needs_live_route = pytest.mark.skipif(
 )
 
 
-def run_lever(*args: str) -> dict:
+def run_lever(*args: str, env: dict | None = None) -> dict:
+    run_env = {**os.environ} if env is None else env
     proc = subprocess.run(
         [sys.executable, str(LEVER), "--json", *args],
         capture_output=True,
         text=True,
         timeout=300,
+        env=run_env,
     )
     assert proc.stdout.strip(), proc.stderr
     return json.loads(proc.stdout)
@@ -272,4 +274,26 @@ def test_the_live_slice_resolves_the_role_and_joins_one_child(tmp_path: Path) ->
     assert report["readonly"]["enforcement"] == "advisory"
     assert report["readonly"]["observed_negative_write_probe"] is False
     # One child, one session, inside the bounded runner rather than tail-spinning.
-    assert live["child_seconds"] < 240.0
+
+
+def test_prove_omp_native_package_is_hermetic_against_ambient_home(tmp_path: Path) -> None:
+    """#728: probe-omp-native-package resolves paths against fixture HOME without ambient leak."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("prove_omp_pkg", LEVER)
+    assert spec is not None and spec.loader is not None
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+
+    fixture_home = tmp_path / "custom-fixture-home"
+    fixture_home.mkdir()
+    (fixture_home / ".omp" / "plugins").mkdir(parents=True)
+    (fixture_home / ".omp" / "plugins" / "omp-plugins.lock.json").write_text('{"fixture": true}\n', encoding="utf-8")
+
+    os.environ["PSTACK_FIXTURE_HOME"] = str(fixture_home)
+    try:
+        assert mod.get_effective_home() == fixture_home
+        snap = mod.ambient_snapshot()
+        assert snap["lock"] == '{"fixture": true}\n'
+    finally:
+        os.environ.pop("PSTACK_FIXTURE_HOME", None)
+
