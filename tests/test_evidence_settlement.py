@@ -463,6 +463,68 @@ def test_a_settled_cancellation_survives_a_durable_refresh() -> None:
     assert preserve_observed_settlements(timed_out_previous, timed_out_current).preserved == []
 
 
+def test_route_missing_blocked_run_preserves_prior_observed_live_settlement() -> None:
+    """#729: an environmental BLOCKED run preserves prior observed_live PASS without overwriting."""
+    scenario_id = "runtime-child-spawn-omp"
+    prior_scenario = _observed_scenario(
+        scenario_id, settlement=_success_settlement()
+    )
+    previous = _adversarial_receipt(prior_scenario)
+
+    # 1. Blocked attempt (e.g. route missing): must preserve prior PASS
+    blocked_scenario = replace(
+        prior_scenario,
+        verdict="BLOCKED",
+        exit_code=1,
+        evidence_level="offline",
+        settlement=None,
+        live_attempted=False,
+        stdout_snippet="BLOCKED: no configured model route",
+    )
+    current_blocked_planes = settle_planes([blocked_scenario])
+    current_blocked = replace(
+        previous,
+        run_id="blocked-run",
+        planes=current_blocked_planes,
+        overall_verdict=reduce_verdicts(current_blocked_planes.values()),
+        scenarios=[blocked_scenario],
+    )
+    current_blocked.validate()
+
+    preservation = preserve_observed_settlements(previous, current_blocked)
+    assert preservation.preserved == [scenario_id]
+    assert preservation.dropped == []
+    assert current_blocked.scenarios[0].evidence_level == "observed_live"
+    assert current_blocked.scenarios[0].verdict == "PASS"
+    assert current_blocked.scenarios[0].preserved_from == previous.run_id
+
+    # 2. Executed live attempt that genuinely failed: must publish FAIL and NOT preserve prior PASS
+    failed_scenario = replace(
+        prior_scenario,
+        verdict="FAIL",
+        exit_code=1,
+        evidence_level="offline",
+        settlement=None,
+        live_attempted=True,
+        stdout_snippet="child failed",
+    )
+    current_failed_planes = settle_planes([failed_scenario])
+    current_failed = replace(
+        previous,
+        run_id="failed-run",
+        planes=current_failed_planes,
+        overall_verdict=reduce_verdicts(current_failed_planes.values()),
+        scenarios=[failed_scenario],
+    )
+    current_failed.validate()
+
+    preservation_failed = preserve_observed_settlements(previous, current_failed)
+    assert preservation_failed.preserved == []
+    assert preservation_failed.dropped == []
+    assert current_failed.scenarios[0].verdict == "FAIL"
+
+
+
 def test_a_cancellation_only_receipt_never_derives_verified(tmp_path: Path) -> None:
     root, prof = _synthetic_evidence_root(
         tmp_path,

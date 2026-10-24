@@ -59,7 +59,12 @@ def preserve_observed_settlements(
     if not previous.evaluate_plane_staleness(current.surface_revisions).get("runtime"):
         for i, scenario in enumerate(current.scenarios):
             candidate = prior.get(scenario.id)
-            if candidate is None or _is_preservable_settlement(scenario) or scenario.verdict != "PASS":
+            if candidate is None or _is_preservable_settlement(scenario):
+                continue
+            # A prior observed_live settlement is preserved when current is a static PASS
+            # or an environmental BLOCKED run (e.g. missing route / credentials, #729).
+            # A live FAIL represents a real executed attempt that failed and must be published.
+            if scenario.verdict not in ("PASS", "BLOCKED"):
                 continue
             current.scenarios[i] = replace(
                 candidate, preserved_from=candidate.preserved_from or previous.run_id
