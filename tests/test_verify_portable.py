@@ -924,4 +924,42 @@ def test_normalize_scenarios_replaces_worktree_paths() -> None:
     assert same == scenarios
 
 
+def test_run_verifier_action_doctor(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    import argparse
+    verifier = PortableVerifier("grok", tmp_path / "evidence")
+    args = argparse.Namespace(allow_stale=False, feature=None, host="grok")
+    receipt, ok = verify_portable.run_verifier_action(verifier, "doctor", args)
+    assert isinstance(receipt, VerificationReceipt)
+    assert ok is True
+
+
+def test_run_verifier_action_unknown(tmp_path: Path) -> None:
+    import argparse
+    verifier = PortableVerifier("grok", tmp_path / "evidence")
+    args = argparse.Namespace(allow_stale=False, feature=None, host="grok")
+    with pytest.raises(ValueError, match="Unknown verifier action"):
+        verify_portable.run_verifier_action(verifier, "invalid-action", args)
+
+
+def test_render_verification_summary(capsys: pytest.CaptureFixture) -> None:
+    receipt = VerificationReceipt(
+        run_id="run-1",
+        host="grok",
+        host_version="1.0",
+        timestamp="2026-10-24T00:00:00Z",
+        overall_verdict="PASS",
+        planes={"canonical": "PASS", "adapter": "PASS", "package": "PASS", "runtime": "PASS"},
+        surface_revisions=verify_portable.compute_surface_revisions(ROOT, "grok"),
+        scenarios=[],
+        artifacts=[],
+        claim="claim",
+    )
+    verify_portable.render_verification_summary("doctor", [receipt], all_pass=True)
+    out = capsys.readouterr().out
+    assert "Verification Summary" in out
+    assert "Host: grok" in out
+    assert "1-Harness Matrix Verdict: PASS" in out
+
+
+
 
