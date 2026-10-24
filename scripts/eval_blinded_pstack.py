@@ -790,8 +790,21 @@ def main() -> int:
         default=None,
         help="Optional path to output receipt JSON",
     )
+    parser.add_argument(
+        "--record-dsh",
+        action="store_true",
+        help="Re-record tests/fixtures/eval_corpus_dsh/scoring_table_candidate.json against current tree",
+    )
 
     args = parser.parse_args()
+
+    if args.record_dsh:
+        target = DSH_CORPUS_DIR / "scoring_table_candidate.json"
+        dsh_result = run_dsh_blinded_eval(DSH_CORPUS_DIR, ROOT, phase="candidate")
+        payload = asdict(dsh_result)
+        target.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+        print(f"Recorded DSH candidate scoring table: {target} (verdict: {dsh_result.verdict}, probe_scope_hash: {payload['provenance']['probe_scope_hash'][:12]}...)")
+        return 0 if dsh_result.verdict in ("PASS", "UNTESTED") else 1
 
     if args.dsh_corpus:
         dsh_result = run_dsh_blinded_eval(args.dsh_corpus, ROOT, args.dsh_phase)
