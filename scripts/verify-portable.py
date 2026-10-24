@@ -571,6 +571,78 @@ class PortableVerifier:
         )
 
 
+def run_verifier_action(
+    verifier: PortableVerifier, action: str, args: argparse.Namespace
+) -> Tuple[VerificationReceipt, bool]:
+    """Execute a single verifier action for one host and return (receipt, passed)."""
+    verifier.launch()
+
+    if action == "doctor":
+        ok = verifier.doctor(check_durability=not args.allow_stale, allow_stale=args.allow_stale)
+        receipt = verifier.proof_bar()
+        verifier.evidence(receipt, update_durable=False)
+        return receipt, ok
+
+    if action == "drive":
+        verifier.doctor(check_durability=False)
+        verifier.drive(feature=args.feature)
+        receipt = verifier.proof_bar()
+        verifier.evidence(receipt, update_durable=False)
+        return receipt, (receipt.planes.get("runtime") == "PASS")
+
+    if action == "run":
+        verifier.doctor(check_durability=False)
+        verifier.drive()
+        receipt = verifier.proof_bar()
+        profile_file = ROOT / "profiles" / f"{verifier.host}.json"
+        claimed_state = ""
+        if profile_file.is_file():
+            claimed_state = json.loads(profile_file.read_text(encoding="utf-8")).get("support_state", "")
+        update_durable = claimed_state != "candidate"
+        verifier.evidence(receipt, update_durable=update_durable)
+        return receipt, (receipt.overall_verdict == "PASS")
+
+    if action == "refresh-static":
+        ok = verifier.doctor(check_durability=False)
+        receipt = verifier.proof_bar()
+        profile_file = ROOT / "profiles" / f"{verifier.host}.json"
+        claimed_state = ""
+        if profile_file.is_file():
+            claimed_state = json.loads(profile_file.read_text(encoding="utf-8")).get("support_state", "")
+        update_durable = claimed_state != "candidate"
+        allow_keep_live = (args.host == "all")
+        verifier.evidence(receipt, update_durable=update_durable, allow_keep_live=allow_keep_live)
+        return receipt, ok
+
+    raise ValueError(f"Unknown verifier action: {action}")
+
+
+def render_verification_summary(
+    action: str, receipts: List[VerificationReceipt], all_pass: bool
+) -> None:
+    """Format and print the verification summary matrix table."""
+    print(f"\n================ Verification Summary ================")
+    for r in receipts:
+        if action in ("doctor", "refresh-static"):
+            status = reduce_verdicts(
+                r.planes.get(p, "UNTESTED") for p in ("canonical", "adapter", "package")
+            )
+        elif action == "drive":
+            status = "PASS" if (r.planes.get("runtime") == "PASS") else "FAIL"
+        else:
+            status = r.overall_verdict
+        print(
+            f"Host: {r.host:<12} | "
+            f"Canonical: {r.planes.get('canonical', 'N/A'):<4} | "
+            f"Adapter: {r.planes.get('adapter', 'N/A'):<4} | "
+            f"Package: {r.planes.get('package', 'N/A'):<4} | "
+            f"Runtime: {r.planes.get('runtime', 'N/A'):<4} | "
+            f"Status: {status}"
+        )
+    print(f"======================================================")
+    print(f"{len(receipts)}-Harness Matrix Verdict: {'PASS' if all_pass else 'FAIL'}\n")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("action", choices=["doctor", "drive", "run", "refresh-static", "check-evidence", "check-staleness", "select-checks"], help="Action to execute")
@@ -603,75 +675,12 @@ def main() -> None:
 
     for h in hosts:
         verifier = PortableVerifier(host=h, evidence_root=args.evidence_dir, change=args.change)
-        verifier.launch()
-
-        if args.action == "doctor":
-            ok = verifier.doctor(check_durability=not args.allow_stale, allow_stale=args.allow_stale)
-            receipt = verifier.proof_bar()
-            verifier.evidence(receipt, update_durable=False)
-            receipts.append(receipt)
-            all_pass = all_pass and ok
-
-        elif args.action == "drive":
-            verifier.doctor(check_durability=False)
-            verifier.drive(feature=args.feature)
-            receipt = verifier.proof_bar()
-            verifier.evidence(receipt, update_durable=False)
-            receipts.append(receipt)
-            # The matrix verdict reads the same runtime plane the printed status line
-            # does: an offline drive proves the wiring, not a child spawn/join, so its
-            # runtime plane is UNTESTED and never a PASS (#444).
-            all_pass = all_pass and (receipt.planes.get("runtime") == "PASS")
-
-        elif args.action == "run":
-            verifier.doctor(check_durability=False)
-            verifier.drive()
-            receipt = verifier.proof_bar()
-            profile_file = ROOT / "profiles" / f"{h}.json"
-            claimed_state = ""
-            if profile_file.is_file():
-                claimed_state = json.loads(profile_file.read_text(encoding="utf-8")).get("support_state", "")
-            # Candidate hosts carry no durable runtime receipt: model-backed
-            # capabilities are untested, so a durable PASS is never claimed.
-            update_durable = claimed_state != "candidate"
-            verifier.evidence(receipt, update_durable=update_durable)
-            receipts.append(receipt)
-            all_pass = all_pass and (receipt.overall_verdict == "PASS")
-
-        elif args.action == "refresh-static":
-            # Honest static refresh: run the static doctor planes only (no model route,
-            # no drive) and record them as the host's durable receipt. The receipt keeps
-            # runtime and overall UNTESTED, so the exit status has to come from the
-            # doctor result — a failing static plane stays FAIL and is never reported as
-            # the nominal UNTESTED the missing runtime plane alone would produce.
-            ok = verifier.doctor(check_durability=False)
-            receipt = verifier.proof_bar()
-            profile_file = ROOT / "profiles" / f"{h}.json"
-            claimed_state = ""
-            if profile_file.is_file():
-                claimed_state = json.loads(profile_file.read_text(encoding="utf-8")).get("support_state", "")
-            # Same rule as `run`: a candidate host has no durable receipt to refresh,
-            # while every mapped/packaged host records the static planes it does prove.
-            update_durable = claimed_state != "candidate"
-            allow_keep_live = (args.host == "all")
-            verifier.evidence(receipt, update_durable=update_durable, allow_keep_live=allow_keep_live)
-            receipts.append(receipt)
-            all_pass = all_pass and ok
+        receipt, ok = run_verifier_action(verifier, args.action, args)
+        receipts.append(receipt)
+        all_pass = all_pass and ok
 
     if args.action == "run" or len(hosts) > 1:
-        print(f"\n================ Verification Summary ================")
-        for r in receipts:
-            if args.action in ("doctor", "refresh-static"):
-                status = reduce_verdicts(
-                    r.planes.get(p, "UNTESTED") for p in ("canonical", "adapter", "package")
-                )
-            elif args.action == "drive":
-                status = "PASS" if (r.planes.get("runtime") == "PASS") else "FAIL"
-            else:
-                status = r.overall_verdict
-            print(f"Host: {r.host:<12} | Canonical: {r.planes.get('canonical', 'N/A'):<4} | Adapter: {r.planes.get('adapter', 'N/A'):<4} | Package: {r.planes.get('package', 'N/A'):<4} | Runtime: {r.planes.get('runtime', 'N/A'):<4} | Status: {status}")
-        print(f"======================================================")
-        print(f"{len(hosts)}-Harness Matrix Verdict: {'PASS' if all_pass else 'FAIL'}\n")
+        render_verification_summary(args.action, receipts, all_pass)
 
     sys.exit(0 if all_pass else 1)
 
