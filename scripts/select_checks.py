@@ -228,7 +228,7 @@ CHECK_SELECTION_TABLE: List[CheckRule] = [
     ),
     (
         "scripts/openspec_change.py",
-        ("tests/test_verify_portable.py",),
+        ("tests/test_openspec_change.py", "tests/test_verify_portable.py"),
         (),
     ),
     (

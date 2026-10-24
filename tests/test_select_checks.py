@@ -140,7 +140,7 @@ class TestCheckSelectionTable:
             ("scripts/portability_types.py", ["pytest:tests/test_evidence_durability.py", "pytest:tests/test_portability_schemas.py", "pytest:tests/test_verdict_reduction.py"]),
             ("scripts/harness_scenarios.py", ["pytest:tests/test_verify_portable.py"]),
             ("scripts/select_checks.py", ["pytest:tests/test_select_checks.py", "pytest:tests/test_verify_portable.py"]),
-            ("scripts/openspec_change.py", ["pytest:tests/test_verify_portable.py"]),
+            ("scripts/openspec_change.py", ["pytest:tests/test_openspec_change.py", "pytest:tests/test_verify_portable.py"]),
             ("scripts/evidence_index.py", ["pytest:tests/test_evidence_durability.py", "pytest:tests/test_evidence_index_resilience.py", "pytest:tests/test_verify_portable.py"]),
             ("scripts/model_role_resolver.py", ["pytest:tests/test_model_role_schema.py", "pytest:tests/test_model_role_constraints.py", "pytest:tests/test_model_role_profiles.py", "pytest:tests/test_setup_pstack.py"]),
             ("scripts/model_role_policy.py", ["pytest:tests/test_model_role_schema.py", "pytest:tests/test_model_role_constraints.py", "pytest:tests/test_model_role_profiles.py", "pytest:tests/test_setup_pstack.py"]),

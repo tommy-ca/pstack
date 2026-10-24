@@ -365,67 +365,6 @@ def test_portable_verifier_cli_failing_change_observable(tmp_path: Path) -> None
     assert res.returncode != 0
     assert "Verify nonexistent-target-change openspec change passes schema checks" in res.stdout or res.returncode == 1
 
-def test_validate_default_change_fallback_branches(monkeypatch: pytest.MonkeyPatch) -> None:
-    import scripts.openspec_change as oc
-
-    validate = verify_portable.validate_openspec_change
-
-    monkeypatch.setattr(oc, "_active_openspec_changes", lambda *a, **k: ["only-active"])
-    monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda *a, **k: ["only-active"])
-    seen: dict[str, list[str]] = {}
-    def _fake_run(*a: object, **k: object) -> subprocess.CompletedProcess[str]:
-        seen["argv"] = list(a[0]) if a else []
-        return subprocess.CompletedProcess(a, 0, "ok", "")
-    monkeypatch.setattr(verify_portable.subprocess, "run", _fake_run)
-    assert validate(None) == 0
-    assert seen.get("argv", [])[2] == "only-active"
-
-    monkeypatch.setattr(oc, "_active_openspec_changes", lambda *a, **k: [])
-    monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda *a, **k: [])
-    assert validate(None) == 0
-
-    monkeypatch.setattr(oc, "_active_openspec_changes", lambda *a, **k: None)
-    monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda *a, **k: None)
-    assert validate(None) == 1
-
-    monkeypatch.setattr(oc, "_active_openspec_changes", lambda *a, **k: ["a", "b"])
-    monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda *a, **k: ["a", "b"])
-    assert validate(None) == 1
-
-
-def test_validate_explicit_default_name_validates_that_name(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    validate = verify_portable.validate_openspec_change
-    name = "pstack-portability-contract"
-    seen: dict[str, list[str]] = {}
-    def _fake_run(*a: object, **k: object) -> subprocess.CompletedProcess[str]:
-        seen["argv"] = list(a[0]) if a else []
-        return subprocess.CompletedProcess(a, 0, "ok", "")
-    monkeypatch.setattr(verify_portable.subprocess, "run", _fake_run)
-    assert validate(name) == 0
-    assert seen.get("argv", [])[2] == name
-
-
-def test_resolution_states_are_distinct(monkeypatch: pytest.MonkeyPatch) -> None:
-    import scripts.openspec_change as oc
-
-    resolve = verify_portable.resolve_openspec_change
-    monkeypatch.setattr(oc, "_active_openspec_changes", lambda *a, **k: None)
-    monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda *a, **k: None)
-    assert resolve(None)[0] == "lookup-failed"
-    monkeypatch.setattr(oc, "_active_openspec_changes", lambda *a, **k: [])
-    monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda *a, **k: [])
-    assert resolve(None)[0] == "none"
-    monkeypatch.setattr(oc, "_active_openspec_changes", lambda *a, **k: ["one"])
-    monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda *a, **k: ["one"])
-    assert resolve(None)[:2] == ("active", "one")
-    monkeypatch.setattr(oc, "_active_openspec_changes", lambda *a, **k: ["a", "b"])
-    monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda *a, **k: ["a", "b"])
-    state, name, names = resolve(None)
-    assert (state, name, names) == ("ambiguous", None, ["a", "b"])
-    assert resolve("explicit-name")[:2] == ("explicit", "explicit-name")
-
 
 def test_doctor_labels_each_resolution_state(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
@@ -488,89 +427,6 @@ def test_change_named_like_a_flag_still_validates_as_a_name(
     scenario = next(s for s in verifier.scenarios if s.id == "doctor-openspec-validation")
     assert any(argv and argv[-1] == "--no-active-change" for argv in seen)
     assert scenario.verdict == "FAIL"
-
-
-@pytest.mark.parametrize("stdout", [
-    '{"changes": ["junk"]}',
-    '{"changes": [{}]}',
-    '{"changes": [{"name": ""}]}',
-    '{"changes": [{"name": 42}]}',
-    '{"changes": "junk"}',
-    'not json',
-])
-def test_active_changes_malformed_payload_is_lookup_failure(
-    monkeypatch: pytest.MonkeyPatch, stdout: str
-) -> None:
-    monkeypatch.setattr(
-        verify_portable.subprocess, "run",
-        lambda *a, **k: subprocess.CompletedProcess(a, 0, stdout, ""),
-    )
-    assert verify_portable._active_openspec_changes() is None
-    assert verify_portable.validate_openspec_change(None) == 1
-
-def test_active_changes_lookup_failure_modes(monkeypatch: pytest.MonkeyPatch) -> None:
-    def _rc1(*a: object, **k: object) -> subprocess.CompletedProcess[str]:
-        return subprocess.CompletedProcess(a, 1, "", "boom")
-    monkeypatch.setattr(verify_portable.subprocess, "run", _rc1)
-    assert verify_portable._active_openspec_changes() is None
-    assert verify_portable.validate_openspec_change(None) == 1
-
-    def _missing(*a: object, **k: object) -> subprocess.CompletedProcess[str]:
-        raise FileNotFoundError("no openspec binary")
-    monkeypatch.setattr(verify_portable.subprocess, "run", _missing)
-    assert verify_portable._active_openspec_changes() is None
-    assert verify_portable.validate_openspec_change(None) == 1
-
-
-def test_active_changes_empty_list_parses_to_noop(monkeypatch: pytest.MonkeyPatch) -> None:
-    import json as _json
-    monkeypatch.setattr(
-        verify_portable.subprocess, "run",
-        lambda *a, **k: subprocess.CompletedProcess(a, 0, _json.dumps({"changes": [], "root": {}}), ""),
-    )
-    assert verify_portable._active_openspec_changes() == []
-    assert verify_portable.validate_openspec_change(None) == 0
-
-
-def test_active_changes_all_complete_parses_to_none_noop(monkeypatch: pytest.MonkeyPatch) -> None:
-    import json as _json
-    completed_payload = {
-        "changes": [
-            {"name": "change-1", "status": "complete", "completedTasks": 5, "totalTasks": 5},
-            {"name": "change-2", "status": "complete", "completedTasks": 3, "totalTasks": 3},
-        ],
-        "root": {},
-    }
-    monkeypatch.setattr(
-        verify_portable.subprocess, "run",
-        lambda *a, **k: subprocess.CompletedProcess(a, 0, _json.dumps(completed_payload), ""),
-    )
-    assert verify_portable._active_openspec_changes() == []
-    resolution = verify_portable.resolve_openspec_change(None)
-    assert resolution.state == "none"
-    assert resolution.name is None
-    assert resolution.names == []
-    assert verify_portable.validate_openspec_change(None) == 0
-
-
-def test_active_changes_filters_out_completed_when_in_progress_exists(monkeypatch: pytest.MonkeyPatch) -> None:
-    import json as _json
-    mixed_payload = {
-        "changes": [
-            {"name": "change-complete", "status": "complete"},
-            {"name": "change-active", "status": "in-progress"},
-        ],
-        "root": {},
-    }
-    monkeypatch.setattr(
-        verify_portable.subprocess, "run",
-        lambda *a, **k: subprocess.CompletedProcess(a, 0, _json.dumps(mixed_payload), ""),
-    )
-    assert verify_portable._active_openspec_changes() == ["change-active"]
-    resolution = verify_portable.resolve_openspec_change(None)
-    assert resolution.state == "active"
-    assert resolution.name == "change-active"
-    assert resolution.names == []
 
 
 def test_verify_portable_modular_decomposition_and_backwards_compatibility() -> None:
@@ -743,39 +599,6 @@ def test_write_verification_evidence_in_isolation(tmp_path: Path) -> None:
 def test_cleanup_method_eliminated_from_portable_verifier() -> None:
     """PortableVerifier.cleanup() was a dead no-op method (#615)."""
     assert not hasattr(PortableVerifier, "cleanup")
-
-
-def test_change_resolution_frozen_dataclass_and_semantics() -> None:
-    """ChangeResolution is a frozen dataclass with Literal states and tuple compatibility (#615)."""
-    from dataclasses import FrozenInstanceError, is_dataclass
-    import scripts.openspec_change as oc
-
-    assert is_dataclass(oc.ChangeResolution)
-
-    res = oc.resolve_openspec_change("explicit-change")
-    assert isinstance(res, oc.ChangeResolution)
-    assert res.state == "explicit"
-    assert res.name == "explicit-change"
-    assert res.names == []
-    assert res.candidates == []
-
-    # Frozen immutability check
-    with pytest.raises(FrozenInstanceError):
-        res.state = "none"  # type: ignore[misc]
-
-    # Tuple unpacking and indexing backwards compatibility
-    state, name, names = res
-    assert (state, name, names) == ("explicit", "explicit-change", [])
-    assert res[0] == "explicit"
-    assert res[1] == "explicit-change"
-    assert res[:2] == ("explicit", "explicit-change")
-
-    # Ambiguous resolution
-    ambig = oc.ChangeResolution(state="ambiguous", name=None, names=["ch1", "ch2"])
-    assert ambig.state == "ambiguous"
-    assert ambig.name is None
-    assert ambig.candidates == ["ch1", "ch2"]
-    assert ambig[2] == ["ch1", "ch2"]
 
 
 def test_check_rules_typed_named_tuple_and_typed_dict() -> None:
