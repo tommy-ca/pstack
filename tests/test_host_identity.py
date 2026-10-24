@@ -477,6 +477,8 @@ def test_a_run_in_a_linked_worktree_points_at_a_run_dir_that_exists(
     """
     verify_portable = _load_module("verify_portable_pointer", "scripts/verify-portable.py")
     worktree = tmp_path / "worktree"
+    worktree.mkdir(parents=True, exist_ok=True)
+    (worktree / "pstack.package.json").write_text(json.dumps({"version": "0.15.29"}), encoding="utf-8")
     evidence_root = worktree / ".audit" / "evidence"
     evidence_root.mkdir(parents=True)
     canonical = tmp_path / "primary"
