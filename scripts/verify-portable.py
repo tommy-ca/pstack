@@ -138,6 +138,69 @@ def get_canonical_root(root: Path) -> Path:
 DEFAULT_EVIDENCE_DIR = ROOT / ".audit" / "evidence"
 
 
+def resolve_host_version(host: str, root: Path) -> str:
+    """Resolve the host runtime version from the live driver or package descriptor."""
+    try:
+        driver = get_driver(host, root)
+        if driver.is_available()[0]:
+            live_v = driver.get_version()
+            if live_v:
+                return live_v
+    except Exception:
+        pass
+
+    pkg_file = root / "pstack.package.json"
+    if not pkg_file.is_file():
+        raise RuntimeError(
+            f"Package descriptor missing at {pkg_file} and host driver for {host} did not provide a version"
+        )
+    try:
+        pkg_data = json.loads(pkg_file.read_text(encoding="utf-8"))
+    except Exception as e:
+        raise RuntimeError(f"Corrupt or unreadable package descriptor at {pkg_file}: {e}") from e
+
+    if not isinstance(pkg_data, dict) or not pkg_data.get("version"):
+        raise RuntimeError(
+            f"Package descriptor at {pkg_file} missing required 'version' field"
+        )
+    return str(pkg_data["version"])
+
+
+def normalize_scenarios(
+    scenarios: List[ScenarioResult], root: Path, canon_root: Path
+) -> List[ScenarioResult]:
+    """Normalize worktree file paths in scenario commands and stdout snippets to canonical paths."""
+    root_str = str(root)
+    canon_str = str(canon_root)
+    if root_str == canon_str:
+        return list(scenarios)
+
+    normalized: List[ScenarioResult] = []
+    for s in scenarios:
+        cmd = s.command.replace(root_str, canon_str)
+        snip = (
+            s.stdout_snippet.replace(root_str, canon_str)
+            if s.stdout_snippet
+            else s.stdout_snippet
+        )
+        normalized.append(
+            ScenarioResult(
+                id=s.id,
+                description=s.description,
+                plane=s.plane,
+                command=cmd,
+                exit_code=s.exit_code,
+                stdout_snippet=snip,
+                verdict=s.verdict,
+                duration_s=s.duration_s,
+                evidence_level=getattr(s, "evidence_level", "offline"),
+                settlement=getattr(s, "settlement", None),
+                live_attempted=getattr(s, "live_attempted", False),
+            )
+        )
+    return normalized
+
+
 
 class PortableVerifier:
     def __init__(
@@ -473,64 +536,11 @@ class PortableVerifier:
         """Step 4: Compute the proof bar and verdicts across the four planes."""
         planes = settle_planes(self.scenarios)
         overall = reduce_verdicts(planes.values())
-
-        # Host version from live driver or package descriptor fallback
-        host_version = ""
-        try:
-            driver = get_driver(self.host, ROOT)
-            if driver.is_available()[0]:
-                live_v = driver.get_version()
-                if live_v:
-                    host_version = live_v
-        except Exception:
-            pass
-
-        if not host_version:
-            pkg_file = ROOT / "pstack.package.json"
-            if not pkg_file.is_file():
-                raise RuntimeError(
-                    f"Package descriptor missing at {pkg_file} and host driver for {self.host} did not provide a version"
-                )
-            try:
-                pkg_data = json.loads(pkg_file.read_text(encoding="utf-8"))
-            except Exception as e:
-                raise RuntimeError(f"Corrupt or unreadable package descriptor at {pkg_file}: {e}") from e
-
-            if not isinstance(pkg_data, dict) or not pkg_data.get("version"):
-                raise RuntimeError(
-                    f"Package descriptor at {pkg_file} missing required 'version' field"
-                )
-            host_version = str(pkg_data["version"])
-
+        host_version = resolve_host_version(self.host, ROOT)
         surface_revisions = compute_surface_revisions(ROOT, self.host)
+        scenarios = normalize_scenarios(self.scenarios, ROOT, get_canonical_root(ROOT))
 
-        root_str = str(ROOT)
-        canon_str = str(get_canonical_root(ROOT))
-
-        scenarios = []
-        for s in self.scenarios:
-            if root_str != canon_str:
-                cmd = s.command.replace(root_str, canon_str)
-                snip = s.stdout_snippet.replace(root_str, canon_str) if s.stdout_snippet else s.stdout_snippet
-                scenarios.append(ScenarioResult(
-                    id=s.id,
-                    description=s.description,
-                    plane=s.plane,
-                    command=cmd,
-                    exit_code=s.exit_code,
-                    stdout_snippet=snip,
-                    verdict=s.verdict,
-                    duration_s=s.duration_s,
-                    evidence_level=getattr(s, "evidence_level", "offline"),
-                    settlement=getattr(s, "settlement", None),
-                    live_attempted=getattr(s, "live_attempted", False),
-                ))
-            else:
-                scenarios.append(s)
-
-        run_receipt_path = str(self.run_dir / "receipt.json")
-
-        receipt = VerificationReceipt(
+        return VerificationReceipt(
             run_id=self.run_id,
             host=self.host,
             host_version=host_version,
@@ -539,11 +549,10 @@ class PortableVerifier:
             planes=planes,
             surface_revisions=surface_revisions,
             scenarios=scenarios,
-            artifacts=[run_receipt_path, f".audit/evidence/{self.host}-receipt.json"],
+            artifacts=[str(self.run_dir / "receipt.json"), f".audit/evidence/{self.host}-receipt.json"],
             claim=f"{self.host} 5-harness portability conformance verification",
             kind="runtime",
         )
-        return receipt
 
     def evidence(
         self,

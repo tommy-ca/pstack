@@ -849,4 +849,79 @@ def test_proof_bar_fails_closed_on_descriptor_missing_version(tmp_path: Path, mo
         verifier.proof_bar()
 
 
+def test_resolve_host_version_live_driver(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    class MockDriver:
+        def is_available(self):
+            return (True, "available")
+        def get_version(self):
+            return "2.4.6"
+
+    monkeypatch.setattr(verify_portable, "get_driver", lambda host, root: MockDriver())
+    v = verify_portable.resolve_host_version("grok", tmp_path)
+    assert v == "2.4.6"
+
+
+def test_resolve_host_version_descriptor_fallback(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    class MockDriver:
+        def is_available(self):
+            return (False, "none")
+        def get_version(self):
+            return ""
+
+    monkeypatch.setattr(verify_portable, "get_driver", lambda host, root: MockDriver())
+    (tmp_path / "pstack.package.json").write_text(json.dumps({"version": "1.2.3"}), encoding="utf-8")
+    v = verify_portable.resolve_host_version("grok", tmp_path)
+    assert v == "1.2.3"
+
+
+def test_resolve_host_version_fails_closed(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    class MockDriver:
+        def is_available(self):
+            return (False, "none")
+        def get_version(self):
+            return ""
+
+    monkeypatch.setattr(verify_portable, "get_driver", lambda host, root: MockDriver())
+    with pytest.raises(RuntimeError, match="Package descriptor missing at"):
+        verify_portable.resolve_host_version("grok", tmp_path)
+
+
+def test_normalize_scenarios_replaces_worktree_paths() -> None:
+    root = Path("/tmp/worktree/pstack")
+    canon = Path("/home/user/pstack")
+    scenarios = [
+        ScenarioResult(
+            id="s1",
+            description="run command",
+            plane="command",
+            command=f"python3 {root}/scripts/test.py",
+            exit_code=0,
+            stdout_snippet=f"output at {root}/log.txt",
+            verdict="PASS",
+            duration_s=0.5,
+        ),
+        ScenarioResult(
+            id="s2",
+            description="another command",
+            plane="runtime",
+            command="echo hello",
+            exit_code=0,
+            stdout_snippet=None,
+            verdict="PASS",
+            duration_s=0.1,
+        ),
+    ]
+
+    normalized = verify_portable.normalize_scenarios(scenarios, root, canon)
+    assert len(normalized) == 2
+    assert normalized[0].command == f"python3 {canon}/scripts/test.py"
+    assert normalized[0].stdout_snippet == f"output at {canon}/log.txt"
+    assert normalized[1].command == "echo hello"
+    assert normalized[1].stdout_snippet is None
+
+    # When roots match, same instances are returned
+    same = verify_portable.normalize_scenarios(scenarios, canon, canon)
+    assert same == scenarios
+
+
 
