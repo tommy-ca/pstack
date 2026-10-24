@@ -356,12 +356,8 @@ class PortableVerifier:
             # doctor closed on a host whose TMPDIR is a link.
             yield Path(tmp).resolve()
 
-    def _doctor_checks(self, fixture_home: Path, check_durability: bool = True, allow_stale: bool = False) -> bool:
-        """Doctor scenarios 1-7; every command runs under fixture_home."""
-        print(f"[{self.host}] Running Doctor checks...")
-        env = {"HOME": str(fixture_home)}
-
-        # 1. Canonical conformance
+    def _check_canonical_plane(self, env: Dict[str, str]) -> bool:
+        """Execute canonical conformance and OpenSpec change validation scenarios."""
         r1 = self.run_command(
             "doctor-canonical-index",
             "Verify canonical inventory conforms to pin",
@@ -370,13 +366,6 @@ class PortableVerifier:
             env=env,
         )
 
-        # 2. OpenSpec change integrity (argv-safe helper above). Resolve once: the
-        # label and the child validation share one observation, so the receipt binds
-        # the exact validated target. Only a real change name reaches the child;
-        # lookup-failed/ambiguous are decided here and recorded as scenarios. A
-        # checkout with no active change appends no row, because a row that executed
-        # nothing is not evidence and the canonical plane still reduces from the
-        # canonical-index row.
         state, change_name, active_names = resolve_openspec_change(
             self.change, active_resolver=lambda: _active_openspec_changes(cwd=str(ROOT))
         )
@@ -416,8 +405,10 @@ class PortableVerifier:
             )
             self.scenarios.append(r2)
 
+        return all(r.verdict in ("PASS", "UNTESTED") for r in (r1, r2) if r is not None)
 
-        # 3. Static adapter checks
+    def _check_adapter_plane(self, env: Dict[str, str]) -> bool:
+        """Execute static harness and host-neutral adapter boundary scenarios."""
         r3 = self.run_command(
             "doctor-adapter-static",
             "Verify static harness names and discipline",
@@ -426,7 +417,6 @@ class PortableVerifier:
             env=env,
         )
 
-        # 3b. Host-neutral adapter boundary scanner
         r3b = self.run_command(
             "doctor-scan-host-boundary",
             "Verify shared skills and playbooks maintain host-neutral adapter boundary",
@@ -435,7 +425,10 @@ class PortableVerifier:
             env=env,
         )
 
-        # 4. Package descriptor and native manifest projection integrity
+        return all(r.verdict in ("PASS", "UNTESTED") for r in (r3, r3b) if r is not None)
+
+    def _check_package_plane(self, env: Dict[str, str]) -> bool:
+        """Execute package projection and host package lifecycle scenarios."""
         r4 = self.run_command(
             "doctor-package-projection",
             "Verify package descriptor and projected native harness manifests",
@@ -444,7 +437,6 @@ class PortableVerifier:
             env=env,
         )
 
-        # 4b. Native package lifecycle verification
         r4b = self.run_command(
             f"doctor-package-lifecycle-{self.host}",
             f"Verify native package lifecycle contract for {self.host}",
@@ -453,14 +445,15 @@ class PortableVerifier:
             env=env,
         )
 
-        doctor_pass = all(
-            r.verdict in ("PASS", "UNTESTED")
-            for r in (r1, r2, r3, r3b, r4, r4b)
-            if r is not None
-        )
+        return all(r.verdict in ("PASS", "UNTESTED") for r in (r4, r4b) if r is not None)
 
-        # 5. Optional typed harness profile validation
+    def _check_profile_and_durability(
+        self, env: Dict[str, str], check_durability: bool = True, allow_stale: bool = False
+    ) -> bool:
+        """Execute profile validation, sync check, and standalone evidence durability."""
+        passed = True
         profile_file = ROOT / "profiles" / f"{self.host}.json"
+
         if profile_file.is_file():
             r5 = self.run_command(
                 f"doctor-profile-{self.host}",
@@ -469,9 +462,8 @@ class PortableVerifier:
                 [sys.executable, "-c", f"import json; from pathlib import Path; from scripts.portability_schema import HarnessProfile, Binding, Evidence; d = json.loads(Path('{profile_file}').read_text()); b = [Binding(**x) for x in d.get('bindings', [])]; e = [Evidence(**x) for x in d.get('evidence_ledger', [])]; HarnessProfile(host=d['host'], support_state=d['support_state'], bindings=b, skills_dir=d.get('skills_dir'), plugins_dir=d.get('plugins_dir'), plugin_manifest=d.get('plugin_manifest'), evidence_ledger=e, tool_mappings=d.get('tool_mappings'), skill_order=d.get('skill_order'), runtime_conventions=d.get('runtime_conventions'), setup=d.get('setup')).validate()"],
                 env=env,
             )
-            doctor_pass = doctor_pass and (r5.verdict == "PASS")
+            passed = passed and (r5.verdict == "PASS")
 
-        # 6. Antigravity live synchronization check
         if self.host == "antigravity":
             r6 = self.run_command(
                 "doctor-antigravity-sync",
@@ -480,9 +472,8 @@ class PortableVerifier:
                 [sys.executable, str(ROOT / "scripts" / "sync-antigravity-plugin.py"), "--check"],
                 env=env,
             )
-            doctor_pass = doctor_pass and (r6.verdict == "PASS")
+            passed = passed and (r6.verdict == "PASS")
 
-        # 7. Evidence durability and support-state derivation check (when running standalone doctor)
         if check_durability and profile_file.is_file():
             chk_cmd = [
                 sys.executable,
@@ -503,9 +494,24 @@ class PortableVerifier:
                 chk_cmd,
                 env=env,
             )
-            doctor_pass = doctor_pass and (r7.verdict == "PASS")
+            passed = passed and (r7.verdict == "PASS")
 
-        return doctor_pass
+        return passed
+
+    def _doctor_checks(self, fixture_home: Path, check_durability: bool = True, allow_stale: bool = False) -> bool:
+        """Doctor scenarios 1-7; every command runs under fixture_home."""
+        print(f"[{self.host}] Running Doctor checks...")
+        env = {"HOME": str(fixture_home)}
+
+        canon_pass = self._check_canonical_plane(env)
+        adapter_pass = self._check_adapter_plane(env)
+        pkg_pass = self._check_package_plane(env)
+        doctor_pass = canon_pass and adapter_pass and pkg_pass
+
+        profile_pass = self._check_profile_and_durability(
+            env, check_durability=check_durability, allow_stale=allow_stale
+        )
+        return doctor_pass and profile_pass
 
     def drive(self, feature: Optional[str] = None) -> bool:
         """Step 3: Drive representative capability scenarios."""
