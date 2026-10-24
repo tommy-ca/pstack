@@ -70,8 +70,24 @@ LIVE_AGENT_PROMPT = (
     'Use the task tool exactly once with the agent "{agent}" and this assignment: '
     "Report the single word CHILD_OK as your findings. Then reply with exactly PARENT_DONE"
 )
-AMBIENT_PLUGINS = Path.home() / ".omp" / "plugins"
-AMBIENT_AGENT_DIRS = (Path.home() / ".omp" / "agent" / "agents", ROOT / ".omp" / "agents")
+
+
+def get_effective_home() -> Path:
+    """Resolve the effective HOME, honoring fixture isolation env vars (#728)."""
+    val = os.environ.get("PSTACK_FIXTURE_HOME") or os.environ.get("HOME")
+    if val:
+        return Path(val).resolve()
+    return Path.home().resolve()
+
+
+def ambient_plugins() -> Path:
+    return get_effective_home() / ".omp" / "plugins"
+
+
+def ambient_agent_dirs() -> Tuple[Path, Path]:
+    return (get_effective_home() / ".omp" / "agent" / "agents", ROOT / ".omp" / "agents")
+
+
 # PI_CONFIG_DIR names a directory under HOME, not a path: `getBaseConfigRoot()`
 # joins it onto the home directory. Passing an absolute path would silently
 # create $HOME/<that path>, so the lever passes a dirname and resolves it the
@@ -84,12 +100,13 @@ def disposable_config_dirname() -> str:
 
 
 def config_root_for(dirname: str) -> Path:
-    return Path.home() / dirname
+    return get_effective_home() / dirname
 
 
 def ambient_snapshot() -> Dict[str, Any]:
-    lock = AMBIENT_PLUGINS / "omp-plugins.lock.json"
-    node_modules = AMBIENT_PLUGINS / "node_modules"
+    plugins = ambient_plugins()
+    lock = plugins / "omp-plugins.lock.json"
+    node_modules = plugins / "node_modules"
     return {
         "lock": lock.read_text(encoding="utf-8") if lock.is_file() else None,
         "entries": sorted(p.name for p in node_modules.glob("*")) if node_modules.is_dir() else [],
@@ -97,7 +114,7 @@ def ambient_snapshot() -> Dict[str, Any]:
 
 
 def ambient_defines_agent(name: str) -> bool:
-    return any((directory / f"{name}.md").is_file() for directory in AMBIENT_AGENT_DIRS)
+    return any((directory / f"{name}.md").is_file() for directory in ambient_agent_dirs())
 
 
 def plugin_entry(
@@ -132,15 +149,23 @@ def advertised_skills(omp_bin: str, cwd: Path, config_dirname: str, seconds: flo
         omp_bin=omp_bin,
         cwd=cwd,
         max_seconds=seconds + 15,
-        env={"PI_CONFIG_DIR": config_dirname},
+        env={"PI_CONFIG_DIR": config_dirname, "HOME": str(get_effective_home())},
     )
     try:
         session.start()
         deadline = time.time() + seconds
+        last_frame_count = 0
+        settle_start: Optional[float] = None
         while time.time() < deadline:
-            if any(f.get("type") == "available_commands_update" for f in session.frames):
-                break
-            time.sleep(0.2)
+            update_frames = [f for f in session.frames if f.get("type") == "available_commands_update"]
+            if update_frames:
+                if len(update_frames) != last_frame_count:
+                    last_frame_count = len(update_frames)
+                    settle_start = time.time()
+                elif settle_start is not None and (time.time() - settle_start >= 0.5):
+                    # Settled: commands stabilized for at least 500ms (#728)
+                    break
+            time.sleep(0.05)
         names = {
             command.get("name", "")
             for frame in session.frames
@@ -434,7 +459,7 @@ def prove(package_dir: Optional[Path], live: bool, agent: str, keep: bool) -> Di
     config_root = config_root_for(config_dirname)
     if config_root.exists():
         raise OSError(f"disposable config root already exists: {config_root}")
-    ambient_agent = Path.home() / ".omp" / "agent"
+    ambient_agent = get_effective_home() / ".omp" / "agent"
     agent_dir = config_root / "agent"
     agent_dir.mkdir(parents=True, exist_ok=True)
     for cfg_name in ("models.yml", "config.yml"):
