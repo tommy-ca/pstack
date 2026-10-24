@@ -85,10 +85,11 @@ ISOLATION_CHILD_FILE = "ISO_CHILD.txt"
 ISOLATION_SENTINEL_FILE = "PARENT_SENTINEL.txt"
 ISOLATION_SENTINEL_BODY = "PARENT-SENTINEL-UNTOUCHED\n"
 ISOLATION_PROMPT = (
+    "You are verifying worktree isolation. DO NOT write or create any files in your current working directory. "
     "Use the task tool exactly once with isolated: true (an isolated worktree) to spawn a subagent "
-    f"whose assignment is: run exactly `printf '{ISOLATION_TOKEN}' > {ISOLATION_CHILD_FILE}` in your "
-    "working directory, then run `pwd` and reply with the absolute path pwd printed and nothing else. "
-    "Do not create, edit or delete any other file yourself. "
+    f"whose assignment is: run exactly `printf '{ISOLATION_TOKEN}' > {ISOLATION_CHILD_FILE}` in the "
+    "subagent's isolated working directory, then run `pwd` and reply with the absolute path pwd printed and nothing else. "
+    "Do not create, edit or touch any files in the parent directory yourself. "
     "When that subagent result arrives, reply with exactly PARENT_DONE"
 )
 ISOLATION_CONFIG = """task:
@@ -137,6 +138,7 @@ def _prepare_isolation_repo(repo: Path, worktree_base: Path) -> str:
 
 def _isolation_residue(repo: Path, worktree_base: Path) -> Dict[str, Any]:
     """Post-run parent-checkout invariants: sentinel, unapplied delta, cleanup."""
+    _git(repo, "worktree", "prune")
     sentinel = repo / ISOLATION_SENTINEL_FILE
     sentinel_intact = sentinel.is_file() and sentinel.read_text(encoding="utf-8") == ISOLATION_SENTINEL_BODY
     child_file_absent = not (repo / ISOLATION_CHILD_FILE).exists()
