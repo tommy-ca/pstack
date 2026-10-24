@@ -745,3 +745,59 @@ def test_refresh_static_refusal_names_host_appropriate_remedy(
     assert "PSTACK_RUN_OMP_LIVE" not in err_msg
 
 
+def test_get_live_remedy() -> None:
+    from scripts.evidence_durability import get_live_remedy
+    assert get_live_remedy("omp") == "PSTACK_RUN_OMP_LIVE=1 python3 scripts/verify-portable.py run --host omp"
+    assert get_live_remedy("grok") == "python3 scripts/verify-portable.py run --host grok"
+    assert get_live_remedy("codex") == "python3 scripts/verify-portable.py run --host codex"
+
+
+def test_evaluate_durable_settlement_update_refuses_corrupt_durable(tmp_path: Path) -> None:
+    from scripts.evidence_durability import evaluate_durable_settlement_update
+    from scripts.portability_schema import VerificationReceipt
+
+    durable = tmp_path / "omp-receipt.json"
+    durable.write_text("{corrupt", encoding="utf-8")
+    current = VerificationReceipt(
+        run_id="run-1",
+        host="omp",
+        host_version="1.0",
+        timestamp="2026-10-24T00:00:00Z",
+        overall_verdict="PASS",
+        planes={},
+        surface_revisions=compute_surface_revisions(ROOT, "omp"),
+        scenarios=[],
+        artifacts=[],
+        claim="c",
+    )
+    decision = evaluate_durable_settlement_update(durable, current, tmp_path / "run.json")
+    assert decision.action == "refuse"
+    assert "REFUSING to overwrite the durable receipt" in (decision.message or "")
+
+
+def test_evaluate_durable_settlement_update_keep_live_and_write(tmp_path: Path) -> None:
+    from scripts.evidence_durability import evaluate_durable_settlement_update
+    from scripts.portability_schema import VerificationReceipt
+
+    durable = tmp_path / "omp-receipt.json"
+    durable.write_bytes((EVIDENCE_DIR / "omp-receipt.json").read_bytes())
+
+    current_data = json.loads(durable.read_text(encoding="utf-8"))
+    current_data["scenarios"] = [
+        s for s in current_data["scenarios"] if s.get("evidence_level") != "observed_live"
+    ]
+    current_data["planes"]["runtime"] = "UNTESTED"
+    current = VerificationReceipt(**current_data)
+
+    dec_refuse = evaluate_durable_settlement_update(durable, current, tmp_path / "run.json", allow_keep_live=False)
+    assert dec_refuse.action == "refuse"
+    assert "PSTACK_RUN_OMP_LIVE=1" in (dec_refuse.message or "")
+    assert len(dec_refuse.dropped) > 0
+
+    dec_keep = evaluate_durable_settlement_update(durable, current, tmp_path / "run.json", allow_keep_live=True)
+    assert dec_keep.action == "keep_live"
+    assert len(dec_keep.dropped) > 0
+
+
+
+

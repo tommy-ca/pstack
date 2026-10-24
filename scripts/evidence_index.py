@@ -13,7 +13,11 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Any, Dict, List, NoReturn, Optional
 
-from scripts.evidence_durability import preserve_observed_settlements
+from scripts.evidence_durability import (
+    evaluate_durable_settlement_update,
+    get_live_remedy,
+    preserve_observed_settlements,
+)
 from scripts.host_identity import BUILTIN_HOSTS
 from scripts.portability_schema import (
     Binding,
@@ -152,48 +156,34 @@ def write_verification_evidence(
         durable_file = evidence_root / f"{host}-receipt.json"
         durable_data = data
         if _file_or_denied(durable_file):
-            try:
-                previous = VerificationReceipt(**json.loads(durable_file.read_text(encoding="utf-8")))
-                preservation = preserve_observed_settlements(previous, receipt)
-            except Exception as err:
-                _fail(
-                    f"REFUSING to overwrite the durable receipt at {durable_file}: "
-                    f"{type(err).__name__}: {err}. This run's receipt is at {receipt_file}."
+            decision = evaluate_durable_settlement_update(
+                durable_file, receipt, receipt_file, allow_keep_live=allow_keep_live
+            )
+            if decision.action == "refuse":
+                _fail(decision.message or f"REFUSING to overwrite the durable receipt at {durable_file}")
+            elif decision.action == "keep_live":
+                print(
+                    f"Kept prior observed_live settlement(s) for {host}: "
+                    f"{', '.join(decision.dropped)}"
                 )
-            if preservation.dropped:
-                if allow_keep_live:
-                    print(
-                        f"Kept prior observed_live settlement(s) for {host}: "
-                        f"{', '.join(preservation.dropped)}"
+                assert decision.previous is not None
+                index_data.setdefault("hosts", {})[host] = evidence_index_row(host, decision.previous)
+                try:
+                    _write_json(index_file, index_data)
+                except OSError as err:
+                    _fail(
+                        f"REFUSING to write the evidence index at {index_file}: "
+                        f"{type(err).__name__}: {err}."
                     )
-                    index_data.setdefault("hosts", {})[host] = evidence_index_row(host, previous)
-                    try:
-                        _write_json(index_file, index_data)
-                    except OSError as err:
-                        _fail(
-                            f"REFUSING to write the evidence index at {index_file}: "
-                            f"{type(err).__name__}: {err}."
-                        )
-                    return durable_file
-                remedy = (
-                    f"PSTACK_RUN_OMP_LIVE=1 python3 scripts/verify-portable.py run --host {host}"
-                    if host == "omp"
-                    else f"python3 scripts/verify-portable.py run --host {host}"
-                )
-                _fail(
-                    f"REFUSING to overwrite the durable receipt at {durable_file}: "
-                    f"prior observed_live settlement(s) {', '.join(preservation.dropped)} from "
-                    f"{previous.run_id} would be lost with no live attempt at the same id. Re-run "
-                    f"live proof with {remedy}, or refresh a host with no live rows. This run's receipt is at "
-                    f"{receipt_file}."
-                )
-            if preservation.preserved:
+                return durable_file
+            elif decision.action == "write" and decision.preserved:
                 receipt.planes = settle_planes(receipt.scenarios)
                 receipt.overall_verdict = reduce_verdicts(receipt.planes.values())
                 durable_data = receipt_payload(receipt)
+                assert decision.previous is not None
                 print(
-                    f"Preserved prior observed_live settlement(s) from {previous.run_id}: "
-                    f"{', '.join(preservation.preserved)}"
+                    f"Preserved prior observed_live settlement(s) from {decision.previous.run_id}: "
+                    f"{', '.join(decision.preserved)}"
                 )
         _write_json(durable_file, durable_data)
 
@@ -307,10 +297,11 @@ def check_evidence_action(hosts: List[str], root: Path, allow_stale: bool = Fals
                 )
         except Exception as err:
             print(f"[{h}] FAIL: {err}")
-            if h == "omp" and "exceeds evidence-derived support state" in str(err):
+            if "exceeds evidence-derived support state" in str(err):
+                remedy = get_live_remedy(h)
                 print(
-                    "       OMP runtime evidence is only observed by a model-backed run: "
-                    "regenerate the durable receipt with PSTACK_RUN_OMP_LIVE=1, then re-check."
+                    f"       {h.upper()} runtime evidence is only observed by a model-backed run: "
+                    f"regenerate the durable receipt with {remedy}, then re-check."
                 )
             all_ok = False
         mismatch = index_row_mismatch(h, index_file, root)
