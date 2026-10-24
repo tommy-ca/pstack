@@ -21,6 +21,26 @@ ScenarioResult = verify_portable.ScenarioResult
 VerificationReceipt = verify_portable.VerificationReceipt
 
 
+class StubUnavailableDriver:
+    def is_available(self):
+        return (False, "none")
+
+    def get_version(self):
+        return ""
+
+
+class StubVersionDriver:
+    def __init__(self, version: str = "2.4.6", available: bool = True):
+        self.version = version
+        self.available = available
+
+    def is_available(self):
+        return (self.available, "available" if self.available else "none")
+
+    def get_version(self):
+        return self.version
+
+
 def _canonical_verdict(host: str) -> str:
     """The canonical plane is UNTESTED once the local upstream cache drifts past the pin."""
     fresh = verify_portable.compute_surface_revisions(ROOT, host).upstream_freshness
@@ -798,14 +818,7 @@ def test_proof_bar_fails_closed_on_missing_descriptor(tmp_path: Path, monkeypatc
     fake_root = tmp_path / "fake_root"
     fake_root.mkdir()
     monkeypatch.setattr(verify_portable, "ROOT", fake_root)
-
-    class DummyDriver:
-        def is_available(self):
-            return (False, "none")
-        def get_version(self):
-            return ""
-
-    monkeypatch.setattr(verify_portable, "get_driver", lambda host, root: DummyDriver())
+    monkeypatch.setattr(verify_portable, "get_driver", lambda host, root: StubUnavailableDriver())
     verifier = PortableVerifier("grok", tmp_path / "evidence")
     with pytest.raises(RuntimeError, match="Package descriptor missing at"):
         verifier.proof_bar()
@@ -817,14 +830,7 @@ def test_proof_bar_fails_closed_on_corrupt_descriptor(tmp_path: Path, monkeypatc
     fake_root.mkdir()
     (fake_root / "pstack.package.json").write_text("{corrupt json", encoding="utf-8")
     monkeypatch.setattr(verify_portable, "ROOT", fake_root)
-
-    class DummyDriver:
-        def is_available(self):
-            return (False, "none")
-        def get_version(self):
-            return ""
-
-    monkeypatch.setattr(verify_portable, "get_driver", lambda host, root: DummyDriver())
+    monkeypatch.setattr(verify_portable, "get_driver", lambda host, root: StubUnavailableDriver())
     verifier = PortableVerifier("grok", tmp_path / "evidence")
     with pytest.raises(RuntimeError, match="Corrupt or unreadable package descriptor"):
         verifier.proof_bar()
@@ -836,52 +842,27 @@ def test_proof_bar_fails_closed_on_descriptor_missing_version(tmp_path: Path, mo
     fake_root.mkdir()
     (fake_root / "pstack.package.json").write_text(json.dumps({"name": "test-pkg"}), encoding="utf-8")
     monkeypatch.setattr(verify_portable, "ROOT", fake_root)
-
-    class DummyDriver:
-        def is_available(self):
-            return (False, "none")
-        def get_version(self):
-            return ""
-
-    monkeypatch.setattr(verify_portable, "get_driver", lambda host, root: DummyDriver())
+    monkeypatch.setattr(verify_portable, "get_driver", lambda host, root: StubUnavailableDriver())
     verifier = PortableVerifier("grok", tmp_path / "evidence")
     with pytest.raises(RuntimeError, match="missing required 'version' field"):
         verifier.proof_bar()
 
 
 def test_resolve_host_version_live_driver(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    class MockDriver:
-        def is_available(self):
-            return (True, "available")
-        def get_version(self):
-            return "2.4.6"
-
-    monkeypatch.setattr(verify_portable, "get_driver", lambda host, root: MockDriver())
+    monkeypatch.setattr(verify_portable, "get_driver", lambda host, root: StubVersionDriver("2.4.6"))
     v = verify_portable.resolve_host_version("grok", tmp_path)
     assert v == "2.4.6"
 
 
 def test_resolve_host_version_descriptor_fallback(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    class MockDriver:
-        def is_available(self):
-            return (False, "none")
-        def get_version(self):
-            return ""
-
-    monkeypatch.setattr(verify_portable, "get_driver", lambda host, root: MockDriver())
+    monkeypatch.setattr(verify_portable, "get_driver", lambda host, root: StubUnavailableDriver())
     (tmp_path / "pstack.package.json").write_text(json.dumps({"version": "1.2.3"}), encoding="utf-8")
     v = verify_portable.resolve_host_version("grok", tmp_path)
     assert v == "1.2.3"
 
 
 def test_resolve_host_version_fails_closed(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    class MockDriver:
-        def is_available(self):
-            return (False, "none")
-        def get_version(self):
-            return ""
-
-    monkeypatch.setattr(verify_portable, "get_driver", lambda host, root: MockDriver())
+    monkeypatch.setattr(verify_portable, "get_driver", lambda host, root: StubUnavailableDriver())
     with pytest.raises(RuntimeError, match="Package descriptor missing at"):
         verify_portable.resolve_host_version("grok", tmp_path)
 
