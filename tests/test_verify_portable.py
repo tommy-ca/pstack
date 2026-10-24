@@ -793,3 +793,60 @@ def test_check_rules_typed_named_tuple_and_typed_dict() -> None:
         assert "paths" in first
 
 
+def test_proof_bar_fails_closed_on_missing_descriptor(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """#735: proof_bar fails closed with RuntimeError when package descriptor is missing."""
+    fake_root = tmp_path / "fake_root"
+    fake_root.mkdir()
+    monkeypatch.setattr(verify_portable, "ROOT", fake_root)
+
+    class DummyDriver:
+        def is_available(self):
+            return (False, "none")
+        def get_version(self):
+            return ""
+
+    monkeypatch.setattr(verify_portable, "get_driver", lambda host, root: DummyDriver())
+    verifier = PortableVerifier("grok", tmp_path / "evidence")
+    with pytest.raises(RuntimeError, match="Package descriptor missing at"):
+        verifier.proof_bar()
+
+
+def test_proof_bar_fails_closed_on_corrupt_descriptor(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """#735: proof_bar fails closed with RuntimeError when package descriptor is corrupt JSON."""
+    fake_root = tmp_path / "fake_root"
+    fake_root.mkdir()
+    (fake_root / "pstack.package.json").write_text("{corrupt json", encoding="utf-8")
+    monkeypatch.setattr(verify_portable, "ROOT", fake_root)
+
+    class DummyDriver:
+        def is_available(self):
+            return (False, "none")
+        def get_version(self):
+            return ""
+
+    monkeypatch.setattr(verify_portable, "get_driver", lambda host, root: DummyDriver())
+    verifier = PortableVerifier("grok", tmp_path / "evidence")
+    with pytest.raises(RuntimeError, match="Corrupt or unreadable package descriptor"):
+        verifier.proof_bar()
+
+
+def test_proof_bar_fails_closed_on_descriptor_missing_version(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """#735: proof_bar fails closed with RuntimeError when package descriptor lacks version."""
+    fake_root = tmp_path / "fake_root"
+    fake_root.mkdir()
+    (fake_root / "pstack.package.json").write_text(json.dumps({"name": "test-pkg"}), encoding="utf-8")
+    monkeypatch.setattr(verify_portable, "ROOT", fake_root)
+
+    class DummyDriver:
+        def is_available(self):
+            return (False, "none")
+        def get_version(self):
+            return ""
+
+    monkeypatch.setattr(verify_portable, "get_driver", lambda host, root: DummyDriver())
+    verifier = PortableVerifier("grok", tmp_path / "evidence")
+    with pytest.raises(RuntimeError, match="missing required 'version' field"):
+        verifier.proof_bar()
+
+
+

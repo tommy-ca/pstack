@@ -487,13 +487,20 @@ class PortableVerifier:
 
         if not host_version:
             pkg_file = ROOT / "pstack.package.json"
-            if pkg_file.is_file():
-                try:
-                    host_version = json.loads(pkg_file.read_text(encoding="utf-8")).get("version", "")
-                except Exception:
-                    pass
-            if not host_version:
-                host_version = "0.15.21-grokbuild.0"
+            if not pkg_file.is_file():
+                raise RuntimeError(
+                    f"Package descriptor missing at {pkg_file} and host driver for {self.host} did not provide a version"
+                )
+            try:
+                pkg_data = json.loads(pkg_file.read_text(encoding="utf-8"))
+            except Exception as e:
+                raise RuntimeError(f"Corrupt or unreadable package descriptor at {pkg_file}: {e}") from e
+
+            if not isinstance(pkg_data, dict) or not pkg_data.get("version"):
+                raise RuntimeError(
+                    f"Package descriptor at {pkg_file} missing required 'version' field"
+                )
+            host_version = str(pkg_data["version"])
 
         surface_revisions = compute_surface_revisions(ROOT, self.host)
 
