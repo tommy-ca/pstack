@@ -263,26 +263,11 @@ def check_evidence_action(hosts: List[str], root: Path, allow_stale: bool = Fals
             all_ok = False
             continue
         try:
-            d = json.loads(profile_file.read_text(encoding="utf-8"))
-        except OSError as err:
-            print(f"[{h}] FAIL: profile {profile_file} is unreadable: {type(err).__name__}: {err}")
+            prof = HarnessProfile.from_file(profile_file)
+        except Exception as err:
+            print(f"[{h}] FAIL: profile {profile_file} is unreadable or invalid: {type(err).__name__}: {err}")
             all_ok = False
             continue
-
-        b = [Binding(**x) for x in d.get("bindings", [])]
-        e = [Evidence(**x) for x in d.get("evidence_ledger", [])]
-        prof = HarnessProfile(
-            host=d["host"],
-            support_state=d["support_state"],
-            bindings=b,
-            skills_dir=d.get("skills_dir"),
-            plugins_dir=d.get("plugins_dir"),
-            plugin_manifest=d.get("plugin_manifest"),
-            evidence_ledger=e,
-            tool_mappings=d.get("tool_mappings"),
-            skill_order=d.get("skill_order"),
-            runtime_conventions=d.get("runtime_conventions"),
-        )
         try:
             res = check_evidence_durability(prof, root, check_freshness=not allow_stale)
             if res["derived_support_state"] == "candidate":
