@@ -35,6 +35,48 @@ class DriverScenarioResult:
             s = self.stderr.strip()
         return s[:300]
 
+    def to_scenario_result(self, plane: str = "runtime") -> Any:
+        """Convert this driver result to a ScenarioResult."""
+        from scripts.portability_types import ScenarioResult
+
+        return ScenarioResult(
+            id=self.scenario_id,
+            description=self.description,
+            plane=plane,
+            command=self.command,
+            exit_code=self.exit_code,
+            stdout_snippet=self.stdout_snippet,
+            verdict=self.verdict,
+            duration_s=self.duration_s,
+            evidence_level=self.evidence_level,
+            settlement=self.settlement,
+            live_attempted=self.live_attempted,
+        )
+
+
+from scripts.portability_types import ScenarioResult
+
+if not hasattr(ScenarioResult, "from_driver_result"):
+    @classmethod
+    def _from_driver_result(cls: Any, res: Any, plane: str = "runtime") -> Any:
+        if hasattr(res, "to_scenario_result"):
+            return res.to_scenario_result(plane=plane)
+        return cls(
+            id=getattr(res, "scenario_id", getattr(res, "id", "")),
+            description=res.description,
+            plane=plane,
+            command=res.command,
+            exit_code=res.exit_code,
+            stdout_snippet=res.stdout_snippet,
+            verdict=res.verdict,
+            duration_s=res.duration_s,
+            evidence_level=getattr(res, "evidence_level", "offline"),
+            settlement=getattr(res, "settlement", None),
+            live_attempted=getattr(res, "live_attempted", False),
+        )
+
+    setattr(ScenarioResult, "from_driver_result", _from_driver_result)
+
 
 def find_executable(name: str, extra_search_dirs: Optional[List[Path]] = None) -> Optional[Path]:
     """Find executable in PATH or standard user install locations."""
