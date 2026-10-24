@@ -114,6 +114,7 @@ def write_verification_evidence(
     run_dir: Path,
     host: str,
     update_durable: bool = True,
+    allow_keep_live: bool = False,
 ) -> Path:
     """Write structured run evidence receipt and optionally durable pointer (#613)."""
     evidence_root.mkdir(parents=True, exist_ok=True)
@@ -160,12 +161,30 @@ def write_verification_evidence(
                     f"{type(err).__name__}: {err}. This run's receipt is at {receipt_file}."
                 )
             if preservation.dropped:
+                if allow_keep_live:
+                    print(
+                        f"Kept prior observed_live settlement(s) for {host}: "
+                        f"{', '.join(preservation.dropped)}"
+                    )
+                    index_data.setdefault("hosts", {})[host] = evidence_index_row(host, previous)
+                    try:
+                        _write_json(index_file, index_data)
+                    except OSError as err:
+                        _fail(
+                            f"REFUSING to write the evidence index at {index_file}: "
+                            f"{type(err).__name__}: {err}."
+                        )
+                    return durable_file
+                remedy = (
+                    f"PSTACK_RUN_OMP_LIVE=1 python3 scripts/verify-portable.py run --host {host}"
+                    if host == "omp"
+                    else f"python3 scripts/verify-portable.py run --host {host}"
+                )
                 _fail(
                     f"REFUSING to overwrite the durable receipt at {durable_file}: "
                     f"prior observed_live settlement(s) {', '.join(preservation.dropped)} from "
                     f"{previous.run_id} would be lost with no live attempt at the same id. Re-run "
-                    f"live proof with PSTACK_RUN_OMP_LIVE=1 python3 scripts/verify-portable.py run "
-                    f"--host {host}, or refresh a host with no live rows. This run's receipt is at "
+                    f"live proof with {remedy}, or refresh a host with no live rows. This run's receipt is at "
                     f"{receipt_file}."
                 )
             if preservation.preserved:

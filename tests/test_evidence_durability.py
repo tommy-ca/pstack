@@ -631,3 +631,117 @@ def test_refresh_static_refuses_when_prior_live_rows_cannot_be_reobserved(
     assert "PSTACK_RUN_OMP_LIVE=1" in str(exit_info.value.code)
     assert (evidence_root / "omp-receipt.json").read_bytes() == durable_before
 
+
+def test_refresh_static_host_all_skips_live_holding_hosts_and_exits_zero(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture
+) -> None:
+    """#726: refresh-static --host all skips a host with live rows, prints that it kept them, and exits 0."""
+    module = _load_verify_portable_module()
+    evidence_root = tmp_path / "evidence"
+    evidence_root.mkdir()
+    for name in ("omp-receipt.json", "grok-receipt.json", "index.json"):
+        shutil.copy2(EVIDENCE_DIR / name, evidence_root / name)
+    durable_omp_before = (evidence_root / "omp-receipt.json").read_bytes()
+
+    def static_doctor(self, check_durability: bool = True, allow_stale: bool = False) -> bool:
+        for plane in ("canonical", "adapter", "package"):
+            self.scenarios.append(
+                module.ScenarioResult(
+                    id=f"doctor-{plane}-{self.host}-stub",
+                    description=f"stub static {plane} plane for {self.host}",
+                    plane=plane,
+                    command="stub",
+                    exit_code=0,
+                    stdout_snippet="stub",
+                    verdict="PASS",
+                    duration_s=0.0,
+                )
+            )
+        return True
+
+    monkeypatch.setattr(module, "resolve_openspec_change", lambda change: ("none", None, []))
+    monkeypatch.setattr(module, "get_declared_hosts", lambda root=None: ["grok", "omp"])
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["verify-portable.py", "refresh-static", "--host", "all", "--evidence-dir", str(evidence_root)],
+    )
+    monkeypatch.setattr(module.PortableVerifier, "doctor", static_doctor)
+
+    with pytest.raises(SystemExit) as exit_info:
+        module.main()
+    assert exit_info.value.code == 0
+
+    captured = capsys.readouterr()
+    assert "Kept prior observed_live settlement(s) for omp" in captured.out
+    assert (evidence_root / "omp-receipt.json").read_bytes() == durable_omp_before
+    grok_after = json.loads((evidence_root / "grok-receipt.json").read_text(encoding="utf-8"))
+    assert any(s["id"] == "doctor-canonical-grok-stub" for s in grok_after["scenarios"])
+
+
+def test_refresh_static_refusal_names_host_appropriate_remedy(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """#726: a single-host refresh refusal names a host-appropriate live command, not hardcoded OMP."""
+    module = _load_verify_portable_module()
+    evidence_root = tmp_path / "evidence"
+    evidence_root.mkdir()
+    shutil.copy2(EVIDENCE_DIR / "index.json", evidence_root / "index.json")
+
+    # Synthetic grok receipt with an observed_live scenario
+    grok_receipt = json.loads((EVIDENCE_DIR / "grok-receipt.json").read_text(encoding="utf-8"))
+    live_scenario = {
+        "id": "runtime-child-spawn-grok",
+        "description": "stub live spawn",
+        "plane": "runtime",
+        "command": "grok test",
+        "exit_code": 0,
+        "stdout_snippet": "ok",
+        "verdict": "PASS",
+        "duration_s": 0.5,
+        "evidence_level": "observed_live",
+        "settlement": {
+            "child_id": "c1",
+            "terminal_outcome": "success",
+            "model": "grok-beta",
+            "transport": "cli",
+            "effective_rpc": "v1",
+        },
+    }
+    grok_receipt["scenarios"].append(live_scenario)
+    grok_receipt["planes"]["runtime"] = "PASS"
+    grok_receipt["overall_verdict"] = "UNTESTED"
+    (evidence_root / "grok-receipt.json").write_text(json.dumps(grok_receipt), encoding="utf-8")
+
+    def static_doctor(self, check_durability: bool = True, allow_stale: bool = False) -> bool:
+        for plane in ("canonical", "adapter", "package"):
+            self.scenarios.append(
+                module.ScenarioResult(
+                    id=f"doctor-{plane}-stub",
+                    description=f"stub static {plane}",
+                    plane=plane,
+                    command="stub",
+                    exit_code=0,
+                    stdout_snippet="stub",
+                    verdict="PASS",
+                    duration_s=0.0,
+                )
+            )
+        return True
+
+    monkeypatch.setattr(module, "resolve_openspec_change", lambda change: ("none", None, []))
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["verify-portable.py", "refresh-static", "--host", "grok", "--evidence-dir", str(evidence_root)],
+    )
+    monkeypatch.setattr(module.PortableVerifier, "doctor", static_doctor)
+
+    with pytest.raises(SystemExit) as exit_info:
+        module.main()
+    err_msg = str(exit_info.value.code)
+    assert "REFUSING to overwrite the durable receipt" in err_msg
+    assert "python3 scripts/verify-portable.py run --host grok" in err_msg
+    assert "PSTACK_RUN_OMP_LIVE" not in err_msg
+
+
