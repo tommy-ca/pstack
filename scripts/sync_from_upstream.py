@@ -68,7 +68,7 @@ def recipe(upstream_file: Path | None = None) -> str:
    skills/swarm/scripts/partition.py seed --cache .worktrees/upstream-cursor-plugins
    --out /tmp/pstack-refresh/overlay.tsv. Classify unclassified fragments with
    partition.py partition --table /tmp/pstack-refresh/overlay.tsv. Coverage is
-   name-status only: partition.py print --coverage --cache .worktrees/upstream-cursor-plugins --table /tmp/pstack-refresh/overlay.tsv.
+   name-status only. Run partition.py print --coverage --cache .worktrees/upstream-cursor-plugins --table /tmp/pstack-refresh/overlay.tsv.
    port is shared intent, not a write permit.
    Copy with skills/swarm/scripts/apply.py --cache .worktrees/upstream-cursor-plugins --table /tmp/pstack-refresh/overlay.tsv.
    After adapt, run partition.py apply-check --cache .worktrees/upstream-cursor-plugins --table /tmp/pstack-refresh/overlay.tsv.
@@ -167,7 +167,7 @@ def show_log(root: Path | None = None) -> int:
     return 0
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--pin", action="store_true", help="print the UPSTREAM tree SHA")
@@ -177,7 +177,7 @@ def main() -> None:
         action="store_true",
         help="git log origin/main -- pstack since the recorded tree",
     )
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     if args.pin:
         print(pin())
         return

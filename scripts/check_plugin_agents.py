@@ -123,10 +123,10 @@ def pstack_collision_names(data: dict) -> list[str]:
     return sorted(set(names))
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--inspect-json", type=Path)
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     try:
         loaded = load_inspect(args.inspect_json)
     except json.JSONDecodeError:
@@ -187,4 +187,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    sys.exit(main())

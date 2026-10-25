@@ -133,6 +133,10 @@ class TestCheckSelectionTable:
             ("scripts/model_role_policy.py", ["pytest:tests/test_model_role_schema.py", "pytest:tests/test_model_role_constraints.py", "pytest:tests/test_model_role_profiles.py", "pytest:tests/test_setup_pstack.py"]),
             ("scripts/setup_pstack.py", ["pytest:tests/test_model_role_schema.py", "pytest:tests/test_model_role_constraints.py", "pytest:tests/test_model_role_profiles.py", "pytest:tests/test_setup_pstack.py"]),
             ("scripts/host_identity.py", ["pytest:tests/test_host_identity.py", "pytest:tests/test_portability_schemas.py"]),
+            ("scripts/sync_antigravity_plugin.py", ["pytest:tests/test_sync_antigravity_plugin.py"]),
+            ("scripts/verify_decision_contract.py", ["pytest:tests/test_verify_decision_contract.py"]),
+            ("scripts/check_plugin_agents.py", ["pytest:tests/test_plugin_agents.py"]),
+            ("scripts/sync_from_upstream.py", ["pytest:tests/test_verify_harness_guides.py", "pytest:tests/test_refresh_hygiene.py"]),
         ]
         offline_set = sorted(f"pytest:{m}" for m in OFFLINE_GATE)
         for path, expected_ids in decomposed:

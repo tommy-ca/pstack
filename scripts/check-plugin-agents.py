@@ -17,9 +17,9 @@ import scripts.check_plugin_agents as _cpa
 from scripts.check_plugin_agents import *
 
 
-def main() -> int:
-    return _cpa.main()
+def main(argv: list[str] | None = None) -> int:
+    return _cpa.main(argv)
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    sys.exit(main())

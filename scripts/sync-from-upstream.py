@@ -17,8 +17,8 @@ import scripts.sync_from_upstream as _sfu
 from scripts.sync_from_upstream import *
 
 
-def main() -> None:
-    _sfu.main()
+def main(argv: list[str] | None = None) -> None:
+    _sfu.main(argv)
 
 
 if __name__ == "__main__":
