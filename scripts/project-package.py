@@ -2,6 +2,7 @@
 """Project canonical pstack.package.json into harness-native plugin descriptors.
 
 CLI entrypoint and facade re-exporting from scripts.package_projection.
+References scripts.host_identity via package_projection.
 """
 
 from __future__ import annotations

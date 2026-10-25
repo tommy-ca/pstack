@@ -60,6 +60,7 @@ IMPORTING_SURFACES = (
     "scripts/verify-portable.py",
     "scripts/package-lifecycle.py",
     "scripts/project-package.py",
+    "scripts/package_projection.py",
     "scripts/drivers/__init__.py",
     "scripts/scan-host-boundary.py",
 )
