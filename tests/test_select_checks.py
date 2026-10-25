@@ -136,7 +136,7 @@ class TestCheckSelectionTable:
     def test_decomposed_scripts_select_owning_modules_rather_than_scripts_fallback(self) -> None:
         decomposed = [
             ("scripts/surface_revisions.py", ["pytest:tests/test_portability_schemas.py", "pytest:tests/test_surface_cache.py"]),
-            ("scripts/evidence_durability.py", ["pytest:tests/test_evidence_durability.py", "pytest:tests/test_evidence_index_resilience.py", "pytest:tests/test_evidence_settlement.py", "pytest:tests/test_portability_schemas.py"]),
+            ("scripts/evidence_durability.py", ["pytest:tests/test_evidence_durability.py", "pytest:tests/test_evidence_index_resilience.py", "pytest:tests/test_evidence_settlement.py", "pytest:tests/test_evidence_cancellation.py", "pytest:tests/test_portability_schemas.py"]),
             ("scripts/portability_types.py", ["pytest:tests/test_evidence_durability.py", "pytest:tests/test_portability_schemas.py", "pytest:tests/test_verdict_reduction.py"]),
             ("scripts/harness_scenarios.py", ["pytest:tests/test_verify_portable.py"]),
             ("scripts/select_checks.py", ["pytest:tests/test_select_checks.py", "pytest:tests/test_verify_portable.py"]),

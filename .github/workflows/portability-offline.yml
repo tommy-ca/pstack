@@ -54,6 +54,7 @@ jobs:
             tests/test_evidence_refresh_static.py \
             tests/test_surface_cache.py \
             tests/test_evidence_settlement.py \
+            tests/test_evidence_cancellation.py \
             tests/test_evidence_index_resilience.py \
             tests/test_evidence_receipts.py \
             tests/test_select_checks.py \
