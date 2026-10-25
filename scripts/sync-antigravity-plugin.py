@@ -31,18 +31,13 @@ from scripts.portability_schema import (
     SKILLS_HASH_IGNORED_SUFFIXES,
 )
 
-PROJECT_PACKAGE_SCRIPT = ROOT / "scripts" / "project-package.py"
-_loader = importlib.util.spec_from_file_location("project_package", PROJECT_PACKAGE_SCRIPT)
-assert _loader is not None and _loader.loader is not None
-_pp_mod = importlib.util.module_from_spec(_loader)
-sys.modules["project_package"] = _pp_mod
-_loader.loader.exec_module(_pp_mod)
-
-generate_antigravity_manifest = _pp_mod.generate_antigravity_manifest
-generate_antigravity_models = _pp_mod.generate_antigravity_models
-generate_antigravity_commands = _pp_mod.generate_antigravity_commands
-load_package_descriptor = _pp_mod.load_package_descriptor
-project_all = _pp_mod.project_all
+from scripts.package_projection import (
+    generate_antigravity_commands,
+    generate_antigravity_manifest,
+    generate_antigravity_models,
+    load_package_descriptor,
+    project_all,
+)
 
 
 def skill_names(directory: Path) -> set[str]:
