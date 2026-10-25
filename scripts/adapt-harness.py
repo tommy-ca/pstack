@@ -17,6 +17,10 @@ import scripts.adapt_harness as _ah
 from scripts.adapt_harness import *
 
 
+def files_transform_would_change(root: Path | None = None) -> list[str]:
+    return _ah.files_transform_would_change(root=root if root is not None else ROOT)
+
+
 def main() -> int:
     return _ah.main(root=ROOT)
 

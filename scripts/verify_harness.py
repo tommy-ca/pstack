@@ -212,21 +212,18 @@ def skip_specs_declared(manifest: pathlib.Path) -> bool:
 
 
 def verify_skills_frontmatter(skills_dir: pathlib.Path) -> None:
-    if not skills_dir.is_dir():
-        return
     for skill_dir in sorted(skills_dir.iterdir()):
         if not skill_dir.is_dir():
             continue
         skill_file = skill_dir / "SKILL.md"
         if not skill_file.is_file():
             fail(f"skill directory {skill_dir.name} missing SKILL.md")
+
         try:
-            lines, _ = split_frontmatter(skill_file.read_text(encoding="utf-8"))
-            name = read_scalar(lines, "name")
-            desc = read_scalar(lines, "description")
-            if not name or not desc:
-                fail(f"{skill_dir.name}/SKILL.md missing name or description")
-            validate_skill_name(name, skill_dir.name)
+            header, _ = split_frontmatter(skill_file.read_text(encoding="utf-8"))
+            validate_skill_name(read_scalar(header, "name"), skill_dir.name)
+            if read_scalar(header, "mode") is not None:
+                raise ValueError("retains Cursor-only frontmatter 'mode'")
         except ValueError as exc:
             fail(f"{skill_dir.name}/SKILL.md {exc}")
 
