@@ -107,21 +107,7 @@ def test_all_six_profiles_pass_evidence_durability_and_freshness() -> None:
     for host in SIX_HARNESSES:
         profile_file = ROOT / "profiles" / f"{host}.json"
         assert profile_file.is_file()
-        d = json.loads(profile_file.read_text(encoding="utf-8"))
-        b = [Binding(**x) for x in d.get("bindings", [])]
-        e = [Evidence(**x) for x in d.get("evidence_ledger", [])]
-        prof = HarnessProfile(
-            host=d["host"],
-            support_state=d["support_state"],
-            bindings=b,
-            skills_dir=d.get("skills_dir"),
-            plugins_dir=d.get("plugins_dir"),
-            plugin_manifest=d.get("plugin_manifest"),
-            evidence_ledger=e,
-            tool_mappings=d.get("tool_mappings"),
-            skill_order=d.get("skill_order"),
-            runtime_conventions=d.get("runtime_conventions"),
-        )
+        prof = HarnessProfile.from_file(profile_file)
         prof.validate()
 
         result = check_evidence_durability(prof, ROOT, check_freshness=True)
@@ -140,21 +126,7 @@ test_all_five_profiles_pass_evidence_durability_and_freshness = test_all_six_pro
 def test_dangling_evidence_path_fails(tmp_path: Path) -> None:
     profile_data = json.loads((ROOT / "profiles" / "codex.json").read_text(encoding="utf-8"))
     profile_data["bindings"][0]["evidence_ref"] = ".audit/evidence/non-existent-receipt.json"
-
-    b = [Binding(**x) for x in profile_data["bindings"]]
-    e = [Evidence(**x) for x in profile_data.get("evidence_ledger", [])]
-    prof = HarnessProfile(
-        host=profile_data["host"],
-        support_state=profile_data["support_state"],
-        bindings=b,
-        skills_dir=profile_data.get("skills_dir"),
-        plugins_dir=profile_data.get("plugins_dir"),
-        plugin_manifest=profile_data.get("plugin_manifest"),
-        evidence_ledger=e,
-        tool_mappings=profile_data.get("tool_mappings"),
-        skill_order=profile_data.get("skill_order"),
-        runtime_conventions=profile_data.get("runtime_conventions"),
-    )
+    prof = HarnessProfile.from_dict(profile_data)
 
     with pytest.raises(ValidationError, match="Dangling evidence path"):
         check_evidence_durability(prof, ROOT)
@@ -266,22 +238,8 @@ def test_stale_profile_hash_invalidates_adapter_and_runtime() -> None:
 
 @pytest.mark.parametrize("host", ["grok", "codex", "omp", "opencode", "antigravity"])
 def test_stale_package_driver_rejected_for_packaged_claim(host: str) -> None:
-    profile_data = json.loads((ROOT / "profiles" / f"{host}.json").read_text(encoding="utf-8"))
-    assert profile_data["support_state"] == "packaged"
-    b = [Binding(**x) for x in profile_data["bindings"]]
-    e = [Evidence(**x) for x in profile_data.get("evidence_ledger", [])]
-    prof = HarnessProfile(
-        host=profile_data["host"],
-        support_state=profile_data["support_state"],
-        bindings=b,
-        skills_dir=profile_data.get("skills_dir"),
-        plugins_dir=profile_data.get("plugins_dir"),
-        plugin_manifest=profile_data.get("plugin_manifest"),
-        evidence_ledger=e,
-        tool_mappings=profile_data.get("tool_mappings"),
-        skill_order=profile_data.get("skill_order"),
-        runtime_conventions=profile_data.get("runtime_conventions"),
-    )
+    prof = HarnessProfile.from_file(ROOT / "profiles" / f"{host}.json")
+    assert prof.support_state == "packaged"
     current_revs = compute_surface_revisions(ROOT, host)
     tampered_revs = replace(current_revs, package_driver_revision="stale-package-driver")
     with pytest.raises(ValidationError, match="evidence is stale"):
@@ -354,20 +312,10 @@ def test_docs_changes_do_not_stale_any_plane() -> None:
 
 def test_hand_authored_support_state_cannot_outrun_evidence() -> None:
     profile_data = json.loads((ROOT / "profiles" / "grok.json").read_text(encoding="utf-8"))
-    b = [Binding(**{**x, "verification_status": "verified"}) for x in profile_data["bindings"]]
-    e = [Evidence(**x) for x in profile_data.get("evidence_ledger", [])]
-    prof = HarnessProfile(
-        host=profile_data["host"],
-        support_state="supported",
-        bindings=b,
-        skills_dir=profile_data.get("skills_dir"),
-        plugins_dir=profile_data.get("plugins_dir"),
-        plugin_manifest=profile_data.get("plugin_manifest"),
-        evidence_ledger=e,
-        tool_mappings=profile_data.get("tool_mappings"),
-        skill_order=profile_data.get("skill_order"),
-        runtime_conventions=profile_data.get("runtime_conventions"),
-    )
+    for b in profile_data["bindings"]:
+        b["verification_status"] = "verified"
+    profile_data["support_state"] = "supported"
+    prof = HarnessProfile.from_dict(profile_data)
 
     current_revs = compute_surface_revisions(ROOT, "grok")
     tampered_revs = replace(current_revs, skills_tree_hash="stale-hash-12345")
