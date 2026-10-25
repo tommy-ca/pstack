@@ -225,6 +225,16 @@ CHECK_SELECTION_TABLE: List[CheckRule] = [
     ("scripts/sync-antigravity-plugin.py", ("tests/test_sync_antigravity_plugin.py",), ()),
     ("scripts/sync_antigravity_plugin.py", ("tests/test_sync_antigravity_plugin.py",), ()),
     (
+        "scripts/sync-from-upstream.py",
+        ("tests/test_verify_harness_guides.py", "tests/test_refresh_hygiene.py"),
+        (),
+    ),
+    (
+        "scripts/sync_from_upstream.py",
+        ("tests/test_verify_harness_guides.py", "tests/test_refresh_hygiene.py"),
+        (),
+    ),
+    (
         "references/**",
         (
             "tests/test_route_resolver.py",
@@ -319,6 +329,11 @@ CHECK_SELECTION_TABLE: List[CheckRule] = [
     ),
     (
         "scripts/check-plugin-agents.py",
+        ("tests/test_plugin_agents.py",),
+        (),
+    ),
+    (
+        "scripts/check_plugin_agents.py",
         ("tests/test_plugin_agents.py",),
         (),
     ),

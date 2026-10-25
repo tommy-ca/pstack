@@ -298,7 +298,7 @@
 ## Epic #807: Code Judo Round 9 — Harmonize scripts file naming patterns, extract pure python modules, and eliminate dynamic reflection
 - [x] Unit 1 (Issue #804): Extract `scripts/sync_antigravity_plugin.py` from `scripts/sync-antigravity-plugin.py`, eliminate dynamic loader in `tests/test_sync_antigravity_plugin.py`, and maintain entrypoint facade.
 - [x] Unit 2 (Issue #805): Extract `scripts/verify_decision_contract.py` from `scripts/verify-decision-contract.py`, eliminate naming asymmetry, and maintain entrypoint facade.
-- [ ] Unit 3 (Issue #806): Extract `scripts/check_plugin_agents.py` and `scripts/sync_from_upstream.py` with entrypoint facades, and eliminate remaining test reflection in `tests/test_verify_harness_guides.py`, `tests/test_refresh_hygiene.py`, `tests/test_skill_frontmatter.py`, and `tests/test_select_checks.py`.
+- [x] Unit 3 (Issue #806): Extract `scripts/check_plugin_agents.py` and `scripts/sync_from_upstream.py` with entrypoint facades, and eliminate remaining test reflection in `tests/test_verify_harness_guides.py`, `tests/test_refresh_hygiene.py`, `tests/test_skill_frontmatter.py`, and `tests/test_select_checks.py`.
 - [ ] Unit 4: 6-Harness matrix verification, receipts refresh, and multi-model Interrogate review.
 - [ ] Unit 5: Stacked PRs merged bottom-up to main, and verified end-to-end workflows.
 
