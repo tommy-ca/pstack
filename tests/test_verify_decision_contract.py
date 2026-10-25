@@ -11,7 +11,13 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+import scripts.verify_decision_contract as vdc
+
 SCRIPT = ROOT / "scripts" / "verify-decision-contract.py"
+MODULE = ROOT / "scripts" / "verify_decision_contract.py"
 A = "a" * 40
 B = "b" * 40
 C = "c" * 40
@@ -64,6 +70,7 @@ def make_repo(tmp_path: Path) -> tuple[Path, Path, Path]:
     repo = tmp_path / "repo"
     (repo / "scripts").mkdir(parents=True)
     shutil.copy2(SCRIPT, repo / "scripts" / SCRIPT.name)
+    shutil.copy2(MODULE, repo / "scripts" / MODULE.name)
     (repo / "references").mkdir()
     playbooks = repo / "skills" / "poteto-mode" / "playbooks"
     playbooks.mkdir(parents=True)
