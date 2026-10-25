@@ -1,9 +1,13 @@
 from __future__ import annotations
 
-import importlib.util
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+import scripts.verify_harness as verify_harness
 
 OWNED_MAPS = frozenset(
     {
@@ -35,12 +39,7 @@ def _h2s(text: str) -> list[str]:
 
 
 def _load_scanner():
-    path = ROOT / "scripts" / "verify-harness.py"
-    spec = importlib.util.spec_from_file_location("verify_harness_docs_sync", path)
-    assert spec is not None and spec.loader is not None, path
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod
+    return verify_harness
 
 
 def test_live_specs_count_twenty_four_principles() -> None:

@@ -180,6 +180,26 @@ CHECK_SELECTION_TABLE: List[CheckRule] = [
         ),
         (),
     ),
+    (
+        "scripts/verify_harness.py",
+        (
+            "tests/test_verify_harness.py",
+            "tests/test_verify_harness_archive.py",
+            "tests/test_verify_harness_guides.py",
+            "tests/test_verify_harness_playbooks.py",
+        ),
+        (),
+    ),
+    (
+        "scripts/adapt-harness.py",
+        ("tests/test_verify_harness.py",),
+        (),
+    ),
+    (
+        "scripts/adapt_harness.py",
+        ("tests/test_verify_harness.py",),
+        (),
+    ),
     ("scripts/verify-decision-contract.py", ("tests/test_verify_decision_contract.py",), ()),
     ("scripts/verify_rollback_equivalence.py", ("tests/test_rollback_equivalence.py",), ()),
     ("scripts/scan-host-boundary.py", ("tests/test_scan_host_boundary.py",), ()),
