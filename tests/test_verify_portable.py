@@ -1,4 +1,3 @@
-import importlib.util
 import json
 import os
 import shutil
@@ -8,17 +7,15 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "scripts" / "verify-portable.py"
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
-loader = importlib.util.spec_from_file_location("verify_portable", SCRIPT)
-assert loader is not None and loader.loader is not None
-verify_portable = importlib.util.module_from_spec(loader)
-sys.modules["verify_portable"] = verify_portable
-loader.loader.exec_module(verify_portable)
-
-PortableVerifier = verify_portable.PortableVerifier
-ScenarioResult = verify_portable.ScenarioResult
-VerificationReceipt = verify_portable.VerificationReceipt
+import scripts.portable_verifier as verify_portable
+from scripts.portable_verifier import (
+    PortableVerifier,
+    ScenarioResult,
+    VerificationReceipt,
+)
 
 
 class StubUnavailableDriver:
@@ -145,14 +142,8 @@ def test_portable_verifier_antigravity(tmp_path: Path) -> None:
 
 def _host_plugin_rel_paths() -> dict[str, Path]:
     """The canonical host -> plugin-mirror map, read from the script that owns it."""
-    spec = importlib.util.spec_from_file_location(
-        "package_lifecycle", ROOT / "scripts" / "package-lifecycle.py"
-    )
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules["package_lifecycle"] = module
-    spec.loader.exec_module(module)
-    return module.HOST_PLUGIN_REL_PATHS
+    from scripts.package_lifecycle import HOST_PLUGIN_REL_PATHS
+    return HOST_PLUGIN_REL_PATHS
 
 
 def test_doctor_is_hermetic_against_ambient_plugin_mirrors(
@@ -694,26 +685,8 @@ def test_normalize_scenarios_replaces_worktree_paths() -> None:
     root = Path("/tmp/worktree/pstack")
     canon = Path("/home/user/pstack")
     scenarios = [
-        ScenarioResult(
-            id="s1",
-            description="run command",
-            plane="command",
-            command=f"python3 {root}/scripts/test.py",
-            exit_code=0,
-            stdout_snippet=f"output at {root}/log.txt",
-            verdict="PASS",
-            duration_s=0.5,
-        ),
-        ScenarioResult(
-            id="s2",
-            description="another command",
-            plane="runtime",
-            command="echo hello",
-            exit_code=0,
-            stdout_snippet=None,
-            verdict="PASS",
-            duration_s=0.1,
-        ),
+        ScenarioResult("s1", "run command", "command", f"python3 {root}/scripts/test.py", 0, f"output at {root}/log.txt", "PASS", 0.5),
+        ScenarioResult("s2", "another command", "runtime", "echo hello", 0, None, "PASS", 0.1),
     ]
 
     normalized = verify_portable.normalize_scenarios(scenarios, root, canon)
@@ -763,7 +736,3 @@ def test_render_verification_summary(capsys: pytest.CaptureFixture) -> None:
     assert "Verification Summary" in out
     assert "Host: grok" in out
     assert "1-Harness Matrix Verdict: PASS" in out
-
-
-
-

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Tests for host-native harness drivers and runtime plane conformance."""
 
-import importlib.util
 import json
 import os
 import sys
@@ -26,10 +25,7 @@ from scripts.drivers import (
 )
 from scripts.drivers.omp import ISOLATION_CHILD_FILE, ISOLATION_TOKEN
 from scripts.drivers.omp_rpc import negotiated_descriptor
-loader = importlib.util.spec_from_file_location("verify_portable", ROOT / "scripts" / "verify-portable.py")
-assert loader is not None and loader.loader is not None
-verify_portable = importlib.util.module_from_spec(loader)
-loader.loader.exec_module(verify_portable)
+import scripts.portable_verifier as verify_portable
 PortableVerifier = verify_portable.PortableVerifier
 
 # These tests interrogate locally installed host CLIs; they do not prove
