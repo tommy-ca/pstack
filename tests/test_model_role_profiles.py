@@ -209,13 +209,7 @@ def test_every_declared_host_plans_without_an_unmapped_host_verdict() -> None:
 
 
 def load_project_package_module():
-    import importlib.util
-
-    spec = importlib.util.spec_from_file_location(
-        "project_package_plan_probe", ROOT / "scripts" / "project-package.py")
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+    import scripts.package_projection as module
     return module
 
 

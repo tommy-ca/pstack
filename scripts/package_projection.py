@@ -707,8 +707,6 @@ def check_hooks(raw: Dict[str, Any], root: Path = ROOT) -> bool:
 def check_all(
     desc: PackageDescriptor,
     hosts: List[str] | None = None,
-    plugin_dir: Optional[Path] = None,
-    policy_path: Optional[Path] = None,
 ) -> bool:
     targets = hosts or list(TARGET_MAP.keys())
     all_ok = True
@@ -743,9 +741,9 @@ def check_all(
             if not aux_checker(desc):
                 all_ok = False
 
-    claude_ok = check_claude_plugin(desc, plugin_dir=plugin_dir)
+    claude_ok = check_claude_plugin(desc)
     hooks_ok = check_hooks(desc.raw_dict)
-    return all_ok and check_model_role_plan(desc, policy_path=policy_path) and claude_ok and hooks_ok
+    return all_ok and check_model_role_plan(desc) and claude_ok and hooks_ok
 
 
 def main() -> None:

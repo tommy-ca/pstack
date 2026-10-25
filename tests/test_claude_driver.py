@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Tests for Claude Code native profile, plugin manifest, and driver (#441)."""
 
-import importlib.util
 import json
 import subprocess
 import sys
