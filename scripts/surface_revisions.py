@@ -497,13 +497,13 @@ def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path
         pkg_hasher.update(b"model-role-policy.schema.json:missing")
     package_driver_revision = pkg_hasher.hexdigest()
 
-    bnd_driver_file = root / "scripts" / "scan-host-boundary.py"
-    if bnd_driver_file.is_file():
-        bnd_hasher = hashlib.sha256()
-        _update_driver_digest(bnd_hasher, bnd_driver_file)
-        boundary_driver_revision = bnd_hasher.hexdigest()
-    else:
-        boundary_driver_revision = "missing"
+    bnd_hasher = hashlib.sha256()
+    for fname in ("scan-host-boundary.py", "scan_host_boundary.py"):
+        bnd_driver_file = root / "scripts" / fname
+        if bnd_driver_file.is_file():
+            bnd_hasher.update(fname.encode("utf-8"))
+            _update_driver_digest(bnd_hasher, bnd_driver_file)
+    boundary_driver_revision = bnd_hasher.hexdigest()
 
     return SurfaceRevisions(
         canonical_pin=canonical_pin,

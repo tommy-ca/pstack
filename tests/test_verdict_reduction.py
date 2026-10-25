@@ -29,12 +29,7 @@ if str(ROOT) not in sys.path:
 
 import scripts.portable_verifier as verify_portable
 
-_scan_spec = importlib.util.spec_from_file_location(
-    "p8_scan_host_boundary", ROOT / "scripts" / "scan-host-boundary.py"
-)
-scan_host_boundary = importlib.util.module_from_spec(_scan_spec)
-sys.modules["p8_scan_host_boundary"] = scan_host_boundary
-_scan_spec.loader.exec_module(scan_host_boundary)
+import scripts.scan_host_boundary as scan_host_boundary
 
 import scripts.prove_omp_vertical_slice as vertical_slice
 

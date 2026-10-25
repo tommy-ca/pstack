@@ -3,8 +3,8 @@
   "hosts": {
     "grok": {
       "receipt": ".audit/evidence/grok-receipt.json",
-      "run_id": "grok-1792960689-88e29bf3",
-      "timestamp": "2026-10-25T20:38:13Z",
+      "run_id": "grok-1792962697-46e6b4ba",
+      "timestamp": "2026-10-25T21:11:41Z",
       "overall_verdict": "UNTESTED",
       "planes": {
         "canonical": "UNTESTED",
@@ -22,15 +22,15 @@
         "manifest_hash": "98d71548c2ea02481dcec79b4dbab1b00d8a5428c2cecd8006a58e95649da0e5",
         "driver_revision": "13311e92155a628b0fb96b64982df44fe319919671be2af00d43c8940d16ef5c",
         "package_driver_revision": "988133f8629bd9783684781000e03b953b319ed910cf0bc132d7aa8893d95fa5",
-        "boundary_driver_revision": "7f071ac38478a21ab2e3ab7127513090ff581fb9978278114315f48022a7855f",
+        "boundary_driver_revision": "d23f678932b26a7fe6772bf5ea662a19eba42de42b1cf8b615a6aa371534ce14",
         "upstream_freshness": "DRIFT",
         "commits_ahead": 67
       }
     },
     "codex": {
       "receipt": ".audit/evidence/codex-receipt.json",
-      "run_id": "codex-1792960693-36312e96",
-      "timestamp": "2026-10-25T20:38:17Z",
+      "run_id": "codex-1792962701-ff98d7ac",
+      "timestamp": "2026-10-25T21:11:45Z",
       "overall_verdict": "UNTESTED",
       "planes": {
         "canonical": "UNTESTED",
@@ -48,7 +48,7 @@
         "manifest_hash": "2c78b2678dab5a2941b9a28c554734c422d5f054abad171d3ccba0d1459cafdb",
         "driver_revision": "13311e92155a628b0fb96b64982df44fe319919671be2af00d43c8940d16ef5c",
         "package_driver_revision": "988133f8629bd9783684781000e03b953b319ed910cf0bc132d7aa8893d95fa5",
-        "boundary_driver_revision": "7f071ac38478a21ab2e3ab7127513090ff581fb9978278114315f48022a7855f",
+        "boundary_driver_revision": "d23f678932b26a7fe6772bf5ea662a19eba42de42b1cf8b615a6aa371534ce14",
         "upstream_freshness": "DRIFT",
         "commits_ahead": 67
       }
@@ -81,8 +81,8 @@
     },
     "opencode": {
       "receipt": ".audit/evidence/opencode-receipt.json",
-      "run_id": "opencode-1792960701-d62e0c7d",
-      "timestamp": "2026-10-25T20:38:25Z",
+      "run_id": "opencode-1792962710-52653f99",
+      "timestamp": "2026-10-25T21:11:54Z",
       "overall_verdict": "UNTESTED",
       "planes": {
         "canonical": "UNTESTED",
@@ -100,15 +100,15 @@
         "manifest_hash": "62f895bddcf6f5a3c596b2ae5e8aea86067bc0dc1cfd01b38303637a751caeab",
         "driver_revision": "13311e92155a628b0fb96b64982df44fe319919671be2af00d43c8940d16ef5c",
         "package_driver_revision": "988133f8629bd9783684781000e03b953b319ed910cf0bc132d7aa8893d95fa5",
-        "boundary_driver_revision": "7f071ac38478a21ab2e3ab7127513090ff581fb9978278114315f48022a7855f",
+        "boundary_driver_revision": "d23f678932b26a7fe6772bf5ea662a19eba42de42b1cf8b615a6aa371534ce14",
         "upstream_freshness": "DRIFT",
         "commits_ahead": 67
       }
     },
     "antigravity": {
       "receipt": ".audit/evidence/antigravity-receipt.json",
-      "run_id": "antigravity-1792960705-40b06fcc",
-      "timestamp": "2026-10-25T20:38:29Z",
+      "run_id": "antigravity-1792962714-2bcc76ca",
+      "timestamp": "2026-10-25T21:11:58Z",
       "overall_verdict": "UNTESTED",
       "planes": {
         "canonical": "UNTESTED",
@@ -126,7 +126,7 @@
         "manifest_hash": "78795355ce15e54da9b2c97b3bdec882c445f91c34298c9084b9b6727f52dc27",
         "driver_revision": "13311e92155a628b0fb96b64982df44fe319919671be2af00d43c8940d16ef5c",
         "package_driver_revision": "988133f8629bd9783684781000e03b953b319ed910cf0bc132d7aa8893d95fa5",
-        "boundary_driver_revision": "7f071ac38478a21ab2e3ab7127513090ff581fb9978278114315f48022a7855f",
+        "boundary_driver_revision": "d23f678932b26a7fe6772bf5ea662a19eba42de42b1cf8b615a6aa371534ce14",
         "upstream_freshness": "DRIFT",
         "commits_ahead": 67
       }
