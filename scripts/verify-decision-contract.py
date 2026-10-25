@@ -17,8 +17,8 @@ import scripts.verify_decision_contract as _vdc
 from scripts.verify_decision_contract import *
 
 
-def main() -> int:
-    return _vdc.main()
+def main(argv: list[str] | None = None) -> int:
+    return _vdc.main(argv)
 
 
 if __name__ == "__main__":

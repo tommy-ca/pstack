@@ -375,14 +375,14 @@ def verify(args: argparse.Namespace) -> dict[str, Any]:
     return result
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--upstream-commit", type=Path, required=True)
     parser.add_argument("--upstream-tree", type=Path, required=True)
     parser.add_argument("--evidence-dir", type=Path)
     parser.add_argument("--require-clean", action="store_true")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     result = verify(args)
     if args.evidence_dir:
         try:
