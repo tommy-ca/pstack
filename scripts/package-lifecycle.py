@@ -2,6 +2,7 @@
 """Native package lifecycle driver for pstack across supported harnesses.
 
 CLI entrypoint and facade re-exporting from scripts.package_lifecycle.
+References scripts.host_identity via package_lifecycle.
 """
 
 from __future__ import annotations

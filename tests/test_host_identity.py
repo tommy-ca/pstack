@@ -59,6 +59,7 @@ IMPORTING_SURFACES = (
     "scripts/portability_schema.py",
     "scripts/verify-portable.py",
     "scripts/package-lifecycle.py",
+    "scripts/package_lifecycle.py",
     "scripts/project-package.py",
     "scripts/package_projection.py",
     "scripts/drivers/__init__.py",
