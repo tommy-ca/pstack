@@ -65,6 +65,7 @@ IMPORTING_SURFACES = (
     "scripts/package_projection.py",
     "scripts/drivers/__init__.py",
     "scripts/scan-host-boundary.py",
+    "scripts/scan_host_boundary.py",
 )
 REFERENCING_SCHEMAS = (
     "profile.schema.json",

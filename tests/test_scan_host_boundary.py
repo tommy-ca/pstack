@@ -6,15 +6,14 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 SCRIPT = ROOT / "scripts" / "scan-host-boundary.py"
 PROFILES_DIR = ROOT / "profiles"
 BOUNDARY_FIXTURES = Path(__file__).resolve().parent / "fixtures" / "boundary"
 
-loader = importlib.util.spec_from_file_location("scan_host_boundary", SCRIPT)
-assert loader is not None and loader.loader is not None
-scan_host_boundary = importlib.util.module_from_spec(loader)
-sys.modules["scan_host_boundary"] = scan_host_boundary
-loader.loader.exec_module(scan_host_boundary)
+import scripts.scan_host_boundary as scan_host_boundary
 
 extract_forbidden_vocabulary = scan_host_boundary.extract_forbidden_vocabulary
 run_scan = scan_host_boundary.run_scan

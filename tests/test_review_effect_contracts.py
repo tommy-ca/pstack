@@ -26,16 +26,13 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 CHANGE = ROOT / "openspec" / "changes" / "archive" / "2026-10-11-deepseek-skill-portability"
 ATOM_TABLE = CHANGE / "atomic-patterns.md"
 SPEC = CHANGE / "specs" / "pstack-reusable-skill-patterns" / "spec.md"
 
-SCANNER = ROOT / "scripts" / "scan-host-boundary.py"
-_scanner_spec = importlib.util.spec_from_file_location("p13_scan_host_boundary", SCANNER)
-assert _scanner_spec is not None and _scanner_spec.loader is not None
-scan_host_boundary = importlib.util.module_from_spec(_scanner_spec)
-sys.modules["p13_scan_host_boundary"] = scan_host_boundary
-_scanner_spec.loader.exec_module(scan_host_boundary)
+import scripts.scan_host_boundary as scan_host_boundary
 
 # The atoms this unit owns, and the owners this unit extends. `bug-fix`, `refactoring`,
 # `perf-issue` and `shipping` are poteto-mode playbooks; `review` is the host's bundled
