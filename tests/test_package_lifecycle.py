@@ -11,11 +11,8 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 LIFECYCLE_SCRIPT = ROOT / "scripts" / "package-lifecycle.py"
 
-loader = importlib.util.spec_from_file_location("package_lifecycle", LIFECYCLE_SCRIPT)
-assert loader is not None and loader.loader is not None
-package_lifecycle = importlib.util.module_from_spec(loader)
+import scripts.package_lifecycle as package_lifecycle
 sys.modules["package_lifecycle"] = package_lifecycle
-loader.loader.exec_module(package_lifecycle)
 
 
 @pytest.mark.parametrize("host", ["grok", "codex", "omp", "opencode", "antigravity"])

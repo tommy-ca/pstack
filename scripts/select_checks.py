@@ -186,6 +186,11 @@ CHECK_SELECTION_TABLE: List[CheckRule] = [
         ("tests/test_package_lifecycle.py", "tests/test_package_lifecycle_safety.py"),
         (),
     ),
+    (
+        "scripts/package_lifecycle.py",
+        ("tests/test_package_lifecycle.py", "tests/test_package_lifecycle_safety.py"),
+        (),
+    ),
     ("scripts/canonical-index.py", ("tests/test_canonical_index.py",), ()),
     ("scripts/scaffold-verification-skill.py", ("tests/test_scaffold_verification_skill.py",), ()),
     ("scripts/sync-antigravity-plugin.py", ("tests/test_sync_antigravity_plugin.py",), ()),
@@ -303,6 +308,11 @@ CHECK_SELECTION_TABLE: List[CheckRule] = [
     ),
     (
         "scripts/prove-omp-native-package.py",
+        ("tests/test_omp_native_package.py",),
+        (),
+    ),
+    (
+        "scripts/prove_omp_native_package.py",
         ("tests/test_omp_native_package.py",),
         (),
     ),

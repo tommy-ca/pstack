@@ -29,7 +29,6 @@ from __future__ import annotations
 
 import argparse
 import hashlib
-import importlib.util
 import json
 import os
 import re
@@ -47,33 +46,30 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-
-def _load_module(name: str, rel: str) -> Any:
-    spec = importlib.util.spec_from_file_location(name, ROOT / rel)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[name] = module
-    spec.loader.exec_module(module)
-    return module
-
-
-_pl = _load_module("package_lifecycle", "scripts/package-lifecycle.py")
-_vp = _load_module("verify_portable", "scripts/verify-portable.py")
-# The package lever already owns the disposable-root discovery helpers (link,
-# advertised skills, ambient snapshot). Reusing them keeps one definition of how
-# the ambient root is isolated instead of two that can drift apart.
-_pkg = _load_module("prove_omp_native_package", "scripts/prove-omp-native-package.py")
-
 from scripts.drivers.omp import _assistant_text, _model_route_error  # noqa: E402
 from scripts.drivers.omp_rpc import (  # noqa: E402
     OmpRpcError,
     OmpRpcSession,
     reduce_child_settlement,
 )
+from scripts.package_lifecycle import (  # noqa: E402
+    get_unmanaged_paths,
+    install_plugin,
+    load_package_descriptor,
+    uninstall_plugin,
+    verify_plugin_at_dir,
+)
 from scripts.portability_schema import (  # noqa: E402
     ScenarioResult,
     VerificationReceipt,
     compute_surface_revisions,
+    reduce_verdicts,
+)
+from scripts.prove_omp_native_package import (  # noqa: E402
+    advertised_skills,
+    ambient_defines_agent,
+    ambient_snapshot,
+    run_omp,
 )
 
 LIVE_GATE_ENV = "PSTACK_RUN_OMP_LIVE"
@@ -91,10 +87,6 @@ SLICE_PROMPT = (
     'Use the task tool exactly once with the agent "{agent}" and this assignment: '
     "Reply with exactly CHILD_OK as your findings. Then reply with exactly PARENT_DONE"
 )
-run_omp = _pkg.run_omp
-advertised_skills = _pkg.advertised_skills
-ambient_snapshot = _pkg.ambient_snapshot
-ambient_defines_agent = _pkg.ambient_defines_agent
 READ_ONLY = {
     "enforcement": "advisory",
     "observed_negative_write_probe": False,
@@ -207,7 +199,7 @@ def uninstall_plan(plugin_dir: Path) -> Dict[str, Any]:
         owned = list(json.loads(record.read_text(encoding="utf-8")).get("managed_files", []))
     return {
         "owned": sorted(owned),
-        "preserved": sorted(_pl.get_unmanaged_paths(plugin_dir, set(owned))),
+        "preserved": sorted(get_unmanaged_paths(plugin_dir, set(owned))),
     }
 
 
@@ -218,9 +210,9 @@ def offline_slice(run_dir: Path, agent: str) -> Dict[str, Any]:
     """Projection, manifest shape and uninstall plan: no binary, no model route."""
     started = time.time()
     base = run_dir / "install"
-    plugin_dir = _pl.install_plugin("omp", target_base=base)
-    desc, _ = _pl.load_package_descriptor()
-    shape_ok, shape_errors = _pl.verify_plugin_at_dir("omp", plugin_dir, desc)
+    plugin_dir = install_plugin("omp", target_base=base)
+    desc, _ = load_package_descriptor()
+    shape_ok, shape_errors = verify_plugin_at_dir("omp", plugin_dir, desc)
     manifest = json.loads((plugin_dir / "package.json").read_text(encoding="utf-8"))
     manifest_ok = manifest.get("name") == PACKAGE_NAME and isinstance(manifest.get("omp"), dict)
 
@@ -245,7 +237,7 @@ def offline_slice(run_dir: Path, agent: str) -> Dict[str, Any]:
 
     sentinels = write_sentinels(plugin_dir)
     plan = uninstall_plan(plugin_dir)
-    uninstall_ok, uninstall_errors = _pl.uninstall_plugin("omp", target_base=base)
+    uninstall_ok, uninstall_errors = uninstall_plugin("omp", target_base=base)
     preserved = [rel for rel in sentinels if (plugin_dir / rel).is_file()]
     owned_removed = [rel for rel in OWNED_PROBE_PATHS if not (plugin_dir / rel).exists()]
 
@@ -672,7 +664,7 @@ def build_receipt(
     artifacts: List[str],
 ) -> tuple[VerificationReceipt, Path]:
     planes = {
-        plane: _vp.reduce_verdicts([s.verdict for s in scenarios if s.plane == plane])
+        plane: reduce_verdicts([s.verdict for s in scenarios if s.plane == plane])
         for plane in ("canonical", "adapter", "package", "runtime")
     }
     receipt = VerificationReceipt(
@@ -680,7 +672,7 @@ def build_receipt(
         host="omp",
         host_version=host_version or "not-observed",
         timestamp=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-        overall_verdict=_vp.reduce_verdicts(planes.values()),
+        overall_verdict=reduce_verdicts(planes.values()),
         planes=planes,
         surface_revisions=compute_surface_revisions(ROOT, "omp"),
         scenarios=scenarios,
@@ -749,7 +741,7 @@ def prove(
                     "no model route: pass --review-model or configure an ambient task/default model role"
                 )
             else:
-                installed = _pl.install_plugin("omp", target_base=temp_root / "install")
+                installed = install_plugin("omp", target_base=temp_root / "install")
                 package = temp_root / "package"
                 shutil.copytree(installed, package, symlinks=True)
                 write_sentinels(package)
