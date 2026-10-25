@@ -43,6 +43,7 @@ jobs:
             tests/test_verdict_reduction.py \
             tests/test_harness_drivers.py \
             tests/test_omp_rpc.py \
+            tests/test_omp_rpc_cancel.py \
             tests/test_project_package.py \
             tests/test_skill_frontmatter.py \
             tests/test_scan_host_boundary.py \
