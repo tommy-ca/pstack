@@ -251,6 +251,7 @@ CHECK_SELECTION_TABLE: List[CheckRule] = [
             "tests/test_evidence_durability.py",
             "tests/test_evidence_index_resilience.py",
             "tests/test_evidence_settlement.py",
+            "tests/test_evidence_cancellation.py",
             "tests/test_portability_schemas.py",
         ),
         (),
