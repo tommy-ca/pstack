@@ -2,6 +2,7 @@
 """Host-boundary gate for the portable shared surfaces.
 
 CLI facade re-exporting from scripts.scan_host_boundary.
+References scripts.host_identity via scan_host_boundary.
 """
 
 from __future__ import annotations
