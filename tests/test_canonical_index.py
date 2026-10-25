@@ -1,12 +1,16 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 import subprocess
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+import scripts.canonical_index as canonical_index
+
 SCRIPT = ROOT / "scripts" / "canonical-index.py"
 INVENTORY = ROOT / "openspec" / "canonical-inventory.json"
 
@@ -16,12 +20,7 @@ def test_canonical_index_script_exists() -> None:
 
 
 def test_canonical_index_get_pin_matches_upstream() -> None:
-    loader = importlib.util.spec_from_file_location("canonical_index", SCRIPT)
-    assert loader is not None and loader.loader is not None
-    mod = importlib.util.module_from_spec(loader)
-    loader.loader.exec_module(mod)
-
-    pin = mod.get_pin()
+    pin = canonical_index.get_pin()
     assert len(pin) == 40
     upstream_text = (ROOT / "UPSTREAM").read_text(encoding="utf-8")
     assert pin in upstream_text
@@ -119,11 +118,7 @@ def test_canonical_index_drift_observation_metadata() -> None:
 
 def _upstream_cache_present() -> bool:
     try:
-        loader = importlib.util.spec_from_file_location("canonical_index_probe", SCRIPT)
-        assert loader is not None and loader.loader is not None
-        mod = importlib.util.module_from_spec(loader)
-        loader.loader.exec_module(mod)
-        return mod.get_git_cache_root() is not None
+        return canonical_index.get_git_cache_root() is not None
     except Exception:
         return False
 
