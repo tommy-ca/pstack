@@ -1,13 +1,18 @@
 from __future__ import annotations
 
-import importlib.util
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
 
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
-SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "sync-antigravity-plugin.py"
+import scripts.sync_antigravity_plugin as sync_mod
+
+SCRIPT = ROOT / "scripts" / "sync-antigravity-plugin.py"
 
 
 def git(root: Path, *args: str) -> subprocess.CompletedProcess[str]:
@@ -41,10 +46,7 @@ def plugin(tmp_path, monkeypatch):
     home = tmp_path / "home"
     home.mkdir()
     monkeypatch.setenv("HOME", str(home))
-    spec = importlib.util.spec_from_file_location("sync_antigravity_test", SCRIPT)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+    module = sync_mod
     desc, raw = module.load_package_descriptor()
     repo = tmp_path / "repo"
     write(repo, "skills/example/SKILL.md", b"# Example skill\n")

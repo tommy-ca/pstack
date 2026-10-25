@@ -222,6 +222,7 @@ CHECK_SELECTION_TABLE: List[CheckRule] = [
     ("scripts/scaffold-verification-skill.py", ("tests/test_scaffold_verification_skill.py",), ()),
     ("scripts/scaffold_verification_skill.py", ("tests/test_scaffold_verification_skill.py",), ()),
     ("scripts/sync-antigravity-plugin.py", ("tests/test_sync_antigravity_plugin.py",), ()),
+    ("scripts/sync_antigravity_plugin.py", ("tests/test_sync_antigravity_plugin.py",), ()),
     (
         "references/**",
         (
