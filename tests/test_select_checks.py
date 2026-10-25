@@ -7,7 +7,6 @@ verdict must stop counting as current CI once the patch under it changes.
 
 from __future__ import annotations
 
-import importlib.util
 import re
 import subprocess
 import sys
@@ -20,21 +19,9 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts import evidence_receipts
+import scripts.portable_verifier as vp
 
 PY = sys.executable
-
-
-def _load_verifier():
-    script = ROOT / "scripts" / "verify-portable.py"
-    spec = importlib.util.spec_from_file_location("verify_portable_select", script)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules["verify_portable_select"] = module
-    spec.loader.exec_module(module)
-    return module
-
-
-vp = _load_verifier()
 
 # The offline PR gate as named in .github/workflows/portability-offline.yml. Read from
 # the workflow rather than re-typed, so a gate list change cannot leave this stale.
@@ -146,6 +133,10 @@ class TestCheckSelectionTable:
             ("scripts/model_role_policy.py", ["pytest:tests/test_model_role_schema.py", "pytest:tests/test_model_role_constraints.py", "pytest:tests/test_model_role_profiles.py", "pytest:tests/test_setup_pstack.py"]),
             ("scripts/setup_pstack.py", ["pytest:tests/test_model_role_schema.py", "pytest:tests/test_model_role_constraints.py", "pytest:tests/test_model_role_profiles.py", "pytest:tests/test_setup_pstack.py"]),
             ("scripts/host_identity.py", ["pytest:tests/test_host_identity.py", "pytest:tests/test_portability_schemas.py"]),
+            ("scripts/sync_antigravity_plugin.py", ["pytest:tests/test_sync_antigravity_plugin.py"]),
+            ("scripts/verify_decision_contract.py", ["pytest:tests/test_verify_decision_contract.py"]),
+            ("scripts/check_plugin_agents.py", ["pytest:tests/test_plugin_agents.py"]),
+            ("scripts/sync_from_upstream.py", ["pytest:tests/test_verify_harness_guides.py", "pytest:tests/test_refresh_hygiene.py"]),
         ]
         offline_set = sorted(f"pytest:{m}" for m in OFFLINE_GATE)
         for path, expected_ids in decomposed:

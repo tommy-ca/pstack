@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
 import re
@@ -8,6 +7,10 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+import scripts.sync_from_upstream as sync_mod
 
 SWITCHER = "[English](README.md) · [简体中文](README.zh-CN.md)"
 CJK = re.compile(r"[\u4e00-\u9fff]")
@@ -187,12 +190,7 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert "up to date" in logged.stdout or re.search(
         r"^[0-9a-f]{7} ", logged.stdout, re.MULTILINE
     )
-    sync_loader = importlib.util.spec_from_file_location(
-        "sync_from_upstream_log", ROOT / "scripts/sync-from-upstream.py"
-    )
-    assert sync_loader is not None and sync_loader.loader is not None
-    sync = importlib.util.module_from_spec(sync_loader)
-    sync_loader.loader.exec_module(sync)
+    sync = sync_mod
     cache = sync.remote_cache()
     if (cache / ".git").is_dir() or (cache / "HEAD").is_file():
         head = subprocess.run(
