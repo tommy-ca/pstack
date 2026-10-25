@@ -31,6 +31,7 @@ from scripts.portability_schema import (
     SKILLS_HASH_IGNORED_SUFFIXES,
 )
 
+import scripts.package_projection as _pp_mod
 from scripts.package_projection import (
     generate_antigravity_commands,
     generate_antigravity_manifest,
