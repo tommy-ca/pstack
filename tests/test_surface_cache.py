@@ -130,8 +130,11 @@ def test_package_ignored_path_query_propagates_git_failure(tmp_path: Path, monke
     [
         "scripts/verify-portable.py",
         "scripts/verify-harness.py",
+        "scripts/verify_harness.py",
         "scripts/adapt-harness.py",
+        "scripts/adapt_harness.py",
         "scripts/scaffold-verification-skill.py",
+        "scripts/scaffold_verification_skill.py",
         "scripts/skill_frontmatter.py",
         "scripts/portability_schema.py",
         "scripts/route_resolver.py",
