@@ -38,7 +38,7 @@ def _load_module(name: str, rel: str):
     return module
 
 
-lifecycle = _load_module("package_lifecycle", "scripts/package-lifecycle.py")
+import scripts.package_lifecycle as lifecycle
 verify_portable = _load_module("verify_portable", "scripts/verify-portable.py")
 verify_harness = _load_module("verify_harness", "scripts/verify-harness.py")
 scan_boundary = _load_module("scan_host_boundary", "scripts/scan-host-boundary.py")
