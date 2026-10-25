@@ -162,12 +162,12 @@ CHECK_SELECTION_TABLE: List[CheckRule] = [
     ),
     (
         "scripts/verify-portable.py",
-        ("tests/test_verify_portable.py", "tests/test_verdict_reduction.py"),
+        ("tests/test_verify_portable.py", "tests/test_verdict_reduction.py", "tests/test_evidence_refresh_static.py"),
         (),
     ),
     (
         "scripts/portable_verifier.py",
-        ("tests/test_verify_portable.py", "tests/test_verdict_reduction.py"),
+        ("tests/test_verify_portable.py", "tests/test_verdict_reduction.py", "tests/test_evidence_refresh_static.py"),
         (),
     ),
     (
