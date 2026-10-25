@@ -381,3 +381,10 @@ def test_live_tree_conforms_to_canonical_pin_and_inventory(tmp_path: Path) -> No
     assert data["source"]["revision"] == rev
 
 
+def test_pure_module_direct_invariants() -> None:
+    registry_data, _, _ = fixture_data()
+    registry = vdc.parse_registry(registry_data)
+    assert len(registry.routes) == 2
+    assert vdc.normalize_spec(SPEC) == vdc.normalize_spec(SPEC.replace("## Requirements", "## ADDED Requirements"))
+
+
