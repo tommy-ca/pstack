@@ -7,6 +7,10 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+import scripts.sync_from_upstream as sync_mod
 SCRIPT = ROOT / "skills" / "swarm" / "scripts" / "refresh-hygiene.py"
 CLAUDE = "transcripts live in ~/.claude/projects/encoded\n"
 GROK = "GROK_SESSION_ID\n"
@@ -205,12 +209,10 @@ def test_sync_remote_cache_is_primary_checkout(tmp_path: Path) -> None:
     )
     try:
         live = ROOT / "scripts" / "sync-from-upstream.py"
+        live_mod = ROOT / "scripts" / "sync_from_upstream.py"
         script = wt / "scripts" / "sync-from-upstream.py"
         script.write_text(live.read_text(encoding="utf-8"), encoding="utf-8")
-        spec = importlib.util.spec_from_file_location("sync_from_upstream_wt", script)
-        assert spec is not None and spec.loader is not None
-        sync = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(sync)
+        (wt / "scripts" / "sync_from_upstream.py").write_text(live_mod.read_text(encoding="utf-8"), encoding="utf-8")
         common_proc = subprocess.run(
             ["git", "-C", str(ROOT), "rev-parse", "--git-common-dir"],
             capture_output=True,
@@ -224,7 +226,7 @@ def test_sync_remote_cache_is_primary_checkout(tmp_path: Path) -> None:
             common = common.resolve()
         primary = common.parent if common.name == ".git" else common
         expected = primary / ".worktrees" / "upstream-cursor-plugins"
-        got = sync.remote_cache()
+        got = sync_mod.remote_cache(wt)
         assert got == expected
         assert got != wt / ".worktrees" / "upstream-cursor-plugins"
         pin = subprocess.run(
