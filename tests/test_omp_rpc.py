@@ -789,16 +789,8 @@ def test_verifier_dispatch_records_the_cancel_scenario_for_omp_only(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     """The cancel scenario reaches a receipt only because drive() dispatches it."""
-    import importlib.util
-
     from scripts.drivers import omp as omp_driver
-
-    loader = importlib.util.spec_from_file_location(
-        "verify_portable_p3", ROOT / "scripts" / "verify-portable.py"
-    )
-    assert loader is not None and loader.loader is not None
-    verify_portable = importlib.util.module_from_spec(loader)
-    loader.loader.exec_module(verify_portable)
+    import scripts.portable_verifier as verify_portable
 
     monkeypatch.delenv(omp_driver.LIVE_GATE_ENV, raising=False)
     monkeypatch.setattr(omp_driver.OMPDriver, "is_available", lambda self: (True, "stubbed host"))

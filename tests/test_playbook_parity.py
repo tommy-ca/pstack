@@ -15,7 +15,6 @@ host-reference contract around that lever instead of re-proving spawn/join.
 
 from __future__ import annotations
 
-import importlib.util
 import json
 import re
 from pathlib import Path
@@ -29,6 +28,8 @@ BINDINGS = ("receipt scenario id", "file hash", "head sha", "commit sha")
 CENSUS_TOKENS = ("pstack.package.json#host_targets", "get_declared_hosts")
 
 
+from scripts.evidence_index import get_declared_hosts
+
 def playbook(name: str) -> str:
     path = ROOT / "skills" / name / "SKILL.md"
     assert path.is_file(), path
@@ -36,11 +37,7 @@ def playbook(name: str) -> str:
 
 
 def declared_hosts() -> list[str]:
-    spec = importlib.util.spec_from_file_location("verify_portable", ROOT / "scripts" / "verify-portable.py")
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module.get_declared_hosts()
+    return get_declared_hosts()
 
 
 @pytest.mark.parametrize("name", PLAYBOOKS)

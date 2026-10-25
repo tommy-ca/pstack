@@ -10,8 +10,11 @@ Applies a strict 3-criterion judge rubric on a common scale.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import re
 import sys
+import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
@@ -227,25 +230,7 @@ class DshEvalResult:
 # file, so the recorded result carries no live/native claim.
 
 import copy
-import hashlib
-import importlib.util
-import re
-import time
-
-
-def _load_sibling_module(name: str, rel: str) -> Any:
-    spec = importlib.util.spec_from_file_location(name, ROOT / rel)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[name] = module
-    spec.loader.exec_module(module)
-    return module
-
-
-# The shipped reducer owns FAIL > BLOCKED > UNTESTED > PASS; reuse it instead of
-# restating the precedence in a second place.
-_vp = _load_sibling_module("verify_portable", "scripts/verify-portable.py")
-reduce_verdicts = _vp.reduce_verdicts
+from scripts.portable_verifier import reduce_verdicts
 
 DSH_CORPUS_DIR = ROOT / "tests" / "fixtures" / "eval_corpus_dsh"
 CANDIDATE_PHASE_FILE = "candidate_phase.json"

@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 from dataclasses import asdict
-import importlib.util
 import json
 import os
 from pathlib import Path
 import shutil
 import subprocess
 import sys
+
+import scripts.portable_verifier as portable_verifier
 
 from scripts.portability_types import (
     Binding,
@@ -69,13 +70,7 @@ def _disposable_copy(tmp_path: Path) -> Path:
 
 
 def _load_verify_portable_module():
-    loader = importlib.util.spec_from_file_location(
-        "verify_portable_refresh", ROOT / "scripts" / "verify-portable.py"
-    )
-    assert loader is not None and loader.loader is not None
-    module = importlib.util.module_from_spec(loader)
-    loader.loader.exec_module(module)
-    return module
+    return portable_verifier
 
 
 def _stat_denied_copy(tmp_path: Path, relative: str) -> tuple:
@@ -243,13 +238,9 @@ def _omp_live_root(tmp_path: Path) -> tuple:
 
 
 def _portable_verifier(evidence_root: Path, root: Path | None = None):
-    loader = importlib.util.spec_from_file_location("verify_portable_preserve", ROOT / "scripts" / "verify-portable.py")
-    assert loader is not None and loader.loader is not None
-    module = importlib.util.module_from_spec(loader)
-    loader.loader.exec_module(module)
-    if root is not None:
-        module.ROOT = root
-    verifier = module.PortableVerifier(host="omp", evidence_root=evidence_root)
+    verifier = portable_verifier.PortableVerifier(
+        host="omp", evidence_root=evidence_root, root=root or ROOT
+    )
     verifier.launch()
     return verifier
 

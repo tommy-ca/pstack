@@ -27,9 +27,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-loader = importlib.util.spec_from_file_location("verify_portable", ROOT / "scripts" / "verify-portable.py")
-verify_portable = importlib.util.module_from_spec(loader)
-loader.loader.exec_module(verify_portable)
+import scripts.portable_verifier as verify_portable
 
 _scan_spec = importlib.util.spec_from_file_location(
     "p8_scan_host_boundary", ROOT / "scripts" / "scan-host-boundary.py"

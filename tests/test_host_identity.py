@@ -58,6 +58,7 @@ HOST_ID_SCHEMA = SCHEMAS_DIR / "host-id.schema.json"
 IMPORTING_SURFACES = (
     "scripts/portability_schema.py",
     "scripts/verify-portable.py",
+    "scripts/portable_verifier.py",
     "scripts/package-lifecycle.py",
     "scripts/package_lifecycle.py",
     "scripts/project-package.py",

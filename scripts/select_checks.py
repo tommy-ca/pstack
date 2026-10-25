@@ -166,6 +166,11 @@ CHECK_SELECTION_TABLE: List[CheckRule] = [
         (),
     ),
     (
+        "scripts/portable_verifier.py",
+        ("tests/test_verify_portable.py", "tests/test_verdict_reduction.py"),
+        (),
+    ),
+    (
         "scripts/verify-harness.py",
         (
             "tests/test_verify_harness.py",
