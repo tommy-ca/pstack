@@ -323,7 +323,12 @@ CHECK_SELECTION_TABLE: List[CheckRule] = [
     ),
     (
         "scripts/prove-omp-vertical-slice.py",
-        ("tests/test_omp_vertical_slice.py",),
+        ("tests/test_omp_native_package.py", "tests/test_verdict_reduction.py"),
+        (),
+    ),
+    (
+        "scripts/prove_omp_vertical_slice.py",
+        ("tests/test_omp_native_package.py", "tests/test_verdict_reduction.py"),
         (),
     ),
     ("scripts/**", ("{offline}",), ()),
