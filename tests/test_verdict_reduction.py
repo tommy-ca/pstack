@@ -36,12 +36,7 @@ scan_host_boundary = importlib.util.module_from_spec(_scan_spec)
 sys.modules["p8_scan_host_boundary"] = scan_host_boundary
 _scan_spec.loader.exec_module(scan_host_boundary)
 
-_slice_spec = importlib.util.spec_from_file_location(
-    "p8_vertical_slice", ROOT / "scripts" / "prove-omp-vertical-slice.py"
-)
-vertical_slice = importlib.util.module_from_spec(_slice_spec)
-sys.modules["p8_vertical_slice"] = vertical_slice
-_slice_spec.loader.exec_module(vertical_slice)
+import scripts.prove_omp_vertical_slice as vertical_slice
 
 import scripts.prove_omp_native_package as native_package
 
