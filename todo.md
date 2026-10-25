@@ -281,11 +281,11 @@
 - [x] Unit 4: 6-Harness matrix verification, receipts refresh, and multi-model Interrogate review.
 - [x] Unit 5: Stacked PRs merged bottom-up to main, and verified end-to-end workflows (6-Harness Matrix Verdict PASS, ALL FRESH).
 
-## Epic #789: Code Judo Round 7 — Decompose scan-host-boundary and canonical-index levers, eliminate dynamic loaders, and isolate OMP RPC cancel test suite
+## Epic #789: Code Judo Round 7 — Decompose scan-host-boundary and canonical-index levers, eliminate dynamic loaders, and isolate OMP RPC cancel test suite (CLOSED)
 - [x] Unit 1 (Issue #786): Extract `scripts/scan_host_boundary.py` from `scripts/scan-host-boundary.py`, eliminate dynamic `spec_from_file_location` in tests, and maintain entrypoint facade (PR #790).
-- [x] Unit 2 (Issue #787): Extract `scripts/canonical_index.py` from `scripts/canonical-index.py`, eliminate dynamic loaders in tests, and maintain entrypoint facade (PR #791).
-- [x] Unit 3 (Issue #788): Extract `tests/test_omp_rpc_cancel.py` from `tests/test_omp_rpc.py` (814L) to bring all test files under 750 lines.
-- [ ] Unit 4: 6-Harness matrix verification, receipts refresh, and multi-model Interrogate review.
-- [ ] Unit 5: Create stacked PRs, merge bottom-up to main, and verify end-to-end workflows.
+- [x] Unit 2 (Issue #787): Extract `scripts/canonical_index.py` from `scripts/canonical-index.py`, eliminate dynamic loaders in tests, and maintain entrypoint facade (PR #793).
+- [x] Unit 3 (Issue #788): Extract `tests/test_omp_rpc_cancel.py` from `tests/test_omp_rpc.py` (814L) to bring all test files under 750 lines (PR #794).
+- [x] Unit 4: 6-Harness matrix verification, receipts refresh, and multi-model Interrogate review (PASS).
+- [x] Unit 5: Stacked PRs merged bottom-up to main, and verified end-to-end workflows (6-Harness Matrix Verdict PASS, ALL FRESH).
 
 
