@@ -266,3 +266,11 @@
 - [x] Merge gate: full offline gate at `88c3e5e` is 1064 passed, 10 skipped.
 - [ ] Deferred with an issue: #725 isolation nondeterminism, #726 `refresh-static --host all`, #728 ambient OMP test, #729 BLOCKED overwrites PASS, #730 DSH probe scope churn.
 - [x] Operator gate: #699 SemVer identity migration, approved and shipped as #733. Published label `0.15.29-preview.0` on the descriptor and all six adapters, `upstream_pin` unchanged, explicit breaking upgrade with a named retired-version error, receipts requalified with both checks clean.
+
+## Epic #770: Code Judo Round 5 — Decompose project-package, eliminate dynamic script loaders, and unify test profile construction
+- [ ] Unit 1 (Issue #771): Extract `scripts/package_projection.py`, eliminate dynamic `importlib` spec loader hacks across scripts and tests, and reduce `scripts/project-package.py` to a clean facade.
+- [ ] Unit 2 (Issue #772): Eliminate dynamic module loaders in OMP levers (`prove-omp-vertical-slice.py`, `prove-omp-native-package.py`) by reusing canonical `reduce_verdicts` and direct lifecycle imports.
+- [ ] Unit 3 (Issue #773): Deduplicate test profile construction in `tests/evidence_test_helpers.py` and `tests/test_evidence_settlement.py` using `HarnessProfile.from_dict` / `from_file`, safeguarding the 1k sprawl threshold.
+- [ ] Unit 4: 6-Harness Swarm matrix verification, receipts refresh, and adversarial Interrogate review across stacked diffs.
+- [ ] Unit 5: Stacked PRs creation on GitHub, Babysit / merge bottom-up to main, and close issues.
+

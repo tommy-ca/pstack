@@ -35,25 +35,20 @@ from scripts.portability_schema import (  # noqa: E402
     SKILLS_HASH_IGNORED_SUFFIXES,
 )
 
-PROJECT_PACKAGE_SCRIPT = ROOT / "scripts" / "project-package.py"
-_loader = importlib.util.spec_from_file_location("project_package", PROJECT_PACKAGE_SCRIPT)
-assert _loader is not None and _loader.loader is not None
-_pp_mod = importlib.util.module_from_spec(_loader)
-sys.modules["project_package"] = _pp_mod
-_loader.loader.exec_module(_pp_mod)
-
-load_package_descriptor = _pp_mod.load_package_descriptor
-generate_grok_manifest = _pp_mod.generate_grok_manifest
-generate_codex_manifest = _pp_mod.generate_codex_manifest
-generate_omp_manifest = _pp_mod.generate_omp_manifest
-generate_opencode_manifest = _pp_mod.generate_opencode_manifest
-generate_antigravity_manifest = _pp_mod.generate_antigravity_manifest
-generate_antigravity_models = _pp_mod.generate_antigravity_models
-generate_antigravity_commands = _pp_mod.generate_antigravity_commands
-generate_droid_manifest = _pp_mod.generate_droid_manifest
-generate_droid_marketplace = _pp_mod.generate_droid_marketplace
-generate_droid_roles = _pp_mod.generate_droid_roles
-check_all_projected = _pp_mod.check_all
+from scripts.package_projection import (
+    check_all as check_all_projected,
+    generate_antigravity_commands,
+    generate_antigravity_manifest,
+    generate_antigravity_models,
+    generate_codex_manifest,
+    generate_droid_manifest,
+    generate_droid_marketplace,
+    generate_droid_roles,
+    generate_grok_manifest,
+    generate_omp_manifest,
+    generate_opencode_manifest,
+    load_package_descriptor,
+)
 
 SUPPORTED_HOSTS = BUILTIN_HOSTS
 

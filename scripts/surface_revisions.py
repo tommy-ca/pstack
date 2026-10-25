@@ -468,6 +468,7 @@ def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path
     pkg_hasher = hashlib.sha256()
     for fname in (
         "project-package.py",
+        "package_projection.py",
         "package-lifecycle.py",
         "sync-antigravity-plugin.py",
         "model_role_policy.py",

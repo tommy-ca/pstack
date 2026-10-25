@@ -1,5 +1,4 @@
 import dataclasses
-import importlib.util
 import json
 import re
 import sys
@@ -7,13 +6,10 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "scripts" / "project-package.py"
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
-loader = importlib.util.spec_from_file_location("project_package", SCRIPT)
-assert loader is not None and loader.loader is not None
-project_package = importlib.util.module_from_spec(loader)
-sys.modules["project_package"] = project_package
-loader.loader.exec_module(project_package)
+import scripts.package_projection as project_package
 
 
 def test_load_package_descriptor() -> None:

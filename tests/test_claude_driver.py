@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Tests for Claude Code native profile, plugin manifest, and driver (#441)."""
 
-import importlib.util
 import json
 import subprocess
 import sys
@@ -22,13 +21,7 @@ from scripts.portability_schema import (
     ValidationError,
 )
 
-_pp_spec = importlib.util.spec_from_file_location("project_package", ROOT / "scripts" / "project-package.py")
-assert _pp_spec and _pp_spec.loader
-_pp_mod = importlib.util.module_from_spec(_pp_spec)
-_pp_spec.loader.exec_module(_pp_mod)
-
-check_claude_plugin = _pp_mod.check_claude_plugin
-load_package_descriptor = _pp_mod.load_package_descriptor
+from scripts.package_projection import check_claude_plugin, load_package_descriptor
 
 
 def test_claude_profile_conforms_to_schema_and_declared_host_gates() -> None:

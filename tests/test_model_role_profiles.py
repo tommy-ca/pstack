@@ -209,13 +209,7 @@ def test_every_declared_host_plans_without_an_unmapped_host_verdict() -> None:
 
 
 def load_project_package_module():
-    import importlib.util
-
-    spec = importlib.util.spec_from_file_location(
-        "project_package_plan_probe", ROOT / "scripts" / "project-package.py")
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+    import scripts.package_projection as module
     return module
 
 
@@ -269,7 +263,10 @@ def test_plan_role_has_exactly_one_production_caller() -> None:
             if re.search(r"\bplan_role\b", line):
                 importers.add(path.name)
                 break
-    assert importers == {"model_role_resolver.py", "project-package.py"}
+    assert importers in (
+        {"model_role_resolver.py", "project-package.py"},
+        {"model_role_resolver.py", "package_projection.py"},
+    )
 
 
 def test_reference_fork_ledger_records_completed_source_review() -> None:
