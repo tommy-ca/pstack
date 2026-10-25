@@ -64,16 +64,7 @@ def test_observed_live_scenario_still_derives_verified(tmp_path: Path) -> None:
     root, prof = _synthetic_evidence_root(
         tmp_path,
         ["offline", "observed_live"],
-        settlements=[
-            None,
-            ChildSettlement(
-                child_id="subagent-7",
-                terminal_outcome="success",
-                model="test-model",
-                transport="rpc",
-                effective_rpc="rpc-v2:profile=disposable:depth=1",
-            ),
-        ],
+        settlements=[None, _success_settlement()],
         force_verified=True,
     )
     assert derive_support_state(prof, root) == "supported"
@@ -84,16 +75,7 @@ def test_adapter_pass_with_package_fail_is_never_an_accepted_package_pass(tmp_pa
     root, prof = _synthetic_evidence_root(
         tmp_path,
         ["offline", "observed_live"],
-        settlements=[
-            None,
-            ChildSettlement(
-                child_id="subagent-7",
-                terminal_outcome="success",
-                model="test-model",
-                transport="rpc",
-                effective_rpc="rpc-v2:profile=disposable:depth=1",
-            ),
-        ],
+        settlements=[None, _success_settlement()],
         force_verified=True,
     )
 
@@ -150,23 +132,8 @@ def test_static_isolation_row_cannot_satisfy_the_runtime_plane_on_its_own() -> N
     assert receipt.planes["runtime"] == "UNTESTED", "a static row never claims a live plane"
 
     ref = ".audit/evidence/omp-receipt.json"
-    profile_data = json.loads((ROOT / "profiles" / "omp.json").read_text(encoding="utf-8"))
-    for binding in profile_data["bindings"]:
-        binding["evidence_ref"] = ref
-        if binding["capability"] == "workspace.isolated":
-            binding["verification_status"] = "verified"
-            binding["evidence_ref"] = {"receipt": ref, "scenario": "runtime-isolation-omp"}
-    profile = HarnessProfile(
-        host=profile_data["host"],
-        support_state="packaged",
-        bindings=[Binding(**x) for x in profile_data["bindings"]],
-        skills_dir=profile_data.get("skills_dir"),
-        plugins_dir=profile_data.get("plugins_dir"),
-        plugin_manifest=profile_data.get("plugin_manifest"),
-        tool_mappings=profile_data.get("tool_mappings"),
-        skill_order=profile_data.get("skill_order"),
-        runtime_conventions=profile_data.get("runtime_conventions"),
-    )
+    profile = _profile_pinning(ref, "runtime-isolation-omp", capability="workspace.isolated")
+    profile.support_state = "packaged"
     with pytest.raises(ValidationError, match="carries no observed_live settlement"):
         check_scenario_pins(profile, {ref: receipt})
 
@@ -268,18 +235,7 @@ def test_driver_settlement_survives_receipt_serialization(tmp_path: Path) -> Non
         evidence_level="observed_live",
         settlement=settlement,
     )
-    scenario = ScenarioResult(
-        id=driver_result.scenario_id,
-        description=driver_result.description,
-        plane="runtime",
-        command=driver_result.command,
-        exit_code=driver_result.exit_code,
-        stdout_snippet=driver_result.stdout_snippet,
-        verdict=driver_result.verdict,
-        duration_s=driver_result.duration_s,
-        evidence_level=driver_result.evidence_level,
-        settlement=driver_result.settlement,
-    )
+    scenario = driver_result.to_scenario_result("runtime")
     scenario.validate()
     blob = json.dumps(asdict(scenario))
     assert '"effective_rpc"' in blob
@@ -463,6 +419,21 @@ def test_a_settled_cancellation_survives_a_durable_refresh() -> None:
     assert preserve_observed_settlements(timed_out_previous, timed_out_current).preserved == []
 
 
+def _receipt_with_scenario(
+    previous: VerificationReceipt, run_id: str, scenario: ScenarioResult
+) -> VerificationReceipt:
+    planes = settle_planes([scenario])
+    receipt = replace(
+        previous,
+        run_id=run_id,
+        planes=planes,
+        overall_verdict=reduce_verdicts(planes.values()),
+        scenarios=[scenario],
+    )
+    receipt.validate()
+    return receipt
+
+
 def test_route_missing_blocked_run_preserves_prior_observed_live_settlement() -> None:
     """#729: an environmental BLOCKED run preserves prior observed_live PASS without overwriting."""
     scenario_id = "runtime-child-spawn-omp"
@@ -481,15 +452,7 @@ def test_route_missing_blocked_run_preserves_prior_observed_live_settlement() ->
         live_attempted=False,
         stdout_snippet="BLOCKED: no configured model route",
     )
-    current_blocked_planes = settle_planes([blocked_scenario])
-    current_blocked = replace(
-        previous,
-        run_id="blocked-run",
-        planes=current_blocked_planes,
-        overall_verdict=reduce_verdicts(current_blocked_planes.values()),
-        scenarios=[blocked_scenario],
-    )
-    current_blocked.validate()
+    current_blocked = _receipt_with_scenario(previous, "blocked-run", blocked_scenario)
 
     preservation = preserve_observed_settlements(previous, current_blocked)
     assert preservation.preserved == [scenario_id]
@@ -508,15 +471,7 @@ def test_route_missing_blocked_run_preserves_prior_observed_live_settlement() ->
         live_attempted=True,
         stdout_snippet="child failed",
     )
-    current_failed_planes = settle_planes([failed_scenario])
-    current_failed = replace(
-        previous,
-        run_id="failed-run",
-        planes=current_failed_planes,
-        overall_verdict=reduce_verdicts(current_failed_planes.values()),
-        scenarios=[failed_scenario],
-    )
-    current_failed.validate()
+    current_failed = _receipt_with_scenario(previous, "failed-run", failed_scenario)
 
     preservation_failed = preserve_observed_settlements(previous, current_failed)
     assert preservation_failed.preserved == []
@@ -539,16 +494,7 @@ def test_supported_needs_a_behavioral_pass_on_every_row(tmp_path: Path) -> None:
     root, prof = _synthetic_evidence_root(
         tmp_path,
         ["offline", "observed_live"],
-        settlements=[
-            None,
-            ChildSettlement(
-                child_id="subagent-7",
-                terminal_outcome="success",
-                model="test-model",
-                transport="rpc",
-                effective_rpc="rpc-v2:profile=disposable:depth=1",
-            ),
-        ],
+        settlements=[None, _success_settlement()],
         force_verified=True,
     )
     assert derive_support_state(prof, root) == "supported"
@@ -744,9 +690,7 @@ def test_a_scenario_records_how_it_was_observed() -> None:
 
 def test_driver_shaped_receipts_still_validate() -> None:
     for host in ("grok", "codex", "omp", "opencode", "antigravity"):
-        VerificationReceipt(
-            **json.loads((EVIDENCE_DIR / f"{host}-receipt.json").read_text(encoding="utf-8"))
-        ).validate()
+        VerificationReceipt(**json.loads((EVIDENCE_DIR / f"{host}-receipt.json").read_text(encoding="utf-8"))).validate()
 
     scenario = _omp_spawn_scenario("observed_live", settlement=_success_settlement())
     scenarios = [scenario] + _plane_rows({"runtime"})
@@ -797,14 +741,9 @@ def test_a_profile_that_binds_one_capability_twice_is_refused(tmp_path: Path) ->
     for row in data["scenarios"]:
         if row["plane"] == "runtime":
             row["verdict"], row["exit_code"] = "FAIL", 1
-    data["planes"], data["overall_verdict"] = _declared_from(
-        [ScenarioResult(**row) for row in data["scenarios"]]
-    )
+    data["planes"], data["overall_verdict"] = _declared_from([ScenarioResult(**row) for row in data["scenarios"]])
     (root / fail_ref).write_text(json.dumps(data), encoding="utf-8")
 
-    act_on = replace(
-        prof,
-        bindings=[replace(floor_row, evidence_ref=fail_ref)] * 9 + list(prof.bindings),
-    )
+    act_on = replace(prof, bindings=[replace(floor_row, evidence_ref=fail_ref)] * 9 + list(prof.bindings))
     with pytest.raises(ValidationError, match=r"binds a capability more than once.*agent\.spawn"):
         derive_support_state(act_on, root)

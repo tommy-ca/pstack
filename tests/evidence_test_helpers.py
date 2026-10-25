@@ -32,19 +32,9 @@ def _declared_hosts() -> tuple:
 
 
 def _omp_profile(data: dict | None = None) -> HarnessProfile:
-    d = data if data is not None else json.loads((ROOT / "profiles" / "omp.json").read_text(encoding="utf-8"))
-    return HarnessProfile(
-        host=d["host"],
-        support_state=d["support_state"],
-        bindings=[Binding(**x) for x in d["bindings"]],
-        skills_dir=d.get("skills_dir"),
-        plugins_dir=d.get("plugins_dir"),
-        plugin_manifest=d.get("plugin_manifest"),
-        evidence_ledger=[Evidence(**x) for x in d.get("evidence_ledger", [])],
-        tool_mappings=d.get("tool_mappings"),
-        skill_order=d.get("skill_order"),
-        runtime_conventions=d.get("runtime_conventions"),
-    )
+    if data is not None:
+        return HarnessProfile.from_dict(data)
+    return HarnessProfile.from_file(ROOT / "profiles" / "omp.json")
 
 
 def _package_ignored_paths() -> frozenset:
@@ -186,17 +176,9 @@ def _synthetic_evidence_root(
         binding["evidence_ref"] = ref
         if force_verified:
             binding["verification_status"] = "verified"
-    prof = HarnessProfile(
-        host=d["host"],
-        support_state="verified",
-        bindings=[Binding(**x) for x in d["bindings"]],
-        skills_dir=d.get("skills_dir"),
-        plugins_dir=d.get("plugins_dir"),
-        plugin_manifest=d.get("plugin_manifest"),
-        tool_mappings=d.get("tool_mappings"),
-        skill_order=d.get("skill_order"),
-        runtime_conventions=d.get("runtime_conventions"),
-    )
+    d["evidence_ledger"] = []
+    d["support_state"] = "verified"
+    prof = HarnessProfile.from_dict(d)
     return tmp_path, prof
 
 
@@ -255,17 +237,8 @@ def _omp_live_root(tmp_path: Path) -> tuple:
     for binding in profile_data["bindings"]:
         binding["evidence_ref"] = ".audit/evidence/omp-receipt.json"
         binding["verification_status"] = "verified"
-    prof = HarnessProfile(
-        host="omp",
-        support_state="verified",
-        bindings=[Binding(**x) for x in profile_data["bindings"]],
-        skills_dir=profile_data.get("skills_dir"),
-        plugins_dir=profile_data.get("plugins_dir"),
-        plugin_manifest=profile_data.get("plugin_manifest"),
-        tool_mappings=profile_data.get("tool_mappings"),
-        skill_order=profile_data.get("skill_order"),
-        runtime_conventions=profile_data.get("runtime_conventions"),
-    )
+    profile_data["support_state"] = "verified"
+    prof = HarnessProfile.from_dict(profile_data)
     return root, prof, evidence_root, revisions
 
 
@@ -361,14 +334,5 @@ def _profile_pinning(
         if binding["capability"] == capability:
             binding["verification_status"] = "verified"
             binding["evidence_ref"] = {"receipt": receipt_ref, "scenario": scenario_id}
-    return HarnessProfile(
-        host=d["host"],
-        support_state=d["support_state"],
-        bindings=[Binding(**x) for x in d["bindings"]],
-        skills_dir=d.get("skills_dir"),
-        plugins_dir=d.get("plugins_dir"),
-        plugin_manifest=d.get("plugin_manifest"),
-        tool_mappings=d.get("tool_mappings"),
-        skill_order=d.get("skill_order"),
-        runtime_conventions=d.get("runtime_conventions"),
-    )
+    d["evidence_ledger"] = []
+    return HarnessProfile.from_dict(d)
