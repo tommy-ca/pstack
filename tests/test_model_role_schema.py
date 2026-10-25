@@ -177,11 +177,7 @@ def test_canonical_role_taxonomy_schema_and_pin_audit_contract() -> None:
     )
     assert proc.returncode == 0, f"effort ladder check failed: {proc.stderr + proc.stdout}"
 
-    import importlib.util
-    spec = importlib.util.spec_from_file_location("canonical_index", ROOT / "scripts/canonical-index.py")
-    assert spec is not None and spec.loader is not None
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
+    import scripts.canonical_index as mod
     cache = mod.get_git_cache_root()
     inventory = mod.compute_inventory(cache)
     assert inventory["pin"] == "88d47514b82e7c44f00f2b2a72ff6dd12158038c", "canonical pin mismatch"
