@@ -288,11 +288,11 @@
 - [x] Unit 4: 6-Harness matrix verification, receipts refresh, and multi-model Interrogate review (PASS).
 - [x] Unit 5: Stacked PRs merged bottom-up to main, and verified end-to-end workflows (6-Harness Matrix Verdict PASS, ALL FRESH).
 
-## Epic #798: Code Judo Round 8 — Decompose verify-harness, adapt-harness, and scaffold-verification-skill levers, and isolate evidence cancellation test suite
-- [x] Unit 1 (Issue #795): Extract `scripts/verify_harness.py` and `scripts/adapt_harness.py`, eliminate dynamic `spec_from_file_location` in tests and cross-script calls, and maintain entrypoint facades.
-- [x] Unit 2 (Issue #796): Extract `scripts/scaffold_verification_skill.py` from `scripts/scaffold-verification-skill.py`, eliminate dynamic loader in `tests/test_scaffold_verification_skill.py`, and maintain entrypoint facade.
-- [x] Unit 3 (Issue #797): Extract `tests/test_evidence_cancellation.py` from `tests/test_evidence_settlement.py` (749L) to achieve robust sub-700 line headroom.
-- [ ] Unit 4: 6-Harness matrix verification, receipts refresh, and multi-model Interrogate review.
-- [ ] Unit 5: Stacked PRs merged bottom-up to main, and verified end-to-end workflows.
+## Epic #798: Code Judo Round 8 — Decompose verify-harness, adapt-harness, and scaffold-verification-skill levers, and isolate evidence cancellation test suite (CLOSED)
+- [x] Unit 1 (Issue #795): Extract `scripts/verify_harness.py` and `scripts/adapt_harness.py`, eliminate dynamic `spec_from_file_location` in tests and cross-script calls, and maintain entrypoint facades (PR #799).
+- [x] Unit 2 (Issue #796): Extract `scripts/scaffold_verification_skill.py` from `scripts/scaffold-verification-skill.py`, eliminate dynamic loader in `tests/test_scaffold_verification_skill.py`, and maintain entrypoint facade (PR #802).
+- [x] Unit 3 (Issue #797): Extract `tests/test_evidence_cancellation.py` from `tests/test_evidence_settlement.py` (749L) to achieve robust sub-700 line headroom (PR #803).
+- [x] Unit 4: 6-Harness matrix verification, receipts refresh, and multi-model Interrogate review (PASS).
+- [x] Unit 5: Stacked PRs merged bottom-up to main, and verified end-to-end workflows (6-Harness Matrix Verdict PASS, ALL FRESH).
 
 
