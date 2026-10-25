@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
 import re
@@ -8,6 +7,12 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+import scripts.verify_harness as verify_harness
+import scripts.adapt_harness as adapt_harness
+
 SCANNER = ROOT / "scripts" / "verify-harness.py"
 
 
@@ -16,10 +21,7 @@ def test_verify_harness_script_exists() -> None:
 
 
 def test_leftover_askquestion_after_there_is_no_is_live() -> None:
-    loader = importlib.util.spec_from_file_location("verify_harness", SCANNER)
-    assert loader is not None and loader.loader is not None
-    scanner = importlib.util.module_from_spec(loader)
-    loader.loader.exec_module(scanner)
+    scanner = verify_harness
     live = "There is no setup. Call AskQuestion for the fork.\n"
     live_idx = live.find("AskQuestion")
     assert scanner.leftover_mention_allowed(live, "AskQuestion", live_idx) is False
@@ -237,7 +239,7 @@ def test_overlay_stems_and_adapter_are_plugin_qualified() -> None:
     assert "~/.grok/roles/pstack:independent-verifier.toml" in plan
     assert 'roles/${key}.toml' not in plan
     assert 'roles/pstack:${key}.toml' in plan
-    adapt = (ROOT / "scripts/adapt-harness.py").read_text(encoding="utf-8")
+    adapt = (ROOT / "scripts/adapt_harness.py").read_text(encoding="utf-8")
     assert 'subagent_type: "pstack:comment-sicko"' in adapt
     assert "', 'subagent_type: \"comment-sicko\"')" not in adapt
     overlay = json.loads(
@@ -342,18 +344,11 @@ def test_agent_and_droid_schema_parity() -> None:
 
 
 def test_audit_dir_skipped_by_harness_scanners() -> None:
-    spec = importlib.util.spec_from_file_location("verify_harness", SCANNER)
-    verify = importlib.util.module_from_spec(spec)
-    assert spec.loader is not None
-    spec.loader.exec_module(verify)
-    adapt_path = ROOT / "scripts/adapt-harness.py"
-    adapt_spec = importlib.util.spec_from_file_location("adapt_harness", adapt_path)
-    adapt = importlib.util.module_from_spec(adapt_spec)
-    assert adapt_spec.loader is not None
-    adapt_spec.loader.exec_module(adapt)
+    verify = verify_harness
+    adapt = adapt_harness
     assert ".audit" in verify.SKIP_DIRS
     assert ".audit" in adapt.SKIP_DIRS
-    verify_src = SCANNER.read_text(encoding="utf-8")
+    verify_src = (ROOT / "scripts" / "verify_harness.py").read_text(encoding="utf-8")
     assert "set(rel.parts) & SKIP_DIRS" in verify_src
     assert "rel.parts[0] in SKIP_DIRS" not in verify_src
 
@@ -378,7 +373,7 @@ def test_harness_skill_order_is_pstack_then_user_then_native() -> None:
     authoring = (
         ROOT / "skills/poteto-mode/playbooks/authoring-a-skill.md"
     ).read_text(encoding="utf-8")
-    adapt = (ROOT / "scripts/adapt-harness.py").read_text(encoding="utf-8")
+    adapt = (ROOT / "scripts/adapt_harness.py").read_text(encoding="utf-8")
     assert "## Skill order" in harness
     assert "## Native first" not in harness
     assert "pstack, then user, then bundled and builtin" in harness
@@ -490,8 +485,8 @@ def test_upstream_metadata_contract() -> None:
         "README.md",
         "README.zh-CN.md",
         "TEST-PLAN.md",
-        "scripts/adapt-harness.py",
-        "scripts/verify-harness.py",
+        "scripts/adapt_harness.py",
+        "scripts/verify_harness.py",
     ):
         text = (ROOT / path).read_text(encoding="utf-8")
         assert "claude-fable-5-1-thinking-max" in text, path
@@ -568,11 +563,7 @@ def test_harness_grok_tools_restored_scheduler_resume_semantics() -> None:
 
 
 def test_all_skills_have_matching_kebab_case_frontmatter_name() -> None:
-    spec = importlib.util.spec_from_file_location("verify_harness", SCANNER)
-    assert spec is not None and spec.loader is not None
-    scanner = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(scanner)
-    scanner.verify_skills_frontmatter(ROOT / "skills")
+    verify_harness.verify_skills_frontmatter(ROOT / "skills")
 
 
 if __name__ == "__main__":

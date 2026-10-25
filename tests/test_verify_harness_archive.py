@@ -1,21 +1,21 @@
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
 import subprocess
+import sys
 import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+import scripts.verify_harness as scanner
+
 SCANNER = ROOT / "scripts" / "verify-harness.py"
 
 
 def test_archivable_intent_chain_guard_distinguishes_changes() -> None:
-    loader = importlib.util.spec_from_file_location("verify_harness", SCANNER)
-    assert loader is not None
-    scanner = importlib.util.module_from_spec(loader)
-    assert loader.loader is not None
-    loader.loader.exec_module(scanner)
     with tempfile.TemporaryDirectory() as tmp:
         changes = Path(tmp)
         complete = changes / "complete"
@@ -34,21 +34,11 @@ def test_archivable_intent_chain_guard_distinguishes_changes() -> None:
 
 
 def test_archived_intent_chains_are_complete() -> None:
-    loader = importlib.util.spec_from_file_location("verify_harness", SCANNER)
-    assert loader is not None
-    scanner = importlib.util.module_from_spec(loader)
-    assert loader.loader is not None
-    loader.loader.exec_module(scanner)
     missing = scanner.archived_changes_missing_artifacts(ROOT / "openspec/changes/archive")
     assert not missing, missing
 
 
 def test_archived_change_missing_adr_artifact_is_flagged() -> None:
-    loader = importlib.util.spec_from_file_location("verify_harness", SCANNER)
-    assert loader is not None
-    scanner = importlib.util.module_from_spec(loader)
-    assert loader.loader is not None
-    loader.loader.exec_module(scanner)
     with tempfile.TemporaryDirectory() as tmp:
         archive = Path(tmp)
         change = archive / "2026-10-13-pstack-fixture"
@@ -66,11 +56,6 @@ def test_archived_change_missing_adr_artifact_is_flagged() -> None:
 
 
 def test_archived_change_skip_specs_exempts_specs_only() -> None:
-    loader = importlib.util.spec_from_file_location("verify_harness", SCANNER)
-    assert loader is not None
-    scanner = importlib.util.module_from_spec(loader)
-    assert loader.loader is not None
-    loader.loader.exec_module(scanner)
     with tempfile.TemporaryDirectory() as tmp:
         archive = Path(tmp)
         for name, manifest in (
