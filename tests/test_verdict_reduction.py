@@ -45,12 +45,7 @@ vertical_slice = importlib.util.module_from_spec(_slice_spec)
 sys.modules["p8_vertical_slice"] = vertical_slice
 _slice_spec.loader.exec_module(vertical_slice)
 
-_native_spec = importlib.util.spec_from_file_location(
-    "p8_prove_omp_native_package", ROOT / "scripts" / "prove-omp-native-package.py"
-)
-native_package = importlib.util.module_from_spec(_native_spec)
-sys.modules["p8_prove_omp_native_package"] = native_package
-_native_spec.loader.exec_module(native_package)
+import scripts.prove_omp_native_package as native_package
 
 from scripts.drivers.omp import OMPDriver, _model_route_error  # noqa: E402
 from scripts.drivers.opencode import OpenCodeDriver  # noqa: E402

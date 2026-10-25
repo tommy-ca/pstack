@@ -278,11 +278,7 @@ def test_the_live_slice_resolves_the_role_and_joins_one_child(tmp_path: Path) ->
 
 def test_prove_omp_native_package_is_hermetic_against_ambient_home(tmp_path: Path) -> None:
     """#728: probe-omp-native-package resolves paths against fixture HOME without ambient leak."""
-    import importlib.util
-    spec = importlib.util.spec_from_file_location("prove_omp_pkg", LEVER)
-    assert spec is not None and spec.loader is not None
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
+    import scripts.prove_omp_native_package as mod
 
     fixture_home = tmp_path / "custom-fixture-home"
     fixture_home.mkdir()

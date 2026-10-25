@@ -87,9 +87,6 @@ def ambient_plugins() -> Path:
 def ambient_agent_dirs() -> Tuple[Path, ...]:
     if os.environ.get("PSTACK_FIXTURE_HOME"):
         return (get_effective_home() / ".omp" / "agent" / "agents", ROOT / ".omp" / "agents")
-    facade = sys.modules.get("p8_prove_omp_native_package") or sys.modules.get("prove_omp_native_package")
-    if facade and hasattr(facade, "AMBIENT_AGENT_DIRS") and facade.AMBIENT_AGENT_DIRS != AMBIENT_AGENT_DIRS:
-        return getattr(facade, "AMBIENT_AGENT_DIRS")
     return AMBIENT_AGENT_DIRS
 
 

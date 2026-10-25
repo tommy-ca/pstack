@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Tests for native package lifecycle driver across all harnesses."""
 
-import importlib.util
 import json
 import subprocess
 import sys
@@ -12,7 +11,6 @@ ROOT = Path(__file__).resolve().parents[1]
 LIFECYCLE_SCRIPT = ROOT / "scripts" / "package-lifecycle.py"
 
 import scripts.package_lifecycle as package_lifecycle
-sys.modules["package_lifecycle"] = package_lifecycle
 
 
 @pytest.mark.parametrize("host", ["grok", "codex", "omp", "opencode", "antigravity"])
