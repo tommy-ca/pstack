@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Read-only static doctor for shared pstack structure and Grok adapter compatibility.
 
+Checks static structure, skills, and configuration layout; NOT a six-host native conformance verdict.
 CLI facade re-exporting from scripts.verify_harness.
 """
 
