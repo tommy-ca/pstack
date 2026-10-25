@@ -201,6 +201,7 @@ CHECK_SELECTION_TABLE: List[CheckRule] = [
         (),
     ),
     ("scripts/verify-decision-contract.py", ("tests/test_verify_decision_contract.py",), ()),
+    ("scripts/verify_decision_contract.py", ("tests/test_verify_decision_contract.py",), ()),
     ("scripts/verify_rollback_equivalence.py", ("tests/test_rollback_equivalence.py",), ()),
     ("scripts/scan-host-boundary.py", ("tests/test_scan_host_boundary.py",), ()),
     ("scripts/scan_host_boundary.py", ("tests/test_scan_host_boundary.py",), ()),
