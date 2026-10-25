@@ -16,6 +16,8 @@ if str(ROOT) not in sys.path:
 import scripts.scaffold_verification_skill as _svs
 from scripts.scaffold_verification_skill import *
 
+require_builtin_host_keys(HOST_DETECT_ORDER, "HOST_DETECT_ORDER")
+
 
 def main() -> int:
     return _svs.main()
