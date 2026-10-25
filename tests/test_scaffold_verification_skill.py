@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import importlib.util
 import pathlib
 import subprocess
 import sys
@@ -8,11 +7,12 @@ import sys
 import pytest
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+import scripts.scaffold_verification_skill as scaffold_mod
+
 SCRIPT_PATH = ROOT / "scripts" / "scaffold-verification-skill.py"
-loader = importlib.util.spec_from_file_location("scaffold_verification_skill", SCRIPT_PATH)
-assert loader is not None and loader.loader is not None
-scaffold_mod = importlib.util.module_from_spec(loader)
-loader.loader.exec_module(scaffold_mod)
 
 HOST_CASES = [
     ("grok", ".grok/skills/verify-demo-app"),
