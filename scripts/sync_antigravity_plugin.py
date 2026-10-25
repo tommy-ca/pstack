@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """Sync and reconcile canonical pstack package to the live Antigravity plugin installation.
 
-Implements Build the Lever + Prove It Works + Zero Drift:
-    Canonical pstack repo -> ~/.gemini/config/plugins/pstack/
+Reconciles canonical pstack repo into the live Antigravity plugin installation.
 """
 
 from __future__ import annotations
@@ -23,8 +22,6 @@ SYNCED_PATHS = ("skills", "agents", "pstack.package.json")
 
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
-
-import importlib.util
 
 from scripts.portability_schema import (
     SKILLS_HASH_IGNORED_DIRS,
@@ -328,25 +325,21 @@ def sync_live_plugin(dry_run: bool = False, force: bool = False) -> bool:
         if not dry_run:
             LIVE_PLUGIN_DIR.mkdir(parents=True, exist_ok=True)
 
-    # 1. Project local repo manifests first
     if not dry_run:
         project_all(desc, ["antigravity"])
 
-    # 2. plugin.json
     manifest = generate_antigravity_manifest(desc)
     manifest_dest = LIVE_PLUGIN_DIR / "plugin.json"
     print(f"Writing {manifest_dest}")
     if not dry_run:
         manifest_dest.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
 
-    # 3. models.json
     models = generate_antigravity_models(desc)
     models_dest = LIVE_PLUGIN_DIR / "models.json"
     print(f"Writing {models_dest}")
     if not dry_run:
         models_dest.write_text(json.dumps(models, indent=2) + "\n", encoding="utf-8")
 
-    # 4. rules/AGENTS.md
     rules_dir = LIVE_PLUGIN_DIR / "rules"
     rules_dest = rules_dir / "AGENTS.md"
     session_start_context = LIVE_PLUGIN_DIR / "hooks" / "session-start-context.md"
@@ -381,7 +374,6 @@ When working with pstack:
             if not dry_run:
                 shutil.rmtree(stray_path)
 
-    # 5. Sync skills from ROOT/skills
     src_skills = ROOT / "skills"
     dest_skills = LIVE_PLUGIN_DIR / "skills"
     if not dry_run:
@@ -407,7 +399,6 @@ When working with pstack:
         if not dry_run:
             shutil.rmtree(dest_skills / name)
 
-    # 6. Sync agents from ROOT/agents
     src_agents = ROOT / "agents"
     dest_agents = LIVE_PLUGIN_DIR / "agents"
     if not dry_run:
@@ -444,7 +435,6 @@ When working with pstack:
             if not dry_run:
                 existing_cmd.unlink()
 
-    # 8. Run agy plugin validate verification
     if not dry_run and shutil.which("agy"):
         print("\nValidating with Antigravity CLI:")
         subprocess.run(["agy", "plugin", "validate", str(LIVE_PLUGIN_DIR)], check=False)

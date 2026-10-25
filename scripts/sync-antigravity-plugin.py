@@ -17,8 +17,8 @@ import scripts.sync_antigravity_plugin as _sap
 from scripts.sync_antigravity_plugin import *
 
 
-def main() -> None:
-    _sap.main()
+def main(argv: list[str] | None = None) -> None:
+    _sap.main(argv)
 
 
 if __name__ == "__main__":
