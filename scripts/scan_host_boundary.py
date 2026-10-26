@@ -145,6 +145,7 @@ GENERIC_WORDS: Set[str] = {
     "cloud",
     "background",
     "scripts/verify-portable.py",
+    "scripts/verify_portable.py",
     "task",
     "ask",
     "todo",
