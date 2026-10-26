@@ -12,7 +12,7 @@ if str(ROOT) not in sys.path:
 
 import scripts.scaffold_verification_skill as scaffold_mod
 
-SCRIPT_PATH = ROOT / "scripts" / "scaffold-verification-skill.py"
+SCRIPT_PATH = ROOT / "scripts" / "scaffold_verification_skill.py"
 
 HOST_CASES = [
     ("grok", ".grok/skills/verify-demo-app"),

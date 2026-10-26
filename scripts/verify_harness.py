@@ -267,7 +267,7 @@ def main(root: pathlib.Path | None = None) -> int:
 
     inventory_file = active_root / "openspec" / "canonical-inventory.json"
     if not inventory_file.is_file():
-        fail("openspec/canonical-inventory.json missing; run python3 scripts/canonical-index.py --generate")
+        fail("openspec/canonical-inventory.json missing; run python3 scripts/canonical_index.py --generate")
     try:
         inv = json.loads(inventory_file.read_text(encoding="utf-8"))
         expected_principles = inv["counts"]["principles"]

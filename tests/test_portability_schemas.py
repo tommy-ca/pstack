@@ -135,7 +135,7 @@ def test_package_descriptor_rejects_runtime_orchestration_fields() -> None:
         upstream_pin="4b4d98e5e3b3c139f63dbc1ce4b538954c8f2f52",
         host_targets=["grok", "codex"],
         skills_root="skills",
-        lifecycle={"install": "echo install", "verify": "python3 scripts/verify-harness.py", "uninstall": "rm"},
+        lifecycle={"install": "echo install", "verify": "python3 scripts/verify_harness.py", "uninstall": "rm"},
         raw_dict={"spawn_topology": "tree"},
     )
     with pytest.raises(ValidationError, match="must not encode runtime orchestration semantics"):
@@ -520,7 +520,7 @@ def test_portability_schema_modular_decomposition_and_backwards_compatibility() 
 
     subprocess.run([sys.executable, "-c", "import scripts.surface_revisions"], check=True, cwd=ROOT)
     subprocess.run([sys.executable, "-c", "import scripts.evidence_durability"], check=True, cwd=ROOT)
-    subprocess.run([sys.executable, "scripts/scaffold-verification-skill.py", "--help"], check=True, cwd=ROOT)
+    subprocess.run([sys.executable, "scripts/scaffold_verification_skill.py", "--help"], check=True, cwd=ROOT)
 
 
 

@@ -257,7 +257,10 @@ def _probe_scope_hash(root: Path) -> str:
     h = hashlib.sha256()
     scope = sorted(root.glob("skills/**/SKILL.md")) + sorted(root.glob("skills/**/playbooks/*.md"))
     scope += sorted(root.glob("agents/*.md")) + [root / "profiles" / "grok.json"]
-    scope += [root / "scripts" / "verify-portable.py", root / "scripts" / "route_resolver.py",
+    vp = root / "scripts" / "verify_portable.py"
+    if not vp.is_file():
+        vp = root / "scripts" / "portable_verifier.py"
+    scope += [vp, root / "scripts" / "route_resolver.py",
               root / "scripts" / "decision_adapter.py", root / "scripts" / "eval_blinded_pstack.py",
               root / "scripts" / "portability_schema.py"]
     for path in scope:

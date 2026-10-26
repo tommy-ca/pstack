@@ -213,7 +213,7 @@ def test_check_evidence_names_the_omp_live_remedy(tmp_path: Path) -> None:
     receipt_path.write_text(json.dumps(receipt), encoding="utf-8")
 
     proc = subprocess.run(
-        [sys.executable, str(copy_root / "scripts" / "verify-portable.py"), "check-evidence", "--host", "omp"],
+        [sys.executable, str(copy_root / "scripts" / "verify_portable.py"), "check-evidence", "--host", "omp"],
         capture_output=True,
         text=True,
         cwd=copy_root,
@@ -250,7 +250,7 @@ def test_check_evidence_cli_refuses_a_profile_that_violates_a_domain_rule(tmp_pa
     copy_root = _disposable_copy(tmp_path)
     command = [
         sys.executable,
-        str(copy_root / "scripts" / "verify-portable.py"),
+        str(copy_root / "scripts" / "verify_portable.py"),
         "check-evidence",
         "--host",
         "grok",
@@ -275,7 +275,7 @@ def test_check_evidence_cli_refuses_a_profile_that_violates_a_domain_rule(tmp_pa
 
 def test_a_missing_index_is_rebuilt_from_the_durable_receipts(tmp_path: Path) -> None:
     copy_root = _disposable_copy(tmp_path)
-    command = [sys.executable, str(copy_root / "scripts" / "verify-portable.py")]
+    command = [sys.executable, str(copy_root / "scripts" / "verify_portable.py")]
     index_file = copy_root / ".audit" / "evidence" / "index.json"
 
     index_file.unlink()
@@ -300,7 +300,7 @@ def test_a_missing_index_is_rebuilt_from_the_durable_receipts(tmp_path: Path) ->
 
 def test_the_projection_skips_receipt_bytes_a_row_cannot_stand_on(tmp_path: Path) -> None:
     copy_root = _disposable_copy(tmp_path)
-    command = [sys.executable, str(copy_root / "scripts" / "verify-portable.py")]
+    command = [sys.executable, str(copy_root / "scripts" / "verify_portable.py")]
     index_file = copy_root / ".audit" / "evidence" / "index.json"
 
     index_file.unlink()
@@ -317,7 +317,7 @@ def test_the_projection_skips_receipt_bytes_a_row_cannot_stand_on(tmp_path: Path
 
 def test_a_missing_row_comes_back_from_the_receipt_on_the_next_run(tmp_path: Path) -> None:
     copy_root = _disposable_copy(tmp_path)
-    command = [sys.executable, str(copy_root / "scripts" / "verify-portable.py")]
+    command = [sys.executable, str(copy_root / "scripts" / "verify_portable.py")]
     index_file = copy_root / ".audit" / "evidence" / "index.json"
 
     index = json.loads(index_file.read_text(encoding="utf-8"))
@@ -344,7 +344,7 @@ def test_a_missing_row_comes_back_from_the_receipt_on_the_next_run(tmp_path: Pat
 
 def test_a_denied_index_write_is_named_not_raised(tmp_path: Path) -> None:
     copy_root = _disposable_copy(tmp_path)
-    command = [sys.executable, str(copy_root / "scripts" / "verify-portable.py")]
+    command = [sys.executable, str(copy_root / "scripts" / "verify_portable.py")]
     evidence_root = copy_root / ".audit" / "evidence"
     index_file = evidence_root / "index.json"
     index_file.unlink()

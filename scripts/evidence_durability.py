@@ -83,8 +83,8 @@ def preserve_observed_settlements(
 def get_live_remedy(host: str) -> str:
     """Return the recommended command to run live verification for a host."""
     if host == "omp":
-        return f"PSTACK_RUN_OMP_LIVE=1 python3 scripts/verify-portable.py run --host {host}"
-    return f"python3 scripts/verify-portable.py run --host {host}"
+        return f"PSTACK_RUN_OMP_LIVE=1 python3 scripts/verify_portable.py run --host {host}"
+    return f"python3 scripts/verify_portable.py run --host {host}"
 
 
 @dataclass(frozen=True)

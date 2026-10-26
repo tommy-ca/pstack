@@ -88,7 +88,7 @@ def _stat_denied_copy(tmp_path: Path, relative: str) -> tuple:
 
 def _run_gate(copy_root: Path, *arguments: str) -> subprocess.CompletedProcess:
     return subprocess.run(
-        [sys.executable, str(copy_root / "scripts" / "verify-portable.py"), *arguments],
+        [sys.executable, str(copy_root / "scripts" / "verify_portable.py"), *arguments],
         capture_output=True,
         text=True,
         cwd=copy_root,

@@ -57,7 +57,7 @@ HOST_ID_SCHEMA = SCHEMAS_DIR / "host-id.schema.json"
 # source, and none of them may carry a host enum of its own.
 IMPORTING_SURFACES = (
     "scripts/portability_schema.py",
-    "scripts/verify-portable.py",
+    "scripts/verify_portable.py",
     "scripts/portable_verifier.py",
     "scripts/package-lifecycle.py",
     "scripts/package_lifecycle.py",
@@ -311,11 +311,11 @@ def test_the_six_builtin_hosts_are_unchanged_everywhere() -> None:
     from scripts.drivers import DRIVER_REGISTRY
 
     lifecycle = _load_module("package_lifecycle_seam", "scripts/package-lifecycle.py")
-    verify_portable = _load_module("verify_portable_seam", "scripts/verify-portable.py")
+    verify_portable = _load_module("verify_portable_seam", "scripts/verify_portable.py")
     scan_boundary = _load_module("scan_host_boundary_seam", "scripts/scan-host-boundary.py")
     project_package = _load_module("project_package_seam", "scripts/project-package.py")
     scaffold = _load_module(
-        "scaffold_verification_skill_seam", "scripts/scaffold-verification-skill.py"
+        "scaffold_verification_skill_seam", "scripts/scaffold_verification_skill.py"
     )
 
     assert BUILTIN_HOSTS == ("grok", "codex", "omp", "opencode", "antigravity", "droid")
@@ -359,7 +359,7 @@ def test_a_seventh_builtin_missed_by_the_detector_order_fails_closed(
     """
     import scripts.host_identity as host_identity_module
 
-    scaffold_path = ROOT / "scripts" / "scaffold-verification-skill.py"
+    scaffold_path = ROOT / "scripts" / "scaffold_verification_skill.py"
     monkeypatch.setattr(host_identity_module, "BUILTIN_HOSTS", BUILTIN_HOSTS + ("seventh",))
     with pytest.raises(HostIdentityError, match="HOST_DETECT_ORDER"):
         exec(
@@ -462,7 +462,7 @@ def test_adapter_version_is_optional_in_the_receipt_schema() -> None:
 
 def test_the_receipt_payload_never_serializes_a_null_adapter_version() -> None:
     """The schema types the field as a string, so an unset value is an absent key."""
-    verify_portable = _load_module("verify_portable_payload", "scripts/verify-portable.py")
+    verify_portable = _load_module("verify_portable_payload", "scripts/verify_portable.py")
     payload = verify_portable._receipt_payload(_receipt("grok"))
     assert "adapter_version" not in payload
     assert verify_portable._receipt_payload(_receipt(DECLARED, "1.2.3"))["adapter_version"] == "1.2.3"
@@ -479,7 +479,7 @@ def test_a_run_in_a_linked_worktree_points_at_a_run_dir_that_exists(
     made these pointers dead in the first place). The pointer is then the file the run
     actually wrote, and it is still there for the reader of the committed receipt (#446).
     """
-    verify_portable = _load_module("verify_portable_pointer", "scripts/verify-portable.py")
+    verify_portable = _load_module("verify_portable_pointer", "scripts/verify_portable.py")
     worktree = tmp_path / "worktree"
     worktree.mkdir(parents=True, exist_ok=True)
     (worktree / "pstack.package.json").write_text(json.dumps({"version": "0.15.29"}), encoding="utf-8")
@@ -495,7 +495,7 @@ def test_a_run_in_a_linked_worktree_points_at_a_run_dir_that_exists(
         "doctor",
         lambda self, check_durability=True, allow_stale=False: True,
     )
-    monkeypatch.setattr(sys, "argv", ["verify-portable.py", "refresh-static", "--host", "omp"])
+    monkeypatch.setattr(sys, "argv", ["verify_portable.py", "refresh-static", "--host", "omp"])
 
     with pytest.raises(SystemExit) as exit_info:
         verify_portable.main()

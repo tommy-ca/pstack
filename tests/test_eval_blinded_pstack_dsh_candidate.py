@@ -207,7 +207,7 @@ class TestDshCandidatePhase:
 # --- the probe scope: what a frozen table is reproduced against (#444) ---
 
 PROBE_SCOPE_SCRIPTS = (
-    "verify-portable.py",
+    "verify_portable.py",
     "route_resolver.py",
     "decision_adapter.py",
     "eval_blinded_pstack.py",
@@ -271,7 +271,7 @@ def test_probe_scope_hash_keeps_the_docstring_verify_portable_publishes(tmp_path
     otherwise leave observable text out of the frozen table's fingerprint (#444).
     """
     copy_root = _probe_scope_copy(tmp_path)
-    target = copy_root / "scripts" / "verify-portable.py"
+    target = copy_root / "scripts" / "verify_portable.py"
     source = target.read_text(encoding="utf-8")
     start = source.index('"""') + 3
     end = source.index('"""', start)

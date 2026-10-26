@@ -39,10 +39,10 @@ def _load_module(name: str, rel: str):
 
 
 import scripts.package_lifecycle as lifecycle
-verify_portable = _load_module("verify_portable", "scripts/verify-portable.py")
-verify_harness = _load_module("verify_harness", "scripts/verify-harness.py")
+import scripts.portable_verifier as verify_portable
+import scripts.verify_harness as verify_harness
 scan_boundary = _load_module("scan_host_boundary", "scripts/scan-host-boundary.py")
-scaffold = _load_module("scaffold_verification_skill", "scripts/scaffold-verification-skill.py")
+import scripts.scaffold_verification_skill as scaffold
 
 from scripts.drivers import DroidDriver, get_driver
 
