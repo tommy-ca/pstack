@@ -312,7 +312,7 @@ class PortableVerifier:
     def doctor(self, check_durability: bool = True, allow_stale: bool = False) -> bool:
         """Step 2: Doctor checks bound to a fixture HOME (#709).
 
-        `package-lifecycle.py verify` and `sync-antigravity-plugin.py --check` read
+        `package_lifecycle.py verify` and `sync_antigravity_plugin.py --check` read
         `$HOME` plugin mirrors, so whatever a developer has installed live could
         decide the verdict. Every doctor command therefore runs under one fixture
         HOME: the host package is installed into it first, so the checks still
@@ -325,7 +325,7 @@ class PortableVerifier:
                 f"doctor-fixture-install-{self.host}",
                 f"Install {self.host} package into fixture HOME for hermetic doctor checks",
                 "package",
-                [sys.executable, str(self.root / "scripts" / "package-lifecycle.py"), "install", "--host", self.host],
+                [sys.executable, str(self.root / "scripts" / "package_lifecycle.py"), "install", "--host", self.host],
                 env={"HOME": str(fixture_home)},
                 record=False,
             )
@@ -415,7 +415,7 @@ class PortableVerifier:
             "doctor-scan-host-boundary",
             "Verify shared skills and playbooks maintain host-neutral adapter boundary",
             "adapter",
-            [sys.executable, str(self.root / "scripts" / "scan-host-boundary.py"), "--check"],
+            [sys.executable, str(self.root / "scripts" / "scan_host_boundary.py"), "--check"],
             env=env,
         )
 
@@ -427,7 +427,7 @@ class PortableVerifier:
             "doctor-package-projection",
             "Verify package descriptor and projected native harness manifests",
             "package",
-            [sys.executable, str(self.root / "scripts" / "project-package.py"), "--check"],
+            [sys.executable, str(self.root / "scripts" / "project_package.py"), "--check"],
             env=env,
         )
 
@@ -435,7 +435,7 @@ class PortableVerifier:
             f"doctor-package-lifecycle-{self.host}",
             f"Verify native package lifecycle contract for {self.host}",
             "package",
-            [sys.executable, str(self.root / "scripts" / "package-lifecycle.py"), "verify", "--host", self.host],
+            [sys.executable, str(self.root / "scripts" / "package_lifecycle.py"), "verify", "--host", self.host],
             env=env,
         )
 
@@ -463,7 +463,7 @@ class PortableVerifier:
                 "doctor-antigravity-sync",
                 "Verify live Antigravity plugin synchronization",
                 "package",
-                [sys.executable, str(self.root / "scripts" / "sync-antigravity-plugin.py"), "--check"],
+                [sys.executable, str(self.root / "scripts" / "sync_antigravity_plugin.py"), "--check"],
                 env=env,
             )
             passed = passed and (r6.verdict == "PASS")

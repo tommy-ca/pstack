@@ -29,19 +29,10 @@ from scripts.portability_schema import (
 )
 
 
-def _load_module(name: str, rel: str):
-    loader = importlib.util.spec_from_file_location(name, ROOT / rel)
-    assert loader is not None and loader.loader is not None
-    module = importlib.util.module_from_spec(loader)
-    sys.modules[name] = module
-    loader.loader.exec_module(module)
-    return module
-
-
 import scripts.package_lifecycle as lifecycle
 import scripts.portable_verifier as verify_portable
 import scripts.verify_harness as verify_harness
-scan_boundary = _load_module("scan_host_boundary", "scripts/scan-host-boundary.py")
+import scripts.scan_host_boundary as scan_boundary
 import scripts.scaffold_verification_skill as scaffold
 
 from scripts.drivers import DroidDriver, get_driver

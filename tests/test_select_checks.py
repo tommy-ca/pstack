@@ -74,7 +74,7 @@ class TestCheckSelectionTable:
         assert _ids(result) != sorted(f"pytest:{m}" for m in OFFLINE_GATE)
 
     def test_scripts_only_selects_the_owning_module(self) -> None:
-        result = vp.select_checks(["scripts/sync-antigravity-plugin.py"])
+        result = vp.select_checks(["scripts/sync_antigravity_plugin.py"])
 
         assert result["unmapped_paths"] == []
         assert _commands(result) == [
@@ -150,9 +150,9 @@ class TestCheckSelectionTable:
         assert _ids(result) == [
             "pytest:tests/test_scan_host_boundary.py",
             "pytest:tests/test_skill_frontmatter.py",
-            "script:scan-host-boundary.py",
+            "script:scan_host_boundary.py",
         ]
-        assert result["checks"][-1]["command"] == [PY, "scripts/scan-host-boundary.py"]
+        assert result["checks"][-1]["command"] == [PY, "scripts/scan_host_boundary.py"]
 
     def test_references_change_selects_contract_tests_and_inventory_check(self) -> None:
         result = vp.select_checks(["references/decision-routing.json"])
@@ -214,7 +214,7 @@ class TestCheckSelectionTable:
 
         assert _ids(result) == [
             "pytest:tests/test_scan_host_boundary.py",
-            "script:scan-host-boundary.py",
+            "script:scan_host_boundary.py",
             "pytest:tests/test_droid_projection.py",
             "pytest:tests/test_plugin_agents.py",
             "pytest:tests/test_verify_harness.py",

@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-SCRIPT = ROOT / "scripts" / "scan-host-boundary.py"
+SCRIPT = ROOT / "scripts" / "scan_host_boundary.py"
 PROFILES_DIR = ROOT / "profiles"
 BOUNDARY_FIXTURES = Path(__file__).resolve().parent / "fixtures" / "boundary"
 
@@ -125,7 +125,7 @@ def test_typed_exemptions():
     assert is_exempt("skills/setup-pstack-grok/references/effort-ladder.md") is not None
     assert is_exempt("profiles/grok.json") is not None
     assert is_exempt("tests/test_scan_host_boundary.py") is not None
-    assert is_exempt("scripts/scan-host-boundary.py") is not None
+    assert is_exempt("scripts/scan_host_boundary.py") is not None
     assert is_exempt("skills/poteto-mode/scripts/node_modules/typescript/README.md") is not None
 
     # Portable shared surfaces must NOT be exempt, including the setup entry
@@ -139,7 +139,7 @@ def test_typed_exemptions():
 def test_cli_execution():
     """The scanner CLI must exit 0 on the clean codebase with --check."""
     proc = subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "scan-host-boundary.py"), "--check", "--json"],
+        [sys.executable, str(ROOT / "scripts" / "scan_host_boundary.py"), "--check", "--json"],
         cwd=ROOT,
         capture_output=True,
         text=True,
@@ -156,11 +156,11 @@ def test_cli_exits_1_on_a_leak(tmp_path: Path, monkeypatch, capsys):
     (tree / "skills" / "sample").mkdir(parents=True)
     (tree / "skills" / "sample" / "SKILL.md").write_text("Call spawn_subagent.\n", encoding="utf-8")
     monkeypatch.setattr(scan_host_boundary, "ROOT", tree)
-    monkeypatch.setattr(sys, "argv", ["scan-host-boundary.py", "--check", "--json"])
+    monkeypatch.setattr(sys, "argv", ["scan_host_boundary.py", "--check", "--json"])
     assert main() == 1
     assert '"violations_count": 1' in capsys.readouterr().out
 
-    monkeypatch.setattr(sys, "argv", ["scan-host-boundary.py", "--no-check", "--json"])
+    monkeypatch.setattr(sys, "argv", ["scan_host_boundary.py", "--no-check", "--json"])
     assert main() == 0
     assert '"violations_count": 1' in capsys.readouterr().out
 
@@ -180,7 +180,7 @@ def test_cli_aborts_on_a_corrupt_profile(tmp_path: Path, monkeypatch, capsys):
     profiles.mkdir()
     (profiles / "bad.json").write_text("{", encoding="utf-8")
     monkeypatch.setattr(scan_host_boundary, "PROFILES_DIR", profiles)
-    monkeypatch.setattr(sys, "argv", ["scan-host-boundary.py"])
+    monkeypatch.setattr(sys, "argv", ["scan_host_boundary.py"])
     assert main() == 2
     captured = capsys.readouterr()
     assert "bad.json" in captured.err

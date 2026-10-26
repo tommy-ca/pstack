@@ -6,11 +6,11 @@ Provides real lifecycle management (install, verify, update, uninstall, prove)
 separating package deployment from validation and ensuring clean residue.
 
 Usage:
-    python3 scripts/package-lifecycle.py install [--host <host>] [--target-dir <dir>]
-    python3 scripts/package-lifecycle.py verify [--host <host>] [--target-dir <dir>]
-    python3 scripts/package-lifecycle.py update [--host <host>] [--target-dir <dir>]
-    python3 scripts/package-lifecycle.py uninstall [--host <host>] [--target-dir <dir>]
-    python3 scripts/package-lifecycle.py prove [--host <host>] [--target-dir <dir>]
+    python3 scripts/package_lifecycle.py install [--host <host>] [--target-dir <dir>]
+    python3 scripts/package_lifecycle.py verify [--host <host>] [--target-dir <dir>]
+    python3 scripts/package_lifecycle.py update [--host <host>] [--target-dir <dir>]
+    python3 scripts/package_lifecycle.py uninstall [--host <host>] [--target-dir <dir>]
+    python3 scripts/package_lifecycle.py prove [--host <host>] [--target-dir <dir>]
 """
 
 from __future__ import annotations
@@ -421,7 +421,7 @@ def verify_plugin_at_dir(host: str, plugin_dir: Path, desc: Any) -> Tuple[bool, 
             if isinstance(installed, str) and installed in RETIRED_VERSIONS:
                 errors.append(
                     f"{host} carries retired version {installed} ({RETIRED_VERSIONS[installed]});"
-                    f" run `package-lifecycle.py update --host {host}` to converge on {desc.version}"
+                    f" run `package_lifecycle.py update --host {host}` to converge on {desc.version}"
                 )
             elif installed != desc.version:
                 errors.append(f"Manifest version mismatch: {installed} != {desc.version}")
