@@ -28,9 +28,9 @@ def test_guide_teaches_sync_then_adapt() -> None:
     harness = (ROOT / "skills" / "poteto-mode" / "references" / "grok-tools.md").read_text(encoding="utf-8")
     upstream = (ROOT / "UPSTREAM").read_text(encoding="utf-8")
     assert "atomic building blocks" in guide
-    assert "adapt-harness.py" in guide
-    assert "verify-harness.py" in guide
-    assert "sync-from-upstream.py" in guide
+    assert "adapt_harness.py" in guide or "adapt-harness.py" in guide
+    assert "verify_harness.py" in guide or "verify-harness.py" in guide
+    assert "sync_from_upstream.py" in guide or "sync-from-upstream.py" in guide
     index = (ROOT / "docs/guide/README.md").read_text(encoding="utf-8")
     assert "does not auto-enter" in index
     natives = (ROOT / "docs/guide/13-grok-natives.md").read_text(encoding="utf-8")
@@ -102,8 +102,8 @@ def test_guide_teaches_sync_then_adapt() -> None:
     )
     assert spec_port.is_file()
     assert "host map" in spec_port.read_text(encoding="utf-8")
-    assert "adapt-harness.py" in upstream
-    assert "sync-from-upstream.py" in upstream
+    assert "adapt_harness.py" in upstream or "adapt-harness.py" in upstream
+    assert "sync_from_upstream.py" in upstream or "sync-from-upstream.py" in upstream
     pin = subprocess.run(
         [sys.executable, str(ROOT / "scripts/sync_from_upstream.py"), "--pin"],
         cwd=ROOT,
@@ -126,10 +126,13 @@ def test_guide_teaches_sync_then_adapt() -> None:
     )
     assert recipe.returncode == 0, recipe.stderr
     assert sha in recipe.stdout
-    assert "adapt-harness.py" in recipe.stdout
-    assert "verify-harness.py" in recipe.stdout
+    assert "adapt_harness.py" in recipe.stdout or "adapt-harness.py" in recipe.stdout
+    assert "verify_harness.py" in recipe.stdout or "verify-harness.py" in recipe.stdout
     assert "verify.py run" in recipe.stdout
-    assert "sync-from-upstream.py --pin" in recipe.stdout
+    assert (
+        "sync_from_upstream.py --pin" in recipe.stdout
+        or "sync-from-upstream.py --pin" in recipe.stdout
+    )
     assert "Full sweep" in recipe.stdout
     assert "leftover-scanner" in recipe.stdout
     assert "upstream-pin" in recipe.stdout
@@ -138,6 +141,7 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert "refresh-hygiene" in recipe.stdout
     assert "release-tag" in recipe.stdout
     assert "verify-harness.py && python3 tests/test_verify_harness.py" not in recipe.stdout
+    assert "verify_harness.py && python3 tests/test_verify_harness.py" not in recipe.stdout
     assert "make-bot-ui" in recipe.stdout
     assert "pstack:<role>" in recipe.stdout
     assert "upstream-cursor-plugins/pstack" in recipe.stdout
