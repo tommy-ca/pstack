@@ -502,8 +502,12 @@ def drive_refresh_hygiene(paths: Paths) -> None:
     skills.mkdir(parents=True, exist_ok=True)
     assert_tmp_skills(skills)
     dest = skills / "reflect" / "SKILL.md"
-    script = paths.root / "skills" / "swarm" / "scripts" / "refresh-hygiene.py"
-    packaged = paths.root / "skills" / "swarm" / "scripts" / "verify-refresh-hygiene.py"
+    script = paths.root / "skills" / "swarm" / "scripts" / "refresh_hygiene.py"
+    if not script.is_file():
+        script = paths.root / "skills" / "swarm" / "scripts" / "refresh-hygiene.py"
+    packaged = paths.root / "skills" / "swarm" / "scripts" / "verify_refresh_hygiene.py"
+    if not packaged.is_file():
+        packaged = paths.root / "skills" / "swarm" / "scripts" / "verify-refresh-hygiene.py"
     dry = capture(
         [sys.executable, str(script), "--root", str(paths.root), "--skills", str(skills)],
         cwd=paths.root,
@@ -543,7 +547,7 @@ def drive_refresh_hygiene(paths: Paths) -> None:
         timeout=HYGIENE_TIMEOUT_S,
     )
     if lever.returncode != 0:
-        fail("verify-refresh-hygiene.py failed")
+        fail("verify_refresh_hygiene.py failed")
     assert_live_skills_unchanged(before)
     data = load_run(paths)
     features = dict(data.get("features") or {})
