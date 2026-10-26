@@ -316,12 +316,12 @@
 - [x] Unit 4: 6-Harness matrix verification, receipts refresh, and multi-model Interrogate review (CONFIRMED PASS).
 - [x] Unit 5: Stacked PRs merged bottom-up to main, and verified end-to-end workflows (6-Harness Matrix Verdict PASS, ALL FRESH, 1340 tests passing).
 
-## Epic #831: Code Judo Round 12 - Harmonize swarm scripts to PEP 8 standards and eliminate dynamic reflection
-- [ ] Unit 1 (Issue #832): Migrate swarm `refresh-hygiene` and `verify-refresh-hygiene` to snake_case and eliminate test reflection
-- [ ] Unit 2 (Issue #833): Align surface revisions, cache tests, and verify-pstack drivers to snake_case swarm scripts
-- [ ] Unit 3 (Issue #834): Retire facades and harmonize operator skill references
-- [ ] Unit 4: 6-Harness matrix verification, receipts refresh, and multi-model Interrogate review
-- [ ] Unit 5: Stacked PRs merged bottom-up to main, and verified end-to-end workflows
+## Epic #831: Code Judo Round 12 - Harmonize swarm scripts to PEP 8 standards and eliminate dynamic reflection (CLOSED)
+- [x] Unit 1 (Issue #832): Migrate swarm `refresh-hygiene` and `verify-refresh-hygiene` to snake_case and eliminate test reflection (PR #835).
+- [x] Unit 2 (Issue #833): Align surface revisions, cache tests, and verify-pstack drivers to snake_case swarm scripts (PR #838).
+- [x] Unit 3 (Issue #834): Retire facades and harmonize operator skill references (PR #839).
+- [x] Unit 4: 6-Harness matrix verification, receipts refresh, and multi-model Interrogate review (CONFIRMED PASS).
+- [x] Unit 5: Stacked PRs merged bottom-up to main, and verified end-to-end workflows (6-Harness Matrix Verdict PASS, ALL FRESH, 1340 tests passing).
 
 
 
