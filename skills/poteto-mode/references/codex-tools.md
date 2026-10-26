@@ -63,7 +63,7 @@ Verification on Codex leverages portable pstack levers and scripted harnesses:
 - **Scaffold lever**: `scripts/scaffold_verification_skill.py --host codex --app <app> --write` (validates with `--check`).
 - **Independent verifier**: `pstack:independent-verifier` running `gpt-6.1-sol` (read-only verification of real surfaces before shipping).
 - **Matrix verification**: `scripts/verify_portable.py run --host codex` generating durable receipts under `.audit/evidence/codex-receipt.json`.
-- **Swarm verification**: `skills/swarm/scripts/verify-refresh-hygiene.py` validating matrix partitions and hygiene sweeps.
+- **Swarm verification**: `skills/swarm/scripts/verify_refresh_hygiene.py` validating matrix partitions and hygiene sweeps.
 
 
 ## Subagent policy

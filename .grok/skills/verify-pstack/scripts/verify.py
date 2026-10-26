@@ -389,7 +389,7 @@ def drive_upstream_pin(paths: Paths) -> None:
     )
     sha = got.stdout.strip()
     if got.returncode != 0 or not re.fullmatch(r"[0-9a-f]{40}", sha):
-        fail("sync-from-upstream.py --pin did not print a 40-hex SHA")
+        fail("sync_from_upstream.py --pin did not print a 40-hex SHA")
     upstream = (paths.root / "UPSTREAM").read_text(encoding="utf-8")
     match = PIN_RE.search(upstream)
     if match is None or match.group(1) != sha:
@@ -445,7 +445,7 @@ def drive_upstream_recipe(paths: Paths) -> None:
         out_dir=paths.evidence / "features" / "upstream-recipe",
     )
     if got.returncode != 0:
-        fail("sync-from-upstream.py --recipe failed")
+        fail("sync_from_upstream.py --recipe failed")
     if "--log" in got.cmd:
         fail("recipe drive must not pass --log")
     text = got.stdout
