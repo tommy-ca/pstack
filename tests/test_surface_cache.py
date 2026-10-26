@@ -361,7 +361,7 @@ def test_published_module_docstring_moves_the_driver_revision(tmp_path: Path) ->
         "skills/interrogate/scripts/pack.py",
         "skills/swarm/scripts/partition.py",
         "skills/swarm/scripts/apply.py",
-        "skills/swarm/scripts/refresh-hygiene.py",
+        "skills/swarm/scripts/refresh_hygiene.py",
     ],
 )
 def test_published_skill_docstring_moves_skills_tree_hash(tmp_path: Path, relative_path: str) -> None:
