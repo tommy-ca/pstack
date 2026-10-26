@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import importlib.util
 import stat
 import subprocess
 import sys
@@ -11,18 +10,15 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 import scripts.sync_from_upstream as sync_mod
-SCRIPT = ROOT / "skills" / "swarm" / "scripts" / "refresh-hygiene.py"
+import skills.swarm.scripts.refresh_hygiene as refresh_hygiene_mod
+
+SCRIPT = ROOT / "skills" / "swarm" / "scripts" / "refresh_hygiene.py"
 CLAUDE = "transcripts live in ~/.claude/projects/encoded\n"
 GROK = "GROK_SESSION_ID\n"
 
 
 def load():
-    spec = importlib.util.spec_from_file_location("refresh_hygiene", SCRIPT)
-    assert spec is not None and spec.loader is not None
-    mod = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = mod
-    spec.loader.exec_module(mod)
-    return mod
+    return refresh_hygiene_mod
 
 
 def _src_dest(tmp_path: Path, dest_text: str) -> tuple[Path, Path, Path, Path]:
