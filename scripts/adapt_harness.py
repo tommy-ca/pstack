@@ -36,12 +36,10 @@ SKIP_FILES = {
     "HARNESS.md",
     "grok-tools.md",
     "UPSTREAM",
-    "adapt-harness.py",
     "adapt_harness.py",
     "TEST-PLAN.md",
     "README.md",
     "README.zh-CN.md",
-    "verify-harness.py",
     "verify_harness.py",
 }
 TEXT_SUFFIXES = {".md", ".toml", ".json", ".ts", ".sh", ".mjs"}
