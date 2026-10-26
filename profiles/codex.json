@@ -161,7 +161,7 @@
       "host": "codex",
       "capability": "verify",
       "implementation_status": "native",
-      "primitive": "scripts/verify-portable.py",
+      "primitive": "scripts/verify_portable.py",
       "enforcement": "hard",
       "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/codex-receipt.json"
@@ -169,10 +169,10 @@
   ],
   "evidence_ledger": [
     {
-      "claim": "HISTORICAL runtime claim, superseded 2026-10-17: Codex implements agent.spawn, agent.join, and workspace.isolated via native spawn_agent and worktrees. The durable receipt was then refreshed statically (canonical/adapter/package PASS, runtime UNTESTED), so this runtime claim is no longer current evidence; codex claims packaged with static-only rows until `python3 scripts/verify-portable.py run --host codex` records an observed_live settlement.",
+      "claim": "HISTORICAL runtime claim, superseded 2026-10-17: Codex implements agent.spawn, agent.join, and workspace.isolated via native spawn_agent and worktrees. The durable receipt was then refreshed statically (canonical/adapter/package PASS, runtime UNTESTED), so this runtime claim is no longer current evidence; codex claims packaged with static-only rows until `python3 scripts/verify_portable.py run --host codex` records an observed_live settlement.",
       "kind": "runtime",
       "artifact": ".audit/evidence/codex-receipt.json",
-      "command": "python3 scripts/verify-portable.py run --host codex",
+      "command": "python3 scripts/verify_portable.py run --host codex",
       "timestamp": "2026-10-05T16:55:00Z"
     }
   ],
