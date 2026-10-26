@@ -16,7 +16,7 @@ Branch or PR CI is failing and needs a fast, iterative path to green checks.
    for the changed paths:
 
    ```bash
-   python scripts/verify-portable.py select-checks --base <base-ref> [--head <sha>] --json
+   python scripts/verify_portable.py select-checks --base <base-ref> [--head <sha>] --json
    ```
 
    The plan names exact commands and tiers (`offline`, `host_dependent`,
@@ -34,9 +34,9 @@ Branch or PR CI is failing and needs a fast, iterative path to green checks.
    head SHA and the `git patch-id` of the base..head diff:
 
    ```bash
-   python scripts/verify-portable.py select-checks --base <base-ref> --record .audit/checks.json \
+   python scripts/verify_portable.py select-checks --base <base-ref> --record .audit/checks.json \
      --outcome 'pytest:tests/test_x.py=PASS'
-   python scripts/verify-portable.py select-checks --base <base-ref> --receipt .audit/checks.json
+   python scripts/verify_portable.py select-checks --base <base-ref> --receipt .audit/checks.json
    ```
 
    A changed patch-id, or a head that moved with a different patch, invalidates

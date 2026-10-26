@@ -19,7 +19,7 @@ def test_plugin_version_is_semver_prerelease() -> None:
 
 def test_port_base_tracks_upstream_packaging() -> None:
     recipe = subprocess.run(
-        [sys.executable, str(ROOT / "scripts/sync-from-upstream.py"), "--recipe"],
+        [sys.executable, str(ROOT / "scripts/sync_from_upstream.py"), "--recipe"],
         cwd=ROOT,
         capture_output=True,
         text=True,

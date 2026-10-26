@@ -5,9 +5,9 @@ Does not copy files. Prints the pin, the recipe, or `git log` since the
 recorded tree. Copy + adapt + verify stay operator-owned so Grok-only files
 and Cursor-only packaging are not overwritten blindly.
 
-    python3 scripts/sync-from-upstream.py --pin
-    python3 scripts/sync-from-upstream.py --recipe
-    python3 scripts/sync-from-upstream.py --log
+    python3 scripts/sync_from_upstream.py --pin
+    python3 scripts/sync_from_upstream.py --recipe
+    python3 scripts/sync_from_upstream.py --log
 """
 
 from __future__ import annotations

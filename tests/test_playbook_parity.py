@@ -78,7 +78,7 @@ def test_census_source_matches_the_declared_manifest() -> None:
 # --- P7 (#293): native dispatch, dropout and cancellation negatives -----------
 
 REFERENCE = ROOT / "skills" / "poteto-mode" / "references" / "omp-tools.md"
-LEVER = ROOT / "scripts" / "prove-omp-vertical-slice.py"
+LEVER = ROOT / "scripts" / "prove_omp_vertical_slice.py"
 ORCHESTRATE = ROOT / "skills" / "poteto-mode" / "playbooks" / "orchestrate.md"
 
 FREEZE_CLAUSE = {

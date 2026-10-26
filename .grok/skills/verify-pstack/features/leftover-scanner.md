@@ -12,7 +12,7 @@ Leftover scan walks this plugin tree for live Cursor harness call sites and chec
 
 ## How to get to it (user POV)
 
-- From the plugin checkout, run `python3 scripts/verify-harness.py`.
+- From the plugin checkout, run `python3 scripts/verify_harness.py`.
 - Run `python3 .grok/skills/verify-pstack/scripts/verify.py doctor --root .`.
 - Run `python3 .grok/skills/verify-pstack/scripts/verify.py drive --root . --feature leftover-scanner`.
 
@@ -26,18 +26,18 @@ Preconditions:
 
 - **Required doctor.** Run leftover scanner before any other feature. Run `python3 .grok/skills/verify-pstack/scripts/verify.py doctor --root .`. Exit code `0`. Evidence `doctor/leftover-scanner/stdout.txt` contains a line `PASS`, `playbooks: 22 named + opening-a-pr`, `principles: 24`, and `plugin.json name: pstack`. Evidence `doctor/plugin-validate/stdout.txt` contains `Plugin manifest is valid.`
 - **Operator entry.** Drive the same scanner as a mapped feature. Run `python3 .grok/skills/verify-pstack/scripts/verify.py drive --root . --feature leftover-scanner`. Exit code `0`. Feature evidence repeats leftover `PASS`.
-- **Direct CLI.** Run the operator command itself. Run `python3 scripts/verify-harness.py`. Exit code `0`. First stdout line is `PASS`.
+- **Direct CLI.** Run the operator command itself. Run `python3 scripts/verify_harness.py`. Exit code `0`. First stdout line is `PASS`.
 - **Proof.** Read `doctor/leftover-scanner/stdout.txt` and `doctor/leftover-scanner/exit.txt`. The exit file is `0`. The stdout file is not pytest `-q` output and is not `grok inspect` JSON.
 
 ## Gotchas
 
 - `grok plugin validate .` and `grok inspect --json` are not leftover scanner. Validate is doctor companion only. Inspect `enabled` is trust.
-- `uv run --with pytest pytest tests/test_verify_harness.py` is not leftover scanner. The tree walk is `scripts/verify-harness.py`.
+- `uv run --with pytest pytest tests/test_verify_harness.py` is not leftover scanner. The tree walk is `scripts/verify_harness.py`.
 - TEST-PLAN.md says verify-harness is not an EDITH pass gate. This map still requires leftover `PASS` as doctor.
 - Scanner skip dirs are `.git`, `automations`, `scripts`, `.superpowers`, `.worktrees`, `openspec`, `.audit`, and `.atl`. A leftover `PASS` does not mean skipped dirs are clean. Skills markdown is not a skip dir. `docs/` is walked. `.grok` is not a skip dir. Project-local skill markdown stays scanned. Doctor still fails if `.grok/workflows` exists. The scanner does not walk `$HOME`.
 - Scanner skip files are `UPSTREAM`, `TEST-PLAN.md`, `README.md`, `README.zh-CN.md`, `codex-tools.md`, `grok-tools.md`, `droid-tools.md`, `provider-dispatch.md`, `antigravity-tools.md`, `omp-tools.md`, `opencode-tools.md`, and `classification.tsv`. Those names may mention Cursor leftovers. Skills markdown must not keep them as call sites.
 - Allowed mentions such as `There is no cursor-team-kit` and `classification.tsv` notes must not be treated as live hits.
 - leftover-scanner is not leftover-clone and not leftover_count from worktree-drop. Isolation reclaim is worktree-cleanup.
-- Leftover PASS is checkout token cleanliness, not catalog identity. After enable, `grok inspect --json` `.agents[].name` must include `pstack:swarm-workers`. Read inspect `plugins[].path` and `skills[]` `collidesWith`. `[compat.claude] skills=false` does not hide `~/.grok/skills`. Missing `pstack:swarm-workers` means Grok is not loading https://github.com/tommy-ca/pstack. `python3 scripts/check-plugin-agents.py` is the enable check. It is not leftover scanner.
+- Leftover PASS is checkout token cleanliness, not catalog identity. After enable, `grok inspect --json` `.agents[].name` must include `pstack:swarm-workers`. Read inspect `plugins[].path` and `skills[]` `collidesWith`. `[compat.claude] skills=false` does not hide `~/.grok/skills`. Missing `pstack:swarm-workers` means Grok is not loading https://github.com/tommy-ca/pstack. `python3 scripts/check_plugin_agents.py` is the enable check. It is not leftover scanner.
 - Later `drive` on the same `--run-id` for other features refuses if leftover scanner did not PASS.
 - `grok-tools.md`, `scripts/`, and `automations/benny` may name Cursor leftovers. Skills markdown must not keep them as call sites.

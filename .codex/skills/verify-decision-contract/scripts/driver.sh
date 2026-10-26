@@ -54,13 +54,13 @@ case "${1:-doctor}" in
       exit 2
     fi
     if [[ -n "${PSTACK_DECISION_EVIDENCE_DIR:-}" ]]; then
-      run_bounded "official-pinned canonical decision parity" python3 scripts/verify-decision-contract.py \
+      run_bounded "official-pinned canonical decision parity" python3 scripts/verify_decision_contract.py \
         --root "$ROOT" \
         --upstream-commit "$PSTACK_UPSTREAM_COMMIT_JSON" \
         --upstream-tree "$PSTACK_UPSTREAM_TREE_JSON" \
         --evidence-dir "$PSTACK_DECISION_EVIDENCE_DIR"
     else
-      run_bounded "official-pinned canonical decision parity" python3 scripts/verify-decision-contract.py \
+      run_bounded "official-pinned canonical decision parity" python3 scripts/verify_decision_contract.py \
         --root "$ROOT" \
         --upstream-commit "$PSTACK_UPSTREAM_COMMIT_JSON" \
         --upstream-tree "$PSTACK_UPSTREAM_TREE_JSON"

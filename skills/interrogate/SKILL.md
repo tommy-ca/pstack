@@ -55,7 +55,7 @@ You are the lead reviewer, a pragmatic senior engineer, not a neutral aggregator
 - **Noted**. Technically valid but not actionable. Context-dependent, premature optimization, or low-impact at this stage.
 - **Dismissed**. Wrong, nitpicky, or missing context, with a brief reason.
 
-The verdict binds to evidence: every finding cites the receipt scenario id, file hash, or PR head SHA it rests on. A prose-only verdict fails and is re-run, not shipped. When the verdict claims host parity, name the declared census read from `pstack.package.json#host_targets` via `get_declared_hosts` in `scripts/verify-portable.py`, with each host's evidence tier; a missing host is a stated gap, not silence.
+The verdict binds to evidence: every finding cites the receipt scenario id, file hash, or PR head SHA it rests on. A prose-only verdict fails and is re-run, not shipped. When the verdict claims host parity, name the declared census read from `pstack.package.json#host_targets` via `get_declared_hosts` in `scripts/verify_portable.py`, with each host's evidence tier; a missing host is a stated gap, not silence.
 
 ## Effect Ownership and Finding Contract
 

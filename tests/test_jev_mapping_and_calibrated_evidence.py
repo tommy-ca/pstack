@@ -7,7 +7,7 @@ Verifies:
 - Stale provider/model, expired receipt, unaccepted review decision, absent eval metrics fail closed.
 - Synthetic self-receipt cannot self-authorize promotion.
 - Known-good persisted calibrated evidence receipt promotes eligible semantic candidates.
-- scripts/verify-decision-contract.py checks applied canonical UPSTREAM pin.
+- scripts/verify_decision_contract.py checks applied canonical UPSTREAM pin.
 """
 
 from __future__ import annotations
