@@ -103,9 +103,7 @@ class RecipeError(RuntimeError):
 
 
 DOCSTRING_CONSUMED_DRIVERS = (
-    "canonical-index.py",
     "canonical_index.py",
-    "verify-portable.py",
     "verify_portable.py",
     "portable_verifier.py",
     "pack.py",
@@ -447,16 +445,11 @@ def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path
 
     hasher = hashlib.sha256()
     for fname in (
-        "canonical-index.py",
         "canonical_index.py",
-        "verify-portable.py",
         "verify_portable.py",
         "portable_verifier.py",
-        "verify-harness.py",
         "verify_harness.py",
-        "adapt-harness.py",
         "adapt_harness.py",
-        "scaffold-verification-skill.py",
         "scaffold_verification_skill.py",
         "skill_frontmatter.py",
         "host_identity.py",
