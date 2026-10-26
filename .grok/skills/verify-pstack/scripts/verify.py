@@ -450,11 +450,7 @@ def drive_upstream_recipe(paths: Paths) -> None:
         fail("recipe drive must not pass --log")
     text = got.stdout
     for needle in (
-        "sync-from-upstream.py --pin",
-        "sync-from-upstream.py --log",
-        "adapt-harness.py",
         "verify.py run",
-        "verify-harness.py",
         "Full sweep",
         "leftover-scanner",
         "upstream-pin",
@@ -468,7 +464,15 @@ def drive_upstream_recipe(paths: Paths) -> None:
     ):
         if needle not in text:
             fail(f"recipe stdout missing {needle}")
-    if "verify-harness.py && python3 tests/test_verify_harness.py" in text:
+    if not ("sync_from_upstream.py --pin" in text or "sync-from-upstream.py --pin" in text):
+        fail("recipe stdout missing sync_from_upstream.py --pin")
+    if not ("sync_from_upstream.py --log" in text or "sync-from-upstream.py --log" in text):
+        fail("recipe stdout missing sync_from_upstream.py --log")
+    if not ("adapt_harness.py" in text or "adapt-harness.py" in text):
+        fail("recipe stdout missing adapt_harness.py")
+    if not ("verify_harness.py" in text or "verify-harness.py" in text):
+        fail("recipe stdout missing verify_harness.py")
+    if "verify-harness.py && python3 tests/test_verify_harness.py" in text or "verify_harness.py && python3 tests/test_verify_harness.py" in text:
         fail("recipe step 5 must not use pytest as leftover doctor")
     data = load_run(paths)
     features = dict(data.get("features") or {})

@@ -61,8 +61,8 @@ def recipe(upstream_file: Path | None = None) -> str:
     sha = pin(upstream_file)
     return f"""Refresh from official Cursor pstack (pin {sha}).
 
-1. python3 scripts/sync-from-upstream.py --pin
-   python3 scripts/sync-from-upstream.py --log
+1. python3 scripts/sync_from_upstream.py --pin
+   python3 scripts/sync_from_upstream.py --log
 2. Review applicable intent from .worktrees/upstream-cursor-plugins/pstack/
    (`skills/`, `agents/`, and selected docs). Overlay last classification with
    skills/swarm/scripts/partition.py seed --cache .worktrees/upstream-cursor-plugins
@@ -84,13 +84,13 @@ def recipe(upstream_file: Path | None = None) -> str:
    Audit retained `scripts/orch/`, `scripts/watch-pr/`, `check-plan.mjs`, and
    `worktree-audit.sh` as Codex compatibility surfaces instead of blind-copying.
    Do not replace Grok `agents/` (22 role files) with upstream's two files.
-3. python3 scripts/adapt-harness.py
+3. python3 scripts/adapt_harness.py
 4. Hand-map depth-1 spawn (`pstack:<role>`) and persist-then-wake overnight
    (`/loop` → scheduler_create). Do not leave Cursor Task, same-run /loop,
    ~/.cursor/rules/*.mdc, or control-cli as live Grok calls.
 5. python3 .grok/skills/verify-pstack/scripts/verify.py run --root .
    That is leftover doctor then Full sweep drive then cleanup on one run-id.
-   Leftover doctor runs scripts/verify-harness.py then grok plugin validate.
+   Leftover doctor runs scripts/verify_harness.py then grok plugin validate.
    Evidence survives. Full sweep walks leftover-scanner, upstream-pin,
    absorbed-intent, upstream-recipe, refresh-hygiene, and release-tag.
 6. Update the `tree` line in UPSTREAM to the new pstack/ commit.
