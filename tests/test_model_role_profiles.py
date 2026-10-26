@@ -263,10 +263,7 @@ def test_plan_role_has_exactly_one_production_caller() -> None:
             if re.search(r"\bplan_role\b", line):
                 importers.add(path.name)
                 break
-    assert importers in (
-        {"model_role_resolver.py", "project-package.py"},
-        {"model_role_resolver.py", "package_projection.py"},
-    )
+    assert importers == {"model_role_resolver.py", "package_projection.py"}
 
 
 def test_reference_fork_ledger_records_completed_source_review() -> None:

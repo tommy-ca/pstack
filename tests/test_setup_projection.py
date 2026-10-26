@@ -150,15 +150,8 @@ def test_grok_skill_owns_the_adapter_body() -> None:
 
 
 def test_entry_skill_passes_the_host_boundary_scan() -> None:
-    import importlib.util
+    import scripts.scan_host_boundary as module
 
-    spec = importlib.util.spec_from_file_location(
-        "scan_host_boundary", ROOT / "scripts" / "scan-host-boundary.py"
-    )
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    sys.modules["scan_host_boundary"] = module
-    spec.loader.exec_module(module)
     vocab = module.extract_forbidden_vocabulary(ROOT / "profiles")
     assert module.scan_file(ENTRY_SKILL, ROOT, vocab) == []
 

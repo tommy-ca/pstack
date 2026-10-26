@@ -101,7 +101,7 @@ Do not send `readonly`, `environment`, `capability_mode`, or `reasoning_effort` 
 
 ## Plugin schema and packaging
 
-Under the 5-harness package architecture (`pstack.package.json`), package manifests are projected via `scripts/project-package.py` to `.grok-plugin/plugin.json` while maintaining repository root `plugin.json` in parity for single-host grok CLI discovery and validation (`grok plugin validate`). grok 1.0.13 parses `PluginManifest` (14 fields). Extra JSON keys are ignored.
+Under the 5-harness package architecture (`pstack.package.json`), package manifests are projected via `scripts/project_package.py` to `.grok-plugin/plugin.json` while maintaining repository root `plugin.json` in parity for single-host grok CLI discovery and validation (`grok plugin validate`). grok 1.0.13 parses `PluginManifest` (14 fields). Extra JSON keys are ignored.
 
 Plugin agents must not declare `mcpServers` or `hooks`, and must not set `permissionMode: bypassPermissions`. Valid `permissionMode`: `default`, `acceptEdits`, `dontAsk`, `bypassPermissions`. Do not ship `permissionMode: plan`.
 

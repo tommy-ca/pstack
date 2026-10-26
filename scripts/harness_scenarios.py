@@ -95,7 +95,7 @@ def execute_local_scenarios(verifier: Any, root: Path) -> List[ScenarioResult]:
             "package",
             [
                 sys.executable,
-                str(root / "scripts" / "package-lifecycle.py"),
+                str(root / "scripts" / "package_lifecycle.py"),
                 "prove",
                 "--host",
                 verifier.host,

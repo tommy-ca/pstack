@@ -145,7 +145,7 @@ def test_role_catalog_rejects_duplicate_ids(monkeypatch) -> None:
 def test_projector_reports_a_refused_catalog_instead_of_crashing(capsys) -> None:
     """Tooth: an unprojectable descriptor is a reported FAIL, not a traceback.
 
-    `check_all` is also the `package-lifecycle.py verify` gate, which expects a
+    `check_all` is also the `package_lifecycle.py verify` gate, which expects a
     bool, so a refused catalog must print and return False.
     """
     desc, _ = project_package.load_package_descriptor()

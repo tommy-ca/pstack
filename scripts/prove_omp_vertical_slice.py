@@ -547,7 +547,7 @@ def slice_scenarios(
             id="slice-package-projection",
             description="Install writes an OMP package whose manifest and skill/agent shape verify",
             plane="package",
-            command="python3 scripts/package-lifecycle.py install --host omp (temp base) + verify",
+            command="python3 scripts/package_lifecycle.py install --host omp (temp base) + verify",
             exit_code=0 if (offline["shape_ok"] and offline["manifest_ok"]) else 1,
             stdout_snippet=(
                 f"manifest={offline['manifest'].get('name')} omp_key="
@@ -563,7 +563,7 @@ def slice_scenarios(
                 "The uninstall plan removes only owned paths and preserves user-authored sentinels"
             ),
             plane="package",
-            command="python3 scripts/package-lifecycle.py uninstall --host omp (temp base)",
+            command="python3 scripts/package_lifecycle.py uninstall --host omp (temp base)",
             exit_code=0 if (offline["uninstall_ok"] and offline["sentinels_preserved"] and offline["owned_paths_removed"]) else 1,
             stdout_snippet=(
                 f"plan_owned={len(offline['plan']['owned'])} plan_preserved={offline['plan']['preserved']} "

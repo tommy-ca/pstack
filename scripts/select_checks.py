@@ -26,7 +26,7 @@ from scripts.evidence_receipts import (
 ROOT = Path(__file__).resolve().parents[1]
 
 OFFLINE_WORKFLOW = Path(".github/workflows/portability-offline.yml")
-SCAN_HOST_BOUNDARY = (sys.executable, "scripts/scan-host-boundary.py")
+SCAN_HOST_BOUNDARY = (sys.executable, "scripts/scan_host_boundary.py")
 CANONICAL_INDEX_CHECK = (sys.executable, "scripts/canonical_index.py", "--check")
 
 
@@ -188,16 +188,10 @@ CHECK_SELECTION_TABLE: List[CheckRule] = [
     ("scripts/verify-decision-contract.py", ("tests/test_verify_decision_contract.py",), ()),
     ("scripts/verify_decision_contract.py", ("tests/test_verify_decision_contract.py",), ()),
     ("scripts/verify_rollback_equivalence.py", ("tests/test_rollback_equivalence.py",), ()),
-    ("scripts/scan-host-boundary.py", ("tests/test_scan_host_boundary.py",), ()),
     ("scripts/scan_host_boundary.py", ("tests/test_scan_host_boundary.py",), ()),
     ("scripts/skill_frontmatter.py", ("tests/test_skill_frontmatter.py",), ()),
-    ("scripts/project-package.py", ("tests/test_project_package.py", "tests/test_droid_projection.py"), ()),
+    ("scripts/project_package.py", ("tests/test_project_package.py", "tests/test_droid_projection.py"), ()),
     ("scripts/package_projection.py", ("tests/test_project_package.py", "tests/test_droid_projection.py"), ()),
-    (
-        "scripts/package-lifecycle.py",
-        ("tests/test_package_lifecycle.py", "tests/test_package_lifecycle_safety.py"),
-        (),
-    ),
     (
         "scripts/package_lifecycle.py",
         ("tests/test_package_lifecycle.py", "tests/test_package_lifecycle_safety.py"),
@@ -205,7 +199,6 @@ CHECK_SELECTION_TABLE: List[CheckRule] = [
     ),
     ("scripts/canonical_index.py", ("tests/test_canonical_index.py",), ()),
     ("scripts/scaffold_verification_skill.py", ("tests/test_scaffold_verification_skill.py",), ()),
-    ("scripts/sync-antigravity-plugin.py", ("tests/test_sync_antigravity_plugin.py",), ()),
     ("scripts/sync_antigravity_plugin.py", ("tests/test_sync_antigravity_plugin.py",), ()),
     (
         "scripts/sync-from-upstream.py",
