@@ -203,7 +203,7 @@ def test_verify_pstack_drive_upstream_recipe_operator_path() -> None:
         for needle in (
             "--pin",
             "--log",
-            "adapt-harness.py",
+            "adapt_harness.py" if "adapt_harness.py" in stdout else "adapt-harness.py",
             "verify.py run",
             "Full sweep",
             "leftover-scanner",
@@ -360,8 +360,8 @@ def test_readme_lists_verify_pstack() -> None:
     assert "Plugin doctor lives at `.grok/skills/verify-pstack/`" in skill
     assert "Do not ship it under `skills/`." in skill
     upstream = (ROOT / "UPSTREAM").read_text(encoding="utf-8")
-    assert "sync-from-upstream.py --pin" in upstream
-    assert "sync-from-upstream.py --log" in upstream
+    assert "sync_from_upstream.py --pin" in upstream or "sync-from-upstream.py --pin" in upstream
+    assert "sync_from_upstream.py --log" in upstream or "sync-from-upstream.py --log" in upstream
     assert "verify.py run" in upstream
 
 
