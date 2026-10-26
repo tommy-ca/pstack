@@ -302,4 +302,12 @@
 - [x] Unit 4: 6-Harness matrix verification, receipts refresh, and multi-model Interrogate review.
 - [x] Unit 5: Stacked PRs merged bottom-up to main, and verified end-to-end workflows (6-Harness Matrix Verdict PASS, ALL FRESH).
 
+## Epic #813: Code Judo Round 10 - Eliminate legacy dashed script files, enforce PEP 8 snake_case, and migrate repository callers
+- [ ] Unit 1 (Issue #814): Eliminate core verification engine and harness dashed scripts, introduce `scripts/verify_portable.py` alias, and migrate callers.
+- [ ] Unit 2 (Issue #815): Eliminate package lifecycle, projection, and boundary dashed scripts, introduce `scripts/project_package.py` alias, and migrate callers.
+- [ ] Unit 3 (Issue #816): Eliminate upstream sync, decision contract, and OMP dashed scripts, update surface revisions, and restamp evidence receipts.
+- [ ] Unit 4: 6-Harness matrix verification, receipts refresh, and multi-model Interrogate review.
+- [ ] Unit 5: Stacked PRs merged bottom-up to main, and verified end-to-end workflows (6-Harness Matrix Verdict PASS, ALL FRESH).
+
+
 
