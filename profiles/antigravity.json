@@ -178,7 +178,7 @@
       "claim": "HISTORICAL runtime ledger entry, recorded 2026-10-05: Antigravity plugin synchronized with 54 skills, 22 subagents, and 19 commands validated via agy plugin validate. The durable receipt was refreshed statically on 2026-10-17, so this entry no longer carries runtime evidence; the sync itself stays re-checked offline by the doctor-antigravity-sync scenario.",
       "kind": "runtime",
       "artifact": ".audit/evidence/antigravity-receipt.json",
-      "command": "python3 scripts/sync-antigravity-plugin.py --check",
+      "command": "python3 scripts/sync_antigravity_plugin.py --check",
       "timestamp": "2026-10-05T20:23:00Z"
     }
   ],

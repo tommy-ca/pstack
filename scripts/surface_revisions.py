@@ -476,11 +476,9 @@ def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path
 
     pkg_hasher = hashlib.sha256()
     for fname in (
-        "project-package.py",
+        "project_package.py",
         "package_projection.py",
-        "package-lifecycle.py",
         "package_lifecycle.py",
-        "sync-antigravity-plugin.py",
         "sync_antigravity_plugin.py",
         "model_role_policy.py",
         "model_role_resolver.py",
@@ -506,7 +504,7 @@ def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path
     package_driver_revision = pkg_hasher.hexdigest()
 
     bnd_hasher = hashlib.sha256()
-    for fname in ("scan-host-boundary.py", "scan_host_boundary.py"):
+    for fname in ("scan_host_boundary.py",):
         bnd_driver_file = root / "scripts" / fname
         if bnd_driver_file.is_file():
             bnd_hasher.update(fname.encode("utf-8"))

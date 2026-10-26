@@ -8,7 +8,10 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-LIFECYCLE_SCRIPT = ROOT / "scripts" / "package-lifecycle.py"
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+LIFECYCLE_SCRIPT = ROOT / "scripts" / "package_lifecycle.py"
 
 import scripts.package_lifecycle as package_lifecycle
 

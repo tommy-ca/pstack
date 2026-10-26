@@ -38,7 +38,7 @@ OBSERVER_HOSTS: Tuple[str, ...] = ("mock",)
 # Every identity a profile, binding or package descriptor may carry.
 KNOWN_HOSTS: Tuple[str, ...] = BUILTIN_HOSTS + LEGACY_HOST_ALIASES
 
-# The one bare harness name `scripts/scan-host-boundary.py` knows without this
+# The one bare harness name `scripts/scan_host_boundary.py` knows without this
 # module (`HARNESS_NAMES = set(KNOWN_HOSTS) | set(OBSERVER_HOSTS) | {"pi"}`), so
 # its namespace is spent too.
 SCANNED_ONLY_HOST_NAMES: Tuple[str, ...] = ("pi",)

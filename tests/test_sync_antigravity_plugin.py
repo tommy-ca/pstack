@@ -12,7 +12,7 @@ if str(ROOT) not in sys.path:
 
 import scripts.sync_antigravity_plugin as sync_mod
 
-SCRIPT = ROOT / "scripts" / "sync-antigravity-plugin.py"
+SCRIPT = ROOT / "scripts" / "sync_antigravity_plugin.py"
 
 
 def git(root: Path, *args: str) -> subprocess.CompletedProcess[str]:

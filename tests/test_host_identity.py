@@ -59,12 +59,10 @@ IMPORTING_SURFACES = (
     "scripts/portability_schema.py",
     "scripts/verify_portable.py",
     "scripts/portable_verifier.py",
-    "scripts/package-lifecycle.py",
     "scripts/package_lifecycle.py",
-    "scripts/project-package.py",
+    "scripts/project_package.py",
     "scripts/package_projection.py",
     "scripts/drivers/__init__.py",
-    "scripts/scan-host-boundary.py",
     "scripts/scan_host_boundary.py",
 )
 REFERENCING_SCHEMAS = (
@@ -310,10 +308,10 @@ def test_the_six_builtin_hosts_are_unchanged_everywhere() -> None:
     import scripts.portability_schema as portability_schema
     from scripts.drivers import DRIVER_REGISTRY
 
-    lifecycle = _load_module("package_lifecycle_seam", "scripts/package-lifecycle.py")
+    lifecycle = _load_module("package_lifecycle_seam", "scripts/package_lifecycle.py")
     verify_portable = _load_module("verify_portable_seam", "scripts/verify_portable.py")
-    scan_boundary = _load_module("scan_host_boundary_seam", "scripts/scan-host-boundary.py")
-    project_package = _load_module("project_package_seam", "scripts/project-package.py")
+    scan_boundary = _load_module("scan_host_boundary_seam", "scripts/scan_host_boundary.py")
+    project_package = _load_module("project_package_seam", "scripts/project_package.py")
     scaffold = _load_module(
         "scaffold_verification_skill_seam", "scripts/scaffold_verification_skill.py"
     )
