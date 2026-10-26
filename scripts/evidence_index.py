@@ -211,7 +211,7 @@ def index_row_mismatch(host: str, index_file: Path, receipt_root: Path) -> Optio
         return (
             f"evidence index {index_file} is missing; it is the inventory of every host's "
             f"durable receipt. Rebuild it with: "
-            f"python3 scripts/verify-portable.py refresh-static --host all."
+            f"python3 scripts/verify_portable.py refresh-static --host all."
         )
     except Exception as err:
         return f"evidence index {index_file} unreadable: {type(err).__name__}: {err}"
@@ -233,7 +233,7 @@ def index_row_mismatch(host: str, index_file: Path, receipt_root: Path) -> Optio
         return (
             f"index {index_file} has no row for {host} but its durable receipt "
             f"{durable_file} exists: the inventory is STALE/REBUILD-REQUIRED. Rebuild "
-            f"the row with: python3 scripts/verify-portable.py refresh-static --host {host} "
+            f"the row with: python3 scripts/verify_portable.py refresh-static --host {host} "
             f"(a host claiming `candidate` writes no durable receipt, so an orphan left by "
             f"a demotion has to be removed instead)."
         )

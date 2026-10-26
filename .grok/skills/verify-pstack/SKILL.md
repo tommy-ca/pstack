@@ -1,6 +1,6 @@
 ---
 name: verify-pstack
-description: "Use when verifying this pstack Grok plugin, leftover Cursor harness call sites may still be live (leftover-scanner is Cursor harness token doctor), plugin doctor is in doubt, refresh-hygiene, upstream pin, upstream recipe, or release-tag checks are needed, or an agent reaches for grok plugin validate, grok inspect, or pytest as a substitute for scripts/verify-harness.py."
+description: "Use when verifying this pstack Grok plugin, leftover Cursor harness call sites may still be live (leftover-scanner is Cursor harness token doctor), plugin doctor is in doubt, refresh-hygiene, upstream pin, upstream recipe, or release-tag checks are needed, or an agent reaches for grok plugin validate, grok inspect, or pytest as a substitute for scripts/verify_harness.py."
 disable-model-invocation: true
 ---
 
@@ -14,7 +14,7 @@ The map lives at `features/`, next to this file. Do not read OpenSpec for drive 
 
 ## Launch
 
-Work in a pstack plugin checkout. `plugin.json` name is `pstack`. `scripts/verify-harness.py` exists.
+Work in a pstack plugin checkout. `plugin.json` name is `pstack`. `scripts/verify_harness.py` exists.
 
 Need `python3` and `grok` on `PATH`. Refresh-hygiene also needs `uv`. Do not run `mise use -g` to get them.
 
@@ -30,7 +30,7 @@ Leftover scanner is required doctor. Run it. No substitutes. leftover-scanner is
 python3 .grok/skills/verify-pstack/scripts/verify.py doctor --root .
 ```
 
-That runs `python3 scripts/verify-harness.py`, then `grok plugin validate .`. Leftover stdout must start with `PASS` and include `playbooks: 22 named + opening-a-pr`, `principles: 24`, and `plugin.json name: pstack`. Leftover exit 0. Validate stdout contains `Plugin manifest is valid.` Exit 0.
+That runs `python3 scripts/verify_harness.py`, then `grok plugin validate .`. Leftover stdout must start with `PASS` and include `playbooks: 22 named + opening-a-pr`, `principles: 24`, and `plugin.json name: pstack`. Leftover exit 0. Validate stdout contains `Plugin manifest is valid.` Exit 0.
 
 `python3 scripts/check_plugin_agents.py` is not leftover scanner. It is the enable check for workflow `agent_type` `pstack:swarm-workers`. It reads inspect `plugins[].path` and `skills[]` `collidesWith`. `[compat.claude] skills=false` does not hide `~/.grok/skills`. If inspect lacks `pstack:swarm-workers`, Grok is not loading https://github.com/tommy-ca/pstack. `grok plugin marketplace add` is catalog-only. Do not treat it as plugin install.
 
@@ -51,9 +51,9 @@ Re-run doctor after any failed drive, and before the first drive of a run.
 | Excuse | Reality |
 |---|---|
 | `grok plugin validate` plus inspect is doctor | Leftover scanner is required doctor. Validate is the companion only. Inspect is not leftover scanner. `scripts/check_plugin_agents.py` is the enable check. |
-| pytest already covers leftover tokens | `tests/test_verify_harness.py` is not `scripts/verify-harness.py` walking the tree. Run the scanner. |
+| pytest already covers leftover tokens | `tests/test_verify_harness.py` is not `scripts/verify_harness.py` walking the tree. Run the scanner. |
 | TEST-PLAN says verify-harness is not a pass gate | EDITH live-CLI gates are a different check. This doctor still requires leftover `PASS`. |
-| Static scan is not a user path | The operator path is `python3 scripts/verify-harness.py`. Drive it. |
+| Static scan is not a user path | The operator path is `python3 scripts/verify_harness.py`. Drive it. |
 | leftover-clone or worktree-drop leftover_count | leftover-scanner is Cursor harness token doctor. Isolation reclaim is worktree-cleanup. |
 | I will run leftover scanner later | Doctor first. A drive without leftover `PASS` is invalid. |
 

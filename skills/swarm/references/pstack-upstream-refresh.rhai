@@ -6,7 +6,7 @@ let meta = #{
         #{ title: "Seed", detail: "Overlay last classification onto the new name-status" },
         #{ title: "Classify", detail: "Fill unclassified fragments. Pause if any remain." },
         #{ title: "Apply", detail: "Thin copy of permitted port and new-skill-lever rows" },
-        #{ title: "Adapt", detail: "Run adapt-harness.py" },
+        #{ title: "Adapt", detail: "Run adapt_harness.py" },
         #{ title: "Check", detail: "apply-check leftover tokens, fences, remaps" },
         #{ title: "Interrogate", detail: "pack.py then pstack:interrogate-reviewers" },
         #{ title: "Verify", detail: "pstack:independent-verifier" },
@@ -121,8 +121,8 @@ if apply_r == () || !apply_r.success || apply_r.output.ok != true {
 phase("Adapt");
 let adapt_prompt = "";
 adapt_prompt += "Use command/run_terminal_command in this plugin cwd. ";
-adapt_prompt += "Run python3 scripts/adapt-harness.py. ";
-adapt_prompt += "Return ok=true only if adapt-harness.py exited 0.";
+adapt_prompt += "Run python3 scripts/adapt_harness.py. ";
+adapt_prompt += "Return ok=true only if adapt_harness.py exited 0.";
 let adapt_r = agent(adapt_prompt, #{
     label: "refresh-adapt",
     agent_type: "pstack:swarm-workers",
@@ -195,7 +195,7 @@ if !review_ok {
 phase("Verify");
 let verify_prompt = "";
 verify_prompt += "Independent verify. Use command/run_terminal_command and read_file. ";
-verify_prompt += "Run python3 scripts/verify-harness.py. ";
+verify_prompt += "Run python3 scripts/verify_harness.py. ";
 verify_prompt += "Run python3 skills/swarm/scripts/partition.py print --coverage --cache " + cache + " --table " + overlay + ". ";
 verify_prompt += "Run python3 skills/swarm/scripts/partition.py apply-check --cache " + cache + " --table " + overlay + " --dest . ";
 verify_prompt += "Return ok=true only if those commands passed. Inconclusive is not a pass.";
