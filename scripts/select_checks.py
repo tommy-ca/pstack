@@ -185,7 +185,6 @@ CHECK_SELECTION_TABLE: List[CheckRule] = [
         ("tests/test_verify_harness.py",),
         (),
     ),
-    ("scripts/verify-decision-contract.py", ("tests/test_verify_decision_contract.py",), ()),
     ("scripts/verify_decision_contract.py", ("tests/test_verify_decision_contract.py",), ()),
     ("scripts/verify_rollback_equivalence.py", ("tests/test_rollback_equivalence.py",), ()),
     ("scripts/scan_host_boundary.py", ("tests/test_scan_host_boundary.py",), ()),
@@ -200,11 +199,6 @@ CHECK_SELECTION_TABLE: List[CheckRule] = [
     ("scripts/canonical_index.py", ("tests/test_canonical_index.py",), ()),
     ("scripts/scaffold_verification_skill.py", ("tests/test_scaffold_verification_skill.py",), ()),
     ("scripts/sync_antigravity_plugin.py", ("tests/test_sync_antigravity_plugin.py",), ()),
-    (
-        "scripts/sync-from-upstream.py",
-        ("tests/test_verify_harness_guides.py", "tests/test_refresh_hygiene.py"),
-        (),
-    ),
     (
         "scripts/sync_from_upstream.py",
         ("tests/test_verify_harness_guides.py", "tests/test_refresh_hygiene.py"),
@@ -304,11 +298,6 @@ CHECK_SELECTION_TABLE: List[CheckRule] = [
         (),
     ),
     (
-        "scripts/check-plugin-agents.py",
-        ("tests/test_plugin_agents.py",),
-        (),
-    ),
-    (
         "scripts/check_plugin_agents.py",
         ("tests/test_plugin_agents.py",),
         (),
@@ -329,18 +318,8 @@ CHECK_SELECTION_TABLE: List[CheckRule] = [
         (),
     ),
     (
-        "scripts/prove-omp-native-package.py",
-        ("tests/test_omp_native_package.py",),
-        (),
-    ),
-    (
         "scripts/prove_omp_native_package.py",
         ("tests/test_omp_native_package.py",),
-        (),
-    ),
-    (
-        "scripts/prove-omp-vertical-slice.py",
-        ("tests/test_omp_native_package.py", "tests/test_verdict_reduction.py"),
         (),
     ),
     (

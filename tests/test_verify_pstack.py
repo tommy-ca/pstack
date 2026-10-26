@@ -194,7 +194,7 @@ def test_verify_pstack_drive_upstream_recipe_operator_path() -> None:
         cmd = (evidence / "features" / "upstream-recipe" / "cmd.txt").read_text(
             encoding="utf-8"
         )
-        assert "sync-from-upstream.py" in cmd
+        assert "sync_from_upstream.py" in cmd
         assert "--recipe" in cmd
         assert "--log" not in cmd
         stdout = (evidence / "features" / "upstream-recipe" / "stdout.txt").read_text(

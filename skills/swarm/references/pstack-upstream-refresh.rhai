@@ -53,7 +53,7 @@ phase("Seed");
 let seed_prompt = "";
 seed_prompt += "You are the parent refresh worker. Use command/run_terminal_command. Do not copy blobs. ";
 seed_prompt += "Cache path (JSON): " + json_encode(cache) + ". Overlay path: " + overlay + ". ";
-seed_prompt += "1. python3 scripts/sync-from-upstream.py --log. ";
+seed_prompt += "1. python3 scripts/sync_from_upstream.py --log. ";
 seed_prompt += "2. mkdir -p /tmp/pstack-refresh. ";
 seed_prompt += "3. python3 skills/swarm/scripts/partition.py seed --cache " + cache + " --out " + overlay + ". ";
 seed_prompt += "4. python3 skills/swarm/scripts/partition.py print --stats --table " + overlay + ". ";

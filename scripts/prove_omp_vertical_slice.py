@@ -20,7 +20,7 @@ the role declares ``capabilityMode: execute``, so the slice downgrades the claim
 rather than pretending a write denial it never observed.
 
 Usage:
-    python3 scripts/prove-omp-vertical-slice.py [--live] [--review-model M] [--out DIR] [--keep] [--json]
+    python3 scripts/prove_omp_vertical_slice.py [--live] [--review-model M] [--out DIR] [--keep] [--json]
 
 Exit codes: 0 PASS, 1 FAIL, 2 BLOCKED.
 """

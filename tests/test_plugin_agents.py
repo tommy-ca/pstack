@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "scripts" / "check-plugin-agents.py"
+SCRIPT = ROOT / "scripts" / "check_plugin_agents.py"
 FIXTURES = ROOT / "tests" / "fixtures"
 
 
