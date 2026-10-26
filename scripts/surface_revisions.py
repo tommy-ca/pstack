@@ -109,7 +109,6 @@ DOCSTRING_CONSUMED_DRIVERS = (
     "pack.py",
     "partition.py",
     "apply.py",
-    "refresh-hygiene.py",
     "refresh_hygiene.py",
 )
 

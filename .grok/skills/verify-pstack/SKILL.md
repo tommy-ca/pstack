@@ -70,7 +70,7 @@ python3 .grok/skills/verify-pstack/scripts/verify.py drive --root . --feature re
 
 Omit `--feature` to drive every mapped feature. That walk follows `features/README.md` top to bottom. It is the Full sweep. Driving one convenient feature is not a sweep. That path requires leftover `PASS` in this run's doctor evidence first. `drive leftover-scanner` may run without that log. Other features on the same `--run-id` refuse until leftover scanner PASSed.
 
-Read `features/README.md`, then the feature file. Drive the listed commands through `verify.py`. Do not paste `refresh-hygiene.py --apply-skills`. Do not run `scripts/release.sh` to completion from nested grok.
+Read `features/README.md`, then the feature file. Drive the listed commands through `verify.py`. Do not paste `refresh_hygiene.py --apply-skills`. Do not run `scripts/release.sh` to completion from nested grok.
 
 ## Proof bar
 
