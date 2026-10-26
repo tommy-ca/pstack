@@ -6,14 +6,14 @@ Refresh hygiene reports leftover overlay caches and stale skills as TSV, prints 
 
 - `hygiene-dry-run` prints `kind\taction\tpath\tnote` TSV and does not delete the primary overlay cache.
 - `hygiene-host-script` prints `cp -- <git-tracked SKILL.md> <tmp dest>` and writes no dest file.
-- `hygiene-packaged-lever` runs `python3 skills/swarm/scripts/verify-refresh-hygiene.py` and exits 0.
+- `hygiene-packaged-lever` runs `python3 skills/swarm/scripts/verify_refresh_hygiene.py` and exits 0.
 - `hygiene-live-untouched` leaves `~/.grok/skills/reflect` unchanged.
 
 ## How to get to it (user POV)
 
-- From the plugin checkout, run `python3 skills/swarm/scripts/refresh-hygiene.py --root . --skills <tmp>/skills`.
+- From the plugin checkout, run `python3 skills/swarm/scripts/refresh_hygiene.py --root . --skills <tmp>/skills`.
 - Run the same command with `--host-script` and the same tmp `--skills`.
-- Run `python3 skills/swarm/scripts/verify-refresh-hygiene.py`.
+- Run `python3 skills/swarm/scripts/verify_refresh_hygiene.py`.
 - Run `python3 .grok/skills/verify-pstack/scripts/verify.py drive --root . --feature refresh-hygiene`.
 
 ## Driving it with verify.py
@@ -28,7 +28,7 @@ Preconditions:
 - **Drive hygiene.** Run `python3 .grok/skills/verify-pstack/scripts/verify.py drive --root . --feature refresh-hygiene`. Exit code `0`.
 - **Dry-run TSV.** Evidence dry-run stdout starts with `kind\taction\tpath\tnote`. Exit code is `0` or `2`. Exit `2` is fail-closed nested would-delete. It is not a missing TSV.
 - **Host script.** Evidence host-script stdout starts with `cp -- `. Exit code `0`. Dest path is under `/tmp/verify-pstack-scratch-<runid>/`. Dest file does not exist after the command. Dest path does not contain `/.grok/skills/`.
-- **Packaged lever.** Evidence for `verify-refresh-hygiene.py` has exit `0`.
+- **Packaged lever.** Evidence for `verify_refresh_hygiene.py` has exit `0`.
 - **Proof.** `~/.grok/skills/reflect` fingerprint matches the pre-drive snapshot. Scratch dest `skills/reflect/SKILL.md` was not created by `--host-script`.
 
 ## Gotchas

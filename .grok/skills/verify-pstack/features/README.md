@@ -52,9 +52,9 @@ Walk this map top to bottom for a broad regression. Order is leftover-scanner, t
 
 ## Features
 
-- [Leftover Cursor harness scan](./leftover-scanner.md) covers `scripts/verify-harness.py` as required doctor and as a driveable operator check.
-- [Upstream pin](./upstream-pin.md) covers `scripts/sync-from-upstream.py --pin` against the `UPSTREAM` tree line.
+- [Leftover Cursor harness scan](./leftover-scanner.md) covers `scripts/verify_harness.py` as required doctor and as a driveable operator check.
+- [Upstream pin](./upstream-pin.md) covers `scripts/sync_from_upstream.py --pin` against the `UPSTREAM` tree line.
 - [Absorbed intent](./absorbed-intent.md) fails when pstack commits follow that pin, or when the named absorbed lines are missing. It does not fetch.
 - [Upstream refresh recipe](./upstream-recipe.md) covers print-only `--recipe`. `--log` fetches the cache and is not this drive.
-- [Refresh hygiene](./refresh-hygiene.md) covers dry-run TSV, `--host-script` with tmp `--skills`, and `verify-refresh-hygiene.py`.
+- [Refresh hygiene](./refresh-hygiene.md) covers dry-run TSV, `--host-script` with tmp `--skills`, and `verify_refresh_hygiene.py`.
 - [Release tag contract](./release-tag.md) covers `tests/test_release.py` and refuses nested `scripts/release.sh`.
