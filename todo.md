@@ -309,12 +309,12 @@
 - [x] Unit 4: 6-Harness matrix verification, receipts refresh, and multi-model Interrogate review (addressed Rhai workflow and operator skill citations).
 - [x] Unit 5: Stacked PRs merged bottom-up to main, and verified end-to-end workflows (6-Harness Matrix Verdict PASS, durable evidence durable and ALL FRESH, 637 tests passing).
 
-## Epic #822: Code Judo Round 11 - Align harness profiles, surface revisions, and guide documentation to PEP 8 standards
-- [ ] Unit 1 (Issue #823): Align capability primitives in `profiles/*.json` and `scripts/scan_host_boundary.py`
-- [ ] Unit 2 (Issue #824): Purge dead dashed script references in `scripts/surface_revisions.py` and `scripts/adapt_harness.py`
-- [ ] Unit 3 (Issue #825): Align guide documentation, UPSTREAM pin instructions, and harness guide tests
-- [ ] Unit 4: 6-Harness matrix verification, receipts refresh, and multi-model Interrogate review
-- [ ] Unit 5: Stacked PRs merged bottom-up to main, and verified end-to-end workflows
+## Epic #822: Code Judo Round 11 - Align harness profiles, surface revisions, and guide documentation to PEP 8 standards (CLOSED)
+- [x] Unit 1 (Issue #823): Align capability primitives in `profiles/*.json` and `scripts/scan_host_boundary.py` (PR #826).
+- [x] Unit 2 (Issue #824): Purge dead dashed script references in `scripts/surface_revisions.py` and `scripts/adapt_harness.py` (PR #829).
+- [x] Unit 3 (Issue #825): Align guide documentation, UPSTREAM pin instructions, and harness guide tests (PR #830).
+- [x] Unit 4: 6-Harness matrix verification, receipts refresh, and multi-model Interrogate review (CONFIRMED PASS).
+- [x] Unit 5: Stacked PRs merged bottom-up to main, and verified end-to-end workflows (6-Harness Matrix Verdict PASS, ALL FRESH, 1340 tests passing).
 
 
 
