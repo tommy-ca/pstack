@@ -105,7 +105,7 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert "adapt-harness.py" in upstream
     assert "sync-from-upstream.py" in upstream
     pin = subprocess.run(
-        [sys.executable, str(ROOT / "scripts/sync-from-upstream.py"), "--pin"],
+        [sys.executable, str(ROOT / "scripts/sync_from_upstream.py"), "--pin"],
         cwd=ROOT,
         capture_output=True,
         text=True,
@@ -118,7 +118,7 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert f"tree `{sha}`" in plan, sha
     assert "46125561306434d8a1d7745d540d8932ab0cd2a2" not in plan
     recipe = subprocess.run(
-        [sys.executable, str(ROOT / "scripts/sync-from-upstream.py"), "--recipe"],
+        [sys.executable, str(ROOT / "scripts/sync_from_upstream.py"), "--recipe"],
         cwd=ROOT,
         capture_output=True,
         text=True,
@@ -170,7 +170,7 @@ def test_guide_teaches_sync_then_adapt() -> None:
     root_version = json.loads((ROOT / "plugin.json").read_text(encoding="utf-8"))["version"]
     assert re.fullmatch(r"\d+\.\d+\.\d+-[a-z]+\.\d+", root_version), root_version
     default = subprocess.run(
-        [sys.executable, str(ROOT / "scripts/sync-from-upstream.py")],
+        [sys.executable, str(ROOT / "scripts/sync_from_upstream.py")],
         cwd=ROOT,
         capture_output=True,
         text=True,
@@ -179,7 +179,7 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert default.returncode == 0, default.stderr
     assert default.stdout == recipe.stdout
     logged = subprocess.run(
-        [sys.executable, str(ROOT / "scripts/sync-from-upstream.py"), "--log"],
+        [sys.executable, str(ROOT / "scripts/sync_from_upstream.py"), "--log"],
         cwd=ROOT,
         capture_output=True,
         text=True,

@@ -208,11 +208,9 @@ def test_sync_remote_cache_is_primary_checkout(tmp_path: Path) -> None:
         capture_output=True,
     )
     try:
-        live = ROOT / "scripts" / "sync-from-upstream.py"
         live_mod = ROOT / "scripts" / "sync_from_upstream.py"
-        script = wt / "scripts" / "sync-from-upstream.py"
-        script.write_text(live.read_text(encoding="utf-8"), encoding="utf-8")
-        (wt / "scripts" / "sync_from_upstream.py").write_text(live_mod.read_text(encoding="utf-8"), encoding="utf-8")
+        script = wt / "scripts" / "sync_from_upstream.py"
+        script.write_text(live_mod.read_text(encoding="utf-8"), encoding="utf-8")
         common_proc = subprocess.run(
             ["git", "-C", str(ROOT), "rev-parse", "--git-common-dir"],
             capture_output=True,

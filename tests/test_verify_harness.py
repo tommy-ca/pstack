@@ -453,7 +453,7 @@ def test_upstream_metadata_contract() -> None:
     assert not (ROOT / "advisor").exists()
 
     recipe = subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "sync-from-upstream.py")],
+        [sys.executable, str(ROOT / "scripts" / "sync_from_upstream.py")],
         cwd=ROOT,
         capture_output=True,
         text=True,

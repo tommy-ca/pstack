@@ -32,7 +32,7 @@ python3 .grok/skills/verify-pstack/scripts/verify.py doctor --root .
 
 That runs `python3 scripts/verify-harness.py`, then `grok plugin validate .`. Leftover stdout must start with `PASS` and include `playbooks: 22 named + opening-a-pr`, `principles: 24`, and `plugin.json name: pstack`. Leftover exit 0. Validate stdout contains `Plugin manifest is valid.` Exit 0.
 
-`python3 scripts/check-plugin-agents.py` is not leftover scanner. It is the enable check for workflow `agent_type` `pstack:swarm-workers`. It reads inspect `plugins[].path` and `skills[]` `collidesWith`. `[compat.claude] skills=false` does not hide `~/.grok/skills`. If inspect lacks `pstack:swarm-workers`, Grok is not loading https://github.com/tommy-ca/pstack. `grok plugin marketplace add` is catalog-only. Do not treat it as plugin install.
+`python3 scripts/check_plugin_agents.py` is not leftover scanner. It is the enable check for workflow `agent_type` `pstack:swarm-workers`. It reads inspect `plugins[].path` and `skills[]` `collidesWith`. `[compat.claude] skills=false` does not hide `~/.grok/skills`. If inspect lacks `pstack:swarm-workers`, Grok is not loading https://github.com/tommy-ca/pstack. `grok plugin marketplace add` is catalog-only. Do not treat it as plugin install.
 
 Later `drive` on the same `--run-id` refuses if leftover scanner did not PASS. `drive leftover-scanner` may run the scanner without a prior doctor log. Other features still require that leftover `PASS` in this run's doctor evidence.
 
@@ -50,7 +50,7 @@ Re-run doctor after any failed drive, and before the first drive of a run.
 
 | Excuse | Reality |
 |---|---|
-| `grok plugin validate` plus inspect is doctor | Leftover scanner is required doctor. Validate is the companion only. Inspect is not leftover scanner. `scripts/check-plugin-agents.py` is the enable check. |
+| `grok plugin validate` plus inspect is doctor | Leftover scanner is required doctor. Validate is the companion only. Inspect is not leftover scanner. `scripts/check_plugin_agents.py` is the enable check. |
 | pytest already covers leftover tokens | `tests/test_verify_harness.py` is not `scripts/verify-harness.py` walking the tree. Run the scanner. |
 | TEST-PLAN says verify-harness is not a pass gate | EDITH live-CLI gates are a different check. This doctor still requires leftover `PASS`. |
 | Static scan is not a user path | The operator path is `python3 scripts/verify-harness.py`. Drive it. |
@@ -107,7 +107,7 @@ From a checkout that already has the skill:
 
 ```bash
 python3 .grok/skills/verify-pstack/scripts/verify.py doctor --root .
-python3 scripts/check-plugin-agents.py
+python3 scripts/check_plugin_agents.py
 python3 .grok/skills/verify-pstack/scripts/verify.py drive --root . --feature leftover-scanner
 python3 .grok/skills/verify-pstack/scripts/verify.py run --root .
 python3 .grok/skills/verify-pstack/scripts/verify.py cleanup --run-id <runid>

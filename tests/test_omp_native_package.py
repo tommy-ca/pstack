@@ -21,8 +21,8 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-LEVER = ROOT / "scripts" / "prove-omp-native-package.py"
-SLICE_LEVER = ROOT / "scripts" / "prove-omp-vertical-slice.py"
+LEVER = ROOT / "scripts" / "prove_omp_native_package.py"
+SLICE_LEVER = ROOT / "scripts" / "prove_omp_vertical_slice.py"
 
 needs_omp = pytest.mark.skipif(shutil.which("omp") is None, reason="omp binary not on PATH")
 needs_live_route = pytest.mark.skipif(

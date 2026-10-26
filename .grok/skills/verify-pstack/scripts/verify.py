@@ -66,7 +66,7 @@ def refuse(msg: str) -> None:
 
 def looks_like_plugin(root: Path) -> bool:
     plugin = root / "plugin.json"
-    scanner = root / "scripts" / "verify-harness.py"
+    scanner = root / "scripts" / "verify_harness.py"
     if not plugin.is_file() or not scanner.is_file():
         return False
     try:
@@ -319,7 +319,7 @@ def require_doctor(paths: Paths) -> None:
 
 
 def cmd_leftover_scanner(paths: Paths, out_dir: Path) -> Capture:
-    script = paths.root / "scripts" / "verify-harness.py"
+    script = paths.root / "scripts" / "verify_harness.py"
     got = capture(
         [sys.executable, str(script)],
         cwd=paths.root,
@@ -381,7 +381,7 @@ def drive_leftover_scanner(paths: Paths) -> None:
 
 
 def drive_upstream_pin(paths: Paths) -> None:
-    script = paths.root / "scripts" / "sync-from-upstream.py"
+    script = paths.root / "scripts" / "sync_from_upstream.py"
     got = capture(
         [sys.executable, str(script), "--pin"],
         cwd=paths.root,
@@ -438,7 +438,7 @@ def drive_absorbed_intent(paths: Paths) -> None:
 
 
 def drive_upstream_recipe(paths: Paths) -> None:
-    script = paths.root / "scripts" / "sync-from-upstream.py"
+    script = paths.root / "scripts" / "sync_from_upstream.py"
     got = capture(
         [sys.executable, str(script), "--recipe"],
         cwd=paths.root,

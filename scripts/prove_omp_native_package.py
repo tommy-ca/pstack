@@ -34,7 +34,7 @@ the isolated root is removed with OMP's own uninstall, and a missing binary is
 reported as BLOCKED rather than FAIL.
 
 Usage:
-    python3 scripts/prove-omp-native-package.py [--package-dir DIR] [--live] [--json]
+    python3 scripts/prove_omp_native_package.py [--package-dir DIR] [--live] [--json]
 
 Exit codes: 0 PASS, 1 FAIL, 2 BLOCKED.
 """

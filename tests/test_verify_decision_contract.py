@@ -16,8 +16,8 @@ if str(ROOT) not in sys.path:
 
 import scripts.verify_decision_contract as vdc
 
-SCRIPT = ROOT / "scripts" / "verify-decision-contract.py"
-MODULE = ROOT / "scripts" / "verify_decision_contract.py"
+SCRIPT = ROOT / "scripts" / "verify_decision_contract.py"
+MODULE = SCRIPT
 A = "a" * 40
 B = "b" * 40
 C = "c" * 40
