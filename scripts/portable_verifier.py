@@ -5,11 +5,11 @@ Implements the pattern from Build the Lever + Prove It Works + create-verificati
     Launch -> Doctor -> Drive -> Proof Bar -> Evidence -> Cleanup
 
 Usage:
-    python3 scripts/verify-portable.py doctor [--host <host>]
-    python3 scripts/verify-portable.py drive --feature <feature> [--host <host>]
-    python3 scripts/verify-portable.py run [--host <host>] [--evidence-dir <dir>]
-    python3 scripts/verify-portable.py refresh-static [--host <host>] [--evidence-dir <dir>]
-    python3 scripts/verify-portable.py select-checks --base <ref> [--head <ref>] [--json]
+    python3 scripts/verify_portable.py doctor [--host <host>]
+    python3 scripts/verify_portable.py drive --feature <feature> [--host <host>]
+    python3 scripts/verify_portable.py run [--host <host>] [--evidence-dir <dir>]
+    python3 scripts/verify_portable.py refresh-static [--host <host>] [--evidence-dir <dir>]
+    python3 scripts/verify_portable.py select-checks --base <ref> [--head <ref>] [--json]
         [--record <path>] [--receipt <path>] [--outcome <check-id>=<verdict>]
 """
 
@@ -357,7 +357,7 @@ class PortableVerifier:
             "doctor-canonical-index",
             "Verify canonical inventory conforms to pin",
             "canonical",
-            [sys.executable, str(self.root / "scripts" / "canonical-index.py"), "--check"],
+            [sys.executable, str(self.root / "scripts" / "canonical_index.py"), "--check"],
             env=env,
         )
 
@@ -407,7 +407,7 @@ class PortableVerifier:
             "doctor-adapter-static",
             "Verify static harness names and discipline",
             "adapter",
-            [sys.executable, str(self.root / "scripts" / "verify-harness.py")],
+            [sys.executable, str(self.root / "scripts" / "verify_harness.py")],
             env=env,
         )
 
@@ -471,7 +471,7 @@ class PortableVerifier:
         if check_durability and profile_file.is_file():
             chk_cmd = [
                 sys.executable,
-                str(self.root / "scripts" / "verify-portable.py"),
+                str(self.root / "scripts" / "verify_portable.py"),
                 "check-evidence",
                 "--host",
                 self.host,

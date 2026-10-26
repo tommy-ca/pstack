@@ -70,7 +70,7 @@ def test_refresh_static_is_partial_and_never_rounds_a_failure_up(
     monkeypatch.setattr(
         sys,
         "argv",
-        ["verify-portable.py", "refresh-static", "--host", "grok", "--evidence-dir", str(evidence_root)],
+        ["verify_portable.py", "refresh-static", "--host", "grok", "--evidence-dir", str(evidence_root)],
     )
 
     monkeypatch.setattr(module.PortableVerifier, "doctor", static_doctor)
@@ -152,7 +152,7 @@ def test_refresh_static_refuses_when_prior_live_rows_cannot_be_reobserved(
     monkeypatch.setattr(
         sys,
         "argv",
-        ["verify-portable.py", "refresh-static", "--host", "omp", "--evidence-dir", str(evidence_root)],
+        ["verify_portable.py", "refresh-static", "--host", "omp", "--evidence-dir", str(evidence_root)],
     )
     monkeypatch.setattr(module.PortableVerifier, "doctor", static_doctor)
     with pytest.raises(SystemExit) as exit_info:
@@ -195,7 +195,7 @@ def test_refresh_static_host_all_skips_live_holding_hosts_and_exits_zero(
     monkeypatch.setattr(
         sys,
         "argv",
-        ["verify-portable.py", "refresh-static", "--host", "all", "--evidence-dir", str(evidence_root)],
+        ["verify_portable.py", "refresh-static", "--host", "all", "--evidence-dir", str(evidence_root)],
     )
     monkeypatch.setattr(module.PortableVerifier, "doctor", static_doctor)
 
@@ -264,7 +264,7 @@ def test_refresh_static_refusal_names_host_appropriate_remedy(
     monkeypatch.setattr(
         sys,
         "argv",
-        ["verify-portable.py", "refresh-static", "--host", "grok", "--evidence-dir", str(evidence_root)],
+        ["verify_portable.py", "refresh-static", "--host", "grok", "--evidence-dir", str(evidence_root)],
     )
     monkeypatch.setattr(module.PortableVerifier, "doctor", static_doctor)
 
@@ -272,5 +272,5 @@ def test_refresh_static_refusal_names_host_appropriate_remedy(
         module.main()
     err_msg = str(exit_info.value.code)
     assert "REFUSING to overwrite the durable receipt" in err_msg
-    assert "python3 scripts/verify-portable.py run --host grok" in err_msg
+    assert "python3 scripts/verify_portable.py run --host grok" in err_msg
     assert "PSTACK_RUN_OMP_LIVE" not in err_msg

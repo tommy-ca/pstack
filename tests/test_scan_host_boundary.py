@@ -303,7 +303,7 @@ def test_setup_write_target_flags_shared_surface(tmp_path: Path) -> None:
 
 
 def test_legacy_grok_doctor_does_not_claim_native_host_proof() -> None:
-    doctor = (ROOT / "scripts/verify-harness.py").read_text(encoding="utf-8")
+    doctor = (ROOT / "scripts/verify_harness.py").read_text(encoding="utf-8")
     tiers = (ROOT / "docs/verification-test-tiers.md").read_text(encoding="utf-8")
     maintain = (ROOT / "skills/maintain-verification-skill/SKILL.md").read_text(
         encoding="utf-8"

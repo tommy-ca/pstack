@@ -128,12 +128,11 @@ def test_package_ignored_path_query_propagates_git_failure(tmp_path: Path, monke
 @pytest.mark.parametrize(
     "relative_path",
     [
-        "scripts/verify-portable.py",
-        "scripts/verify-harness.py",
+        "scripts/verify_portable.py",
+        "scripts/portable_verifier.py",
+        "scripts/canonical_index.py",
         "scripts/verify_harness.py",
-        "scripts/adapt-harness.py",
         "scripts/adapt_harness.py",
-        "scripts/scaffold-verification-skill.py",
         "scripts/scaffold_verification_skill.py",
         "scripts/skill_frontmatter.py",
         "scripts/portability_schema.py",
@@ -334,7 +333,7 @@ def test_published_module_docstring_moves_the_driver_revision(tmp_path: Path) ->
     copy_root = _disposable_copy(tmp_path)
     fresh = compute_surface_revisions(copy_root, "codex")
 
-    published = copy_root / "scripts" / "verify-portable.py"
+    published = copy_root / "scripts" / "verify_portable.py"
     src = published.read_text(encoding="utf-8")
     anchor = '"""Portable lever verification engine for pstack across agent harnesses.'
     assert src.count(anchor) == 1
@@ -546,7 +545,7 @@ def test_driver_core_disk_cache_keeps_published_docs_basename_sensitive(
         "import json, sys; from pathlib import Path; "
         "from scripts.portability_schema import _driver_core; "
         "src = Path(sys.argv[1]).read_bytes(); "
-        "print(json.dumps([_driver_core(Path('verify-portable.py'), src).decode(), "
+        "print(json.dumps([_driver_core(Path('verify_portable.py'), src).decode(), "
         "_driver_core(Path('ordinary.py'), src).decode()]))"
     )
 

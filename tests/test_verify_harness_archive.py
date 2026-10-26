@@ -12,7 +12,7 @@ if str(ROOT) not in sys.path:
 
 import scripts.verify_harness as scanner
 
-SCANNER = ROOT / "scripts" / "verify-harness.py"
+SCANNER = ROOT / "scripts" / "verify_harness.py"
 
 
 def test_archivable_intent_chain_guard_distinguishes_changes() -> None:

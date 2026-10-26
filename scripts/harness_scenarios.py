@@ -57,7 +57,7 @@ def execute_local_scenarios(verifier: Any, root: Path) -> List[ScenarioResult]:
             "package",
             [
                 sys.executable,
-                str(root / "scripts" / "scaffold-verification-skill.py"),
+                str(root / "scripts" / "scaffold_verification_skill.py"),
                 "--host",
                 verifier.host,
                 "--app",
@@ -76,7 +76,7 @@ def execute_local_scenarios(verifier: Any, root: Path) -> List[ScenarioResult]:
             "package",
             [
                 sys.executable,
-                str(root / "scripts" / "scaffold-verification-skill.py"),
+                str(root / "scripts" / "scaffold_verification_skill.py"),
                 "--host",
                 verifier.host,
                 "--check",

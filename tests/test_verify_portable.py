@@ -304,7 +304,7 @@ def test_portable_verifier_drives_verification_skill_scaffolding_across_hosts(tm
 def test_portable_verifier_cli_host_all_doctor(tmp_path: Path) -> None:
     declared = verify_portable.get_declared_hosts()
     res = subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "verify-portable.py"), "doctor", "--host", "all", "--allow-stale", "--evidence-dir", str(tmp_path)],
+        [sys.executable, str(ROOT / "scripts" / "verify_portable.py"), "doctor", "--host", "all", "--allow-stale", "--evidence-dir", str(tmp_path)],
         capture_output=True,
         text=True,
     )
@@ -340,7 +340,7 @@ def test_portable_verifier_cli_failing_change_observable(tmp_path: Path) -> None
     res = subprocess.run(
         [
             sys.executable,
-            str(ROOT / "scripts" / "verify-portable.py"),
+            str(ROOT / "scripts" / "verify_portable.py"),
             "doctor",
             "--host",
             "grok",
@@ -421,7 +421,7 @@ def test_change_named_like_a_flag_still_validates_as_a_name(
 
 
 def test_verify_portable_modular_decomposition_and_backwards_compatibility() -> None:
-    vp_path = ROOT / "scripts" / "verify-portable.py"
+    vp_path = ROOT / "scripts" / "verify_portable.py"
     sc_path = ROOT / "scripts" / "select_checks.py"
     oc_path = ROOT / "scripts" / "openspec_change.py"
     ei_path = ROOT / "scripts" / "evidence_index.py"

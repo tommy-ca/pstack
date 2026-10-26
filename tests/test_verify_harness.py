@@ -13,7 +13,7 @@ if str(ROOT) not in sys.path:
 import scripts.verify_harness as verify_harness
 import scripts.adapt_harness as adapt_harness
 
-SCANNER = ROOT / "scripts" / "verify-harness.py"
+SCANNER = ROOT / "scripts" / "verify_harness.py"
 
 
 def test_verify_harness_script_exists() -> None:

@@ -11,7 +11,7 @@ if str(ROOT) not in sys.path:
 
 import scripts.canonical_index as canonical_index
 
-SCRIPT = ROOT / "scripts" / "canonical-index.py"
+SCRIPT = ROOT / "scripts" / "canonical_index.py"
 INVENTORY = ROOT / "openspec" / "canonical-inventory.json"
 
 

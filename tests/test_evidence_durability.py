@@ -326,7 +326,7 @@ def test_hand_authored_support_state_cannot_outrun_evidence() -> None:
 
 def test_check_staleness_cli_json_output() -> None:
     res = subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "verify-portable.py"), "check-staleness", "--host", "all", "--json"],
+        [sys.executable, str(ROOT / "scripts" / "verify_portable.py"), "check-staleness", "--host", "all", "--json"],
         capture_output=True,
         text=True,
     )
@@ -355,7 +355,7 @@ def test_check_staleness_cli_json_output() -> None:
 
 def test_check_evidence_cli_output() -> None:
     res = subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "verify-portable.py"), "check-evidence", "--host", "all"],
+        [sys.executable, str(ROOT / "scripts" / "verify_portable.py"), "check-evidence", "--host", "all"],
         capture_output=True,
         text=True,
     )
@@ -372,7 +372,7 @@ def test_check_evidence_cli_output() -> None:
 
 def test_candidate_row_reports_not_covered_not_pass() -> None:
     res = subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "verify-portable.py"), "check-evidence", "--host", "droid"],
+        [sys.executable, str(ROOT / "scripts" / "verify_portable.py"), "check-evidence", "--host", "droid"],
         capture_output=True,
         text=True,
     )
@@ -383,7 +383,7 @@ def test_candidate_row_reports_not_covered_not_pass() -> None:
 
 def test_check_evidence_fails_when_a_row_disagrees_with_its_receipt(tmp_path: Path) -> None:
     copy_root = _disposable_copy(tmp_path)
-    command = [sys.executable, str(copy_root / "scripts" / "verify-portable.py"), "check-evidence", "--host", "grok"]
+    command = [sys.executable, str(copy_root / "scripts" / "verify_portable.py"), "check-evidence", "--host", "grok"]
 
     clean = subprocess.run(command, capture_output=True, text=True, cwd=copy_root)
     assert clean.returncode == 0, clean.stdout + clean.stderr
@@ -402,7 +402,7 @@ def test_check_evidence_fails_when_a_row_disagrees_with_its_receipt(tmp_path: Pa
 
 def test_a_row_less_host_with_a_durable_receipt_reports_rebuild_required(tmp_path: Path) -> None:
     copy_root = _disposable_copy(tmp_path)
-    command = [sys.executable, str(copy_root / "scripts" / "verify-portable.py"), "check-evidence"]
+    command = [sys.executable, str(copy_root / "scripts" / "verify_portable.py"), "check-evidence"]
 
     clean = subprocess.run(command + ["--host", "grok"], capture_output=True, text=True, cwd=copy_root)
     assert clean.returncode == 0, clean.stdout + clean.stderr
@@ -437,9 +437,9 @@ def test_a_row_less_host_with_a_durable_receipt_reports_rebuild_required(tmp_pat
 
 def test_get_live_remedy() -> None:
     from scripts.evidence_durability import get_live_remedy
-    assert get_live_remedy("omp") == "PSTACK_RUN_OMP_LIVE=1 python3 scripts/verify-portable.py run --host omp"
-    assert get_live_remedy("grok") == "python3 scripts/verify-portable.py run --host grok"
-    assert get_live_remedy("codex") == "python3 scripts/verify-portable.py run --host codex"
+    assert get_live_remedy("omp") == "PSTACK_RUN_OMP_LIVE=1 python3 scripts/verify_portable.py run --host omp"
+    assert get_live_remedy("grok") == "python3 scripts/verify_portable.py run --host grok"
+    assert get_live_remedy("codex") == "python3 scripts/verify_portable.py run --host codex"
 
 
 def test_evaluate_durable_settlement_update_refuses_corrupt_durable(tmp_path: Path) -> None:

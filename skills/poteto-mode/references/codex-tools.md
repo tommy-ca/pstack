@@ -60,9 +60,9 @@ Playbooks pick **pstack, then user, then bundled and builtin**. Do not add plugi
 
 Verification on Codex leverages portable pstack levers and scripted harnesses:
 - **Project-local verification skills**: Located under `.codex/skills/verify-<app>/` with `SKILL.md` and `features/` map.
-- **Scaffold lever**: `scripts/scaffold-verification-skill.py --host codex --app <app> --write` (validates with `--check`).
+- **Scaffold lever**: `scripts/scaffold_verification_skill.py --host codex --app <app> --write` (validates with `--check`).
 - **Independent verifier**: `pstack:independent-verifier` running `gpt-6.1-sol` (read-only verification of real surfaces before shipping).
-- **Matrix verification**: `scripts/verify-portable.py run --host codex` generating durable receipts under `.audit/evidence/codex-receipt.json`.
+- **Matrix verification**: `scripts/verify_portable.py run --host codex` generating durable receipts under `.audit/evidence/codex-receipt.json`.
 - **Swarm verification**: `skills/swarm/scripts/verify-refresh-hygiene.py` validating matrix partitions and hygiene sweeps.
 
 

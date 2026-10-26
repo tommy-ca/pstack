@@ -105,7 +105,7 @@ class TestCheckSelectionTable:
         ]
 
     def test_specific_script_rule_beats_the_scripts_fallback(self) -> None:
-        result = vp.select_checks(["scripts/verify-harness.py"])
+        result = vp.select_checks(["scripts/verify_harness.py"])
 
         assert _ids(result) == [
             "pytest:tests/test_verify_harness.py",
@@ -163,13 +163,13 @@ class TestCheckSelectionTable:
             "pytest:tests/test_droid_routing.py",
             "pytest:tests/test_evidence_receipts.py",
             "pytest:tests/test_route_resolver.py",
-            "script:canonical-index.py",
+            "script:canonical_index.py",
         ]
         assert all(check["tier"] == "offline" for check in result["checks"])
         by_id = {check["id"]: check for check in result["checks"]}
-        assert by_id["script:canonical-index.py"]["command"] == [
+        assert by_id["script:canonical_index.py"]["command"] == [
             PY,
-            "scripts/canonical-index.py",
+            "scripts/canonical_index.py",
             "--check",
         ]
 

@@ -27,7 +27,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 OFFLINE_WORKFLOW = Path(".github/workflows/portability-offline.yml")
 SCAN_HOST_BOUNDARY = (sys.executable, "scripts/scan-host-boundary.py")
-CANONICAL_INDEX_CHECK = (sys.executable, "scripts/canonical-index.py", "--check")
+CANONICAL_INDEX_CHECK = (sys.executable, "scripts/canonical_index.py", "--check")
 
 
 class CheckRule(NamedTuple):
@@ -161,23 +161,13 @@ CHECK_SELECTION_TABLE: List[CheckRule] = [
         (),
     ),
     (
-        "scripts/verify-portable.py",
+        "scripts/verify_portable.py",
         ("tests/test_verify_portable.py", "tests/test_verdict_reduction.py", "tests/test_evidence_refresh_static.py"),
         (),
     ),
     (
         "scripts/portable_verifier.py",
         ("tests/test_verify_portable.py", "tests/test_verdict_reduction.py", "tests/test_evidence_refresh_static.py"),
-        (),
-    ),
-    (
-        "scripts/verify-harness.py",
-        (
-            "tests/test_verify_harness.py",
-            "tests/test_verify_harness_archive.py",
-            "tests/test_verify_harness_guides.py",
-            "tests/test_verify_harness_playbooks.py",
-        ),
         (),
     ),
     (
@@ -188,11 +178,6 @@ CHECK_SELECTION_TABLE: List[CheckRule] = [
             "tests/test_verify_harness_guides.py",
             "tests/test_verify_harness_playbooks.py",
         ),
-        (),
-    ),
-    (
-        "scripts/adapt-harness.py",
-        ("tests/test_verify_harness.py",),
         (),
     ),
     (
@@ -218,9 +203,7 @@ CHECK_SELECTION_TABLE: List[CheckRule] = [
         ("tests/test_package_lifecycle.py", "tests/test_package_lifecycle_safety.py"),
         (),
     ),
-    ("scripts/canonical-index.py", ("tests/test_canonical_index.py",), ()),
     ("scripts/canonical_index.py", ("tests/test_canonical_index.py",), ()),
-    ("scripts/scaffold-verification-skill.py", ("tests/test_scaffold_verification_skill.py",), ()),
     ("scripts/scaffold_verification_skill.py", ("tests/test_scaffold_verification_skill.py",), ()),
     ("scripts/sync-antigravity-plugin.py", ("tests/test_sync_antigravity_plugin.py",), ()),
     ("scripts/sync_antigravity_plugin.py", ("tests/test_sync_antigravity_plugin.py",), ()),
