@@ -171,6 +171,70 @@ def test_update_idempotent_convergence(tmp_path: Path) -> None:
     assert m_data.get("version") == desc.version
 
 
+def test_update_removes_obsolete_managed_files_and_preserves_user_files(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "stale"
+    plugin_dir = package_lifecycle.install_plugin("omp", target)
+    ownership_path = plugin_dir / ".pstack-managed-files.json"
+    ownership = json.loads(ownership_path.read_text(encoding="utf-8"))
+    obsolete_rel = "skills/legacy-skill/SKILL.md"
+    obsolete = plugin_dir / obsolete_rel
+    obsolete.parent.mkdir(parents=True)
+    obsolete.write_text("old pstack skill\n", encoding="utf-8")
+    ownership["version"] = "0.15.29-grokbuild.0"
+    ownership["managed_files"].append(obsolete_rel)
+    ownership_path.write_text(json.dumps(ownership), encoding="utf-8")
+    user_file = plugin_dir / "user-notes.md"
+    user_file.write_text("keep\n", encoding="utf-8")
+
+    ok, errors = package_lifecycle.update_plugin("omp", target)
+
+    assert ok is True, errors
+    assert not obsolete.exists()
+    assert user_file.read_text(encoding="utf-8") == "keep\n"
+
+
+def test_update_refuses_path_traversal_in_previous_ownership_manifest(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "traversal"
+    plugin_dir = package_lifecycle.install_plugin("omp", target)
+    escaped_file = plugin_dir.parent / "user-notes.md"
+    escaped_file.write_text("keep\n", encoding="utf-8")
+    ownership_path = plugin_dir / ".pstack-managed-files.json"
+    ownership = json.loads(ownership_path.read_text(encoding="utf-8"))
+    ownership["managed_files"].append("../user-notes.md")
+    ownership_path.write_text(json.dumps(ownership), encoding="utf-8")
+
+    ok, errors = package_lifecycle.update_plugin("omp", target)
+
+    assert ok is False
+    assert any("unsafe managed path" in error for error in errors)
+    assert escaped_file.read_text(encoding="utf-8") == "keep\n"
+
+
+def test_update_refuses_symlinked_previous_managed_path(tmp_path: Path) -> None:
+    target = tmp_path / "symlink"
+    plugin_dir = package_lifecycle.install_plugin("omp", target)
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    user_file = outside / "user-notes.md"
+    user_file.write_text("keep\n", encoding="utf-8")
+    legacy_link = plugin_dir / "skills" / "legacy-link"
+    legacy_link.symlink_to(outside, target_is_directory=True)
+    ownership_path = plugin_dir / ".pstack-managed-files.json"
+    ownership = json.loads(ownership_path.read_text(encoding="utf-8"))
+    ownership["managed_files"].append("skills/legacy-link/user-notes.md")
+    ownership_path.write_text(json.dumps(ownership), encoding="utf-8")
+
+    ok, errors = package_lifecycle.update_plugin("omp", target)
+
+    assert ok is False
+    assert any("symlink" in error for error in errors)
+    assert user_file.read_text(encoding="utf-8") == "keep\n"
+
+
 def test_cli_lifecycle_prove(tmp_path: Path) -> None:
     res = subprocess.run(
         [

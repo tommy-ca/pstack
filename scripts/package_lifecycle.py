@@ -21,7 +21,7 @@ import shutil
 import sys
 import tempfile
 import time
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -257,11 +257,85 @@ def get_unmanaged_paths(plugin_dir: Path, managed_files: Set[str]) -> List[str]:
     return [p for p in all_found if p not in managed_files]
 
 
+def prune_obsolete_managed_files(
+    host: str, plugin_dir: Path, current_managed: set[str]
+) -> None:
+    ownership_file = plugin_dir / ".pstack-managed-files.json"
+    if ownership_file.is_symlink():
+        raise ForeignSourceError(
+            f"refusing to read a symlinked ownership manifest at {ownership_file}"
+        )
+    if not ownership_file.is_file():
+        return
+
+    try:
+        ownership = json.loads(ownership_file.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ForeignSourceError(
+            f"refusing to read an invalid ownership manifest at {ownership_file}"
+        ) from exc
+
+    if not isinstance(ownership, dict) or ownership.get("host") != host:
+        raise ForeignSourceError(
+            f"refusing to prune files from an ownership manifest for another host at {ownership_file}"
+        )
+    previous_managed = ownership.get("managed_files")
+    if not isinstance(previous_managed, list):
+        raise ForeignSourceError(
+            f"refusing to prune files without a managed-file list at {ownership_file}"
+        )
+
+    stale_paths: list[Path] = []
+    for relative in previous_managed:
+        if not isinstance(relative, str):
+            raise ForeignSourceError(
+                f"refusing to prune an invalid managed path in {ownership_file}"
+            )
+        path = PurePosixPath(relative)
+        if (
+            not relative
+            or "\\" in relative
+            or PureWindowsPath(relative).drive
+            or path.is_absolute()
+            or not path.parts
+            or path.as_posix() != relative
+            or any(part in {".", ".."} for part in path.parts)
+        ):
+            raise ForeignSourceError(
+                f"refusing to prune unsafe managed path {relative!r} from {ownership_file}"
+            )
+        if relative in current_managed:
+            continue
+
+        target = plugin_dir.joinpath(*path.parts)
+        parent = plugin_dir
+        for part in path.parts[:-1]:
+            parent /= part
+            if parent.is_symlink():
+                raise ForeignSourceError(
+                    f"refusing to prune a managed path through a symlink at {parent}"
+                )
+            if parent.exists() and not parent.is_dir():
+                raise ForeignSourceError(
+                    f"refusing to prune a managed path through a non-directory at {parent}"
+                )
+        if target.is_symlink() or target.is_file():
+            stale_paths.append(target)
+        elif target.exists():
+            raise ForeignSourceError(
+                f"refusing to prune a managed path that is not a file at {target}"
+            )
+
+    for stale_path in stale_paths:
+        stale_path.unlink()
+
+
 def install_plugin(host: str, target_base: Optional[Path] = None) -> Path:
     desc, _ = load_package_descriptor()
     plugin_dir = get_plugin_dir(host, target_base)
     if not is_owned_deploy_target(plugin_dir):
         raise ForeignSourceError(f"refusing to install over a foreign-source install at {plugin_dir}")
+    prune_obsolete_managed_files(host, plugin_dir, compute_managed_files(host, desc))
     plugin_dir.mkdir(parents=True, exist_ok=True)
 
     skills_dir = plugin_dir / "skills"
