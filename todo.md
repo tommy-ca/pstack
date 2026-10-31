@@ -323,6 +323,24 @@
 - [x] Unit 4: 6-Harness matrix verification, receipts refresh, and multi-model Interrogate review (CONFIRMED PASS).
 - [x] Unit 5: Stacked PRs merged bottom-up to main, and verified end-to-end workflows (6-Harness Matrix Verdict PASS, ALL FRESH, 1340 tests passing).
 
+## Epic #840: [Epic][Upstream 0.15.36] Reconcile canonical PStack without regressing multi-harness portability
+### Sub-epic #841: Canonical diff / semantic workflow migration
+- [x] Unit 1 (Issue #844): Freeze exact pstack-scoped diff and classify every semantic delta (PR #852)
+- [x] Unit 2 (Issue #845): Migrate Orchestrate to single-PR agentic ownership and host-owned coordination (PR #856)
+- [x] Unit 3 (Issue #846): Reconcile Arena, Interrogate, and Autopilot review semantics and leaf skills (PR #855, PR #857)
+
+### Sub-epic #842: Statechart capability gate, packaging, and adapter reconciliation
+- [x] Unit 4 (Issue #847): Qualify and optionally package new upstream skills (statechart, ketchup-video, make-bot-ui) and formalize sandbox/exit-code policy
+- [x] Unit 5 (Issue #848): Reconcile six-host capability adapters, model policy, and package projections
+
+### Sub-epic #843: Specs / verification / gated release
+- [x] Unit 6 (Issue #849): Update OpenSpec sync contract, multi-harness provenance, and maintainer guides
+- [x] Unit 7 (Issue #853): Keep a source-pinned applied-versus-candidate CHANGELOG
+- [x] Unit 8 (Issue #854): Update verification and formal-verification skills and executable guardrails
+- [x] Unit 9 (Issue #850): Run Thermo-Nuclear code quality, security review, Swarm matrix, and six-host conformance
+- [ ] Unit 10 (Issue #851): Promote applied pin/version, restamp receipts, merge stacked PRs bottom-up, and ship release
+
+
 
 
 
