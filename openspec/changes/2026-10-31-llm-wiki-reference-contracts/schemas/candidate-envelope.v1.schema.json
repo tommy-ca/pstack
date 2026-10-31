@@ -1,0 +1,210 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/tommy-ca/pstack/tree/main/openspec/changes/2026-10-31-llm-wiki-reference-contracts/schemas/candidate-envelope.v1.schema.json",
+  "title": "Untrusted LLM Wiki CandidateEnvelope.v1 (proposal only)",
+  "description": "Contract fixture, NOT runtime CLI acceptance nor authorization; rehash, rights and CAS require external verifier.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "candidate_id",
+    "kind",
+    "state",
+    "target_path",
+    "content_sha256",
+    "source_revisions",
+    "target_precondition",
+    "review"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "candidate_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]{2,127}$"
+    },
+    "kind": {
+      "enum": [
+        "concept",
+        "entity",
+        "comparison",
+        "overview",
+        "source",
+        "analysis",
+        "synthesis",
+        "query_result"
+      ]
+    },
+    "state": {
+      "enum": [
+        "proposed",
+        "held",
+        "validated",
+        "rejected"
+      ]
+    },
+    "target_path": {
+      "type": "string",
+      "pattern": "^wiki/(?:[a-z0-9_-]+/)+[a-z0-9_-]+\\.md$"
+    },
+    "content_sha256": {
+      "$ref": "#/$defs/digest"
+    },
+    "source_revisions": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/source_revision"
+      }
+    },
+    "target_precondition": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "not_exists"
+          ],
+          "properties": {
+            "not_exists": {
+              "const": true
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "sha256"
+          ],
+          "properties": {
+            "sha256": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "review": {
+      "type": "object",
+      "required": [
+        "hold_reasons"
+      ],
+      "properties": {
+        "hold_reasons": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "low-confidence",
+              "contradicted",
+              "schema-violating",
+              "provenance-violating",
+              "rights-unverified",
+              "high-impact",
+              "stale-source",
+              "stale-target"
+            ]
+          }
+        },
+        "requested_by": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "citations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "source_id",
+          "start_line",
+          "end_line"
+        ],
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "start_line": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "end_line": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "derived_from": {
+      "type": "object",
+      "required": [
+        "engine",
+        "version"
+      ],
+      "properties": {
+        "engine": {
+          "enum": [
+            "atomicstrata",
+            "geronimo",
+            "pstack",
+            "other"
+          ]
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "source_revision": {
+      "type": "object",
+      "required": [
+        "source_id",
+        "uri",
+        "sha256",
+        "rights"
+      ],
+      "properties": {
+        "source_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "uri": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "$ref": "#/$defs/digest"
+        },
+        "rights": {
+          "enum": [
+            "repository",
+            "public",
+            "licensed",
+            "restricted",
+            "unknown"
+          ]
+        },
+        "captured_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
