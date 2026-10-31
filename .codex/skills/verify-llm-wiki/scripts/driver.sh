@@ -18,6 +18,9 @@ run_bounded() {
 
 drive() {
   doctor
+  run_bounded "source hash verification CLI" python3 scripts/llm_wiki.py verify-sources --wiki-dir .llm-wiki
+  run_bounded "knowledge graph CLI" python3 scripts/llm_wiki.py graph --json --wiki-dir .llm-wiki
+  run_bounded "keyword search CLI" python3 scripts/llm_wiki.py search "worktree" --wiki-dir .llm-wiki
   run_bounded "original PStack wiki contracts" python3 -m pytest -q tests/test_llm_wiki.py
   run_bounded "source and path negatives" python3 -m pytest -q tests/test_llm_wiki_safety.py
   run_bounded "bounded production-code model" python3 -m pytest -q tests/test_llm_wiki_bounded_model.py
@@ -28,7 +31,7 @@ drive() {
 doctor() {
   run_bounded "python" python3 --version
   run_bounded "pytest" python3 -m pytest --version
-  run_bounded "structural wiki CLI" python3 scripts/llm_wiki.py check --wiki-dir .llm-wiki
+  run_bounded "structural wiki CLI with source verification" python3 scripts/llm_wiki.py check --sources --wiki-dir .llm-wiki
 }
 
 if [[ -n "${LLM_WIKI_EVIDENCE_DIR:-}" ]]; then
