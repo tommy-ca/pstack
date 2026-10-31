@@ -114,3 +114,67 @@ def test_agentic_orchestrate_has_one_owner_and_independent_pr_verification() -> 
     assert "Gas City formulas and Beads" in skill
     assert "coordinator lands verified units" not in skill
     assert "global stacker write access" in skill
+
+
+def test_agentic_orchestrate_absent_events_and_liveness_fallback() -> None:
+    skill = (
+        ROOT / "skills" / "poteto-mode" / "playbooks" / "orchestrate.md"
+    ).read_text(encoding="utf-8")
+    assert "Prefer native PR/CI event subscriptions where available" in skill
+    assert "bounded checkpoints; do not run unbounded polling loops" in skill
+    assert "Transcript mtime is not liveness" in skill
+
+
+def test_agentic_orchestrate_brief_fields_and_refuse_to_spawn() -> None:
+    skill = (
+        ROOT / "skills" / "poteto-mode" / "playbooks" / "orchestrate.md"
+    ).read_text(encoding="utf-8")
+    for required_field in (
+        "GOAL",
+        "SCOPE",
+        "CONTEXT",
+        "ACCEPTANCE",
+        "VERIFY",
+        "TIMEBOX",
+        "FORBIDDEN",
+        "REPORT",
+        "STANDING",
+    ):
+        assert required_field in skill
+    assert "Missing fields are a refuse-to-spawn condition" in skill
+
+
+def test_agentic_orchestrate_retry_ceiling_and_terminal_handoff() -> None:
+    skill = (
+        ROOT / "skills" / "poteto-mode" / "playbooks" / "orchestrate.md"
+    ).read_text(encoding="utf-8")
+    assert "Two retries, then abandon the unit and replan around it" in skill
+    assert "write a terminal handoff to durable state" in skill
+    assert "end the run" in skill
+
+
+def test_agentic_orchestrate_stale_head_invalidation() -> None:
+    skill = (
+        ROOT / "skills" / "poteto-mode" / "playbooks" / "orchestrate.md"
+    ).read_text(encoding="utf-8")
+    assert "A new head SHA voids the row, so re-verify after restack" in skill
+    assert "Each row is keyed by PR number plus head SHA" in skill
+
+
+def test_agentic_orchestrate_worktree_isolation_enforced() -> None:
+    skill = (
+        ROOT / "skills" / "poteto-mode" / "playbooks" / "orchestrate.md"
+    ).read_text(encoding="utf-8")
+    assert 'Always `isolation: "worktree"`' in skill
+    assert "principle-separate-before-serializing-shared-state" in skill
+
+
+def test_agentic_orchestrate_depth_limit_and_nested_gap() -> None:
+    skill = (
+        ROOT / "skills" / "poteto-mode" / "playbooks" / "orchestrate.md"
+    ).read_text(encoding="utf-8")
+    assert "Subagent depth is 1" in skill
+    assert "A child that calls it fails" in skill
+    assert "classified `adapted` for a single-level coordinator" in skill
+    assert "`gap` for nested track sub-coordinator ownership" in skill
+
