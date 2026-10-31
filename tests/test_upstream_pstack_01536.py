@@ -109,10 +109,8 @@ def test_agentic_orchestrate_has_one_owner_and_independent_pr_verification() -> 
     ).read_text(encoding="utf-8")
     assert "Only the designated PR owner pushes" in skill
     assert "each PR needs an independent verifier" in skill
-    assert "no playbook-local store" in skill
-    assert "PR/CI event subscriptions" in skill or "PR/CI event subscriptions" in (
-        skill + " " + "native PR/CI event subscriptions"
-    )
+    assert "MUST NOT create a playbook-local store" in skill
+    assert "native PR/CI event subscriptions" in skill
     assert "For Gas City adapters" not in skill
     assert "coordinator lands verified units" not in skill
     assert "global stacker write access" in skill
