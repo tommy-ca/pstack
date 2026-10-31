@@ -21,5 +21,6 @@
 - [Statechart Compiler Qualification Analysis](wiki/analyses/statechart-qualification.md): Upstream commit #977 added `skills/statechart`, featuring a TypeScript CLI that compiles statecharts, checks TLA+ invariants with TLC, and renders Mermaid diagrams.
 
 ## Syntheses
+- [LLM Wiki v2 Reference-Derived Formal Contracts](wiki/syntheses/llm-wiki-formal-contracts.md): Source-pinned formal requirements, candidate schema and bounded verification evidence; reference compilers are not deployed.
 - [LLM Wiki Reference Engine Arena Decision](wiki/syntheses/llm-wiki-arena-decision.md): The PStack LLM Wiki Arena evaluation resolves the architecture choice between standard library Python core and external reference engines (Atomicstrata Node.js compiler, Geronimo Rust engine).
 - [Synthesis: Canonical Intent vs Multi-Harness Portability](wiki/syntheses/multi-harness-portability-synthesis.md): The PStack multi-harness port resolves the tension between rapidly evolving canonical Cursor features and broad, truthful host portability:
