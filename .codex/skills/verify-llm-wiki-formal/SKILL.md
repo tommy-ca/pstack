@@ -16,6 +16,10 @@ Derived from `skills/create-formal-verification-skill/SKILL.md`. This does **not
 - **Bound:** all ordered traces of length 1, 2 and 3 over `{shared.md:A, shared.md:B, other.md:C}` = **39** histories, serialized calls through production Python, isolated temp roots. This is not proof of all byte strings, arbitrary process interleavings, race-free directory ancestry, crash durability, or source→log transactional atomicity.
 - **Code-alignment rule:** after changing any listed ingest path or source destination, inspect `git diff bed363e..HEAD -- scripts/llm_wiki.py`, reason about linearization, update this skill's sync commit only after the tests and negative mutant still agree with the new implementation.
 
+## Reference-derived formal target obligations
+
+Additional *unimplemented targets* defined in `openspec/changes/2026-10-31-llm-wiki-reference-contracts/design.md`: candidate isolation, source/target CAS freshness, citation-nonentailment, rebuild snapshot key, publisher single-writer and conservative evidence verdict. These do NOT become covered merely because a synthetic `CandidateEnvelope.v1` passes JSON Schema. No TLC result or independent formal proof is claimed.
+
 ## Model and checker choice
 
 `scripts/verify_llm_wiki_model.py` is a small finite-state exhaustive test harness that calls real production code for each trace and asserts immutability and replay semantics. The explicit mutant `broken_overwrite` must trigger a counterexample. This bounds the **real code path**, unlike a standalone state model.
