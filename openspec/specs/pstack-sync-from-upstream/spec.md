@@ -44,7 +44,7 @@ Feature: pstack-sync-from-upstream
 
 #### Scenario: log binds primary cache from a worktree copy of the script
 
-- **GIVEN** a tmp linked worktree that contains copies of `sync-from-upstream.py` and `partition.py`
+- **GIVEN** a tmp linked worktree that contains copies of `sync_from_upstream.py` and `partition.py`
 - **WHEN** that worktree copy's `remote_cache()` is loaded
 - **THEN** the path is the primary overlay cache
 - **AND** the path is not `<worktree>/.worktrees/upstream-cursor-plugins`
