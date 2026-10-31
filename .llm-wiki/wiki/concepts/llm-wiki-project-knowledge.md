@@ -1,12 +1,22 @@
 # Project-Local LLM Wiki Knowledge System
 
-The project-local LLM Wiki (`.llm-wiki/`) provides a structured, git-tracked knowledge base for PStack engineering.
+PStack's `.llm-wiki/` is a Markdown-first, Git-reviewed knowledge store used by engineering agents and human maintainers. It is not a mandatory semantic compiler or QStack's governed knowledge publisher.
 
-## Purpose and Schema
-- **Layer 1 (`raw/sources/`)**: Immutable snapshots of authoritative specifications, audit manifests, and package descriptors.
-- **Layer 2 (`wiki/`)**: Curated markdown pages covering entities, concepts, requirements, analyses, sources, and syntheses.
-- **Layer 3 (`index.md`, `log.md`, `config.json`)**: Deterministic entrypoint catalog and append-only audit trail.
+## Purpose and storage
 
-## Tooling
-- CLI manager at `scripts/llm_wiki.py` provides `check`, `index`, and `ingest` commands.
-- Automated tests in `tests/test_llm_wiki.py` enforce link integrity, JSON schema validity, and unindexed page detection.
+- **Layer 1 (`raw/sources/`)**: explicit captured source bytes. The PStack Python ingestion CLI creates files exclusively and refuses same-basename changes; direct filesystem changes are not prevented by this tool.
+- **Layer 2 (`wiki/`)**: curated sources, entities, concepts, requirements, analyses and syntheses.
+- **Layer 3 (`index.md`, `log.md`, `config.json`)**: generated navigation, human activity notes and structural configuration. `log.md` is **not** an atomic event ledger.
+
+## Tooling and verification
+
+- `scripts/llm_wiki.py` supports `check`, `index`, `ingest` with Python standard-library dependencies.
+- `tests/test_llm_wiki.py` checks the structural baseline; `tests/test_llm_wiki_safety.py` tests write-once replay, collisions and path/link negatives.
+- `scripts/verify_llm_wiki_model.py` explores 39 bounded serial actual-code ingest traces and verifies that a deliberately broken overwrite variant is detected. It does not prove unbounded concurrency, crash atomicity, or TLA+ conformance.
+- Project-local verification skill: `.codex/skills/verify-llm-wiki/SKILL.md`; bounded formal-analysis skill: `.codex/skills/verify-llm-wiki-formal/SKILL.md`. External TLC remains untested unless a pinned run receipt is produced.
+
+## Reference-engine evaluation
+
+The [reference engine evaluation](../analyses/llm-wiki-reference-evaluation.md) compares Atomicstrata LLMWiki (semantic candidate compilation) with Geronimo LLMWiki (headless graph/search). The default remains the lightweight, offline Python wiki until a measured Arena decision authorizes an optional adapter. QStack retains sole authority over its own canonical publisher, operation ledger and knowledge records.
+
+See `.llm-wiki/WIKI_SCHEMA.md` for the exact implementation limits and ownership rules.
