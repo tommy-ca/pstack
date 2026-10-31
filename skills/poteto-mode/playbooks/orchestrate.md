@@ -24,7 +24,7 @@ Depth stays at this coordinator chat, then workers and verifiers. Tracks are hos
 
 #### Durable state boundary
 
-The coordinator MUST NOT create a playbook-local store or invoke an unshipped orchestration CLI. Keep transient prompt context in the current session. Publish durable units, claims, frontier, verification, gates, and decisions through the host's canonical task and agent state. If the host lacks a field, record a gate or reported gap instead of adding a parallel store.
+The coordinator MUST NOT create a playbook-local store or invoke an unshipped orchestration CLI. Keep transient prompt context in the current session. Publish durable units, claims, frontier, verification, gates, and decisions through the host's canonical task and agent state. For Gas City adapters, use Gas City formulas and Beads for routing, retries, persistence, and fanout/fanin. If the host lacks a field, record a gate or reported gap instead of adding a parallel store.
 
 #### The brief
 

@@ -111,6 +111,6 @@ def test_agentic_orchestrate_has_one_owner_and_independent_pr_verification() -> 
     assert "each PR needs an independent verifier" in skill
     assert "MUST NOT create a playbook-local store" in skill
     assert "native PR/CI event subscriptions" in skill
-    assert "For Gas City adapters" not in skill
+    assert "Gas City formulas and Beads" in skill
     assert "coordinator lands verified units" not in skill
     assert "global stacker write access" in skill

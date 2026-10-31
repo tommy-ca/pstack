@@ -3,8 +3,8 @@
   "hosts": {
     "grok": {
       "receipt": ".audit/evidence/grok-receipt.json",
-      "run_id": "grok-1793051127-f996f3af",
-      "timestamp": "2026-10-26T21:45:31Z",
+      "run_id": "grok-1793447817-7d8a65b8",
+      "timestamp": "2026-10-31T11:57:01Z",
       "overall_verdict": "UNTESTED",
       "planes": {
         "canonical": "UNTESTED",
@@ -14,9 +14,9 @@
       },
       "surface_revisions": {
         "canonical_pin": "88d47514b82e7c44f00f2b2a72ff6dd12158038c",
-        "upstream_head": "99b609a72323b70204eab407c622f436e858e112",
+        "upstream_head": "4dd1d05818d19792e7cd6e818f1667f95f7e1dbe",
         "spec_hash": "f403a35e9ce91413047544cd3cbfc1bba3baf9d56bd90a2e3863432d3fc5bf63",
-        "skills_tree_hash": "a66123fc220a6171ae19f8c8fd328de2c44f09085b9b1024b946a09310f9313c",
+        "skills_tree_hash": "d16a89c46d49af15dd3f41f0ea0da3f17d309a93e78fdf05d31ae5f287b0ba26",
         "profile_hash": "77f0c248f703ab9f29523a23557177449c9d26f8490363023b4e8f5066f1aaea",
         "package_descriptor_hash": "8f680c39f104a2ed8beb57fa2563509c9bd388637dcf9997f8570b9f4c28eebe",
         "manifest_hash": "98d71548c2ea02481dcec79b4dbab1b00d8a5428c2cecd8006a58e95649da0e5",
@@ -24,13 +24,13 @@
         "package_driver_revision": "b794b09f6c2ac26117614688f0cf80806a1cc394743e2488684d52fdf86da4eb",
         "boundary_driver_revision": "89d0128f54a29d09c8f8691b2ee111e12a15c4533e1274b7d0a09c0311ec43f7",
         "upstream_freshness": "DRIFT",
-        "commits_ahead": 67
+        "commits_ahead": 114
       }
     },
     "codex": {
       "receipt": ".audit/evidence/codex-receipt.json",
-      "run_id": "codex-1793051131-306bea96",
-      "timestamp": "2026-10-26T21:45:36Z",
+      "run_id": "codex-1793447821-93f55bd2",
+      "timestamp": "2026-10-31T11:57:04Z",
       "overall_verdict": "UNTESTED",
       "planes": {
         "canonical": "UNTESTED",
@@ -40,9 +40,9 @@
       },
       "surface_revisions": {
         "canonical_pin": "88d47514b82e7c44f00f2b2a72ff6dd12158038c",
-        "upstream_head": "99b609a72323b70204eab407c622f436e858e112",
+        "upstream_head": "4dd1d05818d19792e7cd6e818f1667f95f7e1dbe",
         "spec_hash": "f403a35e9ce91413047544cd3cbfc1bba3baf9d56bd90a2e3863432d3fc5bf63",
-        "skills_tree_hash": "a66123fc220a6171ae19f8c8fd328de2c44f09085b9b1024b946a09310f9313c",
+        "skills_tree_hash": "d16a89c46d49af15dd3f41f0ea0da3f17d309a93e78fdf05d31ae5f287b0ba26",
         "profile_hash": "35105e478e00cfcb3ee82cd86041ebfa52c43b9beb51cc88447e871f1a7fa49e",
         "package_descriptor_hash": "8f680c39f104a2ed8beb57fa2563509c9bd388637dcf9997f8570b9f4c28eebe",
         "manifest_hash": "2c78b2678dab5a2941b9a28c554734c422d5f054abad171d3ccba0d1459cafdb",
@@ -50,7 +50,7 @@
         "package_driver_revision": "b794b09f6c2ac26117614688f0cf80806a1cc394743e2488684d52fdf86da4eb",
         "boundary_driver_revision": "89d0128f54a29d09c8f8691b2ee111e12a15c4533e1274b7d0a09c0311ec43f7",
         "upstream_freshness": "DRIFT",
-        "commits_ahead": 67
+        "commits_ahead": 114
       }
     },
     "omp": {
@@ -81,8 +81,8 @@
     },
     "opencode": {
       "receipt": ".audit/evidence/opencode-receipt.json",
-      "run_id": "opencode-1793051140-f1c947a7",
-      "timestamp": "2026-10-26T21:45:45Z",
+      "run_id": "opencode-1793447828-0b822695",
+      "timestamp": "2026-10-31T11:57:12Z",
       "overall_verdict": "UNTESTED",
       "planes": {
         "canonical": "UNTESTED",
@@ -92,9 +92,9 @@
       },
       "surface_revisions": {
         "canonical_pin": "88d47514b82e7c44f00f2b2a72ff6dd12158038c",
-        "upstream_head": "99b609a72323b70204eab407c622f436e858e112",
+        "upstream_head": "4dd1d05818d19792e7cd6e818f1667f95f7e1dbe",
         "spec_hash": "f403a35e9ce91413047544cd3cbfc1bba3baf9d56bd90a2e3863432d3fc5bf63",
-        "skills_tree_hash": "a66123fc220a6171ae19f8c8fd328de2c44f09085b9b1024b946a09310f9313c",
+        "skills_tree_hash": "d16a89c46d49af15dd3f41f0ea0da3f17d309a93e78fdf05d31ae5f287b0ba26",
         "profile_hash": "21f255021cdcff94953efc576120858f68cd9610cc1570ede5670be7d1bfded7",
         "package_descriptor_hash": "8f680c39f104a2ed8beb57fa2563509c9bd388637dcf9997f8570b9f4c28eebe",
         "manifest_hash": "62f895bddcf6f5a3c596b2ae5e8aea86067bc0dc1cfd01b38303637a751caeab",
@@ -102,13 +102,13 @@
         "package_driver_revision": "b794b09f6c2ac26117614688f0cf80806a1cc394743e2488684d52fdf86da4eb",
         "boundary_driver_revision": "89d0128f54a29d09c8f8691b2ee111e12a15c4533e1274b7d0a09c0311ec43f7",
         "upstream_freshness": "DRIFT",
-        "commits_ahead": 67
+        "commits_ahead": 114
       }
     },
     "antigravity": {
       "receipt": ".audit/evidence/antigravity-receipt.json",
-      "run_id": "antigravity-1793051145-cb37d0be",
-      "timestamp": "2026-10-26T21:45:49Z",
+      "run_id": "antigravity-1793447832-0d39d1f5",
+      "timestamp": "2026-10-31T11:57:17Z",
       "overall_verdict": "UNTESTED",
       "planes": {
         "canonical": "UNTESTED",
@@ -118,9 +118,9 @@
       },
       "surface_revisions": {
         "canonical_pin": "88d47514b82e7c44f00f2b2a72ff6dd12158038c",
-        "upstream_head": "99b609a72323b70204eab407c622f436e858e112",
+        "upstream_head": "4dd1d05818d19792e7cd6e818f1667f95f7e1dbe",
         "spec_hash": "f403a35e9ce91413047544cd3cbfc1bba3baf9d56bd90a2e3863432d3fc5bf63",
-        "skills_tree_hash": "a66123fc220a6171ae19f8c8fd328de2c44f09085b9b1024b946a09310f9313c",
+        "skills_tree_hash": "d16a89c46d49af15dd3f41f0ea0da3f17d309a93e78fdf05d31ae5f287b0ba26",
         "profile_hash": "348a55f542fb8101b5588984e35f84b4aaa5927ed0d1be7979e2a2f486abf38c",
         "package_descriptor_hash": "8f680c39f104a2ed8beb57fa2563509c9bd388637dcf9997f8570b9f4c28eebe",
         "manifest_hash": "78795355ce15e54da9b2c97b3bdec882c445f91c34298c9084b9b6727f52dc27",
@@ -128,7 +128,7 @@
         "package_driver_revision": "b794b09f6c2ac26117614688f0cf80806a1cc394743e2488684d52fdf86da4eb",
         "boundary_driver_revision": "89d0128f54a29d09c8f8691b2ee111e12a15c4533e1274b7d0a09c0311ec43f7",
         "upstream_freshness": "DRIFT",
-        "commits_ahead": 67
+        "commits_ahead": 114
       }
     }
   }
