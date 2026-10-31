@@ -17,6 +17,6 @@ PStack's `.llm-wiki/` is a Markdown-first, Git-reviewed knowledge store used by 
 
 ## Reference-engine evaluation
 
-The [reference engine evaluation](../analyses/llm-wiki-reference-evaluation.md) compares Atomicstrata LLMWiki (semantic candidate compilation) with Geronimo LLMWiki (headless graph/search). The default remains the lightweight, offline Python wiki until a measured Arena decision authorizes an optional adapter. QStack retains sole authority over its own canonical publisher, operation ledger and knowledge records.
+The [reference engine evaluation](../analyses/llm-wiki-reference-evaluation.md) compares Atomicstrata LLMWiki (semantic candidate compilation) with Geronimo LLMWiki (headless graph/search). The [engine parity analysis](../analyses/llm-wiki-v3-engine-parity.md) details the native Python stdlib implementation of source verification, knowledge graph analysis, and in-memory search. QStack retains sole authority over its own canonical publisher, operation ledger and knowledge records.
 
 See `.llm-wiki/WIKI_SCHEMA.md` for the exact implementation limits and ownership rules.

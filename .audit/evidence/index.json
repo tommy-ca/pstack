@@ -3,8 +3,8 @@
   "hosts": {
     "grok": {
       "receipt": ".audit/evidence/grok-receipt.json",
-      "run_id": "grok-1793462888-48ea6e7e",
-      "timestamp": "2026-10-31T16:08:13Z",
+      "run_id": "grok-1793466826-1ac7e881",
+      "timestamp": "2026-10-31T17:13:51Z",
       "overall_verdict": "UNTESTED",
       "planes": {
         "canonical": "UNTESTED",
