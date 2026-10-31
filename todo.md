@@ -340,6 +340,13 @@
 - [x] Unit 9 (Issue #850): Run Thermo-Nuclear code quality, security review, Swarm matrix, and six-host conformance (PR #862)
 - [x] Unit 10 (Issue #851): Maintain strict release gate, restamp durable evidence receipts ALL FRESH, and close Epic #840 (PR #862)
 
+## Epic #863: [Epic] Project-Local LLM Wiki Architecture, Compiler, and Verification Tooling
+- [x] Unit 1 (Issue #864): Move ~/.llm-wiki to project-local .llm-wiki/ and document schema (PR #869)
+- [x] Unit 2 (Issue #865): Build verification and compilation CLI (scripts/llm_wiki.py) with SOLID, KISS, DRY, YAGNI (PR #869)
+- [x] Unit 3 (Issue #866): Add test suite (tests/test_llm_wiki.py) with schema and negative controls (PR #869)
+- [x] Unit 4 (Issue #867): Ingest, update, and compile project knowledge and multi-harness sources (PR #869)
+- [ ] Unit 5 (Issue #868): Conformance verification, durable receipts refresh, stacked PRs merge and ship
+
 
 
 
