@@ -330,8 +330,8 @@
 - [x] Unit 3 (Issue #846): Reconcile Arena, Interrogate, and Autopilot review semantics and leaf skills (PR #858, PR #860)
 
 ### Sub-epic #842: Statechart capability gate, packaging, and adapter reconciliation
-- [ ] Unit 4 (Issue #847): Qualify and optionally package new upstream skills (statechart, ketchup-video, make-bot-ui) and formalize sandbox/exit-code policy
-- [ ] Unit 5 (Issue #848): Reconcile six-host capability adapters, model policy, and package projections
+- [x] Unit 4 (Issue #847): Qualify and optionally package new upstream skills (statechart, ketchup-video, make-bot-ui) and formalize sandbox/exit-code policy (PR #861)
+- [x] Unit 5 (Issue #848): Reconcile six-host capability adapters, model policy, and package projections (PR #861)
 
 ### Sub-epic #843: Specs / verification / gated release
 - [ ] Unit 6 (Issue #849): Update OpenSpec sync contract, multi-harness provenance, and maintainer guides
