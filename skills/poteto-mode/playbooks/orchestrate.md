@@ -38,8 +38,9 @@ CONTEXT      pointers to files and PRs; upstream reports pasted in full when thi
 ACCEPTANCE   checkable criteria, one per line
 VERIFY       exact commands or a project verify-* skill path, plus known gotchas
 TIMEBOX      rough cap on runtime; on expiry, return partial findings and stop rather than run on
-FORBIDDEN    no PR retargets or merges, no rebase, no force-push, no fixes outside scope,
-             plus unit-specific bans
+FORBIDDEN    no unauthorized PR retargets/merges/rebases/force-pushes, no fixes
+             outside scope; the sole PR owner may perform an approved branch operation
+             only after the relevant independent exact-head gate and coordinator approval
 REPORT       status, branch, head SHA, PRs, verdict, what you actually ran, deviations,
              suggested follow-ups
 STANDING     <standing-orders register pasted verbatim>
@@ -80,7 +81,7 @@ A dependency is a context relay, not just ordering: undeclared upstream context 
 
 #### Verification
 
-Scale verification to the unit. When VERIFY is a single cheap command, the worker runs it and reports the output, and the coordinator spot-checks receipts; each PR needs an independent verifier on its current head, from a different evidence-confirmed model family where available. A missing independent verifier blocks that PR's merge, even when the owner ran cheap tests.
+Scale verification to the unit. Cheap commands run during owner development are self-check evidence for the independent reviewer, not a substitute for a second-party verdict; each PR needs an independent verifier on its current head, from a different evidence-confirmed model family where available. A missing independent verifier blocks that PR's merge, even when the owner ran cheap tests.
 
 Write verification rows through canonical host state. Check the current PR and head SHA there. Each row is keyed by PR number plus head SHA and uses one of `live-ui-verified | unit-test-verified | type-check-only | verifier-blocked | verifier-failed`. CI green is an input to a verdict, not a verdict. Behavioral work needs better than `type-check-only`. `verifier-blocked` is not a pass; respawn when the environment heals. `verifier-failed` gets a fix unit, not a re-verify. A worker may self-report tests, but that receipt cannot substitute for independent exact-head verification. A new head SHA voids the row, so re-verify after restack. The ledger answers "was this verified", not memory and not the transcript.
 
