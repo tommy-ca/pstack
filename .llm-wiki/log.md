@@ -9,3 +9,4 @@
 - **2026-10-31 13:42 UTC**: Ingested `llm-wiki-architecture.md` (SHA256: `b5fc978719dc...`) - LLM Wiki Architecture Specification
 - **2026-10-31 13:42 UTC**: Ingested `pstack.package.json` (SHA256: `131522cf7d20...`) - PStack Package Manifest
 - **2026-10-31 (draft research #878)**: Source-reviewed Atomicstrata and Geronimo reference architectures, added a migration evaluation analysis page to the project wiki and regenerated its navigation entry. This is a proposed design and NOT model/runtime/formal or independent verification evidence.
+- **2026-10-31 (Arena decision #873)**: Evaluated reference engine options (Option A baseline vs Option B adapters vs Option C migration). Confirmed Option A (Python stdlib) as canonical baseline, deferred Option B (Issue #875 resolved as not_planned), and rejected Option C per KISS/YAGNI and six-host portability. Added synthesis page and updated index.
