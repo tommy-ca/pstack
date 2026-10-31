@@ -23,6 +23,7 @@ import re
 from pathlib import Path
 import sys
 import tempfile
+from typing import Any
 
 DEFAULT_WIKI_DIR = Path(__file__).resolve().parents[1] / ".llm-wiki"
 
@@ -38,6 +39,182 @@ def compute_sha256(path: Path) -> str:
         while chunk := f.read(65536):
             h.update(chunk)
     return h.hexdigest()
+
+
+def verify_sources(wiki_dir: Path) -> list[str]:
+    """Verify raw source files against recorded digests in log.md.
+    
+    Returns a list of error descriptions (empty on valid pass).
+    """
+    errors: list[str] = []
+    log_file = wiki_dir / "log.md"
+    raw_sources_dir = wiki_dir / "raw" / "sources"
+
+    if not log_file.is_file():
+        return ["Activity log missing: log.md"]
+    if not raw_sources_dir.is_dir():
+        return ["Raw sources directory missing: raw/sources"]
+
+    # Parse log entries for Ingested <name> (SHA256: <digest>...)
+    pattern = re.compile(
+        r"- \*\*[^*]+\*\*: Ingested `([^`]+)` \(SHA256: `([a-f0-9]+)\.\.\.`\)"
+    )
+    logged_sources: dict[str, str] = {}
+    for line in log_file.read_text(encoding="utf-8").splitlines():
+        match = pattern.search(line)
+        if match:
+            fname, digest_prefix = match.group(1), match.group(2)
+            logged_sources[fname] = digest_prefix
+
+    # Verify each logged source on disk
+    for fname, prefix in logged_sources.items():
+        target = raw_sources_dir / fname
+        if not target.is_file():
+            errors.append(f"Missing raw source: {fname} (recorded SHA256 prefix: {prefix})")
+            continue
+        actual_hash = compute_sha256(target)
+        if not actual_hash.startswith(prefix):
+            errors.append(
+                f"Source hash mismatch for {fname}: expected prefix {prefix}, got {actual_hash[:len(prefix)]}"
+            )
+
+    # Check for unlogged raw sources on disk
+    for disk_source in raw_sources_dir.iterdir():
+        if disk_source.name.startswith(".") or disk_source.is_dir():
+            continue
+        if disk_source.name not in logged_sources:
+            errors.append(f"Unlogged raw source file on disk: {disk_source.name}")
+
+    return errors
+
+
+def build_knowledge_graph(wiki_dir: Path) -> dict[str, Any]:
+    """Extract directed cross-references between wiki articles and identify orphans."""
+    pages_root = (wiki_dir / "wiki").resolve()
+    if not pages_root.is_dir():
+        return {"nodes": [], "edges": [], "orphans": [], "metrics": {}}
+
+    nodes: list[str] = []
+    inbound: dict[str, list[str]] = {}
+    outbound: dict[str, list[str]] = {}
+    edges: list[dict[str, str]] = []
+
+    pages = sorted(pages_root.rglob("*.md"))
+    for page in pages:
+        if page.is_symlink():
+            continue
+        rel = str(page.relative_to(pages_root))
+        nodes.append(rel)
+        inbound[rel] = []
+        outbound[rel] = []
+
+    for page in pages:
+        if page.is_symlink():
+            continue
+        src_rel = str(page.relative_to(pages_root))
+        text = page.read_text(encoding="utf-8")
+        for match in re.finditer(r"\[([^\]]+)\]\(([^)]+)\)", text):
+            label = match.group(1).strip()
+            target = match.group(2).strip()
+            if target.startswith(("http://", "https://", "#", "mailto:")):
+                continue
+            file_target = target.split("#")[0]
+            if not file_target:
+                continue
+            resolved = (page.parent / file_target).resolve()
+            if resolved.is_relative_to(pages_root) and resolved.is_file():
+                dest_rel = str(resolved.relative_to(pages_root))
+                if dest_rel in outbound[src_rel]:
+                    continue
+                outbound[src_rel].append(dest_rel)
+                inbound[dest_rel].append(src_rel)
+                edges.append({"source": src_rel, "target": dest_rel, "label": label})
+
+    orphans = [node for node in nodes if len(inbound[node]) == 0]
+    total_nodes = len(nodes)
+    total_edges = len(edges)
+    density = round(total_edges / (total_nodes * (total_nodes - 1)), 4) if total_nodes > 1 else 0.0
+
+    return {
+        "nodes": nodes,
+        "edges": edges,
+        "inbound": inbound,
+        "outbound": outbound,
+        "orphans": orphans,
+        "metrics": {
+            "total_pages": total_nodes,
+            "total_links": total_edges,
+            "orphan_count": len(orphans),
+            "graph_density": density,
+        },
+    }
+
+
+def search_wiki(wiki_dir: Path, query: str) -> list[dict[str, Any]]:
+    """Perform fast keyword and heading search across wiki pages."""
+    pages_root = (wiki_dir / "wiki").resolve()
+    terms = [t.lower() for t in query.strip().split() if t.strip()]
+    if not terms or not pages_root.is_dir():
+        return []
+
+    results: list[dict[str, Any]] = []
+
+    for page in sorted(pages_root.rglob("*.md")):
+        if page.is_symlink():
+            continue
+        rel = str(page.relative_to(wiki_dir))
+        content = page.read_text(encoding="utf-8")
+        lines = content.splitlines()
+
+        title = page.stem.replace("-", " ").title()
+        headings: list[str] = []
+        body_snippets: list[str] = []
+        score = 0
+
+        # Extract title and headings
+        for line in lines:
+            line_s = line.strip()
+            if line_s.startswith("# "):
+                title = line_s[2:].strip()
+            elif line_s.startswith(("## ", "### ")):
+                headings.append(line_s.lstrip("#").strip())
+
+        title_lower = title.lower()
+        headings_lower = " ".join(headings).lower()
+        content_lower = content.lower()
+
+        # Score matching
+        all_terms_present = all(term in content_lower for term in terms)
+        if not all_terms_present:
+            continue
+
+        for term in terms:
+            if term in title_lower:
+                score += 15
+            if term in headings_lower:
+                score += 8
+            score += min(content_lower.count(term), 10)
+
+        # Extract snippet
+        for line in lines:
+            line_s = line.strip()
+            if not line_s or line_s.startswith(("#", "```", "---", "|")):
+                continue
+            if any(term in line_s.lower() for term in terms):
+                body_snippets.append(line_s)
+                if len(body_snippets) >= 2:
+                    break
+
+        snippet = " ... ".join(body_snippets) if body_snippets else ""
+        results.append({
+            "path": rel,
+            "title": title,
+            "score": score,
+            "snippet": snippet[:200] + ("..." if len(snippet) > 200 else ""),
+        })
+
+    results.sort(key=lambda r: r["score"], reverse=True)
+    return results
 
 
 def check_wiki(wiki_dir: Path) -> list[str]:
@@ -235,11 +412,41 @@ def main(argv: list[str] | None = None) -> int:
     subparsers = parser.add_subparsers(dest="subcommand", required=True)
 
     # check
-    subparsers.add_parser(
+    check_parser = subparsers.add_parser(
         "check",
         parents=[parent_parser],
-        help="Verify wiki structure, config shape, and local links (not semantic schema).", 
+        help="Verify wiki structure, config shape, and local links (not semantic schema).",
     )
+    check_parser.add_argument(
+        "--sources",
+        action="store_true",
+        help="Also verify raw source file hashes against log.md digests.",
+    )
+
+    # verify-sources
+    subparsers.add_parser(
+        "verify-sources",
+        parents=[parent_parser],
+        help="Verify raw source file integrity and hashes against log.md digests.",
+    )
+
+    # graph
+    graph_parser = subparsers.add_parser(
+        "graph",
+        parents=[parent_parser],
+        help="Analyze directed cross-references between wiki articles and detect orphan pages.",
+    )
+    graph_parser.add_argument("--json", action="store_true", help="Output graph structure as JSON.")
+    graph_parser.add_argument("--orphans-only", action="store_true", help="Display only orphan pages.")
+
+    # search
+    search_parser = subparsers.add_parser(
+        "search",
+        parents=[parent_parser],
+        help="Perform fast keyword search across wiki titles, headings, and content.",
+    )
+    search_parser.add_argument("query", type=str, help="Search terms.")
+    search_parser.add_argument("--json", action="store_true", help="Output search results as JSON.")
 
     # index
     index_parser = subparsers.add_parser(
@@ -263,12 +470,61 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.subcommand == "check":
         errors = check_wiki(wiki_dir)
+        if args.sources:
+            source_errors = verify_sources(wiki_dir)
+            errors.extend(source_errors)
         if errors:
             print(f"FAIL: {len(errors)} wiki validation error(s) found in {wiki_dir}:")
             for err in errors:
                 print(f"  - {err}")
             return 1
         print(f"PASS: LLM Wiki at {wiki_dir} is structurally valid and fully indexed.")
+        return 0
+
+    elif args.subcommand == "verify-sources":
+        errors = verify_sources(wiki_dir)
+        if errors:
+            print(f"FAIL: {len(errors)} source verification error(s) found in {wiki_dir}:")
+            for err in errors:
+                print(f"  - {err}")
+            return 1
+        print(f"PASS: All raw sources in {wiki_dir} match recorded cryptographic digests.")
+        return 0
+
+    elif args.subcommand == "graph":
+        graph_data = build_knowledge_graph(wiki_dir)
+        if args.json:
+            print(json.dumps(graph_data, indent=2))
+            return 0
+        metrics = graph_data["metrics"]
+        print(f"Knowledge Graph Analysis for {wiki_dir}:")
+        print(f"  Total pages: {metrics.get('total_pages', 0)}")
+        print(f"  Total links: {metrics.get('total_links', 0)}")
+        print(f"  Graph density: {metrics.get('graph_density', 0.0)}")
+        print(f"  Orphan pages ({metrics.get('orphan_count', 0)}):")
+        for orphan in graph_data.get("orphans", []):
+            print(f"    - {orphan}")
+        if not args.orphans_only and graph_data.get("nodes"):
+            print("\nPage Cross-References:")
+            for node in graph_data["nodes"]:
+                out = graph_data["outbound"].get(node, [])
+                inb = graph_data["inbound"].get(node, [])
+                print(f"  - {node}: {len(inb)} inbound, {len(out)} outbound")
+        return 0
+
+    elif args.subcommand == "search":
+        results = search_wiki(wiki_dir, args.query)
+        if args.json:
+            print(json.dumps(results, indent=2))
+            return 0
+        if not results:
+            print(f"No matching wiki pages found for query: '{args.query}'")
+            return 0
+        print(f"Search results for '{args.query}' ({len(results)} matches):")
+        for res in results:
+            print(f"  [{res['score']}] {res['title']} ({res['path']})")
+            if res["snippet"]:
+                print(f"      {res['snippet']}")
         return 0
 
     elif args.subcommand == "index":
