@@ -48,6 +48,18 @@ To create a worktree guaranteed to reside within `.worktrees/`:
 python3 scripts/worktree_protocol.py add <branch-name> [--base <ref>]
 ```
 
+### List Confined Worktrees
+To enumerate all registered confined worktrees (in text or JSON format):
+```bash
+python3 scripts/worktree_protocol.py list [--json]
+```
+
+### Confined Safe Removal
+To remove a worktree strictly verified to reside within `.worktrees/`:
+```bash
+python3 scripts/worktree_protocol.py remove <branch-or-slug> [--force]
+```
+
 ---
 
 ## 4. Failure Modes and Enforcement

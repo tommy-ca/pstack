@@ -165,12 +165,67 @@ def add_worktree(repo_root: Path, branch: str, base_ref: str | None = None) -> P
         raise ValueError(reason)
 
     target_path.parent.mkdir(parents=True, exist_ok=True)
-    cmd = ["git", "worktree", "add", "-b", branch, str(target_path)]
-    if base_ref:
-        cmd.append(base_ref)
+
+    # Check if branch already exists locally
+    check_branch = subprocess.run(
+        ["git", "rev-parse", "--verify", f"refs/heads/{branch}"],
+        cwd=repo_root,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if check_branch.returncode == 0:
+        cmd = ["git", "worktree", "add", str(target_path), branch]
+    else:
+        cmd = ["git", "worktree", "add", "-b", branch, str(target_path)]
+        if base_ref:
+            cmd.append(base_ref)
 
     subprocess.run(cmd, cwd=repo_root, check=True)
     return target_path
+
+
+def remove_worktree(repo_root: Path, target: str | Path, force: bool = False) -> None:
+    """Remove a worktree strictly confined within .worktrees/."""
+    allowed_root = get_allowed_worktree_root(repo_root)
+    if isinstance(target, Path):
+        target_path = target.resolve()
+    else:
+        # Check if target is a path string or branch name/slug
+        candidate = Path(target)
+        if candidate.is_absolute() or candidate.exists():
+            target_path = candidate.resolve()
+        else:
+            target_path = (allowed_root / slugify_branch_name(target)).resolve()
+
+    valid, reason = validate_worktree_path(repo_root, target_path)
+    if not valid:
+        raise ValueError(reason)
+
+    if not target_path.exists():
+        raise FileNotFoundError(f"Worktree path does not exist: {target_path}")
+
+    cmd = ["git", "worktree", "remove", str(target_path)]
+    if force:
+        cmd.append("--force")
+
+    subprocess.run(cmd, cwd=repo_root, check=True)
+
+
+def list_confined_worktrees(repo_root: Path) -> list[dict[str, str]]:
+    """Return list of registered confined worktrees."""
+    registered = list_registered_worktrees(repo_root)
+    results: list[dict[str, str]] = []
+    for wt_path, head_sha, branch in registered[1:]:
+        valid, _ = validate_worktree_path(repo_root, wt_path)
+        if valid:
+            results.append({
+                "path": str(wt_path),
+                "slug": wt_path.name,
+                "head": head_sha,
+                "branch": branch,
+            })
+    return results
 
 
 def main() -> int:
@@ -186,6 +241,10 @@ def main() -> int:
     # Subcommand: check
     subparsers.add_parser("check", parents=[parent_parser], help="Verify all registered worktrees adhere to confinement.")
 
+    # Subcommand: list
+    list_p = subparsers.add_parser("list", parents=[parent_parser], help="List all registered confined worktrees.")
+    list_p.add_argument("--json", action="store_true", help="Output JSON format")
+
     # Subcommand: get-path
     get_path_p = subparsers.add_parser("get-path", parents=[parent_parser], help="Get canonical worktree path for branch.")
     get_path_p.add_argument("branch", help="Branch name")
@@ -194,6 +253,11 @@ def main() -> int:
     add_p = subparsers.add_parser("add", parents=[parent_parser], help="Add a worktree strictly within .worktrees/.")
     add_p.add_argument("branch", help="Branch name to create and checkout")
     add_p.add_argument("--base", default=None, help="Base commit or branch to branch from")
+
+    # Subcommand: remove
+    remove_p = subparsers.add_parser("remove", parents=[parent_parser], help="Remove a confined worktree within .worktrees/.")
+    remove_p.add_argument("target", help="Branch name, slug, or path of worktree to remove")
+    remove_p.add_argument("--force", action="store_true", help="Force removal even if uncommitted changes exist")
 
     args = parser.parse_args()
 
@@ -213,6 +277,19 @@ def main() -> int:
         print(f"PASS: All registered worktrees adhere to PStack worktree confinement protocol.")
         return 0
 
+    elif args.subcommand == "list":
+        worktrees = list_confined_worktrees(repo_root)
+        if getattr(args, "json", False):
+            import json
+            print(json.dumps(worktrees, indent=2))
+        else:
+            if not worktrees:
+                print("No secondary confined worktrees registered.")
+            else:
+                for wt in worktrees:
+                    print(f"{wt['slug']}\t{wt['branch']}\t{wt['head'][:8]}\t{wt['path']}")
+        return 0
+
     elif args.subcommand == "get-path":
         try:
             path = get_canonical_worktree_path(repo_root, args.branch)
@@ -226,6 +303,15 @@ def main() -> int:
         try:
             created = add_worktree(repo_root, args.branch, args.base)
             print(f"SUCCESS: Created confined worktree for '{args.branch}' at {created}")
+            return 0
+        except Exception as e:
+            print(f"ERROR: {e}", file=sys.stderr)
+            return 1
+
+    elif args.subcommand == "remove":
+        try:
+            remove_worktree(repo_root, args.target, force=args.force)
+            print(f"SUCCESS: Removed confined worktree for '{args.target}'")
             return 0
         except Exception as e:
             print(f"ERROR: {e}", file=sys.stderr)
