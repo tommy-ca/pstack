@@ -25,7 +25,7 @@ These are small **contracts**, not services or deployed code. They map to the ex
 
 ## Where formal specs live
 
-The [OpenSpec requirements](../../../openspec/changes/2026-10-31-llm-wiki-reference-contracts/specs/llm-wiki/spec.md), [design and state machine](../../../openspec/changes/2026-10-31-llm-wiki-reference-contracts/design.md) and [data models](../../../openspec/changes/2026-10-31-llm-wiki-reference-contracts/data-models.md) are project-level design artifacts. The proposed versioned `CandidateEnvelope.v1` JSON Schema is **not a runtime PStack schema validator**.
+The OpenSpec requirements (`openspec/changes/2026-10-31-llm-wiki-reference-contracts/specs/llm-wiki/spec.md`), design and state machine (`.../design.md`) and data models (`.../data-models.md`) are project-level design artifacts. The proposed versioned `CandidateEnvelope.v1` JSON Schema is **not a runtime PStack schema validator**.
 
 The `verify-llm-wiki` driver has 9 baseline, 11 source/path, and 3 bounded model tests in the previous PR #879 run. New schema-negative fixtures are introduced separately; report their execution result by exact PR-head GitHub Actions. The 39-history code trace test has a deliberately broken overwrite variant; this is not unbounded concurrency or TLC proof.
 
