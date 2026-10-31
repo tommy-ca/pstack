@@ -8,3 +8,4 @@
 - **2026-10-31 13:42 UTC**: Ingested `statechart-qualification-2026-10-31.md` (SHA256: `97c6cb8f35d3...`) - Statechart Qualification Report
 - **2026-10-31 13:42 UTC**: Ingested `llm-wiki-architecture.md` (SHA256: `b5fc978719dc...`) - LLM Wiki Architecture Specification
 - **2026-10-31 13:42 UTC**: Ingested `pstack.package.json` (SHA256: `131522cf7d20...`) - PStack Package Manifest
+- **2026-10-31 (draft research #878)**: Source-reviewed Atomicstrata and Geronimo reference architectures, added a migration evaluation analysis page to the project wiki and regenerated its navigation entry. This is a proposed design and NOT model/runtime/formal or independent verification evidence.
