@@ -17,7 +17,14 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
-from scripts.llm_wiki import check_wiki, generate_index_markdown, ingest_file
+from scripts.llm_wiki import (
+    check_wiki,
+    generate_index_markdown,
+    ingest_file,
+    verify_sources,
+    build_knowledge_graph,
+    search_wiki,
+)
 
 BASE_WIKI = ROOT / ".llm-wiki"
 
@@ -153,3 +160,56 @@ def test_cli_conflicting_ingest_returns_nonzero(wiki: Path, tmp_path: Path) -> N
     assert ok.returncode == 0
     assert bad.returncode != 0
     assert "Immutable raw source collision" in bad.stderr
+
+
+def test_verify_sources_tampered_source_detected(wiki: Path) -> None:
+    # Pick a raw source file in the wiki and tamper with its content
+    sources = list((wiki / "raw/sources").glob("*.md"))
+    assert sources, "Expected raw sources in test wiki fixture"
+    target = sources[0]
+    target.write_bytes(b"tampered byte payload\n")
+
+    errors = verify_sources(wiki)
+    assert any("Source hash mismatch" in e for e in errors)
+    assert any(target.name in e for e in errors)
+
+
+def test_verify_sources_missing_source_detected(wiki: Path) -> None:
+    sources = list((wiki / "raw/sources").glob("*.md"))
+    assert sources, "Expected raw sources in test wiki fixture"
+    target = sources[0]
+    target.unlink()
+
+    errors = verify_sources(wiki)
+    assert any("Missing raw source" in e for e in errors)
+    assert any(target.name in e for e in errors)
+
+
+def test_verify_sources_missing_log_fails(wiki: Path) -> None:
+    (wiki / "log.md").unlink()
+    errors = verify_sources(wiki)
+    assert any("Activity log missing" in e for e in errors)
+
+
+def test_graph_ignores_external_links_and_anchors(wiki: Path) -> None:
+    # Add a page with external links and anchors
+    page = wiki / "wiki/concepts/link-test.md"
+    page.write_text(
+        "# Link Test\n"
+        "[External](https://example.com/spec)\n"
+        "[Local Anchor](#local-anchor)\n"
+        "[Mail](mailto:test@example.com)\n"
+        "[Valid Target](./agentic-orchestrate.md)\n",
+        encoding="utf-8",
+    )
+    graph = build_knowledge_graph(wiki)
+    # The valid target should be recognized, external and anchor should not be in edges
+    targets = [e["target"] for e in graph["edges"] if e["source"] == "concepts/link-test.md"]
+    assert "concepts/agentic-orchestrate.md" in targets
+    assert not any(t.startswith(("http", "mailto", "#")) for t in targets)
+
+
+def test_search_wiki_respects_all_terms_requirement(wiki: Path) -> None:
+    # Query with one matching term and one impossible term should return empty list
+    results = search_wiki(wiki, "worktree impossiblequerytermxyz123")
+    assert len(results) == 0

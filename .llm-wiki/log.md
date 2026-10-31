@@ -1,8 +1,13 @@
 # Wiki Activity Log
 
-- **2026-10-31 12:35**: Initialized PStack knowledge base for Epic #840 (Upstream 0.15.36 reconciliation).
-- **2026-10-31 12:35**: Ingested raw source artifacts (`upstream-pstack-0.15.36-audit.md`, `upstream-pstack-0.15.36-delta.tsv`, `pstack-sync-from-upstream-spec.md`, `pstack-portability-spec.md`, `UPSTREAM`, `CHANGELOG.md`).
-- **2026-10-31 12:36**: Compiled knowledge pages for sources, entities, concepts, requirements, analyses, and syntheses.
+- **2026-10-31 12:35 UTC**: Initialized PStack knowledge base for Epic #840 (Upstream 0.15.36 reconciliation).
+- **2026-10-31 12:35 UTC**: Ingested `upstream-pstack-0.15.36-audit.md` (SHA256: `a331b3ecab0b...`) - Initial Upstream 0.15.36 Audit
+- **2026-10-31 12:35 UTC**: Ingested `upstream-pstack-0.15.36-delta.tsv` (SHA256: `6a49fc8aad16...`) - Upstream 0.15.36 Commit Delta
+- **2026-10-31 12:35 UTC**: Ingested `pstack-sync-from-upstream-spec.md` (SHA256: `af107ea9db27...`) - PStack Sync Specification
+- **2026-10-31 12:35 UTC**: Ingested `pstack-portability-spec.md` (SHA256: `f403a35e9ce9...`) - PStack Portability Specification
+- **2026-10-31 12:35 UTC**: Ingested `UPSTREAM` (SHA256: `851924c7e121...`) - Upstream Commit Hash Reference
+- **2026-10-31 12:35 UTC**: Ingested `CHANGELOG.md` (SHA256: `503a8ed6d9a8...`) - Upstream Changelog
+- **2026-10-31 12:36 UTC**: Compiled knowledge pages for sources, entities, concepts, requirements, analyses, and syntheses.
 - **2026-10-31 12:36**: Generated `index.md` catalog and verified inter-page cross-references.
 - **2026-10-31 13:56**: Completed Epic #840 program. Landed reviewable stacked PRs bottom-up (#852, #858, #859, #860, #861, #862), verified by independent functional subagents. All durable evidence receipts refreshed to `ALL FRESH`. Closed Sub-epics #841, #842, #843 and all child issues #844–#851, #853, #854 with zero open issues remaining.
 - **2026-10-31 13:42 UTC**: Ingested `statechart-qualification-2026-10-31.md` (SHA256: `97c6cb8f35d3...`) - Statechart Qualification Report

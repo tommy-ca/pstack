@@ -25,6 +25,9 @@ from scripts.llm_wiki import (
     generate_index_markdown,
     ingest_file,
     compute_sha256,
+    verify_sources,
+    build_knowledge_graph,
+    search_wiki,
 )
 
 WIKI_DIR = ROOT / ".llm-wiki"
@@ -128,3 +131,55 @@ def test_cli_subprocess_check_exit_code() -> None:
     )
     assert proc.returncode == 0
     assert "PASS:" in proc.stdout
+
+
+def test_verify_sources_passes_on_current_wiki() -> None:
+    errors = verify_sources(WIKI_DIR)
+    assert not errors, f"Expected clean source verification on current wiki, got: {errors}"
+
+
+def test_build_knowledge_graph_structure() -> None:
+    graph = build_knowledge_graph(WIKI_DIR)
+    assert "nodes" in graph
+    assert "edges" in graph
+    assert "inbound" in graph
+    assert "outbound" in graph
+    assert "orphans" in graph
+    assert "metrics" in graph
+    assert graph["metrics"]["total_pages"] == len(graph["nodes"])
+    assert graph["metrics"]["total_links"] == len(graph["edges"])
+    assert len(graph["nodes"]) > 0
+
+
+def test_search_wiki_finds_relevant_matches() -> None:
+    results = search_wiki(WIKI_DIR, "worktree protocol")
+    assert len(results) > 0
+    first = results[0]
+    assert "path" in first
+    assert "title" in first
+    assert "score" in first
+    assert "snippet" in first
+    assert first["score"] > 0
+
+
+def test_cli_subcommands_subprocess_exit_codes() -> None:
+    cli_path = str(ROOT / "scripts" / "llm_wiki.py")
+    wiki_arg = ["--wiki-dir", str(WIKI_DIR)]
+
+    # verify-sources
+    res_verify = subprocess.run([sys.executable, cli_path, "verify-sources", *wiki_arg], capture_output=True, text=True)
+    assert res_verify.returncode == 0
+    assert "PASS:" in res_verify.stdout
+
+    # graph --json
+    res_graph = subprocess.run([sys.executable, cli_path, "graph", "--json", *wiki_arg], capture_output=True, text=True)
+    assert res_graph.returncode == 0
+    parsed_graph = json.loads(res_graph.stdout)
+    assert "metrics" in parsed_graph
+
+    # search --json
+    res_search = subprocess.run([sys.executable, cli_path, "search", "worktree", "--json", *wiki_arg], capture_output=True, text=True)
+    assert res_search.returncode == 0
+    parsed_search = json.loads(res_search.stdout)
+    assert isinstance(parsed_search, list)
+    assert len(parsed_search) > 0
