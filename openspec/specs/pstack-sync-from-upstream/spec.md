@@ -9,18 +9,18 @@ Define the read-only upstream synchronization interface that reports the pinned 
 
 Feature: pstack-sync-from-upstream
 
-`UPSTREAM` MUST record the current official Cursor pstack commit used by the port. `scripts/sync-from-upstream.py --pin` MUST print its 40-hex `tree` SHA. `--recipe` and the default invocation MUST print the same explicit refresh recipe. `--log` MUST fetch and fast-forward the **primary** overlay cache (`primary_checkout_root(ROOT) / .worktrees / upstream-cursor-plugins`) to `origin/main`, then report the pinned SHA and commits after it. `--pin` and `--recipe` MUST NOT exec `skills/swarm/scripts/partition.py`. `--log` MUST bind that primary cache even when the script file lives in a linked worktree. The recipe MUST name `adapt-harness.py`, `verify-harness.py`, `pstack:<role>`, the Codex-only executable surfaces, and the intentional exclusions for `make-bot-ui`, Cursor-only packaging, and the separate `advisor` plugin. The script MUST NOT copy upstream files into the port.
+`UPSTREAM` MUST record the current official Cursor pstack commit used by the port. `scripts/sync_from_upstream.py --pin` MUST print its 40-hex `tree` SHA. `--recipe` and the default invocation MUST print the same explicit refresh recipe. `--log` MUST fetch and fast-forward the **primary** overlay cache (`primary_checkout_root(ROOT) / .worktrees / upstream-cursor-plugins`) to `origin/main`, then report the pinned SHA and commits after it. `--pin` and `--recipe` MUST NOT exec `skills/swarm/scripts/partition.py`. `--log` MUST bind that primary cache even when the script file lives in a linked worktree. The recipe MUST name `adapt_harness.py`, `verify_harness.py`, `pstack:<role>`, the Codex-only executable surfaces, and the intentional exclusions for `make-bot-ui`, Cursor-only packaging, and the separate `advisor` plugin. The script MUST NOT copy upstream files into the port.
 
 #### Scenario: pin matches UPSTREAM
 
 - **GIVEN** `UPSTREAM` contains `tree <40-hex>`
-- **WHEN** `python3 scripts/sync-from-upstream.py --pin` runs
+- **WHEN** `python3 scripts/sync_from_upstream.py --pin` runs
 - **THEN** stdout is that SHA
 
 #### Scenario: default argv prints the recipe
 
 - **GIVEN** the shipped script
-- **WHEN** `python3 scripts/sync-from-upstream.py` runs with no flags
+- **WHEN** `python3 scripts/sync_from_upstream.py` runs with no flags
 - **THEN** stdout is the same as `--recipe`
 - **AND** stdout names the host adaptation and verification commands
 - **AND** stdout classifies `scripts/orch`, `scripts/watch-pr`, `check-plan.mjs`, and `worktree-audit.sh` as Codex compatibility surfaces
@@ -28,7 +28,7 @@ Feature: pstack-sync-from-upstream
 #### Scenario: log names pin and empty-or-commits
 
 - **GIVEN** a fetch of cursor/plugins is possible
-- **WHEN** `python3 scripts/sync-from-upstream.py --log` runs
+- **WHEN** `python3 scripts/sync_from_upstream.py --log` runs
 - **THEN** stdout contains `pin ` and the 40-hex SHA
 - **AND** stdout contains either `up to date` or at least one oneline commit
 - **AND** `.worktrees/upstream-cursor-plugins` `HEAD` matches `origin/main`
@@ -49,10 +49,28 @@ Feature: pstack-sync-from-upstream
 - **THEN** the path is the primary overlay cache
 - **AND** the path is not `<worktree>/.worktrees/upstream-cursor-plugins`
 
-#### Scenario: current upstream packaging delta remains classified
+#### Scenario: candidate upstream version does not become an applied version
 
-- **GIVEN** the upstream compare for the recorded pin tree `1dcc2bacde73ddd284803b7af28164d0436198fc` contains an official pstack packaging/logo delta and a separate `advisor` plugin
-- **WHEN** the port refresh is reviewed
-- **THEN** the adapter records the new pstack base version (`0.15.21-grokbuild.0` lineage)
-- **AND** it excludes the Cursor-only logo and `advisor` plugin
-- **AND** it reports unchanged executable files for audit rather than blind copying
+- **GIVEN** the recorded applied pin is `88d47514b82e7c44f00f2b2a72ff6dd12158038c` (0.15.29)
+- **AND** the independently observed target in CHANGELOG.md is `c742dd61706fbacc1b95f1a20b7b988cf096ce6c` (0.15.36)
+- **WHEN** an operator reads the recipe or runs `--pin` or `--log`
+- **THEN** the script MUST NOT modify `UPSTREAM`, `plugin.json`, `pstack.package.json`, the canonical inventory or host package projections
+- **AND** the recipe MUST preserve explicit host evidence and independent conformance gates before promotion
+- **AND** the CHANGELOG MUST distinguish candidate, adapted, optional, excluded, blocked and actually applied semantics
+- **AND** source-only and offline verification MUST NOT be represented as native observed-live execution
+
+#### Scenario: removed orchestration script is not blindly synced
+
+- **GIVEN** upstream 0.15.36 removed its Orchestrate CLI/store
+- **WHEN** the repository compares upstream changes to its host-owned adapters
+- **THEN** the recipe MUST direct an audit of callers before any removal of local compatibility entrypoints
+- **AND** it MUST NOT introduce a second durable scheduler or store
+- **AND** unsupported native project state, PR events and nested supervisors remain explicit capability gaps
+
+#### Scenario: statechart is optional without an executable host binding
+
+- **GIVEN** the upstream TypeScript/TLC Statechart compiler is not shipped locally
+- **WHEN** a formal-verification creator references the compiler
+- **THEN** it MUST resolve the active host's installed capability before invoking it
+- **AND** a missing compiler or Java/TLC MUST NOT be counted as a passing model check
+- **AND** direct TLC verification may proceed independently of optional visualization
