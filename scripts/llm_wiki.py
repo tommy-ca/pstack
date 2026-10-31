@@ -18,9 +18,11 @@ import argparse
 import datetime
 import hashlib
 import json
+import os
 import re
 from pathlib import Path
 import sys
+import tempfile
 
 DEFAULT_WIKI_DIR = Path(__file__).resolve().parents[1] / ".llm-wiki"
 
@@ -46,6 +48,8 @@ def check_wiki(wiki_dir: Path) -> list[str]:
     errors: list[str] = []
     if not wiki_dir.is_dir():
         return [f"Wiki root directory not found: {wiki_dir}"]
+    wiki_root = wiki_dir.resolve()
+    pages_root = (wiki_dir / "wiki").resolve()
 
     # 1. Required files
     for fname in REQUIRED_TOP_LEVEL_FILES:
@@ -58,6 +62,8 @@ def check_wiki(wiki_dir: Path) -> list[str]:
         target = wiki_dir / dname
         if not target.is_dir():
             errors.append(f"Missing required directory: {dname}")
+        if target.is_symlink():
+            errors.append(f"Symlink directory forbidden in wiki: {dname}")
 
     # 3. Config JSON validation
     config_file = wiki_dir / "config.json"
@@ -67,6 +73,8 @@ def check_wiki(wiki_dir: Path) -> list[str]:
             for req_key in ("name", "mode", "topic", "version"):
                 if req_key not in cfg:
                     errors.append(f"config.json missing required key '{req_key}'")
+                elif not isinstance(cfg[req_key], str) or not cfg[req_key].strip():
+                    errors.append(f"config.json key '{req_key}' must be a nonempty string")
         except Exception as e:
             errors.append(f"config.json is invalid JSON: {e}")
 
@@ -79,9 +87,12 @@ def check_wiki(wiki_dir: Path) -> list[str]:
         for link_match in re.finditer(r"\[([^\]]+)\]\(([^)]+)\)", text):
             target_rel = link_match.group(2).strip()
             # Ignore external or absolute links
-            if target_rel.startswith(("http://", "https://", "#")):
+            if target_rel.startswith(("http://", "https://", "#", "mailto:")):
                 continue
-            resolved = (wiki_dir / target_rel).resolve()
+            resolved = (wiki_dir / target_rel.split("#", 1)[0]).resolve()
+            if not resolved.is_relative_to(pages_root):
+                errors.append(f"index.md contains out-of-root link: {target_rel}")
+                continue
             if not resolved.is_file():
                 errors.append(f"index.md contains broken link: {target_rel} (resolved to {resolved})")
             else:
@@ -91,6 +102,9 @@ def check_wiki(wiki_dir: Path) -> list[str]:
     wiki_content_dir = wiki_dir / "wiki"
     if wiki_content_dir.is_dir():
         for page in wiki_content_dir.rglob("*.md"):
+            if page.is_symlink() or not page.resolve().is_relative_to(pages_root):
+                errors.append(f"Wiki page escapes content root: {page}")
+                continue
             if page.resolve() not in indexed_targets:
                 rel_path = page.relative_to(wiki_dir)
                 errors.append(f"Wiki page not listed in index.md: {rel_path}")
@@ -106,6 +120,9 @@ def check_wiki(wiki_dir: Path) -> list[str]:
                 if not file_target:
                     continue
                 link_resolved = (page.parent / file_target).resolve()
+                if not link_resolved.is_relative_to(wiki_root):
+                    errors.append(f"Page {page.name} contains out-of-root link to: {link_target}")
+                    continue
                 if not link_resolved.exists():
                     errors.append(
                         f"Page {page.name} contains broken relative link to: {link_target}"
@@ -132,7 +149,7 @@ def generate_index_markdown(wiki_dir: Path) -> str:
         cat_dir = wiki_content_dir / category
         if not cat_dir.is_dir():
             continue
-        pages = sorted(cat_dir.glob("*.md"))
+        pages = sorted(cat_dir.rglob("*.md"))
         if not pages:
             continue
         lines.append(f"## {category.capitalize()}")
@@ -161,27 +178,43 @@ def ingest_file(source: Path, wiki_dir: Path, label: str | None = None) -> tuple
     if not source.is_file():
         raise FileNotFoundError(f"Source file not found: {source}")
 
-    raw_sources_dir = wiki_dir / "raw" / "sources"
+    # A source revision is write-once. Reject known symlink aliases before writes;
+    # this check is not an OS sandbox against hostile concurrent directory swaps.
+    wiki_dir = wiki_dir.resolve()
+    raw_dir = wiki_dir / "raw"
+    raw_sources_dir = raw_dir / "sources"
+    for directory in (raw_dir, raw_sources_dir):
+        if directory.is_symlink():
+            raise ValueError(f"Symlink wiki source directory forbidden: {directory}")
     raw_sources_dir.mkdir(parents=True, exist_ok=True)
+    log_file = wiki_dir / "log.md"
+    if log_file.is_symlink():
+        raise ValueError(f"Symlink wiki log forbidden: {log_file}")
 
     dest = raw_sources_dir / source.name
     content = source.read_bytes()
-    dest.write_bytes(content)
-
     digest = hashlib.sha256(content).hexdigest()
+    try:
+        # Exclusive create is atomic on the destination filesystem; no overwrite.
+        with dest.open("xb") as handle:
+            handle.write(content)
+    except FileExistsError:
+        if dest.is_symlink() or not dest.is_file() or dest.read_bytes() != content:
+            raise FileExistsError(f"Immutable raw source collision: {dest}") from None
+        # Exact replays have no additional log event (idempotent ingest).
+        return dest, digest
     now_str = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
-    log_file = wiki_dir / "log.md"
     log_entry = (
         f"- **{now_str}**: Ingested `{source.name}` (SHA256: `{digest[:12]}...`)"
         + (f" - {label}" if label else "")
         + "\n"
     )
-    if log_file.is_file():
-        existing = log_file.read_text(encoding="utf-8")
-        log_file.write_text(existing + log_entry, encoding="utf-8")
-    else:
-        log_file.write_text(f"# Wiki Activity Log\n\n{log_entry}", encoding="utf-8")
+    # A failed append can leave an unlogged source; reconcile with a later audit.
+    # This is intentionally not represented as an atomic source+ledger transaction.
+    prefix = "" if log_file.is_file() else "# Wiki Activity Log\n\n"
+    with log_file.open("a", encoding="utf-8") as handle:
+        handle.write(prefix + log_entry)
 
     return dest, digest
 
@@ -205,7 +238,7 @@ def main(argv: list[str] | None = None) -> int:
     subparsers.add_parser(
         "check",
         parents=[parent_parser],
-        help="Verify wiki structure, schema, and link integrity.",
+        help="Verify wiki structure, config shape, and local links (not semantic schema).", 
     )
 
     # index
@@ -242,7 +275,17 @@ def main(argv: list[str] | None = None) -> int:
         generated = generate_index_markdown(wiki_dir)
         if args.write:
             index_path = wiki_dir / "index.md"
-            index_path.write_text(generated, encoding="utf-8")
+            # Atomic replace avoids exposing a partially-written navigation index.
+            with tempfile.NamedTemporaryFile(
+                mode="w", encoding="utf-8", dir=wiki_dir,
+                prefix=".index-", suffix=".tmp", delete=False,
+            ) as handle:
+                handle.write(generated)
+                temporary = Path(handle.name)
+            try:
+                os.replace(temporary, index_path)
+            finally:
+                temporary.unlink(missing_ok=True)
             print(f"Wrote generated index to {index_path}")
             return 0
         else:

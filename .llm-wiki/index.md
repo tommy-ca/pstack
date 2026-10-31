@@ -8,7 +8,7 @@
 
 ## Concepts
 - [Agentic Orchestrate Architecture](wiki/concepts/agentic-orchestrate.md): In upstream release 0.15.36 (commit #1043), canonical PStack retired the `orch` CLI and SQLite store (`skills/poteto-mode/scripts/orch/orch.ts`, `store.ts`), replacing it with agentic coordination where the parent chat acts as the coordinator owning briefs, queue draining, and stack frontier tracking.
-- [Project-Local LLM Wiki Knowledge System](wiki/concepts/llm-wiki-project-knowledge.md): The project-local LLM Wiki (`.llm-wiki/`) provides a structured, git-tracked knowledge base for PStack engineering.
+- [Project-Local LLM Wiki Knowledge System](wiki/concepts/llm-wiki-project-knowledge.md): PStack's `.llm-wiki/` is a Markdown-first, Git-reviewed knowledge store used by engineering agents and human maintainers. It is not a mandatory semantic compiler or QStack's governed knowledge publisher.
 - [Review Semantics and Verification Discipline](wiki/concepts/review-semantics-and-verification.md): Upstream 0.15.36 introduces rigorous adversarial review and verification contracts across Arena, Interrogate, Autopilot, and principles.
 
 ## Requirements
