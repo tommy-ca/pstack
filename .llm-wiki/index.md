@@ -10,9 +10,11 @@
 - [Agentic Orchestrate Architecture](wiki/concepts/agentic-orchestrate.md): In upstream release 0.15.36 (commit #1043), canonical PStack retired the `orch` CLI and SQLite store (`skills/poteto-mode/scripts/orch/orch.ts`, `store.ts`), replacing it with agentic coordination where the parent chat acts as the coordinator owning briefs, queue draining, and stack frontier tracking.
 - [Project-Local LLM Wiki Knowledge System](wiki/concepts/llm-wiki-project-knowledge.md): PStack's `.llm-wiki/` is a Markdown-first, Git-reviewed knowledge store used by engineering agents and human maintainers. It is not a mandatory semantic compiler or QStack's governed knowledge publisher.
 - [Review Semantics and Verification Discipline](wiki/concepts/review-semantics-and-verification.md): Upstream 0.15.36 introduces rigorous adversarial review and verification contracts across Arena, Interrogate, Autopilot, and principles.
+- [Semantic Blocks and QStack Governance Crosswalk](wiki/concepts/semantic-blocks-and-crosswalk.md): The PStack LLM Wiki implements formal semantic blocks mapped to QStack knowledge governance roles, ensuring clean cross-repository boundaries and precise data contracts.
 
 ## Requirements
 - [Epic #840 Acceptance Gates and Dependency Graph](wiki/requirements/epic-840-acceptance-gates.md): flowchart TD
+- [Epic #871 LLM Wiki v2 Requirements and Contracts](wiki/requirements/epic-871-llm-wiki-v2-contracts.md): Epic #871 evaluates reference engines, hardens knowledge contracts, and governs migration for the PStack LLM Wiki.
 
 ## Analyses
 - [LLM Wiki Reference Engines and Migration Evaluation](wiki/analyses/llm-wiki-reference-evaluation.md): The PStack LLM Wiki has a completed project-local Markdown/Python baseline (historical [#863](https://github.com/tommy-ca/pstack/issues/863)). The follow-on [#871](https://github.com/tommy-ca/pstack/issues/871) evaluates optional reference engines without treating external compiler output as trusted canonical knowledge.
