@@ -50,3 +50,11 @@ The earlier 0.15.29 sync [#622](https://github.com/tommy-ca/pstack/issues/622), 
 ## Promotion gate
 
 `UPSTREAM`, `pstack.package.json#upstream_pin`, `plugin.json`/host versions, canonical inventory and package projections must reflect the **applied and tested** source, not only the latest observed upstream release. Require exact-head negative tests, host-specific evidence labels, checks and independent review first. Final merger is separate from this audit.
+
+## QStack downstream contract (verified source)
+
+`tommy-ca/qstack/principles/README.md` explicitly treats shared PStack principles as **host analogs**, not a second QStack principle forest. `skills/qstack-mode/SKILL.md` declares QStack a **thin domain overlay**, with generic feature/refactor/test/review/worktree orchestration remaining in PStack. Its research state is separately owned by **qorch**, not PStack's generic Orchestrate. Preserve this split during upstream #1043 migration: renaming/removing an upstream `orch` CLI must not imply deleting QStack research orchestration or importing its state machine into PStack.
+
+The QStack index still describes the host generic orchestration authority as `pstack orch`; verify downstream documentation references whether this means the Orchestrate playbook or a removed CLI, and migrate any executable callers explicitly. QStack-specific `declare-your-falsifier` and `boundary-fuzzy-vs-deterministic` remain domain-owned. Reuse shared PStack `prove-it-works`, `subtract-before-you-add`, and `boundary-discipline` rather than copying their implementations into QStack.
+
+**Downstream acceptance:** verify QStack's host-analog references and read-only routing contract against the applied PStack pin, without falsely claiming quant runtime or qorch execution parity.
