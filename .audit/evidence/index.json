@@ -3,8 +3,8 @@
   "hosts": {
     "grok": {
       "receipt": ".audit/evidence/grok-receipt.json",
-      "run_id": "grok-1793454843-434e2bd4",
-      "timestamp": "2026-10-31T13:54:09Z",
+      "run_id": "grok-1793461229-e1cfe401",
+      "timestamp": "2026-10-31T15:40:33Z",
       "overall_verdict": "UNTESTED",
       "planes": {
         "canonical": "UNTESTED",
@@ -16,7 +16,7 @@
         "canonical_pin": "88d47514b82e7c44f00f2b2a72ff6dd12158038c",
         "upstream_head": "4dd1d05818d19792e7cd6e818f1667f95f7e1dbe",
         "spec_hash": "f403a35e9ce91413047544cd3cbfc1bba3baf9d56bd90a2e3863432d3fc5bf63",
-        "skills_tree_hash": "215c98729553e6e20ecfc04e6ef6c1d4fa3578319a723251d2d60b5037095443",
+        "skills_tree_hash": "4986451e7d8881a506662374699eb55d6239a92bcb74346067d02d61dc311deb",
         "profile_hash": "77f0c248f703ab9f29523a23557177449c9d26f8490363023b4e8f5066f1aaea",
         "package_descriptor_hash": "8f680c39f104a2ed8beb57fa2563509c9bd388637dcf9997f8570b9f4c28eebe",
         "manifest_hash": "98d71548c2ea02481dcec79b4dbab1b00d8a5428c2cecd8006a58e95649da0e5",

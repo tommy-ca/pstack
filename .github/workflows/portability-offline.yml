@@ -70,7 +70,10 @@ jobs:
             tests/test_eval_blinded_pstack_dsh_candidate.py \
             tests/test_eval_blinded_pstack_dsh.py \
             tests/test_canonical_index.py \
-            tests/test_upstream_pstack_01536.py
+            tests/test_upstream_pstack_01536.py \
+            tests/test_worktree_protocol.py
+      - name: Validate worktree confinement protocol
+        run: python3 scripts/worktree_protocol.py check
       - name: Validate documentation and offline JEV decision contracts
         run: |
           python -m pytest -q \
@@ -88,6 +91,13 @@ jobs:
             tests/test_jev_privacy_and_bypass.py \
             tests/test_jev_mapping_and_calibrated_evidence.py \
             tests/test_fast_role_task_fit.py
+      - name: Verify project-local LLM Wiki source safety and bounded model
+        run: |
+          python scripts/scaffold_verification_skill.py --check --target-dir .codex/skills/verify-llm-wiki
+          bash .codex/skills/verify-llm-wiki/scripts/driver.sh launch
+          bash .codex/skills/verify-llm-wiki/scripts/driver.sh drive
+        # Bounded actual-code and negative mutation checks only.
+        # TLC, upstream SDK/binary, models and host-native live runs remain UNTESTED.
       - name: Verify maintained JEV skill doctor on exact PR head
         run: |
           bash .codex/skills/verify-decision-contract/scripts/driver.sh launch
