@@ -178,3 +178,15 @@ def test_agentic_orchestrate_depth_limit_and_nested_gap() -> None:
     assert "classified `adapted` for a single-level coordinator" in skill
     assert "`gap` for nested track sub-coordinator ownership" in skill
 
+
+def test_upstream_goal_and_measurement_workflow_is_present() -> None:
+    mode = (ROOT / "skills" / "poteto-mode" / "SKILL.md").read_text(
+        encoding="utf-8"
+    )
+    principle = (
+        ROOT / "skills" / "principle-explain-the-number" / "SKILL.md"
+    ).read_text(encoding="utf-8")
+    assert "First message and PR rationale" in mode
+    assert "Give **new work** to a fresh subagent by default" in mode
+    assert "Write the decision before you run" in principle
+    assert "run-to-run spread is larger than the effect" in principle
