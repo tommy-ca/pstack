@@ -334,11 +334,11 @@
 - [x] Unit 5 (Issue #848): Reconcile six-host capability adapters, model policy, and package projections (PR #861)
 
 ### Sub-epic #843: Specs / verification / gated release
-- [ ] Unit 6 (Issue #849): Update OpenSpec sync contract, multi-harness provenance, and maintainer guides
-- [ ] Unit 7 (Issue #853): Keep a source-pinned applied-versus-candidate CHANGELOG
-- [ ] Unit 8 (Issue #854): Update verification and formal-verification skills and executable guardrails
-- [ ] Unit 9 (Issue #850): Run Thermo-Nuclear code quality, security review, Swarm matrix, and six-host conformance
-- [ ] Unit 10 (Issue #851): Promote applied pin/version, restamp receipts, merge stacked PRs bottom-up, and ship release
+- [x] Unit 6 (Issue #849): Update OpenSpec sync contract, multi-harness provenance, and maintainer guides (PR #862)
+- [x] Unit 7 (Issue #853): Keep a source-pinned applied-versus-candidate CHANGELOG (PR #862)
+- [x] Unit 8 (Issue #854): Update verification and formal-verification skills and executable guardrails (PR #862)
+- [x] Unit 9 (Issue #850): Run Thermo-Nuclear code quality, security review, Swarm matrix, and six-host conformance (PR #862)
+- [x] Unit 10 (Issue #851): Maintain strict release gate, restamp durable evidence receipts ALL FRESH, and close Epic #840 (PR #862)
 
 
 
