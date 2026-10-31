@@ -13,8 +13,7 @@ This ledger distinguishes **observed canonical upstream changes** from **applied
 
 - **Candidate — PStack router #846:** restate the user's goal in kickoff/PR/final, and favor fresh subagents for new work rather than trusting resumed context.
 - **Candidate — Explain-the-Number #846:** source-identical upstream principle now pre-registers the measurement decision and noise floor before a run.
-
-
+- **Candidate — Agentic Orchestrate #845:** migrated Orchestrate to single-PR agentic ownership, independent PR verification gates, host-owned task/agent state, and removal of stacker write monopoly. Retained local scripts/orch/ compatibility surfaces for caller migration audit.
 - **Candidate — Arena #846:** cross-judge must be a confirmed different family from the *coordinator*, not merely a candidate; skip judge when no independent family is runnable and disclose the omission.
 - **Candidate — Interrogate #846/#854:** reproducible findings only, with bounded command, observed and expected results, and lead rerun at a frozen revision. Unexecuted hypotheses are not confirmed findings.
 - **Candidate — Verification #854:** preserved six-harness scaffold and resource-isolation contract; source-revision identities, negative controls, bounded formal checks, and conditional Statechart integration when available.
@@ -22,7 +21,6 @@ This ledger distinguishes **observed canonical upstream changes** from **applied
 
 ### Upstream changes not yet applied
 
-- **Pending #845:** agentic Orchestrate replaces upstream `orch` CLI/store; local compatibility consumers require migration audit.
 - **Optional/blocked #847:** `statechart` TypeScript/TLC/Java compiler and its substantial fixture corpus; native execution and security proof not yet performed. No unconditional `/statechart` call in a port where the skill is absent.
 - **Excluded pending host case:** Cursor-only package assets and `make-bot-ui`; no blind copy into the generic portability layer.
 - **Pending #850/#851:** six-host native conformance, exact-head CI, candidate-to-applied pin promotion and release.
