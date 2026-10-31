@@ -15,6 +15,7 @@
 - [Epic #840 Acceptance Gates and Dependency Graph](wiki/requirements/epic-840-acceptance-gates.md): flowchart TD
 
 ## Analyses
+- [LLM Wiki Reference Engines and Migration Evaluation](wiki/analyses/llm-wiki-reference-evaluation.md): The PStack LLM Wiki has a completed project-local Markdown/Python baseline (historical [#863](https://github.com/tommy-ca/pstack/issues/863)). The follow-on [#871](https://github.com/tommy-ca/pstack/issues/871) evaluates optional reference engines without treating external compiler output as trusted canonical knowledge.
 - [Statechart Compiler Qualification Analysis](wiki/analyses/statechart-qualification.md): Upstream commit #977 added `skills/statechart`, featuring a TypeScript CLI that compiles statecharts, checks TLA+ invariants with TLC, and renders Mermaid diagrams.
 
 ## Syntheses
