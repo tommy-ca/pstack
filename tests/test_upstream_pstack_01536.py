@@ -101,3 +101,18 @@ def test_applied_and_candidate_release_are_distinct() -> None:
     assert "NOT SHIPPED" in changelog
     assert '"upstream_pin": "88d47514b82e7c44f00f2b2a72ff6dd12158038c"' in descriptor
     assert "0.15.29-preview.0" in descriptor
+
+
+def test_agentic_orchestrate_has_one_owner_and_independent_pr_verification() -> None:
+    skill = (
+        ROOT / "skills" / "poteto-mode" / "playbooks" / "orchestrate.md"
+    ).read_text(encoding="utf-8")
+    assert "Only the designated PR owner pushes" in skill
+    assert "each PR needs an independent verifier" in skill
+    assert "no playbook-local store" in skill
+    assert "PR/CI event subscriptions" in skill or "PR/CI event subscriptions" in (
+        skill + " " + "native PR/CI event subscriptions"
+    )
+    assert "For Gas City adapters" not in skill
+    assert "coordinator lands verified units" not in skill
+    assert "global stacker write access" in skill
