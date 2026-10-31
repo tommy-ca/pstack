@@ -88,6 +88,13 @@ jobs:
             tests/test_jev_privacy_and_bypass.py \
             tests/test_jev_mapping_and_calibrated_evidence.py \
             tests/test_fast_role_task_fit.py
+      - name: Verify project-local LLM Wiki source safety and bounded model
+        run: |
+          python scripts/scaffold_verification_skill.py --check --target-dir .codex/skills/verify-llm-wiki
+          bash .codex/skills/verify-llm-wiki/scripts/driver.sh launch
+          bash .codex/skills/verify-llm-wiki/scripts/driver.sh drive
+        # Bounded actual-code and negative mutation checks only.
+        # TLC, upstream SDK/binary, models and host-native live runs remain UNTESTED.
       - name: Verify maintained JEV skill doctor on exact PR head
         run: |
           bash .codex/skills/verify-decision-contract/scripts/driver.sh launch
