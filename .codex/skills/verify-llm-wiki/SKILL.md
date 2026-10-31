@@ -10,7 +10,7 @@ Generated from `skills/create-verification-skill/SKILL.md` and tailored to actua
 
 ## Launch
 
-No server: the application is a short-lived Python CLI. From the repository root run `bash .codex/skills/verify-llm-wiki/scripts/driver.sh launch`. A usable instance is Python 3 with pytest available, existing `.llm-wiki/config.json` and `scripts/llm_wiki.py`. Scratch drives use pytest `tmp_path` and isolated temporary wiki roots. No shared service, port or provider credentials are required.
+No server: the application is a short-lived Python CLI. The optional *spec-conformance test lane* requires `jsonschema>=4.21,<5` in addition to `pytest`; the production wiki CLI remains Python stdlib. From the repository root run `bash .codex/skills/verify-llm-wiki/scripts/driver.sh launch`. A usable instance is Python 3 with pytest available, existing `.llm-wiki/config.json` and `scripts/llm_wiki.py`. Scratch drives use pytest `tmp_path` and isolated temporary wiki roots. No shared service, port or provider credentials are required.
 
 ## Doctor
 
@@ -18,7 +18,7 @@ No server: the application is a short-lived Python CLI. From the repository root
 
 ## Drive
 
-`bash .codex/skills/verify-llm-wiki/scripts/driver.sh drive` first runs Doctor, then the actual CLI and pytest contracts in isolated scratch directories: `tests/test_llm_wiki.py`, `tests/test_llm_wiki_safety.py`, `tests/test_llm_wiki_bounded_model.py`, and `scripts/verify_llm_wiki_model.py`. This is a real production-Python-code negative control, not an LLM provider/model or full model-checker execution.
+`bash .codex/skills/verify-llm-wiki/scripts/driver.sh drive` first runs Doctor, then the actual CLI and pytest contracts in isolated scratch directories: `tests/test_llm_wiki.py`, `tests/test_llm_wiki_safety.py`, `tests/test_llm_wiki_bounded_model.py`, and `scripts/verify_llm_wiki_model.py`. It additionally runs `tests/test_llm_wiki_spec_contracts.py` for synthetic JSON Schema candidate fixtures (NOT runtime candidate admission). This is a real production-Python-code negative control, not an LLM provider/model or full model-checker execution.
 
 ## Proof bar
 
