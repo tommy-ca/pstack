@@ -19,6 +19,8 @@ from scripts.worktree_protocol import (
     get_canonical_worktree_path,
     check_worktrees,
     add_worktree,
+    remove_worktree,
+    list_confined_worktrees,
 )
 
 
@@ -142,3 +144,95 @@ def test_cli_check_command_on_current_repo() -> None:
     )
     assert res.returncode == 0
     assert "PASS: All registered worktrees adhere" in res.stdout
+
+
+def test_add_worktree_checks_out_existing_branch(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _run_git(["init", "-b", "main"], cwd=repo)
+    _run_git(["config", "user.name", "Tester"], cwd=repo)
+    _run_git(["config", "user.email", "tester@example.com"], cwd=repo)
+    (repo / "README.md").write_text("# Repo\n", encoding="utf-8")
+    _run_git(["add", "README.md"], cwd=repo)
+    _run_git(["commit", "-m", "init"], cwd=repo)
+
+    # Pre-create branch locally
+    _run_git(["branch", "existing-feature"], cwd=repo)
+
+    created_path = add_worktree(repo, "existing-feature")
+    assert created_path.is_dir()
+    assert (created_path / ".git").is_file()
+    assert check_worktrees(repo) == []
+
+
+def test_remove_worktree_and_list_confined(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _run_git(["init", "-b", "main"], cwd=repo)
+    _run_git(["config", "user.name", "Tester"], cwd=repo)
+    _run_git(["config", "user.email", "tester@example.com"], cwd=repo)
+    (repo / "README.md").write_text("# Repo\n", encoding="utf-8")
+    _run_git(["add", "README.md"], cwd=repo)
+    _run_git(["commit", "-m", "init"], cwd=repo)
+
+    # Add worktree
+    wt = add_worktree(repo, "feat/cleanup-target")
+    confined = list_confined_worktrees(repo)
+    assert len(confined) == 1
+    assert confined[0]["slug"] == "feat-cleanup-target"
+    assert "feat/cleanup-target" in confined[0]["branch"]
+
+    # Remove worktree by slug/branch
+    remove_worktree(repo, "feat/cleanup-target")
+    assert not wt.exists()
+    assert list_confined_worktrees(repo) == []
+
+
+def test_remove_worktree_refuses_unconfined_target(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    unconfined_target = tmp_path / "external-wt"
+
+    with pytest.raises(ValueError, match="outside designated worktree root"):
+        remove_worktree(repo, unconfined_target)
+
+
+def test_cli_list_and_remove_commands(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    _run_git(["init", "-b", "main"], cwd=repo)
+    _run_git(["config", "user.name", "Tester"], cwd=repo)
+    _run_git(["config", "user.email", "tester@example.com"], cwd=repo)
+    (repo / "README.md").write_text("# Repo\n", encoding="utf-8")
+    _run_git(["add", "README.md"], cwd=repo)
+    _run_git(["commit", "-m", "init"], cwd=repo)
+
+    # Add worktree via CLI
+    res_add = subprocess.run(
+        [sys.executable, "scripts/worktree_protocol.py", "add", "cli-test", "--repo", str(repo)],
+        capture_output=True,
+        text=True,
+    )
+    assert res_add.returncode == 0
+    assert "SUCCESS: Created confined worktree" in res_add.stdout
+
+    # List worktrees via CLI (--json)
+    res_list = subprocess.run(
+        [sys.executable, "scripts/worktree_protocol.py", "list", "--json", "--repo", str(repo)],
+        capture_output=True,
+        text=True,
+    )
+    assert res_list.returncode == 0
+    import json
+    parsed = json.loads(res_list.stdout)
+    assert len(parsed) == 1
+    assert parsed[0]["slug"] == "cli-test"
+
+    # Remove worktree via CLI
+    res_rm = subprocess.run(
+        [sys.executable, "scripts/worktree_protocol.py", "remove", "cli-test", "--repo", str(repo)],
+        capture_output=True,
+        text=True,
+    )
+    assert res_rm.returncode == 0
+    assert "SUCCESS: Removed confined worktree" in res_rm.stdout
