@@ -32,6 +32,12 @@ Pick the tool that answers the question at the lowest cost: a model checker, a p
 
 Write a project-local skill with frontmatter that names the area and says when to use it. Without frontmatter, the skill never registers. From the skill alone, the next agent must be able to tell whether a change touches the verified code, run the check, tell a real bug from a modeling error, and update the verification when a change is intended. Put the coverage record and the sync commit in the skill, and tell the next agent to move the sync commit forward only after it confirms that the verification describes the code at the new commit. Use this repo's real commands, paths, and nouns, and leave no placeholders.
 
+## TLA+ result interpretation on this port
+
+If the selected checker is TLA+ TLC, **first** resolve `statechart` through the active host's installed skill inventory and capability profile. Official Cursor PStack 0.15.36 provides `/statechart` for viewing shortest invariant counterexample paths, but this port does **not** ship that compiler until #847 establishes its dependencies, security checks and host bindings. When installed and proven, tell the next agent to read every TLC result through `/statechart` using that skill's current instructions, never a hard-coded CLI copied from upstream. When absent, run TLC directly with the pinned model/config, preserve logs and replay the counterexample against the real code. Record visualization as `GAP`; do not convert absent rendering into a PASS or stop checking the real property.
+
+The generated skill must specify its verified code paths/functions, source revision, model assumptions, finite bounds, checker command, status and the mutation that makes each property fail. Promote its sync commit only when the model still matches the actual code and the negative control fails as intended. For missing Java/TLC, report `BLOCKED`, never a model proof.
+
 ## Prove it before you hand off
 
 Follow the generated skill once, as the next agent would, on a scratch change that breaks the property in the real code. It must catch the break. Then drop the scratch change and confirm that the check is back where it started: passing, or failing only on the findings you will report. A verify skill that was never run is a draft. If the skill misses the break or a step does not run, fix the skill or the verification, not the scratch change.

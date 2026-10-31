@@ -69,7 +69,8 @@ jobs:
             tests/test_context_budget_contracts.py \
             tests/test_eval_blinded_pstack_dsh_candidate.py \
             tests/test_eval_blinded_pstack_dsh.py \
-            tests/test_canonical_index.py
+            tests/test_canonical_index.py \
+            tests/test_upstream_pstack_01536.py
       - name: Validate documentation and offline JEV decision contracts
         run: |
           python -m pytest -q \
