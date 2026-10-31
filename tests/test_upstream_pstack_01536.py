@@ -114,3 +114,16 @@ def test_agentic_orchestrate_has_one_owner_and_independent_pr_verification() -> 
     assert "Gas City formulas and Beads" in skill
     assert "coordinator lands verified units" not in skill
     assert "global stacker write access" in skill
+
+
+def test_upstream_goal_and_measurement_workflow_is_present() -> None:
+    mode = (ROOT / "skills" / "poteto-mode" / "SKILL.md").read_text(
+        encoding="utf-8"
+    )
+    principle = (
+        ROOT / "skills" / "principle-explain-the-number" / "SKILL.md"
+    ).read_text(encoding="utf-8")
+    assert "First message and PR rationale" in mode
+    assert "Give **new work** to a fresh subagent by default" in mode
+    assert "Write the decision before you run" in principle
+    assert "run-to-run spread is larger than the effect" in principle
