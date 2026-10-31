@@ -75,15 +75,18 @@ def recipe(upstream_file: Path | None = None) -> str:
    Canonical table is
    skills/swarm/references/classification.tsv. Pack interrogate reviewer prompts
    with skills/interrogate/scripts/pack.py.
-   The current compare is official pstack packaging 0.15.29 at commit
-   88d47514b82e7c44f00f2b2a72ff6dd12158038c (promoted by reconciliation #622
-   to 0.15.29-grokbuild.0). Earlier 0.15.1 density, the two principle leaves,
-   and the evidence-or-label rule stay absorbed. Skip `make-bot-ui`, `.cursor-plugin/`,
-   `assets/logo.png`, and the entire `advisor/` plugin. Do not overwrite
-   HARNESS.md, grok-tools.md, plugin.json, README.md, README.zh-CN.md, tests/, or scripts/.
-   Audit retained `scripts/orch/`, `scripts/watch-pr/`, `check-plan.mjs`, and
-   `worktree-audit.sh` as Codex compatibility surfaces instead of blind-copying.
-   Do not replace Grok `agents/` (22 role files) with upstream's two files.
+   Applied canonical source is whatever the UPSTREAM tree line records, not
+   the latest observed release. Review docs/research/upstream-pstack-0.15.36-audit-2026-10-31.md
+   and CHANGELOG.md for candidate 0.15.36, the source manifest, and explicit GAPs.
+   Do not blindly copy `statechart/` and its test corpus, `make-bot-ui/`,
+   `.cursor-plugin/`, `assets/logo.png`, or the separate `advisor/` plugin.
+   Upstream 0.15.36 removes its `scripts/orch/` runtime; inspect local callers
+   and migrate behavior before considering any local deletion. Do not overwrite
+   host-owned profiles, tool references, manifests, README files, tests, scripts,
+   or six-host agent/role projections. Audit Codex-compatible `watch-pr/`,
+   `check-plan.mjs`, and `worktree-audit.sh` rather than blind-copying.
+   Reject unverified Cursor Task calls and inferred model-family substitutions.
+
 3. python3 scripts/adapt_harness.py
 4. Hand-map depth-1 spawn (`pstack:<role>`) and persist-then-wake overnight
    (`/loop` → scheduler_create). Do not leave Cursor Task, same-run /loop,
@@ -93,7 +96,14 @@ def recipe(upstream_file: Path | None = None) -> str:
    Leftover doctor runs scripts/verify_harness.py then grok plugin validate.
    Evidence survives. Full sweep walks leftover-scanner, upstream-pin,
    absorbed-intent, upstream-recipe, refresh-hygiene, and release-tag.
-6. Update the `tree` line in UPSTREAM to the new pstack/ commit.
+6. Run python3 scripts/verify_portable.py doctor --host all,
+   python3 scripts/verify_portable.py check-evidence --host all,
+   python3 scripts/verify_portable.py check-staleness, targeted pytest and
+   independent negative-control/model checks on the exact candidate head.
+   Record host gaps separately from source-only/offline PASS in CHANGELOG.md.
+7. ONLY after #850's verification gate, promote UPSTREAM, the package upstream_pin,
+   canonical inventory, host versions and generated projections together.
+   Do not claim release or live parity for an untested host.
 """
 
 
