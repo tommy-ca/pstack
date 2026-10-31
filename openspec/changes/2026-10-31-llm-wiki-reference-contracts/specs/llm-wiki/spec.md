@@ -1,6 +1,4 @@
-# LLM Wiki reference-derived contracts — OpenSpec additions
-
-> **Authority:** PStack issue #871 and accepted option A under #873. `SHALL` clauses below are proposed **normative target behavior**, not claims that current Python implementation satisfies them. Refer to [implementation coverage](../../design.md) and [evidence plan](../../tasks.md). QStack governance is independent and strictly stronger for cross-project publication.
+# LLM Wiki reference-derived contracts - OpenSpec additions
 
 ## ADDED Requirements
 
