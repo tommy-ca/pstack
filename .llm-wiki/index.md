@@ -1,0 +1,21 @@
+# Knowledge Base Index: PStack multi-harness portability and canonical upstream 0.15.36 reconciliation
+
+## Sources
+- [Upstream Cursor PStack 0.15.36 Source Reference](wiki/sources/upstream-0.15.36.md): - **Source:** `cursor/plugins@c742dd61706fbacc1b95f1a20b7b988cf096ce6c` (release 0.15.36)
+
+## Entities
+- [PStack Six-Harness Architecture and Profiles](wiki/entities/pstack-harnesses.md): PStack formally declares six supported host environments with native adapters and truthful evidence reporting:
+
+## Concepts
+- [Agentic Orchestrate Architecture](wiki/concepts/agentic-orchestrate.md): In upstream release 0.15.36 (commit #1043), canonical PStack retired the `orch` CLI and SQLite store (`skills/poteto-mode/scripts/orch/orch.ts`, `store.ts`), replacing it with agentic coordination where the parent chat acts as the coordinator owning briefs, queue draining, and stack frontier tracking.
+- [Project-Local LLM Wiki Knowledge System](wiki/concepts/llm-wiki-project-knowledge.md): The project-local LLM Wiki (`.llm-wiki/`) provides a structured, git-tracked knowledge base for PStack engineering.
+- [Review Semantics and Verification Discipline](wiki/concepts/review-semantics-and-verification.md): Upstream 0.15.36 introduces rigorous adversarial review and verification contracts across Arena, Interrogate, Autopilot, and principles.
+
+## Requirements
+- [Epic #840 Acceptance Gates and Dependency Graph](wiki/requirements/epic-840-acceptance-gates.md): flowchart TD
+
+## Analyses
+- [Statechart Compiler Qualification Analysis](wiki/analyses/statechart-qualification.md): Upstream commit #977 added `skills/statechart`, featuring a TypeScript CLI that compiles statecharts, checks TLA+ invariants with TLC, and renders Mermaid diagrams.
+
+## Syntheses
+- [Synthesis: Canonical Intent vs Multi-Harness Portability](wiki/syntheses/multi-harness-portability-synthesis.md): The PStack multi-harness port resolves the tension between rapidly evolving canonical Cursor features and broad, truthful host portability:
