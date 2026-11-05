@@ -3,11 +3,17 @@ from __future__ import annotations
 
 import copy
 import json
+import sys
+from pathlib import Path
 
 import pytest
 
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 from scripts.portability_types import PORTABLE_CAPABILITY_UNIVERSE
-from scripts.verify_pi_candidate import ROOT, CandidateContractError, bounded_negative_controls, check_contract, check_verdict_template, from_disk, smoke
+from scripts.verify_pi_candidate import CandidateContractError, bounded_negative_controls, check_contract, check_verdict_template, from_disk, smoke
 
 
 def test_candidate_profile_all_17():
