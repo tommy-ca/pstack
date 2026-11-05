@@ -2,10 +2,14 @@
 
 Status: not executed. Parent issue #894. Dependency graph is authoritative in GitHub, not in a new task database.
 
-- [x] #895 / source review: record current Pi 1.5.0, pi-subagents 0.85.0, pi-better-sandbox 0.14.1, pi-ask-user 0.17.2, pi-web-access 0.47.0 **published** baselines in the audit. This is not an installed-version check.
+- [x] #895 / source review: record current Pi 1.5.0, pi-subagents 0.86.0, pi-better-sandbox 0.14.1, pi-verdict 0.16.0, pi-ask-user 0.17.2, pi-web-access 0.47.0 **published** baselines in the audit. This is not an installed-version check.
 - [x] #894 / source-only design: inventory original 17 extensions, 17 PStack capabilities, and explicit hard-security unknowns.
-- [x] Source-only adapter slice: `profiles/pstack-pi.json`, `.pi/settings.json` native skills+agents discovery, `references/pi-essential-extensions.json`, 17 typed mapping and Tier 1 bounded mutation verifier (43 negative inputs); **no native run claimed**.
+- [x] Source-only adapter slice: `profiles/pstack-pi.json`, `.pi/settings.json` native skills+agents discovery, `references/pi-essential-extensions.json`, 17 typed mapping and Tier 1 bounded mutation verifier (53 negative inputs); **no native run claimed**.
 - [x] Pi verification skill artifacts: `.pi/skills/verify-pi-pstack` and `.pi/skills/verify-pi-pstack-formal`; current `drive` must refuse BLOCKED.
+- [x] Source contract: pi-verdict tool-call adjudication is separate from pi-ask-user structured selection; updated 4+1 extension reference, secure example and 10 additional rejected authorization mutants (53 total). No effective runtime security is claimed.
+- [ ] #895/#896: verify installed Pi 1.5.0 + subagents 0.86.0 + verdict 0.16.0 package loading, native skills/agents, model catalog and extension compatibility, without duplicate policy packages.
+- [ ] #897: prove effective gate activation (including gate OFF and --no-extensions), per-child `subagent_launch` interception, headless ask-deny, disallowing dangerous ignored custom/MCP tools, classifier primary/fallback behavior and independent external capability ceilings.
+- [ ] #898: bind approval, refusal, execution effects and OS sandbox evidence to exact source/runtime versions; no hard-gate proof from a model verdict.
 - [ ] #895: run installed-version discovery, inspect package source/transitive deps, benchmark optional extensions, freeze compatible lockfile.
 - [ ] #896: implement safe namespaced Pi candidate identity/profile encoding and source-conformant role projection.
 - [ ] #896: validate native extension loading, role/skill discovery, model catalog, and non-overlap with @zenspc/pi-pstack; negative schema tests.

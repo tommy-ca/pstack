@@ -18,10 +18,11 @@ Finite domain checks, using code-level mutant rejection:
 1. Four invalid support-state promotions must fail.
 2. False verified status for each of 17 capabilities must fail.
 3. Duplicate binding for each of 17 capabilities must fail.
-4. Four configuration mutants must fail (extra engine, credential write, headless bypass, unreviewed auto-install).
+4. Four original configuration mutants must fail (extra engine, credential write, headless bypass, unreviewed auto-install).
 5. Unverified `human.gate` native promotion must fail.
+6. Ten pi-verdict policy mutants must fail: absent extension, wrong owner, disabled-gate requirement, disabled deterministic deny floor, permissive headless ask, ignored child launch, allowed classifier rescue, false verified child interception, external gate-off bypass and classifier opinion promoted to a hard gate.
 
-Total: **43 negative cases**. This proves only the enumerated source-contract failure cases. It does NOT formally verify subprocess isolation, `subagent_launch`, scheduling or approval traces in the actual Pi runtime.
+Total: **53 negative cases**. This proves only the enumerated source-contract failure cases. It does NOT formally verify subprocess isolation, `subagent_launch`, scheduling or approval traces in the actual Pi runtime.
 
 ## Reproducible command and negative control
 

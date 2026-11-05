@@ -7,7 +7,7 @@ PStack's canonical workflow intent remains sourced to [Cursor PStack](https://gi
 ## Semantic building blocks
 
 - **Native agent loop and context:** Pi owns model interaction, tools, session persistence/resume, context, skill discovery, native MCP, codemode and tool_search.
-- **Delegation:** [pi-subagents 0.85.0](https://pi.dev/packages/pi-subagents) offers agent.spawn/join/cancel, monitor, steering, durable missions and scheduled runs. It is an external tool runtime, not Pi core. New `subagent_launch` calls require permissions integration; old background runs from pre-0.85.0 cannot automatically resume. Independent model families still require runtime catalog evidence.
+- **Delegation:** [pi-subagents 0.86.0](https://pi.dev/packages/pi-subagents) offers agent.spawn/join/cancel, monitor, steering, durable missions and scheduled runs. It is an external tool runtime, not Pi core. New `subagent_launch` calls require permissions integration; old background runs from pre-0.85.0 cannot automatically resume. Independent model families still require runtime catalog evidence.
 - **Execution trust:** [pi-better-sandbox 0.14.1](https://pi.dev/packages/pi-better-sandbox) offers independently configured main/subagent/background guards; its fresh switches start OFF. **Subagent Stored credentials defaults to Write & delete** and Outside project Write unless explicitly narrowed. Trusted extension tools are not covered by guarded file rules, and remote SSH effects are outside local confinement.
 - **Human interaction:** [pi-ask-user 0.17.2](https://pi.dev/packages/pi-ask-user) adds the explicit structured `human.ask` tool in interactive mode. It is not an enforceable `human.gate` unless an independent permission policy also denies unapproved effects.
 - **Research:** [pi-web-access 0.47.0](https://pi.dev/packages/pi-web-access) belongs to researcher/evidence-auditor roles only where needed; never grant broad network rights merely to enable a workflow.
@@ -42,7 +42,7 @@ See [the full research audit](https://github.com/tommy-ca/pstack/blob/main/docs/
 
 ## Minimal runtime profiles (source-level only)
 
-- Engineering: native Pi 1.5.0 + `pi-subagents@0.85.0` + `pi-better-sandbox@0.14.1` + `pi-ask-user@0.17.2` (3 runtime extensions), plus canonical PStack skills.
+- Engineering: native Pi 1.5.0 + `pi-subagents@0.86.0` + `pi-better-sandbox@0.14.1` + `pi-ask-user@0.17.2` (3 runtime extensions), plus canonical PStack skills.
 - Research: engineering + `pi-web-access@0.47.0` (4 runtime extensions).
 - Temporary migration: `@zenspc/pi-pstack@0.6.0` may remain one *additional policy package* until the canonical `tommy-ca/pstack` projection replaces it; never run duplicate skill/policy copies.
 - Headless: `ask_user` can be omitted only with a proven fail-closed policy for unresolved operator decisions.
@@ -60,7 +60,7 @@ This current branch adds an executable **Tier 1 source-only** adapter slice with
 | Candidate typed adapter | `profiles/pstack-pi.json` | Existing `HarnessProfile` and `Binding`; 17 classified capabilities; no `verified` bindings |
 | Native Pi skills | `.pi/settings.json` → `../skills` | Loads canonical shared PStack skills after Pi project trust, without a copied PStack npm bundle |
 | Native pi-subagents role discovery | `.pi/settings.json` → `subagents.agentScanDirs: ["../agents"]` | Reuses PStack's shared role markdown; `projectRootResolution: git-root` stabilizes worktrees |
-| Essential extension reference | `references/pi-essential-extensions.json` | 3 engineering, 1 research optional, `@zenspc/pi-pstack` transitional only; **does not auto-install** |
+| Essential extension reference | `references/pi-essential-extensions.json` | 4 engineering, 1 research optional, `@zenspc/pi-pstack` transitional only; **does not auto-install** |
 | Source contract verifier | `scripts/verify_pi_candidate.py` | Existing typed models and 43 deliberately rejected source mutations |
 | Pi functional verification skill | `.pi/skills/verify-pi-pstack/` | `doctor` source checks; `drive` returns BLOCKED until real child, worktree and sandbox evidence |
 | Pi bounded formal verification skill | `.pi/skills/verify-pi-pstack-formal/` | Actual PStack validator code under bounded mutation tests; **not** an OS sandbox/security proof |
@@ -72,3 +72,13 @@ Canonical `swarm`, `arena`, and `interrogate` are discoverable skills, while the
 The original `agent.spawn/join/cancel`, `schedule`, and `monitor` remain **version-gated**, not native. `human.ask` uses `pi-ask-user` only where installed; `human.gate` remains GAP because a user-response UI does not enforce tool permissions. `workspace.readonly` remains advisory until the configured OS policy is shown to deny actual writes, including trusted extension tools and detached children.
 
 Offline CI tests and negative controls can verify the candidate *specification*, not live extension composition. The existing six-host PStack verifier and evidence receipts are intentionally unchanged. Public upstream sources remain external citations here until the separate immutable raw-source ingest task #899 captures and verifies hashes.
+
+## Autonomous approval and selection: pi-verdict 0.16.0 (2026-11-05)
+
+Source evidence: [pi-verdict release](https://github.com/jesset/pi-verdict/releases/tag/v0.16.0), [tool_call code](https://github.com/jesset/pi-verdict/blob/main/extensions/pi-verdict.ts), [security principles](https://github.com/jesset/pi-verdict/blob/main/docs/security-principles.md), [pi-ask-user](https://github.com/edlsh/pi-ask-user/releases/tag/v0.17.2), and [pi-subagents 0.86.0](https://github.com/nicobailon/pi-subagents/releases/tag/v0.86.0).
+
+Atomic responsibilities: **PStack** owns the risk class/human gate specification; **Pi core** owns tools/sessions; **pi-subagents 0.86.0** owns child orchestration and schedules; **pi-verdict 0.16.0** owns a conditional pre-tool-call deterministic floor and model `allow|ask|deny`; **pi-ask-user 0.17.2** owns explicit structured user choices; **pi-better-sandbox 0.14.1** owns configured local OS isolation; **PStack verification** owns independent effect/permission receipts. The research-only `pi-web-access 0.47.0` remains optional. Four engineering / five research extensions are the minimal candidate; `@zenspc/pi-pstack` is transitional packaging, not a new runtime.
+
+A classifier `allow` may admit low-risk *reversible* actions **only inside independently enforced ceilings**. `ask` escalates ambiguity via `ctx.ui.confirm` and becomes deny headless. `ask_user` is a separate sequential selection tool; neither its answer nor a classifier decision proves `human.gate`. The plugin can be disabled, its deterministic floor can be configured off, and its `ignoreTools` shortcut can bypass adjudication of custom tools. Its audit records only gray-zone/protected-path adjudication, not all rule outcomes or OS effects. A fallback classifier may rescue first-layer failure under its `enforce` cascade. Parent tool interception is not proof of child `subagent_launch` enforcement.
+
+The candidate manifest `references/pi-essential-extensions.json` now requires four source-pinned engineering packages and splits the tool authorizer from the sandbox. `references/pi-verdict-pstack.example.json` is a **manual configuration example**, not installed policy: deterministic floor on, empty unreviewed allow/ignore lists, no classifier fallback. The existing typed verifier rejects **53 source-level invalid mutations** (43 prior + 10 new authorization mutants). No live Pi, child or OS denial was observed, no independent Swarm/Arena/Interrogate ran, and PStack `human.gate` remains GAP. Public references have not been ingested into immutable .llm-wiki raw sources with verified digests (#899).

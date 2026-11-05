@@ -1,6 +1,6 @@
 # Design: standalone Pi candidate, without a seventh runtime
 
-Status: DESIGN / static-only. Issue #896 owns implementation.
+Status: CANDIDATE / source-only adapter implemented; #896 owns native projection proof; #897 owns live authorization.
 
 ## Ownership graph
 
@@ -85,8 +85,18 @@ Candidate spec removal leaves all existing six host profiles, runtime drivers, p
 
 ## Essential extension profile for candidate Pi
 
-The target is **three** runtime extensions for interactive engineering: `pi-subagents@0.85.0`, `pi-better-sandbox@0.14.1`, `pi-ask-user@0.17.2`; enable `pi-web-access@0.47.0` only for research tasks (four). This excludes PStack skill/package distribution. During transition the installed `@zenspc/pi-pstack@0.6.0` may remain as an explicit **fifth policy package**, subject to collision tests and removal after canonical projection works. Do not add separate goal/task/scheduling extensions: `pi-subagents` already documents missions, timed schedules and acceptance receipts. All package version pins must be reconciled against the actual installed Pi version and verified platform before production use.
+The candidate is **four** engineering runtime extensions: `pi-subagents@0.86.0`, `pi-better-sandbox@0.14.1`, `pi-verdict@0.16.0`, `pi-ask-user@0.17.2`; enable `pi-web-access@0.47.0` only for research (five). This excludes PStack skill/package distribution. During transition the installed `@zenspc/pi-pstack@0.6.0` may remain as an explicit **sixth transitional policy package**, subject to collision tests and removal after canonical projection works. Do not add separate goal/task/scheduling extensions: `pi-subagents` already documents missions, timed schedules and acceptance receipts. All package version pins must be reconciled against the actual installed Pi version and verified platform before production use.
 
-`human.ask` is bound to the interactive `ask_user` tool; `human.gate` is **not** proven by operator text alone. A separate permission decision must authorize side effects. `pi-subagents@0.85.0` now issues a nested `subagent_launch` action for each workflow child. Validate this in both allow/deny settings and in noninteractive `pi -p`. Previously saved background runs created before the 0.85.0 migration cannot be resumed or auto-resumed, so explicitly report the migration impact.
+`human.ask` is bound to the interactive `ask_user` tool; `human.gate` is **not** proven by operator text alone. A separate permission decision must authorize side effects. `pi-subagents@0.86.0` retains the 0.85.0 behavior that issues a nested `subagent_launch` action for each workflow child. Validate this in both allow/deny settings and in noninteractive `pi -p`. Previously saved background runs created before the 0.85.0 migration cannot be resumed or auto-resumed, so explicitly report the migration impact.
 
 Sandbox hardening begins with Main/Subagents/Background switches **on** as appropriate and Subagent Stored credentials **Off**, Outside project **Off or Read**, with narrow project/write paths. The published sandbox's permissive child credential default, trusted-tool bypass, and platform-dependent enforcement require adversarial runtime proof, not a configuration-file assertion.
+
+## Extension ownership and autonomous authorization (2026-11-05)
+
+The canonical PStack policy owns risk classification and approval requirements; native Pi owns the agent loop; `pi-subagents` owns delegation; `pi-better-sandbox` owns independently configured OS confinement; `pi-verdict` owns model-assisted `tool_call` adjudication; `pi-ask-user` owns structured operator selections. PStack does not add a task database, classifier gateway or a second orchestration engine.
+
+The [pi-verdict 0.16.0 source](https://github.com/jesset/pi-verdict/blob/main/extensions/pi-verdict.ts) implements a layered deterministic deny floor and optional `allow|ask|deny` classifier. An `ask` invokes Pi's native `ctx.ui.confirm`, degrading to deny without UI. The separate [pi-ask-user 0.17.2 source](https://github.com/edlsh/pi-ask-user/blob/main/index.ts) implements sequential structured `ask_user` inputs. A classifier `allow` is not external authorization, and the tools do not share a complete effect receipt.
+
+For PStack production, define risk classes before any tool: **low-risk reversible** effects may be autonomously admitted only under a proved external capability ceiling; **ambiguous** effects ask the operator and deny headless; **privileged/irreversible** effects require an independently enforced human-gate policy. This external ceiling is still unimplemented. The Pi extension can be disabled with `/automode off` or `--no-extensions`, so it is not a non-bypassable reference monitor. An installed sandbox with disabled switches is not an OS security boundary either. `human.gate` therefore remains `gap` until negative native tests demonstrate mandatory refusal.
+
+The source-only `references/pi-essential-extensions.json` declares four engineering packages and a research add-on; `references/pi-verdict-pstack.example.json` shows deterministic floor ON, empty auto-allow and `ignoreTools`, and no rescue classifier. **Neither file is automatically installed or loaded by Pi**. The verifier asserts these *requirements*, not their effectiveness. Live tests must cover parent vs child `subagent_launch`, detached processes, MCP/codemode nesting, missing/disabled gate, adversarial bash strings, audit completeness limits, fallback after primary failure, sandbox effects and permission provenance. No Swarm/Arena/Interrogate models or Thermo-Nuclear skills were actually executed.

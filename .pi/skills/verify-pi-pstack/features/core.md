@@ -4,7 +4,7 @@
 
 - Native Pi discovery of canonical PStack skills through project settings
 - 17 typed semantic capabilities and lack of premature runtime promotion
-- Three essential coding extensions and one research extension
+- Four engineering extensions including pi-verdict, plus one research extension
 - Bounded negative variants for credential policy, authorization and duplicate engines
 
 ## How to get to it (user POV)

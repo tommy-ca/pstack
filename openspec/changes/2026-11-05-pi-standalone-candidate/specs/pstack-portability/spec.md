@@ -33,6 +33,28 @@ The interactive candidate profile SHOULD provide `pi-ask-user` to implement stru
 - **THEN** execution MUST remain blocked pending separately authenticated authorization
 - **AND** an `ask_user` fallback or pre-filled prompt MUST NOT authorize the effect
 
+### Requirement: Pi autonomous approval and structured selection have separate owners
+
+The Pi candidate SHOULD use `pi-verdict` for ordinary pre-tool-call risk adjudication and `pi-ask-user` for structured operator selections. These do not replace PStack's independently enforced `human.gate`, and a classifier `allow` MUST NOT override hard-deny policy. A missing or disabled permission extension MUST NOT silently authorize privileged actions. PStack MUST NOT infer full audit coverage from the plugin's gray-zone-only record.
+
+#### Scenario: Classifier allows a privileged action
+- **GIVEN** a PStack risk policy requiring independent human authorization
+- **WHEN** pi-verdict returns `allow` or a fallback classifier rescues a failed first layer
+- **THEN** the host MUST block the effect until independently authorized
+- **AND** no hard-gate receipt may derive solely from the classifier opinion
+
+#### Scenario: Missing gate or headless uncertain decision
+- **GIVEN** an unsafe tool effect with a disabled, absent or uncertain gate
+- **WHEN** the native actor executes without an operator
+- **THEN** a separate mandatory permission boundary MUST deny the action
+- **AND** an `ask_user` fallback MUST NOT bypass that denial
+
+#### Scenario: Child launch and nested tool call
+- **GIVEN** a `pi-subagents` delegated child or MCP/codemode nested call
+- **WHEN** that action crosses a permission boundary
+- **THEN** native tests MUST observe authorization for that actor and effect
+- **AND** untested inherited extension behavior MUST remain UNTESTED, not PASS
+
 ### Requirement: Delegation extension owns schedules and lifecycle receipts
 
 If installed `pi-subagents` exposes `mission.*`, `schedule.*`, and `subagent_launch`, the adapter MAY bind PStack `schedule` and `monitor` through version-gated primitives, but MUST NOT add a PStack-owned scheduler/mission database. Native proof MUST test permission-denied child launch, legacy background resume refusal, schedule restoration and terminal status without falsely promoting source documentation.

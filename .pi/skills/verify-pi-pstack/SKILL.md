@@ -14,7 +14,7 @@ Run `bash .pi/skills/verify-pi-pstack/scripts/driver.sh launch` to probe the ins
 
 ## Doctor
 
-Run `bash .pi/skills/verify-pi-pstack/scripts/driver.sh doctor` to validate the typed profile, source-locked extension list and 43 failing mutation cases. This is source-level proof, not a successful runtime Pi deployment.
+Run `bash .pi/skills/verify-pi-pstack/scripts/driver.sh doctor` to validate the typed profile, source-locked extension list and 53 failing mutation cases. This is source-level proof, not a successful runtime Pi deployment.
 
 ## Drive
 
@@ -22,7 +22,7 @@ Run `bash .pi/skills/verify-pi-pstack/scripts/driver.sh drive`. Until the Pi act
 
 ## Proof bar
 
-Require a pinned Pi binary, package and model catalog, distinct child identities and terminal states; test denied `subagent_launch`, cancellation, workspace isolation/cleanup, sandbox enforcement for parent/child/detached tasks, and credential/outside-repository denial. An `ask_user` answer is not a hard authorization gate. Apply FAIL > BLOCKED > UNTESTED > PASS.
+Require a pinned Pi binary, package and model catalog, distinct child identities and terminal states; test pi-verdict rule denies vs model allows, classifier failure, headless ask, gate disablement, custom/MCP tool bypasses, denied `subagent_launch`, cancellation, workspace isolation/cleanup, sandbox enforcement for parent/child/detached tasks, and credential/outside-repository denial. An `ask_user` answer is not a hard authorization gate. Apply FAIL > BLOCKED > UNTESTED > PASS.
 
 ## Evidence
 
