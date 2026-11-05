@@ -221,7 +221,7 @@
       "shared",
       "worktree (version-gated)"
     ],
-    "default_model": "inherit-parent",
+    "default_model": "inherit",
     "allowed_spawn_fields": [],
     "forbidden_spawn_fields": [
       "reasoning_effort"
