@@ -36,4 +36,4 @@ PStack's canonical workflow intent remains sourced to [Cursor PStack](https://gi
 - Raw source ingestion and hash-backed local sources remain planned in [#899](https://github.com/tommy-ca/pstack/issues/899).
 - Actual independent Swarm/Arena/Interrogate and both Thermo-Nuclear reviews remain a gate in [#900](https://github.com/tommy-ca/pstack/issues/900).
 
-See [the full research audit](https://github.com/tommy-ca/pstack/blob/spec/pi-1-5-pstack-adapter-audit/docs/research/pi-1-5-standalone-pstack-audit-2026-11-05.md) for the 17-capability table, supplied 17-extension decisions, trust boundaries and version pins. The six existing shipped harnesses remain the only declared packaged hosts.
+See [the full research audit](https://github.com/tommy-ca/pstack/blob/main/docs/research/pi-1-5-standalone-pstack-audit-2026-11-05.md) for the 17-capability table, supplied 17-extension decisions, trust boundaries and version pins. The six existing shipped harnesses remain the only declared packaged hosts.
