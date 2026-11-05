@@ -4,6 +4,8 @@ Status: not executed. Parent issue #894. Dependency graph is authoritative in Gi
 
 - [x] #895 / source review: record current Pi 1.5.0, pi-subagents 0.85.0, pi-better-sandbox 0.14.1, pi-ask-user 0.17.2, pi-web-access 0.47.0 **published** baselines in the audit. This is not an installed-version check.
 - [x] #894 / source-only design: inventory original 17 extensions, 17 PStack capabilities, and explicit hard-security unknowns.
+- [x] Source-only adapter slice: `profiles/pstack-pi.json`, `.pi/settings.json` native skills+agents discovery, `references/pi-essential-extensions.json`, 17 typed mapping and Tier 1 bounded mutation verifier (43 negative inputs); **no native run claimed**.
+- [x] Pi verification skill artifacts: `.pi/skills/verify-pi-pstack` and `.pi/skills/verify-pi-pstack-formal`; current `drive` must refuse BLOCKED.
 - [ ] #895: run installed-version discovery, inspect package source/transitive deps, benchmark optional extensions, freeze compatible lockfile.
 - [ ] #896: implement safe namespaced Pi candidate identity/profile encoding and source-conformant role projection.
 - [ ] #896: validate native extension loading, role/skill discovery, model catalog, and non-overlap with @zenspc/pi-pstack; negative schema tests.

@@ -32,7 +32,7 @@ PStack's canonical workflow intent remains sourced to [Cursor PStack](https://gi
 
 ## Known gaps and resolution
 
-- **No Pi candidate profile, projection, native functional driver, test receipts or local installed-version inventory yet.** These belong to [#895](https://github.com/tommy-ca/pstack/issues/895), [#896](https://github.com/tommy-ca/pstack/issues/896), and [#897](https://github.com/tommy-ca/pstack/issues/897).
+- **Candidate profile, native project skill/agent discovery, and offline verification skills are now implemented** on [draft PR #901](https://github.com/tommy-ca/pstack/pull/901). A real Pi child-driver, observed receipts and installed-version inventory are still missing. See [#895](https://github.com/tommy-ca/pstack/issues/895), [#896](https://github.com/tommy-ca/pstack/issues/896), and [#897](https://github.com/tommy-ca/pstack/issues/897).
 - Sandbox/extension interaction, credentials, malicious worktree links and MCP/web admission remain explicitly unproved; see [#897](https://github.com/tommy-ca/pstack/issues/897).
 - Formal state invariants and negative mutants remain planned in [#898](https://github.com/tommy-ca/pstack/issues/898).
 - Raw source ingestion and hash-backed local sources remain planned in [#899](https://github.com/tommy-ca/pstack/issues/899).
@@ -50,3 +50,25 @@ See [the full research audit](https://github.com/tommy-ca/pstack/blob/main/docs/
 - Never infer permission safety from package installation: sandbox starts Off, credential and outside-workspace defaults need tightening, and trusted extension tools are outside file guards.
 
 See [the full audit](https://github.com/tommy-ca/pstack/blob/main/docs/research/pi-1-5-standalone-pstack-audit-2026-11-05.md) for pinned sources, the 17-capability crosswalk and the remaining negative tests. This page is a candidate synthesis, not a verified runtime adapter.
+
+## Candidate implementation crosswalk (draft PR #901)
+
+This current branch adds an executable **Tier 1 source-only** adapter slice without registering a seventh shipped host:
+
+| Semantic artifact | Actual path | Scope |
+| --- | --- | --- |
+| Candidate typed adapter | `profiles/pstack-pi.json` | Existing `HarnessProfile` and `Binding`; 17 classified capabilities; no `verified` bindings |
+| Native Pi skills | `.pi/settings.json` → `../skills` | Loads canonical shared PStack skills after Pi project trust, without a copied PStack npm bundle |
+| Native pi-subagents role discovery | `.pi/settings.json` → `subagents.agentScanDirs: ["../agents"]` | Reuses PStack's shared role markdown; `projectRootResolution: git-root` stabilizes worktrees |
+| Essential extension reference | `references/pi-essential-extensions.json` | 3 engineering, 1 research optional, `@zenspc/pi-pstack` transitional only; **does not auto-install** |
+| Source contract verifier | `scripts/verify_pi_candidate.py` | Existing typed models and 43 deliberately rejected source mutations |
+| Pi functional verification skill | `.pi/skills/verify-pi-pstack/` | `doctor` source checks; `drive` returns BLOCKED until real child, worktree and sandbox evidence |
+| Pi bounded formal verification skill | `.pi/skills/verify-pi-pstack-formal/` | Actual PStack validator code under bounded mutation tests; **not** an OS sandbox/security proof |
+
+Canonical `swarm`, `arena`, and `interrogate` are discoverable skills, while their delegated runtime behavior remains a **Tier 3 unverified requirement** until a real installed Pi runs children with captured IDs and model identity. The two Thermo-Nuclear review skills remain separate acceptance lenses for the implementation patch.
+
+### Capability and trust limits
+
+The original `agent.spawn/join/cancel`, `schedule`, and `monitor` remain **version-gated**, not native. `human.ask` uses `pi-ask-user` only where installed; `human.gate` remains GAP because a user-response UI does not enforce tool permissions. `workspace.readonly` remains advisory until the configured OS policy is shown to deny actual writes, including trusted extension tools and detached children.
+
+Offline CI tests and negative controls can verify the candidate *specification*, not live extension composition. The existing six-host PStack verifier and evidence receipts are intentionally unchanged. Public upstream sources remain external citations here until the separate immutable raw-source ingest task #899 captures and verifies hashes.

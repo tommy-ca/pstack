@@ -177,3 +177,13 @@ The two [Thermo-Nuclear](https://github.com/cursor/plugins/tree/main/thermos/ski
 - `pi-dynamic-workflows` must not run alongside the designated `pi-subagents` delegation owner in the minimal profile.
 
 The acceptance bar remains source-level until Pi and child sessions actually run. Green static CI proves only offline contract validation, **not** safe live execution.
+
+## Implemented candidate slice (follow-up to source audit)
+
+Draft [PR #901](https://github.com/tommy-ca/pstack/pull/901) now implements a namespaced candidate `pstack:pi` in the Windows-safe path `profiles/pstack-pi.json`, preserving the six built-in hosts. `.pi/settings.json` configures Pi's native skills to read `../skills` and pi-subagents' `agentScanDirs` to read `../agents` under `git-root`, with no automatic third-party package installation or copied PStack skills/agents.
+
+A lean `references/pi-essential-extensions.json` records exactly the 3 engineering and 1 research package candidates; its enforcement settings are **required policy expectations**, not proof that Pi has applied them. The existing PStack typed `HarnessProfile` validators are used in `scripts/verify_pi_candidate.py` to check all 17 capabilities, prevent evidence promotion and reject 43 bounded invalid mutations. Pi-native `verify-pi-pstack` and `verify-pi-pstack-formal` skills wrap those checks; the live `drive` action deliberately exits 2 (BLOCKED) until #897 supplies native child/session/worktree/sandbox proof. CI includes those Tier 1 checks.
+
+**Not delivered:** a real native Pi driver, live `pi-subagents` child lifecycle receipts, platform-specific confinement, verified `human.gate`, automated installed-extension compatibility checks, or a full TLC model of actual runtime concurrency. Formal negative controls here cover only the stated PStack *source validator* domain. Raw source ingestion and source hash ledger publication remain #899 work.
+
+Source for native skill paths: https://pi.dev/docs/latest/settings and https://pi.dev/docs/latest/skills. Source for reusing canonical agent definitions without copying: https://github.com/nicobailon/pi-subagents/blob/v0.85.0/docs/agents.md and configuration paths in https://github.com/nicobailon/pi-subagents/blob/v0.85.0/docs/configuration.md .
