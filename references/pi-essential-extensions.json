@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "host": "pstack:pi",
+  "pi_min_version": "1.5.0",
+  "verification_status": "static-only",
+  "active_security_policy": "pi-better-sandbox",
+  "engineering": [
+    {
+      "name": "pi-subagents",
+      "version": "0.85.0",
+      "role": "delegation and schedule",
+      "source": "https://github.com/nicobailon/pi-subagents/releases/tag/v0.85.0"
+    },
+    {
+      "name": "pi-better-sandbox",
+      "version": "0.14.1",
+      "role": "parent/child/background OS policy (disabled until explicitly configured)",
+      "source": "https://pi.dev/packages/pi-better-sandbox"
+    },
+    {
+      "name": "pi-ask-user",
+      "version": "0.17.2",
+      "role": "structured human.ask, not human.gate",
+      "source": "https://pi.dev/packages/pi-ask-user"
+    }
+  ],
+  "research_addon": [
+    {
+      "name": "pi-web-access",
+      "version": "0.47.0",
+      "role": "source-backed web research",
+      "source": "https://pi.dev/packages/pi-web-access"
+    }
+  ],
+  "transitional": [
+    {
+      "name": "@zenspc/pi-pstack",
+      "version": "0.6.0",
+      "role": "legacy PStack integration; disable after native skills projection"
+    }
+  ],
+  "conflicts": [
+    "@quintinshaw/pi-dynamic-workflows",
+    "pi-better-subagents",
+    "pi-permission-modes",
+    "@gotgenes/pi-subagents"
+  ],
+  "policies": {
+    "independent_child_auth_required": true,
+    "headless_approval_fail_closed": true,
+    "sandbox_main_enabled_required": true,
+    "sandbox_subagents_enabled_required": true,
+    "sandbox_background_enabled_for_detached_required": true,
+    "stored_credentials": "deny",
+    "outside_project": "deny",
+    "dynamic_extension_trust_boundary": "unverified"
+  },
+  "notes": "Source-pinned candidate configuration only. This reference manifest is not loaded by Pi; do not install/upgrade packages or promote support from its contents."
+}
