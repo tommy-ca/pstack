@@ -92,6 +92,9 @@ def check_contract(p: dict[str, Any], m: dict[str, Any], s: dict[str, Any]) -> N
         raise CandidateContractError("Extension process has not been confined")
     if s.get("skills") != ["../skills"] or s.get("enableSkillCommands") is not True:
         raise CandidateContractError("Native Pi must discover canonical shared skills")
+    subagents = s.get("subagents", {})
+    if subagents.get("projectRootResolution") != "git-root" or subagents.get("agentScanDirs") != ["../agents"]:
+        raise CandidateContractError("Pi subagent roles must resolve from canonical repository agents in git-root worktrees")
     if s.get("packages") or s.get("extensions"):
         raise CandidateContractError("No automatic third-party package installation")
 

@@ -25,6 +25,7 @@ def test_three_interactive_four_research_and_no_auto_install():
     assert [e["name"] for e in m["research_addon"]] == ["pi-web-access"]
     assert [e["name"] for e in m["transitional"]] == ["@zenspc/pi-pstack"]
     assert s["skills"] == ["../skills"] and not s.get("packages")
+    assert s["subagents"] == {"projectRootResolution":"git-root","agentScanDirs":["../agents"]}
 
 
 @pytest.mark.parametrize("state", ["mapped","packaged","verified","supported"])

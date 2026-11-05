@@ -3,5 +3,11 @@
   "skills": [
     "../skills"
   ],
-  "enableSkillCommands": true
+  "enableSkillCommands": true,
+  "subagents": {
+    "projectRootResolution": "git-root",
+    "agentScanDirs": [
+      "../agents"
+    ]
+  }
 }

@@ -1,10 +1,10 @@
 # Standalone Pi 1.5.0 candidate tool mapping for PStack
 
-Status: **candidate, STATIC-ONLY**. Candidate host ID `pstack:pi`, safe profile filename `profiles/pstack-pi.json`. This is not the OMP adapter. It does not claim actual native Pi child or sandbox execution.
+Status: **candidate, STATIC-ONLY**. Candidate host identity is declared in the safe profile filename `profiles/pstack-pi.json`. This is not the OMP adapter. It does not claim actual native Pi child or sandbox execution.
 
 ## Skill discovery
 
-The repository-local `.pi/settings.json` uses Pi's **native** `skills: ["../skills"]` resource list to load this repository's canonical PStack `skills/` directory (relative to `.pi/`). Project resource settings load after project trust; no npm package is auto-installed. `.pi/skills/` additionally contains Pi-specific verification skills. Open `/skill:poteto-mode`, `/skill:swarm`, `/skill:arena`, `/skill:interrogate` directly. If the existing `@zenspc/pi-pstack` exposes colliding skills, disable its skills; do not silently run two PStack policies.
+The repository-local `.pi/settings.json` uses Pi's **native** `skills: ["../skills"]` resource list to load canonical PStack skills and the pi-subagents `agentScanDirs: ["../agents"]` to load existing canonical role definitions without copying them. Both paths resolve relative to `.pi/`; `projectRootResolution: "git-root"` holds in worktrees. Project resource settings load after project trust; no npm package is auto-installed. `.pi/skills/` additionally contains Pi-specific verification skills. Open `/skill:poteto-mode`, `/skill:swarm`, `/skill:arena`, `/skill:interrogate` directly. If the existing `@zenspc/pi-pstack` exposes colliding skills, disable its skills; do not silently run two PStack policies.
 
 ## Tool and role mapping
 
