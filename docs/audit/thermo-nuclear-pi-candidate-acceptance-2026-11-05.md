@@ -133,3 +133,49 @@ Change '2026-11-05-pi-standalone-candidate' is valid.
 ```
 
 **Final Acceptance Conclusion:** PR #901 satisfies all criteria for the source-level candidate specification. It is ready for merge into `main` as a candidate milestone. Native runtime certification (Tier 2/3) remains cleanly documented as GAP/BLOCKED for follow-on live hardware tasks.
+
+---
+
+## 7. Pi Native Functional Verification Driver & Confinement Proof (#897)
+
+A native verification driver `scripts/prove_pi_vertical_slice.py` has been built and integrated into `.pi/skills/verify-pi-pstack/scripts/driver.sh`:
+
+1. **Four-Plane Receipts:** The driver validates the canonical poteto-mode router (`canonical: PASS`), candidate profile and bounded mutants (`adapter: PASS`), native `.pi/settings.json` discovery (`package: PASS`), and live subprocess confinement (`runtime: BLOCKED`).
+2. **Live Environment Discovery:** Probes the live Pi 1.5.0 binary at `/home/tommyk/.local/share/mise/installs/npm-earendil-works-pi-coding-agent/1.5.0~aube~bf7e819e7e6c9773/node_modules/.bin/pi`.
+3. **Missing Extensions & Conflicting Packages:** Parses `pi list`. Detects that essential engineering extensions (`pi-subagents`, `pi-better-sandbox`, `pi-verdict`) are missing from user packages, and detects conflicting extension `@quintinshaw/pi-dynamic-workflows@3.7.0`.
+4. **Strict Confinement:** Refuses to auto-install npm packages or bypass authorization checks. Emits typed `VerificationReceipt` and exits with code 2 `BLOCKED`.
+
+Receipt battery:
+```text
+python3 scripts/prove_pi_vertical_slice.py
+Pi vertical slice: BLOCKED
+  exact_head: e1df78d7b530c3a165aca8630ef62f8a313b30d2
+  planes: {'canonical': 'PASS', 'adapter': 'PASS', 'package': 'PASS', 'runtime': 'BLOCKED'}
+  reason: canonical=PASS, adapter=PASS, package=PASS, runtime=BLOCKED
+
+python3 scripts/prove_pi_vertical_slice.py --live
+Pi vertical slice: BLOCKED
+  exact_head: e1df78d7b530c3a165aca8630ef62f8a313b30d2
+  planes: {'canonical': 'PASS', 'adapter': 'PASS', 'package': 'PASS', 'runtime': 'BLOCKED'}
+  reason: canonical=PASS, adapter=PASS, package=PASS, runtime=BLOCKED
+  missing required extensions: ['pi-subagents', 'pi-better-sandbox', 'pi-verdict']
+  detected conflicts: ['@quintinshaw/pi-dynamic-workflows']
+```
+
+---
+
+## 8. Pi Verdict Autonomous Pre-Tool-Call Authorization Gate (#902)
+
+Comprehensive test harness implemented in `tests/test_pi_authorization_contracts.py` verifying fail-closed policy invariants:
+
+1. **Denial Floor:** `builtinDenyFloor: true`, `allow: []`, `deny: []`, and protected secrets (`~/.ssh/`, `~/.gnupg/`, `~/.aws/`, `~/.kube/`, `~/.pi/agent/auth.json`) strictly override model allowances.
+2. **Headless Execution:** Non-interactive `pi -p` runs fail closed on `ask` verdicts (`headless_ask_must_deny: true`).
+3. **Delegation Interception:** `subagent_launch` cannot be bypassed or listed in `ignoreTools`.
+4. **Gate Separation:** Model classifier verdicts cannot authorize human gates (`classifier_allow_can_authorize_human_gate: false`). User selections in `pi-ask-user` do not grant tool execution permissions.
+
+Receipt battery:
+```text
+pytest tests/test_pi_authorization_contracts.py tests/test_pi_candidate_profile.py
+============================== 50 passed in 0.42s ==============================
+```
+

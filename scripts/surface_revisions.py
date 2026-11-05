@@ -393,9 +393,13 @@ def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path
     if profile_path is None:
         profile_path = root / "profiles" / f"{host}.json"
         if not profile_path.is_file() and ":" in host:
-            alt_path = root / "profiles" / f"{host.split(':')[-1]}.json"
-            if alt_path.is_file():
-                profile_path = alt_path
+            dashed_path = root / "profiles" / f"{host.replace(':', '-')}.json"
+            if dashed_path.is_file():
+                profile_path = dashed_path
+            else:
+                alt_path = root / "profiles" / f"{host.split(':')[-1]}.json"
+                if alt_path.is_file():
+                    profile_path = alt_path
     if profile_path.is_file():
         try:
             profile_data = json.loads(profile_path.read_text(encoding="utf-8"))
