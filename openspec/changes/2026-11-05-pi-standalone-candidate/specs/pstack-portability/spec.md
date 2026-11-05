@@ -23,9 +23,35 @@ Native Pi MUST own its MCP, codemode, tool-search, sessions and model/tool lifec
 - **THEN** the default profile MUST refuse ambiguous delegation ownership or disable the nonselected engine
 - **AND** must not create two task ledgers
 
+### Requirement: Pi interactive human decisions do not bypass authorization
+
+The interactive candidate profile SHOULD provide `pi-ask-user` to implement structured `human.ask`. A successful `ask_user` response MUST NOT alone prove `human.gate` or hard permission enforcement. Every effect requiring approval MUST have an independently mediated authorization decision, including child launches and noninteractive/headless modes.
+
+#### Scenario: Noninteractive agent requests unsafe operation
+- **GIVEN** a headless Pi run without a permitted human gate
+- **WHEN** an agent requests an effect that requires operator consent
+- **THEN** execution MUST remain blocked pending separately authenticated authorization
+- **AND** an `ask_user` fallback or pre-filled prompt MUST NOT authorize the effect
+
+### Requirement: Delegation extension owns schedules and lifecycle receipts
+
+If installed `pi-subagents` exposes `mission.*`, `schedule.*`, and `subagent_launch`, the adapter MAY bind PStack `schedule` and `monitor` through version-gated primitives, but MUST NOT add a PStack-owned scheduler/mission database. Native proof MUST test permission-denied child launch, legacy background resume refusal, schedule restoration and terminal status without falsely promoting source documentation.
+
+#### Scenario: Permission extension denies workflow child
+- **GIVEN** a policy that denies the `subagent_launch` tool action
+- **WHEN** a Pi workflow attempts to create that child
+- **THEN** the child MUST NOT run and the parent MUST report a blocked outcome
+- **AND** no acceptance receipt may record PASS
+
 ### Requirement: Sandbox claims are evidence-bound
 
 A sandbox extension's installed state MUST NOT imply enabled task confinement. Parent, child and background actor profiles MUST be measured independently where applicable. A permission tool-hook or trusted extension exception MUST NOT be reported as an OS boundary.
+
+#### Scenario: Credentials and outside-project defaults
+- **GIVEN** a newly configured subagent policy with broad file/credential defaults
+- **WHEN** a privileged child attempts to read or alter stored credentials or outside-project files
+- **THEN** the verifier MUST explicitly check and record the effective policy
+- **AND** PStack MUST NOT claim read-only or least-privilege enforcement from the installed sandbox alone
 
 #### Scenario: Child trusted-tool bypass
 - **GIVEN** a read-only confined child and a trusted extension tool that can mutate files

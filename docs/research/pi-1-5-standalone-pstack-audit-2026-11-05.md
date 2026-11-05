@@ -10,6 +10,9 @@ Status: **DESIGN / STATIC-ONLY**, not a packaged seventh host or a live conforma
 - Pi MCP / codemode: https://pi.dev/docs/latest/mcp and https://pi.dev/docs/latest/codemode
 - pi-subagents 0.85.0 (2026-11-05): https://pi.dev/packages/pi-subagents
 - pi-better-sandbox 0.14.1 (2026-11-04): https://pi.dev/packages/pi-better-sandbox
+- pi-ask-user 0.17.2 (2026-11-01): https://pi.dev/packages/pi-ask-user
+- pi-web-access 0.47.0 (2026-11-05): https://pi.dev/packages/pi-web-access
+- pi-subagents v0.85.0 exact release notes: https://github.com/nicobailon/pi-subagents/releases/tag/v0.85.0
 - Installed user inventory supplied in conversation lists 17 packages (versions fixed by that inventory). **No local Pi binary, installed copy, extension source checkout, or child agent was executed in this audit.** Versions in the published package catalog are independent of the user's installed versions.
 
 Canonical workflow/principle intent is at https://github.com/cursor/plugins/tree/main/pstack. The user's tommy-ca/pstack is a portable reference port. Cross-harness behavioral comparisons: https://github.com/openai/codex; https://code.claude.com/docs/en/overview; https://opencode.ai/docs/agents/; https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/architecture.md. These are reference patterns, not code-dependencies.
@@ -22,16 +25,17 @@ The prior 4-package recommendation should be interpreted as **three generic runt
 
 1. pi-subagents: **single** child-agent engine. Prefer over dynamic-workflows when adapting current PStack; if later replaced, supply a host-specific adapter and repeat proof gates. Version/agent transport and cancellation are host/package-owned.
 2. pi-better-sandbox: candidate parent/child/background restrictions. All fresh sandbox columns default **OFF**; a package installation is not hard enforcement. Its trusted extension tools run outside guarded file rules; OS kernel backing differs by platform. Native Pi extensions are trusted code and local confinement does not govern remote SSH effects.
-3. pi-web-access: research profile only. Explicitly admit web tools in child profiles when research/auditing needs them. Never equate tool availability with network isolation.
-4. @zenspc/pi-pstack: currently installed integration candidate; **not** the normative source for tommy-ca/pstack. Review licensing, supplied skills and role mapping before reusing. Prefer a projection from this repository if parity is incomplete.
+3. pi-ask-user: structured `human.ask` in interactive sessions, enabled when genuine product/operator decisions require a tool-level question. This is not itself hard approval enforcement, and must be tested in non-interactive/headless mode.
+4. pi-web-access: research profile only. Explicitly admit web tools in child profiles when research/auditing needs them. Never equate tool availability with network isolation.
+5. @zenspc/pi-pstack: currently installed integration candidate; **not** the normative source for tommy-ca/pstack. Review licensing, supplied skills and role mapping before reusing. Prefer a projection from this repository if parity is incomplete.
 
-Minimal coding mode: native Pi + one delegated-agent engine (plus enforced runtime isolation appropriate to trust boundary). Research mode: add web access. PStack policy can be projected as skills/agents without an extra runtime extension when host packaging supports that.
+Minimal **PStack interactive coding** profile: Pi core + pi-subagents + explicitly configured pi-better-sandbox + pi-ask-user (3 external runtime extensions). **Research** profile adds pi-web-access (4 extensions). Headless CI may omit pi-ask-user only if the operator gate is supplied by a proven explicit noninteractive policy that fails closed; no silent approval. PStack source projection is separate from runtime extension count. During migration @zenspc/pi-pstack is a fifth, **transitional policy package**, not an alternative orchestration engine. PStack policy can be projected as skills/agents without an extra runtime extension when host packaging supports that.
 
 ## Current 17-extension dedup inventory
 
 | Supplied package | Proposed disposition | Semantic reason |
 | --- | --- | --- |
-| pi-ask-user | task-scoped | structured prompts, not core human.ask (Pi UI and files can support narrower interaction) |
+| pi-ask-user | keep in interactive PStack profile | structured `ask_user` tool for `human.ask`; cancellation/fallback tested, does **not** alone enforce `human.gate` |
 | pi-skillful | remove default | native Pi skill discovery; preserve only if ancestor lookup/visibility is a measured need |
 | @zigai/pi-mention-skill | remove default | editor invocation convenience |
 | @narumitw/pi-goal | task-scoped | autonomous goals; avoid competing mission state |
@@ -65,10 +69,10 @@ Statuses below are **source-inferred mapping candidates**, not typed profile ent
 | workspace.shared | Pi cwd | native | same-repo observation and scope |
 | workspace.isolated | subagent worktree workflow / git | extension/shim | real separate worktree, no leaked mutations |
 | workspace.readonly | enabled sandbox read policy or restricted tools | conditional hard | denied edit/bash/extension bypass; no prompt-only promotion |
-| human.ask | interactive Pi UI, optional pi-ask-user | native UI or extension | actual question path in active mode |
-| human.gate | explicit approvals via policy/UI | gap until proved | refusal and allow-once behavior |
+| human.ask | pi-ask-user `ask_user` | extension | structured selection, cancelled response, non-interactive fallback |
+| human.gate | explicit operator decision + enforced permission gate | composition, unverified | `ask_user` answer is not authorization by itself; deny/allow-once and no-interactive failure must be tested |
 | plan.update | repo plan/TODO.md via native write | shim | durable plan change and visible rollback |
-| schedule | external scheduler or subagent missions | gap/version-gated | verified timer/repeat, cancellation, durable restoration |
+| schedule | pi-subagents 0.85 durable `schedule.*` | extension/version-gated | one-shot/recurring fires, restoration, overlap/catch-up, pause and cancellation; no separate scheduler in PStack |
 | monitor | pi-subagents FleetView/bg_wait | extension | bounded nonblocking progress and terminal state |
 | session.persist | Pi session manager JSONL | native | exact session path and restart |
 | session.resume | Pi session resume | native | cold restart preserving relevant context |
@@ -98,7 +102,7 @@ All rows start **static-only or unverified**. Numeric concurrency limits, recurs
 
 ## Security findings: fail-closed requirements
 
-- pi-better-sandbox 0.14.1 starts Main, Subagents and Background tasks inactive in fresh settings. Test that profiles are enabled and persist when intended.
+- pi-better-sandbox 0.14.1 starts Main, Subagents and Background tasks inactive in fresh settings. Test that profiles are enabled and persist when intended. Critically, **Subagents Stored credentials defaults to Write & delete, and Outside project to Write**, when configured without narrowing those rows; set stored credentials **Off** and outside-project **Off or Read** unless an explicitly approved task needs more. Validate actual effective policy per child.
 - Trusted subagent extension tools can run outside the sandbox's guarded file rules. The package describes this explicitly; allowlists cannot be a substitute for container/VM isolation.
 - Local sandbox cannot restrict remote SSH side effects; tokens inherited in environment variables and OS secret vault services require separate containment.
 - On Windows the documented sandbox has no backend and confined launches fail closed. Linux requires a usable Bubblewrap setup; macOS uses Seatbelt. Test actual platform and backend.
@@ -123,3 +127,32 @@ Reuse skills/create-verification-skill, skills/maintain-verification-skill, skil
 - Candidate → packaged → verified promotion requires executable native fixtures, exact-head receipts, no unresolved P0, and documented source revisions. This audit is only the first candidate specification.
 
 Related issues: epic #894 and #895–#900; historical completed #429, #443, #259, #305, #840, #874; draft PRs #502 and #540 remain separate.
+
+## Latest-release correction: minimal PStack extension profiles (2026-11-05)
+
+The earlier three/four-package answers did not distinguish *human.ask* from a human approval gate, and incorrectly left durable scheduling as a generic gap. These are the source-audited, not runtime-certified, profiles:
+
+| Profile | Native Pi | Third-party runtime extensions | PStack payload |
+| --- | --- | --- | --- |
+| Interactive engineering | Pi 1.5.0 | `pi-subagents@0.85.0`, `pi-better-sandbox@0.14.1`, `pi-ask-user@0.17.2` | canonical skills/roles projected from `tommy-ca/pstack` |
+| Research engineering | above | add `pi-web-access@0.47.0` | researcher and evidence-auditor with explicit child tool grant |
+| Headless verified CI | Pi plus one delegate and enforced isolation | `pi-ask-user` omitted **only** if a tested fail-closed policy handles blocked human decisions; research extension optional | deterministic verification scripts and receipts |
+| Transitional existing setup | interactive/research profile above | temporarily keep installed `@zenspc/pi-pstack@0.6.0` until canonical projection matches | **do not load both policy copies** |
+
+Published catalog shows `@zenspc/pi-pstack@0.6.0` (2026-09-09), while `@whamp/pi-pstack@0.11.0` (2026-10-24) is a **different independently maintained integration** using BB workers, not a drop-in update for this plan. Do not infer 0.9.0 or install both. The supplied user's Pi web access `0.26.0` and ask-user `0.14.0` are behind the published versions. Pin compatible versions after source and runtime review, not through blind global upgrades.
+
+**0.85.0 delegation upgrade hazards:** the release adds the nested `subagent_launch` permission hook for every workflow child; permission extensions may now block a previously allowed fanout. Older background runs from before this release **cannot be resumed or auto-resumed**; relaunch using supported `reuseFrom` where appropriate. Structured output validation is stricter. Tests must cover these as security/correctness migration cases. Source: https://github.com/nicobailon/pi-subagents/releases/tag/v0.85.0 .
+
+**Durability without a PStack scheduler:** pi-subagents documents `mission.*` state, review/acceptance receipts, one-shot and recurring `schedule.*`, and run supervision. Map PStack `schedule` and `monitor` to **extension-owned, version-gated capabilities**; verify real replay and restart before promotion. These host-owned mission records do not authorize adding a parallel PStack task database. Source: https://github.com/nicobailon/pi-subagents/blob/v0.85.0/docs/missions.md .
+
+**Security:** a model's `ask_user` response is a decision capture, not hard permissions. A verified `human.gate` needs independent tool policy enforcement and approval provenance; in `pi -p` (noninteractive) the unsafe operation must refuse rather than auto-approve. Verify `subagent_launch` authorization, explicit sandbox switches, read-only reviewer, child credentials defaults, trusted-tool allowances, Linux/macOS backend and Windows fail-closed semantics. Running extensions are trusted process code, so use process/container confinement for untrusted repositories.
+
+## Canonical-vs-convenience dedup check
+
+- `@narumitw/pi-goal` and `pi-manage-todo-list` are not globally necessary: use PStack plans and the single delegate engine's missions/acceptance, not two ledgers.
+- `pi-memory-md` is optional project knowledge; Pi sessions plus PStack `.llm-wiki` are not a replacement for all memory use cases, but adding another memory store requires a concrete missing retrieval need.
+- `pi-skillful`, `pi-mention-skill`, `pi-simplify`, `ponytail`, `pi-context-usage`, `pi-btw` are enhancements, not required for PStack role/skill execution.
+- `pi-autoresearch`, `pi-interactive-shell`, `pi-lsp`, `pi-fff` are specialized opt-ins, not core.
+- `pi-dynamic-workflows` must not run alongside the designated `pi-subagents` delegation owner in the minimal profile.
+
+The acceptance bar remains source-level until Pi and child sessions actually run. Green static CI proves only offline contract validation, **not** safe live execution.

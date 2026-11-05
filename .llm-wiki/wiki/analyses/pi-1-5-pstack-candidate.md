@@ -7,9 +7,10 @@ PStack's canonical workflow intent remains sourced to [Cursor PStack](https://gi
 ## Semantic building blocks
 
 - **Native agent loop and context:** Pi owns model interaction, tools, session persistence/resume, context, skill discovery, native MCP, codemode and tool_search.
-- **Delegation:** [pi-subagents 0.85.0](https://pi.dev/packages/pi-subagents) may provide agent.spawn, agent.join, agent.cancel, monitor and some steering. It is an optional, separate tool runtime, not Pi core. Independent model families require actual provider/catalog observations.
-- **Execution trust:** [pi-better-sandbox 0.14.1](https://pi.dev/packages/pi-better-sandbox) offers independently configured main/subagent/background guards; its fresh switches start OFF. Trusted extension tools are not covered by guarded file rules, and remote SSH effects are outside local confinement.
-- **Research:** pi-web-access belongs to researcher/evidence-auditor roles only where needed; never grant broad network rights merely to enable a workflow.
+- **Delegation:** [pi-subagents 0.85.0](https://pi.dev/packages/pi-subagents) offers agent.spawn/join/cancel, monitor, steering, durable missions and scheduled runs. It is an external tool runtime, not Pi core. New `subagent_launch` calls require permissions integration; old background runs from pre-0.85.0 cannot automatically resume. Independent model families still require runtime catalog evidence.
+- **Execution trust:** [pi-better-sandbox 0.14.1](https://pi.dev/packages/pi-better-sandbox) offers independently configured main/subagent/background guards; its fresh switches start OFF. **Subagent Stored credentials defaults to Write & delete** and Outside project Write unless explicitly narrowed. Trusted extension tools are not covered by guarded file rules, and remote SSH effects are outside local confinement.
+- **Human interaction:** [pi-ask-user 0.17.2](https://pi.dev/packages/pi-ask-user) adds the explicit structured `human.ask` tool in interactive mode. It is not an enforceable `human.gate` unless an independent permission policy also denies unapproved effects.
+- **Research:** [pi-web-access 0.47.0](https://pi.dev/packages/pi-web-access) belongs to researcher/evidence-auditor roles only where needed; never grant broad network rights merely to enable a workflow.
 - **PStack workflow semantics:** intent, plan, swarm, arena, interrogate, independent review, acceptance and truth-labelled receipts stay in PStack; no new orchestration engine.
 - **Verification:** reuse create-verification-skill, create-formal-verification-skill, and their maintenance loops. Mocked or source-only mappings are static-only and not runtime-verified.
 - **Knowledge:** the current Markdown + Git .llm-wiki is the knowledge layer; external docs in this candidate page have **not** yet been captured with scripts/llm_wiki.py ingest. No hash or local raw source claim is made.
@@ -23,6 +24,7 @@ PStack's canonical workflow intent remains sourced to [Cursor PStack](https://gi
 | Role and model policy | Host profile/catalog, source-owned roles | No invented model slugs |
 | Sandbox and permission | Explicitly enabled guard + OS/container | Denied operations observed and recorded |
 | Isolation and integration | Per-writer worktree + host-owned merge | No parent mutation before acceptance |
+| Human questions | pi-ask-user in interactive mode | Actual explicit decision/cancellation; no autoapproval in headless mode |
 | Source-backed research | pi-web-access where authorized | External sources recorded with provenance |
 | Verification | Existing portable driver and 3-tier evidence | Exact revision and failing negative controls |
 | Formal verification | Existing formal skills and installed checker | Bound code relation and failed mutant |
@@ -37,3 +39,14 @@ PStack's canonical workflow intent remains sourced to [Cursor PStack](https://gi
 - Actual independent Swarm/Arena/Interrogate and both Thermo-Nuclear reviews remain a gate in [#900](https://github.com/tommy-ca/pstack/issues/900).
 
 See [the full research audit](https://github.com/tommy-ca/pstack/blob/main/docs/research/pi-1-5-standalone-pstack-audit-2026-11-05.md) for the 17-capability table, supplied 17-extension decisions, trust boundaries and version pins. The six existing shipped harnesses remain the only declared packaged hosts.
+
+## Minimal runtime profiles (source-level only)
+
+- Engineering: native Pi 1.5.0 + `pi-subagents@0.85.0` + `pi-better-sandbox@0.14.1` + `pi-ask-user@0.17.2` (3 runtime extensions), plus canonical PStack skills.
+- Research: engineering + `pi-web-access@0.47.0` (4 runtime extensions).
+- Temporary migration: `@zenspc/pi-pstack@0.6.0` may remain one *additional policy package* until the canonical `tommy-ca/pstack` projection replaces it; never run duplicate skill/policy copies.
+- Headless: `ask_user` can be omitted only with a proven fail-closed policy for unresolved operator decisions.
+- Schedule/monitor: reuse versioned `pi-subagents` missions/schedules rather than install another task runner. Require real schedule/recovery receipts.
+- Never infer permission safety from package installation: sandbox starts Off, credential and outside-workspace defaults need tightening, and trusted extension tools are outside file guards.
+
+See [the full audit](https://github.com/tommy-ca/pstack/blob/main/docs/research/pi-1-5-standalone-pstack-audit-2026-11-05.md) for pinned sources, the 17-capability crosswalk and the remaining negative tests. This page is a candidate synthesis, not a verified runtime adapter.

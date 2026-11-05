@@ -18,6 +18,7 @@ standalone Pi (candidate, distinct from OMP)
  skills/MCP  delegates   sandbox tool admission
  sessions    child IDs   OS kernel, configured per actor
     |
+ pi-ask-user (operator decisions, not authorization)
  optional pi-web-access (researcher tools only)
               |
        existing PStack verification & evidence contracts
@@ -81,3 +82,11 @@ Keep .llm-wiki/raw/sources write-once via scripts/llm_wiki.py ingest and .llm-wi
 ## Rollback
 
 Candidate spec removal leaves all existing six host profiles, runtime drivers, package projection, PStack skills and compiled wiki sources intact. No automatic upgrades or user-installed npm package removal.
+
+## Essential extension profile for candidate Pi
+
+The target is **three** runtime extensions for interactive engineering: `pi-subagents@0.85.0`, `pi-better-sandbox@0.14.1`, `pi-ask-user@0.17.2`; enable `pi-web-access@0.47.0` only for research tasks (four). This excludes PStack skill/package distribution. During transition the installed `@zenspc/pi-pstack@0.6.0` may remain as an explicit **fifth policy package**, subject to collision tests and removal after canonical projection works. Do not add separate goal/task/scheduling extensions: `pi-subagents` already documents missions, timed schedules and acceptance receipts. All package version pins must be reconciled against the actual installed Pi version and verified platform before production use.
+
+`human.ask` is bound to the interactive `ask_user` tool; `human.gate` is **not** proven by operator text alone. A separate permission decision must authorize side effects. `pi-subagents@0.85.0` now issues a nested `subagent_launch` action for each workflow child. Validate this in both allow/deny settings and in noninteractive `pi -p`. Previously saved background runs created before the 0.85.0 migration cannot be resumed or auto-resumed, so explicitly report the migration impact.
+
+Sandbox hardening begins with Main/Subagents/Background switches **on** as appropriate and Subagent Stored credentials **Off**, Outside project **Off or Read**, with narrow project/write paths. The published sandbox's permissive child credential default, trusted-tool bypass, and platform-dependent enforcement require adversarial runtime proof, not a configuration-file assertion.
