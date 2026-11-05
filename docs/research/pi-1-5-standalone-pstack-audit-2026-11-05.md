@@ -147,6 +147,27 @@ Published catalog shows `@zenspc/pi-pstack@0.6.0` (2026-09-09), while `@whamp/pi
 
 **Security:** a model's `ask_user` response is a decision capture, not hard permissions. A verified `human.gate` needs independent tool policy enforcement and approval provenance; in `pi -p` (noninteractive) the unsafe operation must refuse rather than auto-approve. Verify `subagent_launch` authorization, explicit sandbox switches, read-only reviewer, child credentials defaults, trusted-tool allowances, Linux/macOS backend and Windows fail-closed semantics. Running extensions are trusted process code, so use process/container confinement for untrusted repositories.
 
+## Swarm / Arena / Interrogate: source-level decision, not executed agents
+
+The upstream [swarm](https://github.com/cursor/plugins/tree/main/pstack/skills/swarm), [arena](https://github.com/cursor/plugins/tree/main/pstack/skills/arena) and [interrogate](https://github.com/cursor/plugins/tree/main/pstack/skills/interrogate) skills describe *execution* contracts. No actual separate-model work was run for this branch; the following is a source-derived trade study and adversarial checklist, not a multi-agent verdict.
+
+**Swarm decomposition proposed**: (1) current Pi and extension source/version mapping, (2) sandbox + human approval + nested child threat model, (3) PStack 17-semantic profile/projection consistency, (4) verified real driver and evidence, (5) wiki provenance/digest. Independent child IDs and model families must be captured before declaring a swarm run.
+
+**Arena alternatives for the one permission/isolation owner**:
+
+| Candidate | Upside | Risk / evidence gap | Current decision |
+| --- | --- | --- | --- |
+| `pi-better-sandbox@0.14.1` | Explicit Main/Subagents/Background policies, OS-backed local containment | No demonstrated on-demand allow/ask/deny for each operation; trusted extension and unsafe child defaults | **Provisional** protected-child route; hard human.gate remains GAP |
+| `pi-permission-modes@2.7.2` **instead of** pi-better-sandbox | One package combines OS sandbox + allow/ask/deny + plan/build modes; can eliminate a separate approval extension | Docs do not establish equivalent confinement/approval propagation through pi-subagents 0.85 foreground/detached child processes, or `subagent_launch`. Windows alpha degrades to prompts before setup | **Evaluate separately** under same child/escape tests; do not stack both |
+| `pi-better-sandbox` + `pi-guard@1.6.0` | Explicit tool-time allow/ask/deny including headless denial, alongside child sandbox | Adds another security/control extension, layered policy conflicts; OS isolation still depends on sandbox's actual backend | Only if the first route lacks required live approval behavior and child gates are proven together |
+| `@gotgenes/pi-permission-system@42.0.0` | Rich allow/ask/deny with child prompt forwarding | Documents native integration with its own `@gotgenes/pi-subagents` fork, not necessarily the selected `pi-subagents` package | Not default; extra compatibility fork violates one delegate engine |
+
+Sources: https://pi.dev/packages/pi-permission-modes , https://pi.dev/packages/pi-guard , https://pi.dev/packages/%40gotgenes/pi-permission-system . **Do not conflate a separate `ask_user` decision tool with policy authorization.** If per-action hard gate is mandatory, treat it as OPEN until a single candidate passes a negative runtime test; extension-count minimization must not weaken authorization.
+
+**Interrogate/adversarial obligations**: Child denied `subagent_launch` but still starts; sandbox toggles saved OFF after a restart; subagent credential read permitted by default; symlink/worktree git hook writes outside scope; trusted extension tool bypass; headless `ask_user` auto-approval; pre-0.85 child resume unexpectedly accepted; schedule restores twice or runs after pause. Each must produce an observed denial/failure and a source-linked receipt before a high-confidence claim.
+
+The two [Thermo-Nuclear](https://github.com/cursor/plugins/tree/main/thermos/skills/thermo-nuclear-review) review lenses are distinct: security/correctness follows actual changed diff + breaking behavior, while [code-quality review](https://github.com/cursor/plugins/tree/main/thermos/skills/thermo-nuclear-code-quality-review) rejects duplicate orchestration engines, giant adaptor wrappers, reimplemented core APIs, and invented model schemas. Both remain NOT_EXECUTED for the live runtime implementation.
+
 ## Canonical-vs-convenience dedup check
 
 - `@narumitw/pi-goal` and `pi-manage-todo-list` are not globally necessary: use PStack plans and the single delegate engine's missions/acceptance, not two ledgers.
