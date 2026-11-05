@@ -33,6 +33,7 @@ jobs:
         run: |
           python -m pytest -q \
             tests/test_portability_schemas.py \
+            tests/test_pi_candidate_profile.py \
             tests/test_host_identity.py \
             tests/test_model_role_schema.py \
             tests/test_model_role_constraints.py \
@@ -72,6 +73,12 @@ jobs:
             tests/test_canonical_index.py \
             tests/test_upstream_pstack_01536.py \
             tests/test_worktree_protocol.py
+      - name: Validate Pi candidate source-only skills and bounded model
+        run: |
+          python3 scripts/verify_pi_candidate.py check
+          python3 scripts/verify_pi_candidate.py model
+          python3 scripts/scaffold_verification_skill.py --check --target-dir .pi/skills/verify-pi-pstack
+        # This does not run Pi or certify child, sandbox or permission behavior.
       - name: Validate worktree confinement protocol
         run: python3 scripts/worktree_protocol.py check
       - name: Validate documentation and offline JEV decision contracts

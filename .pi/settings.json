@@ -1,0 +1,13 @@
+{
+  "$schema": "https://pi.dev/schemas/settings.schema.json",
+  "skills": [
+    "../skills"
+  ],
+  "enableSkillCommands": true,
+  "subagents": {
+    "projectRootResolution": "git-root",
+    "agentScanDirs": [
+      "../agents"
+    ]
+  }
+}

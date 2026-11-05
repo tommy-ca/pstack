@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "host": "pstack:pi",
+  "pi_min_version": "1.5.0",
+  "verification_status": "static-only",
+  "active_security_policy": "pi-better-sandbox",
+  "engineering": [
+    {
+      "name": "pi-subagents",
+      "version": "0.86.0",
+      "role": "delegation and schedule",
+      "source": "https://github.com/nicobailon/pi-subagents/releases/tag/v0.86.0"
+    },
+    {
+      "name": "pi-better-sandbox",
+      "version": "0.14.1",
+      "role": "parent/child/background OS policy (disabled until explicitly configured)",
+      "source": "https://pi.dev/packages/pi-better-sandbox"
+    },
+    {
+      "name": "pi-verdict",
+      "version": "0.16.0",
+      "role": "autonomous tool_call authorization: deterministic denies, classifier allow/ask/deny; not OS sandbox/human.gate",
+      "source": "https://github.com/jesset/pi-verdict/releases/tag/v0.16.0"
+    },
+    {
+      "name": "pi-ask-user",
+      "version": "0.17.2",
+      "role": "structured human.ask, not human.gate",
+      "source": "https://pi.dev/packages/pi-ask-user"
+    }
+  ],
+  "research_addon": [
+    {
+      "name": "pi-web-access",
+      "version": "0.47.0",
+      "role": "source-backed web research",
+      "source": "https://pi.dev/packages/pi-web-access"
+    }
+  ],
+  "transitional": [
+    {
+      "name": "@zenspc/pi-pstack",
+      "version": "0.6.0",
+      "role": "legacy PStack integration; disable after native skills projection"
+    }
+  ],
+  "conflicts": [
+    "@quintinshaw/pi-dynamic-workflows",
+    "pi-better-subagents",
+    "pi-permission-modes",
+    "@gotgenes/pi-subagents"
+  ],
+  "policies": {
+    "independent_child_auth_required": true,
+    "headless_approval_fail_closed": true,
+    "sandbox_main_enabled_required": true,
+    "sandbox_subagents_enabled_required": true,
+    "sandbox_background_enabled_for_detached_required": true,
+    "stored_credentials": "deny",
+    "outside_project": "deny",
+    "dynamic_extension_trust_boundary": "unverified"
+  },
+  "notes": "Source-pinned Pi candidate only (4 engineering, +1 research). This manifest is not consumed by Pi and cannot enforce required switches. Install and independently configure the actual extension, run negative parent/child tests, and keep human.gate GAP until live proof. Do not auto-install globally.",
+  "active_authorization_policy": "pi-verdict",
+  "authorization": {
+    "owner": "pi-verdict",
+    "version": "0.16.0",
+    "config_template": "references/pi-verdict-pstack.example.json",
+    "verification_status": "static-only",
+    "description": "Configuration requirements for a separate tool_call authorization gate; NOT applied by this manifest. PStack human.gate and child enforcement remain GAP.",
+    "default_on_required": true,
+    "builtin_deny_floor_required": true,
+    "headless_ask_must_deny": true,
+    "ignore_tools_for_permission_sensitive_actions": [],
+    "fallback_rescue_allowed": false,
+    "child_tool_interception": "unverified",
+    "gate_disable_fails_closed_externally": true,
+    "classifier_allow_can_authorize_human_gate": false,
+    "requires_os_isolation": true,
+    "audit_covers_all_actions": false
+  }
+}
