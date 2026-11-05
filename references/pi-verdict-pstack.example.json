@@ -1,0 +1,20 @@
+{
+  "allow": [],
+  "deny": [],
+  "denyPaths": [
+    "~/.ssh/",
+    "~/.gnupg/",
+    "~/.aws/",
+    "~/.kube/",
+    "~/.pi/agent/auth.json"
+  ],
+  "ignoreTools": [],
+  "builtinDenyFloor": true,
+  "classifierModel": null,
+  "classifierFallbackModel": null,
+  "classifierFallbackMode": "enforce",
+  "classifierMinConfidence": null,
+  "audit": false,
+  "auditRedactSecrets": true,
+  "notifyAllows": false
+}

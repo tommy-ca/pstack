@@ -18,7 +18,7 @@ if str(ROOT) not in sys.path:
 from scripts.portability_types import HarnessProfile, PORTABLE_CAPABILITY_UNIVERSE, ValidationError
 
 HOST = "pstack:pi"
-ENGINEERING = ("pi-subagents", "pi-better-sandbox", "pi-ask-user")
+ENGINEERING = ("pi-subagents", "pi-better-sandbox", "pi-verdict", "pi-ask-user")
 RESEARCH = ("pi-web-access",)
 
 
@@ -65,7 +65,7 @@ def check_contract(p: dict[str, Any], m: dict[str, Any], s: dict[str, Any]) -> N
         raise CandidateContractError("Extension manifest may not claim runtime verification")
     eng, research = m.get("engineering", []), m.get("research_addon", [])
     if [e.get("name") for e in eng] != list(ENGINEERING) or [e.get("name") for e in research] != list(RESEARCH):
-        raise CandidateContractError("Expected exactly 3 engineering and 1 research extension")
+        raise CandidateContractError("Expected exactly 4 engineering and 1 research extension")
     names = [e["name"] for e in eng + research]
     if len(set(names)) != len(names):
         raise CandidateContractError("Duplicate extension owner")
@@ -79,7 +79,25 @@ def check_contract(p: dict[str, Any], m: dict[str, Any], s: dict[str, Any]) -> N
     if not {"pi-permission-modes", "@quintinshaw/pi-dynamic-workflows"} <= set(m.get("conflicts", [])):
         raise CandidateContractError("Competing owners not excluded")
     if m.get("active_security_policy") != "pi-better-sandbox":
-        raise CandidateContractError("Security owner ambiguous")
+        raise CandidateContractError("OS security owner ambiguous")
+    if m.get("active_authorization_policy") != "pi-verdict":
+        raise CandidateContractError("Tool authorization owner must be pi-verdict")
+    auth = m.get("authorization", {})
+    if auth.get("owner") != "pi-verdict" or auth.get("version") != "0.16.0":
+        raise CandidateContractError("Wrong autonomous authorization provider")
+    if auth.get("verification_status") != "static-only" or auth.get("child_tool_interception") != "unverified":
+        raise CandidateContractError("Cannot claim observed pi-verdict child interception")
+    if auth.get("config_template") != "references/pi-verdict-pstack.example.json":
+        raise CandidateContractError("Unreviewed pi-verdict configuration source")
+    for key in ("default_on_required", "builtin_deny_floor_required", "headless_ask_must_deny",
+                "gate_disable_fails_closed_externally", "requires_os_isolation"):
+        if auth.get(key) is not True:
+            raise CandidateContractError(f"Authorization restriction missing: {key}")
+    for key in ("fallback_rescue_allowed", "classifier_allow_can_authorize_human_gate", "audit_covers_all_actions"):
+        if auth.get(key) is not False:
+            raise CandidateContractError(f"Unproven authorization bypass: {key}")
+    if auth.get("ignore_tools_for_permission_sensitive_actions") != []:
+        raise CandidateContractError("Permission-sensitive subagent/MCP tools may not be ignored")
     policies = m.get("policies", {})
     for key in ("independent_child_auth_required", "headless_approval_fail_closed",
                 "sandbox_main_enabled_required", "sandbox_subagents_enabled_required",
@@ -105,10 +123,22 @@ def from_disk(root: Path = ROOT) -> tuple[dict, dict, dict]:
             load_json(root / ".pi/settings.json"))
 
 
+def check_verdict_template(root: Path = ROOT) -> None:
+    """Check only a source example; the external user config is NOT managed here."""
+    config = load_json(root / "references/pi-verdict-pstack.example.json")
+    if config.get("builtinDenyFloor") is not True or config.get("allow") != []:
+        raise CandidateContractError("Unsafe pi-verdict example: deny floor disabled or blanket allow")
+    if config.get("ignoreTools") != [] or config.get("classifierFallbackModel") is not None:
+        raise CandidateContractError("Unsafe pi-verdict example: ignored custom tools or fallback rescue")
+    if config.get("auditRedactSecrets") is not True:
+        raise CandidateContractError("Unsafe pi-verdict example: audit redaction opt-out")
+
+
 def bounded_negative_controls(root: Path = ROOT) -> int:
     """Explore fixed finite input mutations of existing PStack validator code."""
     p, m, s = from_disk(root)
     check_contract(p, m, s)
+    check_verdict_template(root)
     count = 0
 
     def reject(profile: dict, manifest: dict, settings: dict, label: str) -> None:
@@ -142,6 +172,35 @@ def bounded_negative_controls(root: Path = ROOT) -> int:
         if label == "package-execution":
             sm["packages"] = ["npm:unreviewed"]
         reject(pm, mm, sm, label)
+
+    for label in (
+        "verdict-missing", "verdict-owner", "verdict-off", "deny-floor-off",
+        "headless-ask-allowed", "subagent-launch-ignored", "fallback-rescue",
+        "child-interception-falsely-verified", "gate-disable-bypass", "classifier-hard-gate",
+    ):
+        pm, mm, sm = copy.deepcopy(p), copy.deepcopy(m), copy.deepcopy(s)
+        auth = mm["authorization"]
+        if label == "verdict-missing":
+            mm["engineering"] = [e for e in mm["engineering"] if e["name"] != "pi-verdict"]
+        elif label == "verdict-owner":
+            mm["active_authorization_policy"] = "pi-permission-modes"
+        elif label == "verdict-off":
+            auth["default_on_required"] = False
+        elif label == "deny-floor-off":
+            auth["builtin_deny_floor_required"] = False
+        elif label == "headless-ask-allowed":
+            auth["headless_ask_must_deny"] = False
+        elif label == "subagent-launch-ignored":
+            auth["ignore_tools_for_permission_sensitive_actions"] = ["subagent_launch"]
+        elif label == "fallback-rescue":
+            auth["fallback_rescue_allowed"] = True
+        elif label == "child-interception-falsely-verified":
+            auth["child_tool_interception"] = "verified"
+        elif label == "gate-disable-bypass":
+            auth["gate_disable_fails_closed_externally"] = False
+        elif label == "classifier-hard-gate":
+            auth["classifier_allow_can_authorize_human_gate"] = True
+        reject(pm, mm, sm, label)
     mutant = copy.deepcopy(p)
     next(r for r in mutant["bindings"] if r["capability"] == "human.gate")["implementation_status"] = "native"
     reject(mutant, m, s, "unproven human gate")
@@ -171,7 +230,8 @@ def main() -> int:
     try:
         if args.action == "check":
             check_contract(*from_disk())
-            print("PASS: static Pi candidate profile and minimal extension policy; NOT native runtime")
+            check_verdict_template()
+            print(": static Pi candidate profile and minimal extension policy; NOT native runtime")
             return 0
         if args.action == "model":
             n = bounded_negative_controls()

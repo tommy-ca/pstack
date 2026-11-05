@@ -13,7 +13,7 @@
       "host": "pstack:pi",
       "capability": "agent.spawn",
       "implementation_status": "version-gated",
-      "primitive": "pi-subagents@0.85.0: child launch; permission subagent_launch required",
+      "primitive": "pi-subagents@0.86.0: child launch; permission subagent_launch required",
       "enforcement": "soft",
       "verification_status": "static-only",
       "notes": "Source-mapped only; no observed native standalone Pi child/sandbox receipt. "
@@ -22,7 +22,7 @@
       "host": "pstack:pi",
       "capability": "agent.join",
       "implementation_status": "version-gated",
-      "primitive": "pi-subagents@0.85.0: child completion by stable ID",
+      "primitive": "pi-subagents@0.86.0: child completion by stable ID",
       "enforcement": "soft",
       "verification_status": "static-only",
       "notes": "Source-mapped only; no observed native standalone Pi child/sandbox receipt. "
@@ -31,7 +31,7 @@
       "host": "pstack:pi",
       "capability": "agent.message",
       "implementation_status": "version-gated",
-      "primitive": "pi-subagents@0.85.0: steering, only where installed version exposes it",
+      "primitive": "pi-subagents@0.86.0: steering, only where installed version exposes it",
       "enforcement": "soft",
       "verification_status": "static-only",
       "notes": "Source-mapped only; no observed native standalone Pi child/sandbox receipt. "
@@ -40,7 +40,7 @@
       "host": "pstack:pi",
       "capability": "agent.cancel",
       "implementation_status": "version-gated",
-      "primitive": "pi-subagents@0.85.0: cancel in-flight child; terminal abort verified separately",
+      "primitive": "pi-subagents@0.86.0: cancel in-flight child; terminal abort verified separately",
       "enforcement": "soft",
       "verification_status": "static-only",
       "notes": "Source-mapped only; no observed native standalone Pi child/sandbox receipt. "
@@ -66,7 +66,7 @@
       "host": "pstack:pi",
       "capability": "workspace.isolated",
       "implementation_status": "version-gated",
-      "primitive": "pi-subagents@0.85.0: isolated worktree mode (configuration dependent)",
+      "primitive": "pi-subagents@0.86.0: isolated worktree mode (configuration dependent)",
       "enforcement": "soft",
       "verification_status": "static-only",
       "notes": "Source-mapped only; no observed native standalone Pi child/sandbox receipt. "
@@ -95,7 +95,7 @@
       "implementation_status": "gap",
       "enforcement": "advisory",
       "verification_status": "static-only",
-      "notes": "Source-mapped only; no observed native standalone Pi child/sandbox receipt. ask_user is not an enforced permission gate."
+      "notes": "Source-level pi-verdict@0.16.0 tool_call allow/ask/deny gate candidate plus pi-ask-user@0.17.2 human.ask; external hard operator gate, missing/disabled extension, child authorization and OS boundary are NOT PROVEN. Remains GAP."
     },
     {
       "host": "pstack:pi",
@@ -110,7 +110,7 @@
       "host": "pstack:pi",
       "capability": "schedule",
       "implementation_status": "version-gated",
-      "primitive": "pi-subagents@0.85.0: mission and schedule.*",
+      "primitive": "pi-subagents@0.86.0: mission and schedule.*",
       "enforcement": "soft",
       "verification_status": "static-only",
       "notes": "Source-mapped only; no observed native standalone Pi child/sandbox receipt. "
@@ -119,7 +119,7 @@
       "host": "pstack:pi",
       "capability": "monitor",
       "implementation_status": "version-gated",
-      "primitive": "pi-subagents@0.85.0: mission supervision / background status",
+      "primitive": "pi-subagents@0.86.0: mission supervision / background status",
       "enforcement": "soft",
       "verification_status": "static-only",
       "notes": "Source-mapped only; no observed native standalone Pi child/sandbox receipt. "
@@ -169,14 +169,16 @@
     "shell_run": "bash (Pi native)",
     "web_fetch": "pi-web-access@0.47.0 (research profile only)",
     "web_search": "pi-web-access@0.47.0 (research profile only)",
-    "agent_spawn": "pi-subagents@0.85.0 (requires subagent_launch authorization)",
-    "agent_fanout": "pi-subagents@0.85.0 parallel delegate roles, only after actual test",
-    "agent_join": "pi-subagents@0.85.0 task settlement",
-    "agent_message": "pi-subagents@0.85.0 steering (version gate)",
-    "task_background": "pi-subagents@0.85.0 mission background supervisor",
+    "agent_spawn": "pi-subagents@0.86.0 (requires subagent_launch authorization)",
+    "agent_fanout": "pi-subagents@0.86.0 parallel delegate roles, only after actual test",
+    "agent_join": "pi-subagents@0.86.0 task settlement",
+    "agent_message": "pi-subagents@0.86.0 steering (version gate)",
+    "task_background": "pi-subagents@0.86.0 mission background supervisor",
     "tool_mcp": "Pi builtin MCP",
     "plan_update": "PStack plan file; no duplicate todo ledger",
-    "human_ask": "pi-ask-user@0.17.2 ask_user; separate human.gate still GAP"
+    "human_ask": "pi-ask-user@0.17.2 ask_user; separate human.gate still GAP",
+    "tool_authorize": "pi-verdict@0.16.0 tool_call allow/ask/deny (source-only); disabled/missing gate is NOT an authorization boundary",
+    "human_gate": "GAP: pi-verdict tool interceptor + Pi UI confirm is not independent mandatory operator authorization; no observed child/OS effect denial"
   },
   "skill_order": [
     {

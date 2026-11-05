@@ -7,7 +7,7 @@ import json
 import pytest
 
 from scripts.portability_types import PORTABLE_CAPABILITY_UNIVERSE
-from scripts.verify_pi_candidate import ROOT, CandidateContractError, bounded_negative_controls, check_contract, from_disk, smoke
+from scripts.verify_pi_candidate import ROOT, CandidateContractError, bounded_negative_controls, check_contract, check_verdict_template, from_disk, smoke
 
 
 def test_candidate_profile_all_17():
@@ -19,9 +19,9 @@ def test_candidate_profile_all_17():
     assert not any(r["verification_status"] == "verified" for r in p["bindings"])
 
 
-def test_three_interactive_four_research_and_no_auto_install():
+def test_four_interactive_five_research_and_no_auto_install():
     _, m, s = from_disk()
-    assert [e["name"] for e in m["engineering"]] == ["pi-subagents", "pi-better-sandbox", "pi-ask-user"]
+    assert [e["name"] for e in m["engineering"]] == ["pi-subagents", "pi-better-sandbox", "pi-verdict", "pi-ask-user"]
     assert [e["name"] for e in m["research_addon"]] == ["pi-web-access"]
     assert [e["name"] for e in m["transitional"]] == ["@zenspc/pi-pstack"]
     assert s["skills"] == ["../skills"] and not s.get("packages")
@@ -62,7 +62,7 @@ def test_operator_ask_not_native_hard_gate():
 def test_extra_orchestration_engine_rejected():
     p, m, s = copy.deepcopy(from_disk())
     m["engineering"].append({"name":"pi-dynamic-workflows","version":"1.0.0"})
-    with pytest.raises(CandidateContractError, match="exactly 3"):
+    with pytest.raises(CandidateContractError, match="exactly 4"):
         check_contract(p, m, s)
 
 
@@ -74,7 +74,7 @@ def test_no_auto_installed_extensions():
 
 
 def test_bounded_mutants_rejected():
-    assert bounded_negative_controls() == 43
+    assert bounded_negative_controls() == 53
 
 
 def test_normative_profile_json_schema():
@@ -97,3 +97,39 @@ def test_pi_smoke_does_not_pretend_runtime_pass(monkeypatch, capsys):
     monkeypatch.setattr(v.shutil,"which",lambda _:None)
     assert smoke() == 2
     assert "BLOCKED" in capsys.readouterr().out
+
+
+def test_autonomous_authorization_is_not_os_sandbox_or_hard_gate():
+    p, m, s = from_disk()
+    assert m["active_security_policy"] == "pi-better-sandbox"
+    assert m["active_authorization_policy"] == "pi-verdict"
+    assert m["authorization"]["child_tool_interception"] == "unverified"
+    assert m["authorization"]["classifier_allow_can_authorize_human_gate"] is False
+    assert m["authorization"]["audit_covers_all_actions"] is False
+    assert next(b for b in p["bindings"] if b["capability"] == "human.gate")["implementation_status"] == "gap"
+    check_verdict_template()
+
+
+@pytest.mark.parametrize("mutation", ["default_on_required", "builtin_deny_floor_required",
+    "headless_ask_must_deny", "gate_disable_fails_closed_externally", "requires_os_isolation"])
+def test_verdict_policy_flags_fail_closed(mutation):
+    p, m, s = copy.deepcopy(from_disk())
+    m["authorization"][mutation] = False
+    with pytest.raises(CandidateContractError, match="Authorization restriction"):
+        check_contract(p, m, s)
+
+
+@pytest.mark.parametrize("field", ["fallback_rescue_allowed",
+    "classifier_allow_can_authorize_human_gate", "audit_covers_all_actions"])
+def test_autonomous_classifier_may_not_be_promoted_to_proof(field):
+    p, m, s = copy.deepcopy(from_disk())
+    m["authorization"][field] = True
+    with pytest.raises(CandidateContractError, match="Unproven authorization bypass"):
+        check_contract(p, m, s)
+
+
+def test_subagent_launch_may_not_be_ignored_by_verdict():
+    p, m, s = copy.deepcopy(from_disk())
+    m["authorization"]["ignore_tools_for_permission_sensitive_actions"] = ["subagent_launch"]
+    with pytest.raises(CandidateContractError, match="Permission-sensitive"):
+        check_contract(p, m, s)
