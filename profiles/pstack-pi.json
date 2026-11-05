@@ -176,9 +176,7 @@
     "task_background": "pi-subagents@0.86.0 mission background supervisor",
     "tool_mcp": "Pi builtin MCP",
     "plan_update": "PStack plan file; no duplicate todo ledger",
-    "human_ask": "pi-ask-user@0.17.2 ask_user; separate human.gate still GAP",
-    "tool_authorize": "pi-verdict@0.16.0 tool_call allow/ask/deny (source-only); disabled/missing gate is NOT an authorization boundary",
-    "human_gate": "GAP: pi-verdict tool interceptor + Pi UI confirm is not independent mandatory operator authorization; no observed child/OS effect denial"
+    "human_ask": "pi-ask-user@0.17.2 ask_user; separate human.gate still GAP"
   },
   "skill_order": [
     {
