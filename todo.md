@@ -347,6 +347,16 @@
 - [x] Unit 4 (Issue #867): Ingest, update, and compile project knowledge and multi-harness sources (PR #869)
 - [x] Unit 5 (Issue #868): Conformance verification, durable receipts refresh, stacked PRs merge and ship (PR #870)
 
+## Epic #894: [Epic][Pi standalone] Candidate host adapter, minimal extensions, verification and wiki evidence
+- [x] Unit 1 (Issue #895): Freeze native Pi/extension versions and deduplicate capability inventory (PR #901)
+- [x] Unit 2 (Issue #896): Candidate Pi host identity (`pstack:pi`), typed 17-capability mapping, and package projection (PR #901)
+- [x] Unit 3 (Issue #897): Build Pi native functional verification driver and confinement proof (`.pi/skills/verify-pi-pstack/`, PR #901)
+- [x] Unit 4 (Issue #898): Extend formal-verification skill coverage with 53 bounded negative mutants (`scripts/verify_pi_candidate.py model`, PR #901)
+- [x] Unit 5 (Issue #899): Update self-contained PStack LLMWiki with Pi source-backed semantic blocks (`.llm-wiki/wiki/analyses/pi-1-5-pstack-candidate.md`, PR #901)
+- [x] Unit 6 (Issue #900): Swarm, Arena, Interrogate, and Thermo-Nuclear Code Quality Review acceptance gate (`docs/audit/thermo-nuclear-pi-candidate-acceptance-2026-11-05.md`, PR #901)
+- [ ] Unit 7 (Issue #902): Live pi-verdict autonomous approval, denied child launches and hard human gates (runtime Pi execution proof)
+
+
 
 
 
