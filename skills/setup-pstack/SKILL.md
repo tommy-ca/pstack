@@ -1,6 +1,6 @@
 ---
 name: setup-pstack
-description: Host-neutral setup entry. Resolves the active host, reads its profiles/<host>.json setup projection, and dispatches to the setup skill that host declares. A host with no setup block, or a candidate host, gets a named GAP, never another host's fallback. Use for /setup-pstack, "configure pstack models", or changing pstack's model or effort choices.
+description: Host-neutral setup entry. Resolves the active host, reads its profiles/<host>.json (or packaged skills/setup-pstack/profiles/<host>.json) setup projection, and dispatches to the setup skill that host declares. A host with no setup block, or a candidate host, gets a named GAP, never another host's fallback. Use for /setup-pstack, "configure pstack models", or changing pstack's model or effort choices.
 ---
 
 # Setup pstack
@@ -9,7 +9,7 @@ This skill is the host-neutral entry for pstack model and effort setup. It holds
 
 ## 1. Resolve the active host
 
-Identify the harness this session actually runs on from its native surface: the spawn, question, and progress primitives present in this session. Then load `profiles/<host>.json`. The profile is the only declaration of host layout, capabilities, and setup placement: observe the session, and never infer the host from a repository path or from a neighbouring skill.
+Identify the harness this session actually runs on from its native surface: the spawn, question, and progress primitives present in this session. Then load `profiles/<host>.json` (packaged in plugin distributions at `skills/setup-pstack/profiles/<host>.json`, resolved canonically via `scripts.setup_pstack.resolve_profiles_dir`). The profile is the only declaration of host layout, capabilities, and setup placement: observe the session, and never infer the host from a repository path or from a neighbouring skill.
 
 The **poteto-mode** skill resolves the same active host for routing and skill order; use the same host it selected, together with that host's `references/<host>-tools.md`.
 

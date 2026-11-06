@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 Every serious project needs a scripted way to drive the real app and prove behavior: launch it, exercise a feature the way a user would, and capture evidence. This skill generates that as a project-local skill tailored to the repo. You write the generator's output for the next agent, not for a human: it will be read cold, mid-task, by an agent that has never seen the app.
 
-Project-local verification skills live under the active harness's native skills directory. That harness-to-directory mapping is owned by the profiles (`skills_dir` in `profiles/<host>.json`, mirrored by `DEFAULT_SKILLS_DIRS` in `scripts/portability_schema.py`); read it there instead of keeping a copy here.
+Project-local verification skills live under the active harness's native skills directory. That harness-to-directory mapping is owned by the profiles (`skills_dir` in `skills/setup-pstack/profiles/<host>.json` or repository `profiles/<host>.json`, resolved canonically via `scripts.setup_pstack.resolve_profiles_dir`, and mirrored by `DEFAULT_SKILLS_DIRS` in `scripts/portability_schema.py`); read it there instead of keeping a copy here.
 
 The scaffold probes the workspace markers in host-detection order and defaults to Grok when none exist. Set `--host <harness>` to override detection. Markers select a destination; they do not prove which host is running. Plugin doctor lives at `<harness-skills-dir>/verify-pstack/`. Do not ship application verification skills under shared `skills/`. Do not write global home directories. App names must use lowercase kebab-case, such as `demo-app`; `pstack` is reserved for the plugin doctor. Checking or listing an existing `verify-pstack` remains permitted.
 

@@ -13,7 +13,7 @@ Bundled skills live at `../<name>/SKILL.md` from this file, so put this file's a
 
 ## Non-negotiables
 
-**Start every multi-step task with a todolist whose first item is to read the Principles section below in full, identify the active host, and load its `profiles/<host>.json` and matching `references/<host>-tools.md` (when present).** The active host's native adapter, not a reference adapter from another host, determines skill precedence, available tools, role/model catalog and invocation syntax. An undeclared or unproven native capability is a GAP, never permission to borrow another host's tool. The principles ground every trigger here. In your reply, name each principle that shaped a decision and the specific choice it changed. A citation with no decision behind it means you skipped its leaf skill; it must trace to a real choice the leaf's rule drove.
+**Start every multi-step task with a todolist whose first item is to read the Principles section below in full, identify the active host, and load its `profiles/<host>.json` (packaged in plugin distributions at `skills/setup-pstack/profiles/<host>.json`) and matching `references/<host>-tools.md` (when present).** The active host's native adapter, not a reference adapter from another host, determines skill precedence, available tools, role/model catalog and invocation syntax. An undeclared or unproven native capability is a GAP, never permission to borrow another host's tool. The principles ground every trigger here. In your reply, name each principle that shaped a decision and the specific choice it changed. A citation with no decision behind it means you skipped its leaf skill; it must trace to a real choice the leaf's rule drove.
 
 Remaining triggers:
 
