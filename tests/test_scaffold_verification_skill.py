@@ -458,3 +458,50 @@ def test_check_skill_rejects_oversized_antigravity_body(tmp_path: pathlib.Path) 
     assert any("exceeds Antigravity 24000-byte limit" in err for err in errors)
 
 
+@pytest.mark.parametrize(("host", "skills_rel"), [
+    ("grok", ".grok/skills"),
+    ("codex", ".codex/skills"),
+    ("omp", ".omp/skills"),
+    ("opencode", ".opencode/skills"),
+    ("antigravity", ".agents/skills"),
+    ("droid", ".factory/skills"),
+])
+def test_scaffold_formal_verification_skill_across_hosts(tmp_path: pathlib.Path, host: str, skills_rel: str) -> None:
+    res = cli(tmp_path, "--host", host, "--app", "concurrency-core", "--formal", "--write")
+    assert res.returncode == 0, res.stderr
+    assert "Draft formal scaffold for 'concurrency-core' on" in res.stdout
+
+    target = tmp_path / skills_rel / "verify-concurrency-core-formal"
+    assert target.is_dir()
+    expected_files = {
+        "SKILL.md",
+        "features/README.md",
+        "features/formal-model.md",
+        "scripts/driver.sh",
+    }
+    assert set(file_bytes(target)) == expected_files
+    assert (target / "scripts/driver.sh").stat().st_mode & 0o111
+
+    skill_text = (target / "SKILL.md").read_text(encoding="utf-8")
+    assert "name: verify-concurrency-core-formal\n" in skill_text
+    assert "## Coverage and sync record" in skill_text
+    assert "## Model and checker choice" in skill_text
+    for sec in scaffold_mod.REQUIRED_SECTIONS:
+        assert f"## {sec}" in skill_text
+
+    # Passes internal check_skill and CLI check
+    assert scaffold_mod.check_skill(target) == []
+    check_res = cli(tmp_path, "--host", host, "--app", "concurrency-core", "--formal", "--check")
+    assert check_res.returncode == 0, check_res.stdout
+    assert "PASS: Structural validation" in check_res.stdout
+
+    # Idempotent suffix handling when app already ends with -formal
+    target_explicit = tmp_path / skills_rel / "verify-raft-formal"
+    res_explicit = cli(tmp_path, "--host", host, "--app", "raft-formal", "--formal", "--write")
+    assert res_explicit.returncode == 0, res_explicit.stderr
+    assert target_explicit.is_dir()
+    assert not (tmp_path / skills_rel / "verify-raft-formal-formal").exists()
+    assert scaffold_mod.check_skill(target_explicit) == []
+
+
+

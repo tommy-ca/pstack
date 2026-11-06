@@ -8,46 +8,91 @@ disable-model-invocation: true
 
 A test checks the cases that someone thought to write. Formal verification checks every case in a stated scope: every order of steps in a model, every input up to a bound, or every input. This skill finds the part of the repo where that matters most, verifies one property of it, and leaves a project-local skill that lets the next agent check a change against that property. Write that skill for an agent who reads it cold, mid-change, and has never seen your work. The user must be able to trust the result and act on it without learning the verification language.
 
-## Choose the target from the code
+Project-local formal verification skills live under the active harness's native skills directory (`skills_dir` in `skills/setup-pstack/profiles/<host>.json` or repository `profiles/<host>.json`, resolved canonically via `scripts.setup_pstack.resolve_profiles_dir`). Formal verification skill directories and frontmatter use the naming convention `verify-<app>-formal` (or `verify-<property>-formal`).
 
-Answer from the codebase, and ask the user only what you cannot observe. If the user named an area or a bug, start there.
+Use `scripts/scaffold_verification_skill.py --formal --host <host> --app <app> --write` to scaffold a draft at `<skills-dir>/verify-<app>-formal/`. The generator creates `SKILL.md`, `features/README.md`, `features/formal-model.md`, and an executable driver script at `scripts/driver.sh`. Run `scripts/scaffold_verification_skill.py --check --target-dir <skill-dir>` for Tier 1 structural validation.
 
-A good target is a promise the code makes, where a break harms users and tests rarely reach the case that breaks it. Choose the strongest such target in the repo, not the one that is easiest to verify.
+## Why not a wiki
 
-## Let the question choose the tool
+A wiki is for humans. Agents pay for every token they reread. Write a skill plus a feature map. Use one short file per verified sub-property or model aspect, the same four H2s, and a README that is the sweep order. Keep the map next to the skill at `features/`. Do not grow it into a wiki. Do not put drive recipes in OpenSpec. `openspec/specs` is capability Gherkin, not a formal drive recipe.
 
-Pick the tool that answers the question at the lowest cost: a model checker, a proof assistant, an SMT-backed verifier, or another tool. Whether events can happen in a bad order usually suits a model checker over a small model of the design, and TLA+ is the default for that in any language. Whether the code itself behaves for every input, as with memory safety, overflow, or a data-structure invariant, usually suits a verifier that runs on the code. If no verifier runs on this language, say so, and test the real code with generated inputs, not a hand model of the function. A property that must hold at every size, where a bound is not enough, can need a proof. Prefer a tool that the repo's developers can install and run, and tell the user why you chose it.
+## 1. Interview the repo, not the user
 
-## What makes it good
+Answer these from the codebase and only ask the user what you cannot observe:
 
-- **True to the code.** Every part of the model or proof points to code that a reviewer can open. What the verification treats as one indivisible step is one indivisible step in the code. Names come from this repo.
-- **Able to fail.** A check that you have never seen fail proves nothing. Show each property failing on a broken variant of the code it guards, such as a removed check or a reordered step.
-- **Findings stay findings.** When the current code breaks the property, report it with the counterexample in the code's terms. Do not weaken the property or the model until it passes, and do not change product code unless the user asks.
-- **Honest about scope.** Say what is verified, under which bounds and assumptions, and what is left out. A pass covers the model or the bound, not the whole system.
-- **Readable without the tool.** State the property and the harm in one plain sentence each. Tell a counterexample as a short sequence of steps in the code's words.
-- **Cheap to rerun.** One command, a reproducible tool version, and a run short enough that the next agent will use it on every relevant change.
-- **Kept in step with the code.** Record which files and functions each check covers, and the commit at which you last confirmed that the verification describes them. When the covered code changes after that commit, the next agent can see that the verification needs another look.
+- **Target:** what promise does the code make where a break harms users and tests rarely reach it? Concurrency races, distributed retries, state machine deadlocks, parsers, cryptographic handshakes, or resource allocation lifecycles.
+- **Tool:** pick the tool that answers the question at the lowest cost:
+  - Event order, race conditions, or interleavings: model checkers (TLA+ TLC, Spin).
+  - Code-level input domain invariants or memory safety: bounded model exploration or SMT-backed verification (Z3, Kani, Creusot).
+  - If no external formal tool fits or installs cleanly: implement an exhaustive bounded finite-state exploration directly against real production code.
+- **Observe:** what counterexample trace or invariant violation can be captured? Sequence of steps in the code's terms, minimal failing inputs, violated assertions.
+- **Isolate:** formal checks and bounded model runs must execute in isolated scratch environments (`TemporaryDirectory`, `mktemp -d`) with zero persistent side effects.
 
-## Generate the verify skill
+If the target code does not build or run, report that first before generating. A formal verification skill written against broken code encodes invalid invariants.
 
-Write a project-local skill with frontmatter that names the area and says when to use it. Without frontmatter, the skill never registers. From the skill alone, the next agent must be able to tell whether a change touches the verified code, run the check, tell a real bug from a modeling error, and update the verification when a change is intended. Put the coverage record and the sync commit in the skill, and tell the next agent to move the sync commit forward only after it confirms that the verification describes the code at the new commit. Use this repo's real commands, paths, and nouns, and leave no placeholders.
+## 2. Generate the formal verify skill
 
-## TLA+ result interpretation on this port
+Write `SKILL.md` at `<skills-dir>/verify-<app>-formal/` with YAML frontmatter:
 
-If the selected checker is TLA+ TLC, **first** resolve `statechart` through the active host's installed skill inventory and capability profile. Official Cursor PStack 0.15.36 provides `/statechart` for viewing shortest invariant counterexample paths, but this port does **not** ship that compiler until #847 establishes its dependencies, security checks and host bindings. When installed and proven, tell the next agent to read every TLC result through `/statechart` using that skill's current instructions, never a hard-coded CLI copied from upstream. When absent, run TLC directly with the pinned model/config, preserve logs and replay the counterexample against the real code. Record visualization as `GAP`; do not convert absent rendering into a PASS or stop checking the real property.
+- `name: verify-<app>-formal`
+- `description`: Use-when triggers only. Name the verified invariant, the code surface, and when to reach for the skill.
+- `disable-model-invocation: true`
 
-The generated skill must specify its verified code paths/functions, source revision, model assumptions, finite bounds, checker command, status and the mutation that makes each property fail. Promote its sync commit only when the model still matches the actual code and the negative control fails as intended. For missing Java/TLC, report `BLOCKED`, never a model proof.
+Keep the generated skill body under 24,000 bytes. Google Antigravity imposes a strict 24,000-byte body limit and truncates oversized skills. `scripts/scaffold_verification_skill.py --check` enforces this bound.
 
-## Foreign-port models and temporal assumptions
+Without frontmatter the skill never registers. To satisfy structural verification standards (`scripts/scaffold_verification_skill.py --check`), write the following required sections:
 
-A model from a different harness is a **counterexample generator**, not a transferable proof. For example, the comparator's PiScheduler TLA+ model assumes event-loop atomicity, host start/settle callbacks, timer cancellation behavior and conditional idle fairness. Before using any such model, trace each action to a concrete target function and callback boundary, list what the native host guarantees versus what you assume, and state the bounds and fairness required by every liveness claim. In particular, do not silently strengthen fairness to make an undelivered wakeup disappear. Demonstrate a reachable failing mutant in the target or document the abstraction mismatch as unverified.
+- **Coverage and sync record:** specify the covered production commit, target code files/functions, the safety and liveness invariants, the finite bound, and the rule for moving the sync commit forward.
+- **Model and checker choice:** explain the chosen formal tool, the modeling assumptions, what is abstracted away, and the deliberate broken mutant used as a negative control.
+- **Launch:** prepare any dependencies, model files, or scratch environments. For bounded real-code models, launch confirms the environment is ready.
+- **Doctor:** one read-only check confirming checker tooling (e.g. Java/TLC jar, SMT solver, Python test harness) is present. If the checker tool is missing, report `BLOCKED` or `UNTESTED`; never report a PASS on an unexecuted model.
+- **Drive:** exact command line to run the formal verification and bounded model suite.
+- **Proof bar:** every claimed invariant holds across the stated bound. A negative mutant (e.g. removed check or reordered step) MUST fail. Reduce verdicts using the failure-first lattice: FAIL > BLOCKED > UNTESTED > PASS.
+- **Evidence:** capture stdout, counterexample traces, state space size, and git revision. Distinguish offline finite trace proof from live host observation.
+- **Cleanup:** tear down any temporary files or scratch directories. Ensure no processes linger.
+- **Helpers:** reference the driver script at `scripts/driver.sh`. Make it executable. The driver must support `doctor`, `drive`, `cleanup`, and `all`.
 
-For agent or timer lifecycles, test stale callbacks after stop, cancelled or timed-out children counted as successful, admission after an effect has started, unauthorized descendant permissions, and cleanup of worktrees with hidden output. Separate safety (forbidden state never reached), conditional liveness (delivery when fairness holds), and OS/external-extension guarantees outside the model. A passing TLC result from the source port or a reviewer LLM is not native verification. For PStack's current migration contract, consult [cross-port OpenSpec](../../openspec/changes/2026-11-06-cross-port-parity/specs/pstack-portability/spec.md) and preserve the existing verification skill's source-sync and negative-mutation requirements.
+## Architectural Discipline: SOLID, KISS, DRY, YAGNI
 
-## Prove it before you hand off
+Formal verification skills and feature maps must follow strict design hygiene:
 
-Follow the generated skill once, as the next agent would, on a scratch change that breaks the property in the real code. It must catch the break. Then drop the scratch change and confirm that the check is back where it started: passing, or failing only on the findings you will report. A verify skill that was never run is a draft. If the skill misses the break or a step does not run, fix the skill or the verification, not the scratch change.
+- **Single Responsibility (SRP):** Each formal skill verifies one cohesive property or state machine. Each feature file in `features/` models one specific sub-property or trace scenario. The driver script handles only execution orchestration (`doctor`, `drive`, `cleanup`).
+- **Open/Closed (OCP):** Extend coverage to additional invariants by adding sibling feature files under `features/` and updating the Full sweep order, without destabilizing core driver execution.
+- **Liskov Substitution (LSP):** Formal verification drivers across all harnesses conform to the uniform command contract: `doctor`, `drive`, `cleanup`, and `all`. Any test runner can invoke them interchangeably.
+- **Interface Segregation (ISP):** Separate high-level abstract models (e.g. TLA+) from concrete bounded code-level falsifiers. Agents execute specific bounded checks independently.
+- **Dependency Inversion (DIP):** Depend on stable code contracts, state transitions, and public entry points rather than private ephemeral variables.
+- **KISS & YAGNI:** Prefer bounded real-code exploration and concise models over speculative full-system theorem proving when a bounded check proves the invariant.
+- **DRY:** Define the sync commit, covered functions, and property statements canonically once in `SKILL.md`.
 
-## Hand off
+## Bounded Negative Controls & Failure-First Lattice
 
-Tell the user what you verified, which tool you used and why, the bounds, what the check found in plain words, how to run it, and what it does not cover. Suggest a second target only if you found a close one. Point the user at `/maintain-formal-verification-skill` for bringing the verification back in line after changes that did not recheck it.
+A formal check that has never been seen to fail proves nothing. Always provide an explicit negative mutant:
+
+- **Mutation:** introduce a deliberate break in the property or a broken variant of the code it guards (e.g. removed lock, inverted condition, reordered callback).
+- **Rejection:** the check MUST reject the mutant and produce a counterexample. If the mutant passes, the verification is flawed.
+- **Verdict Lattice:** reduce all verification outcomes with the strict failure-first lattice:
+  `FAIL > BLOCKED > UNTESTED > PASS`
+  A failed invariant or accepted mutant is FAIL. An unavailable tool or unfulfilled precondition is BLOCKED. An unexecuted model is UNTESTED. Never fabricate or assume a PASS.
+
+## TLA+ Result Interpretation on this Port
+
+If the selected checker is TLA+ TLC, resolve `statechart` through the active host's capability profile:
+- Official Cursor PStack 0.15.36 provides `/statechart` for shortest invariant counterexample paths, but this port does not ship that compiler until #847 establishes its dependencies, security checks and host bindings.
+- When absent, run TLC directly with the pinned model/config, preserve logs and replay the counterexample against the real code. Record visualization as `GAP`; do not convert absent rendering into a PASS or stop checking the real property.
+- For missing Java/TLC, report `BLOCKED`, never a model proof.
+
+## Seed the Feature Map
+
+Create `features/README.md` plus at least one feature markdown file (e.g. `features/formal-model.md`).
+- Follow the shape in `skills/create-verification-skill/references/feature-map-example/`.
+- `features/README.md` must contain `## Full sweep` and `## Features` listing all sibling markdown files in sweep order.
+- Each feature file must contain exactly four H2 sections in order:
+  1. `## Sub-features`
+  2. `## How to get to it (user POV)`
+  3. `## Driving it with <harness>`
+  4. `## Gotchas`
+
+## Prove It Before Handoff
+
+Follow the generated skill once, as the next agent would, on a scratch change that breaks the property in real code. Confirm that it catches the break. Drop the scratch change and verify that the check returns to PASS (or flags pre-existing findings).
+Tell the user what you verified, which tool was used, the bounds, what the check found in plain words, and how to run it. Point the user to `/maintain-formal-verification-skill` for subsequent code synchronization.

@@ -403,6 +403,12 @@
 - [x] Unit 5 (Issue #953): [SP-05][Gate] Verify merged setup semantics, negative controls, and cross-harness doctor PASS
 *(Epic #948 CLOSED)*
 
+## Epic #963: [Epic][Thermo-Nuclear Verification] Formal verification skills upgrade, unified scaffolding levers, and cross-harness quality gates
+- [x] Unit 1 (Issue #964): [A][P0] Harmonize create-formal-verification-skill and maintain-formal-verification-skill with SOLID, KISS, DRY, YAGNI
+- [x] Unit 2 (Issue #965): [B][P0] Extend scaffold_verification_skill with formal verification mode and clean template abstractions
+- [ ] Unit 3 (Issue #966): [C][Gate] Swarm, Arena, Interrogate adversarial verification, full test suite, 6-harness doctor PASS
+
+
 
 
 
