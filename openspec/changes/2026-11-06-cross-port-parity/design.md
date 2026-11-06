@@ -107,5 +107,19 @@ Required concepts: SourceRevision (repository, commit, path, hash when recorded)
 ## Review alternatives and execution honesty
 Arena alternatives: A document-only delta (minimum), B add targeted host-local negative fixtures (default when unmet), C build generic scheduler/process manager (reject without measured duplicate failure in >=2 hosts). Swarm lanes: normative semantics, host safety, formal reachability, provenance/rights. Interrogate adversarial probes: cancel/late delivery, permission escalation, hidden Git files, stale receipts, same-family fanout, policy-fork laundering. Both upstream Thermo Nuclear reviews apply to the actual changed diff. These are **planned checks**, not completed model-backed review sessions.
 
+## QStack downstream principle/playbook crosswalk (source review)
+
+At tommy-ca/qstack@704561f5d99d3d7c254322e4b651cd24fec93333, skills/qstack-mode/SKILL.md explicitly requires **qstack-mode -> independently installed poteto-mode**, never reverse. This strengthens the architectural direction above; QStack is not a host adapter.
+
+| PStack generic responsibility | QStack downstream domain responsibility | Boundary |
+| --- | --- | --- |
+| Intent, role plan, Swarm/Arena/Interrogate | qstack-mode + quant-domain leaf selection | QStack may select PStack route, not re-register generic router |
+| Atomic semantic decomposition | atomic-semantic-contract, declare-your-falsifier | Mathematical/quant sources and falsifiers belong to QStack |
+| State-machine/formal checks | formal-state-model, oms-state-machine, kill-switch-first | Domain safety properties extend, never weaken, generic verification rules |
+| Feature/project workflow | paper-to-live-gate, pnl-parity, research playbooks | Quant authorization/risk remains separate from PR shipping |
+| Engineering knowledge analysis | llm-curated-research, wiki-curate (legacy migration guidance) | QStack's proposed independent llmwiki producer -> compiled read-only consumer is not PStack's .llm-wiki |
+
+The QStack playbooks explicitly warn that producer migration remains pending and that wiki-curate has legacy pre-cutover portions. **Do not backport** those production-wiki steps into PStack, and do not treat compiled quant knowledge as verified operational permission. QStack's qstack-mode currently includes historical wording about an orch owner; cross-check against Cursor 0.15.36's agentic Orchestrate before changing that downstream guidance. This is an audit candidate, not a proven runtime defect.
+
 ## Risks, limitations and rollback
 Github compare output for the 86-commit comparator range was capped at 300 files; first pass is a prioritized path-level audit, NOT an exhaustive modified-file manifest. Do not mistake source-only documentation as native proof, and do not advance the official pin. Missing checker/binary credentials remain BLOCKED/UNTESTED. Revert documentation/skill guidance independently of any later host-specific code additions.
