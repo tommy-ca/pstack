@@ -73,3 +73,29 @@ def test_resolve_profiles_dir_prefers_packaged_then_fallback(tmp_path: Path) -> 
 
     # 3. On live repo, resolves to packaged
     assert resolve_profiles_dir(ROOT) == CANONICAL_PROFILES
+
+
+def test_components_load_profiles_from_resolved_dir() -> None:
+    from scripts.drivers import get_driver
+    from scripts.scaffold_verification_skill import get_candidate_skills_dirs
+    from scripts.surface_revisions import compute_surface_revisions
+
+    # 1. HarnessDriver
+    driver = get_driver("antigravity", ROOT)
+    assert driver.profile_data.get("host") == "antigravity"
+
+    # 2. get_candidate_skills_dirs
+    dirs = get_candidate_skills_dirs(ROOT)
+    assert isinstance(dirs, list)
+
+    # 3. compute_surface_revisions
+    revs = compute_surface_revisions(ROOT, "antigravity")
+    assert revs.profile_hash != "missing"
+
+    # 2. get_candidate_skills_dirs
+    dirs = get_candidate_skills_dirs(ROOT)
+    assert isinstance(dirs, list)
+
+    # 3. compute_surface_revisions
+    revs = compute_surface_revisions(ROOT, "antigravity")
+    assert revs.profile_hash != "missing"

@@ -41,6 +41,7 @@ from scripts.decision_adapter import (
 )
 from scripts.evidence_receipts import can_authorize_controlling_mode, create_decision_receipt
 from scripts.route_resolver import resolve_skill_order, resolve_skill_order_with_shadow
+from scripts.setup_pstack import resolve_profiles_dir
 
 MAX_FALLBACK_LATENCY_MS_BUDGET = 10.0
 
@@ -433,7 +434,7 @@ def run_all_rollback_scenarios(root: Path) -> RollbackEquivalenceReport:
     """Execute all 8 rollback and fail-open equivalence tests."""
     corpus_file = root / "tests" / "fixtures" / "decision_corpus.json"
     fixtures = json.loads(corpus_file.read_text(encoding="utf-8")).get("fixtures", [])
-    profile_path = root / "profiles" / "grok.json"
+    profile_path = resolve_profiles_dir(root) / "grok.json"
     profile = json.loads(profile_path.read_text(encoding="utf-8"))
 
     scenarios = [

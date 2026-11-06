@@ -99,9 +99,12 @@ class HarnessDriver(ABC):
     @property
     def profile_data(self) -> Dict:
         if self._profile_data is None:
-            profile_path = self.root / "profiles" / f"{self.host}.json"
+            from scripts.setup_pstack import resolve_profiles_dir
+
+            profiles_dir = resolve_profiles_dir(self.root)
+            profile_path = profiles_dir / f"{self.host}.json"
             if not profile_path.is_file() and ":" in self.host:
-                alt_path = self.root / "profiles" / f"{self.host.split(':')[-1]}.json"
+                alt_path = profiles_dir / f"{self.host.split(':')[-1]}.json"
                 if alt_path.is_file():
                     profile_path = alt_path
             if profile_path.is_file():

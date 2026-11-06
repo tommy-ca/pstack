@@ -19,6 +19,7 @@ from scripts.evidence_durability import (
     preserve_observed_settlements,
 )
 from scripts.host_identity import BUILTIN_HOSTS
+from scripts.setup_pstack import resolve_profiles_dir
 from scripts.portability_schema import (
     Binding,
     Evidence,
@@ -256,8 +257,9 @@ def index_row_mismatch(host: str, index_file: Path, receipt_root: Path) -> Optio
 def check_evidence_action(hosts: List[str], root: Path, allow_stale: bool = False) -> int:
     all_ok = True
     index_file = root / ".audit" / "evidence" / "index.json"
+    profiles_dir = resolve_profiles_dir(root)
     for h in hosts:
-        profile_file = root / "profiles" / f"{h}.json"
+        profile_file = profiles_dir / f"{h}.json"
         if not _file_or_denied(profile_file):
             print(f"[{h}] Profile not found at {profile_file}")
             all_ok = False
@@ -304,11 +306,12 @@ def check_staleness_action(
 ) -> int:
     staleness_report: Dict[str, Any] = {}
     all_fresh = True
+    profiles_dir = resolve_profiles_dir(root)
     for h in hosts:
         current_revs = compute_surface_revisions(root, h)
         receipt_file = evidence_dir / f"{h}-receipt.json"
         if not _file_or_denied(receipt_file):
-            profile_file = root / "profiles" / f"{h}.json"
+            profile_file = profiles_dir / f"{h}.json"
             claimed_state = ""
             if _file_or_denied(profile_file):
                 try:

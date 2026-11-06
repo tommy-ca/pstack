@@ -33,6 +33,7 @@ from scripts.decision_adapter import (
 )
 from scripts.evidence_receipts import create_decision_receipt
 from scripts.route_resolver import resolve_skill_order, resolve_skill_order_with_shadow
+from scripts.setup_pstack import resolve_profiles_dir
 
 
 # Predeclared budgets per Task #186 and spec
@@ -75,7 +76,7 @@ def run_evaluation(
     corpus = json.loads(corpus_path.read_text(encoding="utf-8"))
     fixtures = corpus.get("fixtures", [])
 
-    profile_path = root / "profiles" / "grok.json"
+    profile_path = resolve_profiles_dir(root) / "grok.json"
     profile = json.loads(profile_path.read_text(encoding="utf-8"))
 
     # Instantiate provider under test

@@ -391,13 +391,16 @@ def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path
         skills_tree_hash = "missing"
 
     if profile_path is None:
-        profile_path = root / "profiles" / f"{host}.json"
+        from scripts.setup_pstack import resolve_profiles_dir
+
+        profiles_dir = resolve_profiles_dir(root)
+        profile_path = profiles_dir / f"{host}.json"
         if not profile_path.is_file() and ":" in host:
-            dashed_path = root / "profiles" / f"{host.replace(':', '-')}.json"
+            dashed_path = profiles_dir / f"{host.replace(':', '-')}.json"
             if dashed_path.is_file():
                 profile_path = dashed_path
             else:
-                alt_path = root / "profiles" / f"{host.split(':')[-1]}.json"
+                alt_path = profiles_dir / f"{host.split(':')[-1]}.json"
                 if alt_path.is_file():
                     profile_path = alt_path
     if profile_path.is_file():

@@ -58,6 +58,7 @@ from scripts.portability_schema import (
 )
 from scripts.drivers import get_driver
 from scripts.host_identity import BUILTIN_HOSTS
+from scripts.setup_pstack import resolve_profiles_dir
 from scripts.evidence_receipts import (
     can_claim_current_ci,
     check_check_evidence_staleness,
@@ -446,7 +447,7 @@ class PortableVerifier:
     ) -> bool:
         """Execute profile validation, sync check, and standalone evidence durability."""
         passed = True
-        profile_file = self.root / "profiles" / f"{self.host}.json"
+        profile_file = resolve_profiles_dir(self.root) / f"{self.host}.json"
 
         if profile_file.is_file():
             r5 = self.run_command(
@@ -594,7 +595,7 @@ def run_verifier_action(
         verifier.doctor(check_durability=False)
         verifier.drive()
         receipt = verifier.proof_bar()
-        profile_file = verifier.root / "profiles" / f"{verifier.host}.json"
+        profile_file = resolve_profiles_dir(verifier.root) / f"{verifier.host}.json"
         claimed_state = ""
         if profile_file.is_file():
             claimed_state = json.loads(profile_file.read_text(encoding="utf-8")).get("support_state", "")
@@ -605,7 +606,7 @@ def run_verifier_action(
     if action == "refresh-static":
         ok = verifier.doctor(check_durability=False)
         receipt = verifier.proof_bar()
-        profile_file = verifier.root / "profiles" / f"{verifier.host}.json"
+        profile_file = resolve_profiles_dir(verifier.root) / f"{verifier.host}.json"
         claimed_state = ""
         if profile_file.is_file():
             claimed_state = json.loads(profile_file.read_text(encoding="utf-8")).get("support_state", "")
