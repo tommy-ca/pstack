@@ -11,7 +11,7 @@ import json
 import pathlib
 import re
 import sys
-from typing import List
+from typing import Dict, List, Optional, Set, Tuple
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SCRIPTS = pathlib.Path(__file__).resolve().parent
@@ -406,11 +406,11 @@ def list_verification_skills(
     return results
 
 
-def audit_verification_skills(workspace: pathlib.Path) -> tuple[int, List[str]]:
+def audit_verification_skills(workspace: pathlib.Path) -> Tuple[int, List[str]]:
     skills = list_verification_skills(workspace, all_dirs=True)
     if not skills:
         return 0, ["No verification skills found to audit."]
-    results = []
+    results: List[str] = []
     has_failures = False
     for skill in skills:
         rel = skill.relative_to(workspace) if skill.is_relative_to(workspace) else skill
@@ -425,7 +425,7 @@ def audit_verification_skills(workspace: pathlib.Path) -> tuple[int, List[str]]:
     return (1 if has_failures else 0), results
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="Scaffold or check portable verification skills.")
     parser.add_argument("--host", choices=list(DEFAULT_SKILLS_DIRS.keys()), help="Target agent harness")
     parser.add_argument("--app", help="Application name for verify-<app>")
