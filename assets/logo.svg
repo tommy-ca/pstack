@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="pstackGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4285F4"/>
+      <stop offset="100%" stop-color="#34A853"/>
+    </linearGradient>
+    <linearGradient id="pstackGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FBBC05"/>
+      <stop offset="100%" stop-color="#EA4335"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="28" fill="#1e1e2e"/>
+  <!-- Layer 3 (bottom) -->
+  <path d="M 28 82 L 64 98 L 100 82 L 64 66 Z" fill="url(#pstackGrad2)" opacity="0.9"/>
+  <!-- Layer 2 (middle) -->
+  <path d="M 28 62 L 64 78 L 100 62 L 64 46 Z" fill="url(#pstackGrad1)" opacity="0.9"/>
+  <!-- Layer 1 (top) -->
+  <path d="M 28 42 L 64 58 L 100 42 L 64 26 Z" fill="#ffffff" opacity="0.95"/>
+  <!-- Crown accent on top -->
+  <circle cx="64" cy="42" r="5" fill="#FBBC05"/>
+</svg>
