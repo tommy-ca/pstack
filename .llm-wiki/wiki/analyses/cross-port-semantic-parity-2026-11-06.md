@@ -27,6 +27,17 @@
 | ReviewTopology | Were seats truly independent? | Model/provider identity must be observed for actual fanout | Swarm, Arena, Interrogate; no simulated agreement |
 | PromotionGate | Is exact-head patch accepted? | Source sync and release policies differ | Independent review and existing shipping gates |
 
+## QStack domain-overlay crosswalk
+
+At [QStack source revision 704561f](https://github.com/tommy-ca/qstack/tree/704561f5d99d3d7c254322e4b651cd24fec93333), skills/qstack-mode/SKILL.md defines **qstack-mode -> poteto-mode only**. PStack supplies general engineering plans, role routing, parallel review, worktree and PR workflows; QStack supplies quant-domain leaves rather than a second harness adapter.
+
+- [QStack atomic-semantic-contract](https://github.com/tommy-ca/qstack/blob/704561f5d99d3d7c254322e4b651cd24fec93333/skills/atomic-semantic-contract/SKILL.md) supplies falsifiable typed quant atom descriptions and negative counterexamples.
+- [QStack formal-state-model](https://github.com/tommy-ca/qstack/blob/704561f5d99d3d7c254322e4b651cd24fec93333/skills/formal-state-model/SKILL.md) supplies quant OMS, data recovery, reconciliation and kill-switch invariants; it reuses PStack's generic proof generation rules.
+- [QStack paper-to-live-gate](https://github.com/tommy-ca/qstack/blob/704561f5d99d3d7c254322e4b651cd24fec93333/skills/qstack-mode/playbooks/paper-to-live-gate.md) retains human capital authorization and domain risk policy independent of engineering PR acceptance.
+- [QStack wiki-curate](https://github.com/tommy-ca/qstack/blob/704561f5d99d3d7c254322e4b651cd24fec93333/skills/qstack-mode/playbooks/wiki-curate.md) explicitly labels legacy producer operations pending its independently governed compiled-bundle cutover. Do not duplicate that producer in PStack's project-local engineering wiki.
+
+The QStack mode text retains a historical reference to an orch owner; check whether any consumers rely on that older wording before reconciling it with Cursor's 0.15.36 agentic Orchestrate. Source observation only, not a verified runtime failure.
+
 ## Gaps worth a small follow-up
 
 1. **Partial comparator manifest:** the 86-commit GitHub comparison's 300-file result cap means every changed path is not yet classified; #907 owns a full bounded manifest.
