@@ -376,6 +376,11 @@
 - [x] Unit 5 (Issue #928): [E][P1] Update verification skills and scaffold for Antigravity native verification (PR #935)
 - [x] Unit 6 (Issue #929): [F][Gate] Swarm, Arena, Interrogate, 6-harness conformance & end-to-end verification (PR #936)
 
+## Epic #916: [Epic][PStack semantics] Upstream Cursor scope, Mu/Dogsled reference-only classification and review (CLOSED)
+- [x] Unit 1 (Issue #917): [PS-01][Semantic source audit] Classify March 2026 Cursor PStack semantic delta across playbooks, principles, and skills (PR #930)
+- [x] Unit 2 (Issue #918): [PS-02][OpenSpec] Consolidate PStack upstream 0.15.35+ specs, references, and tool mappings (PR #930)
+- [x] Unit 3 (Issue #921): [PS-03][Review gate] Validate upstream semantic parity via Swarm, Arena, and Interrogate (PR #930)
+
 
 
 
