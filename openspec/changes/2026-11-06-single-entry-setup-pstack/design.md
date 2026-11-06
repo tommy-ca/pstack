@@ -1,93 +1,138 @@
-# System design: harness-agnostic model setup without a second setup engine
+# System, code and data design — one PStack setup skill
 
-## Responsibility architecture
+## Layering / ownership
 
 ~~~text
-Official Cursor PStack setup semantics (source of engineering intent)
-       |
-       v
-skills/setup-pstack/SKILL.md    (one public entry, neutral process)
-       |
-       +-> pstack.package.json#roles  (one role registry)
-       +-> scripts/model_role_resolver.py (one precedence planner)
-       +-> skills/setup-pstack/profiles/<host>.json
-                | setup.source, setup.reference, catalog, overlay, effort
-                v
-       skills/setup-pstack/references/<host>.md
-                |
-       +--------+-------------------+-----------------------+
-       |                            |                       |
-    host-cli                     host-catalog            inherit/none
-    e.g. Grok                   Codex/Antigravity       candidate or GAP
-    native probe/write          projected native file   no host writes
-       |                            |                       |
-       +----------------------------+-----------------------+
-                                    |
-                         confirm exact outcome + proof tier
+Pinned cursor/plugins/pstack setup semantics (UPSTREAM @88d47514)
+    |
+    v
+skills/setup-pstack/SKILL.md      single human-invocable setup skill
+    |  observe active host (same host identity as poteto-mode)
+    |  read typed host profile from canonical packaged directory
+    +--> pstack.package.json#roles          canonical 22 role IDs/panels
+    +--> scripts/model_role_resolver.py     canonical model precedence
+    +--> scripts/setup_pstack.py            existing setup/profile helpers
+              |
+              v
+       SetupProjection.source
+         host-cli (currently Grok) -> references/<matched-profile-stem>.md
+                                   -> host-only detect/ask/validate/write
+         host-catalog             -> report existing native projected catalog
+         inherit                  -> no override write
+         none / absent / candidate -> named BLOCKED or GAP
+              |
+       confirm exact action and evidence tier
 
-poteto-mode/references/<host>-tools.md: separate playbook tool/spawn consumption
-External agent orchestrators / qorch: no setup ownership or reverse imports
+poteto-mode/references/<host>-tools.md : host tool/spawn syntax only
+QStack -> independently installed poteto-mode : one-way downstream overlay
+No orchestration engine, agent scheduler, provider gateway, or duplicate router
 ~~~
 
-## Semantic building blocks
-| Atom | Owner | Contract |
+## Semantic atoms and source of truth
+| Atom | Owner | Invariant |
 | --- | --- | --- |
-| Scope and host identity | setup-pstack + typed profile | Match installed active host, not path/stem guess |
-| Role taxonomy | pstack.package.json#roles | No new role list; preserve scalar/panel shape |
-| Availability discovery | selected native reference | Only observed entitled slugs; no model guesses |
-| Budget and effort | Cursor setup intent + host reference | Offer choices supported by actual host enum; no cross-host tokens |
-| Precedence | scripts/model_role_resolver.py | Explicit > project > user > host-role > host-tier > inherit; fail closed |
-| Persist or project | typed setup.source | Host-cli isolated write; host-catalog reports projection; inherit/none no write |
-| Verification status | existing verification skills | Static plan/config write is NOT native-run evidence |
-| Safe recovery | selected host reference | Idempotent changes, user ownership preserved, changes reported |
+| Upstream role/budget intent | pinned Cursor setup skill | Adapt to proven host surface, do not copy Cursor slugs as Grok defaults |
+| Exact active host ID | scripts/host_identity.py + validated HarnessProfile | `github:copilot` is not `copilot`; filename never grants capabilities |
+| Setup state/source | existing SetupProjection + setup-projection.schema.json | no `skill` or `reference` field after caller migration |
+| Setup reference selection | validated profile path + small existing setup helper | `references/<matched-profile-stem>.md`; no user path |
+| Role taxonomy | pstack.package.json#roles | 22 keys, scalar/panel topology preserved |
+| Override precedence | scripts/model_role_resolver.py | explicit > project > user > host-role > host-tier > inherit or BLOCKED |
+| Grok model/effort discovery | setup-pstack/references/grok.md | only slugs / effort tokens proven on live host |
+| Writes | host-specific native reference + current scoped helper | only managed files; idempotent and user-safe |
+| Profile source | skills/setup-pstack/profiles/ | edit once, generate root compatibility copy |
+| Proof | verification skills / offline contracts / native smoke | static config write != live host model acceptance |
 
-## Typed delta to existing SetupProjection (proposal only)
-`SetupProjection` already has `source`, `effort`, `skill?`, `catalog?`, `overlay?`. Add an optional relative `reference` in the existing schema/dataclass; do not create a new model or provider registry.
+## Minimal existing data schemas — no new registry
 
-~~~ts
-type SetupSource = "host-cli" | "host-catalog" | "inherit" | "none";
-interface SetupProjectionVNext {
-  source: SetupSource;
-  effort: "live-enum" | "inherit-parent" | "none";
-  reference?: string | null; // "references/grok.md", relative to skills/setup-pstack/
-  skill?: string | null;     // legacy only while migrating readers
-  catalog?: string | null;   // existing declared native path
-  overlay?: string | null;   // existing declared native overlay
+### SetupProjection: final typed shape
+The current `scripts/portability_types.py::SetupProjection` and `schemas/portability/setup-projection.schema.json` are the **only** implementation carriers. Change them in place; this is a specification of their eventual shape, not a new schema file.
+
+~~~python
+@dataclass(frozen=True)
+class SetupProjection:
+    source: Literal["host-cli", "host-catalog", "inherit", "none"]
+    effort: Literal["live-enum", "inherit-parent", "none"]
+    catalog: str | None = None
+    overlay: str | None = None
+# NO "skill" field; NO "reference" field. The native reference is derived.
+~~~
+
+| source | effort | catalog | overlay | host-specific instructions | allowed action |
+| --- | --- | --- | --- | --- | --- |
+| host-cli | live-enum | required host-home path | optional host-home path | derived by matched profile filename | scoped native probe/write |
+| host-catalog | none | required repo-projected path | forbidden | none | report project-time projection; no runtime write |
+| inherit | inherit-parent | forbidden | forbidden | none | omit model override; no runtime write |
+| none | none | forbidden | forbidden | none | report BLOCKED; no runtime write |
+| absent `setup` | n/a | n/a | n/a | none | explicit GAP, no fallback |
+
+Candidate `support_state` MUST reject `host-cli`. Each setup object MUST reject unknown keys and disallowed source-field combinations (JSON Schema Draft 2020-12 `oneOf`/conditionals, with current `SetupProjection.validate` checking the same semantic matrix). A catalog string must not be used as a native path until the selected host declares that layout; project-relative values require projected-file existence, and host-home values must stay in the selected host's allowed subtree.
+
+### Canonical host example (existing grok.json, proposed field removal)
+~~~json
+{
+  "host": "grok",
+  "support_state": "packaged",
+  "setup": {
+    "source": "host-cli",
+    "catalog": "~/.grok/pstack-models.toml",
+    "overlay": "~/.grok/roles",
+    "effort": "live-enum"
+  }
 }
 ~~~
+Only the `setup` block is a proposed delta; all other existing HarnessProfile fields remain as shipped. Both packaged and generated root copies MUST be byte-identical. `profiles/copilot.json` has `host: github:copilot`; resolve the real filename by exact profile ID match first.
 
-**Migration:** first accept `skill` or `reference` (exactly one) for `host-cli`, but do NOT silently fall back from an invalid reference to the legacy skill; migrate Grok profile, all callers and tests; then remove `skill` from the schema and profile after packaging succeeds. Non-host-cli source values must have neither field. Validate relative paths: no `..`, absolute path, symlink escape, directory, or missing file. A candidate host cannot declare CLI probing.
-
-## Code flow
-1. Observe active host capability (as poteto-mode already does); resolve exact declared profile `host` ID from the same packaged profile source.
-2. Parse and validate the `setup` block using existing `scripts/portability_types.py` and `scripts/setup_pstack.py` helpers.
-3. For `host-cli`, read its validated local reference; for `host-catalog`, report the existing projected file; for `inherit` and `none`, make no writes and report the relevant status.
-4. Use `pstack.package.json#roles` and the existing pure model resolver to build available, correctly shaped role/panel choices. Preserve upstream budget intent without assuming that every host accepts Cursor's `max/xhigh` slugs.
-5. Validate observed model/effort availability, user choice, host support status and write destination. Invalid/unknown/denied -> BLOCKED/GAP and zero writes.
-6. Execute only the active host's native config operation. Grok remains limited to `~/.grok/pstack-models.toml` plus pstack-namespaced role overlays; never rewrite user-owned unrelated files.
-7. Confirm what was actually written/projected, how to reload, and what was NOT proven. Optional project-local verification skill offer stays in the common setup process, with no duplicate generator.
-
-## Grok effort alias nuance
-On the existing Grok adapter, model `inherit-parent`/`auto` omits `task.model` and uses the parent's model. But `[effort].<role> = inherit-parent` or `auto` removes only the managed role overlay; the plugin agent's shipped frontmatter `effort` still applies. It must not be described as guaranteed inheritance of parent-session effort. The host reference owns this clarification and its negative test, not the neutral SKILL body.
-
-## Profile data flow
-~~~text
-skills/setup-pstack/profiles/*.json (canonical editable input)
-  -> validate HarnessProfile / SetupProjection
-  -> existing package projection or staging emits root profiles/ compatibility mirror
-  -> packaged plugin includes canonical setup profiles (and temporary root copy where required)
-  -> resolve_profiles_dir reads canonical path, or validated legacy mirror only in compatibility mode
-  -> installed and repo consumers observe identical declared data
+### Reference convention is a path derived from validated data, not a field
+~~~python
+# Conceptual behavior inside existing scripts/setup_pstack.py; not shipped code.
+profile_path, typed_profile = load_exact_declared_profile(active_host)
+projection = validate_setup(typed_profile.setup, typed_profile.support_state)
+if projection.source == "host-cli":
+    # Use profile_path.stem, not the untrusted host string and not a new field.
+    reference = SETUP_SKILL / "references" / (profile_path.stem + ".md")
+    require_regular_file_inside(reference, SETUP_SKILL / "references")
+    read_only_selected_host_reference(reference)
+# Other source modes never resolve or load a host-specific setup reference.
 ~~~
-Guard against stale mirrors by byte parity and fail closed rather than silently preferring whichever directory happens to exist. Do not remove the root mirror until `scripts/drivers/base.py`, `verify_portable.py` callers, `tests/test_setup_projection.py`, Antigravity proof/staging and live package consumers are reconciled.
+Inputs to `load_exact_declared_profile` MUST be validated IDs from `scripts/host_identity.py`, and match the JSON `host` value exactly. Both the profile and the reference must be in the trusted package and not an escaping symlink; invalid/missing reference -> GAP/BLOCKED without defaulting to another host. Keep this a small utility, not a general adapter abstraction. A test must reject host-ID filename mismatches and attempting to select `references/grok.md` while running as Codex.
 
-## Migration impact
-- Move `skills/setup-pstack-grok/SKILL.md` to `skills/setup-pstack/references/grok.md`, preserving live CLI detection, question order, role overlays and Grok-specific constants only there.
-- Move its four reference assets to `skills/setup-pstack/references/grok/`; revise relative links and all Grok-only skill citations.
-- Update existing `SetupProjection`, schema, `resolve_setup_projection`, profile `grok.json` in source and mirror, compatibility projectors and package manifests.
-- Update `tests/test_setup_projection.py`, `tests/test_verify_harness.py`, `tests/test_scan_host_boundary.py`, `tests/test_harness_profiles_sync.py`, `scripts/verify_harness.py`, scanner exemptions, README/README.zh-CN, TEST-PLAN, and relevant source/fixture hashes. Delete old skill only after consumers pass.
-- Retain historical audit docs and old closed issues; do not rewrite historical evidence or report tests not run.
-- If `scripts/setup_pstack.py` still mixes host-neutral policy with Grok-only file writes, move the already-existing writer to a narrow Grok-native helper **only if needed**, without inventing a generic adapter interface.
+## Code flow (runtime)
+1. **Identify** active harness by actually available host primitives; validate the ID and locate the one matching packaged profile (allow root mirror only after parity check).
+2. **Parse** and validate raw JSON at the boundary into existing `HarnessProfile` and `SetupProjection`; reject invalid source shapes, candidate `host-cli`, unsafe paths or extra fields.
+3. **Select** a host-local setup reference only if `source=host-cli`. Select by validated profile filename stem; do not fall back to `setup-pstack-grok` or a guessed different host.
+4. **Discover** available models/effort via native declared interface; load current configured state, use 22 canonical roles plus existing pure precedence. For `host-catalog` report the already projected catalog; for `inherit`, `none`, missing setup no runtime write.
+5. **Offer** host-supported budget/role/panel choices and validate against actual available slugs/tokens before writing. Missing catalog/invalid token -> BLOCKED, no silent family/host substitution.
+6. **Persist** only managed native targets, with idempotent replacement and safe user-owned file preservation. Grok: `~/.grok/pstack-models.toml` + `~/.grok/roles/pstack:<key>.toml` only, never Cursor rules.
+7. **Report** host, source mode, exact paths modified (or no-write), effort/model provenance, degraded or blocked state, and evidence tier. A written file is not proof a child ran.
+8. **Offer optionally** `create-verification-skill` and `create-formal-verification-skill` when the project lacks the respective verification skill. These are distinct explicit follow-up invocations, not setup-file writes; avoid `verify-pstack` name collision or automatic generation.
 
-## Reversibility and proof
-Use a reviewable stack: spec change -> reference migration -> canonical profile convergence -> final verification. Retain exact-head rollback instructions and restore packaging before removal. CI must distinguish typed/offline proof from observed host execution and separate missing host binaries as NOT_RUN/BLOCKED.
+## Data flow / source distribution
+~~~text
+skills/setup-pstack/profiles/*.json  [canonical machine-readable data]
+       -> validate schema / host IDs / complete set
+       -> existing packaging/projection code generates profiles/*.json mirror
+       -> assert byte-for-byte parity in tests and packaging
+       -> distribute packaged skills and required mirror without extra edit authority
+       -> resolve host by validated ID and profile filename
+       -> consume setup.source and only matching native reference
+       -> report native state/evidence, not fake model availability
+~~~
+Current `resolve_profiles_dir` prefers root if it exists, while tests designate packaged as canonical. Converge by explicitly changing the resolver to prefer the packaged source; when *both* are present, verify full mirror parity before any setup target is selected. Installed plugin without root continues to function. Do not remove root until the current `package_lifecycle`, `prove_antigravity_native_package`, `sync_antigravity_plugin`, `adapt_harness`, driver/test and `verify_harness` consumers have all migrated; recent `main` modifies several of those files, so no implementation wave may discard them.
+
+## Grok aliases, model/effort shape and exact budget limits
+- Model `inherit-parent`/`auto` -> omit `task.model`; Grok plugin agent inherits the parent model.
+- Grok `[effort].role = inherit-parent/auto` -> remove the **managed role overlay only**. Shipped agent-frontmatter `effort` still wins when present; do NOT falsely claim the parent session's effort is directly inherited.
+- Array/panel role choices preserve cardinality and provenance. Multiple entries in one identical model family are multiple requests, not proof of independent model diversity or completed worker executions.
+- Grok uses its live `use one of:` CLI enum, not reserved parser tokens or Cursor budget strings. Defaults and effort ladder remain in native setup references. Static presets are labeled ship-time snapshots, not live discovery.
+- Original Grok skill's `Write only ~/.grok...` statement governs the **setup mutation phase**, while optional verification authoring is a separate requested action and must be described as such. Do not silently generate app skills during model setup.
+
+## Migration sequence and failure containment
+**Single coordinated internal migration wave** (separate reviewable implementation PRs may stack; no intermediate publicly released broken state):
+1. Freeze pinned source and complete caller inventory (#949).
+2. Accept this OpenSpec MODIFIED requirements change (#950); verify schema conditional design before execution.
+3. Move Grok 15KB body to `skills/setup-pstack/references/grok.md`, its four refs to `references/grok/`, update relative links, and keep neutral SKILL under host path/slug boundary scans.
+4. Migrate all `setup.skill` readers, two `grok.json` copies, existing typed model/schema, tests, `scripts/verify_harness.py`, `scripts/scan_host_boundary.py`, `scripts/adapt_harness.py`, package verifier and manifests. Delete old public skill **in the same wave**, not after shipping a permanent dual-mode shim (#951).
+5. Make packaged profiles editable authority, generate root mirror using current packaging helpers, update resolver preference/parity, regression and stale-mirror tests (#952). Only remove root in a later explicit compatibility decision.
+6. Run targeted and full offline tests, OpenSpec CLI when available, exact SHA package proofs, and real-host smoke where available. Independent Swarm/Arena/Interrogate and Thermos review require real outputs/receipts (#953).
+
+Rollback restores previous skill, projection and generated data consistently; never restore only one half of the schema/reader pair. Classify native checks unrun as NOT_RUN/BLOCKED, not a blanket PASS.
