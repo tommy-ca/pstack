@@ -67,6 +67,9 @@ interface SetupProjectionVNext {
 6. Execute only the active host's native config operation. Grok remains limited to `~/.grok/pstack-models.toml` plus pstack-namespaced role overlays; never rewrite user-owned unrelated files.
 7. Confirm what was actually written/projected, how to reload, and what was NOT proven. Optional project-local verification skill offer stays in the common setup process, with no duplicate generator.
 
+## Grok effort alias nuance
+On the existing Grok adapter, model `inherit-parent`/`auto` omits `task.model` and uses the parent's model. But `[effort].<role> = inherit-parent` or `auto` removes only the managed role overlay; the plugin agent's shipped frontmatter `effort` still applies. It must not be described as guaranteed inheritance of parent-session effort. The host reference owns this clarification and its negative test, not the neutral SKILL body.
+
 ## Profile data flow
 ~~~text
 skills/setup-pstack/profiles/*.json (canonical editable input)

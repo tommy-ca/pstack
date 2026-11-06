@@ -10,6 +10,7 @@ Status: SPECIFIED / NOT_RUN. A plan is not proof of executed independent agents 
 | V-04 | Cross-host write | Codex/candidate attempts Grok TOML write | path-sandbox negative test |
 | V-05 | Availability | missing slug/invalid effort after host detection | explicit BLOCKED/no persisted value |
 | V-06 | Default aliases | `auto` or `inherit-parent` configured | model omitted, no fake identity; effort described precisely |
+| V-06b | Grok effort alias | overlay removed but plugin agent frontmatter effort remains | report frontmatter fallback, not false parent effort inheritance |
 | V-07 | Panel semantics | arena candidates/seat or judge missing | coverage/independence GAP, no synthetic success |
 | V-08 | Idempotent user config | second setup call same choices and unrelated files present | no new write outside managed names |
 | V-09 | Profile authority | packaged and root copies disagree | deterministic FAIL and no stale root preference |

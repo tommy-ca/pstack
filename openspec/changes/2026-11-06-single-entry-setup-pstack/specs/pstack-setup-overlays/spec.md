@@ -44,6 +44,12 @@ Setup MUST bind the active session to the exact declared host ID and profile sup
 - **THEN** it MUST refuse or request a supported choice
 - **AND** it MUST NOT persist the unverified value or substitute another host's default
 
+#### Scenario: Grok effort alias does not guarantee parent effort
+- **GIVEN** a Grok plugin agent with shipped frontmatter `effort` and an `[effort]` override set to `inherit-parent` or `auto`
+- **WHEN** setup removes the corresponding managed role overlay
+- **THEN** confirmation MUST describe the effective fallback as plugin-agent frontmatter unless native evidence proves parent effort inheritance
+- **AND** it MUST NOT claim that omitting the overlay causes direct parent-session effort inheritance
+
 ### Requirement: Packaged profiles are a single canonical machine-readable source
 `skills/setup-pstack/profiles/` MUST hold the editable canonical host declarations for skill distribution. During migration `profiles/` MAY remain a deterministic generated compatibility mirror, never an independently maintained source. All host discovery and consumers MUST use a validated resolver and reject diverged copies; a mirror MUST NOT silently override the canonical packaged data.
 
