@@ -331,3 +331,14 @@ def test_update_refuses_foreign_tree(tmp_path: Path) -> None:
     assert ok is False, errors
     assert any("refused" in e and str(live) in e for e in errors), errors
     assert _tree_digest(foreign_plugin) == before
+
+
+def test_antigravity_native_package_proof() -> None:
+    from scripts.prove_antigravity_native_package import prove_antigravity_package
+
+    code, result = prove_antigravity_package()
+    assert code == 0, result
+    assert result["verdict"] == "PASS"
+    assert result["skills_count"] >= 60
+    assert result["agents_count"] >= 20
+
