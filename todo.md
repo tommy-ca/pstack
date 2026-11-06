@@ -368,13 +368,13 @@
 - [x] Unit 4 (Issue #910): [Cross-port][D][P1] Curate source-backed LLMWiki cross-port semantic atoms
 - [x] Unit 5 (Issue #911): [Cross-port][E][Gate] Run exact-head Swarm/Arena/Interrogate and both Thermo reviews
 
-## Epic #923: [Epic][Antigravity Native Package & Quality Judo] Native agy plugin lifecycle, thermo-nuclear quality audit, and verification tooling
-- [ ] Unit 1 (Issue #924): [A][P0] Thermo-nuclear audit & test sync fix (docs sync & leftover scanner)
-- [ ] Unit 2 (Issue #925): [B][P0] Trim poteto-mode under 24k Antigravity limit and add SVG logo
-- [ ] Unit 3 (Issue #926): [C][P0] Native Antigravity plugin manifest & projection without ignored fields
-- [ ] Unit 4 (Issue #927): [D][P1] Package lifecycle integration with agy plugin install/validate
-- [ ] Unit 5 (Issue #928): [E][P1] Update verification skills and scaffold for Antigravity native verification
-- [ ] Unit 6 (Issue #929): [F][Gate] Swarm, Arena, Interrogate, 6-harness conformance & end-to-end verification
+## Epic #923: [Epic][Antigravity Native Package & Quality Judo] Native agy plugin lifecycle, thermo-nuclear quality audit, and verification tooling (CLOSED)
+- [x] Unit 1 (Issue #924): [A][P0] Thermo-nuclear audit & test sync fix (docs sync & leftover scanner) (PR #931)
+- [x] Unit 2 (Issue #925): [B][P0] Trim poteto-mode under 24k Antigravity limit and add SVG logo (PR #932)
+- [x] Unit 3 (Issue #926): [C][P0] Native Antigravity plugin manifest & projection without ignored fields (PR #933)
+- [x] Unit 4 (Issue #927): [D][P1] Package lifecycle integration with agy plugin install/validate (PR #934)
+- [x] Unit 5 (Issue #928): [E][P1] Update verification skills and scaffold for Antigravity native verification (PR #935)
+- [x] Unit 6 (Issue #929): [F][Gate] Swarm, Arena, Interrogate, 6-harness conformance & end-to-end verification (PR #936)
 
 
 

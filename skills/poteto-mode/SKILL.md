@@ -106,7 +106,7 @@ Spawn using the active host's `agent.spawn` primitive per the harness profile (`
 
 **Match the model to the job.** Start from role configured model or default and pick reasoning level and speed needed. Raise one step for subtlest work; lower for routine work. Use fast mode only when urgent (red CI/trunk or blocked human); otherwise standard speed. Verification uses configured `swarm-workers` model and speed. Keep the family the role names so panels stay diverse. If no slug at that level, use nearest slug. A role on `auto` or `inherit-parent` stays on parent model. If host rejects adjusted slug, use role configured default.
 
-You own every subagent's work. Review actual diff and runtime receipts; do not relay summaries unverified. Give new work to a fresh subagent with full goal and previous report. Resume only when preserving costly uncommitted local state and host proves resume semantics. A PR owner is a durable role, not a persistent session. Independent opinions require distinct models and context.
+You own every subagent's work. Review actual diff and runtime receipts; do not relay summaries unverified. Give **new work** to a fresh subagent by default, with full goal and previous report. Resume only when preserving costly uncommitted local state and host proves resume semantics. A PR owner is a durable role, not a persistent session. Independent opinions require distinct models and context.
 
 ## Writing the reply
 
