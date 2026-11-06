@@ -28,24 +28,62 @@ PACKAGE_JSON = ROOT / "pstack.package.json"
 def resolve_profiles_dir(root: Path | None = None) -> Path:
     """Resolve the directory containing harness profiles.
 
-    Prefers the repository profiles directory when present (in repo workspace),
-    falling back to the packaged skill directory (guaranteed present in installed plugins).
+    Prefers the canonical packaged skill directory (skills/setup-pstack/profiles/).
+    Falls back to root profiles/ if the packaged directory is missing.
     """
     base = root or ROOT
-    repo_profiles = base / "profiles"
-    if repo_profiles.is_dir():
-        return repo_profiles
     packaged = base / "skills" / "setup-pstack" / "profiles"
     if packaged.is_dir():
         return packaged
-    return repo_profiles
+    repo_profiles = base / "profiles"
+    if repo_profiles.is_dir():
+        return repo_profiles
+    return packaged
+
+
+def assert_profiles_parity(root: Path | None = None) -> None:
+    """Assert byte-for-byte parity between canonical packaged profiles and root mirror."""
+    base = root or ROOT
+    packaged = base / "skills" / "setup-pstack" / "profiles"
+    repo_profiles = base / "profiles"
+    if packaged.is_dir() and repo_profiles.is_dir():
+        packaged_files = {p.name: p for p in packaged.glob("*.json")}
+        repo_files = {p.name: p for p in repo_profiles.glob("*.json")}
+        if set(packaged_files.keys()) != set(repo_files.keys()):
+            missing = set(packaged_files.keys()) ^ set(repo_files.keys())
+            raise ValidationError(
+                f"Profile file set mismatch between canonical ({packaged}) and root mirror ({repo_profiles}): {sorted(missing)}"
+            )
+        for name, pkg_file in packaged_files.items():
+            repo_file = repo_files[name]
+            if pkg_file.read_bytes() != repo_file.read_bytes():
+                raise ValidationError(
+                    f"Profile content drift between canonical ({pkg_file}) and root mirror ({repo_file})"
+                )
+
+
+def sync_root_profiles_mirror(root: Path | None = None) -> int:
+    """Generate and synchronize root profiles/ compatibility mirror from canonical packaged profiles."""
+    import shutil
+
+    base = root or ROOT
+    packaged = base / "skills" / "setup-pstack" / "profiles"
+    repo_profiles = base / "profiles"
+    if not packaged.is_dir():
+        raise ValidationError(f"Canonical packaged profiles directory missing: {packaged}")
+    repo_profiles.mkdir(parents=True, exist_ok=True)
+    count = 0
+    for p in packaged.glob("*.json"):
+        shutil.copy2(p, repo_profiles / p.name)
+        count += 1
+    return count
 
 
 PROFILES_DIR = resolve_profiles_dir(ROOT)
 
 
-def _declared_profile(host: str, profiles_dir: Path) -> dict[str, Any]:
-    """The profile whose `host` field is exactly `host`.
+def _declared_profile_entry(host: str, profiles_dir: Path) -> tuple[Path, dict[str, Any]]:
+    """The profile path and dict whose `host` field is exactly `host`.
 
     The argument is a host id, never a filename stem: `profiles/copilot.json`
     declares `github:copilot`, and a stem lookup would also let `../profiles/grok`
@@ -59,8 +97,12 @@ def _declared_profile(host: str, profiles_dir: Path) -> dict[str, Any]:
         except (OSError, ValueError) as exc:
             raise ValidationError(f"Unreadable harness profile {path.name}: {exc}") from exc
         if isinstance(profile, dict) and profile.get("host") == host:
-            return profile
+            return path, profile
     raise ValidationError(f"No harness profile for host {host!r}")
+
+
+def _declared_profile(host: str, profiles_dir: Path) -> dict[str, Any]:
+    return _declared_profile_entry(host, profiles_dir)[1]
 
 
 def resolve_setup_projection(
@@ -71,11 +113,11 @@ def resolve_setup_projection(
     `None` is a GAP to report, never a reason to reuse another host's setup. The
     structural matrix (source/effort/field coherence) lives on the typed model;
     this resolver adds the repo-level checks the profile cannot make on its own:
-    a declared skill must exist, and a repo-relative catalog must be projected.
+    a declared reference for host-cli must exist, and a repo-relative catalog must be projected.
     The writers read it instead of hardcoding the same paths, so a host that
     changes its setup surface changes exactly one declaration.
     """
-    profile = _declared_profile(host, profiles_dir)
+    profile_path, profile = _declared_profile_entry(host, profiles_dir)
     raw = profile.get("setup")
     if raw is None:
         return None
@@ -92,10 +134,12 @@ def resolve_setup_projection(
     except TypeError as exc:
         raise ValidationError(f"setup block for {host!r} does not match SetupProjection: {exc}") from exc
     projection.validate()
-    if projection.skill is not None and not (root / "skills" / projection.skill / "SKILL.md").is_file():
-        raise ValidationError(
-            f"setup skill {projection.skill!r} for {host!r} has no skills/{projection.skill}/SKILL.md"
-        )
+    if projection.source == "host-cli":
+        ref_path = root / "skills" / "setup-pstack" / "references" / f"{profile_path.stem}.md"
+        if not ref_path.is_file():
+            raise ValidationError(
+                f"setup reference for {host!r} has no skills/setup-pstack/references/{profile_path.stem}.md"
+            )
     # A `~` catalog is a host-home write target that need not exist yet; everything
     # else is a repo artifact this tree must already project.
     if projection.catalog is not None and not projection.catalog.startswith("~"):

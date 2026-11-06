@@ -28,14 +28,14 @@ CONFORMANCE_PLANES = ("canonical", "adapter", "package", "runtime")
 
 SETUP_SOURCES = ("host-cli", "host-catalog", "inherit", "none")
 SETUP_EFFORT_MODES = ("live-enum", "inherit-parent", "none")
-# Closed matrix per setup source: (declares a skill, declares a catalog, declares
+# Closed matrix per setup source: (declares a catalog, declares
 # an overlay, required effort mode). Only a CLI-enumerated surface may pin a
 # per-role level, because an offline catalog has no observed effort vocabulary.
-SETUP_SHAPES: Dict[str, Tuple[bool, bool, bool, str]] = {
-    "host-cli": (True, True, True, "live-enum"),
-    "host-catalog": (False, True, False, "none"),
-    "inherit": (False, False, False, "inherit-parent"),
-    "none": (False, False, False, "none"),
+SETUP_SHAPES: Dict[str, Tuple[bool, bool, str]] = {
+    "host-cli": (True, True, "live-enum"),
+    "host-catalog": (True, False, "none"),
+    "inherit": (False, False, "inherit-parent"),
+    "none": (False, False, "none"),
 }
 
 SKILLS_HASH_IGNORED_DIRS = frozenset({"__pycache__", "node_modules"})
@@ -349,7 +349,7 @@ class PackageDescriptor:
 
 @dataclass
 class SetupProjection:
-    """Where a host declares its setup surface, and which skill owns the steps.
+    """Where a host declares its setup surface.
 
     A declaration only: a projected profile or a written config file is not
     evidence that the host accepted a model or a level.
@@ -357,7 +357,6 @@ class SetupProjection:
 
     source: str
     effort: str = "none"
-    skill: Optional[str] = None
     catalog: Optional[str] = None
     overlay: Optional[str] = None
 
@@ -366,15 +365,11 @@ class SetupProjection:
             raise ValidationError(f"Invalid setup source: {self.source!r}")
         if self.effort not in SETUP_EFFORT_MODES:
             raise ValidationError(f"Invalid setup effort mode: {self.effort!r}")
-        declares_skill, declares_catalog, allows_overlay, effort = SETUP_SHAPES[self.source]
-        for required, name, value in (
-            (declares_skill, "skill", self.skill),
-            (declares_catalog, "catalog", self.catalog),
-        ):
-            if required and not (isinstance(value, str) and value.strip()):
-                raise ValidationError(f"setup source {self.source!r} must name a {name}")
-            if not required and value is not None:
-                raise ValidationError(f"setup source {self.source!r} must not name a {name}")
+        declares_catalog, allows_overlay, effort = SETUP_SHAPES[self.source]
+        if declares_catalog and not (isinstance(self.catalog, str) and self.catalog.strip()):
+            raise ValidationError(f"setup source {self.source!r} must name a catalog")
+        if not declares_catalog and self.catalog is not None:
+            raise ValidationError(f"setup source {self.source!r} must not name a catalog")
         if not allows_overlay and self.overlay is not None:
             raise ValidationError(f"setup source {self.source!r} declares no per-role overlay")
         if self.effort != effort:

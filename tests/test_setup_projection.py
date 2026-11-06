@@ -26,7 +26,7 @@ from tests.model_role_helpers import (
 )
 
 ENTRY_SKILL = ROOT / "skills" / "setup-pstack" / "SKILL.md"
-GROK_SKILL = ROOT / "skills" / "setup-pstack-grok" / "SKILL.md"
+GROK_REF = ROOT / "skills" / "setup-pstack" / "references" / "grok.md"
 
 
 def _profile(host: str) -> dict:
@@ -76,14 +76,15 @@ def test_inherit_hosts_inherit_the_parent_model_instead_of_overriding_it() -> No
     assert checked, "no inherit host: the invariant would pass vacuously"
 
 
-def test_host_cli_hosts_name_a_setup_skill_that_exists() -> None:
+def test_host_cli_hosts_name_a_setup_reference_that_exists() -> None:
     checked = 0
     for host in BUILTIN_HOSTS:
         projection = resolve_setup_projection(host)
         assert projection is not None
         if projection.source != "host-cli":
             continue
-        assert (ROOT / "skills" / str(projection.skill) / "SKILL.md").is_file(), host
+        stem = host.split(":")[-1]
+        assert (ROOT / "skills" / "setup-pstack" / "references" / f"{stem}.md").is_file(), host
         checked += 1
     assert checked, "no host-cli host: the invariant would pass vacuously"
 
@@ -93,7 +94,6 @@ def test_grok_is_the_one_cli_probing_surface() -> None:
     assert resolve_setup_projection("grok") == SetupProjection(
         source="host-cli",
         effort="live-enum",
-        skill="setup-pstack-grok",
         catalog="~/.grok/pstack-models.toml",
         overlay="~/.grok/roles",
     )
@@ -115,7 +115,7 @@ def test_inherit_parent_projection_declares_no_write_target() -> None:
     assert projection is not None
     assert projection.source == "inherit"
     assert projection.effort == "inherit-parent"
-    assert projection.catalog is None and projection.overlay is None and projection.skill is None
+    assert projection.catalog is None and projection.overlay is None
 
 
 def test_candidate_hosts_declare_a_passive_surface_or_none() -> None:
@@ -128,23 +128,23 @@ def test_candidate_hosts_declare_a_passive_surface_or_none() -> None:
 
 
 def test_entry_skill_names_no_host_path_or_slug() -> None:
-    """The shared entry must stay host-neutral; the Grok body lives in its own skill."""
+    """The shared entry must stay host-neutral; the Grok body lives in its own reference."""
     text = ENTRY_SKILL.read_text(encoding="utf-8")
     for token in ("~/.grok", "grok-4.6", "pstack-models.toml", "Grok Build", ".grok/"):
         assert token not in text, token
     assert "profiles/<host>.json#setup" in text
-    assert "skills/<setup.skill>/SKILL.md" in text
+    assert "references/<profile-stem>.md" in text
     assert "Never substitute one host's setup for another." in text
     assert "pstack.package.json#roles" in text
     assert "scripts/model_role_resolver.py" in text
 
 
-def test_grok_skill_owns_the_adapter_body() -> None:
-    text = GROK_SKILL.read_text(encoding="utf-8")
-    assert text.startswith("---\nname: setup-pstack-grok\n")
-    assert "../setup-pstack/SKILL.md" in text
+def test_grok_reference_owns_the_adapter_body() -> None:
+    text = GROK_REF.read_text(encoding="utf-8")
+    assert "Grok Build native reference" in text
+    assert "../SKILL.md" in text
     for reference in ("defaults.toml", "effort-ladder.md", "resolve-effort.md", "resolve-model.md"):
-        path = GROK_SKILL.parent / "references" / reference
+        path = GROK_REF.parent / "grok" / reference
         assert path.is_file(), f"deleted guide: {path.relative_to(ROOT)}"
     assert "use one of:" in text
 
@@ -160,13 +160,12 @@ def test_entry_skill_passes_the_host_boundary_scan() -> None:
     "block",
     [
         {"source": "inherit", "effort": "inherit-parent", "overlay": "~/.some/roles"},
-        {"source": "host-cli", "effort": "live-enum", "catalog": "x.json"},
-        {"source": "host-cli", "effort": "none", "skill": "s", "catalog": "x.json"},
+        {"source": "host-cli", "effort": "live-enum"},
+        {"source": "host-cli", "effort": "none", "catalog": "x.json"},
         {"source": "host-catalog", "effort": "none"},
         {"source": "none", "effort": "inherit-parent"},
         {"source": "bogus", "effort": "none"},
         {"source": "none", "effort": "bogus"},
-        {"source": "inherit", "effort": "inherit-parent", "skill": "setup-pstack-grok"},
     ],
 )
 def test_setup_projection_rejects_incoherent_shapes(block: dict) -> None:
@@ -174,9 +173,10 @@ def test_setup_projection_rejects_incoherent_shapes(block: dict) -> None:
         SetupProjection(**block).validate()
 
 
-def _write_profile(directory: Path, host: str, support_state: str, setup: object) -> None:
+def _write_profile(directory: Path, host: str, support_state: str, setup: object, filename: str | None = None) -> None:
     directory.mkdir(parents=True, exist_ok=True)
-    (directory / f"{host}.json").write_text(
+    fname = filename or (host.split(":")[-1] if ":" in host else host)
+    (directory / f"{fname}.json").write_text(
         json.dumps(
             {
                 "host": host,
@@ -191,14 +191,14 @@ def _write_profile(directory: Path, host: str, support_state: str, setup: object
     )
 
 
-def test_resolver_requires_a_declared_skill_dir(tmp_path: Path) -> None:
+def test_resolver_requires_a_declared_reference(tmp_path: Path) -> None:
     _write_profile(
         tmp_path / "profiles",
         "acme:alpha",
         "mapped",
-        {"source": "host-cli", "effort": "live-enum", "skill": "no-such-skill", "catalog": "~/.acme/models.toml"},
+        {"source": "host-cli", "effort": "live-enum", "catalog": "~/.acme/models.toml"},
     )
-    with pytest.raises(ValidationError, match="no skills/no-such-skill/SKILL.md"):
+    with pytest.raises(ValidationError, match="no skills/setup-pstack/references/alpha.md"):
         resolve_setup_projection("acme:alpha", tmp_path / "profiles", tmp_path)
 
 
@@ -219,10 +219,11 @@ def test_resolver_tolerates_a_host_home_catalog(tmp_path: Path) -> None:
         tmp_path / "profiles",
         "acme:gamma",
         "mapped",
-        {"source": "host-cli", "effort": "live-enum", "skill": "gamma", "catalog": "~/.acme/models.toml"},
+        {"source": "host-cli", "effort": "live-enum", "catalog": "~/.acme/models.toml"},
     )
-    (tmp_path / "skills" / "gamma").mkdir(parents=True)
-    (tmp_path / "skills" / "gamma" / "SKILL.md").write_text("---\nname: gamma\n---\n", encoding="utf-8")
+    ref = tmp_path / "skills" / "setup-pstack" / "references" / "gamma.md"
+    ref.parent.mkdir(parents=True)
+    ref.write_text("# Gamma\n", encoding="utf-8")
     projection = resolve_setup_projection("acme:gamma", tmp_path / "profiles", tmp_path)
     assert projection is not None and projection.catalog == "~/.acme/models.toml"
 
@@ -232,7 +233,7 @@ def test_candidate_host_cannot_declare_a_cli_probe(tmp_path: Path) -> None:
         tmp_path / "profiles",
         "acme:delta",
         "candidate",
-        {"source": "host-cli", "effort": "live-enum", "skill": "s", "catalog": "~/.acme/models.toml"},
+        {"source": "host-cli", "effort": "live-enum", "catalog": "~/.acme/models.toml"},
     )
     with pytest.raises(ValidationError, match="Candidate host"):
         resolve_setup_projection("acme:delta", tmp_path / "profiles", tmp_path)

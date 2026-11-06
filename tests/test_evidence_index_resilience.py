@@ -5,8 +5,13 @@ from pathlib import Path
 import subprocess
 import sys
 
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 import pytest
 
+from scripts.setup_pstack import resolve_profiles_dir
 from tests.evidence_test_helpers import (
     _disposable_copy,
     _omp_live_root,
@@ -117,7 +122,8 @@ def test_a_stat_denied_durable_receipt_is_refused_not_crashed(tmp_path: Path) ->
 
 
 def test_a_stat_denied_profile_is_refused_not_reported_absent(tmp_path: Path) -> None:
-    copy_root, _, denied = _stat_denied_copy(tmp_path, "profiles/grok.json")
+    rel_path = (resolve_profiles_dir(ROOT) / "grok.json").relative_to(ROOT).as_posix()
+    copy_root, _, denied = _stat_denied_copy(tmp_path, rel_path)
     try:
         res = _run_gate(copy_root, "check-evidence", "--host", "grok")
     finally:
@@ -126,7 +132,7 @@ def test_a_stat_denied_profile_is_refused_not_reported_absent(tmp_path: Path) ->
     assert res.returncode == 1, res.stdout + res.stderr
     assert "Traceback" not in res.stderr
     assert "Profile not found" not in res.stdout
-    assert "profiles/grok.json" in res.stdout and "Permission denied" in res.stdout
+    assert "grok.json" in res.stdout and "Permission denied" in res.stdout
 
 
 def test_a_stat_denied_staleness_receipt_is_refused_not_reported_absent(tmp_path: Path) -> None:
@@ -190,7 +196,7 @@ def test_repeated_refreshes_keep_the_run_that_observed(tmp_path: Path) -> None:
 
 def test_check_evidence_names_the_omp_live_remedy(tmp_path: Path) -> None:
     copy_root = _disposable_copy(tmp_path)
-    profile = json.loads((copy_root / "profiles" / "omp.json").read_text(encoding="utf-8"))
+    profile = json.loads((resolve_profiles_dir(copy_root) / "omp.json").read_text(encoding="utf-8"))
     spawn = next(b for b in profile["bindings"] if b["capability"] == "agent.spawn")
     assert spawn["verification_status"] == "verified"
     assert spawn["evidence_ref"]["scenario"] == "runtime-child-spawn-omp"
@@ -258,7 +264,7 @@ def test_check_evidence_cli_refuses_a_profile_that_violates_a_domain_rule(tmp_pa
     clean = subprocess.run(command, capture_output=True, text=True, cwd=copy_root)
     assert clean.returncode == 0, clean.stdout + clean.stderr
 
-    profile_file = copy_root / "profiles" / "grok.json"
+    profile_file = resolve_profiles_dir(copy_root) / "grok.json"
     d = json.loads(profile_file.read_text(encoding="utf-8"))
     d["support_state"] = "supported"
     for binding in d["bindings"]:

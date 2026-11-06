@@ -1,6 +1,6 @@
 ---
 name: setup-pstack
-description: Host-neutral setup entry. Resolves the active host, reads its profiles/<host>.json (or packaged skills/setup-pstack/profiles/<host>.json) setup projection, and dispatches to the setup skill that host declares. A host with no setup block, or a candidate host, gets a named GAP, never another host's fallback. Use for /setup-pstack, "configure pstack models", or changing pstack's model or effort choices.
+description: Host-neutral setup entry. Resolves the active host, reads its profiles/<host>.json (or packaged skills/setup-pstack/profiles/<host>.json) setup projection, and dispatches to the host-native setup reference (when source=host-cli) or reports projected/inherit bindings. A host with no setup block, or a candidate host, gets a named GAP, never another host's fallback. Use for /setup-pstack, "configure pstack models", or changing pstack's model or effort choices.
 ---
 
 # Setup pstack
@@ -22,7 +22,6 @@ If no profile matches, or the profile declares no `setup` block, report a GAP na
 | field | meaning |
 |---|---|
 | `source` | `host-cli`: the host CLI enumerates models and effort and a host-home config is written. `host-catalog`: role-to-model bindings ship in a repo-projected catalog, so there is nothing to write at runtime. `inherit`: children inherit the parent session model. `none`: this host exposes no model or effort setup surface. |
-| `skill` | the skill that owns this host's steps, resolved as `skills/<skill>/SKILL.md`. Present only for `host-cli`. |
 | `catalog` | the file the host reads role-to-model bindings from. A `~` path is a host-home write target that may not exist yet; a repo-relative path must exist. |
 | `overlay` | per-role overlay directory the setup writes, or `null`. |
 | `effort` | `live-enum`: probe the host CLI for its usable levels. `inherit-parent`: no per-role level. `none`: the host exposes no per-role effort. |
@@ -31,7 +30,7 @@ If no profile matches, or the profile declares no `setup` block, report a GAP na
 
 ## 3. Dispatch on `source`
 
-- `host-cli` → follow `skills/<setup.skill>/SKILL.md` exactly as written. That skill owns the probes, the question shape, the validation, and the writes. Report what it wrote.
+- `host-cli` → read the native host reference at `references/<profile-stem>.md` (e.g. `references/grok.md`). That reference owns the native probes, question shape, validation, and writes. Report what it wrote.
 - `host-catalog` → there is no runtime write. Report the catalog path, that the bindings are projected by `scripts/project_package.py`, and that re-running that projection is what changes them.
 - `inherit` → no setup runs. Report that every role keeps the parent session model and the shipped per-role effort from its agent frontmatter.
 - `none` → report BLOCKED for this host: no model or effort setup surface is declared. Name the profile key that would have to exist before this host could be configured.
@@ -40,11 +39,11 @@ Never substitute one host's setup for another. A missing `setup` block is a GAP 
 
 ## 4. Shared contract
 
-Every host branch obeys these; no host skill may restate or extend them.
+Every host branch obeys these; no host reference may restate or extend them.
 
-**Roles.** `pstack.package.json#roles` is the only role registry (22 keys). A setup skill chooses a model and an effort per canonical role key; it never invents a role, and a panel role stays an array with one spawn per entry.
+**Roles.** `pstack.package.json#roles` is the only role registry (22 keys). A setup reference chooses a model and an effort per canonical role key; it never invents a role, and a panel role stays an array with one spawn per entry.
 
-**Precedence.** `scripts/model_role_resolver.py` `resolve_role_source` owns the ladder: explicit, project, user, host-role, host-tier, inherit-parent, then fail-closed. A setup skill writes the rung its host actually reads (`setup.catalog`, `setup.overlay`); it does not reimplement the ladder.
+**Precedence.** `scripts/model_role_resolver.py` `resolve_role_source` owns the ladder: explicit, project, user, host-role, host-tier, inherit-parent, then fail-closed. A setup reference writes the rung its host actually reads (`setup.catalog`, `setup.overlay`); it does not reimplement the ladder.
 
 **Honest status.** `plan_role` answers `PLANNED`, `DEGRADED`, or `BLOCKED` with `evidence_level: static-planning-only`, never VERIFIED. A catalog whose `discovery` is not live degrades an effort plan, and a slug absent from the catalog blocks with no silent substitution. Writing a config file, or reading a projected profile, is not observed host operation: say what was written, not that the host accepted it.
 
@@ -52,10 +51,14 @@ Every host branch obeys these; no host skill may restate or extend them.
 
 A skill that spawns a child resolves two values for its canonical role key, and it does neither by probing or writing itself.
 
-- **Model.** The rung this host reads: `setup.catalog` first, then `setup.overlay`. A key that is missing, `inherit-parent`, or `auto` omits the model, so the child inherits the parent session. A real slug is sent only when this session confirmed it through the host setup skill or a host probe.
-- **Effort.** From `setup.effort`. `live-enum` means the host setup skill wrote a per-role level after probing the host CLI. `inherit-parent` and `none` mean nothing per-role was written, so the role agent's frontmatter level is what applies.
+- **Model.** The rung this host reads: `setup.catalog` first, then `setup.overlay`. A key that is missing, `inherit-parent`, or `auto` omits the model, so the child inherits the parent session. A real slug is sent only when this session confirmed it through the host setup reference or a host probe.
+- **Effort.** From `setup.effort`. `live-enum` means the host setup reference wrote a per-role level after probing the host CLI. `inherit-parent` and `none` mean nothing per-role was written, so the role agent's frontmatter level is what applies.
 - Never invent a slug or a level, and never send an effort field on the spawn call unless the host profile's `runtime_conventions.allowed_spawn_fields` names it.
 
 ## 6. Confirm
 
-Name the host, `setup.source`, the skill that ran (if any), and the exact paths that host's steps wrote. If a step was skipped because a catalog, overlay, or CLI probe was unavailable, say which one. Do not name another host's paths.
+Name the host, `setup.source`, the reference that was loaded (if any), and the exact paths that host's steps wrote. If a step was skipped because a catalog, overlay, or CLI probe was unavailable, say which one. Do not name another host's paths.
+
+## 7. Verification skill offers (optional)
+
+Optionally offer `/create-verification-skill` or `/create-formal-verification-skill` when the project lacks application verification skills. These are distinct explicit follow-up invocations, not setup-file writes; avoid `verify-pstack` name collision or automatic generation.

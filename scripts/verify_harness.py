@@ -136,7 +136,7 @@ def allows_cursor_rules_mention(path: pathlib.Path, root: pathlib.Path | None = 
     parts = rel.parts
     if parts and parts[0] == "docs":
         return True
-    return parts[:2] in (("skills", "setup-pstack"), ("skills", "setup-pstack-grok"))
+    return parts[:2] == ("skills", "setup-pstack")
 
 
 def allows_cursor_compat_scanner(path: pathlib.Path, text: str, index: int, root: pathlib.Path | None = None) -> bool:
@@ -362,9 +362,10 @@ def main(root: pathlib.Path | None = None) -> int:
         "agents/independent-verifier.md",
         "agents/feature.md",
         "agents/how-explainer.md",
-        "skills/setup-pstack-grok/references/resolve-effort.md",
-        "skills/setup-pstack-grok/references/effort-ladder.md",
-        "skills/setup-pstack-grok/references/defaults.toml",
+        "skills/setup-pstack/references/grok.md",
+        "skills/setup-pstack/references/grok/resolve-effort.md",
+        "skills/setup-pstack/references/grok/effort-ladder.md",
+        "skills/setup-pstack/references/grok/defaults.toml",
         "scripts/effort_ladder.py",
         "skills/poteto-mode/references/grok-tools.md",
     ):
@@ -438,7 +439,7 @@ def main(root: pathlib.Path | None = None) -> int:
     except SystemExit as exc:
         fail(f"effort_ladder self_check: {exc}")
     role_effort = role_effort_map(SHIP_TIME_ENUM)
-    ladder_md = (active_root / "skills" / "setup-pstack-grok" / "references" / "effort-ladder.md").read_text(
+    ladder_md = (active_root / "skills" / "setup-pstack" / "references" / "grok" / "effort-ladder.md").read_text(
         encoding="utf-8"
     )
     for key in (*MECHANICAL, *INSTRUCTION, *JUDGMENT):
@@ -460,7 +461,7 @@ def main(root: pathlib.Path | None = None) -> int:
                 f"{path.relative_to(active_root)}: frontmatter effort {match.group(1)!r}, expected {level!r}"
             )
 
-    defaults = (active_root / "skills" / "setup-pstack-grok" / "references" / "defaults.toml").read_text(
+    defaults = (active_root / "skills" / "setup-pstack" / "references" / "grok" / "defaults.toml").read_text(
         encoding="utf-8"
     )
     if 'feature = "grok-4.6"' not in defaults:
@@ -475,19 +476,19 @@ def main(root: pathlib.Path | None = None) -> int:
         fail("defaults.toml ships reserved max; live grok 1.0.13 CLI does not list max")
     if "max" in SHIP_TIME_ENUM:
         fail("SHIP_TIME_ENUM includes reserved max")
-    skill_setup = (active_root / "skills" / "setup-pstack-grok" / "SKILL.md").read_text(encoding="utf-8")
+    skill_setup = (active_root / "skills" / "setup-pstack" / "references" / "grok.md").read_text(encoding="utf-8")
     if "Effort options: inherit-parent, auto, none, minimal" in skill_setup:
-        fail("setup-pstack-grok SKILL.md still offers CLI-parseable none/minimal as Agent effort options")
+        fail("grok.md still offers CLI-parseable none/minimal as Agent effort options")
     if "use one of:" not in skill_setup:
-        fail("setup-pstack-grok SKILL.md must detect from live CLI use one of:")
+        fail("grok.md must detect from live CLI use one of:")
     if "expected one of:" in skill_setup:
-        fail("setup-pstack-grok SKILL.md still prefers FromStr expected one of (includes reserved max)")
+        fail("grok.md still prefers FromStr expected one of (includes reserved max)")
     if "Do not offer `max`" not in skill_setup:
-        fail("setup-pstack-grok SKILL.md must refuse reserved max unless the live CLI listed it")
+        fail("grok.md must refuse reserved max unless the live CLI listed it")
     if "Do not invent `ultra`" not in skill_setup:
-        fail("setup-pstack-grok SKILL.md must refuse invented ultra")
-    if "references/effort-ladder.md" not in skill_setup:
-        fail("setup-pstack-grok SKILL.md must point at effort-ladder.md")
+        fail("grok.md must refuse invented ultra")
+    if "effort-ladder.md" not in skill_setup:
+        fail("grok.md must point at effort-ladder.md")
     for slug in CURSOR_MODEL_SLUGS:
         if slug in defaults:
             fail(f"defaults.toml contains Cursor panel slug {slug}")

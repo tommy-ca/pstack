@@ -121,8 +121,8 @@ def test_detects_forbidden_primitives_in_fixture(tmp_path: Path):
 def test_typed_exemptions():
     """Exemptions must protect adapter references, profiles, and tests while leaving skills unexempt."""
     assert is_exempt("skills/poteto-mode/references/grok-tools.md") is not None
-    assert is_exempt("skills/setup-pstack-grok/SKILL.md") is not None
-    assert is_exempt("skills/setup-pstack-grok/references/effort-ladder.md") is not None
+    assert is_exempt("skills/setup-pstack/references/grok.md") is not None
+    assert is_exempt("skills/setup-pstack/references/grok/effort-ladder.md") is not None
     assert is_exempt("profiles/grok.json") is not None
     assert is_exempt("tests/test_scan_host_boundary.py") is not None
     assert is_exempt("scripts/scan_host_boundary.py") is not None
@@ -281,16 +281,16 @@ def test_portable_router_selects_the_active_host_not_grok() -> None:
 def test_setup_entry_is_host_neutral_and_dispatches() -> None:
     """The shared setup name must dispatch from the profile, never carry one host's body."""
     entry = (ROOT / "skills/setup-pstack/SKILL.md").read_text(encoding="utf-8")
-    grok = (ROOT / "skills/setup-pstack-grok/SKILL.md").read_text(encoding="utf-8")
+    grok = (ROOT / "skills/setup-pstack/references/grok.md").read_text(encoding="utf-8")
     for host_owned in ("~/.grok/", "grok-4.6", "pstack-models.toml", "Grok Build"):
         assert host_owned not in entry, host_owned
     assert "profiles/<host>.json#setup" in entry
-    assert "skills/<setup.skill>/SKILL.md" in entry
+    assert "references/<profile-stem>.md" in entry
     assert "Never substitute one host's setup for another." in entry
     assert "pstack.package.json#roles" in entry
-    # The Grok body lives in the namespaced adapter skill and stays scannable there.
+    # The Grok body lives in the native reference and stays scannable there.
     assert "~/.grok/pstack-models.toml" in grok
-    assert "../setup-pstack/SKILL.md" in grok
+    assert "../SKILL.md" in grok
 
 
 def test_setup_write_target_flags_shared_surface(tmp_path: Path) -> None:
