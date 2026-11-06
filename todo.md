@@ -389,6 +389,12 @@
 - [x] Unit 5 (Issue #942): [E][Gate] Swarm, Arena, Interrogate, 6-harness conformance & end-to-end verification (PR #947)
 *(Epic #937 CLOSED)*
 
+## Epic #954: [Epic][Thermo-Nuclear Quality & Verification Tools] Refactor verification tooling, eliminate redundant plugin sync loops, and solidify 6-harness quality gates
+- [x] Unit 1 (Issue #955): [A][P0] Refactor sync_antigravity_plugin to delegate to package_lifecycle native installation (DRY/KISS) (PR #958)
+- [ ] Unit 2 (Issue #956): [B][P0] Enhance verification skills and scaffolders with strict typing, clean contracts, and cross-harness assertions
+- [ ] Unit 3 (Issue #957): [C][Gate] Swarm, Arena, Interrogate adversarial verification, full test suite, 6-harness doctor PASS
+
+
 
 
 
