@@ -21,6 +21,8 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 LEVER = ROOT / "scripts" / "prove_omp_native_package.py"
 SLICE_LEVER = ROOT / "scripts" / "prove_omp_vertical_slice.py"
 
@@ -31,7 +33,13 @@ needs_live_route = pytest.mark.skipif(
 )
 
 
+_default_lever_report: dict | None = None
+
+
 def run_lever(*args: str, env: dict | None = None) -> dict:
+    global _default_lever_report
+    if not args and env is None and _default_lever_report is not None:
+        return _default_lever_report
     run_env = {**os.environ} if env is None else env
     proc = subprocess.run(
         [sys.executable, str(LEVER), "--json", *args],
@@ -41,7 +49,10 @@ def run_lever(*args: str, env: dict | None = None) -> dict:
         env=run_env,
     )
     assert proc.stdout.strip(), proc.stderr
-    return json.loads(proc.stdout)
+    report = json.loads(proc.stdout)
+    if not args and env is None:
+        _default_lever_report = report
+    return report
 
 
 def run_slice(*args: str, path: str | None = None, timeout: int = 600) -> dict:
