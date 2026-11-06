@@ -108,6 +108,8 @@ SKIP_FILES = {
     "omp-tools.md",
     "opencode-tools.md",
     "classification.tsv",
+    "pstack-claude-forks-2026-11-06.json",
+    "cross-port-semantic-delta-2026-11-06.md",
 }
 
 PARTITION_SCRIPT = ROOT / "skills" / "swarm" / "scripts" / "partition.py"

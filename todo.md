@@ -361,6 +361,13 @@
 - [x] Unit 2: Synchronize and update live Antigravity plugin installation (`scripts/sync_antigravity_plugin.py`, `scripts/package_lifecycle.py`)
 - [x] Unit 3: Conformance verification (`verify_portable.py doctor --host antigravity` PASS, `package_lifecycle.py prove --host antigravity` PASS)
 
+## Epic #906: [Epic][Cross-port 2026-11-06] Source-pinned semantic parity, verification and wiki
+- [x] Unit 1 (Issue #907): [Cross-port][A][P0] Pin three sources and classify fork/host/test semantics
+- [x] Unit 2 (Issue #908): [Cross-port][B][P0] Port portable negative scenarios into existing functional verifiers
+- [x] Unit 3 (Issue #909): [Cross-port][C][P1] Specify and test code-linked formal safety/liveness invariants
+- [x] Unit 4 (Issue #910): [Cross-port][D][P1] Curate source-backed LLMWiki cross-port semantic atoms
+- [x] Unit 5 (Issue #911): [Cross-port][E][Gate] Run exact-head Swarm/Arena/Interrogate and both Thermo reviews
+
 
 
 
