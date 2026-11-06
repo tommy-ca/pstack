@@ -17,6 +17,7 @@
 - [Epic #871 LLM Wiki v2 Requirements and Contracts](wiki/requirements/epic-871-llm-wiki-v2-contracts.md): Epic #871 evaluates reference engines, hardens knowledge contracts, and governs migration for the PStack LLM Wiki.
 
 ## Analyses
+- [Cross-port semantic parity — November 2026](wiki/analyses/cross-port-semantic-parity-2026-11-06.md): **Source-review analysis only; no native runtime, formal checker, or independent multi-model proof is asserted.** This page tracks three pinned PStack sources and reusable contracts, without taking normative policy from a reference port.
 - [LLM Wiki Reference Engines and Migration Evaluation](wiki/analyses/llm-wiki-reference-evaluation.md): The PStack LLM Wiki has a completed project-local Markdown/Python baseline (historical [#863](https://github.com/tommy-ca/pstack/issues/863)). The follow-on [#871](https://github.com/tommy-ca/pstack/issues/871) evaluates optional reference engines without treating external compiler output as trusted canonical knowledge.
 - [LLM Wiki v3 Engine Parity Analysis](wiki/analyses/llm-wiki-v3-engine-parity.md): This page documents the reference engine parity architecture implemented for Epic #887.
 - [Standalone Pi 1.5.0 → PStack candidate semantic crosswalk](wiki/analyses/pi-1-5-pstack-candidate.md): Status: **source-based candidate analysis, NOT live evidence**, 2026-11-05. Parent: [Pi adapter epic #894](https://github.com/tommy-ca/pstack/issues/894).
