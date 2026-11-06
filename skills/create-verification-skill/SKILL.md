@@ -40,6 +40,8 @@ Write `SKILL.md` at the path above with YAML frontmatter:
 - `description` that is Use-when triggers only. Name the app, the surface, and when to reach for the skill. Do not dump Launch/Doctor/Drive into the description.
 - `disable-model-invocation: true`
 
+Keep the generated skill body under 24,000 bytes. Google Antigravity imposes a strict 24,000-byte body limit and truncates oversized skills. `scripts/scaffold_verification_skill.py --check` enforces this bound.
+
 Without frontmatter the skill never registers. Then write these sections, each grounded in what the interview actually found (no placeholders left):
 
 - **Launch:** the exact command that starts the app for verification, and how to tell it's ready (a log line, a prompt). Launch must reach a usable state from an empty data dir, including any migrations and seed data. Ready means usable, not just that a process answers. A database health check can pass while its init scripts are still running. Include teardown. For a short-lived CLI or TUI there is no server to keep alive. Launch means build the binary (or install deps) once, then start each drive in its own isolated PTY or tmux session. Encode the Isolate answer here. Refuse double-drive of a shared instance.
@@ -94,7 +96,3 @@ Use a fresh evidence directory for each run and each named step. Preserve earlie
 ## 5. Offer the maintenance loop
 
 Point the user at `/maintain-verification-skill` for keeping the map honest as the app changes. Suggest a cadence only if they ask.
-
-## Agent orchestration adapters
-
-When the target under interview *actually supervises child agents* (native host, optional Mu, or optional Dogsled), use the [agent orchestration verification matrix](../../openspec/changes/2026-11-06-agent-orchestration-contracts/references/verification-matrix.md) as a scope checklist. Exercise exact request/incarnation correlation, read-only observation, retry-after-unknown-launch, cancellation fences, parent-child ownership, permission failure, and dirty-worktree preservation on the **real installed executable**. A turn-end, prose answer or child process exit is not sufficient proof of task acceptance. Missing host capability is `BLOCKED`; a static scaffold PASS must never be called live verification. Do not generate an executor-specific skill until its runnable target and source revision exist.
