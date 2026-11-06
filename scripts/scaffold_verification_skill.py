@@ -64,13 +64,13 @@ def detect_host(workspace: pathlib.Path) -> str:
 
 
 def get_skill_dir(workspace: pathlib.Path, host: str, app: str, *, formal: bool = False) -> pathlib.Path:
-    validate_app_name(app, allow_pstack=True, formal=formal)
+    validate_app_name(app, allow_pstack=True)
     skills_rel = DEFAULT_SKILLS_DIRS.get(host, f".{host}/skills")
     effective_app = f"{app}-formal" if formal and not app.endswith("-formal") else app
     return workspace / skills_rel / f"verify-{effective_app}"
 
 
-def validate_app_name(app: str, *, allow_pstack: bool = False, formal: bool = False) -> None:
+def validate_app_name(app: str, *, allow_pstack: bool = False) -> None:
     if not SKILL_NAME_RE.fullmatch(app):
         raise ValueError("Application name must be lowercase kebab-case")
     if app == "pstack" and not allow_pstack:
@@ -305,7 +305,7 @@ def scaffold_skill(
     *,
     formal: bool = False,
 ) -> None:
-    validate_app_name(app, formal=formal)
+    validate_app_name(app)
     effective_app = f"{app}-formal" if formal and not app.endswith("-formal") else app
     feature_file = "features/formal-model.md" if formal else "features/core.md"
     outputs = {
@@ -538,7 +538,7 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     if args.app is not None:
         try:
-            validate_app_name(args.app, allow_pstack=not args.write, formal=args.formal)
+            validate_app_name(args.app, allow_pstack=not args.write)
         except ValueError as exc:
             parser.error(str(exc))
 
