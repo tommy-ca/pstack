@@ -26,6 +26,7 @@ from scripts.portability_schema import (
     check_evidence_durability,
     compute_surface_revisions,
 )
+from scripts.setup_pstack import resolve_profiles_dir
 
 
 def test_compute_surface_revisions_all_fields_present() -> None:
@@ -189,7 +190,7 @@ def test_driver_source_change_invalidates_adapter_and_runtime(
 
 def test_mutated_model_role_policy_stales_the_package_plane(tmp_path: Path) -> None:
     copy_root = _disposable_copy(tmp_path)
-    profile_data = json.loads((copy_root / "profiles" / "grok.json").read_text(encoding="utf-8"))
+    profile_data = json.loads((resolve_profiles_dir(copy_root) / "grok.json").read_text(encoding="utf-8"))
     prof = HarnessProfile(
         host=profile_data["host"],
         support_state=profile_data["support_state"],
@@ -249,7 +250,7 @@ def test_mutated_model_role_policy_stales_the_package_plane(tmp_path: Path) -> N
 
 def test_mutated_planner_module_stales_the_package_plane(tmp_path: Path) -> None:
     copy_root = _disposable_copy(tmp_path)
-    profile_data = json.loads((copy_root / "profiles" / "grok.json").read_text(encoding="utf-8"))
+    profile_data = json.loads((resolve_profiles_dir(copy_root) / "grok.json").read_text(encoding="utf-8"))
     prof = HarnessProfile(
         host=profile_data["host"],
         support_state=profile_data["support_state"],

@@ -28,6 +28,7 @@ from scripts.decision_adapter import FakeDecisionProvider
 # restated: the probe scope must not grow a second copy of the normalizer.
 from scripts.portability_schema import _update_driver_digest
 from scripts.route_resolver import resolve_skill_order, resolve_skill_order_with_shadow
+from scripts.setup_pstack import resolve_profiles_dir
 
 
 @dataclass
@@ -115,7 +116,7 @@ def run_blinded_eval(corpus_path: Path, root: Path) -> BlindedEvalResult:
     corpus = json.loads(corpus_path.read_text(encoding="utf-8"))
     fixtures = corpus.get("fixtures", [])
 
-    profile_path = root / "profiles" / "grok.json"
+    profile_path = resolve_profiles_dir(root) / "grok.json"
     profile = json.loads(profile_path.read_text(encoding="utf-8"))
 
     baseline_scores: List[int] = []
@@ -256,7 +257,7 @@ def _probe_scope_hash(root: Path) -> str:
     """
     h = hashlib.sha256()
     scope = sorted(root.glob("skills/**/SKILL.md")) + sorted(root.glob("skills/**/playbooks/*.md"))
-    scope += sorted(root.glob("agents/*.md")) + [root / "profiles" / "grok.json"]
+    scope += sorted(root.glob("agents/*.md")) + [resolve_profiles_dir(root) / "grok.json"]
     vp = root / "scripts" / "verify_portable.py"
     if not vp.is_file():
         vp = root / "scripts" / "portable_verifier.py"
@@ -518,7 +519,7 @@ def run_dsh_blinded_eval(
     """
     corpus_path = corpus_dir / "cases.json"
     corpus = json.loads(corpus_path.read_text(encoding="utf-8"))
-    profile = json.loads((root / "profiles" / "grok.json").read_text(encoding="utf-8"))
+    profile = json.loads((resolve_profiles_dir(root) / "grok.json").read_text(encoding="utf-8"))
     evaluated_revision = _repo_revision(root)
 
     cases = corpus["cases"]

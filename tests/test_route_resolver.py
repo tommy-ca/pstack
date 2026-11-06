@@ -26,10 +26,11 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts.route_resolver import RouteResolution, resolve_skill_order, resolve_primary_artifact
+from scripts.setup_pstack import resolve_profiles_dir
 
 
 def load_profile(host: str) -> dict:
-    return json.loads((ROOT / "profiles" / f"{host}.json").read_text(encoding="utf-8"))
+    return json.loads((resolve_profiles_dir(ROOT) / f"{host}.json").read_text(encoding="utf-8"))
 
 
 # --- 1. Substring Rejection & Exact Matching ---

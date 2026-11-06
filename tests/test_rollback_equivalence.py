@@ -22,13 +22,14 @@ from scripts.verify_rollback_equivalence import (
     verify_scenario_receipt_failure,
     verify_scenario_stale_evidence,
 )
+from scripts.setup_pstack import resolve_profiles_dir
 
 
 @pytest.fixture
 def fixtures_and_profile():
     corpus_file = ROOT / "tests" / "fixtures" / "decision_corpus.json"
     fixtures = json.loads(corpus_file.read_text(encoding="utf-8")).get("fixtures", [])
-    profile_path = ROOT / "profiles" / "grok.json"
+    profile_path = resolve_profiles_dir(ROOT) / "grok.json"
     profile = json.loads(profile_path.read_text(encoding="utf-8"))
     return fixtures, profile
 

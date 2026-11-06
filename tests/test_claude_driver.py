@@ -22,10 +22,11 @@ from scripts.portability_schema import (
 )
 
 from scripts.package_projection import check_claude_plugin, load_package_descriptor
+from scripts.setup_pstack import resolve_profiles_dir
 
 
 def test_claude_profile_conforms_to_schema_and_declared_host_gates() -> None:
-    profile_path = ROOT / "profiles" / "claude.json"
+    profile_path = resolve_profiles_dir(ROOT) / "claude.json"
     assert profile_path.is_file(), "profiles/claude.json must exist"
 
     data = json.loads(profile_path.read_text(encoding="utf-8"))
@@ -69,7 +70,7 @@ def test_claude_profile_conforms_to_schema_and_declared_host_gates() -> None:
 
 
 def test_claude_profile_fail_closed_negatives() -> None:
-    profile_path = ROOT / "profiles" / "claude.json"
+    profile_path = resolve_profiles_dir(ROOT) / "claude.json"
     data = json.loads(profile_path.read_text(encoding="utf-8"))
 
     # 1. Declared host cannot self-promote to packaged without native evidence

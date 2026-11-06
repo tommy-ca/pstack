@@ -29,6 +29,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Iterable, List, Sequence, Tuple
 
+from scripts.setup_pstack import resolve_profiles_dir
+
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -353,7 +355,7 @@ def test_qstack_overlay_stays_post_routing_and_leaves_routes_unchanged() -> None
     assert overlay["unsupported_response"] in UNSUPPORTED_RESPONSES
 
     for host in route["hosts"]:
-        resolved = resolve_skill_order(_load(ROOT / "profiles" / f"{host}.json"), route["need"], ROOT)
+        resolved = resolve_skill_order(_load(resolve_profiles_dir(ROOT) / f"{host}.json"), route["need"], ROOT)
         observed = {"status": resolved.status, "kind": resolved.kind, "target": resolved.target}
         assert observed == route["expect"], host
 

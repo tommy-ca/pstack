@@ -10,7 +10,8 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 SCRIPT = ROOT / "scripts" / "scan_host_boundary.py"
-PROFILES_DIR = ROOT / "profiles"
+from scripts.setup_pstack import resolve_profiles_dir
+PROFILES_DIR = resolve_profiles_dir(ROOT)
 BOUNDARY_FIXTURES = Path(__file__).resolve().parent / "fixtures" / "boundary"
 
 import scripts.scan_host_boundary as scan_host_boundary

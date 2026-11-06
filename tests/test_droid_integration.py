@@ -27,6 +27,7 @@ from scripts.portability_schema import (
     Evidence,
     derive_support_state,
 )
+from scripts.setup_pstack import resolve_profiles_dir
 
 
 import scripts.package_lifecycle as lifecycle
@@ -123,7 +124,7 @@ def test_verify_harness_skip_files_include_droid_reference() -> None:
 
 
 def _droid_profile_data() -> dict:
-    return json.loads((ROOT / "profiles" / "droid.json").read_text(encoding="utf-8"))
+    return json.loads((resolve_profiles_dir(ROOT) / "droid.json").read_text(encoding="utf-8"))
 
 
 def _droid_profile() -> HarnessProfile:
@@ -165,7 +166,7 @@ def test_droid_profile_runtime_conventions() -> None:
 
 
 def test_droid_profile_records_gaps() -> None:
-    raw = (ROOT / "profiles" / "droid.json").read_text(encoding="utf-8")
+    raw = (resolve_profiles_dir(ROOT) / "droid.json").read_text(encoding="utf-8")
     assert "untested" in raw
     assert "candidate" in raw
     assert "inherit" in raw

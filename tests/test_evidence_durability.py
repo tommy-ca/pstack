@@ -23,6 +23,7 @@ from scripts.portability_schema import (
     check_evidence_durability,
     compute_surface_revisions,
 )
+from scripts.setup_pstack import resolve_profiles_dir
 from tests.evidence_test_helpers import (
     _declared_hosts,
     _disposable_copy,
@@ -105,7 +106,7 @@ def test_durable_receipts_exist_for_all_five_hosts() -> None:
 
 def test_all_six_profiles_pass_evidence_durability_and_freshness() -> None:
     for host in SIX_HARNESSES:
-        profile_file = ROOT / "profiles" / f"{host}.json"
+        profile_file = resolve_profiles_dir(ROOT) / f"{host}.json"
         assert profile_file.is_file()
         prof = HarnessProfile.from_file(profile_file)
         prof.validate()
@@ -124,7 +125,7 @@ test_all_five_profiles_pass_evidence_durability_and_freshness = test_all_six_pro
 
 
 def test_dangling_evidence_path_fails(tmp_path: Path) -> None:
-    profile_data = json.loads((ROOT / "profiles" / "codex.json").read_text(encoding="utf-8"))
+    profile_data = json.loads((resolve_profiles_dir(ROOT) / "codex.json").read_text(encoding="utf-8"))
     profile_data["bindings"][0]["evidence_ref"] = ".audit/evidence/non-existent-receipt.json"
     prof = HarnessProfile.from_dict(profile_data)
 
@@ -176,7 +177,7 @@ def test_omp_profile_claims_only_what_its_receipt_settles() -> None:
 
 def test_scenario_pin_naming_an_unrecorded_scenario_fails() -> None:
     """A pin that names no scenario in the cited receipt is a dangling reference."""
-    d = json.loads((ROOT / "profiles" / "omp.json").read_text(encoding="utf-8"))
+    d = json.loads((resolve_profiles_dir(ROOT) / "omp.json").read_text(encoding="utf-8"))
     pinned = [b for b in d["bindings"] if isinstance(b.get("evidence_ref"), dict)]
     assert pinned, "the omp profile must pin scenarios"
     for binding in pinned:
@@ -190,7 +191,7 @@ def test_scenario_pin_naming_an_unrecorded_scenario_fails() -> None:
 
 
 def test_verified_binding_cannot_pin_a_non_live_scenario() -> None:
-    d = json.loads((ROOT / "profiles" / "omp.json").read_text(encoding="utf-8"))
+    d = json.loads((resolve_profiles_dir(ROOT) / "omp.json").read_text(encoding="utf-8"))
     for binding in d["bindings"]:
         if binding["capability"] == "agent.spawn":
             binding["verification_status"] = "verified"
@@ -238,7 +239,7 @@ def test_stale_profile_hash_invalidates_adapter_and_runtime() -> None:
 
 @pytest.mark.parametrize("host", ["grok", "codex", "omp", "opencode", "antigravity"])
 def test_stale_package_driver_rejected_for_packaged_claim(host: str) -> None:
-    prof = HarnessProfile.from_file(ROOT / "profiles" / f"{host}.json")
+    prof = HarnessProfile.from_file(resolve_profiles_dir(ROOT) / f"{host}.json")
     assert prof.support_state == "packaged"
     current_revs = compute_surface_revisions(ROOT, host)
     tampered_revs = replace(current_revs, package_driver_revision="stale-package-driver")
@@ -311,7 +312,7 @@ def test_docs_changes_do_not_stale_any_plane() -> None:
 
 
 def test_hand_authored_support_state_cannot_outrun_evidence() -> None:
-    profile_data = json.loads((ROOT / "profiles" / "grok.json").read_text(encoding="utf-8"))
+    profile_data = json.loads((resolve_profiles_dir(ROOT) / "grok.json").read_text(encoding="utf-8"))
     for b in profile_data["bindings"]:
         b["verification_status"] = "verified"
     profile_data["support_state"] = "supported"
@@ -341,7 +342,7 @@ def test_check_staleness_cli_json_output() -> None:
             assert data[host]["stale_planes"] == []
         else:
             assert len(data[host]["stale_planes"]) > 0
-        claimed = json.loads((ROOT / "profiles" / f"{host}.json").read_text(encoding="utf-8"))["support_state"]
+        claimed = json.loads((resolve_profiles_dir(ROOT) / f"{host}.json").read_text(encoding="utf-8"))["support_state"]
         if host == "droid":
             assert data[host]["support_state"] == "candidate"
             assert claimed == "candidate"
