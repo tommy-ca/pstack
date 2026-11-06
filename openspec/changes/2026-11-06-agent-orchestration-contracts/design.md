@@ -61,7 +61,8 @@ type Capability = "spawn" | "observe" | "cancel" | "join" |
 type ExecutionPhase = "prepared" | "queued" | "starting" |
   "running" | "asking" | "blocked" | "finishing" | "returned" |
   "cancelled" | "failed" | "lost" | "unresolved";
-type Verdict = "PASS" | "ISSUES" | "FAILED" | "BLOCKED" | "UNTESTED";
+type VerificationVerdict = "PASS" | "FAIL" | "BLOCKED" | "UNTESTED";
+type LaneVerdict = "PASS" | "ISSUES" | "BLOCKED";
 
 interface TaskUnit {
   schemaVersion: 1;
@@ -116,9 +117,9 @@ interface VerificationResult {
   taskId: ID;
   executionId: ID;
   revision: Revision;
-  verdict: Verdict;
+  verdict: VerificationVerdict;
   requiredChecks: ID[];
-  actualChecks: { checkId: ID; verdict: Verdict; evidenceRefs: ID[] }[];
+  actualChecks: { checkId: ID; verdict: VerificationVerdict; evidenceRefs: ID[] }[];
 }
 ```
 
@@ -133,7 +134,7 @@ A `HostProfile` exposes declared + **observed** capabilities, role/model provena
 3. If an optional executor supports prepare, it persists a non-executable intent before effects. A retry of the same request re-observes; changed payload rejects as `REQUEST_CONFLICT`. Never assume an in-flight launch failed because an RPC timed out.
 4. Host/executor emits receipts with exact identity and incarnation. Observation is read-only and cannot start a second execution.
 5. A `returned` terminal *candidate* requires correlated terminal proof; PStack still executes checks against the immutable task acceptance predicate and source revision.
-6. PStack aggregates failure first: `FAILED / ISSUES > BLOCKED > UNTESTED > PASS` for gate severity. A missing lane stays a gap, even when all observed lanes pass.
+6. PStack verification uses `FAIL > BLOCKED > UNTESTED > PASS` for gate severity; `ISSUES` is a swarm/arena worker-lane outcome, not a verification verdict. A missing lane stays a gap, even when all observed lanes pass.
 7. Cancel marks the execution fenced; a late child result is retained as historical evidence, never reclassifies a cancelled execution to accepted.
 8. Cleanup executes only after verified preservation of dirty/untracked content and verified no outstanding execution ownership. Uncertain cleanup is refused rather than destructive.
 
