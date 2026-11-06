@@ -38,6 +38,12 @@ If the selected checker is TLA+ TLC, **first** resolve `statechart` through the 
 
 The generated skill must specify its verified code paths/functions, source revision, model assumptions, finite bounds, checker command, status and the mutation that makes each property fail. Promote its sync commit only when the model still matches the actual code and the negative control fails as intended. For missing Java/TLC, report `BLOCKED`, never a model proof.
 
+## Foreign-port models and temporal assumptions
+
+A model from a different harness is a **counterexample generator**, not a transferable proof. For example, the comparator's PiScheduler TLA+ model assumes event-loop atomicity, host start/settle callbacks, timer cancellation behavior and conditional idle fairness. Before using any such model, trace each action to a concrete target function and callback boundary, list what the native host guarantees versus what you assume, and state the bounds and fairness required by every liveness claim. In particular, do not silently strengthen fairness to make an undelivered wakeup disappear. Demonstrate a reachable failing mutant in the target or document the abstraction mismatch as unverified.
+
+For agent or timer lifecycles, test stale callbacks after stop, cancelled or timed-out children counted as successful, admission after an effect has started, unauthorized descendant permissions, and cleanup of worktrees with hidden output. Separate safety (forbidden state never reached), conditional liveness (delivery when fairness holds), and OS/external-extension guarantees outside the model. A passing TLC result from the source port or a reviewer LLM is not native verification. For PStack's current migration contract, consult [cross-port OpenSpec](../../openspec/changes/2026-11-06-cross-port-parity/specs/pstack-portability/spec.md) and preserve the existing verification skill's source-sync and negative-mutation requirements.
+
 ## Prove it before you hand off
 
 Follow the generated skill once, as the next agent would, on a scratch change that breaks the property in the real code. It must catch the break. Then drop the scratch change and confirm that the check is back where it started: passing, or failing only on the findings you will report. A verify skill that was never run is a draft. If the skill misses the break or a step does not run, fix the skill or the verification, not the scratch change.

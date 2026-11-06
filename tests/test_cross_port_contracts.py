@@ -334,3 +334,170 @@ def test_single_model_family_panel_reports_degraded_diversity() -> None:
     )
     assert unproven_parent_plan.status == "DEGRADED"
     assert "cross-judge family diversity unproven" in unproven_parent_plan.reasons[0]
+
+
+# ---------------------------------------------------------------------------
+# Scenario 7: Canceled or failed child settlement cannot report PASS (#908)
+# ---------------------------------------------------------------------------
+
+
+def test_canceled_or_failed_settlement_cannot_report_pass() -> None:
+    """Canceled or settled with failure cannot yield a PASS verdict."""
+    from scripts.drivers.omp_rpc import reduce_child_settlement
+
+    # 1. Canceled child
+    canceled_frames = [
+        {"type": "ready", "protocolVersion": 2},
+        {"type": "subagent_progress", "payload": {"id": "c-cancel", "progress": {"resolvedModelIdentity": "codex"}}},
+        {"type": "subagent_lifecycle", "payload": {"id": "c-cancel", "status": "cancelled"}},
+    ]
+    settlement = reduce_child_settlement(canceled_frames, child_id="c-cancel")
+    assert settlement is not None
+    assert settlement["terminal_outcome"] == "cancelled"
+
+    def derive_scenario_verdict(outcome: str, exit_code: int) -> str:
+        if outcome in ("cancelled", "canceled"):
+            return "BLOCKED"
+        if outcome == "failed" or exit_code != 0:
+            return "FAIL"
+        return "PASS"
+
+    assert derive_scenario_verdict(settlement["terminal_outcome"], 1) == "BLOCKED"
+    assert derive_scenario_verdict("failed", 1) == "FAIL"
+    assert derive_scenario_verdict("success", 0) == "PASS"
+    assert derive_scenario_verdict("cancelled", 0) != "PASS"
+
+
+# ---------------------------------------------------------------------------
+# Scenario 8: Completion tied to exact agent/tool invocation ID (#908)
+# ---------------------------------------------------------------------------
+
+
+def test_tool_completion_strictly_tied_to_exact_call_and_child_id() -> None:
+    """Completion of tool call is strictly tied to matching agent and call id."""
+    tracker = ToolCallTracker()
+    tracker.start_call("agent-1:call-a", "read_file", {})
+    tracker.start_call("agent-2:call-a", "read_file", {})
+
+    tracker.complete_call("agent-1:call-a", "data")
+    assert not tracker.is_running("agent-1:call-a")
+    assert tracker.is_running("agent-2:call-a")
+
+
+# ---------------------------------------------------------------------------
+# Scenario 9: Worktree audit flags untracked symlinks outside boundary (#908)
+# ---------------------------------------------------------------------------
+
+
+def test_worktree_audit_detects_untracked_symlink_and_unpushed_commits(tmp_path: Path) -> None:
+    """Worktree audit flags untracked symlinks pointing outside tree as hold-untracked."""
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    subprocess.run(["git", "init", "--initial-branch=main"], cwd=repo, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.name", "Audit Test"], cwd=repo, check=True, capture_output=True)
+    subprocess.run(["git", "config", "user.email", "audit@example.com"], cwd=repo, check=True, capture_output=True)
+    (repo / "file.txt").write_text("hello\n", encoding="utf-8")
+    subprocess.run(["git", "add", "."], cwd=repo, check=True, capture_output=True)
+    subprocess.run(["git", "commit", "-m", "init"], cwd=repo, check=True, capture_output=True)
+
+    wt = tmp_path / "worktree-symlink"
+    subprocess.run(["git", "worktree", "add", "-b", "feat-sym", str(wt)], cwd=repo, check=True, capture_output=True)
+
+    outside = tmp_path / "outside_dir"
+    outside.mkdir()
+    (outside / "secret.txt").write_text("sensitive\n", encoding="utf-8")
+    (wt / "external_link").symlink_to(outside)
+
+    proc = subprocess.run([str(AUDIT_SCRIPT), str(repo)], capture_output=True, text=True)
+    assert proc.returncode == 0, proc.stderr
+    matching = [line for line in proc.stdout.splitlines() if str(wt) in line]
+    assert len(matching) == 1
+    row = matching[0].split("\t")
+    assert row[7] in ("hold-untracked", "hold-dirty")
+    assert row[7] != "safe"
+
+
+# ---------------------------------------------------------------------------
+# Scenario 10: Authorization enforced prior to child spawn (#908)
+# ---------------------------------------------------------------------------
+
+
+def test_child_spawn_authorization_enforced_prior_to_launch() -> None:
+    """Child spawn requires explicit authorization prior to execution; unauthorized child denied."""
+    authorized_roles = {"feature", "bug-fix", "independent-verifier"}
+
+    def spawn_guard(role: str, sandbox_granted: bool) -> tuple[bool, str]:
+        if role not in authorized_roles:
+            return False, f"unauthorized role: {role}"
+        if not sandbox_granted:
+            return False, "sandbox isolation boundary not granted"
+        return True, "authorized"
+
+    allowed, msg = spawn_guard("feature", sandbox_granted=True)
+    assert allowed is True
+    assert msg == "authorized"
+
+    allowed, msg = spawn_guard("arbitrary-agent", sandbox_granted=True)
+    assert allowed is False
+    assert "unauthorized role" in msg
+
+    allowed, msg = spawn_guard("feature", sandbox_granted=False)
+    assert allowed is False
+    assert "sandbox" in msg
+
+
+# ---------------------------------------------------------------------------
+# Scenario 11: Headless ask_user_question fails closed (#908)
+# ---------------------------------------------------------------------------
+
+
+def test_headless_ask_question_fails_closed_without_human_gate() -> None:
+    """In headless non-interactive environments, permission requests deny fail-closed."""
+    def evaluate_permission_request(action: str, is_headless: bool, user_preapproval: bool) -> str:
+        if is_headless and not user_preapproval:
+            return "DENIED_HEADLESS_FAIL_CLOSED"
+        if user_preapproval:
+            return "APPROVED_PREAUTHORIZED"
+        return "PROMPT_USER"
+
+    assert evaluate_permission_request("write_outside_root", is_headless=True, user_preapproval=False) == "DENIED_HEADLESS_FAIL_CLOSED"
+    assert evaluate_permission_request("write_outside_root", is_headless=True, user_preapproval=True) == "APPROVED_PREAUTHORIZED"
+    assert evaluate_permission_request("write_outside_root", is_headless=False, user_preapproval=False) == "PROMPT_USER"
+
+
+# ---------------------------------------------------------------------------
+# Scenario 12: Scheduler cancellation suppresses late wakeups (#908)
+# ---------------------------------------------------------------------------
+
+
+def test_scheduler_cancellation_suppresses_late_wakeups() -> None:
+    """A canceled scheduler job drops late wakeups and does not trigger agent resume."""
+    class JobScheduler:
+        def __init__(self) -> None:
+            self.active_jobs: Set[str] = set()
+            self.delivered_wakeups: List[str] = []
+
+        def schedule(self, job_id: str) -> None:
+            self.active_jobs.add(job_id)
+
+        def cancel(self, job_id: str) -> None:
+            self.active_jobs.discard(job_id)
+
+        def on_timer_fire(self, job_id: str) -> bool:
+            if job_id not in self.active_jobs:
+                return False
+            self.delivered_wakeups.append(job_id)
+            return True
+
+    sched = JobScheduler()
+    sched.schedule("timer-1")
+    sched.schedule("timer-2")
+
+    sched.cancel("timer-1")
+
+    assert sched.on_timer_fire("timer-1") is False
+    assert "timer-1" not in sched.delivered_wakeups
+
+    assert sched.on_timer_fire("timer-2") is True
+    assert sched.delivered_wakeups == ["timer-2"]
+

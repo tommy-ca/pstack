@@ -27,3 +27,4 @@ The nine QStack knowledge roles map directly to PStack's local markdown and git-
 - Architecture Specification: [LLM Wiki Project Knowledge](llm-wiki-project-knowledge.md)
 - Review Policies: [Review Semantics and Verification](review-semantics-and-verification.md)
 - Formal Decision: [Arena Decision](../syntheses/llm-wiki-arena-decision.md)
+- Cross-Port Analysis: [Cross-Port Semantic Atoms](../analyses/cross-port-semantic-atoms-2026-11-06.md)
