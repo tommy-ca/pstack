@@ -5,7 +5,8 @@ Status 2026-11-06. These are issue-owned work items, not automatic proof of comp
 ## A. Source classification — #907
 - [x] Freeze source SHA and scope canonical upstream pstack/ (cursor c742dd6), comparator port (d88063f), target base (5d58283).
 - [x] Record 86-commit GitHub compare with 300-file listing cap; partial path inventory only.
-- [ ] Obtain a complete comparator path manifest, annotate every relevant policy-fork, host-specific mechanism, canonical drift and scenario.
+- [x] Recover all changed blob paths via two untruncated Git-tree snapshots (464 add / 51 delete / 134 modify), documented in references/comparator-tree-delta.md.
+- [ ] Annotate all relevant semantic hunks, policy forks, host-specific mechanisms, canonical drift and negative scenarios; do not equate path completeness with behavioral audit.
 - [ ] Audit license/NOTICE before any verbatim import. Reconcile with closed #429, #840 and #894.
 
 ## B. Functional verification — #908, after A
