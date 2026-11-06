@@ -1,0 +1,310 @@
+{
+  "host": "grok",
+  "support_state": "packaged",
+  "skills_dir": ".grok/skills",
+  "plugins_dir": "~/.grok/installed-plugins",
+  "plugin_manifest": ".grok-plugin/plugin.json",
+  "setup": {
+    "source": "host-cli",
+    "skill": "setup-pstack-grok",
+    "catalog": "~/.grok/pstack-models.toml",
+    "overlay": "~/.grok/roles",
+    "effort": "live-enum"
+  },
+  "bindings": [
+    {
+      "host": "grok",
+      "capability": "agent.spawn",
+      "implementation_status": "native",
+      "primitive": "spawn_subagent",
+      "enforcement": "hard",
+      "verification_status": "static-only",
+      "evidence_ref": ".audit/evidence/grok-receipt.json"
+    },
+    {
+      "host": "grok",
+      "capability": "agent.join",
+      "implementation_status": "native",
+      "primitive": "get_command_or_subagent_output",
+      "enforcement": "hard",
+      "verification_status": "static-only",
+      "evidence_ref": ".audit/evidence/grok-receipt.json"
+    },
+    {
+      "host": "grok",
+      "capability": "agent.message",
+      "implementation_status": "native",
+      "primitive": "spawn_subagent (resume)",
+      "enforcement": "hard",
+      "verification_status": "static-only",
+      "evidence_ref": ".audit/evidence/grok-receipt.json"
+    },
+    {
+      "host": "grok",
+      "capability": "agent.cancel",
+      "implementation_status": "native",
+      "primitive": "kill_command_or_subagent",
+      "enforcement": "hard",
+      "verification_status": "static-only",
+      "evidence_ref": ".audit/evidence/grok-receipt.json"
+    },
+    {
+      "host": "grok",
+      "capability": "agent.resume",
+      "implementation_status": "native",
+      "primitive": "spawn_subagent (resume_from)",
+      "enforcement": "hard",
+      "verification_status": "static-only",
+      "evidence_ref": ".audit/evidence/grok-receipt.json"
+    },
+    {
+      "host": "grok",
+      "capability": "workspace.shared",
+      "implementation_status": "native",
+      "primitive": "isolation: none",
+      "enforcement": "hard",
+      "verification_status": "static-only",
+      "evidence_ref": ".audit/evidence/grok-receipt.json"
+    },
+    {
+      "host": "grok",
+      "capability": "workspace.isolated",
+      "implementation_status": "native",
+      "primitive": "isolation: worktree",
+      "enforcement": "hard",
+      "verification_status": "static-only",
+      "evidence_ref": ".audit/evidence/grok-receipt.json"
+    },
+    {
+      "host": "grok",
+      "capability": "workspace.readonly",
+      "implementation_status": "native",
+      "primitive": "pstack:how-explorer (no file-edit tools)",
+      "enforcement": "hard",
+      "verification_status": "static-only",
+      "evidence_ref": ".audit/evidence/grok-receipt.json"
+    },
+    {
+      "host": "grok",
+      "capability": "human.ask",
+      "implementation_status": "native",
+      "primitive": "ask_user_question",
+      "enforcement": "hard",
+      "verification_status": "static-only",
+      "evidence_ref": ".audit/evidence/grok-receipt.json"
+    },
+    {
+      "host": "grok",
+      "capability": "human.gate",
+      "implementation_status": "native",
+      "primitive": "ask_user_question (blocking gate)",
+      "enforcement": "hard",
+      "verification_status": "static-only",
+      "evidence_ref": ".audit/evidence/grok-receipt.json"
+    },
+    {
+      "host": "grok",
+      "capability": "plan.update",
+      "implementation_status": "native",
+      "primitive": "todo_write",
+      "enforcement": "hard",
+      "verification_status": "static-only",
+      "evidence_ref": ".audit/evidence/grok-receipt.json"
+    },
+    {
+      "host": "grok",
+      "capability": "schedule",
+      "implementation_status": "native",
+      "primitive": "scheduler_create",
+      "enforcement": "hard",
+      "verification_status": "static-only",
+      "evidence_ref": ".audit/evidence/grok-receipt.json"
+    },
+    {
+      "host": "grok",
+      "capability": "monitor",
+      "implementation_status": "native",
+      "primitive": "monitor command + scheduler_create",
+      "enforcement": "hard",
+      "verification_status": "static-only",
+      "evidence_ref": ".audit/evidence/grok-receipt.json"
+    },
+    {
+      "host": "grok",
+      "capability": "session.persist",
+      "implementation_status": "native",
+      "primitive": "~/.grok/ persistence",
+      "enforcement": "hard",
+      "verification_status": "static-only",
+      "evidence_ref": ".audit/evidence/grok-receipt.json"
+    },
+    {
+      "host": "grok",
+      "capability": "session.resume",
+      "implementation_status": "native",
+      "primitive": "grok resume",
+      "enforcement": "hard",
+      "verification_status": "static-only",
+      "evidence_ref": ".audit/evidence/grok-receipt.json"
+    },
+    {
+      "host": "grok",
+      "capability": "evidence.capture",
+      "implementation_status": "native",
+      "primitive": "receipts under .audit/evidence/",
+      "enforcement": "hard",
+      "verification_status": "static-only",
+      "evidence_ref": ".audit/evidence/grok-receipt.json"
+    },
+    {
+      "host": "grok",
+      "capability": "verify",
+      "implementation_status": "native",
+      "primitive": "scripts/verify_portable.py",
+      "enforcement": "hard",
+      "verification_status": "static-only",
+      "evidence_ref": ".audit/evidence/grok-receipt.json"
+    }
+  ],
+  "evidence_ledger": [
+    {
+      "claim": "HISTORICAL runtime claim, superseded 2026-10-17: Grok Build implements all 7 required capabilities natively with hard enforcement. The durable receipt was then refreshed statically (canonical/adapter/package PASS, runtime UNTESTED), so this runtime claim is no longer current evidence; grok claims packaged with static-only rows until `python3 scripts/verify_portable.py run --host grok` records an observed_live settlement.",
+      "kind": "runtime",
+      "artifact": ".audit/evidence/grok-receipt.json",
+      "command": "python3 scripts/verify_portable.py run --host grok",
+      "timestamp": "2026-10-05T16:55:00Z"
+    }
+  ],
+  "tool_mappings": {
+    "file_read": "read_file",
+    "file_edit": "edit_file / write_to_file",
+    "file_write": "write_to_file",
+    "shell_run": "run_command",
+    "web_fetch": "read_url_content",
+    "web_search": "search_web",
+    "agent_spawn": "spawn_subagent",
+    "agent_fanout": "N spawn_subagent in one turn",
+    "agent_join": "get_command_or_subagent_output",
+    "agent_message": "inter-agent message / parent routing",
+    "task_background": "spawn_subagent background: true / monitor",
+    "tool_mcp": "session MCP client",
+    "plan_update": "todo_write",
+    "human_ask": "ask_user_question"
+  },
+  "skill_order": [
+    {
+      "need": "TDD",
+      "primary_pstack": "/tdd",
+      "secondary_user": "/test-driven-development",
+      "fallback_builtin": null,
+      "notes": "User skill only if /tdd is not loaded"
+    },
+    {
+      "need": "Author a SKILL.md",
+      "primary_pstack": "playbooks/authoring-a-skill.md",
+      "secondary_user": "/writing-skills",
+      "fallback_builtin": "/create-skill"
+    },
+    {
+      "need": "Review a diff or PR",
+      "primary_pstack": "/interrogate",
+      "secondary_user": "/requesting-code-review",
+      "fallback_builtin": "/review"
+    },
+    {
+      "need": "Babysit",
+      "primary_pstack": "playbooks/babysit.md",
+      "secondary_user": null,
+      "fallback_builtin": null
+    },
+    {
+      "need": "Prove work is done",
+      "primary_pstack": "/principle-prove-it-works",
+      "secondary_user": "/verification-before-completion",
+      "fallback_builtin": null
+    },
+    {
+      "need": "Debug a failure",
+      "primary_pstack": "playbooks/bug-fix.md",
+      "secondary_user": "/systematic-debugging",
+      "fallback_builtin": null
+    },
+    {
+      "need": "Disk prune",
+      "primary_pstack": "playbooks/worktree-cleanup.md",
+      "secondary_user": null,
+      "fallback_builtin": null
+    },
+    {
+      "need": "Worktree isolation",
+      "primary_pstack": null,
+      "secondary_user": "/using-git-worktrees",
+      "fallback_builtin": "isolation: worktree"
+    },
+    {
+      "need": "Design a playbook",
+      "primary_pstack": "/figure-it-out",
+      "secondary_user": null,
+      "fallback_builtin": null
+    },
+    {
+      "need": "Spec then plan",
+      "primary_pstack": null,
+      "secondary_user": "/brainstorming",
+      "fallback_builtin": "/plan"
+    },
+    {
+      "need": "Execute a written plan",
+      "primary_pstack": "playbooks/feature.md",
+      "secondary_user": "/executing-plans",
+      "fallback_builtin": "/implement"
+    },
+    {
+      "need": "Overnight heartbeat",
+      "primary_pstack": null,
+      "secondary_user": null,
+      "fallback_builtin": "/loop"
+    },
+    {
+      "need": "Read-only spawn",
+      "primary_pstack": "pstack:how-explorer",
+      "secondary_user": null,
+      "fallback_builtin": "explore"
+    },
+    {
+      "need": "Unslop / comments",
+      "primary_pstack": "/unslop",
+      "secondary_user": null,
+      "fallback_builtin": null
+    }
+  ],
+  "runtime_conventions": {
+    "max_subagent_depth": 1,
+    "supported_isolation_modes": ["none", "worktree"],
+    "default_model": "grok-4.6",
+    "allowed_spawn_fields": [
+      "prompt",
+      "description",
+      "subagent_type",
+      "run_in_background",
+      "isolation",
+      "resume_from",
+      "cwd",
+      "model"
+    ],
+    "forbidden_spawn_fields": [
+      "readonly",
+      "environment",
+      "capability_mode",
+      "reasoning_effort"
+    ],
+    "wire_aliases": {
+      "task": "spawn_subagent",
+      "Task": "spawn_subagent",
+      "run_in_background": "background",
+      "get_task_output": "get_command_or_subagent_output",
+      "wait_tasks": "get_command_or_subagent_output",
+      "kill_task": "kill_command_or_subagent"
+    }
+  }
+}
