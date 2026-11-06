@@ -52,6 +52,18 @@ Without frontmatter the skill never registers. Then write these sections, each g
 - **Cleanup:** how to tear down instances the run created. Never kill by process name. Kill what you started. Cleanup removes instances and scratch state, never the evidence. Proof artifacts survive the teardown, in a location the skill names.
 - **Helpers:** ship the driver at `scripts/driver.sh` (or `driver.py`). Make it executable. Include the exact invocation in the skill body. The driver wraps Launch, Doctor, Drive, and Cleanup with 60 second timeout bounds and exit code checking. A helper the reader has to reverse-engineer is not a helper. The `references/feature-map-example/` omits a driver on purpose (map-only sample). Generated skills do not copy that omission.
 
+## Architectural Discipline: SOLID, KISS, DRY, YAGNI
+
+Verification skills and feature maps must follow strict design hygiene:
+
+- **Single Responsibility (SRP):** Each feature file describes exactly one user-facing behavior. The driver handles only orchestration and process lifecycle (`launch`, `doctor`, `drive`, `cleanup`).
+- **Open/Closed (OCP):** Add new test journeys by adding new sibling markdown files to `features/` and updating the Full sweep order, without modifying the core harness or driver contract.
+- **Liskov Substitution (LSP):** Verification drivers across all harnesses conform to the uniform command contract: `doctor`, `launch`, `drive`, `cleanup`, and `all`. Any harness runner can invoke any driver interchangeably.
+- **Interface Segregation (ISP):** Break monolithic verification into focused feature drives. Agents execute specific feature paths independently without running the entire suite.
+- **Dependency Inversion (DIP):** Depend on user-visible abstractions and stable contracts (routes, CLI flags, ARIA roles, exit codes) rather than internal implementation details, internal variables, or fragile UI pixel coordinates.
+- **KISS & YAGNI:** Prefer standard library tools and the simplest driver that works. Avoid speculative multi-process orchestration frameworks when a single isolated run or `--run-id` suffices.
+- **DRY:** Define verification recipes canonically once in their respective feature files. Reuse existing harness helpers rather than duplicating launch recipes.
+
 ## Isolate the resources the driver touches
 
 A driver that two concurrent runs can execute owns every port, path, marker, and child process it uses. Do not answer a collision by serialising the whole suite; isolate instead. In this repository the worked example is `tests/fixtures/resource-isolation/`. It holds a colliding and an isolated implementation of one two-worker shape in Python and Node, driven by `tests/test_ci_resource_isolation.py`. The colliding half is the negative control: it fails as soon as these rules are broken, so keep it failing.
