@@ -23,7 +23,25 @@ from scripts.portability_types import SetupProjection, ValidationError
 
 ROOT = Path(__file__).resolve().parent.parent
 PACKAGE_JSON = ROOT / "pstack.package.json"
-PROFILES_DIR = ROOT / "profiles"
+
+
+def resolve_profiles_dir(root: Path | None = None) -> Path:
+    """Resolve the directory containing harness profiles.
+
+    Prefers the packaged skill directory (guaranteed present in installed plugins),
+    falling back to the repository root profiles directory.
+    """
+    base = root or ROOT
+    packaged = base / "skills" / "setup-pstack" / "profiles"
+    if packaged.is_dir():
+        return packaged
+    repo_profiles = base / "profiles"
+    if repo_profiles.is_dir():
+        return repo_profiles
+    return packaged
+
+
+PROFILES_DIR = resolve_profiles_dir(ROOT)
 
 
 def _declared_profile(host: str, profiles_dir: Path) -> dict[str, Any]:

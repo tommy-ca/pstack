@@ -1,0 +1,237 @@
+{
+  "host": "github:copilot",
+  "support_state": "candidate",
+  "skills_dir": ".github/skills",
+  "plugins_dir": "~/.copilot/plugins",
+  "plugin_manifest": ".copilot-plugin/plugin.json",
+  "bindings": [
+    {
+      "host": "github:copilot",
+      "capability": "agent.spawn",
+      "implementation_status": "gap",
+      "primitive": "none (subagent dispatch unsupported in Copilot CLI)",
+      "enforcement": "advisory",
+      "verification_status": "static-only",
+      "notes": "GitHub Copilot CLI operates in single-process interactive mode; no autonomous subagent spawn primitive"
+    },
+    {
+      "host": "github:copilot",
+      "capability": "agent.join",
+      "implementation_status": "gap",
+      "primitive": "none (child join unsupported)",
+      "enforcement": "advisory",
+      "verification_status": "static-only",
+      "notes": "No child subagent join primitive"
+    },
+    {
+      "host": "github:copilot",
+      "capability": "agent.message",
+      "implementation_status": "gap",
+      "primitive": "none (child messaging unsupported)",
+      "enforcement": "advisory",
+      "verification_status": "static-only"
+    },
+    {
+      "host": "github:copilot",
+      "capability": "agent.cancel",
+      "implementation_status": "gap",
+      "primitive": "none (child cancellation unsupported)",
+      "enforcement": "advisory",
+      "verification_status": "static-only"
+    },
+    {
+      "host": "github:copilot",
+      "capability": "agent.resume",
+      "implementation_status": "gap",
+      "primitive": "none (child session resume unsupported)",
+      "enforcement": "advisory",
+      "verification_status": "static-only"
+    },
+    {
+      "host": "github:copilot",
+      "capability": "workspace.shared",
+      "implementation_status": "native",
+      "primitive": "working directory (cwd)",
+      "enforcement": "hard",
+      "verification_status": "static-only"
+    },
+    {
+      "host": "github:copilot",
+      "capability": "workspace.isolated",
+      "implementation_status": "gap",
+      "primitive": "none (no native worktree isolation)",
+      "enforcement": "advisory",
+      "verification_status": "static-only",
+      "notes": "No native container or worktree isolation primitive in Copilot CLI"
+    },
+    {
+      "host": "github:copilot",
+      "capability": "workspace.readonly",
+      "implementation_status": "native",
+      "primitive": "prompt instruction (read-only posture advice)",
+      "enforcement": "advisory",
+      "verification_status": "static-only",
+      "notes": "Advisory prompt-level read-only posture; Copilot exposes no kernel-level read-only filesystem mount"
+    },
+    {
+      "host": "github:copilot",
+      "capability": "human.ask",
+      "implementation_status": "native",
+      "primitive": "interactive terminal confirmation",
+      "enforcement": "hard",
+      "verification_status": "static-only",
+      "notes": "Interactive user confirmation prompt in terminal"
+    },
+    {
+      "host": "github:copilot",
+      "capability": "human.gate",
+      "implementation_status": "native",
+      "primitive": "blocking terminal execution confirmation",
+      "enforcement": "hard",
+      "verification_status": "static-only"
+    },
+    {
+      "host": "github:copilot",
+      "capability": "plan.update",
+      "implementation_status": "native",
+      "primitive": "todo markdown (logbook tracking in repository)",
+      "enforcement": "hard",
+      "verification_status": "static-only"
+    },
+    {
+      "host": "github:copilot",
+      "capability": "schedule",
+      "implementation_status": "gap",
+      "primitive": "none (no native scheduler)",
+      "enforcement": "advisory",
+      "verification_status": "static-only",
+      "notes": "No native cron or timer scheduler primitive"
+    },
+    {
+      "host": "github:copilot",
+      "capability": "monitor",
+      "implementation_status": "gap",
+      "primitive": "none (no background monitor)",
+      "enforcement": "advisory",
+      "verification_status": "static-only",
+      "notes": "No persistent background monitor primitive"
+    },
+    {
+      "host": "github:copilot",
+      "capability": "session.persist",
+      "implementation_status": "native",
+      "primitive": "shell history (terminal session history)",
+      "enforcement": "advisory",
+      "verification_status": "static-only"
+    },
+    {
+      "host": "github:copilot",
+      "capability": "session.resume",
+      "implementation_status": "gap",
+      "primitive": "none (no structured session resumption)",
+      "enforcement": "advisory",
+      "verification_status": "static-only"
+    },
+    {
+      "host": "github:copilot",
+      "capability": "evidence.capture",
+      "implementation_status": "native",
+      "primitive": "evidence ledger (.audit/evidence/)",
+      "enforcement": "hard",
+      "verification_status": "static-only"
+    },
+    {
+      "host": "github:copilot",
+      "capability": "verify",
+      "implementation_status": "native",
+      "primitive": "copilot verification checks",
+      "enforcement": "hard",
+      "verification_status": "static-only"
+    }
+  ],
+  "evidence_ledger": [],
+  "tool_mappings": {
+    "file_read": "cat / less / grep",
+    "file_edit": "sed / patch / editor",
+    "file_write": "cat / tee / redirect",
+    "shell_run": "gh copilot / bash execution",
+    "web_fetch": "curl / wget",
+    "web_search": "gh search / web search",
+    "agent_spawn": "unsupported (single-process CLI execution)",
+    "agent_fanout": "unsupported (no fanout primitive)",
+    "agent_join": "unsupported (no join primitive)",
+    "agent_message": "unsupported (no messaging primitive)",
+    "task_background": "unsupported (no background task primitive)",
+    "tool_mcp": "unsupported (no native MCP in standard Copilot CLI)",
+    "plan_update": "todo markdown updates",
+    "human_ask": "interactive terminal prompt"
+  },
+  "skill_order": [
+    {
+      "need": "TDD",
+      "primary_pstack": "/tdd",
+      "secondary_user": "/test-driven-development",
+      "fallback_builtin": null,
+      "notes": "Advisory: resolves to pstack tdd playbook or personal skill"
+    },
+    {
+      "need": "Review a diff or PR",
+      "primary_pstack": "/interrogate",
+      "secondary_user": "/requesting-code-review",
+      "fallback_builtin": null,
+      "notes": "Advisory: resolves to pstack interrogate skill"
+    },
+    {
+      "need": "Debug a failure",
+      "primary_pstack": "playbooks/bug-fix.md",
+      "secondary_user": "/systematic-debugging",
+      "fallback_builtin": null,
+      "notes": "Advisory: resolves to pstack bug-fix playbook"
+    },
+    {
+      "need": "Prove work is done",
+      "primary_pstack": "/principle-prove-it-works",
+      "secondary_user": "/verification-before-completion",
+      "fallback_builtin": null,
+      "notes": "Advisory: resolves to pstack prove-it-works principle"
+    },
+    {
+      "need": "Execute a written plan",
+      "primary_pstack": "playbooks/feature.md",
+      "secondary_user": "/executing-plans",
+      "fallback_builtin": null,
+      "notes": "Advisory: resolves to pstack feature playbook"
+    },
+    {
+      "need": "Read-only spawn",
+      "primary_pstack": "pstack:how-explorer",
+      "secondary_user": null,
+      "fallback_builtin": "explorer",
+      "notes": "Advisory read-only prompt advice; Copilot CLI provides no kernel mount isolation"
+    },
+    {
+      "need": "Worktree isolation",
+      "primary_pstack": null,
+      "secondary_user": "/using-git-worktrees",
+      "fallback_builtin": "git worktree",
+      "notes": "External git worktrees used for physical branch/workspace isolation"
+    }
+  ],
+  "runtime_conventions": {
+    "max_subagent_depth": 1,
+    "supported_isolation_modes": [
+      "none"
+    ],
+    "default_model": "inherit",
+    "allowed_spawn_fields": [
+      "prompt"
+    ],
+    "forbidden_spawn_fields": [
+      "subagent_type",
+      "model",
+      "effort",
+      "readonly",
+      "isolation"
+    ]
+  }
+}

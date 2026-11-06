@@ -1,0 +1,302 @@
+{
+  "host": "codex",
+  "support_state": "packaged",
+  "skills_dir": ".codex/skills",
+  "plugins_dir": "~/.codex/plugins",
+  "plugin_manifest": ".codex-plugin/plugin.json",
+  "setup": {
+    "source": "host-catalog",
+    "skill": null,
+    "catalog": ".codex-plugin/models.json",
+    "overlay": null,
+    "effort": "none"
+  },
+  "bindings": [
+    {
+      "host": "codex",
+      "capability": "agent.spawn",
+      "implementation_status": "native",
+      "primitive": "spawn_agent",
+      "enforcement": "hard",
+      "verification_status": "static-only",
+      "evidence_ref": ".audit/evidence/codex-receipt.json"
+    },
+    {
+      "host": "codex",
+      "capability": "agent.join",
+      "implementation_status": "native",
+      "primitive": "wait_agent",
+      "enforcement": "hard",
+      "verification_status": "static-only",
+      "evidence_ref": ".audit/evidence/codex-receipt.json"
+    },
+    {
+      "host": "codex",
+      "capability": "agent.message",
+      "implementation_status": "native",
+      "primitive": "send_message",
+      "enforcement": "hard",
+      "verification_status": "static-only",
+      "evidence_ref": ".audit/evidence/codex-receipt.json"
+    },
+    {
+      "host": "codex",
+      "capability": "agent.cancel",
+      "implementation_status": "gap",
+      "primitive": null,
+      "enforcement": "advisory",
+      "verification_status": "static-only",
+      "evidence_ref": ".audit/evidence/codex-receipt.json",
+      "notes": "No cancel API in Codex CLI"
+    },
+    {
+      "host": "codex",
+      "capability": "agent.resume",
+      "implementation_status": "native",
+      "primitive": "resume_agent",
+      "enforcement": "hard",
+      "verification_status": "static-only",
+      "evidence_ref": ".audit/evidence/codex-receipt.json"
+    },
+    {
+      "host": "codex",
+      "capability": "workspace.shared",
+      "implementation_status": "native",
+      "primitive": "working directory (cwd)",
+      "enforcement": "hard",
+      "verification_status": "static-only",
+      "evidence_ref": ".audit/evidence/codex-receipt.json"
+    },
+    {
+      "host": "codex",
+      "capability": "workspace.isolated",
+      "implementation_status": "native",
+      "primitive": "git worktree",
+      "enforcement": "hard",
+      "verification_status": "static-only",
+      "evidence_ref": ".audit/evidence/codex-receipt.json"
+    },
+    {
+      "host": "codex",
+      "capability": "workspace.readonly",
+      "implementation_status": "native",
+      "primitive": "prompt-advisory",
+      "enforcement": "advisory",
+      "verification_status": "static-only",
+      "evidence_ref": ".audit/evidence/codex-receipt.json"
+    },
+    {
+      "host": "codex",
+      "capability": "human.ask",
+      "implementation_status": "native",
+      "primitive": "plain_text_question",
+      "enforcement": "advisory",
+      "verification_status": "static-only",
+      "evidence_ref": ".audit/evidence/codex-receipt.json"
+    },
+    {
+      "host": "codex",
+      "capability": "human.gate",
+      "implementation_status": "native",
+      "primitive": "plain_text_question (blocking gate)",
+      "enforcement": "advisory",
+      "verification_status": "static-only",
+      "evidence_ref": ".audit/evidence/codex-receipt.json"
+    },
+    {
+      "host": "codex",
+      "capability": "plan.update",
+      "implementation_status": "native",
+      "primitive": "update_plan / todo.md",
+      "enforcement": "advisory",
+      "verification_status": "static-only",
+      "evidence_ref": ".audit/evidence/codex-receipt.json"
+    },
+    {
+      "host": "codex",
+      "capability": "schedule",
+      "implementation_status": "shim",
+      "primitive": "watch-pr / host cron",
+      "enforcement": "soft",
+      "verification_status": "static-only",
+      "evidence_ref": ".audit/evidence/codex-receipt.json"
+    },
+    {
+      "host": "codex",
+      "capability": "monitor",
+      "implementation_status": "shim",
+      "primitive": "watch-pr cadence loop",
+      "enforcement": "soft",
+      "verification_status": "static-only",
+      "evidence_ref": ".audit/evidence/codex-receipt.json"
+    },
+    {
+      "host": "codex",
+      "capability": "session.persist",
+      "implementation_status": "native",
+      "primitive": "codex session state",
+      "enforcement": "hard",
+      "verification_status": "static-only",
+      "evidence_ref": ".audit/evidence/codex-receipt.json"
+    },
+    {
+      "host": "codex",
+      "capability": "session.resume",
+      "implementation_status": "native",
+      "primitive": "codex resume",
+      "enforcement": "hard",
+      "verification_status": "static-only",
+      "evidence_ref": ".audit/evidence/codex-receipt.json"
+    },
+    {
+      "host": "codex",
+      "capability": "evidence.capture",
+      "implementation_status": "native",
+      "primitive": "receipts under .audit/evidence/",
+      "enforcement": "hard",
+      "verification_status": "static-only",
+      "evidence_ref": ".audit/evidence/codex-receipt.json"
+    },
+    {
+      "host": "codex",
+      "capability": "verify",
+      "implementation_status": "native",
+      "primitive": "scripts/verify_portable.py",
+      "enforcement": "hard",
+      "verification_status": "static-only",
+      "evidence_ref": ".audit/evidence/codex-receipt.json"
+    }
+  ],
+  "evidence_ledger": [
+    {
+      "claim": "HISTORICAL runtime claim, superseded 2026-10-17: Codex implements agent.spawn, agent.join, and workspace.isolated via native spawn_agent and worktrees. The durable receipt was then refreshed statically (canonical/adapter/package PASS, runtime UNTESTED), so this runtime claim is no longer current evidence; codex claims packaged with static-only rows until `python3 scripts/verify_portable.py run --host codex` records an observed_live settlement.",
+      "kind": "runtime",
+      "artifact": ".audit/evidence/codex-receipt.json",
+      "command": "python3 scripts/verify_portable.py run --host codex",
+      "timestamp": "2026-10-05T16:55:00Z"
+    }
+  ],
+  "tool_mappings": {
+    "file_read": "read_file / shell",
+    "file_edit": "apply_patch / edit_file",
+    "file_write": "write_file",
+    "shell_run": "execute_command / shell",
+    "web_fetch": "fetch_web / curl",
+    "web_search": "search_web",
+    "agent_spawn": "spawn_agent",
+    "agent_fanout": "N spawn_agent in one turn",
+    "agent_join": "wait_agent",
+    "agent_message": "send_message",
+    "task_background": "spawn_agent (multi_agent)",
+    "tool_mcp": "mcp_client",
+    "plan_update": "update_plan",
+    "human_ask": "ask_user / request_user_input"
+  },
+  "skill_order": [
+    {
+      "need": "TDD",
+      "primary_pstack": "/tdd",
+      "secondary_user": "/test-driven-development",
+      "fallback_builtin": null,
+      "notes": "User skill only if /tdd is not loaded"
+    },
+    {
+      "need": "Author a SKILL.md",
+      "primary_pstack": "playbooks/authoring-a-skill.md",
+      "secondary_user": "/writing-skills",
+      "fallback_builtin": "/create-skill"
+    },
+    {
+      "need": "Review a diff or PR",
+      "primary_pstack": "/interrogate",
+      "secondary_user": "/requesting-code-review",
+      "fallback_builtin": "/review"
+    },
+    {
+      "need": "Babysit",
+      "primary_pstack": "playbooks/babysit.md",
+      "secondary_user": null,
+      "fallback_builtin": null
+    },
+    {
+      "need": "Prove work is done",
+      "primary_pstack": "/principle-prove-it-works",
+      "secondary_user": "/verification-before-completion",
+      "fallback_builtin": null
+    },
+    {
+      "need": "Debug a failure",
+      "primary_pstack": "playbooks/bug-fix.md",
+      "secondary_user": "/systematic-debugging",
+      "fallback_builtin": null
+    },
+    {
+      "need": "Disk prune",
+      "primary_pstack": "playbooks/worktree-cleanup.md",
+      "secondary_user": null,
+      "fallback_builtin": null
+    },
+    {
+      "need": "Worktree isolation",
+      "primary_pstack": null,
+      "secondary_user": "/using-git-worktrees",
+      "fallback_builtin": "isolation: worktree"
+    },
+    {
+      "need": "Design a playbook",
+      "primary_pstack": "/figure-it-out",
+      "secondary_user": null,
+      "fallback_builtin": null
+    },
+    {
+      "need": "Spec then plan",
+      "primary_pstack": null,
+      "secondary_user": "/brainstorming, /writing-plans",
+      "fallback_builtin": "plan"
+    },
+    {
+      "need": "Execute a written plan",
+      "primary_pstack": "playbooks/feature.md",
+      "secondary_user": "/executing-plans, /subagent-driven-development",
+      "fallback_builtin": "/implement, /execute-plan"
+    },
+    {
+      "need": "Overnight heartbeat",
+      "primary_pstack": null,
+      "secondary_user": null,
+      "fallback_builtin": "cadence loop / scheduled task"
+    },
+    {
+      "need": "Read-only spawn",
+      "primary_pstack": "pstack:how-explorer",
+      "secondary_user": null,
+      "fallback_builtin": "explore"
+    },
+    {
+      "need": "Unslop / comments",
+      "primary_pstack": "/unslop",
+      "secondary_user": null,
+      "fallback_builtin": null,
+      "notes": "/unslop for prose, /no-comments for diffs"
+    }
+  ],
+  "runtime_conventions": {
+    "max_subagent_depth": 1,
+    "supported_isolation_modes": ["worktree", "shared"],
+    "default_model": "gpt-6.1-sol",
+    "allowed_spawn_fields": [
+      "prompt",
+      "role",
+      "model",
+      "isolation"
+    ],
+    "forbidden_spawn_fields": [
+      "capability_mode",
+      "environment"
+    ],
+    "wire_aliases": {
+      "spawn_agent": "spawn_subagent",
+      "wait_agent": "join_subagent"
+    }
+  }
+}

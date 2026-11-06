@@ -40,11 +40,13 @@ from pathlib import Path
 from typing import Dict, List, Optional, Pattern, Set, Tuple
 
 ROOT = Path(__file__).resolve().parents[1]
-PROFILES_DIR = ROOT / "profiles"
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts.host_identity import KNOWN_HOSTS, OBSERVER_HOSTS, SCANNED_ONLY_HOST_NAMES  # noqa: E402
+from scripts.setup_pstack import resolve_profiles_dir  # noqa: E402
+
+PROFILES_DIR = resolve_profiles_dir(ROOT)
 
 
 @dataclass(frozen=True)
@@ -86,6 +88,10 @@ DEFAULT_EXEMPTIONS: Tuple[Exemption, ...] = (
     Exemption(
         "skills/setup-pstack-grok/**",
         "Grok Build setup adapter: owns the host paths and model keys it writes",
+    ),
+    Exemption(
+        "skills/setup-pstack/profiles/**",
+        "Packaged harness profile declarations for plugin distributions",
     ),
     Exemption("**/node_modules/**", "External vendor dependencies in scripts"),
     Exemption(

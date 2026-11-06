@@ -1,0 +1,238 @@
+{
+  "host": "claude",
+  "support_state": "candidate",
+  "skills_dir": ".claude/skills",
+  "plugins_dir": "~/.claude/plugins",
+  "plugin_manifest": ".claude-plugin/plugin.json",
+  "bindings": [
+    {
+      "host": "claude",
+      "capability": "agent.spawn",
+      "implementation_status": "native",
+      "primitive": "Task tool (parent-owned dispatch; depth 1)",
+      "enforcement": "hard",
+      "verification_status": "static-only",
+      "notes": "Parent-owned dispatch; depth bounded to 1"
+    },
+    {
+      "host": "claude",
+      "capability": "agent.join",
+      "implementation_status": "native",
+      "primitive": "TaskOutput tool (blocking join; auto-delivered completion)",
+      "enforcement": "hard",
+      "verification_status": "static-only",
+      "notes": "Synchronous or reactive completion delivery"
+    },
+    {
+      "host": "claude",
+      "capability": "agent.message",
+      "implementation_status": "native",
+      "primitive": "Task resume (inter-agent follow-up message)",
+      "enforcement": "hard",
+      "verification_status": "static-only"
+    },
+    {
+      "host": "claude",
+      "capability": "agent.cancel",
+      "implementation_status": "native",
+      "primitive": "claude stop (CLI session cancellation)",
+      "enforcement": "hard",
+      "verification_status": "static-only",
+      "notes": "Background session stop via CLI"
+    },
+    {
+      "host": "claude",
+      "capability": "agent.resume",
+      "implementation_status": "native",
+      "primitive": "claude resume (CLI session continuation)",
+      "enforcement": "hard",
+      "verification_status": "static-only"
+    },
+    {
+      "host": "claude",
+      "capability": "workspace.shared",
+      "implementation_status": "native",
+      "primitive": "working directory (cwd)",
+      "enforcement": "hard",
+      "verification_status": "static-only"
+    },
+    {
+      "host": "claude",
+      "capability": "workspace.isolated",
+      "implementation_status": "native",
+      "primitive": "directory allowlist (--add-dir scoping)",
+      "enforcement": "hard",
+      "verification_status": "static-only"
+    },
+    {
+      "host": "claude",
+      "capability": "workspace.readonly",
+      "implementation_status": "native",
+      "primitive": "allowed-tools exclusion (tool-level restrictions)",
+      "enforcement": "advisory",
+      "verification_status": "static-only",
+      "notes": "Advisory tool-level restrictions; Claude Code exposes no kernel-level read-only mount"
+    },
+    {
+      "host": "claude",
+      "capability": "human.ask",
+      "implementation_status": "native",
+      "primitive": "AskUserQuestion tool (interactive user dialog)",
+      "enforcement": "hard",
+      "verification_status": "static-only"
+    },
+    {
+      "host": "claude",
+      "capability": "human.gate",
+      "implementation_status": "native",
+      "primitive": "AskUserQuestion gate (blocking confirmation)",
+      "enforcement": "hard",
+      "verification_status": "static-only"
+    },
+    {
+      "host": "claude",
+      "capability": "plan.update",
+      "implementation_status": "native",
+      "primitive": "todo_write tool (logbook tracking)",
+      "enforcement": "hard",
+      "verification_status": "static-only"
+    },
+    {
+      "host": "claude",
+      "capability": "schedule",
+      "implementation_status": "gap",
+      "primitive": "none (no native scheduler)",
+      "enforcement": "advisory",
+      "verification_status": "static-only",
+      "notes": "No native cron/timer scheduler primitive in Claude Code CLI"
+    },
+    {
+      "host": "claude",
+      "capability": "monitor",
+      "implementation_status": "gap",
+      "primitive": "none (no background monitor)",
+      "enforcement": "advisory",
+      "verification_status": "static-only",
+      "notes": "No persistent background monitor primitive"
+    },
+    {
+      "host": "claude",
+      "capability": "session.persist",
+      "implementation_status": "native",
+      "primitive": "session transcripts (~/.claude/sessions)",
+      "enforcement": "hard",
+      "verification_status": "static-only"
+    },
+    {
+      "host": "claude",
+      "capability": "session.resume",
+      "implementation_status": "native",
+      "primitive": "session resume (--resume <id>)",
+      "enforcement": "hard",
+      "verification_status": "static-only"
+    },
+    {
+      "host": "claude",
+      "capability": "evidence.capture",
+      "implementation_status": "native",
+      "primitive": "evidence ledger (.audit/evidence/)",
+      "enforcement": "hard",
+      "verification_status": "static-only"
+    },
+    {
+      "host": "claude",
+      "capability": "verify",
+      "implementation_status": "native",
+      "primitive": "plugin validate (claude plugin validate)",
+      "enforcement": "hard",
+      "verification_status": "static-only"
+    }
+  ],
+  "evidence_ledger": [],
+  "tool_mappings": {
+    "file_read": "View / Read / Grep / Glob",
+    "file_edit": "Edit",
+    "file_write": "Write",
+    "shell_run": "Bash",
+    "web_fetch": "FetchUrl / WebFetch",
+    "web_search": "WebSearch",
+    "agent_spawn": "Task (agent_spawn with Task tool; depth 1)",
+    "agent_fanout": "Concurrent Task invocations in turn",
+    "agent_join": "TaskOutput (blocking join; auto-delivered completion)",
+    "agent_message": "Task with resume",
+    "task_background": "claude --bg / background task execution",
+    "tool_mcp": "mcp servers defined in claude config or plugin",
+    "plan_update": "todo_write / logbook markdown",
+    "human_ask": "AskUserQuestion"
+  },
+  "skill_order": [
+    {
+      "need": "TDD",
+      "primary_pstack": "/tdd",
+      "secondary_user": "/test-driven-development",
+      "fallback_builtin": null,
+      "notes": "Advisory: resolves to pstack tdd playbook or personal skill"
+    },
+    {
+      "need": "Review a diff or PR",
+      "primary_pstack": "/interrogate",
+      "secondary_user": "/requesting-code-review",
+      "fallback_builtin": null,
+      "notes": "Advisory: resolves to pstack interrogate skill"
+    },
+    {
+      "need": "Debug a failure",
+      "primary_pstack": "playbooks/bug-fix.md",
+      "secondary_user": "/systematic-debugging",
+      "fallback_builtin": null,
+      "notes": "Advisory: resolves to pstack bug-fix playbook"
+    },
+    {
+      "need": "Prove work is done",
+      "primary_pstack": "/principle-prove-it-works",
+      "secondary_user": "/verification-before-completion",
+      "fallback_builtin": null,
+      "notes": "Advisory: resolves to pstack prove-it-works principle"
+    },
+    {
+      "need": "Execute a written plan",
+      "primary_pstack": "playbooks/feature.md",
+      "secondary_user": "/executing-plans",
+      "fallback_builtin": null,
+      "notes": "Advisory: resolves to pstack feature playbook"
+    },
+    {
+      "need": "Read-only spawn",
+      "primary_pstack": "pstack:how-explorer",
+      "secondary_user": null,
+      "fallback_builtin": "explorer",
+      "notes": "Allowed tools filtering: readonly is enforced via tool permissions (no Edit/Write/destructive tools) or prompt advice; no hard filesystem mount readonly exists"
+    },
+    {
+      "need": "Worktree isolation",
+      "primary_pstack": null,
+      "secondary_user": "/using-git-worktrees",
+      "fallback_builtin": "git worktree",
+      "notes": "Git worktrees used for physical branch/workspace isolation"
+    }
+  ],
+  "runtime_conventions": {
+    "max_subagent_depth": 1,
+    "supported_isolation_modes": [
+      "none",
+      "directory-allowlist"
+    ],
+    "default_model": "inherit",
+    "allowed_spawn_fields": [
+      "subagent_type",
+      "description",
+      "prompt",
+      "allowed_tools"
+    ],
+    "forbidden_spawn_fields": [
+      "readonly",
+      "isolation",
+      "cwd"
+    ]
+  }
+}
