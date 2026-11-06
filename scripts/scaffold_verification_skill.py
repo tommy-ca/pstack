@@ -364,6 +364,11 @@ def check_skill(target_dir: pathlib.Path) -> List[str]:
             if not re.search(pattern, body, re.MULTILINE | re.IGNORECASE):
                 errors.append(f"SKILL.md missing required section '## {sec}'")
 
+        if len(body.encode("utf-8")) > 24000:
+            errors.append(
+                f"SKILL.md body exceeds Antigravity 24000-byte limit ({len(body.encode('utf-8'))} bytes)"
+            )
+
     errors.extend(check_feature_map(target_dir / "features"))
 
     return errors
