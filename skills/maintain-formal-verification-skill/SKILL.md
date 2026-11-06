@@ -21,38 +21,54 @@ A check can be both updated and bug: the update makes the verification describe 
 
 ## Edit scope
 
-Edit only the verification: models, harnesses, property files, and the verify skill itself. Never edit product code during a run, unless the user asks you to. When a property fails on the current code, do not weaken the property or the model to make it pass. Report the failure.
+Edit only the verification: models, harnesses, property files, feature maps under `features/`, driver scripts, and the verify skill `SKILL.md` itself. Never edit product code during a maintenance run, unless the user asks you to. When a property fails on the current code, do not weaken the property or the model to make it pass. Report the failure.
 
-## Pass
+Keep the skill body under 24,000 bytes to preserve Antigravity compatibility.
 
-1. **Find the checks.** A verify skill has no fixed name, so find it by what it does: a project skill that runs a model checker, a prover, or another verifier against named code. Read each one you find, or the one the user named. For each check, collect the property, the code it covers, the bounds and assumptions, the command that runs it, and the commit where it was last confirmed to describe the code. If no verify skill exists, stop and point at `/create-formal-verification-skill`. If the skill does not record a sync commit, use the last commit that changed the verification files, and say that you did.
+## Upkeep Pass
 
-2. **Run it as it is.** Run each check once before you change anything, and record the result. A pass here does not tell you that the code is correct. It tells you that the old description still holds. A failure here can be drift or a bug. Do not decide which until step 5.
+1. **Find the checks.**
+   Locate project-local formal skills (`verify-*-formal` or named formal checkers) in the active harness's native skills directory (`skills_dir` in `skills/setup-pstack/profiles/<host>.json` or repository `profiles/<host>.json`, resolved canonically via `scripts.setup_pstack.resolve_profiles_dir`). Read each one found. Collect the covered code paths, the property, the bounds, the command, the feature map in `features/`, and the commit where it was last confirmed to describe the code. If no verify skill exists, stop and point at `/create-formal-verification-skill`.
 
-3. **Read every change to covered code.** Diff the covered files from the sync commit to the current commit, and read each commit message. Also look for code that moved: a covered function that is renamed, split, or moved to another file is still covered code. Also look for new code that touches the state that a check guards, such as a new function that writes the same fields. For each change, decide which of these it is:
-   - **No effect.** The change does not alter anything the verification describes, such as formatting, comments, or code paths that the verification does not cover. Check this against the model or harness, not against the commit message.
-   - **The verification no longer describes the code.** A step that was one indivisible action is now two, a branch was added or removed, a check moved, a new path reaches the guarded state, or a value now has a different range. The model or harness must change.
-   - **The promise changed on purpose.** The change alters what the code promises, and evidence in the change says that this is intended: the doc comment, the tests, the changelog, or the commit message. The property must change, and you must cite that evidence.
-   - **The promise may be broken.** The code changed, and no evidence says that the promise changed. Treat a failure that follows as a bug candidate.
+2. **Run it as it is.**
+   Run the verification driver (`./scripts/driver.sh all` or the documented drive command) before changing anything. A pass here does not mean the code is correct; it means the old description holds or passes trivially. A failure can be drift or a real regression.
 
-4. **Update from the code, not from the result.** Change the model or harness so that each changed part again points to code that a reviewer can open, and keep one indivisible step in the code as one step in the verification. Write the update from the code before you rerun, and do not shape it by what makes the check pass. Change a property only for a promise that changed on purpose. Write down the old wording, the new wording, and the evidence. Keep the bounds unless the change makes them wrong. If you must reduce a bound, say so in the report.
+3. **Read every change to covered code.**
+   Diff the covered files from the sync commit to the current commit (`git diff <sync-commit>..HEAD -- <covered-paths>`). Review commit messages and investigate structural movements (renamed functions, split files, new callers reaching the guarded state). Classify each change:
+   - **No effect:** formatting, comments, or unmodeled helper paths.
+   - **Verification no longer describes the code:** an atomic step was split, a branch added/removed, state variables modified, or bounds altered. The model or harness must change.
+   - **Promise changed on purpose:** intentional API or behavior update supported by commit messages or tests. The property must be updated, citing that evidence.
+   - **Promise broken:** code changed without intent to alter the invariant. A failure is a bug candidate.
+
+4. **Update from the code, not from the result.**
+   Update the model, bounded test harness, feature map, and driver so that each changed part again corresponds directly to real code. Do not shape the update to force a pass. Change properties only when intentional evidence warrants it. Record old wording, new wording, and rationale.
 
 5. **Rerun and judge each result.**
-   - **Pass:** the check can now pass on a description that has lost the ability to fail. Break the new code the way the property guards against, such as removing a new check or reordering a new step, and confirm that the check catches it. Then drop the break.
-   - **Fail:** replay the counterexample against the real code, step by step. If a step cannot happen in the code, the verification is wrong. Fix the verification, and say what was wrong. If every step can happen, it is a bug. Name the commit that introduced it, tell the counterexample as a sequence of steps in the code's own words, and state the harm in one sentence. If a cheap test or reproduction against the real code shows the bug, add it to the report as evidence. Do not commit it to the product code.
+   - **Pass:** confirm the check has not lost the ability to fail. Introduce a deliberate break in the property or code mutant (e.g. removed check or inverted branch) and verify that the checker flags it. Then revert the break.
+   - **Fail:** replay the counterexample trace against the real code. If impossible in the code, fix the model. If reproducible, report it as a bug with the introducing commit, minimal step sequence, and harm statement. Reduce verdicts using the failure-first lattice: FAIL > BLOCKED > UNTESTED > PASS.
 
-6. **Update the verify skill.** Update the code that each check covers, the commands, the bounds, the assumptions, and the sync commit. Set the sync commit to the commit that you checked. Do not move the sync commit for a blocked check, and say so in the report. Then follow the verify skill once as the next agent would, so that you know its steps still run.
+6. **Update the verify skill.**
+   Update `SKILL.md`: refresh covered files, bounds, assumptions, feature maps, driver references, and the sync commit. Set the sync commit to the commit that was checked. Never advance the sync commit for a blocked check. Ensure the 7 required sections (`Launch`, `Doctor`, `Drive`, `Proof bar`, `Evidence`, `Cleanup`, `Helpers`) and the feature map (`features/README.md`) remain structurally valid. Run `scripts/scaffold_verification_skill.py --check --target-dir <skill-dir>`.
+
+## Architectural Discipline: SOLID, KISS, DRY, YAGNI
+
+Maintenance must preserve structural cleanliness:
+
+- **Single Responsibility (SRP):** Maintain clean separation between the formal specification/model and the execution driver.
+- **Open/Closed (OCP):** Add new invariants or sub-features as new markdown files in `features/` without mutating existing verified flows.
+- **Liskov Substitution (LSP):** Maintain uniform driver interfaces (`doctor`, `drive`, `cleanup`, `all`) across updates.
+- **Interface Segregation (ISP):** Keep abstract provers and bounded code-level falsifiers decoupled.
+- **Dependency Inversion (DIP):** Anchor formal models to public invariants, not brittle private implementation details.
+- **KISS & YAGNI:** Avoid adding speculative state variables or complex proof branches not necessitated by the target code.
+- **DRY:** Ensure properties, bounds, and sync commits are defined canonically once in `SKILL.md`.
 
 ## Report
 
 Tell the user, for each check:
+- The outcome (`in sync`, `updated`, `bug`, or `blocked`) and the evaluated commits.
+- What changed in the verification and why (code drift or intentional promise change with citations).
+- The rerun result, including the negative mutant used to demonstrate that the check can still fail.
+- Each bug found in plain language: counterexample steps, introducing commit, and user harm.
+- Any remaining unverified areas or gaps.
 
-- the outcome, and the commits that you read;
-- what changed in the verification and why, with a short reason for each change: the code changed shape, or the promise changed on purpose (with the evidence);
-- the rerun result, and the break that you used to show the updated check can still fail;
-- each bug, in plain words: the counterexample as steps in the code's words, the harm, and the commit that introduced it;
-- what the verification still does not cover, including new code that it should cover and does not.
-
-Say outright which failures were drift in the verification and which were bugs in the code. For a check that passed before you updated it and fails after, say that the old pass was on a stale description.
-
-Put the verification updates in a change of their own, separate from any product fix.
+Put verification updates in a standalone commit separate from any product code changes.
