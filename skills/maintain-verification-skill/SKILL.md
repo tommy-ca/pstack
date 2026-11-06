@@ -20,6 +20,16 @@ Pick one, and say which:
 
 Only edit the verification skill's own directory (its SKILL.md, features/, and any harness scripts it owns). Never edit product code during a run. A behavior the map describes that the app no longer does is either doc drift (fix the map) or a product regression (report it, don't paper over it in docs). Never edit `openspec/`. The map lives at skill-root `features/`, not under OpenSpec.
 
+## Upkeep Principles: SOLID, KISS, DRY, YAGNI
+
+During maintenance sweeps, enforce clean design standards:
+- **Single Responsibility:** Treat each feature markdown file as the sole authority for its feature's proof recipe. Keep harness execution logic strictly inside the driver.
+- **Open/Closed:** Accommodate application changes by extending the feature map files or adding new journey files without changing the driver's interface.
+- **Liskov Substitution:** Ensure all project-local drivers remain drop-in compatible across harnesses with uniform verbs (`doctor`, `launch`, `drive`, `cleanup`, `all`).
+- **Interface Segregation:** Keep feature recipes decoupled so individual regressions can be verified in isolation without triggering the full sweep.
+- **KISS & DRY:** Remove duplicated driver steps and redundant environment assertions. Favor simple native assertions over complex helper hierarchies.
+- **YAGNI:** Remove dead gotchas, obsolete workarounds, and speculative feature drafts that no longer correspond to real code paths.
+
 ## Pass
 
 0. **Locate the target.** Find the verification skill to maintain: the project-local skill whose body has launch/drive sections and a feature map. Look in the harness skill locations: run `scripts/scaffold_verification_skill.py --list` to enumerate the `verify-*` skills under them, or read the harness-to-directory mapping from `skills_dir` in `skills/setup-pstack/profiles/<host>.json` (or root `profiles/<host>.json`, resolved via `scripts.setup_pstack.resolve_profiles_dir`, mirrored by `DEFAULT_SKILLS_DIRS` in `scripts/portability_schema.py`).

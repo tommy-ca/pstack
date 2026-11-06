@@ -46,8 +46,9 @@ from scripts.portability_schema import (
 from scripts.setup_pstack import resolve_profiles_dir
 
 
-def stage_antigravity_package(dest_dir: Path) -> Path:
+def stage_antigravity_package(dest_dir: Path, source_root: Optional[Path] = None) -> Path:
     """Stage a clean, standalone Antigravity plugin package for validation and installation."""
+    src_root = source_root if source_root is not None else ROOT
     desc, _ = load_package_descriptor()
     dest_dir.mkdir(parents=True, exist_ok=True)
 
@@ -62,7 +63,7 @@ def stage_antigravity_package(dest_dir: Path) -> Path:
     # 3. Logo asset
     assets_dir = dest_dir / "assets"
     assets_dir.mkdir(parents=True, exist_ok=True)
-    logo_src = ROOT / "assets" / "logo.svg"
+    logo_src = src_root / "assets" / "logo.svg"
     if logo_src.is_file():
         shutil.copy2(logo_src, assets_dir / "logo.svg")
 
@@ -78,7 +79,7 @@ def stage_antigravity_package(dest_dir: Path) -> Path:
     )
 
     # 5. Skills
-    skills_src = ROOT / "skills"
+    skills_src = src_root / "skills"
     skills_dest = dest_dir / "skills"
     skills_dest.mkdir(parents=True, exist_ok=True)
     for skill_dir in skills_src.iterdir():
@@ -92,7 +93,7 @@ def stage_antigravity_package(dest_dir: Path) -> Path:
         )
 
     # 6. Agents
-    agents_src = ROOT / "agents"
+    agents_src = src_root / "agents"
     agents_dest = dest_dir / "agents"
     agents_dest.mkdir(parents=True, exist_ok=True)
     for agent_file in agents_src.glob("*.md"):
@@ -100,7 +101,7 @@ def stage_antigravity_package(dest_dir: Path) -> Path:
             shutil.copy2(agent_file, agents_dest / agent_file.name)
 
     # 7. Profiles
-    profiles_src = resolve_profiles_dir(ROOT)
+    profiles_src = resolve_profiles_dir(src_root)
     profiles_dest = dest_dir / "profiles"
     profiles_dest.mkdir(parents=True, exist_ok=True)
     for p_file in sorted(profiles_src.glob("*.json")):

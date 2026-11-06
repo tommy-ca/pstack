@@ -324,6 +324,51 @@ def source_tree_guard(source: Path | None = None) -> str:
     return ""
 
 
+def _log_sync_plan(desc: Any, dest_dir: Path) -> None:
+    manifest_dest = dest_dir / "plugin.json"
+    print(f"Writing {manifest_dest}")
+    models_dest = dest_dir / "models.json"
+    print(f"Writing {models_dest}")
+    rules_dest = dest_dir / "rules" / "AGENTS.md"
+    print(f"Writing {rules_dest}")
+
+    hooks_file = dest_dir / "hooks" / "hooks.json"
+    if hooks_file.is_file():
+        print(f"Removing stale {hooks_file}")
+
+    for stray in [".codex-plugin", ".claude-plugin"]:
+        stray_path = dest_dir / stray
+        if stray_path.exists():
+            print(f"Removing foreign legacy directory {stray_path}")
+
+    src_skills = ROOT / "skills"
+    dest_skills = dest_dir / "skills"
+    src_skill_names = skill_names(src_skills)
+    for item_name in sorted(src_skill_names):
+        print(f"Syncing skill {item_name} -> {dest_skills / item_name}")
+    for name in sorted(skill_names(dest_skills) - src_skill_names):
+        print(f"Removing deleted skill {name}")
+
+    src_agents = ROOT / "agents"
+    dest_agents = dest_dir / "agents"
+    src_agent_files = {f.name for f in src_agents.glob("*.md") if f.is_file()}
+    for fname in sorted(src_agent_files):
+        print(f"Syncing agent {fname} -> {dest_agents / fname}")
+    if dest_agents.is_dir():
+        for existing_f in dest_agents.glob("*.md"):
+            if existing_f.is_file() and existing_f.name not in src_agent_files:
+                print(f"Removing deleted agent {existing_f.name}")
+
+    expected_cmds = generate_antigravity_commands(desc)
+    dest_cmds = dest_dir / "commands"
+    for fname, _ in sorted(expected_cmds.items()):
+        print(f"Syncing command {fname} -> {dest_cmds / fname}")
+    if dest_cmds.is_dir():
+        for existing_cmd in dest_cmds.glob("*.toml"):
+            if existing_cmd.is_file() and existing_cmd.name not in expected_cmds:
+                print(f"Removing deleted command {existing_cmd.name}")
+
+
 def sync_live_plugin(dry_run: bool = False, force: bool = False) -> bool:
     refusal = "" if force else source_tree_guard()
     if refusal:
@@ -333,121 +378,33 @@ def sync_live_plugin(dry_run: bool = False, force: bool = False) -> bool:
     desc, _ = load_package_descriptor()
     print(f"Syncing canonical pstack ({desc.version}) -> {LIVE_PLUGIN_DIR}")
 
-    if not LIVE_PLUGIN_DIR.exists():
-        if not dry_run:
-            LIVE_PLUGIN_DIR.mkdir(parents=True, exist_ok=True)
+    _log_sync_plan(desc, LIVE_PLUGIN_DIR)
 
-    if not dry_run:
-        project_all(desc, ["antigravity"])
+    if dry_run:
+        return True
 
-    manifest = generate_antigravity_manifest(desc)
-    manifest_dest = LIVE_PLUGIN_DIR / "plugin.json"
-    print(f"Writing {manifest_dest}")
-    if not dry_run:
-        manifest_dest.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    from scripts.package_lifecycle import install_plugin
+    project_all(desc, ["antigravity"])
+    install_plugin("antigravity", target_dir=LIVE_PLUGIN_DIR, source_root=ROOT, force=force)
 
-    models = generate_antigravity_models(desc)
-    models_dest = LIVE_PLUGIN_DIR / "models.json"
-    print(f"Writing {models_dest}")
-    if not dry_run:
-        models_dest.write_text(json.dumps(models, indent=2) + "\n", encoding="utf-8")
-
-    rules_dir = LIVE_PLUGIN_DIR / "rules"
-    rules_dest = rules_dir / "AGENTS.md"
-    session_start_context = LIVE_PLUGIN_DIR / "hooks" / "session-start-context.md"
-    rules_content = """# pstack instructions for Antigravity
-
-When working with pstack:
-- Prefer fewer, higher-quality changes.
-- Follow poteto-mode: go deep first, plan before coding, verify with levereable proofs.
-- Use native subagents (`invoke_subagent`) for parallel operations (Arena, Swarm, Interrogate).
-- Respect isolated workspaces (`Workspace: branch`) when modifying code in parallel.
-"""
-    if session_start_context.is_file():
-        rules_content = session_start_context.read_text(encoding="utf-8")
-
-    print(f"Writing {rules_dest}")
-    if not dry_run:
-        rules_dir.mkdir(parents=True, exist_ok=True)
-        rules_dest.write_text(rules_content, encoding="utf-8")
-
-    # Clean up stale hooks that relied on CLAUDE_PLUGIN_ROOT
-    hooks_file = LIVE_PLUGIN_DIR / "hooks" / "hooks.json"
-    if hooks_file.is_file():
-        print(f"Removing stale {hooks_file}")
-        if not dry_run:
-            hooks_file.unlink()
-
-    # Clean up foreign / legacy directories
-    for stray in [".codex-plugin", ".claude-plugin"]:
-        stray_path = LIVE_PLUGIN_DIR / stray
-        if stray_path.exists():
-            print(f"Removing foreign legacy directory {stray_path}")
-            if not dry_run:
-                shutil.rmtree(stray_path)
-
+    # Reconcile removed skills and removed files inside managed skills
     src_skills = ROOT / "skills"
     dest_skills = LIVE_PLUGIN_DIR / "skills"
-    if not dry_run:
-        dest_skills.mkdir(parents=True, exist_ok=True)
-
-    src_skill_names = skill_names(src_skills)
-    for item_name in sorted(src_skill_names):
-        item = src_skills / item_name
-        target = dest_skills / item_name
-        print(f"Syncing skill {item_name} -> {target}")
-        if not dry_run:
-            if target.exists():
-                shutil.rmtree(target)
-            target.mkdir(parents=True, exist_ok=True)
-            for rel_path, content in skill_files(item).items():
-                dest_file = target / rel_path
-                dest_file.parent.mkdir(parents=True, exist_ok=True)
-                dest_file.write_bytes(content)
-
-    # Clean up any removed skills
-    for name in sorted(skill_names(dest_skills) - src_skill_names):
-        print(f"Removing deleted skill {name}")
-        if not dry_run:
+    if dest_skills.is_dir():
+        src_skill_names = skill_names(src_skills)
+        for name in sorted(skill_names(dest_skills) - src_skill_names):
             shutil.rmtree(dest_skills / name)
+        for sname in sorted(src_skill_names):
+            target = dest_skills / sname
+            if target.is_dir():
+                expected_files = set(skill_files(src_skills / sname).keys())
+                actual_files = set(skill_files(target).keys())
+                for extra_rel in sorted(actual_files - expected_files):
+                    extra_p = target / extra_rel
+                    if extra_p.is_file() or extra_p.is_symlink():
+                        extra_p.unlink()
 
-    src_agents = ROOT / "agents"
-    dest_agents = LIVE_PLUGIN_DIR / "agents"
-    if not dry_run:
-        dest_agents.mkdir(parents=True, exist_ok=True)
-
-    src_agent_files = {f.name for f in src_agents.glob("*.md") if f.is_file()}
-    for fname in sorted(src_agent_files):
-        src_file = src_agents / fname
-        target_file = dest_agents / fname
-        print(f"Syncing agent {fname} -> {target_file}")
-        if not dry_run:
-            shutil.copy2(src_file, target_file)
-
-    for existing_f in dest_agents.glob("*.md"):
-        if existing_f.is_file() and existing_f.name not in src_agent_files:
-            print(f"Removing deleted agent {existing_f.name}")
-            if not dry_run:
-                existing_f.unlink()
-
-    expected_cmds = generate_antigravity_commands(desc)
-    dest_cmds = LIVE_PLUGIN_DIR / "commands"
-    if not dry_run:
-        dest_cmds.mkdir(parents=True, exist_ok=True)
-
-    for fname, content in sorted(expected_cmds.items()):
-        target_cmd = dest_cmds / fname
-        print(f"Syncing command {fname} -> {target_cmd}")
-        if not dry_run:
-            target_cmd.write_text(content, encoding="utf-8")
-
-    for existing_cmd in dest_cmds.glob("*.toml"):
-        if existing_cmd.is_file() and existing_cmd.name not in expected_cmds:
-            print(f"Removing deleted command {existing_cmd.name}")
-            if not dry_run:
-                existing_cmd.unlink()
-
-    if not dry_run and shutil.which("agy"):
+    if shutil.which("agy"):
         print("\nValidating with Antigravity CLI:")
         subprocess.run(["agy", "plugin", "validate", str(LIVE_PLUGIN_DIR)], check=False)
 

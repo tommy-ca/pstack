@@ -167,29 +167,35 @@ def freshness_errors(plugin_dir: Path) -> List[str]:
     return errors
 
 
-def copy_skills(dest_skills: Path) -> List[str]:
-    src_skills = ROOT / "skills"
+def copy_skills(dest_skills: Path, source_root: Optional[Path] = None) -> List[str]:
+    from scripts.sync_antigravity_plugin import skill_files, skill_names
+    src_skills = (source_root or ROOT) / "skills"
     dest_skills.mkdir(parents=True, exist_ok=True)
     copied_rel = []
-    for src_file in src_skills.rglob("*"):
-        if src_file.is_file():
-            rel = src_file.relative_to(src_skills)
-            if any(part.startswith(".") for part in rel.parts):
-                continue
-            dest_file = dest_skills / rel
+    src_names = skill_names(src_skills)
+    for sname in sorted(src_names):
+        item = src_skills / sname
+        target = dest_skills / sname
+        target.mkdir(parents=True, exist_ok=True)
+        for rel_path, content in skill_files(item).items():
+            dest_file = target / rel_path
             dest_file.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(src_file, dest_file)
-            copied_rel.append(f"skills/{rel.as_posix()}")
+            dest_file.write_bytes(content)
+            copied_rel.append(f"skills/{sname}/{rel_path}")
     return copied_rel
 
 
-def copy_agents(dest_agents: Path) -> List[str]:
-    src_agents = ROOT / "agents"
+def copy_agents(dest_agents: Path, source_root: Optional[Path] = None) -> List[str]:
+    src_agents = (source_root or ROOT) / "agents"
     dest_agents.mkdir(parents=True, exist_ok=True)
     copied_rel = []
-    for agent_file in src_agents.glob("*.md"):
-        shutil.copy2(agent_file, dest_agents / agent_file.name)
-        copied_rel.append(f"agents/{agent_file.name}")
+    src_agent_files = {f.name for f in src_agents.glob("*.md") if f.is_file()}
+    for fname in sorted(src_agent_files):
+        shutil.copy2(src_agents / fname, dest_agents / fname)
+        copied_rel.append(f"agents/{fname}")
+    for existing_f in dest_agents.glob("*.md"):
+        if existing_f.is_file() and existing_f.name not in src_agent_files:
+            existing_f.unlink()
     return copied_rel
 
 
@@ -262,19 +268,28 @@ def get_unmanaged_paths(plugin_dir: Path, managed_files: Set[str]) -> List[str]:
     return [p for p in all_found if p not in managed_files]
 
 
-def install_plugin(host: str, target_base: Optional[Path] = None) -> Path:
+def install_plugin(
+    host: str,
+    target_base: Optional[Path] = None,
+    force: bool = False,
+    target_dir: Optional[Path] = None,
+    source_root: Optional[Path] = None,
+) -> Path:
+    src_root = source_root or ROOT
     desc, _ = load_package_descriptor()
-    plugin_dir = get_plugin_dir(host, target_base)
-    if not is_owned_deploy_target(plugin_dir):
+    standard_dir = get_plugin_dir(host, target_base)
+    plugin_dir = target_dir if target_dir is not None else standard_dir
+    if not force and not is_owned_deploy_target(plugin_dir):
         raise ForeignSourceError(f"refusing to install over a foreign-source install at {plugin_dir}")
 
     agy_bin = shutil.which("agy")
-    if host == "antigravity" and agy_bin:
+    is_standard_dir = (plugin_dir == standard_dir)
+    if host == "antigravity" and agy_bin and is_standard_dir:
         from scripts.prove_antigravity_native_package import stage_antigravity_package
         import os, subprocess
         with tempfile.TemporaryDirectory(prefix="pstack-agy-stage-") as tmp_stage:
             stage_dir = Path(tmp_stage)
-            stage_antigravity_package(stage_dir)
+            stage_antigravity_package(stage_dir, source_root=src_root)
             managed_set = compute_managed_files(host, desc)
             manifest_record = {
                 "host": host,
@@ -319,13 +334,13 @@ def install_plugin(host: str, target_base: Optional[Path] = None) -> Path:
     plugin_dir.mkdir(parents=True, exist_ok=True)
 
     skills_dir = plugin_dir / "skills"
-    copy_skills(skills_dir)
+    copy_skills(skills_dir, source_root=src_root)
 
     if host == "grok":
         manifest = generate_grok_manifest(desc)
         (plugin_dir / "plugin.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
         agents_dir = plugin_dir / "agents"
-        copy_agents(agents_dir)
+        copy_agents(agents_dir, source_root=src_root)
 
     elif host == "codex":
         manifest = generate_codex_manifest(desc)
@@ -347,7 +362,7 @@ def install_plugin(host: str, target_base: Optional[Path] = None) -> Path:
         manifest = generate_omp_manifest(desc)
         (plugin_dir / "package.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
         agents_dir = plugin_dir / "agents"
-        copy_agents(agents_dir)
+        copy_agents(agents_dir, source_root=src_root)
 
     elif host == "opencode":
         manifest = generate_opencode_manifest(desc)
@@ -361,8 +376,12 @@ def install_plugin(host: str, target_base: Optional[Path] = None) -> Path:
 
         cmds_dir = plugin_dir / "commands"
         cmds_dir.mkdir(parents=True, exist_ok=True)
-        for fname, toml_str in generate_antigravity_commands(desc).items():
+        expected_cmds = generate_antigravity_commands(desc)
+        for fname, toml_str in expected_cmds.items():
             (cmds_dir / fname).write_text(toml_str, encoding="utf-8")
+        for existing_cmd in cmds_dir.glob("*.toml"):
+            if existing_cmd.is_file() and existing_cmd.name not in expected_cmds:
+                existing_cmd.unlink()
 
         rules_dir = plugin_dir / "rules"
         rules_dir.mkdir(parents=True, exist_ok=True)
@@ -377,18 +396,29 @@ def install_plugin(host: str, target_base: Optional[Path] = None) -> Path:
             encoding="utf-8",
         )
 
+        # Clean up stale hooks that relied on CLAUDE_PLUGIN_ROOT
+        hooks_file = plugin_dir / "hooks" / "hooks.json"
+        if hooks_file.is_file():
+            hooks_file.unlink()
+
+        # Clean up foreign / legacy directories
+        for stray in [".codex-plugin", ".claude-plugin"]:
+            stray_path = plugin_dir / stray
+            if stray_path.exists():
+                shutil.rmtree(stray_path)
+
         assets_dir = plugin_dir / "assets"
         assets_dir.mkdir(parents=True, exist_ok=True)
-        logo_src = ROOT / "assets" / "logo.svg"
+        logo_src = src_root / "assets" / "logo.svg"
         if logo_src.is_file():
             shutil.copy2(logo_src, assets_dir / "logo.svg")
 
         agents_dir = plugin_dir / "agents"
-        copy_agents(agents_dir)
+        copy_agents(agents_dir, source_root=src_root)
 
         profiles_dest = plugin_dir / "profiles"
         profiles_dest.mkdir(parents=True, exist_ok=True)
-        for p in resolve_profiles_dir(ROOT).glob("*.json"):
+        for p in resolve_profiles_dir(src_root).glob("*.json"):
             shutil.copy2(p, profiles_dest / p.name)
 
     elif host == "droid":
