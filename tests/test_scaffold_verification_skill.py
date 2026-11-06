@@ -434,3 +434,27 @@ def test_candidate_verification_skill_discovery_and_builtin_isolation(tmp_path):
     errors = scaffold_mod.check_skill(pi_skill)
     assert any("does not match directory" in err for err in errors)
 
+
+def test_check_skill_rejects_oversized_antigravity_body(tmp_path: pathlib.Path) -> None:
+    skill = tmp_path / ".agents/skills/verify-big-app"
+    scaffold_mod.scaffold_skill(skill, "big-app", "antigravity")
+    skill_md = skill / "SKILL.md"
+    content = skill_md.read_text(encoding="utf-8")
+    for sec in scaffold_mod.REQUIRED_SECTIONS:
+        content += f"\n\n## {sec}\nContent for {sec}."
+    (skill / "features").mkdir(parents=True, exist_ok=True)
+    (skill / "features" / "README.md").write_text("# Sweep\n## Full sweep\n1. `core.md`\n")
+    (skill / "features" / "core.md").write_text(
+        "# Core\n## Sub-features\n## How to get to it (user POV)\n## Driving it with CLI\n## Gotchas\n"
+    )
+
+    skill_md.write_text(content, encoding="utf-8")
+    assert scaffold_mod.check_skill(skill) == []
+
+    # Pad body past 24,000 bytes
+    padded_content = content + "\n\n" + ("padding line\n" * 2000)
+    skill_md.write_text(padded_content, encoding="utf-8")
+    errors = scaffold_mod.check_skill(skill)
+    assert any("exceeds Antigravity 24000-byte limit" in err for err in errors)
+
+
