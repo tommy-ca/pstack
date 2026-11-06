@@ -94,3 +94,7 @@ Use a fresh evidence directory for each run and each named step. Preserve earlie
 ## 5. Offer the maintenance loop
 
 Point the user at `/maintain-verification-skill` for keeping the map honest as the app changes. Suggest a cadence only if they ask.
+
+## Agent orchestration adapters
+
+When the target under interview *actually supervises child agents* (native host, optional Mu, or optional Dogsled), use the [agent orchestration verification matrix](../../openspec/changes/2026-11-06-agent-orchestration-contracts/references/verification-matrix.md) as a scope checklist. Exercise exact request/incarnation correlation, read-only observation, retry-after-unknown-launch, cancellation fences, parent-child ownership, permission failure, and dirty-worktree preservation on the **real installed executable**. A turn-end, prose answer or child process exit is not sufficient proof of task acceptance. Missing host capability is `BLOCKED`; a static scaffold PASS must never be called live verification. Do not generate an executor-specific skill until its runnable target and source revision exist.
