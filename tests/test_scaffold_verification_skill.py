@@ -390,3 +390,47 @@ def test_generated_driver_makes_no_timeout_bound_claim_while_unwired(draft):
     text = (draft / "scripts/driver.sh").read_text()
     assert text.count("run_bounded") == 1
     assert "STUB_NOT_IMPLEMENTED" in text
+
+
+def test_candidate_verification_skill_discovery_and_builtin_isolation(tmp_path):
+    profiles_dir = tmp_path / "profiles"
+    profiles_dir.mkdir()
+    pi_profile = profiles_dir / "pstack-pi.json"
+    pi_profile.write_text(
+        '{"host": "pstack:pi", "support_state": "candidate", "skills_dir": ".pi/skills"}\n',
+        encoding="utf-8",
+    )
+
+    pi_skill = tmp_path / ".pi/skills/verify-pi-demo"
+    scaffold_mod.scaffold_skill(pi_skill, "pi-demo", "pstack:pi")
+
+    result = cli(tmp_path, "--host", "codex", "--app", "codex-app", "--write")
+    assert result.returncode == 0, result.stderr
+
+    all_discovered = scaffold_mod.list_verification_skills(tmp_path)
+    discovered_rel = {p.relative_to(tmp_path).as_posix() for p in all_discovered}
+    assert discovered_rel == {".codex/skills/verify-codex-app", ".pi/skills/verify-pi-demo"}
+
+    builtin_only = scaffold_mod.list_verification_skills(tmp_path, include_candidates=False)
+    assert {p.relative_to(tmp_path).as_posix() for p in builtin_only} == {".codex/skills/verify-codex-app"}
+
+    list_run = cli(tmp_path, "--list")
+    assert list_run.returncode == 0
+    assert ".codex/skills/verify-codex-app" in list_run.stdout
+    assert ".pi/skills/verify-pi-demo" in list_run.stdout
+
+    # Built-in host detection remains intact
+    assert scaffold_mod.detect_host(tmp_path) == "codex"
+
+    # Host CLI choices strictly enforce built-in harnesses
+    invalid_host = cli(tmp_path, "--host", "pi", "--app", "foo", "--write")
+    assert invalid_host.returncode == 2
+    assert "invalid choice: 'pi'" in invalid_host.stderr
+
+    # Candidate skill check strictly validates directory matching
+    assert scaffold_mod.check_skill(pi_skill) == []
+    skill_md = pi_skill / "SKILL.md"
+    skill_md.write_text(skill_md.read_text().replace("name: verify-pi-demo", "name: verify-other"))
+    errors = scaffold_mod.check_skill(pi_skill)
+    assert any("does not match directory" in err for err in errors)
+
