@@ -51,3 +51,7 @@ Follow the generated skill once, as the next agent would, on a scratch change th
 ## Hand off
 
 Tell the user what you verified, which tool you used and why, the bounds, what the check found in plain words, how to run it, and what it does not cover. Suggest a second target only if you found a close one. Point the user at `/maintain-formal-verification-skill` for bringing the verification back in line after changes that did not recheck it.
+
+## Agent orchestration state boundaries
+
+For a concrete child-execution adapter, additionally consult the [agent orchestration negative-control and formal matrix](../../openspec/changes/2026-11-06-agent-orchestration-contracts/references/verification-matrix.md). Map prepare/dispatch/observe/cancel/settle/release to real code-level atomic boundaries before running a checker; a source-port model remains reference-only. Require reachable mutants for duplicate dispatch, wrong-execution terminal acceptance, late success after cancellation, premature parent completion, and unsafe worktree deletion. Keep every missing runtime or checker `BLOCKED`, not `PASS`. This is additive guidance for generating a project-local skill, **not** a second formal-verification generator.
