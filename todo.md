@@ -395,6 +395,15 @@
 - [x] Unit 3 (Issue #957): [C][Gate] Swarm, Arena, Interrogate adversarial verification, full test suite, 6-harness doctor PASS (PR #961)
 *(Epic #954 CLOSED)*
 
+## Epic #948: [Epic][Setup semantics] Consolidate setup-pstack into one harness-neutral skill and canonical packaged profiles
+- [x] Unit 1 (Issue #949): [SP-01][Audit] Freeze setup-pstack upstream semantics, profile authority and migration callers (PR #958)
+- [x] Unit 2 (Issue #950): [SP-02][OpenSpec] Specify one setup entry with safe host-local reference dispatch (PR #958)
+- [x] Unit 3 (Issue #951): [SP-03][Implementation] Merge setup-pstack-grok into setup-pstack with native setup references
+- [x] Unit 4 (Issue #952): [SP-04][Profiles] Make packaged profiles canonical and generate root mirror
+- [x] Unit 5 (Issue #953): [SP-05][Gate] Verify merged setup semantics, negative controls, and cross-harness doctor PASS
+*(Epic #948 CLOSED)*
+
+
 
 
 

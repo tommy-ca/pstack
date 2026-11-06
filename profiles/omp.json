@@ -6,7 +6,6 @@
   "plugin_manifest": ".omp-plugin/package.json",
   "setup": {
     "source": "none",
-    "skill": null,
     "catalog": null,
     "overlay": null,
     "effort": "none"

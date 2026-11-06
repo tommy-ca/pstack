@@ -1,13 +1,8 @@
----
-name: setup-pstack-grok
-description: Grok Build adapter for pstack setup. Detects the models the task tool accepts and the live grok-build effort enum, then writes ~/.grok/pstack-models.toml plus ~/.grok/roles/pstack:<role>.toml. Dispatched from /setup-pstack when profiles/grok.json#setup names this skill; use it directly for "configure pstack models on Grok Build".
----
+# Setup pstack — Grok Build native reference
 
-# Setup pstack — Grok Build adapter
+Host-neutral entry: [`../SKILL.md`](../SKILL.md). It reads `profiles/grok.json#setup` (or packaged `skills/setup-pstack/profiles/grok.json`) and loads this reference when `source=host-cli`. This file owns the concrete CLI probes, option shape, and file writes for Grok Build only.
 
-Host-neutral entry: [`../setup-pstack/SKILL.md`](../setup-pstack/SKILL.md). It reads `profiles/grok.json#setup` and dispatches here. This file owns the concrete CLI probes, option shape, and file writes for Grok Build only.
-
-Write `~/.grok/pstack-models.toml` (model slugs and `[effort]`) and pstack-managed overlay files `~/.grok/roles/pstack:<key>.toml`. This is an **override layer**. A fresh install with no setup already uses the shipped default: `grok-4.6` plus per-role `effort` on the plugin agents (ship-time three-tier split in [`references/effort-ladder.md`](references/effort-ladder.md)). See [`references/defaults.toml`](references/defaults.toml), [`references/resolve-model.md`](references/resolve-model.md), and [`references/resolve-effort.md`](references/resolve-effort.md).
+Write `~/.grok/pstack-models.toml` (model slugs and `[effort]`) and pstack-managed overlay files `~/.grok/roles/pstack:<key>.toml`. This is an **override layer**. A fresh install with no setup already uses the shipped default: `grok-4.6` plus per-role `effort` on the plugin agents (ship-time three-tier split in [`./grok/effort-ladder.md`](./grok/effort-ladder.md)). See [`./grok/defaults.toml`](./grok/defaults.toml), [`./grok/resolve-model.md`](./grok/resolve-model.md), and [`./grok/resolve-effort.md`](./grok/resolve-effort.md).
 
 On Google Antigravity, model tiers are configured natively via `.antigravity-plugin/models.json` (and `~/.gemini/config/plugins/pstack/models.json`) binding roles to `pro`, `flash`, `flash_lite`, and `inherit`. On Codex, OMP, and OpenCode, model configurations are bound in projected plugin manifests (`.codex-plugin/plugin.json`, `.omp-plugin/package.json`, `.opencode-plugin/package.json`).
 
@@ -38,7 +33,7 @@ Panel roles (`how-critics`, `arena-runners`, `arena-cross-judge-pool`, `architec
 
 ### Effort
 
-Second question, after models. Detect the live enum first ([`references/effort-ladder.md`](references/effort-ladder.md)). Compute the three-tier split from that list. `questions[].question` is a short how-should-pstack-pick-reasoning-effort line. Options, in this order, and no others:
+Second question, after models. Detect the live enum first ([`./grok/effort-ladder.md`](./grok/effort-ladder.md)). Compute the three-tier split from that list. `questions[].question` is a short how-should-pstack-pick-reasoning-effort line. Options, in this order, and no others:
 
 1. Shipped default (recommended). Name the three resolved tokens this session. Highest detected for `judgment-and-prose`, `hardest-tasks`, `how-explainer`, `why-synthesizer`, `reflect-judgment`, `independent-verifier`, `how-critics`, `arena-runners`, `arena-cross-judge-pool`, `architect-runners`, `interrogate-reviewers`, `poteto-agent`. One step down for `bug-fix`, `perf-issue`, `hillclimb`, `reflect-tooling`. Two steps down for `feature`, `refactoring`, `how-explorer`, `why-investigators`, `swarm-workers`, `comment-sicko` (clamped off the weakest when the enum has three or more levels).
 2. `inherit-parent` for every role. No `~/.grok/roles` overlay. Plugin agent frontmatter stays.
@@ -63,7 +58,7 @@ Never write a slug you have not confirmed this session. `inherit-parent` and `au
 
 ### 1b. Detect the live effort enum
 
-Follow [`references/effort-ladder.md`](references/effort-ladder.md). Do not send `reasoning_effort` on `task`.
+Follow [`./grok/effort-ladder.md`](./grok/effort-ladder.md). Do not send `reasoning_effort` on `task`.
 
 - Prefer `grok --reasoning-effort not-a-real-effort` and the live `use one of:` list (`unknown effort level …; use one of: xhigh, high, medium, low` on grok 1.0.13). That list is strongest-first; reverse to weak → strong before stepping down.
 - Do not use FromStr or `Effort::VALID_VALUES`. Those include reserved `max` that this CLI rejects.
@@ -74,11 +69,11 @@ Follow [`references/effort-ladder.md`](references/effort-ladder.md). Do not send
 - Do not use the TUI effort menu as the set.
 - If detection returns nothing, use the ship-time snapshot in that file (`low` `medium` `high` `xhigh`) and remember to say so in step 6, not in the TUI.
 
-Compute the three-tier split from the detected (or snapshot) list. That computed table is the shipped-default effort option this session. It may differ from [`references/defaults.toml`](references/defaults.toml) if the live enum grew.
+Compute the three-tier split from the detected (or snapshot) list. That computed table is the shipped-default effort option this session. It may differ from [`./grok/defaults.toml`](./grok/defaults.toml) if the live enum grew.
 
 ### 2. Load current state
 
-If `~/.grok/pstack-models.toml` exists, read it (top-level model keys and `[effort]`). Otherwise the current state is [`references/defaults.toml`](references/defaults.toml) for models, and the **computed** three-tier split for `[effort]`. If `grok-4.6` is not in the detected set, treat every model key as `inherit-parent` while keeping that computed `[effort]` table. Do not load any other models file.
+If `~/.grok/pstack-models.toml` exists, read it (top-level model keys and `[effort]`). Otherwise the current state is [`./grok/defaults.toml`](./grok/defaults.toml) for models, and the **computed** three-tier split for `[effort]`. If `grok-4.6` is not in the detected set, treat every model key as `inherit-parent` while keeping that computed `[effort]` table. Do not load any other models file.
 
 ### 3. Map and confirm
 
@@ -112,9 +107,9 @@ reasoning_effort = "<level>"
 
 Do not write `model`, `prompt_file`, `default_capability_mode`, or `default_isolation` into those files. Do not edit `~/.grok/config.toml`. Do not delete role files whose names are not pstack keys.
 
-First run writes the shipped default when they accept it. Copy [`references/defaults.toml`](references/defaults.toml) for **models**. Replace `grok-4.6` with `inherit-parent` only when `grok-4.6` was not detected this session. Replace the `[effort]` table with the computed live split when that split differs from the file.
+First run writes the shipped default when they accept it. Copy [`./grok/defaults.toml`](./grok/defaults.toml) for **models**. Replace `grok-4.6` with `inherit-parent` only when `grok-4.6` was not detected this session. Replace the `[effort]` table with the computed live split when that split differs from the file.
 
-EXAMPLE (ship-time snapshot). Same `[effort]` bytes as `references/defaults.toml` when the live usable set is `low` `medium` `high` `xhigh`. If this session's `use one of:` differed, write that computed table instead.
+EXAMPLE (ship-time snapshot). Same `[effort]` bytes as `./grok/defaults.toml` when the live usable set is `low` `medium` `high` `xhigh`. If this session's `use one of:` differed, write that computed table instead.
 
 ```toml
 # Write only slugs detected this session (task.model rejection, grok inspect, grok models).
@@ -194,6 +189,6 @@ Do not read `~/.cursor/rules/pstack-models.mdc`. If that file exists on disk, ig
 
 Proceed only on Grok Build: live `spawn_subagent` (`background`, `isolation`) and/or `grok` CLI. If this session would write Cursor rules paths, stop. Do not write those paths. Do not discuss that stop in the TUI. This plugin is the Grok Build port.
 
-Do not copy an example table from another product, from older revisions of this skill, or from training memory. Models come from this session's detected set. Effort comes from [`references/effort-ladder.md`](references/effort-ladder.md) applied to this session's live `use one of:` list. Do not copy `Effort::VALID_VALUES`.
+Do not copy an example table from another product, from older revisions of this skill, or from training memory. Models come from this session's detected set. Effort comes from [`./grok/effort-ladder.md`](./grok/effort-ladder.md) applied to this session's live `use one of:` list. Do not copy `Effort::VALID_VALUES`.
 
 Do not offer a menu item that is not in **Ask the human**. Do not mention other products in the TUI. Do not offer to port or mix a mapping from another tool.

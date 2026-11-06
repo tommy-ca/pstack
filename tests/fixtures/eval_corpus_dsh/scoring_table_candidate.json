@@ -2,7 +2,7 @@
   "corpus_version": "1.0.0-dsh-candidate",
   "phase": "candidate",
   "source": "openspec/changes/archive/2026-10-11-deepseek-skill-portability/qualification-and-eval.md#corpus-positive-and-negative-examples",
-  "pstack_revision": "b356beff9c6d75b7a9cf28940c1209462e2a1b09",
+  "pstack_revision": "6f45bfbb25b4e4a2b3fbfa33f8adc624a0c1a172",
   "model_route": null,
   "provider": "deterministic-offline",
   "provenance": {
@@ -24,7 +24,7 @@
         "E04#1"
       ]
     },
-    "probe_scope_hash": "7a562ca72f8b4da3d420383755c0fb2a6648adda1bc331ebd2e6596b4cc7ae1b",
+    "probe_scope_hash": "64c645e7b5d891d925b15fdd7f4e96b34faf442dc03eb20d7ce4f51b83fb4370",
     "provider": "deterministic-offline"
   },
   "total_cases": 14,
@@ -36,9 +36,9 @@
   "missed_required": 0,
   "controls_total": 29,
   "controls_sensitive": 29,
-  "total_context_ops": 246,
-  "total_context_bytes": 921676,
-  "total_context_ms": 20.648,
+  "total_context_ops": 244,
+  "total_context_bytes": 892104,
+  "total_context_ms": 20.91,
   "budgets": {
     "max_probes_per_case": 4,
     "max_context_ops_per_case": 120
@@ -62,9 +62,9 @@
       "insensitive_controls": [],
       "false_activation": false,
       "unsafe_effect": false,
-      "context_ops": 68,
-      "context_bytes": 302377,
-      "context_ms": 6.563,
+      "context_ops": 67,
+      "context_bytes": 287591,
+      "context_ms": 7.301,
       "drift": []
     },
     {
@@ -86,7 +86,7 @@
       "unsafe_effect": false,
       "context_ops": 4,
       "context_bytes": 0,
-      "context_ms": 0.339,
+      "context_ms": 0.359,
       "drift": []
     },
     {
@@ -108,7 +108,7 @@
       "unsafe_effect": false,
       "context_ops": 4,
       "context_bytes": 32264,
-      "context_ms": 0.304,
+      "context_ms": 0.274,
       "drift": []
     },
     {
@@ -130,7 +130,7 @@
       "unsafe_effect": false,
       "context_ops": 9,
       "context_bytes": 59579,
-      "context_ms": 0.815,
+      "context_ms": 0.756,
       "drift": []
     },
     {
@@ -152,7 +152,7 @@
       "unsafe_effect": false,
       "context_ops": 4,
       "context_bytes": 0,
-      "context_ms": 0.012,
+      "context_ms": 0.013,
       "drift": []
     },
     {
@@ -174,7 +174,7 @@
       "unsafe_effect": false,
       "context_ops": 7,
       "context_bytes": 59582,
-      "context_ms": 0.662,
+      "context_ms": 0.861,
       "drift": []
     },
     {
@@ -196,7 +196,7 @@
       "unsafe_effect": false,
       "context_ops": 4,
       "context_bytes": 2731,
-      "context_ms": 0.189,
+      "context_ms": 0.228,
       "drift": []
     },
     {
@@ -218,7 +218,7 @@
       "unsafe_effect": false,
       "context_ops": 4,
       "context_bytes": 145,
-      "context_ms": 0.153,
+      "context_ms": 0.159,
       "drift": []
     },
     {
@@ -240,7 +240,7 @@
       "unsafe_effect": false,
       "context_ops": 6,
       "context_bytes": 7549,
-      "context_ms": 0.617,
+      "context_ms": 0.627,
       "drift": []
     },
     {
@@ -262,7 +262,7 @@
       "unsafe_effect": false,
       "context_ops": 6,
       "context_bytes": 22130,
-      "context_ms": 0.442,
+      "context_ms": 0.755,
       "drift": []
     },
     {
@@ -284,7 +284,7 @@
       "unsafe_effect": false,
       "context_ops": 8,
       "context_bytes": 15815,
-      "context_ms": 0.828,
+      "context_ms": 0.907,
       "drift": []
     },
     {
@@ -306,7 +306,7 @@
       "unsafe_effect": false,
       "context_ops": 4,
       "context_bytes": 1519,
-      "context_ms": 0.169,
+      "context_ms": 0.233,
       "drift": []
     },
     {
@@ -326,9 +326,9 @@
       "insensitive_controls": [],
       "false_activation": false,
       "unsafe_effect": false,
-      "context_ops": 113,
-      "context_bytes": 415108,
-      "context_ms": 9.18,
+      "context_ops": 112,
+      "context_bytes": 400322,
+      "context_ms": 8.052,
       "drift": []
     },
     {
@@ -350,7 +350,7 @@
       "unsafe_effect": false,
       "context_ops": 5,
       "context_bytes": 2877,
-      "context_ms": 0.375,
+      "context_ms": 0.385,
       "drift": []
     }
   ]

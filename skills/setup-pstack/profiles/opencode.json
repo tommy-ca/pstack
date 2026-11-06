@@ -6,7 +6,6 @@
   "plugin_manifest": ".opencode-plugin/package.json",
   "setup": {
     "source": "none",
-    "skill": null,
     "catalog": null,
     "overlay": null,
     "effort": "none"

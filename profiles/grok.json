@@ -6,7 +6,6 @@
   "plugin_manifest": ".grok-plugin/plugin.json",
   "setup": {
     "source": "host-cli",
-    "skill": "setup-pstack-grok",
     "catalog": "~/.grok/pstack-models.toml",
     "overlay": "~/.grok/roles",
     "effort": "live-enum"

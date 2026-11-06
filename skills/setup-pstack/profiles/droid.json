@@ -6,7 +6,6 @@
   "plugin_manifest": ".factory-plugin/plugin.json",
   "setup": {
     "source": "inherit",
-    "skill": null,
     "catalog": null,
     "overlay": null,
     "effort": "inherit-parent"
