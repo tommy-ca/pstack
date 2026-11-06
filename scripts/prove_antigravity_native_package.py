@@ -43,6 +43,7 @@ from scripts.portability_schema import (
     SKILLS_HASH_IGNORED_DIRS,
     SKILLS_HASH_IGNORED_SUFFIXES,
 )
+from scripts.setup_pstack import resolve_profiles_dir
 
 
 def stage_antigravity_package(dest_dir: Path) -> Path:
@@ -97,6 +98,14 @@ def stage_antigravity_package(dest_dir: Path) -> Path:
     for agent_file in agents_src.glob("*.md"):
         if agent_file.is_file():
             shutil.copy2(agent_file, agents_dest / agent_file.name)
+
+    # 7. Profiles
+    profiles_src = resolve_profiles_dir(ROOT)
+    profiles_dest = dest_dir / "profiles"
+    profiles_dest.mkdir(parents=True, exist_ok=True)
+    for p_file in sorted(profiles_src.glob("*.json")):
+        if p_file.is_file():
+            shutil.copy2(p_file, profiles_dest / p_file.name)
 
     return dest_dir
 
@@ -164,6 +173,13 @@ def prove_antigravity_package(package_dir: Optional[Path] = None) -> Tuple[int, 
             return 1, {"verdict": "FAIL", "reason": f"Insufficient skills staged: {len(skills)}"}
         if len(agents) < 20:
             return 1, {"verdict": "FAIL", "reason": f"Insufficient agents staged: {len(agents)}"}
+
+        setup_profiles = pkg_dir / "skills" / "setup-pstack" / "profiles"
+        if not setup_profiles.is_dir() or len(list(setup_profiles.glob("*.json"))) < 9:
+            return 1, {"verdict": "FAIL", "reason": "Missing packaged profiles in skills/setup-pstack/profiles"}
+        root_profiles = pkg_dir / "profiles"
+        if not root_profiles.is_dir() or len(list(root_profiles.glob("*.json"))) < 9:
+            return 1, {"verdict": "FAIL", "reason": "Missing root profiles directory in staged package"}
 
         duration = time.perf_counter() - t0
         return 0, {
