@@ -40,8 +40,6 @@ Write `SKILL.md` at the path above with YAML frontmatter:
 - `description` that is Use-when triggers only. Name the app, the surface, and when to reach for the skill. Do not dump Launch/Doctor/Drive into the description.
 - `disable-model-invocation: true`
 
-Keep the generated skill body under 24,000 bytes. Google Antigravity imposes a strict 24,000-byte body limit and truncates oversized skills. `scripts/scaffold_verification_skill.py --check` enforces this bound.
-
 Without frontmatter the skill never registers. Then write these sections, each grounded in what the interview actually found (no placeholders left):
 
 - **Launch:** the exact command that starts the app for verification, and how to tell it's ready (a log line, a prompt). Launch must reach a usable state from an empty data dir, including any migrations and seed data. Ready means usable, not just that a process answers. A database health check can pass while its init scripts are still running. Include teardown. For a short-lived CLI or TUI there is no server to keep alive. Launch means build the binary (or install deps) once, then start each drive in its own isolated PTY or tmux session. Encode the Isolate answer here. Refuse double-drive of a shared instance.
