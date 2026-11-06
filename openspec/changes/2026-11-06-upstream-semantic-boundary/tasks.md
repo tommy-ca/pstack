@@ -13,10 +13,10 @@ This change retains only PStack-owned specification work. All checkboxes are hon
 ## Kept, re-scoped
 - [x] #917: inventory and classify canonical vs Mu/Dogsled source references (source-only; no runtime tests).
 - [x] #918: draft revised requirements, ADR, code/data/documentation flow and minimal attribution record.
-- [ ] #918: validate OpenSpec with available CLI, reconcile against the existing pstack-reference-port/pstack-playbooks specs.
-- [ ] #921: perform actual independently sourced review only when capable; record all non-runs.
-- [ ] #921: review the final diff under both Thermos lenses; reject duplicated capability and speculative architecture.
-- [ ] #930: re-run relevant offline checks and inspect fresh head-SHA CI, then accept or revise.
+- [x] #918: validate OpenSpec with available CLI, reconcile against the existing pstack-reference-port/pstack-playbooks specs.
+- [x] #921: perform actual independently sourced review only when capable; record all non-runs.
+- [x] #921: review the final diff under both Thermos lenses; reject duplicated capability and speculative architecture.
+- [x] #930: re-run relevant offline checks and inspect fresh head-SHA CI, then accept or revise.
 
 ## Retired as PStack work
 - #919: Mu/Dogsled child-agent lifecycle verification belongs to actual executor owners; generic skills already exist.
