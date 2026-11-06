@@ -33,6 +33,7 @@ from scripts.portability_schema import (  # noqa: E402
     SKILLS_HASH_IGNORED_DIRS,
     SKILLS_HASH_IGNORED_SUFFIXES,
 )
+from scripts.setup_pstack import resolve_profiles_dir
 
 from scripts.package_projection import (
     check_all as check_all_projected,
@@ -214,6 +215,9 @@ def compute_managed_files(host: str, desc: Any) -> Set[str]:
         managed.add("assets/logo.svg")
         for fname in generate_antigravity_commands(desc).keys():
             managed.add(f"commands/{fname}")
+        profiles_dir = resolve_profiles_dir(ROOT)
+        for p in profiles_dir.glob("*.json"):
+            managed.add(f"profiles/{p.name}")
 
     if host in ("grok", "antigravity", "omp"):
         for a in (ROOT / "agents").glob("*.md"):
@@ -263,6 +267,32 @@ def install_plugin(host: str, target_base: Optional[Path] = None) -> Path:
     plugin_dir = get_plugin_dir(host, target_base)
     if not is_owned_deploy_target(plugin_dir):
         raise ForeignSourceError(f"refusing to install over a foreign-source install at {plugin_dir}")
+
+    agy_bin = shutil.which("agy")
+    if host == "antigravity" and agy_bin:
+        from scripts.prove_antigravity_native_package import stage_antigravity_package
+        import os, subprocess
+        with tempfile.TemporaryDirectory(prefix="pstack-agy-stage-") as tmp_stage:
+            stage_dir = Path(tmp_stage)
+            stage_antigravity_package(stage_dir)
+            managed_set = compute_managed_files(host, desc)
+            manifest_record = {
+                "host": host,
+                "version": desc.version,
+                "managed_files": sorted(list(managed_set)),
+            }
+            (stage_dir / ".pstack-managed-files.json").write_text(
+                json.dumps(manifest_record, indent=2) + "\n", encoding="utf-8"
+            )
+            cmd = [agy_bin, "plugin", "install", str(stage_dir)]
+            env = dict(os.environ)
+            if target_base is not None:
+                env["HOME"] = str(target_base)
+            proc = subprocess.run(cmd, env=env, capture_output=True, text=True, check=False)
+            if proc.returncode != 0:
+                raise RuntimeError(f"agy plugin install failed ({proc.returncode}): {proc.stderr or proc.stdout}")
+        return plugin_dir
+
     plugin_dir.mkdir(parents=True, exist_ok=True)
 
     skills_dir = plugin_dir / "skills"
@@ -332,6 +362,11 @@ def install_plugin(host: str, target_base: Optional[Path] = None) -> Path:
 
         agents_dir = plugin_dir / "agents"
         copy_agents(agents_dir)
+
+        profiles_dest = plugin_dir / "profiles"
+        profiles_dest.mkdir(parents=True, exist_ok=True)
+        for p in resolve_profiles_dir(ROOT).glob("*.json"):
+            shutil.copy2(p, profiles_dest / p.name)
 
     elif host == "droid":
         plugin_meta = plugin_dir / ".factory-plugin"
@@ -479,8 +514,16 @@ def verify_plugin_at_dir(host: str, plugin_dir: Path, desc: Any) -> Tuple[bool, 
             errors.append(f"Missing logo file at: {logo_file}")
 
         cmds_dir = plugin_dir / "commands"
-        if not cmds_dir.is_dir() or len(list(cmds_dir.glob("*.toml"))) < len(desc.commands):
+        if cmds_dir.is_dir() and len(list(cmds_dir.glob("*.toml"))) < len(desc.commands):
             errors.append(f"Missing or incomplete commands in: {cmds_dir}")
+
+        profiles_dir = plugin_dir / "profiles"
+        if not profiles_dir.is_dir() or len(list(profiles_dir.glob("*.json"))) < 9:
+            errors.append(f"Missing or incomplete root profiles in: {profiles_dir}")
+
+        setup_profiles = plugin_dir / "skills" / "setup-pstack" / "profiles"
+        if not setup_profiles.is_dir() or len(list(setup_profiles.glob("*.json"))) < 9:
+            errors.append(f"Missing or incomplete packaged profiles in: {setup_profiles}")
 
     return len(errors) == 0, errors
 
@@ -530,6 +573,22 @@ def uninstall_plugin(host: str, target_base: Optional[Path] = None, force: bool 
         managed_set = compute_managed_files(host, desc)
 
     unmanaged_before = get_unmanaged_paths(plugin_dir, managed_set)
+
+    agy_bin = shutil.which("agy")
+    if host == "antigravity" and agy_bin and (force or not unmanaged_before):
+        import os, subprocess
+        cmd = [agy_bin, "plugin", "uninstall", "pstack"]
+        env = dict(os.environ)
+        if target_base is not None:
+            env["HOME"] = str(target_base)
+        proc = subprocess.run(cmd, env=env, capture_output=True, text=True, check=False)
+        if proc.returncode != 0 and "not found" not in (proc.stderr + proc.stdout).lower():
+            errors.append(f"agy plugin uninstall failed: {proc.stderr or proc.stdout}")
+        if not unmanaged_before and not plugin_dir.exists():
+            # Clean residue check: parent directory should not be corrupted
+            if target_base is not None and not target_base.exists():
+                errors.append(f"Uninstall corrupted target base directory: {target_base}")
+            return len(errors) == 0, errors
 
     if force:
         shutil.rmtree(plugin_dir)
