@@ -236,20 +236,32 @@ def check_live_sync() -> bool:
     if not check_files(src_agents, dest_agents, "agents"):
         all_ok = False
 
-    # Check commands
-    expected_cmds = generate_antigravity_commands(desc)
-    dest_cmds = {f.name: f.read_bytes() for f in (LIVE_PLUGIN_DIR / "commands").glob("*.toml") if f.is_file()}
-    if not check_files(
-        {name: content.encode("utf-8") for name, content in expected_cmds.items()},
-        dest_cmds,
-        "commands",
-    ):
-        all_ok = False
+    # Check commands (native agy packages ship commands as skills; check only when commands dir exists)
+    commands_dir = LIVE_PLUGIN_DIR / "commands"
+    if commands_dir.is_dir():
+        expected_cmds = generate_antigravity_commands(desc)
+        dest_cmds = {f.name: f.read_bytes() for f in commands_dir.glob("*.toml") if f.is_file()}
+        if not check_files(
+            {name: content.encode("utf-8") for name, content in expected_cmds.items()},
+            dest_cmds,
+            "commands",
+        ):
+            all_ok = False
 
     # Check foreign directories
     for stray in [".codex-plugin", ".claude-plugin"]:
         if (LIVE_PLUGIN_DIR / stray).exists():
             print(f"FAIL: Foreign legacy directory present in live plugin: {stray}")
+            all_ok = False
+
+    # Check profiles
+    from scripts.setup_pstack import resolve_profiles_dir
+    src_profiles_dir = resolve_profiles_dir(ROOT)
+    dest_profiles_dir = LIVE_PLUGIN_DIR / "profiles"
+    if dest_profiles_dir.is_dir():
+        src_profiles = {p.name: p.read_bytes() for p in src_profiles_dir.glob("*.json")}
+        dest_profiles = {p.name: p.read_bytes() for p in dest_profiles_dir.glob("*.json")}
+        if not check_files(src_profiles, dest_profiles, "profiles"):
             all_ok = False
 
     if all_ok:

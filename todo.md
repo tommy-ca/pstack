@@ -385,8 +385,9 @@
 - [x] Unit 1 (Issue #938): [A][P0] Relocate harness profiles to `skills/setup-pstack/profiles` with canonical resolver and boundary exemption (PR #943)
 - [x] Unit 2 (Issue #939): [B][P0] Update scripts, drivers, and verifiers to use `resolve_profiles_dir()` (PR #944)
 - [x] Unit 3 (Issue #940): [C][P0] Native `agy plugin install` integration in `package_lifecycle` and staged packaging (PR #945)
-- [x] Unit 4 (Issue #941): [D][P1] Document packaged profiles location in `poteto-mode`, `setup-pstack`, and verification skills
-- [ ] Unit 5 (Issue #942): [E][Gate] Swarm, Arena, Interrogate, 6-harness conformance & end-to-end verification
+- [x] Unit 4 (Issue #941): [D][P1] Document packaged profiles location in `poteto-mode`, `setup-pstack`, and verification skills (PR #946)
+- [x] Unit 5 (Issue #942): [E][Gate] Swarm, Arena, Interrogate, 6-harness conformance & end-to-end verification (PR #947)
+*(Epic #937 CLOSED)*
 
 
 

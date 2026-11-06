@@ -28,17 +28,17 @@ PACKAGE_JSON = ROOT / "pstack.package.json"
 def resolve_profiles_dir(root: Path | None = None) -> Path:
     """Resolve the directory containing harness profiles.
 
-    Prefers the packaged skill directory (guaranteed present in installed plugins),
-    falling back to the repository root profiles directory.
+    Prefers the repository profiles directory when present (in repo workspace),
+    falling back to the packaged skill directory (guaranteed present in installed plugins).
     """
     base = root or ROOT
-    packaged = base / "skills" / "setup-pstack" / "profiles"
-    if packaged.is_dir():
-        return packaged
     repo_profiles = base / "profiles"
     if repo_profiles.is_dir():
         return repo_profiles
-    return packaged
+    packaged = base / "skills" / "setup-pstack" / "profiles"
+    if packaged.is_dir():
+        return packaged
+    return repo_profiles
 
 
 PROFILES_DIR = resolve_profiles_dir(ROOT)

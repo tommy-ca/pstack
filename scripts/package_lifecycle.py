@@ -284,13 +284,36 @@ def install_plugin(host: str, target_base: Optional[Path] = None) -> Path:
             (stage_dir / ".pstack-managed-files.json").write_text(
                 json.dumps(manifest_record, indent=2) + "\n", encoding="utf-8"
             )
-            cmd = [agy_bin, "plugin", "install", str(stage_dir)]
-            env = dict(os.environ)
-            if target_base is not None:
-                env["HOME"] = str(target_base)
-            proc = subprocess.run(cmd, env=env, capture_output=True, text=True, check=False)
-            if proc.returncode != 0:
-                raise RuntimeError(f"agy plugin install failed ({proc.returncode}): {proc.stderr or proc.stdout}")
+
+            # Preserve pre-existing unmanaged user files before native agy plugin install
+            unmanaged_paths = []
+            if plugin_dir.exists():
+                unmanaged_paths = get_unmanaged_paths(plugin_dir, managed_set)
+
+            with tempfile.TemporaryDirectory(prefix="pstack-unmanaged-backup-") as backup_tmp:
+                backup_dir = Path(backup_tmp)
+                for u_rel in unmanaged_paths:
+                    src_u = plugin_dir / u_rel
+                    if src_u.is_file() or src_u.is_symlink():
+                        dest_u = backup_dir / u_rel
+                        dest_u.parent.mkdir(parents=True, exist_ok=True)
+                        shutil.copy2(src_u, dest_u, follow_symlinks=False)
+
+                cmd = [agy_bin, "plugin", "install", str(stage_dir)]
+                env = dict(os.environ)
+                if target_base is not None:
+                    env["HOME"] = str(target_base)
+                proc = subprocess.run(cmd, env=env, capture_output=True, text=True, check=False)
+                if proc.returncode != 0:
+                    raise RuntimeError(f"agy plugin install failed ({proc.returncode}): {proc.stderr or proc.stdout}")
+
+                # Restore preserved unmanaged user files
+                for u_rel in unmanaged_paths:
+                    src_u = backup_dir / u_rel
+                    if src_u.is_file() or src_u.is_symlink():
+                        dest_u = plugin_dir / u_rel
+                        dest_u.parent.mkdir(parents=True, exist_ok=True)
+                        shutil.copy2(src_u, dest_u, follow_symlinks=False)
         return plugin_dir
 
     plugin_dir.mkdir(parents=True, exist_ok=True)

@@ -56,23 +56,23 @@ def test_all_packaged_profiles_are_valid_harness_profiles() -> None:
         assert profile.support_state, f"Missing support_state in {path.name}"
 
 
-def test_resolve_profiles_dir_prefers_packaged_then_fallback(tmp_path: Path) -> None:
-    # 1. When packaged profiles exist, prefer packaged
+def test_resolve_profiles_dir(tmp_path: Path) -> None:
+    # 1. When repo profiles exist, use repo profiles
     mock_root = tmp_path / "repo1"
     packaged = mock_root / "skills" / "setup-pstack" / "profiles"
     packaged.mkdir(parents=True)
     root_prof = mock_root / "profiles"
     root_prof.mkdir(parents=True)
-    assert resolve_profiles_dir(mock_root) == packaged
+    assert resolve_profiles_dir(mock_root) == root_prof
 
-    # 2. When packaged is absent, fall back to root profiles
+    # 2. When repo profiles is absent (installed plugin distribution), use packaged profiles
     mock_root2 = tmp_path / "repo2"
-    root_prof2 = mock_root2 / "profiles"
-    root_prof2.mkdir(parents=True)
-    assert resolve_profiles_dir(mock_root2) == root_prof2
+    packaged2 = mock_root2 / "skills" / "setup-pstack" / "profiles"
+    packaged2.mkdir(parents=True)
+    assert resolve_profiles_dir(mock_root2) == packaged2
 
-    # 3. On live repo, resolves to packaged
-    assert resolve_profiles_dir(ROOT) == CANONICAL_PROFILES
+    # 3. In workspace with root profiles, resolves to ROOT_PROFILES
+    assert resolve_profiles_dir(ROOT) == ROOT_PROFILES
 
 
 def test_components_load_profiles_from_resolved_dir() -> None:
