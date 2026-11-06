@@ -26,6 +26,7 @@ from scripts.portability_schema import (
     HarnessProfile,
     ValidationError,
 )
+from scripts.setup_pstack import resolve_profiles_dir
 
 SCHEMAS_DIR = ROOT / "schemas" / "portability"
 
@@ -43,7 +44,7 @@ def _registry() -> Registry:
 
 
 def test_copilot_profile_conforms_to_schema_and_declared_host_gates() -> None:
-    profile_path = ROOT / "profiles" / "copilot.json"
+    profile_path = resolve_profiles_dir(ROOT) / "copilot.json"
     assert profile_path.is_file(), "profiles/copilot.json must exist"
 
     data = json.loads(profile_path.read_text(encoding="utf-8"))
@@ -110,7 +111,7 @@ def test_copilot_profile_conforms_to_schema_and_declared_host_gates() -> None:
 
 
 def test_copilot_profile_fail_closed_negatives() -> None:
-    profile_path = ROOT / "profiles" / "copilot.json"
+    profile_path = resolve_profiles_dir(ROOT) / "copilot.json"
     data = json.loads(profile_path.read_text(encoding="utf-8"))
 
     # 1. Bare unnamespaced 'copilot' must be refused (#446)

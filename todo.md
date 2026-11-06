@@ -409,6 +409,13 @@
 - [x] Unit 3 (Issue #966): [C][Gate] Swarm, Arena, Interrogate adversarial verification, full test suite, 6-harness doctor PASS
 *(Epic #963 CLOSED)*
 
+## Epic #968: [Epic][Profiles Architecture & Quality Judo] Canonical profiles evaluation, root references clean up, and verification tools hardening
+- [x] Unit 1 (Issue #969): [A][P0] Reference audit and architecture evaluation for profiles placement (setup-pstack vs poteto-mode)
+- [x] Unit 2 (Issue #970): [B][P0] Clean up hardcoded root profiles callers across tests and scripts to use resolve_profiles_dir
+- [x] Unit 3 (Issue #971): [C][Gate] Swarm, Arena, Interrogate adversarial verification, full test suite, 6-harness doctor PASS
+*(Epic #968 CLOSED)*
+
+
 
 
 

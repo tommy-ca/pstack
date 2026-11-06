@@ -20,10 +20,11 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts.drivers.droid import DroidDriver, resolve_skill_order
+from scripts.setup_pstack import resolve_profiles_dir
 
 
 def _profile() -> dict:
-    return json.loads((ROOT / "profiles" / "droid.json").read_text(encoding="utf-8"))
+    return json.loads((resolve_profiles_dir(ROOT) / "droid.json").read_text(encoding="utf-8"))
 
 
 def _rows() -> list[dict]:

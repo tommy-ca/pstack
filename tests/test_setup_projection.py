@@ -18,7 +18,7 @@ from scripts.host_identity import BUILTIN_HOSTS
 from scripts.model_role_policy import check_model_role_policy
 from scripts.model_role_resolver import plan_role
 from scripts.portability_types import SetupProjection, ValidationError
-from scripts.setup_pstack import PACKAGE_JSON, resolve_setup_projection
+from scripts.setup_pstack import PACKAGE_JSON, resolve_setup_projection, resolve_profiles_dir
 from tests.model_role_helpers import (
     available_catalog_policy,
     invalid_catalog_policy,
@@ -30,7 +30,7 @@ GROK_REF = ROOT / "skills" / "setup-pstack" / "references" / "grok.md"
 
 
 def _profile(host: str) -> dict:
-    return json.loads((ROOT / "profiles" / f"{host}.json").read_text(encoding="utf-8"))
+    return json.loads((resolve_profiles_dir(ROOT) / f"{host}.json").read_text(encoding="utf-8"))
 
 
 @pytest.mark.parametrize("host", BUILTIN_HOSTS)
@@ -152,7 +152,7 @@ def test_grok_reference_owns_the_adapter_body() -> None:
 def test_entry_skill_passes_the_host_boundary_scan() -> None:
     import scripts.scan_host_boundary as module
 
-    vocab = module.extract_forbidden_vocabulary(ROOT / "profiles")
+    vocab = module.extract_forbidden_vocabulary(resolve_profiles_dir(ROOT))
     assert module.scan_file(ENTRY_SKILL, ROOT, vocab) == []
 
 

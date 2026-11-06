@@ -25,6 +25,8 @@ from pathlib import Path
 
 import pytest
 
+from scripts.setup_pstack import resolve_profiles_dir
+
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
@@ -310,7 +312,7 @@ def test_a_read_only_audit_triggers_no_mutation(tmp_path: Path) -> None:
     (audit_root / "skills" / "sample" / "SKILL.md").write_text(
         "Start a worker with spawn_subagent.\n", encoding="utf-8"
     )
-    shutil.copytree(ROOT / "profiles", audit_root / "profiles")
+    shutil.copytree(resolve_profiles_dir(ROOT), audit_root / "profiles")
 
     before = tree_digest(audit_root, suffix=None)
     _, violations, scanned = scan_host_boundary.run_scan(audit_root, audit_root / "profiles")
@@ -323,7 +325,7 @@ def test_a_read_only_audit_triggers_no_mutation(tmp_path: Path) -> None:
 def test_the_repository_audit_is_clean_and_read_only() -> None:
     """A real read-only audit over this checkout: zero violations, zero writes."""
     before = tree_digest(ROOT / "skills")
-    _, violations, scanned = scan_host_boundary.run_scan(ROOT, ROOT / "profiles")
+    _, violations, scanned = scan_host_boundary.run_scan(ROOT, resolve_profiles_dir(ROOT))
 
     assert violations == [], violations
     assert scanned > 0

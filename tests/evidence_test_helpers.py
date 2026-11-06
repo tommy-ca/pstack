@@ -22,6 +22,7 @@ from scripts.portability_types import (
     settle_planes,
 )
 from scripts.surface_revisions import compute_surface_revisions
+from scripts.setup_pstack import resolve_profiles_dir
 
 ROOT = Path(__file__).resolve().parents[1]
 EVIDENCE_DIR = ROOT / ".audit" / "evidence"
@@ -35,7 +36,7 @@ def _declared_hosts() -> tuple:
 def _omp_profile(data: dict | None = None) -> HarnessProfile:
     if data is not None:
         return HarnessProfile.from_dict(data)
-    return HarnessProfile.from_file(ROOT / "profiles" / "omp.json")
+    return HarnessProfile.from_file(resolve_profiles_dir(ROOT) / "omp.json")
 
 
 def _package_ignored_paths() -> frozenset:
@@ -166,7 +167,7 @@ def _synthetic_evidence_root(
     receipt_path.parent.mkdir(parents=True, exist_ok=True)
     receipt_path.write_text(json.dumps(asdict(receipt)), encoding="utf-8")
 
-    d = json.loads((ROOT / "profiles" / f"{host}.json").read_text(encoding="utf-8"))
+    d = json.loads((resolve_profiles_dir(ROOT) / f"{host}.json").read_text(encoding="utf-8"))
     for binding in d["bindings"]:
         binding["evidence_ref"] = ref
         if force_verified:
@@ -228,7 +229,7 @@ def _omp_live_root(tmp_path: Path) -> tuple:
     )
     (evidence_root / "omp-receipt.json").write_text(json.dumps(asdict(live)), encoding="utf-8")
 
-    profile_data = json.loads((ROOT / "profiles" / "omp.json").read_text(encoding="utf-8"))
+    profile_data = json.loads((resolve_profiles_dir(ROOT) / "omp.json").read_text(encoding="utf-8"))
     for binding in profile_data["bindings"]:
         binding["evidence_ref"] = ".audit/evidence/omp-receipt.json"
         binding["verification_status"] = "verified"
@@ -319,7 +320,7 @@ def _adversarial_receipt(scenario: ScenarioResult) -> VerificationReceipt:
 def _profile_pinning(
     receipt_ref: str, scenario_id: str, capability: str = "agent.resume"
 ) -> HarnessProfile:
-    d = json.loads((ROOT / "profiles" / "omp.json").read_text(encoding="utf-8"))
+    d = json.loads((resolve_profiles_dir(ROOT) / "omp.json").read_text(encoding="utf-8"))
     for binding in d["bindings"]:
         binding["evidence_ref"] = receipt_ref
         if binding["capability"] == capability:

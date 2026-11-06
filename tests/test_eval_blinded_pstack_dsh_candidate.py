@@ -27,6 +27,7 @@ from scripts.eval_blinded_pstack import (
     DSH_CORPUS_DIR,
     run_dsh_blinded_eval,
 )
+from scripts.setup_pstack import resolve_profiles_dir
 
 BASELINE_CORPUS = DSH_CORPUS_DIR / "cases.json"
 BASELINE_TABLE = DSH_CORPUS_DIR / "scoring_table.json"
@@ -231,8 +232,9 @@ def _probe_scope_copy(tmp_path: Path) -> Path:
             target = root / path.relative_to(ROOT)
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(path, target)
-    (root / "profiles").mkdir(parents=True, exist_ok=True)
-    shutil.copy2(ROOT / "profiles" / "grok.json", root / "profiles" / "grok.json")
+    target_prof = resolve_profiles_dir(root)
+    target_prof.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(resolve_profiles_dir(ROOT) / "grok.json", target_prof / "grok.json")
     (root / "scripts").mkdir(parents=True, exist_ok=True)
     for name in PROBE_SCOPE_SCRIPTS:
         shutil.copy2(ROOT / "scripts" / name, root / "scripts" / name)

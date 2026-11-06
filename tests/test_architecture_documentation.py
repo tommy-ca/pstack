@@ -10,9 +10,14 @@ from __future__ import annotations
 
 import json
 import re
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from scripts.setup_pstack import resolve_profiles_dir
 ARCH = ROOT / "docs" / "architecture" / "harness-adapters-and-jev-2026-10-20.md"
 
 
@@ -59,7 +64,7 @@ def test_host_support_table_reflects_actual_profiles() -> None:
     profiles = {
         json.loads(path.read_text(encoding="utf-8"))["host"]:
         json.loads(path.read_text(encoding="utf-8"))["support_state"]
-        for path in (ROOT / "profiles").glob("*.json")
+        for path in resolve_profiles_dir(ROOT).glob("*.json")
     }
     assert table == profiles, f"documented host states must match live profile declarations: {table=} {profiles=}"
     package = json.loads((ROOT / "pstack.package.json").read_text(encoding="utf-8"))

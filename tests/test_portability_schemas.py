@@ -25,6 +25,7 @@ from scripts.portability_schema import (
     ToolMapping,
     ValidationError,
 )
+from scripts.setup_pstack import resolve_profiles_dir
 
 ROOT = Path(__file__).resolve().parents[1]
 SCHEMAS_DIR = ROOT / "schemas" / "portability"
@@ -203,7 +204,7 @@ def test_adaptation_requires_reason_for_exclude_and_gap() -> None:
 
 
 def test_antigravity_profile_conformance() -> None:
-    profile_path = ROOT / "profiles" / "antigravity.json"
+    profile_path = resolve_profiles_dir(ROOT) / "antigravity.json"
     assert profile_path.is_file()
     data = json.loads(profile_path.read_text(encoding="utf-8"))
     assert data["host"] == "antigravity"
@@ -231,7 +232,7 @@ def test_antigravity_profile_conformance() -> None:
 
 
 def test_all_harness_profiles_conform_to_layout_and_model() -> None:
-    profiles_dir = ROOT / "profiles"
+    profiles_dir = resolve_profiles_dir(ROOT)
     assert profiles_dir.is_dir()
     expected_hosts = {
         "grok": (".grok/skills", ".grok-plugin/plugin.json"),
@@ -351,7 +352,7 @@ def test_tool_mapping_json_schema_conformance() -> None:
     required_fields = set(schema.get("required", []))
     allowed_fields = set(schema.get("properties", {}).keys())
 
-    profiles_dir = ROOT / "profiles"
+    profiles_dir = resolve_profiles_dir(ROOT)
     for host in ("grok", "codex", "omp", "opencode", "antigravity"):
         pf = profiles_dir / f"{host}.json"
         data = json.loads(pf.read_text(encoding="utf-8"))
@@ -407,7 +408,7 @@ def test_runtime_conventions_validation() -> None:
 
 
 def test_harness_profiles_skill_order_and_runtime_conventions_json_schemas() -> None:
-    profiles_dir = ROOT / "profiles"
+    profiles_dir = resolve_profiles_dir(ROOT)
     skill_order_schema = json.loads((SCHEMAS_DIR / "skill-order.schema.json").read_text(encoding="utf-8"))
     runtime_schema = json.loads((SCHEMAS_DIR / "runtime-conventions.schema.json").read_text(encoding="utf-8"))
 
@@ -454,7 +455,7 @@ def test_all_profiles_satisfy_normative_profile_json_schema() -> None:
 
     validator = jsonschema.Draft202012Validator(profile_schema, registry=registry)
 
-    profiles_dir = ROOT / "profiles"
+    profiles_dir = resolve_profiles_dir(ROOT)
     profile_files = sorted(profiles_dir.glob("*.json"))
     assert len(profile_files) >= 7
 
@@ -478,7 +479,7 @@ def test_normative_profile_json_schema_fails_closed_on_invalid_primitive_or_shap
     validator = jsonschema.Draft202012Validator(profile_schema, registry=registry)
 
     # Base valid profile
-    base = json.loads((ROOT / "profiles/codex.json").read_text(encoding="utf-8"))
+    base = json.loads((resolve_profiles_dir(ROOT) / "codex.json").read_text(encoding="utf-8"))
     assert list(validator.iter_errors(base)) == []
 
     # Mutation 1: Non-string, non-null primitive (e.g. integer) must fail closed

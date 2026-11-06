@@ -25,6 +25,7 @@ from scripts.decision_adapter import (
     ProviderObservation,
     SemanticDecisionProvider,
 )
+from scripts.setup_pstack import resolve_profiles_dir
 
 # 5 input route classes x 3 summary classes x 3 modes x 3 observations =
 # 135 reachable combinations over the pinned Grok profile and canonical mapping.
@@ -103,7 +104,7 @@ def _check_case(profile: dict, route_class: str, summary_class: str,
 
 
 def test_bounded_jev_routing_safety_state_space() -> None:
-    profile = json.loads((ROOT / "profiles" / "grok.json").read_text(encoding="utf-8"))
+    profile = json.loads((resolve_profiles_dir(ROOT) / "grok.json").read_text(encoding="utf-8"))
     for route_class, summary_class, mode, status in product(
         ROUTES, SUMMARIES, MODES, OBSERVATIONS,
     ):
@@ -112,7 +113,7 @@ def test_bounded_jev_routing_safety_state_space() -> None:
 
 def test_bypass_mutation_is_caught(monkeypatch: pytest.MonkeyPatch) -> None:
     """Negative control: remove early preflight and the real-code check must fail."""
-    profile = json.loads((ROOT / "profiles" / "grok.json").read_text(encoding="utf-8"))
+    profile = json.loads((resolve_profiles_dir(ROOT) / "grok.json").read_text(encoding="utf-8"))
     _check_case(profile, "slash", "approved_fixture", "shadow", "decided_candidate")
     with monkeypatch.context() as mutated:
         mutated.setattr(routing, "_is_egress_bypassed", lambda *_a, **_kw: False)

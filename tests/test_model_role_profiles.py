@@ -26,6 +26,7 @@ from scripts.model_role_resolver import (
     resolve_role_source,
 )
 from scripts.portability_schema import ValidationError
+from scripts.setup_pstack import resolve_profiles_dir
 from tests.model_role_helpers import (
     EXAMPLE,
     PACKAGE,
@@ -345,14 +346,14 @@ def test_cross_harness_promotion_gate_and_evidence_contract() -> None:
     from scripts.portability_schema import Binding, Evidence, HarnessProfile
 
     for host in candidate_hosts:
-        p_path = ROOT / "profiles" / f"{host}.json"
+        p_path = resolve_profiles_dir(ROOT) / f"{host}.json"
         assert p_path.is_file(), f"missing profile for {host}"
         data = json.loads(p_path.read_text(encoding="utf-8"))
         profile_validator.validate(data)
         assert data["support_state"] == "candidate"
 
     for host in declared_hosts + candidate_hosts:
-        p_path = ROOT / "profiles" / f"{host}.json"
+        p_path = resolve_profiles_dir(ROOT) / f"{host}.json"
         assert p_path.is_file(), f"missing profile for {host}"
         data = json.loads(p_path.read_text(encoding="utf-8"))
         bindings = [Binding(**b) for b in data.get("bindings", [])]

@@ -18,7 +18,12 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-PROFILES = ROOT / "profiles"
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from scripts.setup_pstack import resolve_profiles_dir
+
+PROFILES = resolve_profiles_dir(ROOT)
 
 DECLARED_HOSTS = ("grok", "codex", "omp", "opencode", "antigravity", "droid")
 

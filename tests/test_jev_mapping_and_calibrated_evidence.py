@@ -39,11 +39,12 @@ from scripts.route_resolver import (
     resolve_skill_order_with_shadow,
 )
 import scripts.route_resolver as route_resolver
+from scripts.setup_pstack import resolve_profiles_dir
 
 
 @pytest.fixture
 def grok_profile() -> Dict[str, Any]:
-    profile_path = ROOT / "profiles" / "grok.json"
+    profile_path = resolve_profiles_dir(ROOT) / "grok.json"
     return json.loads(profile_path.read_text(encoding="utf-8"))
 
 
