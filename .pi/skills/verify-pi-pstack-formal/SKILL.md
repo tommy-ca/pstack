@@ -31,3 +31,35 @@ Run `python3 scripts/verify_pi_candidate.py model` and `python3 -m pytest -q tes
 ## Maintenance
 
 Use `maintain-formal-verification-skill`: record source commit before and after any validator change, rerun all bounded negatives, refuse stale proof promotion. For actual Pi race/security properties, choose TLC, SMT or a code-level checker based on the real implementation and replay a deliberate broken variant (#898).
+
+## Launch
+
+No long-lived process or network daemon required. Verify Python 3.10+ and pytest availability before running model suites.
+
+## Doctor
+
+Run `python3 scripts/verify_pi_candidate.py check` to confirm candidate profile integrity and essential extension schema adherence.
+
+## Drive
+
+Run `python3 scripts/verify_pi_candidate.py model` and `python3 -m pytest -q tests/test_pi_candidate_profile.py` to drive all 53 bounded mutation proofs.
+
+## Proof bar
+
+Verify all 53 bounded mutants are rejected. Any accepted mutant yields FAIL. Missing environment yields BLOCKED, never PASS.
+
+## Evidence
+
+Capture stdout, exit codes, and exact git commit hash. Distinguish offline contract checking from live runtime receipts.
+
+## Cleanup
+
+No persistent filesystem state or orphan processes remain after mutation suite execution.
+
+## Helpers
+
+Run the verification suite:
+```bash
+python3 scripts/verify_pi_candidate.py model
+python3 -m pytest -q tests/test_pi_candidate_profile.py
+```

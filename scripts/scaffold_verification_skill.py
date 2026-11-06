@@ -7,6 +7,7 @@ Supports all 6 agent harnesses: Grok Build, Codex, OMP, OpenCode, Antigravity, D
 from __future__ import annotations
 
 import argparse
+import json
 import pathlib
 import re
 import sys
@@ -309,6 +310,29 @@ def check_feature_map(features_dir: pathlib.Path) -> List[str]:
     return errors
 
 
+def get_candidate_skills_dirs(workspace: pathlib.Path) -> List[str]:
+    """Discover candidate skills directories declared in workspace profiles/*.json."""
+    candidate_dirs: List[str] = []
+    profiles_dir = workspace / "profiles"
+    if profiles_dir.is_dir() and not profiles_dir.is_symlink():
+        for path in sorted(profiles_dir.glob("*.json")):
+            if path.is_file() and not path.is_symlink():
+                try:
+                    data = json.loads(path.read_text(encoding="utf-8"))
+                    if isinstance(data, dict):
+                        skills_rel = data.get("skills_dir")
+                        if (
+                            isinstance(skills_rel, str)
+                            and skills_rel
+                            and skills_rel not in DEFAULT_SKILLS_DIRS.values()
+                            and skills_rel not in candidate_dirs
+                        ):
+                            candidate_dirs.append(skills_rel)
+                except (OSError, json.JSONDecodeError):
+                    continue
+    return candidate_dirs
+
+
 def check_skill(target_dir: pathlib.Path) -> List[str]:
     errors: List[str] = []
     if target_dir.is_symlink() or not target_dir.is_dir():
@@ -322,9 +346,9 @@ def check_skill(target_dir: pathlib.Path) -> List[str]:
         body = ""
         try:
             header, body = split_frontmatter(text)
-            native_parent = target_dir.absolute().parent.as_posix().endswith(
-                tuple("/" + rel for rel in DEFAULT_SKILLS_DIRS.values())
-            )
+            candidate_dirs = get_candidate_skills_dirs(target_dir.parents[2]) if len(target_dir.parents) >= 3 else []
+            known_parents = tuple("/" + rel for rel in (*DEFAULT_SKILLS_DIRS.values(), *candidate_dirs))
+            native_parent = target_dir.absolute().parent.as_posix().endswith(known_parents)
             expected = target_dir.name if native_parent else None
             name = validate_skill_name(read_scalar(header, "name"), expected)
             if not name.startswith("verify-") or not SKILL_NAME_RE.fullmatch(name[7:]):
@@ -345,14 +369,34 @@ def check_skill(target_dir: pathlib.Path) -> List[str]:
     return errors
 
 
-def list_verification_skills(workspace: pathlib.Path, *, all_dirs: bool = False) -> List[pathlib.Path]:
+def list_verification_skills(
+    workspace: pathlib.Path,
+    *,
+    all_dirs: bool = False,
+    include_candidates: bool = True,
+) -> List[pathlib.Path]:
     results: List[pathlib.Path] = []
+    seen: set[pathlib.Path] = set()
+
     for host, rel in DEFAULT_SKILLS_DIRS.items():
         base = workspace / rel
         if base.is_dir():
             for d in sorted(base.glob("verify-*")):
                 if d.is_dir() and (all_dirs or (d / "SKILL.md").is_file()):
-                    results.append(d)
+                    if d not in seen:
+                        results.append(d)
+                        seen.add(d)
+
+    if include_candidates:
+        for rel in get_candidate_skills_dirs(workspace):
+            base = workspace / rel
+            if base.is_dir():
+                for d in sorted(base.glob("verify-*")):
+                    if d.is_dir() and (all_dirs or (d / "SKILL.md").is_file()):
+                        if d not in seen:
+                            results.append(d)
+                            seen.add(d)
+
     return results
 
 
