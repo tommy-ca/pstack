@@ -63,23 +63,30 @@ def detect_host(workspace: pathlib.Path) -> str:
     return "grok"
 
 
-def get_skill_dir(workspace: pathlib.Path, host: str, app: str) -> pathlib.Path:
-    validate_app_name(app, allow_pstack=True)
+def get_skill_dir(workspace: pathlib.Path, host: str, app: str, *, formal: bool = False) -> pathlib.Path:
+    validate_app_name(app, allow_pstack=True, formal=formal)
     skills_rel = DEFAULT_SKILLS_DIRS.get(host, f".{host}/skills")
-    return workspace / skills_rel / f"verify-{app}"
+    effective_app = f"{app}-formal" if formal and not app.endswith("-formal") else app
+    return workspace / skills_rel / f"verify-{effective_app}"
 
 
-def validate_app_name(app: str, *, allow_pstack: bool = False) -> None:
+def validate_app_name(app: str, *, allow_pstack: bool = False, formal: bool = False) -> None:
     if not SKILL_NAME_RE.fullmatch(app):
         raise ValueError("Application name must be lowercase kebab-case")
     if app == "pstack" and not allow_pstack:
         raise ValueError("Application name 'pstack' is reserved for the plugin doctor")
 
 
-def generate_driver_script(app: str) -> str:
+def generate_driver_script(app: str, *, formal: bool = False) -> str:
+    target_type = "formal verification" if formal else "verification"
+    purpose = (
+        "formal model checker or bounded test harness"
+        if formal
+        else "app's real"
+    )
     return f"""#!/usr/bin/env bash
-# Verification driver stub template for {app}
-# Wire each branch to the app's real command during tailoring; the
+# {target_type.capitalize()} driver stub template for {app}
+# Wire each branch to the {purpose} command during tailoring; the
 # 60s bound below applies to the tailored driver, not this stub.
 set -euo pipefail
 
@@ -98,19 +105,19 @@ run_bounded() {{
 
 case "${{1:-all}}" in
     doctor)
-        echo "STUB_NOT_IMPLEMENTED: wire this branch to the app's real doctor command" >&2
+        echo "STUB_NOT_IMPLEMENTED: wire this branch to the {purpose} doctor command" >&2
         exit 2
         ;;
     launch)
-        echo "STUB_NOT_IMPLEMENTED: wire this branch to the app's real launch command" >&2
+        echo "STUB_NOT_IMPLEMENTED: wire this branch to the {purpose} launch command" >&2
         exit 2
         ;;
     drive)
-        echo "STUB_NOT_IMPLEMENTED: wire this branch to the app's real drive command" >&2
+        echo "STUB_NOT_IMPLEMENTED: wire this branch to the {purpose} drive command" >&2
         exit 2
         ;;
     cleanup)
-        echo "STUB_NOT_IMPLEMENTED: wire this branch to the app's real cleanup command" >&2
+        echo "STUB_NOT_IMPLEMENTED: wire this branch to the {purpose} cleanup command" >&2
         exit 2
         ;;
     all)
@@ -127,7 +134,69 @@ esac
 """
 
 
-def generate_skill_content(app: str, host: str) -> str:
+def generate_skill_content(app: str, host: str, *, formal: bool = False) -> str:
+    if formal:
+        return f"""---
+name: verify-{app}
+description: "Use when formally verifying invariants, state transitions, or bounded models for {app} on {host}."
+disable-model-invocation: true
+---
+
+# Formally verify {app} invariants
+
+Draft formal verification skill requiring tailoring with concrete formal model/checker and bounded test harness.
+Structural validation does not assess runtime proof.
+
+## Coverage and sync record
+
+- **Covered production commit:** `HEAD` (record checked commit hash during tailoring).
+- **Target code:** specify files and functions verified by the model.
+- **Invariants:** state safety (forbidden state never reached) and bounded liveness properties.
+- **Bound:** finite state traces and input domains modeled.
+
+## Model and checker choice
+
+Specify the formal checker (TLA+ TLC, SMT solver, or bounded Python/Rust test harness) and deliberate broken mutant.
+
+## Launch
+
+Prepare scratch directory, model files, and environment.
+
+## Doctor
+
+Read-only health check. Verify checker tooling and dependencies are available. Report BLOCKED or UNTESTED if missing, never assume PASS.
+
+## Drive
+
+Drive formal property verification and bounded model tests:
+```bash
+./scripts/driver.sh drive
+```
+
+## Proof bar
+
+Verify all modeled traces pass and deliberate negative mutant fails.
+Reduce scenario verdicts with the strict failure-first lattice: FAIL > BLOCKED > UNTESTED > PASS.
+
+## Evidence
+
+Capture counterexample traces, state space size, and git revision. Distinguish offline trace checks from live host observation.
+Bound driver command executions to 60 seconds with strict timeout handling once each branch is wired to the real checker.
+
+## Cleanup
+
+Tear down temporary verification directories. Ensure no lingering processes.
+
+## Helpers
+
+Run the verification driver script (stub until each branch is wired to the real checker):
+```bash
+./scripts/driver.sh doctor
+./scripts/driver.sh drive
+./scripts/driver.sh cleanup
+```
+"""
+
     return f"""---
 name: verify-{app}
 description: "Use when verifying, reproducing, or proving behavior for {app} on {host}."
@@ -177,21 +246,41 @@ Run the verification driver script (stub until each branch is wired to the app's
 """
 
 
-def generate_features_readme(app: str) -> str:
-    return f"""# Feature Map for {app}
+def generate_features_readme(app: str, *, formal: bool = False) -> str:
+    feature_file = "formal-model.md" if formal else "core.md"
+    description = "Formal model and invariant properties." if formal else "Core application behavior."
+    title = f"Formal Feature Map for {app}" if formal else f"Feature Map for {app}"
+    return f"""# {title}
 
 ## Full sweep
 
 Order of verification sweep across features:
-1. `core.md`
+1. `{feature_file}`
 
 ## Features
 
-- [`core.md`](core.md): Core application behavior.
+- [`{feature_file}`]({feature_file}): {description}
 """
 
 
-def generate_feature_content(app: str) -> str:
+def generate_feature_content(app: str, *, formal: bool = False) -> str:
+    if formal:
+        return f"""# Formal Invariant Property: {app}
+
+## Sub-features
+- State transition safety
+- Bounded invariant exploration
+
+## How to get to it (user POV)
+Invoke formal verification driver for `{app}`.
+
+## Driving it with harness
+Execute formal checker suite and assert all invariants hold and mutants fail.
+
+## Gotchas
+Ensure formal tooling is installed and model sync commit matches target code.
+"""
+
     return f"""# Core Feature: {app}
 
 ## Sub-features
@@ -209,13 +298,21 @@ Ensure working directory and dependencies are initialized.
 """
 
 
-def scaffold_skill(target_dir: pathlib.Path, app: str, host: str) -> None:
-    validate_app_name(app)
+def scaffold_skill(
+    target_dir: pathlib.Path,
+    app: str,
+    host: str,
+    *,
+    formal: bool = False,
+) -> None:
+    validate_app_name(app, formal=formal)
+    effective_app = f"{app}-formal" if formal and not app.endswith("-formal") else app
+    feature_file = "features/formal-model.md" if formal else "features/core.md"
     outputs = {
-        "SKILL.md": generate_skill_content(app, host),
-        "features/README.md": generate_features_readme(app),
-        "features/core.md": generate_feature_content(app),
-        "scripts/driver.sh": generate_driver_script(app),
+        "SKILL.md": generate_skill_content(effective_app, host, formal=formal),
+        "features/README.md": generate_features_readme(effective_app, formal=formal),
+        feature_file: generate_feature_content(effective_app, formal=formal),
+        "scripts/driver.sh": generate_driver_script(effective_app, formal=formal),
     }
     if any(path.is_symlink() for path in (target_dir, *target_dir.parents)):
         raise FileExistsError(f"Refusing symlink target or ancestor: {target_dir}")
@@ -429,6 +526,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="Scaffold or check portable verification skills.")
     parser.add_argument("--host", choices=list(DEFAULT_SKILLS_DIRS.keys()), help="Target agent harness")
     parser.add_argument("--app", help="Application name for verify-<app>")
+    parser.add_argument("--formal", action="store_true", help="Scaffold formal verification skill (model checker, provers, bounded falsifiers)")
     parser.add_argument("--target-dir", type=pathlib.Path, help="Explicit target directory for skill")
     parser.add_argument("--workspace", type=pathlib.Path, default=pathlib.Path.cwd(), help="Workspace root")
     parser.add_argument("--write", action="store_true", help="Scaffold verification skill files")
@@ -440,7 +538,7 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     if args.app is not None:
         try:
-            validate_app_name(args.app, allow_pstack=not args.write)
+            validate_app_name(args.app, allow_pstack=not args.write, formal=args.formal)
         except ValueError as exc:
             parser.error(str(exc))
 
@@ -466,19 +564,20 @@ def main(argv: Optional[List[str]] = None) -> int:
         if not args.app:
             print("Error: --app required when scaffolding with --write", file=sys.stderr)
             return 2
-        target = args.target_dir or get_skill_dir(workspace, host, args.app)
+        target = args.target_dir or get_skill_dir(workspace, host, args.app, formal=args.formal)
         try:
-            scaffold_skill(target, args.app, host)
+            scaffold_skill(target, args.app, host, formal=args.formal)
         except (ValueError, FileExistsError) as exc:
             parser.error(str(exc))
-        print(f"Draft scaffold for '{args.app}' on {host} at {target}; requires tailoring and runtime proof.")
+        kind = "formal " if args.formal else ""
+        print(f"Draft {kind}scaffold for '{args.app}' on {host} at {target}; requires tailoring and runtime proof.")
         return 0
 
     if args.check:
         if args.target_dir:
             target = args.target_dir
         elif args.app:
-            target = get_skill_dir(workspace, host, args.app)
+            target = get_skill_dir(workspace, host, args.app, formal=args.formal)
         else:
             print("Error: --target-dir or --app required with --check", file=sys.stderr)
             return 2
