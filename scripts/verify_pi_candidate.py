@@ -16,6 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 from scripts.portability_types import HarnessProfile, PORTABLE_CAPABILITY_UNIVERSE, ValidationError
+from scripts.setup_pstack import resolve_profiles_dir
 
 HOST = "pstack:pi"
 ENGINEERING = ("pi-subagents", "pi-better-sandbox", "pi-verdict", "pi-ask-user")
@@ -131,7 +132,7 @@ def check_contract(profile: dict[str, Any], manifest: dict[str, Any], settings: 
 
 
 def from_disk(root: Path = ROOT) -> tuple[dict, dict, dict]:
-    return (load_json(root / "profiles/pstack-pi.json"),
+    return (load_json(resolve_profiles_dir(root) / "pstack-pi.json"),
             load_json(root / "references/pi-essential-extensions.json"),
             load_json(root / ".pi/settings.json"))
 

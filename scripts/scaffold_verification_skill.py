@@ -25,6 +25,7 @@ if str(ROOT) not in sys.path:
 
 from scripts.portability_schema import DEFAULT_SKILLS_DIRS
 from scripts.host_identity import require_builtin_host_keys
+from scripts.setup_pstack import resolve_profiles_dir
 from skill_frontmatter import SKILL_NAME_RE, read_scalar, split_frontmatter, validate_skill_name
 
 REQUIRED_SECTIONS = [
@@ -313,7 +314,7 @@ def check_feature_map(features_dir: pathlib.Path) -> List[str]:
 def get_candidate_skills_dirs(workspace: pathlib.Path) -> List[str]:
     """Discover candidate skills directories declared in workspace profiles/*.json."""
     candidate_dirs: List[str] = []
-    profiles_dir = workspace / "profiles"
+    profiles_dir = resolve_profiles_dir(workspace)
     if profiles_dir.is_dir() and not profiles_dir.is_symlink():
         for path in sorted(profiles_dir.glob("*.json")):
             if path.is_file() and not path.is_symlink():
