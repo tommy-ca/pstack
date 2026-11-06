@@ -8,7 +8,7 @@
 - [Michael Denyer's comparator](https://github.com/michael-denyer/pstack-claude/tree/d88063f3355a5ecff0e6dbb890a11bab4b08bc2e): d88063f3355a5ecff0e6dbb890a11bab4b08bc2e (2026-11-05); source of additional host mechanisms, policy-fork declarations and negative scenarios.
 - [Target PStack baseline](https://github.com/tommy-ca/pstack/tree/5d58283f40f7fc8f56a536946abe79418538fe6e): 5d58283f40f7fc8f56a536946abe79418538fe6e; native host profiles, verification skills, schema and wiki authority.
 - The target's applied UPSTREAM pin is still 88d47514b82e7c44f00f2b2a72ff6dd12158038c; semantic sync #840 and host-specific release pin promotion are distinct.
-- Reference port's tools/upstream.json already pins canonical c742dd6. The old target cross-port OpenSpec design compared comparator 0.9.95 (88f6d39f); GitHub compare to d88063f reports 86 commits and only the first 300 modified files. Coverage is prioritized, not exhaustive.
+- Reference port's tools/upstream.json already pins canonical c742dd6. The old target cross-port OpenSpec design compared comparator 0.9.95 (88f6d39f); GitHub compare to d88063f reports 86 commits and only the first 300 modified files. The GitHub compare-file response was capped, but two recursive, untruncated tree snapshots subsequently established a complete **649 changed-path inventory**; semantic-hunk classification remains incomplete.
 
 ## Atomic concepts and separation
 
@@ -40,7 +40,7 @@ The QStack mode text retains a historical reference to an orch owner; check whet
 
 ## Gaps worth a small follow-up
 
-1. **Partial comparator manifest:** the 86-commit GitHub comparison's 300-file result cap means every changed path is not yet classified; #907 owns a full bounded manifest.
+1. **Complete path list, incomplete semantic classification:** GitHub's 300-file compare cap was bypassed with two untruncated Git-tree snapshots (464 added, 51 removed, 134 modified paths). Among additions, 410 are under statechart. #907 owns the remaining path-to-behavior/fork classification and rights audit; path completeness alone is not code review.
 2. **Host-level negative fixture coverage:** reuse comparator tests/pi/* to locate uncovered child lifecycle, late callback, worktree and denial postconditions. Existing target tests are substantial; do not presume absence without executable comparison. #908.
 3. **Formal assumption mapping:** the comparator PiScheduler TLA+ model is code-linked to the comparator's own Node/Pi callbacks and fairness; it cannot prove target's driver or another host without a new concrete abstraction map. #909.
 4. **Provenance:** these GitHub source links are externally pinned but were NOT captured into .llm-wiki/raw/sources via write-once ingest. The page is a compiled analytical interpretation only; no local SHA-256 ingestion attestation is claimed. #910.
