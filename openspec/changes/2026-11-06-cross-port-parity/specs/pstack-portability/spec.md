@@ -1,6 +1,6 @@
 # Delta specification: source-pinned cross-port semantic parity
 
-The requirements below extend, not replace, openspec/specs/pstack-portability/spec.md and the existing create-/maintain-verification-skill, evidence and wiki contracts.
+## ADDED Requirements
 
 ### Requirement: Each semantic adoption is attributable to three frozen revisions
 
