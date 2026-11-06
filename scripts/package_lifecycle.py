@@ -211,6 +211,7 @@ def compute_managed_files(host: str, desc: Any) -> Set[str]:
     if host == "antigravity":
         managed.add("models.json")
         managed.add("rules/AGENTS.md")
+        managed.add("assets/logo.svg")
         for fname in generate_antigravity_commands(desc).keys():
             managed.add(f"commands/{fname}")
 
@@ -322,6 +323,12 @@ def install_plugin(host: str, target_base: Optional[Path] = None) -> Path:
             "- Respect isolated workspaces (`Workspace: branch`) when modifying code in parallel.\n",
             encoding="utf-8",
         )
+
+        assets_dir = plugin_dir / "assets"
+        assets_dir.mkdir(parents=True, exist_ok=True)
+        logo_src = ROOT / "assets" / "logo.svg"
+        if logo_src.is_file():
+            shutil.copy2(logo_src, assets_dir / "logo.svg")
 
         agents_dir = plugin_dir / "agents"
         copy_agents(agents_dir)
@@ -466,6 +473,10 @@ def verify_plugin_at_dir(host: str, plugin_dir: Path, desc: Any) -> Tuple[bool, 
                     errors.append("models.json missing singleRoleDefault")
             except Exception as e:
                 errors.append(f"Corrupt models.json: {e}")
+
+        logo_file = plugin_dir / "assets" / "logo.svg"
+        if not logo_file.is_file():
+            errors.append(f"Missing logo file at: {logo_file}")
 
         cmds_dir = plugin_dir / "commands"
         if not cmds_dir.is_dir() or len(list(cmds_dir.glob("*.toml"))) < len(desc.commands):
