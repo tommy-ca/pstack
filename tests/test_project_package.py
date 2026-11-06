@@ -53,8 +53,9 @@ def test_generate_manifests() -> None:
     antigravity_m = project_package.generate_antigravity_manifest(desc)
     assert antigravity_m["name"] == "pstack"
     assert "skills" in antigravity_m
-    assert "agents" in antigravity_m
-    assert "commands" in antigravity_m
+    assert "logo" in antigravity_m
+    assert "agents" not in antigravity_m
+    assert "commands" not in antigravity_m
 
     cmds = project_package.generate_antigravity_commands(desc)
     assert len(cmds) >= 13
