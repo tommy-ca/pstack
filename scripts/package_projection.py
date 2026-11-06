@@ -183,9 +183,8 @@ def generate_antigravity_manifest(desc: PackageDescriptor) -> Dict[str, Any]:
         "homepage": "https://github.com/tommy-ca/pstack",
         "repository": "https://github.com/tommy-ca/pstack",
         "license": "MIT",
+        "logo": "assets/logo.svg",
         "skills": ["./skills/"],
-        "agents": "./agents/",
-        "commands": "./commands/",
     }
 
 
