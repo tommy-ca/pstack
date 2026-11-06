@@ -12,7 +12,7 @@ The prior cross-port design compared pstack-claude 0.9.95 (commit 88f6d39f) and 
 - Reference comparator: michael-denyer/pstack-claude@d88063f3355a5ecff0e6dbb890a11bab4b08bc2e (2026-11-05); its tools/upstream.json pins upstream c742dd6.
 - Target audit base: tommy-ca/pstack@5d58283f40f7fc8f56a536946abe79418538fe6e.
 - Target's applied UPSTREAM and pstack.package.json pin remains 88d47514b82e7c44f00f2b2a72ff6dd12158038c; completed semantic upstream program #840 deliberately did not imply a release pin bump.
-- Comparator commit range from 88f6d39f to d88063f: GitHub compare reports 86 commits; API returned a truncated 300-file list. Do not claim exhaustiveness from that compare alone.
+- Comparator commit range from 88f6d39f to d88063f: GitHub compare reports 86 commits; compare-file response capped at 300 entries. Recursive Git-tree snapshots (both untruncated) recover a **complete path-level** inventory of 464 added, 51 deleted and 134 changed files; see [the source inventory](references/comparator-tree-delta.md). Semantic hunk classification is still incomplete.
 
 ## Requirements
 1. Preserve Cursor intent as normative; distinguish comparator policy forks, host-only mechanisms, reusable postconditions and excluded features.
