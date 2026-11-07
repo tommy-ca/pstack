@@ -16,6 +16,8 @@ This ledger distinguishes **observed canonical upstream changes** from **applied
 - Hardened candidate verifier with 59 bounded negative mutants and multi-harness conformance (#1012, #1013).
 - Decomposed package lifecycle staging into scripts/package_install_staging.py keeping modules under 550 lines (#1021).
 - Hardened verification skills scaffolder with structured JSON reporting on audit, list, and check commands (#1022).
+- Ported canonical thermos and thermo-nuclear-review skills from cursor/plugins (#1032).
+- Projected thermos and thermo-nuclear-review commands across all six host manifests (#1033).
 
 ## [Unreleased] — upstream 0.15.36 candidate (2026-10-31)
 
