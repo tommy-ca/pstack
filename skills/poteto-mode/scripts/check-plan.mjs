@@ -30,7 +30,7 @@ const BOX = /^\s*- \[[ x]\] (.*)$/;
 
 const file = process.argv[2];
 if (!file) {
-	console.error("Usage: node check-plan.mjs <plan.md>");
+	console.error("Usage: bun check-plan.mjs <plan.md>");
 	process.exit(2);
 }
 
