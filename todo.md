@@ -415,6 +415,23 @@
 - [x] Unit 3 (Issue #971): [C][Gate] Swarm, Arena, Interrogate adversarial verification, full test suite, 6-harness doctor PASS
 *(Epic #968 CLOSED)*
 
+## Epic #973: [Epic][Pi package] Reconcile essential extensions, minimal skills+roles package, and fail-closed verification proof
+- [x] Unit 1 (Issue #974): [Pi package][P0] Pin current Pi extensions and classify native vs third-party engineering capabilities (PR #979)
+- [x] Unit 2 (Issue #975): [Pi package][P1] Specify and prove a thin native Pi skills+roles package from pstack.package.json (PR #979)
+- [x] Unit 3 (Issue #976): [Pi verify][P0] Eliminate false Pi runtime PASS, enforce fail-closed preflight, and verify driver scripts (PR #979)
+- [x] Unit 4 (Issue #977): [Pi formal][P1] Maintain bounded formal-source properties and negative mutant harness (PR #979)
+- [x] Unit 5 (Issue #978): [Pi review][Gate] Reconcile exact-head Pi package, fail-closed receipts, and multi-host regression (PR #979)
+*(Epic #973 CLOSED)*
+
+## Epic #980: [Epic][Upstream 0.15.36 & Verification Levers] Sync Cursor PStack 0.15.36, agentic orchestrate, statechart, and formal verification tooling
+- [x] Unit 1 (Issue #981): [P0][Orchestrate & Skills] Port agentic orchestrate, clean up legacy orch scripts, and sync arena/interrogate/swarm updates
+- [ ] Unit 2 (Issue #982): [P0][Statechart & Ketchup] Ingest statechart and ketchup-video skills with lean compiler and zero static fixture bloat
+- [ ] Unit 3 (Issue #983): [P0][Verification Levers] Upgrade verification skills and scaffold_verification_skill with /statechart integration and typed contracts
+- [ ] Unit 4 (Issue #984): [P0][Upstream Pin & Sync] Advance UPSTREAM pin to 0.15.36, update canonical index, package manifest, and host profiles
+- [ ] Unit 5 (Issue #985): [Gate] Swarm, Arena, Interrogate adversarial verification, full test suite, 6-harness doctor PASS
+
+
+
 
 
 
