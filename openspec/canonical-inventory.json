@@ -4,16 +4,16 @@
   "pin_conformance": "PASS",
   "upstream_freshness": "DRIFT",
   "upstream_head": "6b0300214a09fd6029cfb7077043125758cd1fd2",
-  "observation_time": "2026-11-07T14:22:20.686907+00:00",
+  "observation_time": "2026-11-07T15:35:52.844711+00:00",
   "observation_source": "/home/tommyk/projects/pstack/.worktrees/upstream-cursor-plugins",
   "commits_ahead": 38,
   "counts": {
     "principles": 24,
     "playbooks": 23,
     "total_artifacts": 573,
-    "preserved": 146,
+    "preserved": 131,
     "adapted": 57,
-    "excluded": 370,
+    "excluded": 385,
     "gaps": 0
   },
   "known_defect_exceptions": {
@@ -1289,9 +1289,9 @@
     {
       "path": "skills/statechart/scripts/test/chart.test.ts",
       "canonical_hash": "ef220432d79345fc5fa36210cef6c6ae7468fb4e",
-      "category": "skill",
-      "mode": "preserve",
-      "local_path": "skills/statechart/scripts/test/chart.test.ts"
+      "category": "excluded",
+      "mode": "exclude",
+      "reason": "Statechart corpus integration tests; excluded per YAGNI as corpus fixtures are omitted"
     },
     {
       "path": "skills/statechart/scripts/test/charts/Braces.mmd",
@@ -1317,23 +1317,23 @@
     {
       "path": "skills/statechart/scripts/test/cli.test.ts",
       "canonical_hash": "97b71c30c228eafd55f599375f16be4f656f20e5",
-      "category": "skill",
-      "mode": "preserve",
-      "local_path": "skills/statechart/scripts/test/cli.test.ts"
+      "category": "excluded",
+      "mode": "exclude",
+      "reason": "Statechart CLI corpus integration tests; excluded per YAGNI as corpus fixtures are omitted"
     },
     {
       "path": "skills/statechart/scripts/test/config-fuzz.test.ts",
       "canonical_hash": "88ec2d3d0b09cd85759507aaf786722add1a2cb7",
-      "category": "skill",
-      "mode": "preserve",
-      "local_path": "skills/statechart/scripts/test/config-fuzz.test.ts"
+      "category": "excluded",
+      "mode": "exclude",
+      "reason": "Statechart TLC config fuzz tests; excluded per YAGNI as live TLC runtime is host-dependent"
     },
     {
       "path": "skills/statechart/scripts/test/corpus.test.ts",
       "canonical_hash": "8934373187b213d9be5ef6011db1893cbb8b037f",
-      "category": "skill",
-      "mode": "preserve",
-      "local_path": "skills/statechart/scripts/test/corpus.test.ts"
+      "category": "excluded",
+      "mode": "exclude",
+      "reason": "Statechart corpus tests; excluded per YAGNI as corpus fixtures are omitted"
     },
     {
       "path": "skills/statechart/scripts/test/corpus/Counter/ChartRun.out",
@@ -3830,44 +3830,44 @@
     {
       "path": "skills/statechart/scripts/test/differential.test.ts",
       "canonical_hash": "c6aff9cadcc724202d7308a93fe2e17cc9aa64f4",
-      "category": "skill",
-      "mode": "preserve",
-      "local_path": "skills/statechart/scripts/test/differential.test.ts"
+      "category": "excluded",
+      "mode": "exclude",
+      "reason": "Statechart differential tests; excluded per YAGNI as fast-check and corpus are omitted"
     },
     {
       "path": "skills/statechart/scripts/test/grid/Grid.cfg",
       "canonical_hash": "d0ee570affdd4f5c4a26cff74d7fcace15898db1",
-      "category": "skill",
-      "mode": "preserve",
-      "local_path": "skills/statechart/scripts/test/grid/Grid.cfg"
+      "category": "excluded",
+      "mode": "exclude",
+      "reason": "Statechart TLC grid test fixtures; excluded per YAGNI"
     },
     {
       "path": "skills/statechart/scripts/test/grid/Grid.tla",
       "canonical_hash": "362afc474250b6d8892d7feb5b553bca3dc5d9ee",
-      "category": "skill",
-      "mode": "preserve",
-      "local_path": "skills/statechart/scripts/test/grid/Grid.tla"
+      "category": "excluded",
+      "mode": "exclude",
+      "reason": "Statechart TLC grid test fixtures; excluded per YAGNI"
     },
     {
       "path": "skills/statechart/scripts/test/grid/sany.out",
       "canonical_hash": "79e7f1243077292f954650ba757ca13f5565fee1",
-      "category": "skill",
-      "mode": "preserve",
-      "local_path": "skills/statechart/scripts/test/grid/sany.out"
+      "category": "excluded",
+      "mode": "exclude",
+      "reason": "Statechart TLC grid test fixtures; excluded per YAGNI"
     },
     {
       "path": "skills/statechart/scripts/test/java.ts",
       "canonical_hash": "b6634ad7ac998851cbce400bf5a52b37ee96ea80",
-      "category": "skill",
-      "mode": "preserve",
-      "local_path": "skills/statechart/scripts/test/java.ts"
+      "category": "excluded",
+      "mode": "exclude",
+      "reason": "Statechart Java runner helper; excluded per YAGNI"
     },
     {
       "path": "skills/statechart/scripts/test/labels.ts",
       "canonical_hash": "a3d149984e53558e8b6a59dd994cdbd28487aa2e",
-      "category": "skill",
-      "mode": "preserve",
-      "local_path": "skills/statechart/scripts/test/labels.ts"
+      "category": "excluded",
+      "mode": "exclude",
+      "reason": "Statechart corpus label helper; excluded per YAGNI"
     },
     {
       "path": "skills/statechart/scripts/test/messages.test.ts",
@@ -3879,37 +3879,37 @@
     {
       "path": "skills/statechart/scripts/test/pipeline.test.ts",
       "canonical_hash": "81a5056a37276e38bb4f68993378a82fb55036f5",
-      "category": "skill",
-      "mode": "preserve",
-      "local_path": "skills/statechart/scripts/test/pipeline.test.ts"
+      "category": "excluded",
+      "mode": "exclude",
+      "reason": "Statechart Node registerHooks test; excluded as runtime is consolidated on Bun"
     },
     {
       "path": "skills/statechart/scripts/test/plain-tlc.test.ts",
       "canonical_hash": "434e25612db133034c5a9f7e04965906488ef01c",
-      "category": "skill",
-      "mode": "preserve",
-      "local_path": "skills/statechart/scripts/test/plain-tlc.test.ts"
+      "category": "excluded",
+      "mode": "exclude",
+      "reason": "Statechart plain TLC runner tests; excluded per YAGNI"
     },
     {
       "path": "skills/statechart/scripts/test/render.test.ts",
       "canonical_hash": "5309a92648b950554381f5adecacac161bee3e28",
-      "category": "skill",
-      "mode": "preserve",
-      "local_path": "skills/statechart/scripts/test/render.test.ts"
+      "category": "excluded",
+      "mode": "exclude",
+      "reason": "Statechart chart render tests; excluded per YAGNI as charts are omitted"
     },
     {
       "path": "skills/statechart/scripts/test/tlc-out.test.ts",
       "canonical_hash": "7f27d04ee195e05d0ccea6c9e024a7b2890fde45",
-      "category": "skill",
-      "mode": "preserve",
-      "local_path": "skills/statechart/scripts/test/tlc-out.test.ts"
+      "category": "excluded",
+      "mode": "exclude",
+      "reason": "Statechart TLC output parser tests; covered hermetically by messages.test.ts"
     },
     {
       "path": "skills/statechart/scripts/test/tlc.ts",
       "canonical_hash": "f659423d24c489616168096695ecfde1714bf45d",
-      "category": "skill",
-      "mode": "preserve",
-      "local_path": "skills/statechart/scripts/test/tlc.ts"
+      "category": "excluded",
+      "mode": "exclude",
+      "reason": "Statechart TLC process helper; excluded per YAGNI"
     },
     {
       "path": "skills/statechart/scripts/tsconfig.json",
