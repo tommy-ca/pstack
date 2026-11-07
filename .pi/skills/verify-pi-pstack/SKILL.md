@@ -8,17 +8,17 @@ disable-model-invocation: true
 
 This existing project-local skill verifies PStack semantics on **standalone Pi**, distinct from OMP. It does not enroll a seventh shipped host or launch a second orchestration runtime. Read [core feature](features/core.md) and [extension-package feature map](features/extension-package.md) before claiming any result.
 
-## Launch — environment preflight only
+## Launch
 
-`bash .pi/skills/verify-pi-pstack/scripts/driver.sh launch` runs `scripts/prove_pi_vertical_slice.py --live`. This observes the Pi binary/version, parses `pi list`, and attempts `pi -p --no-session --no-tools`. **That probe cannot spawn, join, cancel, authorize, or sandbox a child.** Even with a healthy preflight, the runtime plane MUST remain **BLOCKED** until a real actor driver records the required actions. Never upgrade a package-presence check to `observed_live`.
+`bash .pi/skills/verify-pi-pstack/scripts/driver.sh launch` runs `scripts/prove_pi_vertical_slice.py --live`. This observes the Pi binary and version. It parses `pi list`. It attempts `pi -p --no-session --no-tools`. That probe cannot spawn, join, cancel, authorize, or sandbox a child. The runtime plane must remain BLOCKED until a real actor driver records the required actions. Never upgrade a package-presence check to observed_live.
 
-## Doctor — source and schema contracts
+## Doctor
 
-`bash .pi/skills/verify-pi-pstack/scripts/driver.sh doctor` runs the existing `verify_pi_candidate.py check` and `model` checks. A source-level PASS covers the current 17-capability profile and 53 bounded mutations only. The **tiered minimum** (sequential zero third-party packages; multiagent pi-subagents alone; guarded extras opt-in) and documented Pi package `pi.subagents.agents` role export require **separate native verification** (issue #975). It does not mean any extension is installed, enabled or secure at runtime.
+`bash .pi/skills/verify-pi-pstack/scripts/driver.sh doctor` runs `verify_pi_candidate.py check` and `model` checks. A source-level PASS covers the current 17-capability profile and 59 bounded mutations. The tiered minimum and documented Pi package role export require separate native verification. It does not mean any extension is installed, enabled, or secure at runtime.
 
-## Drive — runtime proof gate
+## Drive
 
-`bash .pi/skills/verify-pi-pstack/scripts/driver.sh drive` requests the same Pi preflight pending the future native actor-test integration (#976). It exits **2 / BLOCKED** without real child IDs, provider-qualified model selections, terminal states and negative effects. A completed `echo HELLO` is neither a child launch nor an independent model review.
+`bash .pi/skills/verify-pi-pstack/scripts/driver.sh drive` requests the same Pi preflight pending future native actor-test integration. It exits 2 or BLOCKED without real child IDs, provider-qualified model selections, terminal states, and negative effects. A completed `echo HELLO` is neither a child launch nor an independent model review.
 
 ## Proof bar
 
