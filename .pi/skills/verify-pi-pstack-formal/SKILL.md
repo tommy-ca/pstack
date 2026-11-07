@@ -29,16 +29,42 @@ For extension version pins and concrete source locations in the implemented acto
 
 **These properties have not been formally checked against the actual Pi 1.5.0 + pi-subagents runtime**. Select TLC, SMT or code-level verification only after selecting a small *source-linked* model, declaring bounds/environment assumptions and demonstrating a deliberate broken variant. Do not derive a human-gate proof from pi-verdict's classifier. Pi-subagents v0.87.0 adds relevant drain/provider behavior but remains an unverified candidate upgrade.
 
-## Launch / doctor / drive
+## Launch
 
-- `python3 scripts/verify_pi_candidate.py check` validates source manifest and policy.
-- `python3 scripts/verify_pi_candidate.py model` executes the 53 fixed mutations; a rejected mutant means PASS **for the bounded source suite only**.
-- `python3 -m pytest -q tests/test_pi_candidate_profile.py tests/test_pi_authorization_contracts.py` exercises the source and false-PASS regression.
-- No formal checker is installed or run by this skill; native checker result = **NOT_RUN**.
-- Missing required checker/installed Pi = **BLOCKED**. An accepted mutant = FAIL.
+No long-running service. Python 3.12 and uv/mise environment for bounded source and mutation contracts.
 
-## Evidence and maintenance
+## Doctor
 
-Record exact source revision, package pins, executed command, exit code, rejection class counts, and the changed source hash. If source/manifest changes, re-run and re-review the model; no copy-forward PASS. Reserve formal VERIFIED for a real checker receipt with version, bounded model, source mapping, counterexample and replay. The current finite test suite is static/contract evidence. It leaves no managed child or workspace to clean.
+`python3 scripts/verify_pi_candidate.py check` validates source manifest, profile constraints, and policy. Missing required tools or misconfigured manifest reports BLOCKED.
+
+## Drive
+
+```bash
+python3 scripts/verify_pi_candidate.py model
+python3 -m pytest -q tests/test_pi_candidate_profile.py tests/test_pi_authorization_contracts.py
+```
+No formal TLC/SMT checker is installed or run by this skill; native external checker result = NOT_RUN. Missing required checker or uninstalled Pi = BLOCKED. An accepted mutant = FAIL.
+
+## Proof bar
+
+All 53 enumerated invalid source-contract mutations are rejected. The regression suites in `tests/test_pi_candidate_profile.py` and `tests/test_pi_authorization_contracts.py` pass. Reduce scenario verdicts with the strict failure-first lattice: FAIL > BLOCKED > UNTESTED > PASS.
+
+## Evidence
+
+Record exact source revision, package pins, executed command, exit code, rejection class counts, and the changed source hash. If source/manifest changes, re-run and re-review the model; no copy-forward PASS. Reserve formal VERIFIED for a real checker receipt with version, bounded model, source mapping, counterexample and replay. The current finite test suite is static/contract evidence.
 
 See [functional Pi feature map](../verify-pi-pstack/features/extension-package.md) and [existing Pi requirements](../../../openspec/changes/2026-11-05-pi-standalone-candidate/specs/pstack-portability/spec.md) for separate runtime-level claims.
+
+## Cleanup
+
+The bounded test explorer creates temporary scratch state and cleans up on exit. No persistent process, PID, or workspace is left uncleaned.
+
+## Helpers
+
+Run the verification driver script from repository root:
+```bash
+./.pi/skills/verify-pi-pstack-formal/scripts/driver.sh doctor
+./.pi/skills/verify-pi-pstack-formal/scripts/driver.sh drive
+./.pi/skills/verify-pi-pstack-formal/scripts/driver.sh cleanup
+./.pi/skills/verify-pi-pstack-formal/scripts/driver.sh all
+```

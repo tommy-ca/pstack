@@ -438,6 +438,11 @@
 - [x] Unit 4 (Issue #997): [Gate] Swarm, Arena, Interrogate adversarial verification, full test suite via mise/uv, 6-harness doctor PASS
 *(Epic #993 CLOSED)*
 
+## Epic #1003: [Epic][Thermo-Nuclear Quality & Verification Levers] Structural verification conformance, statechart lean test suites, and unified runners
+- [ ] Unit 1 (Issue #1004): [P0][Verification Levers] Enforce structural verification conformance, driver virtualenv resolution, and repo-level audit gate
+- [ ] Unit 2 (Issue #1005): [P0][Statechart & Test Runner] Prune orphaned corpus-dependent test files and unify script test suites under mise
+- [ ] Unit 3 (Issue #1006): [Gate] Swarm, Arena, Interrogate adversarial verification, full test suite via mise/uv, 6-harness doctor PASS
+
 
 
 
