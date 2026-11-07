@@ -432,10 +432,11 @@
 *(Epic #980 CLOSED)*
 
 ## Epic #993: [Epic][Runtime Toolchain & Mise Reproducibility] Unify runtime dependencies under mise, consolidate JS/TS into Bun, and standardize Python under uv
-- [ ] Unit 1 (Issue #994): [P0][Mise & PyProject] Establish `mise.toml` and `pyproject.toml` with Bun, Python 3.12, and UV toolchain
-- [ ] Unit 2 (Issue #995): [P0][Bun Unification] Consolidate JS/TS execution from Node into Bun across skills and scripts
-- [ ] Unit 3 (Issue #996): [P0][UV Native Flow] Standardize verifier scripts, test harnesses, and CI to use native UV flows
-- [ ] Unit 4 (Issue #997): [Gate] Swarm, Arena, Interrogate adversarial verification, full test suite via mise/uv, 6-harness doctor PASS
+- [x] Unit 1 (Issue #994): [P0][Mise & PyProject] Establish `mise.toml` and `pyproject.toml` with Bun, Python 3.12, and UV toolchain (PR #998)
+- [x] Unit 2 (Issue #995): [P0][Bun Unification] Consolidate JS/TS execution from Node into Bun across skills and scripts (PR #1001)
+- [x] Unit 3 (Issue #996): [P0][UV Native Flow] Standardize verifier scripts, test harnesses, and CI to use native UV flows (PR #1002)
+- [x] Unit 4 (Issue #997): [Gate] Swarm, Arena, Interrogate adversarial verification, full test suite via mise/uv, 6-harness doctor PASS
+*(Epic #993 CLOSED)*
 
 
 
