@@ -7,6 +7,13 @@ if [[ -d "$ROOT/.venv/bin" ]]; then
     export PATH="$ROOT/.venv/bin:$PATH"
 fi
 
+PYTHON_EXEC="python3"
+if command -v uv >/dev/null 2>&1 && [[ -d "$ROOT/.venv" ]]; then
+    PYTHON_EXEC="uv run python"
+elif [[ -x "$ROOT/.venv/bin/python" ]]; then
+    PYTHON_EXEC="$ROOT/.venv/bin/python"
+fi
+
 TIMEOUT_SECONDS=60
 
 run_bounded() {
@@ -22,14 +29,14 @@ run_bounded() {
 
 case "${1:-all}" in
     doctor)
-        run_bounded "doctor" python3 scripts/verify_pi_candidate.py check
+        run_bounded "doctor" $PYTHON_EXEC scripts/verify_pi_candidate.py check
         ;;
     launch)
         echo "Launch: Python and pytest environment ready"
         ;;
     drive)
-        run_bounded "model" python3 scripts/verify_pi_candidate.py model
-        run_bounded "pytest" python3 -m pytest -q tests/test_pi_candidate_profile.py
+        run_bounded "model" $PYTHON_EXEC scripts/verify_pi_candidate.py model
+        run_bounded "pytest" $PYTHON_EXEC -m pytest -q tests/test_pi_candidate_profile.py
         ;;
     cleanup)
         echo "Cleanup: No persistent state created"

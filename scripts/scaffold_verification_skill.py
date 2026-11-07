@@ -101,6 +101,18 @@ if [[ -d "$ROOT/.venv/bin" ]]; then
     export PATH="$ROOT/.venv/bin:$PATH"
 fi
 
+PYTHON_EXEC="python3"
+if command -v uv >/dev/null 2>&1 && [[ -d "$ROOT/.venv" ]]; then
+    PYTHON_EXEC="uv run python"
+elif [[ -x "$ROOT/.venv/bin/python" ]]; then
+    PYTHON_EXEC="$ROOT/.venv/bin/python"
+fi
+
+BUN_EXEC="bun"
+if ! command -v bun >/dev/null 2>&1; then
+    BUN_EXEC="node"
+fi
+
 TIMEOUT_SECONDS=60
 
 run_bounded() {{

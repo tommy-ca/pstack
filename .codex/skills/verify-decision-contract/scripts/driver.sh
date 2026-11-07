@@ -9,6 +9,13 @@ if [[ -d "$ROOT/.venv/bin" ]]; then
   export PATH="$ROOT/.venv/bin:$PATH"
 fi
 
+PYTHON_EXEC="python3"
+if command -v uv >/dev/null 2>&1 && [[ -d "$ROOT/.venv" ]]; then
+  PYTHON_EXEC="uv run python"
+elif [[ -x "$ROOT/.venv/bin/python" ]]; then
+  PYTHON_EXEC="$ROOT/.venv/bin/python"
+fi
+
 if ! command -v timeout >/dev/null 2>&1; then
   echo "BLOCKED: GNU timeout is required to enforce the 60-second command bound." >&2
   exit 2
@@ -22,14 +29,14 @@ run_bounded() {
 
 case "${1:-doctor}" in
   launch)
-    run_bounded "python prerequisite" python3 --version
-    run_bounded "pytest prerequisite" python3 -m pytest --version
+    run_bounded "python prerequisite" $PYTHON_EXEC --version
+    run_bounded "pytest prerequisite" $PYTHON_EXEC -m pytest --version
     echo "No process launched; use doctor before drive."
     ;;
   doctor)
-    run_bounded "bounded real-router invariants and mutation probe" python3 -m pytest -q tests/test_decision_bounded_invariants.py
-    run_bounded "atomic paid budget reservation and model-checked interleavings" python3 -m pytest -q tests/test_paid_budget_concurrency.py
-    run_bounded "decision contract, privacy, evidence and wire regressions" python3 -m pytest -q \
+    run_bounded "bounded real-router invariants and mutation probe" $PYTHON_EXEC -m pytest -q tests/test_decision_bounded_invariants.py
+    run_bounded "atomic paid budget reservation and model-checked interleavings" $PYTHON_EXEC -m pytest -q tests/test_paid_budget_concurrency.py
+    run_bounded "decision contract, privacy, evidence and wire regressions" $PYTHON_EXEC -m pytest -q \
       tests/test_verify_decision_contract.py \
       tests/test_jev_privacy_and_bypass.py \
       tests/test_jev_mapping_and_calibrated_evidence.py \
@@ -44,9 +51,9 @@ case "${1:-doctor}" in
     ;;
   drive)
     # Doctor first so a malformed or stale local verifier never receives a PASS.
-    run_bounded "bounded real-router invariants and mutation probe" python3 -m pytest -q tests/test_decision_bounded_invariants.py
-    run_bounded "rollback equivalence" python3 scripts/verify_rollback_equivalence.py --format json
-    run_bounded "decision routing evaluation" python3 scripts/eval_decision_routing.py --format json
+    run_bounded "bounded real-router invariants and mutation probe" $PYTHON_EXEC -m pytest -q tests/test_decision_bounded_invariants.py
+    run_bounded "rollback equivalence" $PYTHON_EXEC scripts/verify_rollback_equivalence.py --format json
+    run_bounded "decision routing evaluation" $PYTHON_EXEC scripts/eval_decision_routing.py --format json
 
     if [[ -z "${PSTACK_UPSTREAM_COMMIT_JSON:-}" || -z "${PSTACK_UPSTREAM_TREE_JSON:-}" ]]; then
       echo "BLOCKED: set PSTACK_UPSTREAM_COMMIT_JSON and PSTACK_UPSTREAM_TREE_JSON to independently captured pinned official GitHub objects." >&2
@@ -57,13 +64,13 @@ case "${1:-doctor}" in
       exit 2
     fi
     if [[ -n "${PSTACK_DECISION_EVIDENCE_DIR:-}" ]]; then
-      run_bounded "official-pinned canonical decision parity" python3 scripts/verify_decision_contract.py \
+      run_bounded "official-pinned canonical decision parity" $PYTHON_EXEC scripts/verify_decision_contract.py \
         --root "$ROOT" \
         --upstream-commit "$PSTACK_UPSTREAM_COMMIT_JSON" \
         --upstream-tree "$PSTACK_UPSTREAM_TREE_JSON" \
         --evidence-dir "$PSTACK_DECISION_EVIDENCE_DIR"
     else
-      run_bounded "official-pinned canonical decision parity" python3 scripts/verify_decision_contract.py \
+      run_bounded "official-pinned canonical decision parity" $PYTHON_EXEC scripts/verify_decision_contract.py \
         --root "$ROOT" \
         --upstream-commit "$PSTACK_UPSTREAM_COMMIT_JSON" \
         --upstream-tree "$PSTACK_UPSTREAM_TREE_JSON"
