@@ -64,7 +64,7 @@ class TestCanonicalMappingFreshness:
 
     def test_applied_canonical_pin_matches_package_and_upstream(self) -> None:
         pin = _get_applied_canonical_pin(str(ROOT))
-        assert pin == "88d47514b82e7c44f00f2b2a72ff6dd12158038c"
+        assert pin == "c742dd61706fbacc1b95f1a20b7b988cf096ce6c"
 
     def test_stale_mapping_revision_fails_closed_to_baseline(
         self, grok_profile: Dict[str, Any], valid_candidate_observation: ProviderObservation, monkeypatch: pytest.MonkeyPatch
@@ -80,7 +80,7 @@ class TestCanonicalMappingFreshness:
                 "path_prefix": "pstack/",
                 "revision": "d0ef80d86795816da932a153458c5dbe192d294e",
                 "tree": "ef1c6ab4b7f1016cfbd4fbdb2e25cfa5ceecaa55",
-                "router_blob": "21993f546032ca37671d5f1caf39c9a82ab4fa9d",
+                "router_blob": "2dd5e76fde228141d3fe78b0b09ca68456b49531",
             },
             "fallback": "baseline",
             "routes": [{"playbook": "bug-fix", "canonical_blob": "b5de0bfa63add6ed38a38a8bd668cf36ac009c61", "selection": "semantic_candidate", "class": "defect"}],

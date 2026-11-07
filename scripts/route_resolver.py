@@ -361,7 +361,7 @@ def _load_semantic_candidates(root: Path) -> Tuple[Dict[str, Dict[str, Any]], Se
     applied_pin = _get_applied_canonical_pin(str(root.resolve()))
     if applied_pin and source_info.get("revision") != applied_pin:
         return {}, set()
-    if source_info.get("router_blob") != "21993f546032ca37671d5f1caf39c9a82ab4fa9d":
+    if source_info.get("router_blob") != "2dd5e76fde228141d3fe78b0b09ca68456b49531":
         return {}, set()
 
     semantic_candidates: Dict[str, Dict[str, Any]] = {}

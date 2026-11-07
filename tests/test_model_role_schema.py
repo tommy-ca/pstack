@@ -180,10 +180,10 @@ def test_canonical_role_taxonomy_schema_and_pin_audit_contract() -> None:
     import scripts.canonical_index as mod
     cache = mod.get_git_cache_root()
     inventory = mod.compute_inventory(cache)
-    assert inventory["pin"] == "88d47514b82e7c44f00f2b2a72ff6dd12158038c", "canonical pin mismatch"
+    assert inventory["pin"] == "c742dd61706fbacc1b95f1a20b7b988cf096ce6c", "canonical pin mismatch"
     assert inventory["pin_conformance"] == "PASS", f"canonical conformance failed: {inventory['counts']}"
     assert inventory["counts"]["gaps"] == 0, "canonical inventory must contain 0 unclassified gaps"
-    assert inventory["counts"]["total_artifacts"] == 172, f"expected 172 artifacts, got {inventory['counts']['total_artifacts']}"
+    assert inventory["counts"]["total_artifacts"] == 573, f"expected 573 artifacts, got {inventory['counts']['total_artifacts']}"
 
     assert len(EXAMPLE["hosts"]) == 6, "all 6 host targets must be declared"
     for host_name, host_cfg in EXAMPLE["hosts"].items():

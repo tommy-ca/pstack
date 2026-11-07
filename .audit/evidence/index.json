@@ -3,8 +3,8 @@
   "hosts": {
     "grok": {
       "receipt": ".audit/evidence/grok-receipt.json",
-      "run_id": "grok-1794007337-0af89ed3",
-      "timestamp": "2026-11-06T23:22:22Z",
+      "run_id": "grok-1794059400-9ba81ebd",
+      "timestamp": "2026-11-07T13:50:06Z",
       "overall_verdict": "UNTESTED",
       "planes": {
         "canonical": "UNTESTED",
@@ -13,24 +13,24 @@
         "runtime": "UNTESTED"
       },
       "surface_revisions": {
-        "canonical_pin": "88d47514b82e7c44f00f2b2a72ff6dd12158038c",
-        "upstream_head": "8ecfb19f844b67a4bc7af7f66c366d57bc7b6d2b",
+        "canonical_pin": "c742dd61706fbacc1b95f1a20b7b988cf096ce6c",
+        "upstream_head": "6b0300214a09fd6029cfb7077043125758cd1fd2",
         "spec_hash": "f403a35e9ce91413047544cd3cbfc1bba3baf9d56bd90a2e3863432d3fc5bf63",
-        "skills_tree_hash": "015ced4dfc2014fcc2c6f10ab53aa59ccee6b461af4ec5c0522540354580ff07",
+        "skills_tree_hash": "ecdd61a6ae1a109e4b112f902576ef7088eb36149fa4316ee69efd05c6cbdc62",
         "profile_hash": "f57cc1a10aac1aae75b7bea4ec30b76ae920c0815938292cc2ae36609ec46808",
-        "package_descriptor_hash": "8f680c39f104a2ed8beb57fa2563509c9bd388637dcf9997f8570b9f4c28eebe",
-        "manifest_hash": "98d71548c2ea02481dcec79b4dbab1b00d8a5428c2cecd8006a58e95649da0e5",
-        "driver_revision": "3ce63dfc2993e968fd9e2905624e44252865a74140512dca590b20b5f711267f",
-        "package_driver_revision": "165e63a547da788a57386c3c986b501f82a0af34c8df546ea0d931e7610cb285",
+        "package_descriptor_hash": "37adfb518f65a4ee01503416fabcda9084b278a3557b98b686c3bade3d6b3e1e",
+        "manifest_hash": "6bdd0ad96f0c923b4ed4c4019614c0d3f1f6fbf43c529d68059c6eee1b2cee02",
+        "driver_revision": "a3a3c2183ce5630720a4b95b2bc41dab51d24cb0869187942481359a58f5dabe",
+        "package_driver_revision": "3624f97e377261efb40ca2efc25de2a33d304dd63bc7c4a6968032470ca8ba90",
         "boundary_driver_revision": "ded4475d707124d6db00167347a2a7217255f3b55e689b647f716617e79a82eb",
         "upstream_freshness": "DRIFT",
-        "commits_ahead": 134
+        "commits_ahead": 38
       }
     },
     "codex": {
       "receipt": ".audit/evidence/codex-receipt.json",
-      "run_id": "codex-1794007342-a1b71979",
-      "timestamp": "2026-11-06T23:22:28Z",
+      "run_id": "codex-1794059406-21a80ebb",
+      "timestamp": "2026-11-07T13:50:13Z",
       "overall_verdict": "UNTESTED",
       "planes": {
         "canonical": "UNTESTED",
@@ -39,18 +39,18 @@
         "runtime": "UNTESTED"
       },
       "surface_revisions": {
-        "canonical_pin": "88d47514b82e7c44f00f2b2a72ff6dd12158038c",
-        "upstream_head": "8ecfb19f844b67a4bc7af7f66c366d57bc7b6d2b",
+        "canonical_pin": "c742dd61706fbacc1b95f1a20b7b988cf096ce6c",
+        "upstream_head": "6b0300214a09fd6029cfb7077043125758cd1fd2",
         "spec_hash": "f403a35e9ce91413047544cd3cbfc1bba3baf9d56bd90a2e3863432d3fc5bf63",
-        "skills_tree_hash": "015ced4dfc2014fcc2c6f10ab53aa59ccee6b461af4ec5c0522540354580ff07",
+        "skills_tree_hash": "ecdd61a6ae1a109e4b112f902576ef7088eb36149fa4316ee69efd05c6cbdc62",
         "profile_hash": "29213226c5c9f8a47be13fbb4a6c5dff242773c0182e2bb4af69c3cd1d01fd8e",
-        "package_descriptor_hash": "8f680c39f104a2ed8beb57fa2563509c9bd388637dcf9997f8570b9f4c28eebe",
-        "manifest_hash": "2c78b2678dab5a2941b9a28c554734c422d5f054abad171d3ccba0d1459cafdb",
-        "driver_revision": "3ce63dfc2993e968fd9e2905624e44252865a74140512dca590b20b5f711267f",
-        "package_driver_revision": "165e63a547da788a57386c3c986b501f82a0af34c8df546ea0d931e7610cb285",
+        "package_descriptor_hash": "37adfb518f65a4ee01503416fabcda9084b278a3557b98b686c3bade3d6b3e1e",
+        "manifest_hash": "2798c0cf20790bd59605a94d10245b95071bd3b880f08f2743001684ba5f14e6",
+        "driver_revision": "a3a3c2183ce5630720a4b95b2bc41dab51d24cb0869187942481359a58f5dabe",
+        "package_driver_revision": "3624f97e377261efb40ca2efc25de2a33d304dd63bc7c4a6968032470ca8ba90",
         "boundary_driver_revision": "ded4475d707124d6db00167347a2a7217255f3b55e689b647f716617e79a82eb",
         "upstream_freshness": "DRIFT",
-        "commits_ahead": 134
+        "commits_ahead": 38
       }
     },
     "omp": {
@@ -65,24 +65,24 @@
         "runtime": "PASS"
       },
       "surface_revisions": {
-        "canonical_pin": "88d47514b82e7c44f00f2b2a72ff6dd12158038c",
-        "upstream_head": "8ecfb19f844b67a4bc7af7f66c366d57bc7b6d2b",
+        "canonical_pin": "c742dd61706fbacc1b95f1a20b7b988cf096ce6c",
+        "upstream_head": "6b0300214a09fd6029cfb7077043125758cd1fd2",
         "spec_hash": "f403a35e9ce91413047544cd3cbfc1bba3baf9d56bd90a2e3863432d3fc5bf63",
-        "skills_tree_hash": "015ced4dfc2014fcc2c6f10ab53aa59ccee6b461af4ec5c0522540354580ff07",
+        "skills_tree_hash": "ecdd61a6ae1a109e4b112f902576ef7088eb36149fa4316ee69efd05c6cbdc62",
         "profile_hash": "42587dd6c3939ad4a7140e32952d8a37d39224fe5e0c68c8a55bdf2e58588207",
-        "package_descriptor_hash": "8f680c39f104a2ed8beb57fa2563509c9bd388637dcf9997f8570b9f4c28eebe",
-        "manifest_hash": "d44e573328ea8a9f6be540837a36d797876368cba4f77797bb25e95e9cb97b24",
-        "driver_revision": "3ce63dfc2993e968fd9e2905624e44252865a74140512dca590b20b5f711267f",
-        "package_driver_revision": "165e63a547da788a57386c3c986b501f82a0af34c8df546ea0d931e7610cb285",
+        "package_descriptor_hash": "37adfb518f65a4ee01503416fabcda9084b278a3557b98b686c3bade3d6b3e1e",
+        "manifest_hash": "7ac6a1385b63cf2300e27af0ddd2057c45ddc9f4a845392dc144c12cf0977520",
+        "driver_revision": "a3a3c2183ce5630720a4b95b2bc41dab51d24cb0869187942481359a58f5dabe",
+        "package_driver_revision": "3624f97e377261efb40ca2efc25de2a33d304dd63bc7c4a6968032470ca8ba90",
         "boundary_driver_revision": "ded4475d707124d6db00167347a2a7217255f3b55e689b647f716617e79a82eb",
         "upstream_freshness": "DRIFT",
-        "commits_ahead": 134
+        "commits_ahead": 38
       }
     },
     "opencode": {
       "receipt": ".audit/evidence/opencode-receipt.json",
-      "run_id": "opencode-1794007348-2d279ad5",
-      "timestamp": "2026-11-06T23:22:34Z",
+      "run_id": "opencode-1794059419-9301d5d3",
+      "timestamp": "2026-11-07T13:50:24Z",
       "overall_verdict": "UNTESTED",
       "planes": {
         "canonical": "UNTESTED",
@@ -91,24 +91,24 @@
         "runtime": "UNTESTED"
       },
       "surface_revisions": {
-        "canonical_pin": "88d47514b82e7c44f00f2b2a72ff6dd12158038c",
-        "upstream_head": "8ecfb19f844b67a4bc7af7f66c366d57bc7b6d2b",
+        "canonical_pin": "c742dd61706fbacc1b95f1a20b7b988cf096ce6c",
+        "upstream_head": "6b0300214a09fd6029cfb7077043125758cd1fd2",
         "spec_hash": "f403a35e9ce91413047544cd3cbfc1bba3baf9d56bd90a2e3863432d3fc5bf63",
-        "skills_tree_hash": "015ced4dfc2014fcc2c6f10ab53aa59ccee6b461af4ec5c0522540354580ff07",
+        "skills_tree_hash": "ecdd61a6ae1a109e4b112f902576ef7088eb36149fa4316ee69efd05c6cbdc62",
         "profile_hash": "12fa3f0e01d564c0f35cdb400d89b5dc2f3bfa02558b1994d5ff63fd6165f832",
-        "package_descriptor_hash": "8f680c39f104a2ed8beb57fa2563509c9bd388637dcf9997f8570b9f4c28eebe",
-        "manifest_hash": "62f895bddcf6f5a3c596b2ae5e8aea86067bc0dc1cfd01b38303637a751caeab",
-        "driver_revision": "3ce63dfc2993e968fd9e2905624e44252865a74140512dca590b20b5f711267f",
-        "package_driver_revision": "165e63a547da788a57386c3c986b501f82a0af34c8df546ea0d931e7610cb285",
+        "package_descriptor_hash": "37adfb518f65a4ee01503416fabcda9084b278a3557b98b686c3bade3d6b3e1e",
+        "manifest_hash": "45216e3e16bb6dc34ab4247de08cce89550b1de986760c60d6db8f14925b696e",
+        "driver_revision": "a3a3c2183ce5630720a4b95b2bc41dab51d24cb0869187942481359a58f5dabe",
+        "package_driver_revision": "3624f97e377261efb40ca2efc25de2a33d304dd63bc7c4a6968032470ca8ba90",
         "boundary_driver_revision": "ded4475d707124d6db00167347a2a7217255f3b55e689b647f716617e79a82eb",
         "upstream_freshness": "DRIFT",
-        "commits_ahead": 134
+        "commits_ahead": 38
       }
     },
     "antigravity": {
       "receipt": ".audit/evidence/antigravity-receipt.json",
-      "run_id": "antigravity-1794007354-afa8de2e",
-      "timestamp": "2026-11-06T23:22:40Z",
+      "run_id": "antigravity-1794059424-592e7f47",
+      "timestamp": "2026-11-07T13:50:30Z",
       "overall_verdict": "UNTESTED",
       "planes": {
         "canonical": "UNTESTED",
@@ -117,18 +117,18 @@
         "runtime": "UNTESTED"
       },
       "surface_revisions": {
-        "canonical_pin": "88d47514b82e7c44f00f2b2a72ff6dd12158038c",
-        "upstream_head": "8ecfb19f844b67a4bc7af7f66c366d57bc7b6d2b",
+        "canonical_pin": "c742dd61706fbacc1b95f1a20b7b988cf096ce6c",
+        "upstream_head": "6b0300214a09fd6029cfb7077043125758cd1fd2",
         "spec_hash": "f403a35e9ce91413047544cd3cbfc1bba3baf9d56bd90a2e3863432d3fc5bf63",
-        "skills_tree_hash": "015ced4dfc2014fcc2c6f10ab53aa59ccee6b461af4ec5c0522540354580ff07",
+        "skills_tree_hash": "ecdd61a6ae1a109e4b112f902576ef7088eb36149fa4316ee69efd05c6cbdc62",
         "profile_hash": "c760cbea72a76b9fd769560621ba81160fa9aa50f383f220502fa47a1963bdd2",
-        "package_descriptor_hash": "8f680c39f104a2ed8beb57fa2563509c9bd388637dcf9997f8570b9f4c28eebe",
-        "manifest_hash": "bed9891232517515122c19dc6d49b346d3e5b2a80460673fed4b1a3320958bdc",
-        "driver_revision": "3ce63dfc2993e968fd9e2905624e44252865a74140512dca590b20b5f711267f",
-        "package_driver_revision": "165e63a547da788a57386c3c986b501f82a0af34c8df546ea0d931e7610cb285",
+        "package_descriptor_hash": "37adfb518f65a4ee01503416fabcda9084b278a3557b98b686c3bade3d6b3e1e",
+        "manifest_hash": "b40d6d4c98ed781bc485982f7908f40eece1467d0e031517bfeed2ec634af9cd",
+        "driver_revision": "a3a3c2183ce5630720a4b95b2bc41dab51d24cb0869187942481359a58f5dabe",
+        "package_driver_revision": "3624f97e377261efb40ca2efc25de2a33d304dd63bc7c4a6968032470ca8ba90",
         "boundary_driver_revision": "ded4475d707124d6db00167347a2a7217255f3b55e689b647f716617e79a82eb",
         "upstream_freshness": "DRIFT",
-        "commits_ahead": 134
+        "commits_ahead": 38
       }
     }
   }
