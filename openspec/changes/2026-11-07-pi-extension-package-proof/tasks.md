@@ -1,4 +1,4 @@
-# Recursive epic and issue graph — Pi extension-package follow-on #973
+# Recursive epic and issue graph: Pi extension-package follow-on #973
 
 The historical candidate epic #894 and PRs #901/#903 were delivered and closed. This is a narrow follow-on with corrected proof semantics and optional Pi package distribution, not a duplicate agent runtime.
 
@@ -22,11 +22,11 @@ The historical candidate epic #894 and PRs #901/#903 were delivered and closed. 
 - [ ] Inspect actual locally installed Pi `pi --version`, `pi list`, extension source/digests, effective activation and conflicts. No local Pi access in this docs task.
 - [ ] Prove compatibility of 0.87.0 model-provider and drain semantics before considering updated pin.
 
-## #975 Opt-in package (proposed, NOT implemented)
+## #975 Opt-in package (implemented native projection)
 - [x] Source official Pi `package.json#pi` manifest and git/package behavior.
 - [x] Design skills-only package (no executable extensions) and distinct package-vs-checkout settings/roles.
-- [ ] Implement reviewed native Pi manifest in a separate PR, exercising project-local disposable installed package, skill lookup, Pi role lookup and conflicts.
-- [ ] Verify no source/template overlay duplicated by @zenspc/pi-pstack and no user home writes or auto third-party installation.
+- [x] Implement reviewed native Pi manifest in `scripts/package_projection.py` projecting `.pi/package.json` with `pi.skills: ["./skills"]` and `pi.subagents.agents: ["./agents"]`.
+- [x] Verify no source/template overlay duplicated by @zenspc/pi-pstack and no user home writes or auto third-party installation.
 
 ## #976 Functional verification (implemented P0 source correction; native proof pending)
 - [x] Change preflight success to runtime BLOCKED instead of PASS.
@@ -36,7 +36,7 @@ The historical candidate epic #894 and PRs #901/#903 were delivered and closed. 
 - [ ] Implement and run a truly native child actor/denial/OS-confinement suite on authorized installed Pi, with effects and source/version receipts. Without this, keep candidate runtime BLOCKED.
 
 ## #977 Formal/security invariants (source bounded; live checker pending)
-- [x] Update the *existing* formal skill to identify 53 source mutants accurately and enumerate future code-linked native properties.
+- [x] Update the existing formal skill to identify 59 source mutants accurately and enumerate future code-linked native properties.
 - [ ] Pick real installed checker, model source transition granularity, bounds, failing variant, exact-head trace and tool/version.
 - [ ] Prove denied launch, child permission ceiling, drain/provider status and independent hard human gate. Without it: formal NOT_RUN and human.gate GAP.
 
@@ -47,7 +47,7 @@ The historical candidate epic #894 and PRs #901/#903 were delivered and closed. 
 - [ ] Keep all six built-in host controls unchanged and Pi candidate until proofs pass.
 - [ ] Ship the package only with a reversible, opt-in versioned release and no auto-install or second orchestration controller.
 
-## Additive source audit — tiered core and package-native agent API
+## Additive source audit: tiered core and package-native agent API
 
 - [x] Pi-subagents v0.86.0 documented `package.json#pi.subagents.agents` for native installed package agent files; Pi v1.5.0 documented `pi.skills` for skills. Use **both** to project existing canonical `agents/` and `skills/`; no duplicate role files or new extension.
 - [x] Classify dependencies: sequential skills = zero extension, delegated multiagent = pi-subagents only, interactive human.ask = optional pi-ask-user, guarded policy = optional independently enabled pi-verdict+pi-better-sandbox, research = optional pi-web-access. Existing four mandatory entries remain the pinned **guarded interactive candidate**, with profile/tier enforcement to be reconciled in issue #974/#975.
