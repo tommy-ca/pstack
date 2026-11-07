@@ -76,8 +76,8 @@ def recipe(upstream_file: Path | None = None) -> str:
    skills/swarm/references/classification.tsv. Pack interrogate reviewer prompts
    with skills/interrogate/scripts/pack.py.
    Applied canonical source is whatever the UPSTREAM tree line records, not
-   the latest observed release. The current compare is official pstack packaging 0.15.29 at commit
-   88d47514b82e7c44f00f2b2a72ff6dd12158038c. Review docs/research/upstream-pstack-0.15.36-audit-2026-10-31.md
+   the latest observed release. The current compare is official pstack packaging 0.15.36 at commit
+   c742dd61706fbacc1b95f1a20b7b988cf096ce6c. Review docs/research/upstream-pstack-0.15.36-audit-2026-10-31.md
    and CHANGELOG.md for candidate 0.15.36, the source manifest, and explicit GAPs.
    Do not blindly copy `statechart/` and its test corpus, `make-bot-ui/`,
    `.cursor-plugin/`, `assets/logo.png`, or the separate `advisor/` plugin.

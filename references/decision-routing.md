@@ -12,7 +12,7 @@ The production route seam is the unresolved point in `/poteto-mode` immediately 
 
 ## Source capture
 
-The inventory follows the official `cursor/plugins` source at commit `88d47514b82e7c44f00f2b2a72ff6dd12158038c` (v0.15.29). Its resolved Git tree is `6e60624e2f172e2d8d796d6e644695ff5591e29f`. `source.revision` identifies the commit; `source.tree` identifies its root tree. The recorded router blob `21993f546032ca37671d5f1caf39c9a82ab4fa9d` (`skills/poteto-mode/SKILL.md`) supports drift checks, and each playbook row records its own canonical blob hash.
+The inventory follows the official `cursor/plugins` source at commit `c742dd61706fbacc1b95f1a20b7b988cf096ce6c` (v0.15.36). Its resolved Git tree is `dab86ab4f12c5fdc853a28045f25cd1610aa8b6b`. `source.revision` identifies the commit; `source.tree` identifies its root tree. The recorded router blob `2dd5e76fde228141d3fe78b0b09ca68456b49531` (`skills/poteto-mode/SKILL.md`) supports drift checks, and each playbook row records its own canonical blob hash.
 
 Capture the commit object and its resolved tree with:
 

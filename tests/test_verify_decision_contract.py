@@ -350,7 +350,7 @@ def test_live_tree_conforms_to_canonical_pin_and_inventory(tmp_path: Path) -> No
     upstream_repo = ROOT / ".worktrees" / "upstream-cursor-plugins"
     if not (upstream_repo / ".git").exists() and not (upstream_repo / "HEAD").exists():
         pytest.skip("upstream worktree not available")
-    rev = "88d47514b82e7c44f00f2b2a72ff6dd12158038c"
+    rev = "c742dd61706fbacc1b95f1a20b7b988cf096ce6c"
     tree_sha = subprocess.check_output(["git", "-C", str(upstream_repo), "rev-parse", f"{rev}^{{tree}}"], text=True).strip()
     commit_obj = {"sha": rev, "tree": {"sha": tree_sha}}
     lines = subprocess.check_output(["git", "-C", str(upstream_repo), "ls-tree", "-r", tree_sha], text=True).strip().splitlines()
