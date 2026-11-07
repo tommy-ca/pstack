@@ -479,6 +479,7 @@ def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path
         "project_package.py",
         "package_projection.py",
         "package_lifecycle.py",
+        "package_install_staging.py",
         "sync_antigravity_plugin.py",
         "model_role_policy.py",
         "model_role_resolver.py",

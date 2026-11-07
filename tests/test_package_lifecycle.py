@@ -342,3 +342,24 @@ def test_antigravity_native_package_proof() -> None:
     assert result["skills_count"] >= 60
     assert result["agents_count"] >= 20
 
+
+def test_package_install_staging_decomposition(tmp_path: Path) -> None:
+    from scripts import package_install_staging
+    from scripts.package_projection import load_package_descriptor
+
+    desc, _ = load_package_descriptor()
+    managed_from_staging = package_install_staging.compute_managed_files("grok", desc)
+    managed_from_lifecycle = package_lifecycle.compute_managed_files("grok", desc)
+    assert managed_from_staging == managed_from_lifecycle
+    assert "plugin.json" in managed_from_staging
+    assert "skills/poteto-mode/SKILL.md" in managed_from_staging
+
+    # Verify line counts remain strictly bounded
+    staging_file = Path(package_install_staging.__file__)
+    lifecycle_file = Path(package_lifecycle.__file__)
+    staging_lines = len(staging_file.read_text(encoding="utf-8").splitlines())
+    lifecycle_lines = len(lifecycle_file.read_text(encoding="utf-8").splitlines())
+    assert staging_lines < 850
+    assert lifecycle_lines < 850
+
+
