@@ -1,12 +1,20 @@
-# Feature: standalone Pi candidate and verification tiers
+# Core Feature: Pi PStack candidate
 
-## User entry
-A trusted repository checkout configures native Pi project skills from `../skills` and Pi subagent role templates from `../agents`. A future independently installed PStack Pi package must prove native package discovery separately; project settings are not an installable package.
+## Sub-features
 
-## Current behavior
-`doctor`: source-only profile/config and 53 bounded negative contracts. `launch` and `drive`: Pi binary/package + `--no-tools` echo preflight only; runtime remains BLOCKED without a tested child/OS sandbox. `cleanup`: no tracked child/artifact lifecycle exists, so cleanup is BLOCKED/NOT_VERIFIED instead of claiming nothing leaked. `evidence` has runtime BLOCKED and must never promote a static receipt to observed_live.
+- Source-only native skill projection and exact namespaced candidate identity `pstack:pi`
+- Seventeen typed PStack capability bindings and no premature support promotion
+- Four engineering extensions, one opt-in research extension, and 53 bounded negative source-contract mutations
+- Correct runtime preflight evidence and cleanup proof status
 
-## Required effect-level proof
-GIVEN a trusted Pi host and independently configured extensions, WHEN one authorized/one denied child is launched, THEN capture exact child ID, resolved model/provider, terminal result, permission decision and boundary effects; otherwise runtime is BLOCKED. A successful interactive answer is human.ask, not a hard human.gate. No two agents may be called independent *models* without verifying the model families.
+## How to get to it (user POV)
 
-See [extension-package.md](extension-package.md) for capability-to-extension mapping and negative tests.
+Start standalone Pi in a trusted PStack checkout. The project settings load canonical skills from `../skills` and role templates from `../agents` through pi-subagents. Test the local candidate with `bash .pi/skills/verify-pi-pstack/scripts/driver.sh doctor`. Third-party extension packages are **not** auto-installed.
+
+## Driving it with Pi
+
+`doctor` runs `verify_pi_candidate.py check` and `model` for source-only contracts. `launch` or `drive` probes the Pi binary and installed packages and runs a `--no-tools` echo; the runtime plane remains BLOCKED until real child/permission/OS evidence exists. `cleanup` exits 2/BLOCKED without tracked native actors. Record actual command, exit code, source SHA and evidence tier.
+
+## Gotchas
+
+Standalone Pi is not OMP; do not reuse OMP native receipts or RPC paths. The Pi package source inventory is not a `package.json#pi` install manifest. A healthy `pi -p --no-tools` echo does not launch a child or prove sandbox. Source-only 53 mutants do not constitute formal model-checking of the native runtime. Candidate `human.gate` remains GAP.

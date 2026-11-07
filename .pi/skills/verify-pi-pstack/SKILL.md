@@ -26,9 +26,13 @@ Observe **both allowed and denied** child launch through the actual `pi-subagent
 
 Version policy: the existing approved candidate pins `pi-subagents@0.86.0`; observed `v0.87.0` is a **candidate upgrade**, requiring drain, strict `provider/id`, and multi-session regression proofs before changing the pin. The other four package versions remain the current source manifest. No Pi/npm package installation happens through this skill.
 
-## Evidence, cleanup and limits
+## Evidence
 
-Use the existing `VerificationReceipt` and source revision conventions. Static PASS may coexist with runtime BLOCKED. Missing native Pi -> BLOCKED. Actual verifier child processes, outside files or worktrees are untracked by today's preflight; `cleanup` therefore reports **BLOCKED / NOT_VERIFIED**, never unconditional PASS. No receipt for absent effects may be fabricated. Reuse `create-verification-skill` and `maintain-verification-skill` procedures, not another verification registry.
+Use the existing `VerificationReceipt` and source revision conventions. Static PASS may coexist with runtime BLOCKED. Missing native Pi -> BLOCKED. No receipt for absent effects may be fabricated. Reuse `create-verification-skill` and `maintain-verification-skill` procedures, not another verification registry.
+
+## Cleanup
+
+Actual verifier child processes, outside files or worktrees are untracked by today's preflight; `cleanup` therefore reports **BLOCKED / NOT_VERIFIED** (exit 2), never unconditional PASS. A future native verifier must track spawned actor identities and remove/check their artifacts under timeout and cancellation before claiming cleanup.
 
 ## Helpers
 
