@@ -1,0 +1,2 @@
+description = "Comprehensive security and correctness audit of diff changes"
+prompt = "Run /thermo-nuclear-review {{args}}. Perform a deep security and correctness audit for bugs, breaking changes, security vulnerabilities, and devex regressions."
