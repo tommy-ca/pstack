@@ -460,9 +460,10 @@
 
 ## Epic #1031: [Epic][Thermos Skills Port & Verification Levers] Port thermos and thermo-nuclear-review from cursor/plugins, project multi-harness commands, and harden verification
 - [x] Unit 1 (Issue #1032, PR #1036): [Thermos Skills][P0] Port thermos and thermo-nuclear-review canonical skills from cursor/plugins
-- [x] Unit 2 (Issue #1033, PR #1037): [Package Projection][P0] Project thermos commands across all six host manifests
-- [ ] Unit 3 (Issue #1034): [Reconcile & Receipts][P0] Refresh evidence receipts, update changelog, and validate plan
-- [ ] Unit 4 (Issue #1035): [Gate] Swarm, Arena, Interrogate adversarial verification, full test suite, and end-to-end workflow proof
+- [x] Unit 2 (Issue #1033, PR #1039): [Package Projection][P0] Project thermos commands across all six host manifests
+- [x] Unit 3 (Issue #1034, PR #1040): [Reconcile & Receipts][P0] Refresh evidence receipts, update changelog, and validate plan
+- [x] Unit 4 (Issue #1035): [Gate] Swarm, Arena, Interrogate adversarial verification, full test suite, and end-to-end workflow proof
+*(Epic #1031 CLOSED)*
 
 
 
