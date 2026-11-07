@@ -38,7 +38,7 @@ flowchart TD
 
 ## Reusable semantic building blocks
 
-Retain the existing `B01..B20` decomposition in the [2026-10-11 archived atomic patterns](../2026-10-11-deepseek-skill-portability/atomic-patterns.md); do **not** clone it. New source material specializes existing atoms:
+Retain the existing `B01..B20` decomposition in the [2026-10-11 archived atomic patterns](../archive/2026-10-11-deepseek-skill-portability/atomic-patterns.md); do **not** clone it. New source material specializes existing atoms:
 
 | Source-derived concept | Existing atom | Owner and when applicable |
 | --- | --- | --- |
