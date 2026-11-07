@@ -35,3 +35,21 @@ If actual `pi list` reports 0.87.0 while the current manifest pins 0.86.0, the c
 
 ## Boundary from QStack
 QStack consumes `poteto-mode` and supplies quant-only semantics. It cannot register Pi tools or substitute PStack's host authority. PStack remains fully operational without QStack; use QStack's test-falsifier discipline as a review method only.
+
+
+## Upstream principle and playbook crosswalk
+
+PStack's applied `UPSTREAM` source is the immutable official [Cursor pstack@88d47514](https://github.com/cursor/plugins/tree/88d47514b82e7c44f00f2b2a72ff6dd12158038c/pstack) (verified in this repository's `UPSTREAM` file). Its skill/playbook **intent** is canonical; Pi and third-party extension API examples are local implementation bindings, not new PStack principles.
+
+| Applied canonical principle / method | Specific Pi decision it changes |
+| --- | --- |
+| [Subtract Before You Add](https://github.com/cursor/plugins/blob/88d47514b82e7c44f00f2b2a72ff6dd12158038c/pstack/skills/principle-subtract-before-you-add/SKILL.md) | No new PStack scheduler, model catalog or Pi-native executor wrapper; use Pi+one delegate owner |
+| [Boundary Discipline](https://github.com/cursor/plugins/blob/88d47514b82e7c44f00f2b2a72ff6dd12158038c/pstack/skills/principle-boundary-discipline/SKILL.md) | Keep explicit separation among candidate profile contract, actual installed extensions and observable child/OS effects |
+| [Type System Discipline](https://github.com/cursor/plugins/blob/88d47514b82e7c44f00f2b2a72ff6dd12158038c/pstack/skills/principle-type-system-discipline/SKILL.md) | Reuse existing 17 `Binding` rows and `VerificationReceipt`; no duplicate Pi extension capability data model |
+| [Migrate Callers Then Delete Legacy APIs](https://github.com/cursor/plugins/blob/88d47514b82e7c44f00f2b2a72ff6dd12158038c/pstack/skills/principle-migrate-callers-then-delete-legacy-apis/SKILL.md) | Retire transitional `@zenspc/pi-pstack` policy *only after* native PStack skills and agent templates are proven discoverable |
+| [Make Operations Idempotent](https://github.com/cursor/plugins/blob/88d47514b82e7c44f00f2b2a72ff6dd12158038c/pstack/skills/principle-make-operations-idempotent/SKILL.md) | Future Pi package installation/rollback uses disposable roots and confirms exact effect/cleanup state |
+| [Prove It Works](https://github.com/cursor/plugins/blob/88d47514b82e7c44f00f2b2a72ff6dd12158038c/pstack/skills/principle-prove-it-works/SKILL.md) | P0 fix: a zero-exit `--no-tools` process check can never prove child authorization or hard sandbox |
+
+Canonical `/swarm`, `/arena` and `/interrogate` are **review compositions using independently verified host primitives**, not Pi extension packages. The source-bearing official [swarm](https://github.com/cursor/plugins/tree/88d47514b82e7c44f00f2b2a72ff6dd12158038c/pstack/skills/swarm), [arena](https://github.com/cursor/plugins/tree/88d47514b82e7c44f00f2b2a72ff6dd12158038c/pstack/skills/arena) and [interrogate](https://github.com/cursor/plugins/tree/88d47514b82e7c44f00f2b2a72ff6dd12158038c/pstack/skills/interrogate) specify framing, independent model/child lanes, synthesis and verification; Pi must substantiate actual model and child IDs before reporting them as EXECUTED. [Thermo Nuclear Review](https://github.com/cursor/plugins/tree/main/thermos/skills/thermo-nuclear-review) audits changed-diff correctness and security; [Thermo Nuclear Code Quality Review](https://github.com/cursor/plugins/tree/main/thermos/skills/thermo-nuclear-code-quality-review) challenges duplicate adapters, giant files and uncontrolled conditionals. These are **review lenses**, not source evidence that a reviewer ran. All independent panels remain NOT_RUN here.
+
+[QStack's compose-with-poteto](https://github.com/tommy-ca/qstack/blob/main/skills/qstack-mode/guides/compose-with-poteto.md) confirms one-way downstream `qstack-mode -> poteto-mode`. QStack's quant-domain falsification and runtime gates can *consume* a tested Pi-PStack host binding, but PStack cannot import QStack, duplicate its quant task graph or become its orchestration runtime.
