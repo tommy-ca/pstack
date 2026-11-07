@@ -15,7 +15,8 @@
 - [ ] Execute repository OpenSpec syntax/schema and link checks against a checkout and record exact commands/results (NOT_RUN at source-only inspection).
 
 ## S2 — targeted owner-gap probes (NOT_RUN)
-- [ ] Diff eight changed source directories against the October pin and reread affected references/scripts.
+- [x] Compare all eight changed source `SKILL.md` bodies at the October and current pins; summarize source-level deltas in `source-delta-review.md` (SOURCE_STATIC).
+- [ ] Reinspect affected upstream `references/` and `scripts/` only if a source behavior is proposed for executable adoption (not done).
 - [ ] Probe existing `create-verification-skill`/ `fix-ci` isolation: atomic port/path, readiness, deterministic overlapping execution, quiescent cleanup.
 - [ ] Probe Thermos/interrogate exact-head, cross-consumer lifecycle and complexity-removal findings.
 - [ ] Probe `technical-writing` / PR workflows on migration/test evidence honesty and negative UI triggers.
