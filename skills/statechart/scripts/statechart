@@ -15,12 +15,12 @@ version() {
     echo $((${major:-0} * 1000000 + ${minor:-0} * 1000 + ${patch:-0}))
   }
 }
+if [ "$(version bun)" -ge 1001005 ]; then
+  exec bun "$entry" "$@"
+fi
 node=$(version node)
 if [ "$node" -ge 23006000 ] || { [ "$node" -ge 22018000 ] && [ "$node" -lt 23000000 ]; }; then
   exec node --disable-warning=ExperimentalWarning "$entry" "$@"
-fi
-if [ "$(version bun)" -ge 1001005 ]; then
-  exec bun "$entry" "$@"
 fi
 if [ "$(version deno)" -ge 2000000 ]; then
   exec deno run --quiet --no-prompt --allow-read --allow-write --allow-run --allow-env "$entry" "$@"
