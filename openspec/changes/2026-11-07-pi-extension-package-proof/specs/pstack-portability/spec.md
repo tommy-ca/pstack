@@ -51,7 +51,7 @@ Specifically for standalone Pi, a version/package listing and a `pi -p --no-sess
 ## ADDED Requirements
 
 ### Requirement: Pi extension ownership and source-pinned upgrades stay explicit
-Standalone Pi MUST remain a separate namespaced candidate from OMP, with one selected delegated-agent engine, one OS sandbox owner, one tool-call adjudicator and one structured human.ask owner. The source-pinned **guarded interactive** candidate lists pi-subagents 0.86.0, pi-better-sandbox 0.14.1, pi-verdict 0.16.0 and pi-ask-user 0.17.2; pi-web-access 0.47.0 is optional research. These four do NOT constitute a proven minimal dependency or an installed security profile: sequential Pi PStack needs no third-party extension and delegation needs only pi-subagents. Structured human.ask and security controls are conditional profile additions, with fail-closed privileged-action gates. An observed newer pi-subagents release 0.87.0 MUST be a distinct, independently verified upgrade candidate rather than automatically changing the active pin. Pi's built-in MCP, tools and sessions MUST not be repackaged as new PStack extensions.
+Standalone Pi MUST remain a separate candidate host from OMP with explicit delegation, OS sandbox, tool adjudication, and human.ask capabilities. Pinned packages are pi-subagents 0.86.0, pi-better-sandbox 0.14.1, pi-verdict 0.16.0, and pi-ask-user 0.17.2, with pi-web-access 0.47.0 as optional research. Newer releases such as 0.87.0 require independent verification before changing the active pin.
 
 #### Scenario: provider-qualified model would fall back
 - **GIVEN** a future upgrade probe names `provider/id` and the chosen provider is not authorized
@@ -66,8 +66,7 @@ Standalone Pi MUST remain a separate namespaced candidate from OMP, with one sel
 - **AND** no cancelled/stopped workflow or another session's child MAY be counted as an accepted independent reviewer without terminal evidence
 
 ### Requirement: Pi package resources and role semantics must be separate verifiable contracts
-
-A future Pi package MUST derive its native manifest's version and IDs from the single canonical `pstack.package.json` and expose `pi.skills: ["./skills"]` plus `pi.subagents.agents: ["./agents"]` without bundling executable Pi extensions. The `pi.subagents.agents` key is documented in pi-subagents v0.86.0 and MUST NOT be mistaken for Pi core's own `pi.skills` schema. A native package install and the actual extension-driven role lookup MUST be independently observed. Pi child tool permissions, skill/context inheritance, model/provider and thinking settings MUST be explicitly mapped where the canonical PStack role uses different frontmatter, without silently assuming `effort` is `thinking` or a prompt-only no-write rule is enforceable read-only. Keep `human.gate` GAP and runtime BLOCKED until native receipts.
+A future Pi package MUST derive its native manifest version and IDs from canonical `pstack.package.json`, exposing `pi.skills: ["./skills"]` and `pi.subagents.agents: ["./agents"]` without bundling third-party code. Native package install and extension role lookup MUST be independently observed. Child tool permissions, thinking parameters, and read-only limits MUST be verified explicitly.
 
 #### Scenario: Pi-native package exposes roles without copying agents
 - **GIVEN** 22 canonical PStack `roles[].id` and a proposed `package.json` with both `pi.skills` and `pi.subagents.agents`
@@ -95,7 +94,7 @@ A future Pi package MUST derive its native manifest's version and IDs from the s
 
 
 ### Requirement: Pi authorization and formal verification must not overclaim their enforcement
-An enabled pi-verdict tool_call hook MAY reject known unsafe calls, but classifier `allow`/interactive `ask_user` are NOT sufficient to prove mandatory human.gate or OS sandbox enforcement. Any missing/disabled hook, child delegation bypass, custom/MCP trusted-extension effect or unavailable operator MUST remain BLOCKED for privileged actions. The existing functional and formal verification skills MUST expose source-versus-native proof tiers, exact source/pin revisions, negative tests and checker/tool availability; no generic parallel proof service may be introduced.
+A pi-verdict hook MAY reject unsafe calls, but classifier approval is not sufficient to prove mandatory human.gate or OS sandbox enforcement. Missing hooks or unverified child actions MUST remain fail-closed. Verification skills MUST distinguish finite source-contract tests from native formal verification and checker availability.
 
 #### Scenario: classifier allow but hard action lacks authorization
 - **GIVEN** an attempted privileged child/custom tool action returns `allow` from pi-verdict but no independently enforced human permission
