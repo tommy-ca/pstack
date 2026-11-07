@@ -55,6 +55,18 @@ EXCLUSIONS = {
         "mode": "exclude",
         "reason": "Cursor-side bun:test twin of the retained check-plan.mjs; the port carries the same fence cases adapted in check-plan.test.mjs",
     },
+    "skills/statechart/scripts/test/corpus": {
+        "mode": "exclude",
+        "reason": "Static statechart TLA+ corpus test fixtures; excluded per Laziness Protocol and YAGNI to prevent repo bloat",
+    },
+    "skills/statechart/scripts/test/charts": {
+        "mode": "exclude",
+        "reason": "Static statechart test output charts; excluded per Laziness Protocol",
+    },
+    "skills/statechart/scripts/test/ConfigOracle.java": {
+        "mode": "exclude",
+        "reason": "Java test oracle for TLC config parser; runtime compiler uses TypeScript parser",
+    },
 }
 
 # Known upstream semantic defects with tracked local adaptations (#204, #205)
