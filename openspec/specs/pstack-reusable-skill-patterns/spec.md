@@ -107,12 +107,24 @@ Review and performance acceptance MUST identify actual source/base/head and arti
 
 ### Requirement: relevance and host conditionality
 
-Optional UI, i18n, release, archive, browser evidence and GitHub native-stack contracts MUST be invoked only when the project/task has matching features and capabilities. DSH-specific commands, fixed theme rules and credential instructions MUST NOT be common-pstack requirements.
+Optional UI, i18n, release, archive, and browser evidence workflows MUST activate only for matching target tasks and project capabilities. Forge-native stack mechanics, DSH product rules and OS-specific setup MUST stay outside generic PStack skill requirements. Ordinary new UI development MUST use the existing feature workflow and applicable user-path verification. The `visual-parity` playbook MUST be reserved for an explicitly requested pixel-exact baseline/equivalence task; it MUST NOT be invoked solely because a change is responsive or visually inspectable.
 
 #### Scenario: backend project with no UI or i18n
 - **GIVEN** a server-only code change
 - **WHEN** pstack selects skill overlays
 - **THEN** browser-GIF, UI color, bilingual pairing and DSH build steps remain inactive.
+
+#### Scenario: responsive feature with no existing pixel-match goal
+- **GIVEN** a new responsive UI control without a requested reference implementation or pixel baseline
+- **WHEN** the agent composes the workflow
+- **THEN** the existing `feature` playbook and applicable `create-verification-skill` user-path checks are selected
+- **AND** `visual-parity` and mandatory GIF publishing are not required.
+
+#### Scenario: explicit pixel-exact UI migration
+- **GIVEN** an explicit request to match a prior visual baseline
+- **WHEN** PStack composes the UI verification workflow
+- **THEN** `visual-parity` MAY be selected with the target project's real baseline and comparison surface
+- **AND** DSH-specific theme tokens, viewport defaults and publication commands MUST NOT be imposed.
 
 ### Requirement: credible evidence, security and six-host compatibility
 
