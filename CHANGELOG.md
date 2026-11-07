@@ -11,6 +11,9 @@ This ledger distinguishes **observed canonical upstream changes** from **applied
 - Ingested statechart and ketchup-video skills with lean compiler and zero static fixture bloat (#982).
 - Upgraded formal verification skills and scaffolding with `/statechart` visualization integration (#983).
 - Promoted UPSTREAM pin to 0.15.36 and projected canonical manifests to all six host adapters (#984).
+- Projected opt-in Pi native package exposing canonical skills and agents without executable extensions (#1010).
+- Extended verification skills and scaffolders with candidate host support and truthful proof tiers (#1011).
+- Hardened candidate verifier with 59 bounded negative mutants and multi-harness conformance (#1012, #1013).
 
 ## [Unreleased] — upstream 0.15.36 candidate (2026-10-31)
 
