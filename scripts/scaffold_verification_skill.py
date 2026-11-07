@@ -90,6 +90,11 @@ def generate_driver_script(app: str, *, formal: bool = False) -> str:
 # 60s bound below applies to the tailored driver, not this stub.
 set -euo pipefail
 
+ROOT="$(cd -- "$(dirname -- "${{BASH_SOURCE[0]}}")/../../../.." && pwd)"
+if [[ -d "$ROOT/.venv/bin" ]]; then
+    export PATH="$ROOT/.venv/bin:$PATH"
+fi
+
 TIMEOUT_SECONDS=60
 
 run_bounded() {{
