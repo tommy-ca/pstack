@@ -3,9 +3,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "bun test test/messages.test.ts"
-  },
-  "devDependencies": {
-    "fast-check": "4.5.3"
+    "test": "bun test"
   }
 }

@@ -67,6 +67,58 @@ EXCLUSIONS = {
         "mode": "exclude",
         "reason": "Java test oracle for TLC config parser; runtime compiler uses TypeScript parser",
     },
+    "skills/statechart/scripts/test/chart.test.ts": {
+        "mode": "exclude",
+        "reason": "Statechart corpus integration tests; excluded per YAGNI as corpus fixtures are omitted",
+    },
+    "skills/statechart/scripts/test/cli.test.ts": {
+        "mode": "exclude",
+        "reason": "Statechart CLI corpus integration tests; excluded per YAGNI as corpus fixtures are omitted",
+    },
+    "skills/statechart/scripts/test/config-fuzz.test.ts": {
+        "mode": "exclude",
+        "reason": "Statechart TLC config fuzz tests; excluded per YAGNI as live TLC runtime is host-dependent",
+    },
+    "skills/statechart/scripts/test/corpus.test.ts": {
+        "mode": "exclude",
+        "reason": "Statechart corpus tests; excluded per YAGNI as corpus fixtures are omitted",
+    },
+    "skills/statechart/scripts/test/differential.test.ts": {
+        "mode": "exclude",
+        "reason": "Statechart differential tests; excluded per YAGNI as fast-check and corpus are omitted",
+    },
+    "skills/statechart/scripts/test/grid": {
+        "mode": "exclude",
+        "reason": "Statechart TLC grid test fixtures; excluded per YAGNI",
+    },
+    "skills/statechart/scripts/test/java.ts": {
+        "mode": "exclude",
+        "reason": "Statechart Java runner helper; excluded per YAGNI",
+    },
+    "skills/statechart/scripts/test/labels.ts": {
+        "mode": "exclude",
+        "reason": "Statechart corpus label helper; excluded per YAGNI",
+    },
+    "skills/statechart/scripts/test/pipeline.test.ts": {
+        "mode": "exclude",
+        "reason": "Statechart Node registerHooks test; excluded as runtime is consolidated on Bun",
+    },
+    "skills/statechart/scripts/test/plain-tlc.test.ts": {
+        "mode": "exclude",
+        "reason": "Statechart plain TLC runner tests; excluded per YAGNI",
+    },
+    "skills/statechart/scripts/test/render.test.ts": {
+        "mode": "exclude",
+        "reason": "Statechart chart render tests; excluded per YAGNI as charts are omitted",
+    },
+    "skills/statechart/scripts/test/tlc-out.test.ts": {
+        "mode": "exclude",
+        "reason": "Statechart TLC output parser tests; covered hermetically by messages.test.ts",
+    },
+    "skills/statechart/scripts/test/tlc.ts": {
+        "mode": "exclude",
+        "reason": "Statechart TLC process helper; excluded per YAGNI",
+    },
 }
 
 # Known upstream semantic defects with tracked local adaptations (#204, #205)
