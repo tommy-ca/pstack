@@ -486,6 +486,7 @@ def test_scaffold_formal_verification_skill_across_hosts(tmp_path: pathlib.Path,
     assert "name: verify-concurrency-core-formal\n" in skill_text
     assert "## Coverage and sync record" in skill_text
     assert "## Model and checker choice" in skill_text
+    assert "/statechart" in skill_text
     for sec in scaffold_mod.REQUIRED_SECTIONS:
         assert f"## {sec}" in skill_text
 
