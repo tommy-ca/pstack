@@ -219,6 +219,16 @@
       "prompt": "Run /thermo-nuclear-code-quality-review {{args}}. Perform an unusually strict review focused on abstraction quality, maintainability, and architectural health."
     },
     {
+      "name": "thermos",
+      "description": "Launch dual thermo-nuclear reviews in parallel and synthesize findings",
+      "prompt": "Run /thermos {{args}}. Launch both thermo-nuclear review passes in parallel for security, correctness, and code quality."
+    },
+    {
+      "name": "thermo-nuclear-review",
+      "description": "Comprehensive security and correctness audit of diff changes",
+      "prompt": "Run /thermo-nuclear-review {{args}}. Perform a deep security and correctness audit for bugs, breaking changes, security vulnerabilities, and devex regressions."
+    },
+    {
       "name": "babysit",
       "description": "Watch an open PR — fix failing CI, address feedback, and drive to mergeable",
       "prompt": "Run /babysit {{args}}. Shepherd open pull requests to green, resolve CI checks, triage review comments, and ensure clean mergeability."

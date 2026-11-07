@@ -1,0 +1,2 @@
+description = "Launch dual thermo-nuclear reviews in parallel and synthesize findings"
+prompt = "Run /thermos {{args}}. Launch both thermo-nuclear review passes in parallel for security, correctness, and code quality."
