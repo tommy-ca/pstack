@@ -426,8 +426,8 @@
 ## Epic #980: [Epic][Upstream 0.15.36 & Verification Levers] Sync Cursor PStack 0.15.36, agentic orchestrate, statechart, and formal verification tooling
 - [x] Unit 1 (Issue #981): [P0][Orchestrate & Skills] Port agentic orchestrate, clean up legacy orch scripts, and sync arena/interrogate/swarm updates (PR #986)
 - [x] Unit 2 (Issue #982): [P0][Statechart & Ketchup] Ingest statechart and ketchup-video skills with lean compiler and zero static fixture bloat (PR #987)
-- [x] Unit 3 (Issue #983): [P0][Verification Levers] Upgrade verification skills and scaffold_verification_skill with /statechart integration and typed contracts
-- [ ] Unit 4 (Issue #984): [P0][Upstream Pin & Sync] Advance UPSTREAM pin to 0.15.36, update canonical index, package manifest, and host profiles
+- [x] Unit 3 (Issue #983): [P0][Verification Levers] Upgrade verification skills and scaffold_verification_skill with /statechart integration and typed contracts (PR #988)
+- [x] Unit 4 (Issue #984): [P0][Upstream Pin & Sync] Advance UPSTREAM pin to 0.15.36, update canonical index, package manifest, and host profiles
 - [ ] Unit 5 (Issue #985): [Gate] Swarm, Arena, Interrogate adversarial verification, full test suite, 6-harness doctor PASS
 
 
