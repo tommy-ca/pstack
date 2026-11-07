@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import pathlib
 import subprocess
 import sys
@@ -549,6 +550,41 @@ def test_candidate_host_pi_formal_scaffold_write_and_check(tmp_path: pathlib.Pat
 def test_candidate_host_detection(tmp_path: pathlib.Path) -> None:
     (tmp_path / ".pi").mkdir()
     assert scaffold_mod.detect_host(tmp_path) == "pi"
+
+
+def test_audit_and_list_json_format(tmp_path: pathlib.Path) -> None:
+    cli(tmp_path, "--host", "grok", "--app", "app-a", "--write")
+    cli(tmp_path, "--host", "codex", "--app", "app-b", "--write")
+
+    list_res = cli(tmp_path, "--list", "--json")
+    assert list_res.returncode == 0, list_res.stderr
+    list_data = json.loads(list_res.stdout)
+    assert list_data["count"] == 2
+    assert ".grok/skills/verify-app-a" in list_data["skills"]
+    assert ".codex/skills/verify-app-b" in list_data["skills"]
+
+    audit_res = cli(tmp_path, "--audit", "--json")
+    assert audit_res.returncode == 0, audit_res.stderr
+    audit_data = json.loads(audit_res.stdout)
+    assert audit_data["exit_code"] == 0
+    assert audit_data["total_skills"] == 2
+    assert audit_data["passed"] == 2
+    assert audit_data["failed"] == 0
+    paths = {s["path"] for s in audit_data["skills"]}
+    assert ".grok/skills/verify-app-a" in paths
+    assert ".codex/skills/verify-app-b" in paths
+
+
+def test_check_json_format(tmp_path: pathlib.Path) -> None:
+    cli(tmp_path, "--host", "grok", "--app", "app-a", "--write")
+    target = tmp_path / ".grok/skills/verify-app-a"
+
+    check_res = cli(tmp_path, "--check", "--target-dir", str(target), "--json")
+    assert check_res.returncode == 0, check_res.stderr
+    data = json.loads(check_res.stdout)
+    assert data["status"] == "PASS"
+    assert data["errors"] == []
+
 
 
 
