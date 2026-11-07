@@ -1,0 +1,5 @@
+# Bun runtime configuration for PStack
+# Enforces deterministic test execution across git worktree and lifecycle tests
+
+[test]
+timeout = 15000
