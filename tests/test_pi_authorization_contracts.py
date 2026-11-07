@@ -197,8 +197,9 @@ def test_prove_pi_vertical_slice_offline():
     assert offline["router_ok"] is True
     assert offline["profile_ok"] is True
     assert offline["settings_ok"] is True
+    assert offline["package_ok"] is True
     assert offline["mutants_ok"] is True
-    assert offline["mutant_count"] == 53
+    assert offline["mutant_count"] == 59
 
     scenarios = build_scenarios(offline, live=None, live_requested=False)
     assert len(scenarios) == 5

@@ -80,7 +80,19 @@ def test_no_auto_installed_extensions():
 
 
 def test_bounded_mutants_rejected():
-    assert bounded_negative_controls() == 53
+    assert bounded_negative_controls() == 59
+
+
+def test_pi_package_manifest_contract():
+    from scripts.verify_pi_candidate import load_package, _check_package_contract
+    pkg = load_package()
+    _check_package_contract(pkg)
+    assert pkg["name"] == "pstack"
+    assert pkg["private"] is True
+    assert "pi-package" in pkg["keywords"]
+    assert pkg["pi"]["skills"] == ["./skills"]
+    assert pkg["pi"]["subagents"]["agents"] == ["./agents"]
+    assert "extensions" not in pkg["pi"]
 
 
 def test_normative_profile_json_schema():

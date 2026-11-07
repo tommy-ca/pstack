@@ -44,6 +44,7 @@ AGENTS_DIR = ROOT / "agents"
 DROIDS_DIR = ROOT / "droids"
 FACTORY_PLUGIN_DIR = ROOT / ".factory-plugin"
 CLAUDE_PLUGIN_DIR = ROOT / ".claude-plugin"
+PI_DIR = ROOT / ".pi"
 
 CLAUDE_MANIFEST_SHAPE = {"name": str, "version": str, "skills": str, "agents": (str, list)}
 
@@ -185,6 +186,25 @@ def generate_antigravity_manifest(desc: PackageDescriptor) -> Dict[str, Any]:
         "license": "MIT",
         "logo": "assets/logo.svg",
         "skills": ["./skills/"],
+    }
+
+
+def generate_pi_manifest(desc: PackageDescriptor) -> Dict[str, Any]:
+    return {
+        "name": desc.name,
+        "version": desc.version,
+        "description": f"{desc.name} for Pi: portable principles, playbooks, skills, and role agents.",
+        "private": True,
+        "keywords": ["pi-package", "pstack", "poteto-mode"],
+        "homepage": "https://github.com/tommy-ca/pstack",
+        "repository": "https://github.com/tommy-ca/pstack",
+        "license": "MIT",
+        "pi": {
+            "skills": ["./skills"],
+            "subagents": {
+                "agents": ["./agents"],
+            },
+        },
     }
 
 
@@ -431,6 +451,10 @@ TARGET_MAP = {
 }
 require_builtin_host_keys(TARGET_MAP, "TARGET_MAP")
 
+CANDIDATE_TARGET_MAP: Dict[str, Tuple[Path, Callable[[PackageDescriptor], Dict[str, Any]]]] = {
+    "pi": (PI_DIR / "package.json", generate_pi_manifest),
+}
+
 
 def projected_model_catalog(host: str) -> Path:
     projection = resolve_setup_projection(host)
@@ -487,17 +511,27 @@ AUXILIARY_PROJECTORS: Dict[str, Callable[[PackageDescriptor], None]] = {
 def project_all(desc: PackageDescriptor, hosts: List[str] | None = None) -> None:
     targets = hosts or list(TARGET_MAP.keys())
     for host in targets:
-        if host not in TARGET_MAP:
-            continue
-        dest_file, generator = TARGET_MAP[host]
-        dest_file.parent.mkdir(parents=True, exist_ok=True)
-        content = generator(desc)
-        dest_file.write_text(json.dumps(content, indent=2) + "\n", encoding="utf-8")
-        print(f"Projected {host} -> {dest_file.relative_to(ROOT)}")
+        if host in TARGET_MAP:
+            dest_file, generator = TARGET_MAP[host]
+            dest_file.parent.mkdir(parents=True, exist_ok=True)
+            content = generator(desc)
+            dest_file.write_text(json.dumps(content, indent=2) + "\n", encoding="utf-8")
+            print(f"Projected {host} -> {dest_file.relative_to(ROOT)}")
 
-        aux_projector = AUXILIARY_PROJECTORS.get(host)
-        if aux_projector is not None:
-            aux_projector(desc)
+            aux_projector = AUXILIARY_PROJECTORS.get(host)
+            if aux_projector is not None:
+                aux_projector(desc)
+        elif host in CANDIDATE_TARGET_MAP:
+            dest_file, generator = CANDIDATE_TARGET_MAP[host]
+            dest_file.parent.mkdir(parents=True, exist_ok=True)
+            content = generator(desc)
+            dest_file.write_text(json.dumps(content, indent=2) + "\n", encoding="utf-8")
+            print(f"Projected {host} -> {dest_file.relative_to(ROOT)}")
+    if hosts is None:
+        dest_file, generator = CANDIDATE_TARGET_MAP["pi"]
+        dest_file.parent.mkdir(parents=True, exist_ok=True)
+        dest_file.write_text(json.dumps(generator(desc), indent=2) + "\n", encoding="utf-8")
+        print(f"Projected pi -> {dest_file.relative_to(ROOT)}")
 
 
 def _check_antigravity_auxiliary(desc: PackageDescriptor) -> bool:
@@ -703,6 +737,36 @@ def check_hooks(raw: Dict[str, Any], root: Path = ROOT) -> bool:
     return False
 
 
+def check_pi_package(desc: PackageDescriptor, pi_dir: Optional[Path] = None) -> bool:
+    resolved_dir = pi_dir if pi_dir is not None else PI_DIR
+    target_file = resolved_dir / "package.json"
+    if not target_file.is_file():
+        label = target_file.relative_to(ROOT) if target_file.is_relative_to(ROOT) else target_file
+        print(f"MISSING: {label} (Pi package manifest)")
+        return False
+    try:
+        actual = json.loads(target_file.read_text(encoding="utf-8"))
+        expected = generate_pi_manifest(desc)
+        if actual != expected:
+            print(f"DRIFT: {target_file.relative_to(ROOT)} does not match expected Pi manifest")
+            return False
+        pi_field = actual.get("pi", {})
+        if "extensions" in pi_field or "packages" in actual:
+            print(f"ERROR: {target_file.relative_to(ROOT)} must not bundle executable extensions")
+            return False
+        if pi_field.get("skills") != ["./skills"]:
+            print(f"ERROR: {target_file.relative_to(ROOT)} must expose canonical ./skills")
+            return False
+        if pi_field.get("subagents", {}).get("agents") != ["./agents"]:
+            print(f"ERROR: {target_file.relative_to(ROOT)} must expose canonical ./agents")
+            return False
+        print(f"PASS: pi package at {target_file.relative_to(ROOT)} in sync")
+        return True
+    except Exception as e:
+        print(f"ERROR: {target_file.relative_to(ROOT)} failed to parse: {e}")
+        return False
+
+
 def check_all(
     desc: PackageDescriptor,
     hosts: List[str] | None = None,
@@ -742,14 +806,21 @@ def check_all(
 
     claude_ok = check_claude_plugin(desc)
     hooks_ok = check_hooks(desc.raw_dict)
-    return all_ok and check_model_role_plan(desc) and claude_ok and hooks_ok
+    pi_ok = True
+    if hosts is None or "pi" in hosts:
+        pi_ok = check_pi_package(desc)
+    return all_ok and check_model_role_plan(desc) and claude_ok and hooks_ok and pi_ok
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true", help="Check manifests for drift")
     parser.add_argument("--project", action="store_true", help="Project manifests to disk")
-    parser.add_argument("--host", choices=list(TARGET_MAP.keys()), help="Target specific host")
+    parser.add_argument(
+        "--host",
+        choices=list(TARGET_MAP.keys()) + list(CANDIDATE_TARGET_MAP.keys()),
+        help="Target specific host",
+    )
     args = parser.parse_args()
 
     desc, _ = load_package_descriptor()

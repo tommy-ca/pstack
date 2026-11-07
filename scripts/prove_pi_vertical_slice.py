@@ -47,10 +47,12 @@ from scripts.portability_schema import (
 )
 from scripts.verify_pi_candidate import (
     CandidateContractError,
+    _check_package_contract,
     bounded_negative_controls,
     check_contract,
     check_verdict_template,
     from_disk,
+    load_package,
 )
 
 HOST = "pstack:pi"
@@ -145,6 +147,7 @@ def offline_slice() -> Dict[str, Any]:
     profile_errors: List[str] = []
     try:
         check_contract(profile, manifest, settings)
+        _check_package_contract(load_package())
         check_verdict_template()
     except CandidateContractError as err:
         profile_errors.append(str(err))
@@ -158,8 +161,11 @@ def offline_slice() -> Dict[str, Any]:
         and not settings.get("packages")
     )
 
+    pkg_file = ROOT / ".pi" / "package.json"
+    package_ok = pkg_file.is_file() and not profile_errors
+
     mutant_count = bounded_negative_controls()
-    mutants_ok = mutant_count == 53
+    mutants_ok = mutant_count == 59
 
     return {
         "duration_s": round(time.time() - started, 3),
@@ -168,6 +174,7 @@ def offline_slice() -> Dict[str, Any]:
         "profile_ok": len(profile_errors) == 0,
         "profile_errors": profile_errors,
         "settings_ok": settings_ok,
+        "package_ok": package_ok,
         "mutants_ok": mutants_ok,
         "mutant_count": mutant_count,
         "profile": profile,
@@ -256,7 +263,7 @@ def build_scenarios(
     scenarios.append(
         ScenarioResult(
             id="slice-pi-bounded-mutations",
-            description="53 bounded negative mutations rejected by fail-closed candidate validator",
+            description="59 bounded negative mutations rejected by fail-closed candidate validator",
             plane="adapter",
             command="scripts/verify_pi_candidate.py model",
             exit_code=0 if offline["mutants_ok"] else 1,
@@ -268,11 +275,11 @@ def build_scenarios(
     )
 
     # 3. Package Plane
-    package_ok = offline["settings_ok"]
+    package_ok = offline["settings_ok"] and offline.get("package_ok", True)
     package_snippet = (
-        "PASS: .pi/settings.json discovers git-root skills/agents with no automatic package installs"
+        "PASS: .pi/package.json and .pi/settings.json discover skills/agents with no automatic package installs"
         if package_ok
-        else "FAIL: .pi/settings.json invalid discovery or auto-packages detected"
+        else "FAIL: Pi package manifest or settings invalid or auto-packages detected"
     )
     scenarios.append(
         ScenarioResult(
