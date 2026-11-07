@@ -2,19 +2,27 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../../" && pwd)"
 cd "$ROOT"
+
+PYTHON_EXEC="python3"
+if command -v uv >/dev/null 2>&1 && [[ -d "$ROOT/.venv" ]]; then
+  PYTHON_EXEC="uv run python"
+elif [[ -x "$ROOT/.venv/bin/python" ]]; then
+  PYTHON_EXEC="$ROOT/.venv/bin/python"
+fi
+
 case "${1:-doctor}" in
   doctor)
-    python3 scripts/verify_pi_candidate.py check
-    python3 scripts/verify_pi_candidate.py model
+    $PYTHON_EXEC scripts/verify_pi_candidate.py check
+    $PYTHON_EXEC scripts/verify_pi_candidate.py model
     ;;
   launch)
-    python3 scripts/prove_pi_vertical_slice.py --live
+    $PYTHON_EXEC scripts/prove_pi_vertical_slice.py --live
     ;;
   drive)
-    python3 scripts/prove_pi_vertical_slice.py --live
+    $PYTHON_EXEC scripts/prove_pi_vertical_slice.py --live
     ;;
   evidence)
-    python3 scripts/prove_pi_vertical_slice.py --json
+    $PYTHON_EXEC scripts/prove_pi_vertical_slice.py --json
     ;;
   cleanup)
     # The existing preflight never starts or tracks real child processes.

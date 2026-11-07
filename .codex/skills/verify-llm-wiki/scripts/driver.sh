@@ -8,6 +8,13 @@ if [[ -d "$ROOT/.venv/bin" ]]; then
   export PATH="$ROOT/.venv/bin:$PATH"
 fi
 
+PYTHON_EXEC="python3"
+if command -v uv >/dev/null 2>&1 && [[ -d "$ROOT/.venv" ]]; then
+  PYTHON_EXEC="uv run python"
+elif [[ -x "$ROOT/.venv/bin/python" ]]; then
+  PYTHON_EXEC="$ROOT/.venv/bin/python"
+fi
+
 if ! command -v timeout >/dev/null 2>&1; then
   echo "BLOCKED: GNU timeout required for 60s execution bounds" >&2
   exit 2
@@ -21,20 +28,20 @@ run_bounded() {
 
 drive() {
   doctor
-  run_bounded "source hash verification CLI" python3 scripts/llm_wiki.py verify-sources --wiki-dir .llm-wiki
-  run_bounded "knowledge graph CLI" python3 scripts/llm_wiki.py graph --json --wiki-dir .llm-wiki
-  run_bounded "keyword search CLI" python3 scripts/llm_wiki.py search "worktree" --wiki-dir .llm-wiki
-  run_bounded "original PStack wiki contracts" python3 -m pytest -q tests/test_llm_wiki.py
-  run_bounded "source and path negatives" python3 -m pytest -q tests/test_llm_wiki_safety.py
-  run_bounded "bounded production-code model" python3 -m pytest -q tests/test_llm_wiki_bounded_model.py
-  run_bounded "proposed schema conformance and negative controls" python3 -m pytest -q tests/test_llm_wiki_spec_contracts.py
-  run_bounded "real-code and mutation trace" python3 scripts/verify_llm_wiki_model.py
+  run_bounded "source hash verification CLI" $PYTHON_EXEC scripts/llm_wiki.py verify-sources --wiki-dir .llm-wiki
+  run_bounded "knowledge graph CLI" $PYTHON_EXEC scripts/llm_wiki.py graph --json --wiki-dir .llm-wiki
+  run_bounded "keyword search CLI" $PYTHON_EXEC scripts/llm_wiki.py search "worktree" --wiki-dir .llm-wiki
+  run_bounded "original PStack wiki contracts" $PYTHON_EXEC -m pytest -q tests/test_llm_wiki.py
+  run_bounded "source and path negatives" $PYTHON_EXEC -m pytest -q tests/test_llm_wiki_safety.py
+  run_bounded "bounded production-code model" $PYTHON_EXEC -m pytest -q tests/test_llm_wiki_bounded_model.py
+  run_bounded "proposed schema conformance and negative controls" $PYTHON_EXEC -m pytest -q tests/test_llm_wiki_spec_contracts.py
+  run_bounded "real-code and mutation trace" $PYTHON_EXEC scripts/verify_llm_wiki_model.py
 }
 
 doctor() {
-  run_bounded "python" python3 --version
-  run_bounded "pytest" python3 -m pytest --version
-  run_bounded "structural wiki CLI with source verification" python3 scripts/llm_wiki.py check --sources --wiki-dir .llm-wiki
+  run_bounded "python" $PYTHON_EXEC --version
+  run_bounded "pytest" $PYTHON_EXEC -m pytest --version
+  run_bounded "structural wiki CLI with source verification" $PYTHON_EXEC scripts/llm_wiki.py check --sources --wiki-dir .llm-wiki
 }
 
 if [[ -n "${LLM_WIKI_EVIDENCE_DIR:-}" ]]; then
@@ -46,7 +53,7 @@ if [[ -n "${LLM_WIKI_EVIDENCE_DIR:-}" ]]; then
 fi
 
 case "${1:-doctor}" in
-  launch) run_bounded "python" python3 --version; run_bounded "pytest" python3 -m pytest --version ;;
+  launch) run_bounded "python" $PYTHON_EXEC --version; run_bounded "pytest" $PYTHON_EXEC -m pytest --version ;;
   doctor) doctor ;;
   drive) drive ;;
   cleanup) echo "No owned persistent processes; scratch roots belong to test fixtures; receipts retained." ;;
