@@ -446,7 +446,7 @@
 
 ## Epic #1009: [Epic][Pi Native Package & Thermo-Nuclear Verification] Reconcile opt-in Pi package projection, harden verification tooling, and prove multi-harness conformance
 - [x] Unit 1 (Issue #1010): [Pi Package][P0] Project opt-in skills-and-roles Pi native package from pstack.package.json without executable extensions (PR #1014)
-- [x] Unit 2 (Issue #1011): [Verification Levers][P0] Extend verification skills and scaffolders with candidate host support and truthful proof tiers (PR #1015)
+- [x] Unit 2 (Issue #1011): [Verification Levers][P0] Extend verification skills and scaffolders with candidate host support and truthful proof tiers (PR #1017)
 - [x] Unit 3 (Issue #1012): [Thermo-Nuclear Quality][P0] Perform repo-level code quality review, eliminate duplicate projection patterns, and harden candidate verifiers (PR #1016)
 - [x] Unit 4 (Issue #1013): [Gate] Swarm, Arena, Interrogate adversarial verification, full test suite, and end-to-end workflow proof
 *(Epic #1009 CLOSED)*
