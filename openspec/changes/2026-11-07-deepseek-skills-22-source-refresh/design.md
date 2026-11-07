@@ -1,109 +1,94 @@
-# Design: reconcile DeepSeek 22 skills with existing PStack owners
+# Design: thin source-to-PStack reusable contract curation
 
-## System boundaries and alternatives
+## Primary architecture decision
 
-**Selected: refine existing owners.** Prior source audit already established 20 reusable semantic atoms and a living PStack specification. Current source drift adds six candidate skills but does not justify a second framework.
+The correct unit of reuse is a **falsifiable behavior**, not a third-party `SKILL.md`. Source skill titles remain provenance, not installed command names.
 
-| Alternative | Benefit | Risk | Verdict |
+```text
+pinned external source (read-only, untrusted)
+   → 22/22 audit ledger (GENERAL / CONDITIONAL / EXCLUDE)
+   → filter: current use? owner? platform relevance? security?
+   → existing PStack leaf + principle + playbook mapping
+   → actual PStack playbook via poteto-mode
+   → host-selected native adapter, authorization and evidence
+   → existing exact-head verifier and status reducer
+   → QStack adds *only* quant-domain invariants when quant context applies
+```
+
+**SOLID:** one concern per owner, rely on capability contracts not DSH concrete tools. **KISS:** keep existing skill names and routing. **DRY:** canonical PStack owner states an invariant once; source ledger only links it. **YAGNI:** add no new leaf, principle, playbook, package, scheduler or serialized type unless a failing test proves the current owner lacks essential behavior.
+
+## Source disposition
+
+See [source-crosswalk.md](source-crosswalk.md) for every pinned source path and existing leaf/principle/playbook mapping:
+- **12 GENERAL**: agent-experience, CI test reliability, code review, upgrade guidance, documentation, error handling, simplification, PR description, pre-push validation, prose quality, performance and removal of session-only prose.
+- **5 CONDITIONAL**: Agent Notes archiving (when decision records exist), UI/UX, responsive UI, bilingual translation (when a project requires it), browser demo evidence (when a product/user/review workflow requires it). They are not compulsory generic dependencies.
+- **5 EXCLUDE**: Cordis lifecycle skill, macOS CUA signing, GitHub-native stack merge implementation, product-specific artwork, DeepSeek session-projection machinery. A generic invariant from an excluded skill may be independently expressed at an existing PStack owner; **its implementation is not imported**.
+
+## Decomposition: what owns what
+
+| Level | Responsibility | Canonical target | Anti-pattern |
 | --- | --- | --- | --- |
-| Vendor all 22 skill directories | Source parity | DSH-specific commands/privileges, duplicate routing, maintenance | Reject |
-| Add a portable `dsh` meta-router | Single entry | Conflicts with `poteto-mode`, second skills registry | Reject |
-| Add targeted contracts to existing owners | Minimal interfaces, existing verification receipts, host-neutral | Requires behavioral comparison before code edits | **Accept** |
-| Add specialized host/domain reference packs | Conditional deep coverage | Overactivation and future upkeep | Optional, evidence-gated |
+| Leaf skill | One testable action/report, e.g. a repro or review finding | `fix-ci`, `create-verification-skill`, `interrogate`, both `thermo-nuclear-*`, `benchmark-checklist`, `technical-writing`, `make-pr-easy-to-review` | New `dsh-*` command per upstream file |
+| Principle | Cross-workflow invariant (what must remain true) | `principle-prove-it-works`, `principle-subtract-before-you-add`, `principle-boundary-discipline`, `principle-guard-the-context-window`, `principle-experience-first`, `principle-separate-before-serializing-shared-state` | Duplicated rules in each source adaptation |
+| Playbook | Order and termination of engineering work | Existing `bug-fix`, `investigation`, `refactoring`, `perf-issue`, `opening-a-pr`, `shipping`, `visual-parity`, `authoring-a-skill` | New giant DSH orchestrator |
+| Host adapter | Actually supported commands, identity and permissions | Active PStack `profiles/<host>.json` + tool refs | Hardcoded pnpm, Cordis, gh stack, CUA |
+| Project/domain overlay | Nonportable constraints and domain invariants | Target project, QStack quant-only when applicable | Vendor features generalized into PStack |
+| Evidence | Exact execution state and target receipt | Existing 4-plane, 3-tier verifier | Source claims promoted to runtime PASS |
 
-**Single authority for each concern:** PStack playbook/router selects; principle/skill owns generic rule; host adapter resolves actual tools; optional project/domain overlay adds constraints; existing verifier records observable evidence. QStack must remain downstream and quant-only.
+Existing semantic blocks B01–B20 already live in [the archived first audit](../archive/2026-10-11-deepseek-skill-portability/atomic-patterns.md). Do not mint 20 new classes or another registry. Two domain-independent refinements worth testing are **resource ownership through asynchronous shutdown** and **PR claims tied to exact executed evidence**.
 
 ## Code and data flows
 
-```mermaid
-flowchart TD
- A[User intent and scope] --> B[poteto-mode existing playbook]
- B --> C[Skill eligibility and owner crosswalk]
- C --> D{Capability and permission present?}
- D -->|No| E[SKIP or BLOCKED with reason]
- D -->|Yes| F[Host-native execution / isolated fixture]
- F --> G[Observable result and negative control]
- G --> H[Existing evidence receipt reducer]
- H --> I[PASS / FAIL / BLOCKED / UNTESTED]
- E --> I
-```
+**Review:** `intent/scope → investigation or review playbook → exact base/head → read source and consumers → Thermos correctness/quality passes → reproducible finding or explicit UNTESTED → existing evidence`.
 
-**Source admission:** pinned DeepSeek source → source crosswalk `SOURCE_STATIC` → behavioral proposal → PStack owner → baseline vs candidate eval + safety negative controls → approved skill edit → actual host verification. No source markdown can grant executable permissions.
+**Bug / flaky CI:** `bug-fix/fix-ci → acquire isolated test resource → wait for observable readiness → deterministic overlap barrier → negative control → bounded teardown until quiescence → current-head receipt`. A fixed sleep is not a readiness proof; a caught exception is not rollback.
 
-**Swarm:** partition DeepSeek skill review into context/documentation, test/CI/review, UI/release, and lifecycle/session domains. Each worker reads pinned immutable source and returns evidence; shared source/branch state is read-only.
+**Refactor:** `refactoring → consumer reachability → maintained obligations → smaller design → behavior parity and negative control → approved diff`. Deleted LOC alone is not a quality metric.
 
-**Arena:** when choosing materially different design shapes, produce independent artifacts in isolated worktrees, compare 3-6 criteria (owner fit, correctness, host portability, maintenance burden, verifiability), pick and synthesize exactly one design. Do not run just to vote on trivial wording.
+**Docs / PR:** `technical-writing → user-visible contract and migration → commands actually observed → exact-head test results → report gaps`. No project-independent AI-use percentages, mandated GUI GIFs, translation structure, or release paths.
 
-**Interrogate:** review changes against intended behavior from current base/head; try to falsify lifecycle/retry safety, authorization, tests and migration behavior. Only repeatable real-code counterexamples count as findings. Static risks remain `UNTESTED` observations rather than verified defects.
+**Quant:** `PStack development playbook → QStack capability overlay and domain verifier → quant receipts by reference`; never PStack calls QStack or qorch manages generic software work.
 
-## Reusable semantic building blocks
+## Minimal conceptual records
 
-Retain the existing `B01..B20` decomposition in the [2026-10-11 archived atomic patterns](../archive/2026-10-11-deepseek-skill-portability/atomic-patterns.md); do **not** clone it. New source material specializes existing atoms:
-
-| Source-derived concept | Existing atom | Owner and when applicable |
-| --- | --- | --- |
-| Lifetime-scoped service effects, await cleanup before dependency release | B06, B07, B10 | `interrogate` / formal verifier, resource-owning tasks |
-| Deterministic projection/replay, not repeating I/O, bounded state | B06, B13, B15 | `statechart` / formal verification, only event-sourced systems |
-| PR change/test truth, specific user-visible delta, provenance | B05, B14, B16 | `opening-a-pr`, `make-pr-easy-to-review` |
-| Responsive action/focus/touch accessibility | B03, B13, B20 | `visual-parity`, only UI |
-| Icon/artwork evidence and approval | B03, B20 | optional product visual pack |
-| macOS signing privileges/keyring | B02, B06, B20 | explicit host-specific user permission, otherwise defer |
-
-## Schema models (conceptual, not a competing serialized authority)
+These are **documentation fields**, not a new serialized runtime schema:
 
 ```yaml
-SourceSkill:
-  repository: deepseek-ai/deepseek-harness
-  commit_sha: 40-char-git-sha
-  path: .agents/skills/<slug>/SKILL.md
-  license: MIT
-  source_change: new | changed | unchanged
-  decision: refine | optional | defer
-  pstack_owner: existing-skill-or-playbook
-  evidence_class: SOURCE_STATIC
-
-Invocation:
-  request_id: opaque
-  intent: review | design | fix | verify | document | ship
-  mode: read_only | authorized_write
-  required_capabilities: [host-capability]
-  disallowed_contexts: [context]
-  eligible: boolean
-
-VerificationReceipt:
-  # REFERENCE existing receipt schema; do not implement this as another type
-  source_revision: git-sha
-  target_head: git-sha
-  host_profile: name
-  check_id: name
-  observed_command: exact-executed-command
-  result: PASS | FAIL | BLOCKED | UNTESTED
-  evidence_refs: [existing-artifact-id]
+SourceDisposition:
+  source: {repository: deepseek-ai/deepseek-harness, commit: git-sha, path: skill-path, license: MIT}
+  classification: GENERAL | CONDITIONAL | EXCLUDE
+  reason: why the rule transfers or is excluded
+  owner: existing PStack skill/principle/playbook, or none
+  verified: SOURCE_STATIC
+RetainedBehavior:
+  trigger: positive task condition
+  negative_trigger: excluded context/capability
+  preconditions: [invariant]
+  postconditions: [observable outcome]
+  forbidden_shortcuts: [vendor assumption or unsafe omission]
+  covering_test: existing gate identifier or UNTESTED
 ```
 
-A source crosswalk does **not** get to set `PASS`; status authority belongs to the existing four-plane receipts (canonical/adapter/package/runtime). Reduction remains `FAIL > BLOCKED > UNTESTED > PASS`. Distinguish `SKIP` (not applicable) from `PASS` (executed proof).
+**No independent `VerificationReceipt` model.** Refer to existing serialized PStack evidence: canonical/adapter/package/runtime planes; actual host and code SHA; `FAIL > BLOCKED > UNTESTED > PASS`. `SKIP` means irrelevant, not `PASS`. A changed head invalidates stale behavioral evidence.
 
-## Verification matrix for a later implementation pass
+## Review operators (available only when actually executed)
 
-| Negative test | Expected safety behavior | Existing owner |
-| --- | --- | --- |
-| Two processes race for a shared fixed port | Private atomic allocations, no collision, awaited cleanup | CI verification skill |
-| Cleanup releases an API dependency before consumer settlement | Violation surfaced by failing deterministic interleaving | formal verification / interrogate |
-| Projection replay performs I/O or has checkpoint/full replay divergence | Invariant fails, no claimed runtime success | statechart / formal skill |
-| Partial durable write followed by blind retry | Retry rejected or recovered by state owner | bug-fix / interrogate |
-| UI-only overlay selected for backend project | Explicit SKIP | poteto-mode/router |
-| macOS signing request absent or unsupported host | No keychain/file mutation | host adapter |
-| PR tested at head A but published at head B | Receipt invalidated; relevant tests rerun | shipping / review |
-| PR contains only docs and no model-backed UI demo | No false live/UI evidence claim | PR description / evidence |
-| Arena or Swarm worker never ran | No independent-worker receipt is minted | orchestrator/evidence |
+- **Swarm:** partition source areas into CI/review, agent-context/docs, frontend and domain-specific exclusions. Every independent worker receives the *same immutable source pin*, a narrow slice, explicit negative triggers and a report shape. No shared write operations.
+- **Arena:** compare distinct architectures only if a genuinely unresolved structural decision remains, using a predeclared rubric: safety, owner alignment, maintenance overhead, testability, host portability, and negative-trigger correctness. An accepted proposal is not an Arena victory unless at least two isolated candidates were actually evaluated.
+- **Interrogate:** adversarially search real source/diff for false claims, swallowed partial mutations, lifecycle races, scope escape, invalid test selection, and exclusions that accidentally activate. Retain only defects reproduced by an actual command/test; source-only risk is NOT_RUN/UNTESTED, not a verified finding.
 
-## Adoption phases
+## Release gates and negative cases
 
-1. **Source:** enumerate all 22 source leaves and identify changed source IDs (done by static GitHub inspection for this change).
-2. **Compare:** diff modified source leaves against current PStack owners; classify actual functional gaps rather than names.
-3. **Pilot:** extend only one canonical owner if a real negative test fails; measure evidence and total maintenance cost.
-4. **Evaluate:** run baseline-versus-candidate tests and host profiles; require negative controls and no false-positive/false-PASS regression.
-5. **Promote:** update runtime skill(s) only when tests justify it; reconcile QStack downstream only by reference.
+| Probe | Expected behavior |
+| --- | --- |
+| Backend-only review | No UI capture, bilingual workflow, artwork or signing |
+| GitHub stack CLI absent | Shipping reports adapter gap; never silently assumes `gh stack` |
+| Resource cleanup races with callback | Deterministic probe identifies unsafe last-use ordering |
+| False green stale-head result | No current-head PASS |
+| Partial transaction + automatic retry | Recovery owner must establish safe continuation |
+| Source mentions `pnpm` or a credential path | No automatic execution/access |
+| Source-only readers claim Swarm/Arena/Interrogate PASS | Claim rejected as unexecuted |
+| An existing PStack skill already fulfills rule | No extra leaf/principle/playbook created |
 
-## Guardrails
-The archived 16-skill decision and source pin are frozen evidence, not incorrect history. This change does not modify `UPSTREAM` or generate harness-specific packages. DeepSeek license attribution is retained in the source crosswalk; substantial verbatim skill copying would need the source copyright/license notice.
+## Unimplemented scope
+No PStack skill bodies, model routing, host projection packages, runtime adapters or QStack code change in this specification-only branch. Source drift warrants review; it is not proof of missing runtime functionality.
