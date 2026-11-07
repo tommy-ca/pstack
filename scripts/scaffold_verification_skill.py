@@ -515,23 +515,41 @@ def list_verification_skills(
     return results
 
 
-def audit_verification_skills(workspace: pathlib.Path) -> Tuple[int, List[str]]:
+def audit_verification_skills_data(workspace: pathlib.Path) -> Dict[str, Any]:
     skills = list_verification_skills(workspace, all_dirs=True)
-    if not skills:
-        return 0, ["No verification skills found to audit."]
-    results: List[str] = []
+    results: List[Dict[str, Any]] = []
     has_failures = False
+    passed_count = 0
+    failed_count = 0
     for skill in skills:
-        rel = skill.relative_to(workspace) if skill.is_relative_to(workspace) else skill
+        rel = skill.relative_to(workspace).as_posix() if skill.is_relative_to(workspace) else str(skill)
         errors = check_skill(skill)
         if errors:
             has_failures = True
-            results.append(f"FAIL: {rel}")
-            for err in errors:
-                results.append(f"  - {err}")
+            failed_count += 1
+            results.append({"path": rel, "status": "FAIL", "errors": errors})
         else:
-            results.append(f"PASS: {rel}")
-    return (1 if has_failures else 0), results
+            passed_count += 1
+            results.append({"path": rel, "status": "PASS", "errors": []})
+    return {
+        "exit_code": 1 if has_failures else 0,
+        "total_skills": len(skills),
+        "passed": passed_count,
+        "failed": failed_count,
+        "skills": results,
+    }
+
+
+def audit_verification_skills(workspace: pathlib.Path) -> Tuple[int, List[str]]:
+    data = audit_verification_skills_data(workspace)
+    if not data["skills"]:
+        return 0, ["No verification skills found to audit."]
+    results: List[str] = []
+    for item in data["skills"]:
+        results.append(f"{item['status']}: {item['path']}")
+        for err in item["errors"]:
+            results.append(f"  - {err}")
+    return data["exit_code"], results
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -549,6 +567,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--check", action="store_true", help="Validate existing verification skill")
     parser.add_argument("--list", action="store_true", help="Discover verification skills across harnesses")
     parser.add_argument("--audit", action="store_true", help="Audit all verification skills across all 6 harnesses")
+    parser.add_argument("--json", action="store_true", help="Output audit, list, or check results as JSON")
 
     args = parser.parse_args(argv)
 
@@ -561,6 +580,10 @@ def main(argv: Optional[List[str]] = None) -> int:
     workspace = args.workspace.resolve()
 
     if args.audit:
+        if args.json:
+            data = audit_verification_skills_data(workspace)
+            print(json.dumps(data, indent=2))
+            return data["exit_code"]
         code, lines = audit_verification_skills(workspace)
         for line in lines:
             print(line)
@@ -568,6 +591,13 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     if args.list:
         skills = list_verification_skills(workspace)
+        if args.json:
+            rel_skills = [
+                (s.relative_to(workspace).as_posix() if s.is_relative_to(workspace) else str(s))
+                for s in skills
+            ]
+            print(json.dumps({"count": len(skills), "skills": rel_skills}, indent=2))
+            return 0
         print(f"Found {len(skills)} verification skill(s):")
         for s in skills:
             rel = s.relative_to(workspace) if s.is_relative_to(workspace) else s
@@ -602,6 +632,15 @@ def main(argv: Optional[List[str]] = None) -> int:
             errors = check_skill(target)
         except (ValueError, FileExistsError) as exc:
             parser.error(str(exc))
+        if args.json:
+            status = "FAIL" if errors else "PASS"
+            res = {
+                "path": str(target),
+                "status": status,
+                "errors": errors,
+            }
+            print(json.dumps(res, indent=2))
+            return 1 if errors else 0
         if errors:
             print(f"FAIL: Verification skill at {target} has errors:")
             for err in errors:
