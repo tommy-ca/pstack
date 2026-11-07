@@ -4,9 +4,9 @@ description: "Maintain bounded source-contract mutation verification for the Pi 
 disable-model-invocation: true
 ---
 
-# Pi candidate — bounded formal-contract verification
+# Pi candidate bounded formal contract verification
 
-This is the existing project-local `create-formal-verification-skill` / `maintain-formal-verification-skill` artifact. **Current method: exhaustive enumeration of 53 fixed invalid source-contract mutants.** That is a finite source-validator check, *not* a formal proof of Pi execution, sandbox security or a Pi state machine.
+This is the existing project-local `create-formal-verification-skill` and `maintain-formal-verification-skill` artifact. Current method is exhaustive enumeration of 59 fixed invalid source-contract mutants. That is a finite source-validator check. It is not a formal proof of Pi execution, sandbox security, or a Pi state machine.
 
 ## Target and source relation
 
@@ -20,8 +20,9 @@ The verified *source contract* is `scripts/verify_pi_candidate.py::check_contrac
 4. Reject four unsafe candidate configurations (second delegation engine, credential policy, headless allow, automatic unreviewed package installation).
 5. Reject one `human.gate` native promotion without proof.
 6. Reject ten `pi-verdict` authorization bypass declarations (gate absent/wrong/off, deny-floor off, headless ask bypass, ignored child launch, fallback rescue, claimed child interception, gate disabled, classifier treated as human authorization).
+7. Reject six invalid Pi package projections (missing skills declaration, missing agents declaration, bundled executable extensions, packages array field, package name mismatch, non-private package declaration).
 
-Total **53** enumerated negatives. This establishes ONLY that these invalid JSON mutations are refused by PStack's validator. It does not prove the real Pi extension or the operating system behaves accordingly.
+Total 59 enumerated negatives. This establishes only that these invalid JSON mutations are refused by PStack's validator. It does not prove the real Pi extension or the operating system behaves accordingly.
 
 ## Native properties requiring a future code-bound formal model
 
@@ -47,7 +48,7 @@ No formal TLC/SMT checker is installed or run by this skill; native external che
 
 ## Proof bar
 
-All 53 enumerated invalid source-contract mutations are rejected. The regression suites in `tests/test_pi_candidate_profile.py` and `tests/test_pi_authorization_contracts.py` pass. Reduce scenario verdicts with the strict failure-first lattice: FAIL > BLOCKED > UNTESTED > PASS.
+All 59 enumerated invalid source-contract mutations are rejected. The regression suites in `tests/test_pi_candidate_profile.py` and `tests/test_pi_authorization_contracts.py` pass. Reduce scenario verdicts with the strict failure-first lattice: FAIL > BLOCKED > UNTESTED > PASS.
 
 ## Evidence
 

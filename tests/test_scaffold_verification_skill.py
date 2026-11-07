@@ -433,10 +433,15 @@ def test_candidate_verification_skill_discovery_and_builtin_isolation(tmp_path):
     # Built-in host detection remains intact
     assert scaffold_mod.detect_host(tmp_path) == "codex"
 
-    # Host CLI choices strictly enforce built-in harnesses
-    invalid_host = cli(tmp_path, "--host", "pi", "--app", "foo", "--write")
+    # Invalid host choices are rejected
+    invalid_host = cli(tmp_path, "--host", "unknown-host", "--app", "foo", "--write")
     assert invalid_host.returncode == 2
-    assert "invalid choice: 'pi'" in invalid_host.stderr
+    assert "invalid choice: 'unknown-host'" in invalid_host.stderr
+
+    # Candidate host pi is accepted
+    candidate_res = cli(tmp_path, "--host", "pi", "--app", "foo", "--write")
+    assert candidate_res.returncode == 0, candidate_res.stderr
+    assert (tmp_path / ".pi/skills/verify-foo/SKILL.md").is_file()
 
     # Candidate skill check strictly validates directory matching
     assert scaffold_mod.check_skill(pi_skill) == []
@@ -514,6 +519,37 @@ def test_scaffold_formal_verification_skill_across_hosts(tmp_path: pathlib.Path,
     assert target_explicit.is_dir()
     assert not (tmp_path / skills_rel / "verify-raft-formal-formal").exists()
     assert scaffold_mod.check_skill(target_explicit) == []
+
+
+def test_candidate_host_pi_scaffold_write_and_check(tmp_path: pathlib.Path) -> None:
+    res = cli(tmp_path, "--host", "pi", "--app", "demo-app", "--write")
+    assert res.returncode == 0, res.stderr
+    assert "Draft scaffold for 'demo-app' on pi" in res.stdout
+    target = tmp_path / ".pi/skills/verify-demo-app"
+    assert target.is_dir()
+    assert (target / "SKILL.md").is_file()
+    assert (target / "scripts/driver.sh").stat().st_mode & 0o111
+    check_res = cli(tmp_path, "--host", "pi", "--app", "demo-app", "--check")
+    assert check_res.returncode == 0, check_res.stdout
+    assert "PASS: Structural validation" in check_res.stdout
+
+
+def test_candidate_host_pi_formal_scaffold_write_and_check(tmp_path: pathlib.Path) -> None:
+    res = cli(tmp_path, "--host", "pi", "--app", "demo-app", "--formal", "--write")
+    assert res.returncode == 0, res.stderr
+    assert "Draft formal scaffold for 'demo-app' on pi" in res.stdout
+    target = tmp_path / ".pi/skills/verify-demo-app-formal"
+    assert target.is_dir()
+    assert (target / "SKILL.md").is_file()
+    check_res = cli(tmp_path, "--host", "pi", "--app", "demo-app", "--formal", "--check")
+    assert check_res.returncode == 0, check_res.stdout
+    assert "PASS: Structural validation" in check_res.stdout
+
+
+def test_candidate_host_detection(tmp_path: pathlib.Path) -> None:
+    (tmp_path / ".pi").mkdir()
+    assert scaffold_mod.detect_host(tmp_path) == "pi"
+
 
 
 

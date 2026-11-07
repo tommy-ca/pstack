@@ -49,6 +49,8 @@ HOST_DETECT_ORDER = ("antigravity", "codex", "omp", "opencode", "grok", "droid")
 # is never detected and silently falls through to the `"grok"` default (#446).
 require_builtin_host_keys(HOST_DETECT_ORDER, "HOST_DETECT_ORDER")
 
+CANDIDATE_HOSTS = ("pi",)
+
 
 def detect_host(workspace: pathlib.Path) -> str:
     """Auto-detect active harness from workspace markers."""
@@ -59,6 +61,10 @@ def detect_host(workspace: pathlib.Path) -> str:
         # Check parent folder marker like .agents, .codex, etc.
         marker = skills_rel.split("/")[0] if skills_rel else f".{host}"
         if (workspace / marker).exists():
+            return host
+    for host in CANDIDATE_HOSTS:
+        marker = f".{host}"
+        if (workspace / marker).exists() or (workspace / marker / "skills").exists():
             return host
     return "grok"
 
@@ -530,7 +536,11 @@ def audit_verification_skills(workspace: pathlib.Path) -> Tuple[int, List[str]]:
 
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="Scaffold or check portable verification skills.")
-    parser.add_argument("--host", choices=list(DEFAULT_SKILLS_DIRS.keys()), help="Target agent harness")
+    parser.add_argument(
+        "--host",
+        choices=list(DEFAULT_SKILLS_DIRS.keys()) + list(CANDIDATE_HOSTS),
+        help="Target agent harness",
+    )
     parser.add_argument("--app", help="Application name for verify-<app>")
     parser.add_argument("--formal", action="store_true", help="Scaffold formal verification skill (model checker, provers, bounded falsifiers)")
     parser.add_argument("--target-dir", type=pathlib.Path, help="Explicit target directory for skill")
