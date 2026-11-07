@@ -453,9 +453,10 @@
 
 ## Epic #1020: [Epic][Thermo-Nuclear Quality & Verification Levers] Decompose package lifecycle, harden verification tooling, and prove multi-harness conformance
 - [x] Unit 1 (Issue #1021): [Code Judo][P0] Decompose package_lifecycle.py into package_install_staging.py (PR #1025)
-- [x] Unit 2 (Issue #1022): [Verification Levers][P0] Harden verification skills and scaffolders with structured audit and candidate checks (PR #1026)
-- [ ] Unit 3 (Issue #1023): [Quality Review][P0] Perform repo-level code quality review and reconcile change tasks
-- [ ] Unit 4 (Issue #1024): [Gate] Swarm, Arena, Interrogate adversarial verification, full test suite, and end-to-end workflow proof
+- [x] Unit 2 (Issue #1022): [Verification Levers][P0] Harden verification skills and scaffolders with structured audit and candidate checks (PR #1028)
+- [x] Unit 3 (Issue #1023): [Quality Review][P0] Perform repo-level code quality review and reconcile change tasks (PR #1029)
+- [x] Unit 4 (Issue #1024): [Gate] Swarm, Arena, Interrogate adversarial verification, full test suite, and end-to-end workflow proof
+*(Epic #1020 CLOSED)*
 
 
 

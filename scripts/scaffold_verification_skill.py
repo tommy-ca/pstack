@@ -11,7 +11,7 @@ import json
 import pathlib
 import re
 import sys
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SCRIPTS = pathlib.Path(__file__).resolve().parent
