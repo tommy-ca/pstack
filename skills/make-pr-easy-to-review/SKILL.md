@@ -52,6 +52,12 @@ When code behavior should stay untouched, prefer PR description and review notes
 - Call out risky behavior changes, migration order, rollout plan, and test coverage.
 - Link issue trackers, dashboards, or design docs when they explain intent.
 
+## Verification Claims
+
+When asked to polish an existing PR directly, reuse the [Opening a PR](../poteto-mode/playbooks/opening-a-pr.md) verification rules and the [Fix CI](../fix-ci/SKILL.md) current-head receipt checks. Do not create a second test or CI verdict system.
+
+Only call a check `PASS` when it actually ran and its result still applies to the PR's current patch and required base checks. An unrun or planned check is `UNTESTED`; an unavailable required check is `BLOCKED`. A stale green receipt cannot be reported as current `PASS`. If the PR head or base changes, check freshness again before retaining test claims. Link the commands, observed outcomes, and known gaps; keep the PR body a short reviewer briefing.
+
 ## Guardrails
 
 - Never hide meaningful behavior changes inside "cleanup".
