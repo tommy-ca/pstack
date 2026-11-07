@@ -21,11 +21,19 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           version: "0.13.7"
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
       - name: Install test dependencies
         run: |
           uv sync --frozen
           echo "$GITHUB_WORKSPACE/.venv/bin" >> $GITHUB_PATH
           echo "VIRTUAL_ENV=$GITHUB_WORKSPACE/.venv" >> $GITHUB_ENV
+      - name: Validate poteto-mode scripts and execution plans
+        run: |
+          (cd skills/poteto-mode/scripts && bun install --frozen-lockfile)
+          bun skills/poteto-mode/scripts/check-plan.mjs docs/plans/2026-11-07-reproducible-runtime-and-verification.md
+          bun test skills/poteto-mode/scripts/
       - name: Validate hermetic doctor fixture (offline, no host CLIs)
         # #709/#717: the two fixture-HOME doctor cases — the regression that keeps
         # ambient plugin mirrors from deciding the doctor verdict, plus its
@@ -82,12 +90,12 @@ jobs:
             tests/test_worktree_protocol.py
       - name: Validate Pi candidate source-only skills and bounded model
         run: |
-          python3 scripts/verify_pi_candidate.py check
-          python3 scripts/verify_pi_candidate.py model
-          python3 scripts/scaffold_verification_skill.py --check --target-dir .pi/skills/verify-pi-pstack
+          uv run python scripts/verify_pi_candidate.py check
+          uv run python scripts/verify_pi_candidate.py model
+          uv run python scripts/scaffold_verification_skill.py --check --target-dir .pi/skills/verify-pi-pstack
         # This does not run Pi or certify child, sandbox or permission behavior.
       - name: Validate worktree confinement protocol
-        run: python3 scripts/worktree_protocol.py check
+        run: uv run python scripts/worktree_protocol.py check
       - name: Validate documentation and offline JEV decision contracts
         run: |
           uv run pytest -q \
@@ -107,7 +115,7 @@ jobs:
             tests/test_fast_role_task_fit.py
       - name: Verify project-local LLM Wiki source safety and bounded model
         run: |
-          python scripts/scaffold_verification_skill.py --check --target-dir .codex/skills/verify-llm-wiki
+          uv run python scripts/scaffold_verification_skill.py --check --target-dir .codex/skills/verify-llm-wiki
           bash .codex/skills/verify-llm-wiki/scripts/driver.sh launch
           bash .codex/skills/verify-llm-wiki/scripts/driver.sh drive
         # Bounded actual-code and negative mutation checks only.
@@ -119,6 +127,6 @@ jobs:
         # This validates only hermetic bounded checks. Upstream commit/tree
         # captures, native hosts, and authenticated providers remain UNTESTED.
       - name: Validate checked-in model policy against canonical role registry
-        run: python -m scripts.model_role_policy
+        run: uv run python -m scripts.model_role_policy
       # Native host spawn/join/isolation are intentionally NOT covered here.
       # Their separate live evidence lives in .audit/evidence/ receipts and profiles/*.json bindings.

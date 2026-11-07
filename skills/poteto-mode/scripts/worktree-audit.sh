@@ -163,7 +163,7 @@ emit_row() {
 				''|*[!0-9]*) continue ;;
 			esac
 			[ "$file_ts" -gt "$last_ts" ] && last_ts="$file_ts"
-		done < <(rg -F -l -e "${wt}/" -e "${wt}\"" "$transcripts" 2>/dev/null)
+		done < <(if command -v rg >/dev/null 2>&1; then rg -F -l -e "${wt}/" -e "${wt}\"" "$transcripts" 2>/dev/null; else grep -F -l -r -e "${wt}/" -e "${wt}\"" "$transcripts" 2>/dev/null; fi)
 		if [ "$last_ts" -gt 0 ]; then
 			last=$(format_date "$last_ts")
 			[ -n "$last" ] || last="-"

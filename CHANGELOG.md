@@ -18,6 +18,9 @@ This ledger distinguishes **observed canonical upstream changes** from **applied
 - Hardened verification skills scaffolder with structured JSON reporting on audit, list, and check commands (#1022).
 - Ported canonical thermos and thermo-nuclear-review skills from cursor/plugins (#1032).
 - Projected thermos and thermo-nuclear-review commands across all six host manifests (#1033).
+- Added root bunfig.toml test timeout and converted check-plan shebang to bun (#1043).
+- Hardened verification skills scaffolder and drivers with reproducible uv run and bun runtime resolution (#1044).
+- Added setup-bun and reproducible uv run steps to GitHub Actions offline workflow (#1045).
 
 ## [Unreleased] — upstream 0.15.36 candidate (2026-10-31)
 
