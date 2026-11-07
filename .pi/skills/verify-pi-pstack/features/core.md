@@ -1,20 +1,12 @@
-# Core Feature: Pi PStack candidate
+# Feature: standalone Pi candidate and verification tiers
 
-## Sub-features
+## User entry
+A trusted repository checkout configures native Pi project skills from `../skills` and Pi subagent role templates from `../agents`. A future independently installed PStack Pi package must prove native package discovery separately; project settings are not an installable package.
 
-- Native Pi discovery of canonical PStack skills through project settings
-- 17 typed semantic capabilities and lack of premature runtime promotion
-- Four engineering extensions including pi-verdict, plus one research extension
-- Bounded negative variants for credential policy, authorization and duplicate engines
+## Current behavior
+`doctor`: source-only profile/config and 53 bounded negative contracts. `launch` and `drive`: Pi binary/package + `--no-tools` echo preflight only; runtime remains BLOCKED without a tested child/OS sandbox. `cleanup`: no tracked child/artifact lifecycle exists, so cleanup is BLOCKED/NOT_VERIFIED instead of claiming nothing leaked. `evidence` has runtime BLOCKED and must never promote a static receipt to observed_live.
 
-## How to get to it (user POV)
+## Required effect-level proof
+GIVEN a trusted Pi host and independently configured extensions, WHEN one authorized/one denied child is launched, THEN capture exact child ID, resolved model/provider, terminal result, permission decision and boundary effects; otherwise runtime is BLOCKED. A successful interactive answer is human.ask, not a hard human.gate. No two agents may be called independent *models* without verifying the model families.
 
-Run Pi from a trusted checkout. The shared PStack skills should be visible through the native Pi skills resource setting, including `/skill:poteto-mode`, `/skill:swarm`, `/skill:arena`, and `/skill:interrogate`. Third-party packages must be explicitly installed separately.
-
-## Driving it with Pi
-
-Run `bash .pi/skills/verify-pi-pstack/scripts/driver.sh doctor` for offline source contracts. `launch` probes a local Pi binary, and `drive` deliberately returns BLOCKED until #897 delivers a real native driver.
-
-## Gotchas
-
-Do not confuse standalone Pi with OMP or reuse OMP native receipt paths. Installed sandbox packages are disabled until configured and trusted extension tools have different boundaries. A human question is not an enforced gate. PASS on offline contracts never proves live child isolation.
+See [extension-package.md](extension-package.md) for capability-to-extension mapping and negative tests.

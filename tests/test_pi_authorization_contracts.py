@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import copy
 import json
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -237,3 +238,39 @@ def test_prove_pi_vertical_slice_live_blocks_on_missing_extensions():
     assert runtime_scenario.exit_code == 2
     assert "missing required extensions" in runtime_scenario.stdout_snippet
     assert "conflicting extension" in runtime_scenario.stdout_snippet
+
+
+def test_healthy_pi_preflight_does_not_pretend_native_child_or_sandbox_pass():
+    """A successful --no-tools echo cannot establish spawn/authorization/OS confinement."""
+    offline = offline_slice()
+    manifest = offline["manifest"]
+    live = {
+        "duration_s": 0.1,
+        "pi_bin": "/usr/bin/pi",
+        "pi_version": "1.5.0",
+        "packages": {row["name"]: row["version"] for row in manifest["engineering"]},
+        "missing_required": [],
+        "mismatched_versions": [],
+        "detected_conflicts": [],
+        "ephemeral_probe": {"exit_code": 0, "stdout": "HELLO", "stderr": "", "duration_s": 0.1},
+    }
+    scenarios = build_scenarios(offline, live, live_requested=True)
+    runtime = next(s for s in scenarios if s.plane == "runtime")
+    assert runtime.verdict == "BLOCKED"
+    assert runtime.exit_code == 2
+    assert runtime.evidence_level != "observed_live"
+    assert "no real child ID" in runtime.stdout_snippet
+    receipt = build_receipt(scenarios, "test-preflight-not-live", "1.5.0")
+    assert receipt.planes["runtime"] == "BLOCKED"
+    assert receipt.overall_verdict == "BLOCKED"
+
+
+def test_pi_cleanup_without_native_actor_tracking_never_claims_pass():
+    """The cleanup command cannot certify subprocess/worktree absence by assertion."""
+    proc = subprocess.run(
+        ["bash", ".pi/skills/verify-pi-pstack/scripts/driver.sh", "cleanup"],
+        capture_output=True, text=True, cwd=ROOT, check=False,
+    )
+    assert proc.returncode == 2
+    assert "BLOCKED" in proc.stderr and "NOT_VERIFIED" in proc.stderr
+    assert "PASS" not in proc.stdout + proc.stderr
