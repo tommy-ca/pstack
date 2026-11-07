@@ -125,10 +125,43 @@ def _check_settings_contract(settings: dict[str, Any]) -> None:
         raise CandidateContractError("No automatic third-party package installation")
 
 
-def check_contract(profile: dict[str, Any], manifest: dict[str, Any], settings: dict[str, Any]) -> None:
+def _check_package_contract(package: dict[str, Any]) -> None:
+    if package.get("name") != "pstack":
+        raise CandidateContractError("Pi package manifest name must be 'pstack'")
+    if package.get("private") is not True:
+        raise CandidateContractError("Pi package manifest must be marked private")
+    if "pi-package" not in package.get("keywords", []):
+        raise CandidateContractError("Pi package manifest must declare 'pi-package' keyword")
+    pi_field = package.get("pi", {})
+    if not isinstance(pi_field, dict):
+        raise CandidateContractError("Pi package manifest requires a 'pi' object")
+    if pi_field.get("skills") != ["./skills"]:
+        raise CandidateContractError("Pi package manifest must declare skills as ['./skills']")
+    subagents = pi_field.get("subagents", {})
+    if not isinstance(subagents, dict) or subagents.get("agents") != ["./agents"]:
+        raise CandidateContractError("Pi package manifest must declare subagents.agents as ['./agents']")
+    if "extensions" in pi_field or "packages" in package:
+        raise CandidateContractError("Pi package manifest must not bundle executable extensions")
+
+
+def load_package(root: Path = ROOT) -> dict[str, Any]:
+    pkg_path = root / ".pi/package.json"
+    if not pkg_path.is_file():
+        raise CandidateContractError(f"Missing Pi package manifest at {pkg_path}")
+    return load_json(pkg_path)
+
+
+def check_contract(
+    profile: dict[str, Any],
+    manifest: dict[str, Any],
+    settings: dict[str, Any],
+    package: dict[str, Any] | None = None,
+) -> None:
     _check_profile_contract(profile)
     _check_manifest_contract(manifest)
     _check_settings_contract(settings)
+    if package is not None:
+        _check_package_contract(package)
 
 
 def from_disk(root: Path = ROOT) -> tuple[dict, dict, dict]:
@@ -222,6 +255,42 @@ def bounded_negative_controls(root: Path = ROOT) -> int:
     mutant = copy.deepcopy(profile)
     next(r for r in mutant["bindings"] if r["capability"] == "human.gate")["implementation_status"] = "native"
     reject(mutant, manifest, settings, "unproven human gate")
+
+    pkg = load_package(root)
+    _check_package_contract(pkg)
+
+    def reject_package(mutant_pkg: dict, label: str) -> None:
+        nonlocal count
+        try:
+            _check_package_contract(mutant_pkg)
+        except CandidateContractError:
+            count += 1
+            return
+        raise AssertionError(f"Mutant accepted: {label}")
+
+    for label in (
+        "pi-package-missing-skills",
+        "pi-package-missing-agents",
+        "pi-package-bundled-extensions",
+        "pi-package-packages-field",
+        "pi-package-name-mismatch",
+        "pi-package-not-private",
+    ):
+        mut_pkg = copy.deepcopy(pkg)
+        if label == "pi-package-missing-skills":
+            mut_pkg["pi"].pop("skills")
+        elif label == "pi-package-missing-agents":
+            mut_pkg["pi"]["subagents"].pop("agents")
+        elif label == "pi-package-bundled-extensions":
+            mut_pkg["pi"]["extensions"] = ["npm:pi-better-sandbox"]
+        elif label == "pi-package-packages-field":
+            mut_pkg["packages"] = ["npm:pi-subagents"]
+        elif label == "pi-package-name-mismatch":
+            mut_pkg["name"] = "unrelated-package"
+        elif label == "pi-package-not-private":
+            mut_pkg["private"] = False
+        reject_package(mut_pkg, label)
+
     return count
 
 
@@ -248,6 +317,7 @@ def main() -> int:
     try:
         if args.action == "check":
             check_contract(*from_disk())
+            _check_package_contract(load_package())
             check_verdict_template()
             print("PASS: static Pi candidate profile and minimal extension policy; NOT native runtime")
             return 0
