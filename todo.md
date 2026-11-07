@@ -465,6 +465,12 @@
 - [x] Unit 4 (Issue #1035): [Gate] Swarm, Arena, Interrogate adversarial verification, full test suite, and end-to-end workflow proof
 *(Epic #1031 CLOSED)*
 
+## Epic #1042: [Epic][Runtime Reproducibility & Verification Levers] Unify Python uv run and Bun runtime workflows and harden verification drivers
+- [x] Unit 1 (Issue #1043, PR #1047): [Runtime][P0] Add Bun test execution and root bunfig configuration with timeout guard
+- [x] Unit 2 (Issue #1044, PR #1048): [Runtime & Verification][P0] Update verification drivers and scaffolder template to use reproducible uv run and bun runtimes
+- [ ] Unit 3 (Issue #1045): [CI & Reconcile][P0] Update GitHub Actions workflow with setup-bun and uv run steps, and update changelog
+- [ ] Unit 4 (Issue #1046): [Gate] Swarm, Arena, Interrogate adversarial verification, full test suite, and end-to-end workflow proof
+
 
 
 
