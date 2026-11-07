@@ -58,10 +58,12 @@ def test_generate_manifests() -> None:
     assert "commands" not in antigravity_m
 
     cmds = project_package.generate_antigravity_commands(desc)
-    assert len(cmds) >= 13
+    assert len(cmds) >= 21
     assert "poteto-mode.toml" in cmds
     assert "babysit.toml" in cmds
     assert "thermo-nuclear-code-quality-review.toml" in cmds
+    assert "thermos.toml" in cmds
+    assert "thermo-nuclear-review.toml" in cmds
 
     antigravity_models = project_package.generate_antigravity_models(desc)
     assert antigravity_models["singleRoleDefault"] == "pro"
