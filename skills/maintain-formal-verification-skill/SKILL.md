@@ -45,7 +45,7 @@ Keep the skill body under 24,000 bytes to preserve Antigravity compatibility.
 
 5. **Rerun and judge each result.**
    - **Pass:** confirm the check has not lost the ability to fail. Introduce a deliberate break in the property or code mutant (e.g. removed check or inverted branch) and verify that the checker flags it. Then revert the break.
-   - **Fail:** replay the counterexample trace against the real code. If impossible in the code, fix the model. If reproducible, report it as a bug with the introducing commit, minimal step sequence, and harm statement. Reduce verdicts using the failure-first lattice: FAIL > BLOCKED > UNTESTED > PASS.
+   - **Fail:** replay the counterexample trace against the real code. If the check is a TLA+ model, visualize the trace with the pstack `/statechart` skill to locate the shortest path to the invariant violation. If impossible in the code, fix the model. If reproducible, report it as a bug with the introducing commit, minimal step sequence, and harm statement. Reduce verdicts using the failure-first lattice: FAIL > BLOCKED > UNTESTED > PASS.
 
 6. **Update the verify skill.**
    Update `SKILL.md`: refresh covered files, bounds, assumptions, feature maps, driver references, and the sync commit. Set the sync commit to the commit that was checked. Never advance the sync commit for a blocked check. Ensure the 7 required sections (`Launch`, `Doctor`, `Drive`, `Proof bar`, `Evidence`, `Cleanup`, `Helpers`) and the feature map (`features/README.md`) remain structurally valid. Run `scripts/scaffold_verification_skill.py --check --target-dir <skill-dir>`.

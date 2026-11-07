@@ -157,6 +157,7 @@ Structural validation does not assess runtime proof.
 ## Model and checker choice
 
 Specify the formal checker (TLA+ TLC, SMT solver, or bounded Python/Rust test harness) and deliberate broken mutant.
+For TLA+ models, read verification outputs and trace invariant violations with `/statechart`.
 
 ## Launch
 
