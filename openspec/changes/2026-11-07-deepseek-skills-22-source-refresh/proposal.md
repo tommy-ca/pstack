@@ -24,3 +24,6 @@ PStack owns generic engineering orchestration. QStack invokes PStack through `qs
 
 ## Acceptance
 A consistent 22/22 source ledger with exclusions, a minimal complete OpenSpec delta, unchanged existing runtime skill count, and explicit NOT_RUN follow-up gates. This proposal does not declare source-to-target functional improvement, live multi-host conformance, or executable multi-model review.
+
+## Recursive execution graph
+The live [issue-graph.md](issue-graph.md) records [#1060](https://github.com/tommy-ca/pstack/issues/1060) and its four minimal leaf gates: [#1061](https://github.com/tommy-ca/pstack/issues/1061) source/spec review → ([#1062](https://github.com/tommy-ca/pstack/issues/1062) lifecycle/review ∥ [#1063](https://github.com/tommy-ca/pstack/issues/1063) optionality/non-trigger) → [#1064](https://github.com/tommy-ca/pstack/issues/1064) independent acceptance. Old #305–#315 remain closed. Existing #1054/#1058 own verification tools and host CI. No source skill maps directly to an issue; a new implementation task requires a real failing test.
