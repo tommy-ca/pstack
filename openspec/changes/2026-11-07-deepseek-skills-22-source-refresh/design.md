@@ -30,7 +30,7 @@ See [source-crosswalk.md](source-crosswalk.md) for every pinned source path and 
 | --- | --- | --- | --- |
 | Leaf skill | One testable action/report, e.g. a repro or review finding | `fix-ci`, `create-verification-skill`, `interrogate`, both `thermo-nuclear-*`, `benchmark-checklist`, `technical-writing`, `make-pr-easy-to-review` | New `dsh-*` command per upstream file |
 | Principle | Cross-workflow invariant (what must remain true) | `principle-prove-it-works`, `principle-subtract-before-you-add`, `principle-boundary-discipline`, `principle-guard-the-context-window`, `principle-experience-first`, `principle-separate-before-serializing-shared-state` | Duplicated rules in each source adaptation |
-| Playbook | Order and termination of engineering work | Existing `bug-fix`, `investigation`, `refactoring`, `perf-issue`, `opening-a-pr`, `shipping`, `visual-parity`, `authoring-a-skill` | New giant DSH orchestrator |
+| Playbook | Order and termination of engineering work | Existing `bug-fix`, `investigation`, `refactoring`, `perf-issue`, `opening-a-pr`, `shipping`, `feature` for new UI, `visual-parity` **only for explicit pixel-match**, `authoring-a-skill` | New giant DSH orchestrator |
 | Host adapter | Actually supported commands, identity and permissions | Active PStack `profiles/<host>.json` + tool refs | Hardcoded pnpm, Cordis, gh stack, CUA |
 | Project/domain overlay | Nonportable constraints and domain invariants | Target project, QStack quant-only when applicable | Vendor features generalized into PStack |
 | Evidence | Exact execution state and target receipt | Existing 4-plane, 3-tier verifier | Source claims promoted to runtime PASS |
@@ -95,3 +95,7 @@ No PStack skill bodies, model routing, host projection packages, runtime adapter
 
 ## Recursive rollout and issue ownership
 The minimal DAG is maintained in [issue-graph.md](issue-graph.md): #1060 epic → #1061 source/spec validation → #1062 + #1063 independent gap probes → #1064 qualification. These are investigation and evidence gates, not four new skill implementations. Closed #305–#315 retain historical ownership. Current verification-driver/CI tooling remains owned by #1054/#1058, and QStack's quant-only overlays remain independently owned by QStack.
+
+## Verified conditional UI ownership correction
+
+The current PStack `visual-parity` playbook specifies pixel-exact equivalence against a frozen baseline for UI migrations and “make X match Y” tasks. It is **not** the default playbook for new responsive UI. New feature work routes to `feature` with `principle-experience-first` and a project verifier covering actual affected state, focus, wrapping and action reachability; only explicit visual matching selects `visual-parity`. This prevents a source-derived UI skill from imposing unrelated baseline/GIF obligations (B03/B20 negative activation). Documented as an executable selector scenario in the living OpenSpec and delta; actual agent routing has not been run in this audit.
