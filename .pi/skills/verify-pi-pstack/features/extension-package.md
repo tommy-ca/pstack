@@ -6,7 +6,7 @@
 | --- | --- | --- |
 | Native tools/MCP/models/sessions | Pi v1.5.0 | source-documented |
 | PStack canonical engineering semantics | `skills/` and `poteto-mode` | project-discovered |
-| Named role templates | `agents/` via pi-subagents `agentScanDirs` | checkout-source-only |
+| Named role templates | `agents/` via checkout `agentScanDirs` or packaged `pi.subagents.agents` | package API source-backed; native install NOT_RUN |
 | Child spawn/join/cancel/schedule | pi-subagents@0.86.0 | static-only; v0.87.0 unverified |
 | OS sandbox | pi-better-sandbox@0.14.1 | effective enabled mode NOT_RUN |
 | Pre-tool-call adjudication | pi-verdict@0.16.0 | not mandatory human.gate |
@@ -14,7 +14,7 @@
 | Web access | pi-web-access@0.47.0 | optional research-only |
 | Native Pi package `pi.skills` | proposed #975 | NOT_SHIPPED |
 
-Exactly four engineering extension owners plus optional research. `@zenspc/pi-pstack` is transitional, not a second policy source. No default second delegation engine, scheduler, permission-mode extension or model gateway.
+**Capability-minimal core:** zero third-party extensions for single-agent Pi PStack; **only pi-subagents@0.86.0 is essential for delegated Swarm/Arena/Interrogate**. The existing 4-engineering source list describes a *guarded interactive candidate*, not mandatory dependencies of every PStack skill: pi-ask-user supports optional structured questions, while pi-verdict+pi-better-sandbox provide optional separately configured policy and confinement (neither alone proves mandatory human.gate). pi-web-access remains research-only. `@zenspc/pi-pstack` is transitional, not a second PStack policy source. No second delegation engine, scheduler, permission-modes owner or model gateway.
 
 ## How to get to it (user POV)
 
@@ -26,7 +26,13 @@ Use an already trusted PStack checkout to run Pi with project settings; no third
 
 **PI-15 cleanup:** GIVEN only preflight with no child/artifact ledger, WHEN `driver.sh cleanup` runs, THEN exit 2/BLOCKED, never PASS.
 
-**PI-02 package:** GIVEN a skills-only Pi package, WHEN installed in disposable project, THEN actual `/skill:poteto-mode` and role resolution MUST be observed separately; missing agent template => PACKAGE GAP.
+**PI-02 package:** GIVEN a proposed native Pi `pi.skills:["./skills"]` + `pi.subagents.agents:["./agents"]` manifest, WHEN installed into a disposable project with separately installed pi-subagents, THEN `/skill:poteto-mode` plus **all 22** canonical role identities MUST resolve without copying them, or PACKAGE GAP.
+
+**PI-20 role effort:** GIVEN `effort:xhigh` on a PStack role, WHEN Pi loads it, THEN do not claim native `thinking:xhigh` without observed mapping/override.
+
+**PI-21 hard readonly:** GIVEN `independent-verifier` says "do not edit" but does not declare `tools`, WHEN launched under Pi, THEN hard readonly is NOT_VERIFIED until an explicit native allowlist + OS-denied write/bash/child-spawn effects are proven.
+
+**PI-22 skills inheritance:** GIVEN a Pi child that should follow PStack principles, WHEN spawned fresh, THEN verify `inheritSkills` or explicit native skill selection; do not claim skill context from the role prompt alone.
 
 **PI-04 provider:** GIVEN unavailable `provider/id`, WHEN upgraded pi-subagents candidate is run, THEN native launch MUST refuse, not silently switch to another provider.
 

@@ -14,7 +14,7 @@ This existing project-local skill verifies PStack semantics on **standalone Pi**
 
 ## Doctor — source and schema contracts
 
-`bash .pi/skills/verify-pi-pstack/scripts/driver.sh doctor` runs the existing `verify_pi_candidate.py check` and `model` checks. A source-level PASS covers the current 17-capability profile and 53 bounded mutations only. It does not mean any extension is installed, enabled or secure at runtime.
+`bash .pi/skills/verify-pi-pstack/scripts/driver.sh doctor` runs the existing `verify_pi_candidate.py check` and `model` checks. A source-level PASS covers the current 17-capability profile and 53 bounded mutations only. The **tiered minimum** (sequential zero third-party packages; multiagent pi-subagents alone; guarded extras opt-in) and documented Pi package `pi.subagents.agents` role export require **separate native verification** (issue #975). It does not mean any extension is installed, enabled or secure at runtime.
 
 ## Drive — runtime proof gate
 
@@ -22,7 +22,7 @@ This existing project-local skill verifies PStack semantics on **standalone Pi**
 
 ## Proof bar
 
-Observe **both allowed and denied** child launch through the actual `pi-subagents` extension; record child IDs, `subagent_launch` authorization, join/cancel/timeout, role/model identity, worktree cleanup and intended scopes. Confirm **pi-verdict** is enabled and deterministic deny floor works even if the model votes allow, `ask` in headless mode denies, custom/MCP tools cannot bypass policy, and `pi-ask-user` is not a hard `human.gate`. Verify the actual **pi-better-sandbox** OS backend on parent, foreground child and detached/background actor; stored credentials and outside-project writes are denied. An extension running in the trusted Pi process is NOT automatically isolated.
+Observe **both allowed and denied** child launch through the actual `pi-subagents` extension; also verify all 22 canonical roles resolve through the proposed native `pi.subagents.agents` resource, `effort` is explicitly mapped to Pi `thinking` when required, fresh children actually receive the selected PStack skills, and an `independent-verifier` child has a native denied write/bash path rather than prompt-only no-edit advice.  record child IDs, `subagent_launch` authorization, join/cancel/timeout, role/model identity, worktree cleanup and intended scopes. Confirm **pi-verdict** is enabled and deterministic deny floor works even if the model votes allow, `ask` in headless mode denies, custom/MCP tools cannot bypass policy, and `pi-ask-user` is not a hard `human.gate`. Verify the actual **pi-better-sandbox** OS backend on parent, foreground child and detached/background actor; stored credentials and outside-project writes are denied. An extension running in the trusted Pi process is NOT automatically isolated.
 
 Version policy: the existing approved candidate pins `pi-subagents@0.86.0`; observed `v0.87.0` is a **candidate upgrade**, requiring drain, strict `provider/id`, and multi-session regression proofs before changing the pin. The other four package versions remain the current source manifest. No Pi/npm package installation happens through this skill.
 

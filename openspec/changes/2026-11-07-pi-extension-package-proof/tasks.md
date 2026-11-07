@@ -47,5 +47,14 @@ The historical candidate epic #894 and PRs #901/#903 were delivered and closed. 
 - [ ] Keep all six built-in host controls unchanged and Pi candidate until proofs pass.
 - [ ] Ship the package only with a reversible, opt-in versioned release and no auto-install or second orchestration controller.
 
+## Additive source audit — tiered core and package-native agent API
+
+- [x] Pi-subagents v0.86.0 documented `package.json#pi.subagents.agents` for native installed package agent files; Pi v1.5.0 documented `pi.skills` for skills. Use **both** to project existing canonical `agents/` and `skills/`; no duplicate role files or new extension.
+- [x] Classify dependencies: sequential skills = zero extension, delegated multiagent = pi-subagents only, interactive human.ask = optional pi-ask-user, guarded policy = optional independently enabled pi-verdict+pi-better-sandbox, research = optional pi-web-access. Existing four mandatory entries remain the pinned **guarded interactive candidate**, with profile/tier enforcement to be reconciled in issue #974/#975.
+- [x] Source-find role gaps: PStack `effort` vs Pi `thinking`, `inheritSkills`/context behavior, independent-verifier prompt-only no-edit without native tools allowlist.
+- [ ] #975: prove exact install, `pi.subagents.agents` native role resolution, 22 source IDs, role-thinking tools/context mapping, inheritance and package/checkout duplicate detection in disposable Pi home.
+- [ ] #976/#977: expand actual native verification skill/driver to catch default writer tools in readonly verifier, denied bash/edit/write and nested spawn, rather than claiming role security from a prompt.
+- [ ] #978: independent reviewers and exact-head provenance on the new package/role tests; no parity promotion from sources alone.
+
 ## Status
 Specification, P0 source verification corrections and tests may land before native actor/package execution. Do not mark #975/#977/#978 completed merely because an OpenSpec document or a bounded source test exists.

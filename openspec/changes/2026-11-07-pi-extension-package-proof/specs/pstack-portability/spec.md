@@ -51,7 +51,7 @@ Specifically for standalone Pi, a version/package listing and a `pi -p --no-sess
 ## ADDED Requirements
 
 ### Requirement: Pi extension ownership and source-pinned upgrades stay explicit
-Standalone Pi MUST remain a separate namespaced candidate from OMP, with one selected delegated-agent engine, one OS sandbox owner, one tool-call adjudicator and one structured human.ask owner. The minimal coding candidate uses pi-subagents 0.86.0, pi-better-sandbox 0.14.1, pi-verdict 0.16.0, pi-ask-user 0.17.2; pi-web-access 0.47.0 is optional research. An observed newer pi-subagents release 0.87.0 MUST be a distinct, independently verified upgrade candidate rather than automatically changing the active pin. Pi's built-in MCP, tools and sessions MUST not be repackaged as new PStack extensions.
+Standalone Pi MUST remain a separate namespaced candidate from OMP, with one selected delegated-agent engine, one OS sandbox owner, one tool-call adjudicator and one structured human.ask owner. The source-pinned **guarded interactive** candidate lists pi-subagents 0.86.0, pi-better-sandbox 0.14.1, pi-verdict 0.16.0 and pi-ask-user 0.17.2; pi-web-access 0.47.0 is optional research. These four do NOT constitute a proven minimal dependency or an installed security profile: sequential Pi PStack needs no third-party extension and delegation needs only pi-subagents. Structured human.ask and security controls are conditional profile additions, with fail-closed privileged-action gates. An observed newer pi-subagents release 0.87.0 MUST be a distinct, independently verified upgrade candidate rather than automatically changing the active pin. Pi's built-in MCP, tools and sessions MUST not be repackaged as new PStack extensions.
 
 #### Scenario: provider-qualified model would fall back
 - **GIVEN** a future upgrade probe names `provider/id` and the chosen provider is not authorized
@@ -64,6 +64,35 @@ Standalone Pi MUST remain a separate namespaced candidate from OMP, with one sel
 - **WHEN** `stop` with `drain:true` is exercised
 - **THEN** new child dispatch MUST stop, running children MAY settle and preserve their results
 - **AND** no cancelled/stopped workflow or another session's child MAY be counted as an accepted independent reviewer without terminal evidence
+
+### Requirement: Pi package resources and role semantics must be separate verifiable contracts
+
+A future Pi package MUST derive its native manifest's version and IDs from the single canonical `pstack.package.json` and expose `pi.skills: ["./skills"]` plus `pi.subagents.agents: ["./agents"]` without bundling executable Pi extensions. The `pi.subagents.agents` key is documented in pi-subagents v0.86.0 and MUST NOT be mistaken for Pi core's own `pi.skills` schema. A native package install and the actual extension-driven role lookup MUST be independently observed. Pi child tool permissions, skill/context inheritance, model/provider and thinking settings MUST be explicitly mapped where the canonical PStack role uses different frontmatter, without silently assuming `effort` is `thinking` or a prompt-only no-write rule is enforceable read-only. Keep `human.gate` GAP and runtime BLOCKED until native receipts.
+
+#### Scenario: Pi-native package exposes roles without copying agents
+- **GIVEN** 22 canonical PStack `roles[].id` and a proposed `package.json` with both `pi.skills` and `pi.subagents.agents`
+- **WHEN** a disposable trusted project installs that exact package with an independently installed pi-subagents extension
+- **THEN** PStack skill names and all 22 role identities MUST be discoverable without parallel handwritten role trees
+- **AND** a discovery failure, disabled extension or duplicate legacy package MUST remain PACKAGE GAP
+
+#### Scenario: Generic role effort and skill context do not map automatically
+- **GIVEN** a canonical role uses `effort: xhigh` or asks to read PStack principles
+- **WHEN** pi-subagents loads the source role as a fresh child
+- **THEN** PStack MUST NOT infer `thinking: xhigh` or inherited skills from the mere existence of the role file
+- **AND** explicit host-local setting/override or source-derived projection MUST be tested before claiming semantic parity
+
+#### Scenario: Independent verifier has prompt-only readonly instruction
+- **GIVEN** `agents/independent-verifier.md` says not to edit, but its Pi-native tool allowlist and OS sandbox have not been proven
+- **WHEN** a review child starts with default Pi tools
+- **THEN** the verifier's hard-readonly enforcement MUST remain UNVERIFIED/BLOCKED
+- **AND** a negative native write/bash test MUST prove the effective tool/OS restriction before any isolated reviewer PASS
+
+#### Scenario: Core delegation works without optional guarded extensions
+- **GIVEN** Pi built-ins and exactly one pi-subagents delegation engine, but no pi-ask-user, pi-verdict or pi-better-sandbox
+- **WHEN** a read-only/nonprivileged PStack swarm/arena operation is requested
+- **THEN** it MAY use the delegate engine subject to native role/child/runtime proof
+- **AND** structured human.ask, guarded OS confinement and hard human.gate remain individually GAP/BLOCKED rather than falsely presented as included
+
 
 ### Requirement: Pi authorization and formal verification must not overclaim their enforcement
 An enabled pi-verdict tool_call hook MAY reject known unsafe calls, but classifier `allow`/interactive `ask_user` are NOT sufficient to prove mandatory human.gate or OS sandbox enforcement. Any missing/disabled hook, child delegation bypass, custom/MCP trusted-extension effect or unavailable operator MUST remain BLOCKED for privileged actions. The existing functional and formal verification skills MUST expose source-versus-native proof tiers, exact source/pin revisions, negative tests and checker/tool availability; no generic parallel proof service may be introduced.

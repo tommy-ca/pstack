@@ -5,7 +5,7 @@ Status: source-reviewed; **native extension/child/security tests NOT_RUN**. Exis
 | Feature ID | Required observable | Current evidence | Negative control | Owning verifier |
 | --- | --- | --- | --- | --- |
 | PI-01 | native skills selected under project trust | .pi/settings.json static | disable trust or shadow skill; no false discovery | verify-pi-pstack doctor + future package smoke |
-| PI-02 | Pi native git package installs only canonical skills | proposed manifest ONLY | package installs executable extension unexpectedly | #975 package test |
+| PI-02 | Pi git package exports skills AND canonical agents via pi.subagents.agents | source-documented v0.86 API, no native install | missing 22nd role / duplicate legacy skill / package loads executable extension | #975 package test |
 | PI-03 | pi-subagents single delegate engine | extension pin static-only | second engine/tool-owner collision | existing candidate contract |
 | PI-04 | model/provider identity exact | v0.87 source change, uninstalled | provider/id fallback to other account/model | native v0.87 candidate test |
 | PI-05 | child launch only after authorization | unobserved | denied subagent_launch still starts child | future native actor driver |
@@ -21,6 +21,19 @@ Status: source-reviewed; **native extension/child/security tests NOT_RUN**. Exis
 | PI-15 | cleanup cannot claim unobserved absence | before fix: unconditional PASS | call cleanup with zero child tracking | shell wrapper regression |
 | PI-16 | offline results never become observed_live | existing receipt shapes | fake child ID or absent source SHA | four-plane Receipt validation |
 | PI-17 | independent Swarm/Arena/Interrogate/Thermos | NOT_RUN | same model/context falsely called independent | reviewer receipts + #978 |
+
+## Role-semantic negative tests to add before Pi package promotion
+
+| ID | Assumption to falsify | Required native observation |
+| --- | --- | --- |
+| PI-18 | Zero-extension Pi single-agent cannot load canonical PStack skills | Native PStack skill discovery, no bundled executable extensions |
+| PI-19 | pi-subagents cannot consume `pi.subagents.agents` (v0.86) | Disposable package install + listing/resolution of all 22 role identities |
+| PI-20 | PStack frontmatter `effort` becomes Pi `thinking` automatically | Resolved child thinking level and explicit mapping when needed; no guessed equivalence |
+| PI-21 | Prompt-only independent-verifier no-edit creates hard read-only | Denied native `edit`, `write`, `bash` and nested delegate spawn, plus actual OS effect |
+| PI-22 | Fresh Pi children inherit project skills and context automatically | Child can resolve the exact `poteto-mode` skill/principles under declared `inheritSkills` or explicit `skills`; otherwise GAP |
+| PI-23 | Guarded profile optional packages imply hard human.gate | Separate enabled hooks and OS policy denial, but hard human.gate remains GAP without independent enforcement |
+
+All PI-18..PI-23 are **SOURCE-DESIGNED / NOT_RUN**. Existing 53 mutants test only the previous source manifest and profile contract; do not imply new role-effect coverage was executed. A real Pi package and role runner must prove these controls before #975/#978 can close.
 
 ## Exact tests to run at PR HEAD
 ~~~sh

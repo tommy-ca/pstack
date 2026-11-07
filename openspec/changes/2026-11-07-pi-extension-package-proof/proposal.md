@@ -12,6 +12,11 @@ A deep audit on 2026-11-07 found a P0 proof defect: `scripts/prove_pi_vertical_s
 - Investigate a **thin native Pi package.json** with `pi.skills` referencing canonical PStack `./skills`; declare *no bundled executable extensions*. Candidate project `.pi/settings.json` can still opt into `../agents` through pi-subagents, but a package `pi.skills` declaration alone does not install subagent role definitions or prove native role dispatch.
 - Keep `pstack:pi` **candidate**, 17 static-only bindings, `human.gate` GAP, and no automatic seventh host enrollment.
 
+## Refined capability-based package minimum (v0.86 source-confirmed)
+The existing 4-engineering / +1-research manifest is a **guarded interactive candidate**, not proof that all four extensions are necessary for every PStack skill. Sequential PStack skills use Pi core with **zero** third-party extensions. For PStack child workflows (Swarm, Arena, Interrogate), **pi-subagents@0.86.0 is the sole necessary delegation extension**. Structured `human.ask` adds pi-ask-user, while pi-verdict + pi-better-sandbox are separately opt-in guarded-workflow controls requiring enabled policy and effect-level negative tests; pi-web-access is an opt-in research enhancement. No combination proves hard `human.gate` without independent enforcement.
+
+The [pi-subagents v0.86.0 agent documentation](https://github.com/nicobailon/pi-subagents/blob/v0.86.0/docs/agents.md) explicitly supports native package `pi.subagents.agents: ["./agents"]` (also `pi-subagents.agents`) alongside Pi core `pi.skills: ["./skills"]`. Therefore one **proposed** package can expose all canonical 22 PStack role definitions without copying them into another tree. **Source support is not installed proof.** Native Pi's `thinking`, `tools`, and skill-context fields must be compared with PStack's generic `effort` and prompt-only read-only instructions before claiming role fidelity; the raw role bodies are not automatically secure or fully equivalent.
+
 ## Minimal extension set and release drift
 | Source-pinned candidate | Existing pin | Owner | Decision |
 | --- | --- | --- | --- |
