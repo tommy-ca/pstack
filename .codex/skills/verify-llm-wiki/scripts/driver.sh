@@ -4,6 +4,9 @@ set -euo pipefail
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../../../.." && pwd)"
 cd "$ROOT"
 export PYTHONPATH="$ROOT${PYTHONPATH:+:$PYTHONPATH}"
+if [[ -d "$ROOT/.venv/bin" ]]; then
+  export PATH="$ROOT/.venv/bin:$PATH"
+fi
 
 if ! command -v timeout >/dev/null 2>&1; then
   echo "BLOCKED: GNU timeout required for 60s execution bounds" >&2

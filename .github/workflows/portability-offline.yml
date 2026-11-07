@@ -22,7 +22,10 @@ jobs:
         with:
           version: "0.13.7"
       - name: Install test dependencies
-        run: uv sync --frozen
+        run: |
+          uv sync --frozen
+          echo "$GITHUB_WORKSPACE/.venv/bin" >> $GITHUB_PATH
+          echo "VIRTUAL_ENV=$GITHUB_WORKSPACE/.venv" >> $GITHUB_ENV
       - name: Validate hermetic doctor fixture (offline, no host CLIs)
         # #709/#717: the two fixture-HOME doctor cases — the regression that keeps
         # ambient plugin mirrors from deciding the doctor verdict, plus its

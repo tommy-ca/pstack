@@ -2,6 +2,11 @@
 # Verification driver script for Pi candidate formal verification
 set -euo pipefail
 
+ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../../../.." && pwd)"
+if [[ -d "$ROOT/.venv/bin" ]]; then
+    export PATH="$ROOT/.venv/bin:$PATH"
+fi
+
 TIMEOUT_SECONDS=60
 
 run_bounded() {
