@@ -315,14 +315,21 @@ def build_scenarios(
             runtime_exit = 2
             runtime_snippet = f"BLOCKED: {'; '.join(unmet)}; zero unverified runtime claims promoted"
         else:
-            runtime_verdict = "PASS"
-            runtime_exit = 0
-            runtime_snippet = f"PASS: Pi {live['pi_version']} with verified extensions and confinement"
+            # A no-tools Pi echo probe establishes *only* process/package preflight.
+            # It cannot exercise child launch, tool_call denials, or OS confinement.
+            # Until a real actor driver supplies per-child proof, fail closed.
+            runtime_verdict = "BLOCKED"
+            runtime_exit = 2
+            runtime_snippet = (
+                f"BLOCKED: Pi {live['pi_version']} and pinned packages pass preflight, "
+                "but no real child ID, denied subagent_launch, terminal join/cancel, "
+                "or parent/child/background sandbox-effect receipt was observed"
+            )
 
     scenarios.append(
         ScenarioResult(
             id="slice-runtime-child-spawn",
-            description="Pi 1.5.0 live subprocess invocation, extension audit, and fail-closed child confinement",
+            description="Pi process/package preflight only; live child authorization and sandbox remain unverified",
             plane="runtime",
             command="pi -p --no-session --no-tools (ephemeral probe + package audit)",
             exit_code=runtime_exit,
@@ -348,14 +355,14 @@ def build_receipt(
     receipt = VerificationReceipt(
         run_id=run_id,
         host=HOST,
-        host_version=host_version or "1.5.0",
+        host_version=host_version or "unobserved",
         timestamp=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         overall_verdict=overall_verdict,
         planes=planes,
         surface_revisions=revisions,
         scenarios=scenarios,
         artifacts=[],
-        claim=f"one Pi vertical slice at exact head {head}",
+        claim=f"Pi candidate contract/preflight slice at exact head {head}; runtime capability NOT PROVEN",
         kind="runtime",
         adapter_version=ADAPTER_VERSION,
     )
@@ -377,7 +384,7 @@ def main() -> int:
     live = live_slice(offline["manifest"]) if live_requested else None
     scenarios = build_scenarios(offline, live, live_requested)
 
-    host_ver = (live.get("pi_version") if live else "") or "1.5.0"
+    host_ver = (live.get("pi_version") if live else "") or "unobserved"
     receipt = build_receipt(scenarios, head, host_ver)
 
     if args.out:
