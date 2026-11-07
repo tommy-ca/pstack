@@ -330,3 +330,51 @@ def test_the_repository_audit_is_clean_and_read_only() -> None:
     assert violations == [], violations
     assert scanned > 0
     assert tree_digest(ROOT / "skills") == before
+
+
+# --- B05/B14/B16: direct PR-polish claims reuse existing evidence owners -----
+
+PR_POLISH = ROOT / "skills" / "make-pr-easy-to-review" / "SKILL.md"
+
+
+def pr_polish_reuses_current_evidence(text: str) -> bool:
+    """Tier-1 source contract, not a model-backed agent behavior test."""
+    _, separator, section = text.partition("## Verification Claims")
+    if not separator:
+        return False
+    section = section.split("\n## ", 1)[0]
+    required = (
+        "../poteto-mode/playbooks/opening-a-pr.md",
+        "../fix-ci/SKILL.md",
+        "Only call a check `PASS` when it actually ran",
+        "An unrun or planned check is `UNTESTED`",
+        "an unavailable required check is `BLOCKED`",
+        "A stale green receipt cannot be reported as current `PASS`",
+        "If the PR head or base changes, check freshness again",
+    )
+    return all(token in section for token in required)
+
+
+def test_direct_pr_polish_reuses_verification_owners() -> None:
+    text = PR_POLISH.read_text(encoding="utf-8")
+    assert pr_polish_reuses_current_evidence(text)
+    assert (ROOT / "skills" / "poteto-mode" / "playbooks" / "opening-a-pr.md").is_file()
+    assert (ROOT / "skills" / "fix-ci" / "SKILL.md").is_file()
+
+
+def test_pr_polish_negative_controls_reject_false_pass_claims() -> None:
+    """Mutating either evidence rule must invalidate the documented contract."""
+    shipped = PR_POLISH.read_text(encoding="utf-8")
+    assert pr_polish_reuses_current_evidence(shipped)
+    unrun_as_pass = shipped.replace(
+        "Only call a check `PASS` when it actually ran",
+        "Call a check `PASS` when it was planned",
+    )
+    stale_as_pass = shipped.replace(
+        "A stale green receipt cannot be reported as current `PASS`",
+        "A stale green receipt can be reported as current `PASS`",
+    )
+    no_owner = shipped.replace("../fix-ci/SKILL.md", "some duplicated local CI checklist")
+    assert not pr_polish_reuses_current_evidence(unrun_as_pass)
+    assert not pr_polish_reuses_current_evidence(stale_as_pass)
+    assert not pr_polish_reuses_current_evidence(no_owner)
