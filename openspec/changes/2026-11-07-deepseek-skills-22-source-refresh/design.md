@@ -92,3 +92,6 @@ RetainedBehavior:
 
 ## Unimplemented scope
 No PStack skill bodies, model routing, host projection packages, runtime adapters or QStack code change in this specification-only branch. Source drift warrants review; it is not proof of missing runtime functionality.
+
+## Recursive rollout and issue ownership
+The minimal DAG is maintained in [issue-graph.md](issue-graph.md): #1060 epic → #1061 source/spec validation → #1062 + #1063 independent gap probes → #1064 qualification. These are investigation and evidence gates, not four new skill implementations. Closed #305–#315 retain historical ownership. Current verification-driver/CI tooling remains owned by #1054/#1058, and QStack's quant-only overlays remain independently owned by QStack.
