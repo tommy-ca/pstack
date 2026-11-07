@@ -3,8 +3,8 @@
   "hosts": {
     "grok": {
       "receipt": ".audit/evidence/grok-receipt.json",
-      "run_id": "grok-1794079444-a7cd3782",
-      "timestamp": "2026-11-07T19:24:10Z",
+      "run_id": "grok-1794079854-0a418e12",
+      "timestamp": "2026-11-07T19:31:00Z",
       "overall_verdict": "UNTESTED",
       "planes": {
         "canonical": "UNTESTED",
@@ -20,7 +20,7 @@
         "profile_hash": "f57cc1a10aac1aae75b7bea4ec30b76ae920c0815938292cc2ae36609ec46808",
         "package_descriptor_hash": "86eb2c514dd7bee7dd79c7a3b5ae566941439d132d9cf2e87edbc7f2e244daa6",
         "manifest_hash": "6bdd0ad96f0c923b4ed4c4019614c0d3f1f6fbf43c529d68059c6eee1b2cee02",
-        "driver_revision": "099c1a3218cb80b052ce73a69ddb93851153df03a7665911387e81f4e067d92c",
+        "driver_revision": "a32c0f3f881bfcdc131067295073ad8e9647942ccf31a7ec3af75b40cf01574f",
         "package_driver_revision": "fe80de3a4d53f2630fe3f6a0f22ce0bed2c2bb6d4ab911896cb0a53d14ebfa20",
         "boundary_driver_revision": "ded4475d707124d6db00167347a2a7217255f3b55e689b647f716617e79a82eb",
         "upstream_freshness": "DRIFT",
@@ -29,8 +29,8 @@
     },
     "codex": {
       "receipt": ".audit/evidence/codex-receipt.json",
-      "run_id": "codex-1794079450-4fd2a16a",
-      "timestamp": "2026-11-07T19:24:17Z",
+      "run_id": "codex-1794079860-52688ec7",
+      "timestamp": "2026-11-07T19:31:06Z",
       "overall_verdict": "UNTESTED",
       "planes": {
         "canonical": "UNTESTED",
@@ -46,7 +46,7 @@
         "profile_hash": "29213226c5c9f8a47be13fbb4a6c5dff242773c0182e2bb4af69c3cd1d01fd8e",
         "package_descriptor_hash": "86eb2c514dd7bee7dd79c7a3b5ae566941439d132d9cf2e87edbc7f2e244daa6",
         "manifest_hash": "2798c0cf20790bd59605a94d10245b95071bd3b880f08f2743001684ba5f14e6",
-        "driver_revision": "099c1a3218cb80b052ce73a69ddb93851153df03a7665911387e81f4e067d92c",
+        "driver_revision": "a32c0f3f881bfcdc131067295073ad8e9647942ccf31a7ec3af75b40cf01574f",
         "package_driver_revision": "fe80de3a4d53f2630fe3f6a0f22ce0bed2c2bb6d4ab911896cb0a53d14ebfa20",
         "boundary_driver_revision": "ded4475d707124d6db00167347a2a7217255f3b55e689b647f716617e79a82eb",
         "upstream_freshness": "DRIFT",
@@ -72,7 +72,7 @@
         "profile_hash": "42587dd6c3939ad4a7140e32952d8a37d39224fe5e0c68c8a55bdf2e58588207",
         "package_descriptor_hash": "86eb2c514dd7bee7dd79c7a3b5ae566941439d132d9cf2e87edbc7f2e244daa6",
         "manifest_hash": "7ac6a1385b63cf2300e27af0ddd2057c45ddc9f4a845392dc144c12cf0977520",
-        "driver_revision": "099c1a3218cb80b052ce73a69ddb93851153df03a7665911387e81f4e067d92c",
+        "driver_revision": "a32c0f3f881bfcdc131067295073ad8e9647942ccf31a7ec3af75b40cf01574f",
         "package_driver_revision": "fe80de3a4d53f2630fe3f6a0f22ce0bed2c2bb6d4ab911896cb0a53d14ebfa20",
         "boundary_driver_revision": "ded4475d707124d6db00167347a2a7217255f3b55e689b647f716617e79a82eb",
         "upstream_freshness": "DRIFT",
@@ -81,8 +81,8 @@
     },
     "opencode": {
       "receipt": ".audit/evidence/opencode-receipt.json",
-      "run_id": "opencode-1794079462-6ff0e8df",
-      "timestamp": "2026-11-07T19:24:28Z",
+      "run_id": "opencode-1794079871-81ae0344",
+      "timestamp": "2026-11-07T19:31:16Z",
       "overall_verdict": "UNTESTED",
       "planes": {
         "canonical": "UNTESTED",
@@ -98,7 +98,7 @@
         "profile_hash": "12fa3f0e01d564c0f35cdb400d89b5dc2f3bfa02558b1994d5ff63fd6165f832",
         "package_descriptor_hash": "86eb2c514dd7bee7dd79c7a3b5ae566941439d132d9cf2e87edbc7f2e244daa6",
         "manifest_hash": "45216e3e16bb6dc34ab4247de08cce89550b1de986760c60d6db8f14925b696e",
-        "driver_revision": "099c1a3218cb80b052ce73a69ddb93851153df03a7665911387e81f4e067d92c",
+        "driver_revision": "a32c0f3f881bfcdc131067295073ad8e9647942ccf31a7ec3af75b40cf01574f",
         "package_driver_revision": "fe80de3a4d53f2630fe3f6a0f22ce0bed2c2bb6d4ab911896cb0a53d14ebfa20",
         "boundary_driver_revision": "ded4475d707124d6db00167347a2a7217255f3b55e689b647f716617e79a82eb",
         "upstream_freshness": "DRIFT",
@@ -107,8 +107,8 @@
     },
     "antigravity": {
       "receipt": ".audit/evidence/antigravity-receipt.json",
-      "run_id": "antigravity-1794079468-c724a228",
-      "timestamp": "2026-11-07T19:24:36Z",
+      "run_id": "antigravity-1794079876-e71158ba",
+      "timestamp": "2026-11-07T19:31:22Z",
       "overall_verdict": "UNTESTED",
       "planes": {
         "canonical": "UNTESTED",
@@ -124,7 +124,7 @@
         "profile_hash": "c760cbea72a76b9fd769560621ba81160fa9aa50f383f220502fa47a1963bdd2",
         "package_descriptor_hash": "86eb2c514dd7bee7dd79c7a3b5ae566941439d132d9cf2e87edbc7f2e244daa6",
         "manifest_hash": "b40d6d4c98ed781bc485982f7908f40eece1467d0e031517bfeed2ec634af9cd",
-        "driver_revision": "099c1a3218cb80b052ce73a69ddb93851153df03a7665911387e81f4e067d92c",
+        "driver_revision": "a32c0f3f881bfcdc131067295073ad8e9647942ccf31a7ec3af75b40cf01574f",
         "package_driver_revision": "fe80de3a4d53f2630fe3f6a0f22ce0bed2c2bb6d4ab911896cb0a53d14ebfa20",
         "boundary_driver_revision": "ded4475d707124d6db00167347a2a7217255f3b55e689b647f716617e79a82eb",
         "upstream_freshness": "DRIFT",

@@ -404,6 +404,13 @@ def test_generated_driver_makes_no_timeout_bound_claim_while_unwired(draft):
     assert "STUB_NOT_IMPLEMENTED" in text
 
 
+def test_generated_driver_includes_runtime_resolution(draft):
+    text = (draft / "scripts/driver.sh").read_text()
+    assert 'PYTHON_EXEC="python3"' in text
+    assert 'uv run python' in text
+    assert 'BUN_EXEC="bun"' in text
+
+
 def test_candidate_verification_skill_discovery_and_builtin_isolation(tmp_path):
     profiles_dir = tmp_path / "profiles"
     profiles_dir.mkdir()

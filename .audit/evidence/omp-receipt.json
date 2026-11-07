@@ -18,7 +18,7 @@
     "profile_hash": "42587dd6c3939ad4a7140e32952d8a37d39224fe5e0c68c8a55bdf2e58588207",
     "package_descriptor_hash": "86eb2c514dd7bee7dd79c7a3b5ae566941439d132d9cf2e87edbc7f2e244daa6",
     "manifest_hash": "7ac6a1385b63cf2300e27af0ddd2057c45ddc9f4a845392dc144c12cf0977520",
-    "driver_revision": "099c1a3218cb80b052ce73a69ddb93851153df03a7665911387e81f4e067d92c",
+    "driver_revision": "a32c0f3f881bfcdc131067295073ad8e9647942ccf31a7ec3af75b40cf01574f",
     "package_driver_revision": "fe80de3a4d53f2630fe3f6a0f22ce0bed2c2bb6d4ab911896cb0a53d14ebfa20",
     "boundary_driver_revision": "ded4475d707124d6db00167347a2a7217255f3b55e689b647f716617e79a82eb",
     "upstream_freshness": "DRIFT",
