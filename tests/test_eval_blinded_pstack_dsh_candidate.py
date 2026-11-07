@@ -145,7 +145,6 @@ class TestDshCandidatePhase:
         assert recorded["phase"] == live["phase"]
         assert recorded["verdict"] == live["verdict"]
         expected_hash = _probe_scope_hash(ROOT)
-        print("CANDIDATE_RECORD_BEGIN" + json.dumps(live, indent=2) + "CANDIDATE_RECORD_END")  # TEMP audit capture; revert before merging
         re_record_cmd = "python3 scripts/eval_blinded_pstack.py --record-dsh"
         assert recorded["provenance"]["probe_scope_hash"] == live["provenance"]["probe_scope_hash"] == expected_hash, (
             f"recorded table must match the probe scope it reproduces. "
