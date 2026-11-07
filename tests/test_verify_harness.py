@@ -407,8 +407,8 @@ def test_harness_skill_order_is_pstack_then_user_then_native() -> None:
 
 def test_upstream_metadata_contract() -> None:
     upstream = (ROOT / "UPSTREAM").read_text(encoding="utf-8")
-    assert "tree 88d47514b82e7c44f00f2b2a72ff6dd12158038c" in upstream
-    assert "34a0b817e5ea92375bb10f20b15cf750d4e8095a" in upstream
+    assert "tree c742dd61706fbacc1b95f1a20b7b988cf096ce6c" in upstream
+    assert "4719e1c4b4c43bac85d4206a8b41dd2899769c1c" in upstream
     root_manifest = json.loads((ROOT / "plugin.json").read_text(encoding="utf-8"))
     root_version = root_manifest["version"]
     manifest_fields = (

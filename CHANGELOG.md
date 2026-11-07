@@ -2,6 +2,16 @@
 
 This ledger distinguishes **observed canonical upstream changes** from **applied, verified changes in the multi-harness port**. An upstream release number is not evidence of local parity. Historical releases remain recorded in git history and [UPSTREAM](UPSTREAM); new syncs append a dated entry, never rewrite historical claims.
 
+## [0.15.36-preview.0] — 2026-11-07
+
+**Port release:** `0.15.36-preview.0` on `main`.
+**Applied canonical source:** `cursor/plugins@c742dd61706fbacc1b95f1a20b7b988cf096ce6c` (`pstack/` tree `4719e1c4b4c43bac85d4206a8b41dd2899769c1c`).
+**Applied changes:**
+- Ported agentic orchestrate and cleaned up legacy orchestrate scripts (#981).
+- Ingested statechart and ketchup-video skills with lean compiler and zero static fixture bloat (#982).
+- Upgraded formal verification skills and scaffolding with `/statechart` visualization integration (#983).
+- Promoted UPSTREAM pin to 0.15.36 and projected canonical manifests to all six host adapters (#984).
+
 ## [Unreleased] — upstream 0.15.36 candidate (2026-10-31)
 
 **Port release:** `0.15.29-preview.0` on `main` (no applied release promotion).

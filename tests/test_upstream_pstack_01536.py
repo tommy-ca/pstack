@@ -97,10 +97,9 @@ def test_source_contracts_disallow_phantom_independent_review() -> None:
 def test_applied_and_candidate_release_are_distinct() -> None:
     changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
     descriptor = (ROOT / "pstack.package.json").read_text(encoding="utf-8")
-    assert "0.15.36 candidate" in changelog
-    assert "NOT SHIPPED" in changelog
-    assert '"upstream_pin": "88d47514b82e7c44f00f2b2a72ff6dd12158038c"' in descriptor
-    assert "0.15.29-preview.0" in descriptor
+    assert "0.15.36-preview.0" in changelog
+    assert '"upstream_pin": "c742dd61706fbacc1b95f1a20b7b988cf096ce6c"' in descriptor
+    assert "0.15.36-preview.0" in descriptor
 
 
 def test_agentic_orchestrate_has_one_owner_and_independent_pr_verification() -> None:

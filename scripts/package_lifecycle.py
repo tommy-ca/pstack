@@ -333,6 +333,27 @@ def install_plugin(
 
     plugin_dir.mkdir(parents=True, exist_ok=True)
 
+    # Clean up previously managed files that are no longer part of the package
+    managed_record_file = plugin_dir / ".pstack-managed-files.json"
+    if managed_record_file.is_file():
+        try:
+            prev_record = json.loads(managed_record_file.read_text(encoding="utf-8"))
+            old_managed = set(prev_record.get("managed_files", []))
+            new_managed = compute_managed_files(host, desc)
+            for stale_rel in old_managed - new_managed:
+                stale_p = plugin_dir / stale_rel
+                if stale_p.is_file() or stale_p.is_symlink():
+                    stale_p.unlink()
+                parent = stale_p.parent
+                while parent != plugin_dir and parent.is_relative_to(plugin_dir):
+                    try:
+                        parent.rmdir()
+                        parent = parent.parent
+                    except OSError:
+                        break
+        except Exception:
+            pass
+
     skills_dir = plugin_dir / "skills"
     copy_skills(skills_dir, source_root=src_root)
 

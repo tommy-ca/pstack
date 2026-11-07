@@ -3,9 +3,9 @@
   "source": {
     "repository": "cursor/plugins",
     "path_prefix": "pstack/",
-    "revision": "88d47514b82e7c44f00f2b2a72ff6dd12158038c",
-    "tree": "6e60624e2f172e2d8d796d6e644695ff5591e29f",
-    "router_blob": "21993f546032ca37671d5f1caf39c9a82ab4fa9d"
+    "revision": "c742dd61706fbacc1b95f1a20b7b988cf096ce6c",
+    "tree": "dab86ab4f12c5fdc853a28045f25cd1610aa8b6b",
+    "router_blob": "2dd5e76fde228141d3fe78b0b09ca68456b49531"
   },
   "fallback": "baseline",
   "routes": [
@@ -16,22 +16,22 @@
     },
     {
       "playbook": "autonomous-run",
-      "canonical_blob": "e6b88703cf327a76bcdd424429345ac0efeca67e",
+      "canonical_blob": "af3bf11609a24020f678f859f13a65710ab67fbd",
       "selection": "direct"
     },
     {
       "playbook": "autopilot-full",
-      "canonical_blob": "068882379d9bdc2298052e7762d67ac795715baf",
+      "canonical_blob": "bbc5b3751ad789cfbd92f8937a2e84de365509ad",
       "selection": "direct"
     },
     {
       "playbook": "autopilot-stack",
-      "canonical_blob": "d7bdc289e045e8bc7da97b4ddfccc8d6c9ed0800",
+      "canonical_blob": "819862c8fe7b756c8571eed410a30a09625673d9",
       "selection": "direct"
     },
     {
       "playbook": "babysit",
-      "canonical_blob": "51549ab2da11e5905342bbb3aadb93685c8ac348",
+      "canonical_blob": "14d5783d447ba3530d038c9dffa514f2492a54e0",
       "selection": "direct"
     },
     {
@@ -63,17 +63,17 @@
     },
     {
       "playbook": "multi-phase-plan",
-      "canonical_blob": "27e99947bd20575e2ff503dbfba985a4f0fa298e",
+      "canonical_blob": "7101aa71dbc08f2b84baa227a7bd589f800f13e8",
       "selection": "system_two"
     },
     {
       "playbook": "opening-a-pr",
-      "canonical_blob": "d729a7a06c5b67e406b081e1777114bc03b66f4a",
+      "canonical_blob": "4a92c501f184ea24392d59a9889ce2f08e8e9201",
       "selection": "system_two"
     },
     {
       "playbook": "orchestrate",
-      "canonical_blob": "4ccb24d76c5e190125cecc99d4a9b5c9eb2932d9",
+      "canonical_blob": "b6e5f5661a1e6b4778845de53f331cee3486905b",
       "selection": "system_two"
     },
     {
