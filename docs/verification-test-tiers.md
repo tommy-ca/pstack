@@ -355,3 +355,17 @@ Linked worktrees must reside strictly inside `<repo_root>/.worktrees/<slug>` per
 Arbitrary external workspace directories are forbidden.
 Local git branches that have been cherry-merged into `main` or correspond to completed subagent execution runs must be pruned to preserve repository cleanliness and avoid branch explosion.
 
+### OpenSpec intent-driven planning artifact chain lifecycle
+
+OpenSpec changes in this repository follow the intent-driven schema (`openspec/schemas/intent-driven/schema.yaml`).
+Every change requires five sequential planning artifacts (`principle-sequence-verifiable-units`).
+First is `proposal.md` defining intent, scope, and user value.
+Second is `specs/` containing formal markdown requirements and scenarios, unless explicitly marked with `skip_specs`.
+Third is `design.md` detailing architectural decisions and component interactions.
+Fourth is `adr.md` recording architectural decision rationale, evaluated alternatives, and trade-offs.
+Fifth is `tasks.md` listing atomic implementation and verification tasks.
+All five planning artifacts must reach completion before implementation tasks begin.
+The CLI command `python3 scripts/openspec_change.py --status` inspects this artifact chain (`principle-prove-it-works`).
+Archived changes must preserve their complete planning chain under `openspec/changes/archive/` per the `archive-chain-integrity` specification (`principle-boundary-discipline`).
+
+

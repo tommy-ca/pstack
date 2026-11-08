@@ -178,24 +178,24 @@ Each live lane runs in its own worktree child at the PR head. Drive the real sur
 
 **Files.**
 
-- [ ] Edit `docs/verification-test-tiers.md`.
-- [ ] Edit `todo.md`.
+- [x] Edit `docs/verification-test-tiers.md`.
+- [x] Edit `todo.md`.
 
 **Build.**
 
-- [ ] Audit intent-driven artifact chains across all active and archived changes in `openspec/`.
-- [ ] Document the 5-artifact planning lifecycle (proposal, specs, design, adr, tasks) in `docs/verification-test-tiers.md`.
-- [ ] Ensure strict compliance with `archive-chain-integrity` specification.
-- [ ] Verify zero untracked clutter and clean working tree.
+- [x] Audit intent-driven artifact chains across all active and archived changes in `openspec/`.
+- [x] Document the 5-artifact planning lifecycle (proposal, specs, design, adr, tasks) in `docs/verification-test-tiers.md`.
+- [x] Ensure strict compliance with `archive-chain-integrity` specification.
+- [x] Verify zero untracked clutter and clean working tree.
 
 **You see.**
 
-- [ ] Verified intent-driven artifact chains across all changes.
-- [ ] Clear documentation of OpenSpec intent-driven flows in `docs/verification-test-tiers.md`.
+- [x] Verified intent-driven artifact chains across all changes.
+- [x] Clear documentation of OpenSpec intent-driven flows in `docs/verification-test-tiers.md`.
 
 **Verify, unit.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Run `uv run python scripts/openspec_change.py 2026-11-07-pi-extension-package-proof`.
+- [x] Run `uv run python scripts/openspec_change.py 2026-11-07-pi-extension-package-proof`.
 
 **Verify, live.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked. Ten lanes on `gemini-pro` at the PR head, per the boot recipe.
 
