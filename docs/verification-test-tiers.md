@@ -365,7 +365,7 @@ Third is `design.md` detailing architectural decisions and component interaction
 Fourth is `adr.md` recording architectural decision rationale, evaluated alternatives, and trade-offs.
 Fifth is `tasks.md` listing atomic implementation and verification tasks.
 All five planning artifacts must reach completion before implementation tasks begin.
-The CLI command `python3 scripts/openspec_change.py --status` inspects this artifact chain (`principle-prove-it-works`).
+The CLI command `openspec status --all` inspects this artifact chain directly (`principle-prove-it-works`).
 Archived changes must preserve their complete planning chain under `openspec/changes/archive/` per the `archive-chain-integrity` specification (`principle-boundary-discipline`).
 
 ### OpenSpec git discipline and dual-mode validation contracts
@@ -374,10 +374,12 @@ Repository agents follow the `openspec-git-discipline` skill (`.agents/skills/op
 Every OpenSpec lifecycle phase must cross `main` before dependent phases begin (`principle-boundary-discipline`).
 Proposals must be committed and merged to `main` before apply starts.
 Archive operations must execute on `main` after implementation PRs merge.
-Validation uses dual-mode checks adapted from QStack toolchains (`principle-make-operations-idempotent`).
-The command `mise run verify:openspec` strictly validates active change proposals against intent-driven schemas.
-The command `mise run verify:openspec:all` validates all living specifications under `openspec/specs/`.
-The unified entry point `scripts/openspec_change.py` supports `--all`, `--status`, `--change`, and `--json` options.
+Validation uses dual-mode checks matching QStack toolchain tasks (`principle-make-operations-idempotent`).
+OpenSpec tasks in `mise.toml` invoke `openspec` commands directly without Python wrapper indirection (`principle-laziness-protocol`).
+The command `mise run openspec:status` runs `openspec status --all` directly.
+The commands `mise run validate:openspec` and `mise run verify:openspec` run dual-mode validation across all specifications and active changes (`openspec validate --all && openspec validate --changes --strict`).
+The commands `mise run validate:openspec:all` and `mise run verify:openspec:all` validate all living specifications under `openspec/specs/`.
+The commands `mise run validate:openspec:changes` and `mise run verify:openspec:changes` strictly validate active change proposals.
 
 
 
