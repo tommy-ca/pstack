@@ -178,24 +178,24 @@ Each live lane runs in its own worktree child at the PR head. Drive the real sur
 
 **Files.**
 
-- [ ] Edit `docs/verification-test-tiers.md`.
-- [ ] Edit `todo.md`.
+- [x] Edit `docs/verification-test-tiers.md`.
+- [x] Edit `todo.md`.
 
 **Build.**
 
-- [ ] Document pinned `bunx` wrapper in `docs/verification-test-tiers.md`.
-- [ ] Document `mise` npm tool management for `@fission-ai/openspec`.
-- [ ] Detail reproducible execution benefits and alignment with QStack toolchain patterns.
-- [ ] Update todo.md with completed tasks under Epic 1203.
+- [x] Document pinned `bunx` wrapper in `docs/verification-test-tiers.md`.
+- [x] Document `mise` npm tool management for `@fission-ai/openspec`.
+- [x] Detail reproducible execution benefits and alignment with QStack toolchain patterns.
+- [x] Update todo.md with completed tasks under Epic 1203.
 
 **You see.**
 
-- [ ] Accurate documentation of pinned bunx OpenSpec execution in `docs/verification-test-tiers.md`.
-- [ ] Updated execution plan and task ledger in `todo.md`.
+- [x] Accurate documentation of pinned bunx OpenSpec execution in `docs/verification-test-tiers.md`.
+- [x] Updated execution plan and task ledger in `todo.md`.
 
 **Verify, unit.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Run `bunx --yes @fission-ai/openspec@1.16.1 status --all`.
+- [x] Run `bunx --yes @fission-ai/openspec@1.16.1 status --all`.
 
 **Verify, live.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked. Ten lanes on `gemini-pro` at the PR head, per the boot recipe.
 
