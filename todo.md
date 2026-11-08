@@ -582,7 +582,8 @@
 - [x] Unit 1 (Issue #1204): [Runtime & Mise][P0] Manage @fission-ai/openspec in mise.toml tools and wrap tasks with fixed bunx version
 - [x] Unit 2 (Issue #1205): [Tooling & Tests][P0] Harmonize runtime toolchain and OpenSpec tests with pinned bunx and mise npm contracts
 - [x] Unit 3 (Issue #1206): [Docs & Verification][P0] Document pinned bunx and mise npm OpenSpec lifecycle in test tiers documentation
-- [ ] Unit 4 (Issue #1207): [Gate & Close][P0] Qualify 6-harness verification matrix, reconcile issue graph, and close Epic 1203
+- [x] Unit 4 (Issue #1207): [Gate & Close][P0] Qualify 6-harness verification matrix, reconcile issue graph, and close Epic 1203
+*(Epic #1203 CLOSED)*
 
 
 

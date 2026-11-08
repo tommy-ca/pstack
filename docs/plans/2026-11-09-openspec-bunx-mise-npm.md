@@ -234,25 +234,25 @@ Each live lane runs in its own worktree child at the PR head. Drive the real sur
 
 **Files.**
 
-- [ ] Edit `docs/plans/2026-11-09-openspec-bunx-mise-npm.md`.
-- [ ] Edit `todo.md`.
-- [ ] Edit `CHANGELOG.md`.
+- [x] Edit `docs/plans/2026-11-09-openspec-bunx-mise-npm.md`.
+- [x] Edit `todo.md`.
+- [x] Edit `CHANGELOG.md`.
 
 **Build.**
 
-- [ ] Run full 6-harness verification matrix doctor across all hosts.
-- [ ] Run plan check, offline test suites, and pinned OpenSpec validations.
-- [ ] Update CHANGELOG.md with Epic 1203 deliverables.
-- [ ] Reconcile `todo.md` and close Epic #1203 on GitHub.
+- [x] Run full 6-harness verification matrix doctor across all hosts.
+- [x] Run plan check, offline test suites, and pinned OpenSpec validations.
+- [x] Update CHANGELOG.md with Epic 1203 deliverables.
+- [x] Reconcile `todo.md` and close Epic #1203 on GitHub.
 
 **You see.**
 
-- [ ] 6-Harness Matrix Verdict PASS in doctor output.
-- [ ] Complete evidence receipts recorded for all six harnesses.
+- [x] 6-Harness Matrix Verdict PASS in doctor output.
+- [x] Complete evidence receipts recorded for all six harnesses.
 
 **Verify, unit.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Run `bun skills/poteto-mode/scripts/check-plan.mjs docs/plans/2026-11-09-openspec-bunx-mise-npm.md`.
+- [x] Run `bun skills/poteto-mode/scripts/check-plan.mjs docs/plans/2026-11-09-openspec-bunx-mise-npm.md`.
 
 **Verify, live.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked. Ten lanes on `gemini-pro` at the PR head, per the boot recipe.
 
