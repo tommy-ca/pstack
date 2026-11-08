@@ -50,6 +50,10 @@ This ledger distinguishes **observed canonical upstream changes** from **applied
 - Pruned obsolete workspace cache clutter in .atl/ and reinforced style rules (#1118, #1122).
 - Audited all 10 verification skill drivers and updated templates for flattened schemas (#1119, #1123).
 - Qualified 6-harness verification gate across all 10 verification skills and closed Epic #1116 (#1120).
+- Supported multi-file plan validation in check-plan.mjs and wired all plans into CI (#1126, #1130).
+- Synchronized mise.toml offline test tasks and added verification driver tasks (#1127, #1131).
+- Pruned ephemeral evidence runs and audited workspace clutter (#1128, #1132).
+- Qualified 6-harness verification matrix and closed Epic #1125 (#1129).
 
 ## [Unreleased] — upstream 0.15.36 candidate (2026-10-31)
 
