@@ -135,56 +135,56 @@ Each live lane runs in its own worktree child at the PR head. Drive the real sur
 
 **Files.**
 
-- [ ] Delete stale `.atl/` directory.
-- [ ] Edit `.gitignore`.
-- [ ] Edit documentation referencing old schema paths.
+- [x] Delete stale `.atl/` directory.
+- [x] Edit `.gitignore`.
+- [x] Edit documentation referencing old schema paths.
 
 **Build.**
 
-- [ ] Remove obsolete cache artifacts.
-- [ ] Enforce clean ignore rules for workspace scratch directories.
-- [ ] Cleanse references to old schema paths across docs and guides.
-- [ ] Confirm zero long dashes across the repository.
+- [x] Remove obsolete cache artifacts.
+- [x] Enforce clean ignore rules for workspace scratch directories.
+- [x] Cleanse references to old schema paths across docs and guides.
+- [x] Confirm zero long dashes across the repository.
 
 **You see.**
 
-- [ ] Clean working tree with zero untracked scratch files.
-- [ ] Repository boundary scanner reports zero violations.
+- [x] Clean working tree with zero untracked scratch files.
+- [x] Repository boundary scanner reports zero violations.
 
 **Verify, unit.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Run `python3 scripts/scan_host_boundary.py`.
+- [x] Run `python3 scripts/scan_host_boundary.py`.
 
 **Verify, live.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked. Ten lanes on `gemini-pro` at the PR head, per the boot recipe.
 
-- [ ] Lane 1. Boundary scan probe. Save `/tmp/swarm-prune-clutter/worker-1/boundary.png`. Pass when scan_host_boundary passes.
-- [ ] Lane 2. Git status probe. Save `/tmp/swarm-prune-clutter/worker-2/status.png`. Pass when git status is clean.
-- [ ] Lane 3. Worktree protocol probe. Save `/tmp/swarm-prune-clutter/worker-3/confinement.png`. Pass when worktrees are confined.
-- [ ] Lane 4. Package projection probe. Save `/tmp/swarm-prune-clutter/worker-4/projection.png`. Pass when package_projection check passes.
-- [ ] Lane 5. Evidence staleness probe. Save `/tmp/swarm-prune-clutter/worker-5/staleness.png`. Pass when check-staleness reports all fresh.
-- [ ] Lane 6. Evidence durability probe. Save `/tmp/swarm-prune-clutter/worker-6/durability.png`. Pass when check-evidence passes.
-- [ ] Lane 7. Thermos skill frontmatter probe. Save `/tmp/swarm-prune-clutter/worker-7/thermo.png`. Pass when test_thermos_skills passes.
-- [ ] Lane 8. Offline checks selection probe. Save `/tmp/swarm-prune-clutter/worker-8/select.png`. Pass when test_select_checks passes.
-- [ ] Lane 9. Line ceiling probe. Save `/tmp/swarm-prune-clutter/worker-9/ceiling.png`. Pass when zero Python files exceed 1000 lines.
-- [ ] Lane 10. Status hygiene probe. Save `/tmp/swarm-prune-clutter/worker-10/status-clean.png`. Pass when working tree has zero untracked files.
+- [x] Lane 1. Boundary scan probe. Save `/tmp/swarm-prune-clutter/worker-1/boundary.png`. Pass when scan_host_boundary passes.
+- [x] Lane 2. Git status probe. Save `/tmp/swarm-prune-clutter/worker-2/status.png`. Pass when git status is clean.
+- [x] Lane 3. Worktree protocol probe. Save `/tmp/swarm-prune-clutter/worker-3/confinement.png`. Pass when worktrees are confined.
+- [x] Lane 4. Package projection probe. Save `/tmp/swarm-prune-clutter/worker-4/projection.png`. Pass when package_projection check passes.
+- [x] Lane 5. Evidence staleness probe. Save `/tmp/swarm-prune-clutter/worker-5/staleness.png`. Pass when check-staleness reports all fresh.
+- [x] Lane 6. Evidence durability probe. Save `/tmp/swarm-prune-clutter/worker-6/durability.png`. Pass when check-evidence passes.
+- [x] Lane 7. Thermos skill frontmatter probe. Save `/tmp/swarm-prune-clutter/worker-7/thermo.png`. Pass when test_thermos_skills passes.
+- [x] Lane 8. Offline checks selection probe. Save `/tmp/swarm-prune-clutter/worker-8/select.png`. Pass when test_select_checks passes.
+- [x] Lane 9. Line ceiling probe. Save `/tmp/swarm-prune-clutter/worker-9/ceiling.png`. Pass when zero Python files exceed 1000 lines.
+- [x] Lane 10. Status hygiene probe. Save `/tmp/swarm-prune-clutter/worker-10/status-clean.png`. Pass when working tree has zero untracked files.
 
 **Verify, perf.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Metric. Boundary scan execution duration in seconds.
-- [ ] Probe. Time python3 scripts/scan_host_boundary.py.
-- [ ] Baseline. Record trunk duration of boundary scan.
-- [ ] Rule. Head duration must not exceed trunk duration plus 2 seconds.
+- [x] Metric. Boundary scan execution duration in seconds.
+- [x] Probe. Time python3 scripts/scan_host_boundary.py.
+- [x] Baseline. Record trunk duration of boundary scan.
+- [x] Rule. Head duration must not exceed trunk duration plus 2 seconds.
 
 **Review gate.** The operator reviews before merge.
 
-- [ ] Copy lane screenshots into `/tmp/prune-clutter-review-gate.png`.
-- [ ] Record a 30 second video of the change and save as `/tmp/prune-clutter-review.mp4`.
-- [ ] Post the screenshot and video in chat for operator review.
+- [x] Copy lane screenshots into `/tmp/prune-clutter-review-gate.png`.
+- [x] Record a 30 second video of the change and save as `/tmp/prune-clutter-review.mp4`.
+- [x] Post the screenshot and video in chat for operator review.
 
 **Merge.**
 
-- [ ] Root clean verdict at head SHA.
-- [ ] Squash merge to parent branch.
+- [x] Root clean verdict at head SHA.
+- [x] Squash merge to parent branch.
 
 ## Update verification skill templates and audit drivers (verification-tools)
 
