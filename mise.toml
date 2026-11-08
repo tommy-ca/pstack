@@ -66,6 +66,14 @@ run = "uv run python scripts/scaffold_verification_skill.py --cleanup-all"
 description = "Execute launch and drive across all 10 verification drivers"
 run = "uv run python scripts/scaffold_verification_skill.py --drive-all"
 
+[tasks."openspec:status"]
+description = "Inspect active intent-driven OpenSpec planning flow status"
+run = "uv run python scripts/openspec_change.py --status"
+
+[tasks."verify:openspec"]
+description = "Validate active OpenSpec changes against intent-driven schema"
+run = "uv run python scripts/openspec_change.py validate"
+
 [tasks."worktree:check"]
 description = "Validate worktree confinement protocol"
 run = "uv run python scripts/worktree_protocol.py check"
