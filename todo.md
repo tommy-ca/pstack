@@ -532,7 +532,7 @@
 ## Epic #1125: [Epic][Tooling & Quality] Multi-Plan CI Validation, Mise Task Synchronization, and Verification Driver Automation
 - [x] Unit 1 (Issue #1126): [Tooling & Plan][P0] Support multi-file plan validation in check-plan.mjs and wire all plans into CI
 - [x] Unit 2 (Issue #1127): [Runtime & Mise][P0] Synchronize mise.toml offline test tasks and add verification driver tasks
-- [ ] Unit 3 (Issue #1128): [Hygiene & Audit][P0] Prune ephemeral evidence runs and verify zero useless clutter
+- [x] Unit 3 (Issue #1128): [Hygiene & Audit][P0] Prune ephemeral evidence runs and verify zero useless clutter
 - [ ] Unit 4 (Issue #1129): [Gate & Close][P0] Qualify 6-harness verification matrix, reconcile plan, and close Epic #1125
 
 
