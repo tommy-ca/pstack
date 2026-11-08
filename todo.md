@@ -500,6 +500,13 @@
 - [x] Unit 4 (Issue #1082): [Gate & Close][P0] Run multi-harness verification gate, reconcile plan, and close Epic #1078
 *(Epic #1078 CLOSED)*
 
+## Epic #1087: [Epic][Thermo-Nuclear Quality & Verification Tools] Decompose Antigravity command projection, unify Grok verification driver, and automate CI checks
+- [x] Unit 1 (Issue #1088, PR #1092): [Decomposition][P0] Extract Antigravity command projection into dedicated module scripts/antigravity_command_projection.py
+- [x] Unit 2 (Issue #1089, PR #1093): [Grok Verification][P0] Add reproducible driver.sh to verify-pstack and require driver in scaffolder
+- [x] Unit 3 (Issue #1090, PR #1094): [CI & Tools][P0] Wire Grok verification driver into portability-offline workflow and update tests
+- [x] Unit 4 (Issue #1091): [Gate & Close][P0] Run multi-harness verification gate, reconcile plan, and close Epic #1087
+*(Epic #1087 CLOSED)*
+
 
 
 
