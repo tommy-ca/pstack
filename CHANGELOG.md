@@ -58,6 +58,10 @@ This ledger distinguishes **observed canonical upstream changes** from **applied
 - Streamlined mise.toml verify:drivers task to use the driver orchestrator lever (#1136, #1140).
 - Aligned verifier receipt claim to 6 declared harnesses and refreshed evidence matrix (#1137, #1141).
 - Qualified 6-harness verification matrix and closed Epic #1134 (#1138).
+- Harmonized OMP verification driver doctor command and pruned stale pycache (#1144, #1148).
+- Added doctor-all flag to scripts/scaffold_verification_skill.py and expanded test suite (#1145, #1149).
+- Added verify:doctor:skills task to mise.toml and updated toolchain tests (#1146, #1150).
+- Qualified 6-harness verification matrix and closed Epic #1143 (#1147).
 
 ## [Unreleased] — upstream 0.15.36 candidate (2026-10-31)
 
