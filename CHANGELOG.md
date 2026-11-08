@@ -66,6 +66,10 @@ This ledger distinguishes **observed canonical upstream changes** from **applied
 - Added verify:cleanup:skills task to mise.toml and updated toolchain tests (#1154, #1158).
 - Pruned 92 obsolete local branches and enforced worktree confinement protocol (#1155, #1159).
 - Qualified 6-harness verification matrix and closed Epic #1152 (#1156).
+- Added intent-driven OpenSpec planning flow status inspection to scripts/openspec_change.py (#1165, #1169).
+- Added verify:openspec and openspec:status tasks to mise.toml and updated toolchain tests (#1166, #1170).
+- Audited intent-driven artifact chains across all changes and documented planning lifecycle in docs/verification-test-tiers.md (#1167, #1171).
+- Qualified 6-harness verification matrix and closed Epic #1164 (#1168).
 
 ## [Unreleased] — upstream 0.15.36 candidate (2026-10-31)
 
