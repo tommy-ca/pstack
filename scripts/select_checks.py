@@ -129,7 +129,12 @@ CHECK_SELECTION_TABLE: List[CheckRule] = [
     ("LICENSE", ("tests/test_verify_docs_sync.py",), ()),
     (".github/**", ("{offline}",), ()),
     ("schemas/**", ("tests/test_portability_schemas.py",), ()),
-    ("profiles/**", ("tests/test_portability_schemas.py", "tests/test_evidence_durability.py"), ()),
+    ("profiles/**", ("tests/test_portability_schemas.py", "tests/test_evidence_durability.py", "tests/test_harness_profiles_sync.py"), ()),
+    ("skills/setup-pstack/profiles/**", ("tests/test_harness_profiles_sync.py", "tests/test_portability_schemas.py"), ()),
+    ("skills/interrogate/**", ("tests/test_interrogate_pack.py", "tests/test_skill_frontmatter.py"), ()),
+    ("skills/swarm/**", ("tests/test_swarm_apply.py", "tests/test_swarm_partition.py", "tests/test_skill_frontmatter.py"), ()),
+    (".pi/**", ("tests/test_pi_candidate_profile.py", "tests/test_pi_authorization_contracts.py"), ()),
+    ("scripts/verify_pi_candidate.py", ("tests/test_pi_candidate_profile.py", "tests/test_pi_authorization_contracts.py"), ()),
     (
         "scripts/portability_types.py",
         (

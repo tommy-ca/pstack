@@ -214,10 +214,10 @@ class TestCheckSelectionTable:
 
         assert _ids(result) == [
             "pytest:tests/test_droid_projection.py",
+            "pytest:tests/test_plugin_agents.py",
             "pytest:tests/test_scan_host_boundary.py",
             "pytest:tests/test_verify_harness.py",
             "script:scan_host_boundary.py",
-            "pytest:tests/test_plugin_agents.py",
         ]
         assert result["unmapped_paths"] == []
         assert result["checks"][0]["paths"] == ["agents/a.md", "droids/b.md"]
