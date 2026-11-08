@@ -25,6 +25,28 @@ def test_mise_toml_configuration() -> None:
     assert "verify:portable" in tasks, "mise.toml must declare verify:portable task"
     assert "verify:lifecycle" in tasks, "mise.toml must declare verify:lifecycle task"
     assert "verify:sync" in tasks, "mise.toml must declare verify:sync task"
+    assert "verify:doctor" in tasks, "mise.toml must declare verify:doctor task"
+    assert "verify:staleness" in tasks, "mise.toml must declare verify:staleness task"
+    assert "verify:projection" in tasks, "mise.toml must declare verify:projection task"
+    assert "verify:skills" in tasks, "mise.toml must declare verify:skills task"
+    assert "worktree:check" in tasks, "mise.toml must declare worktree:check task"
+    assert "worktree:audit" in tasks, "mise.toml must declare worktree:audit task"
+
+
+def test_release_workflow_uses_uv() -> None:
+    release_path = ROOT / ".github" / "workflows" / "release.yml"
+    assert release_path.is_file(), "release.yml must exist"
+    content = release_path.read_text(encoding="utf-8")
+    assert "astral-sh/setup-uv" in content, "release.yml must set up uv"
+    assert "uv run python" in content, "release.yml must use uv run python"
+
+
+def test_driver_template_runtime_contracts() -> None:
+    from scripts.scaffold_verification_skill import generate_driver_script
+    script = generate_driver_script("test-app")
+    assert 'PYTHON_EXEC="uv run python"' in script
+    assert 'BUN_EXEC="bun"' in script
+
 
 
 def test_mise_lockfile_exists() -> None:
