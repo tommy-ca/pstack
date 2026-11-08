@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://pstack.dev/schemas/portability/tool-mapping.schema.json",
+  "$id": "https://pstack.dev/schemas/tool-mapping.schema.json",
   "title": "ToolMapping",
   "description": "Structured mapping of portable pstack capabilities to host-native agent harness tools and execution conventions.",
   "type": "object",

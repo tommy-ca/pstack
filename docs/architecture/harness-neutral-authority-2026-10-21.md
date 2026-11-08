@@ -7,7 +7,7 @@ Status: **source-level reconciliation**, target `tommy-ca/pstack@ef3405282e4afd2
 | Layer | Owned by | Evidence |
 | --- | --- | --- |
 | Canonical purpose and ordering | `UPSTREAM`, `skills/`, `skills/poteto-mode/playbooks/`, principles | source-pinned semantic diff; behavioral fixtures |
-| Portable vocabulary and role identity | `pstack.package.json`, `schemas/portability/`, `scripts/model_role_policy.py` | schema + negative contract tests |
+| Portable vocabulary and role identity | `pstack.package.json`, `schemas/`, `scripts/model_role_policy.py` | schema + negative contract tests |
 | Host capability, model and skill precedence | `profiles/<host>.json`, `skills/poteto-mode/references/<host>-tools.md`, host model catalogs | declared mapping; unsupported capability = GAP |
 | Host native execution | `scripts/drivers/` and host runtime itself | independently observed spawn/join/cancel/isolation or explicit BLOCKED/UNTESTED |
 | Packaging/projection | `scripts/project-package.py`, host manifest directories, lifecycle tests | projected manifest + actual installed behavior |

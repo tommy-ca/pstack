@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://pstack.dev/schemas/portability/setup-projection.schema.json",
+  "$id": "https://pstack.dev/schemas/setup-projection.schema.json",
   "title": "SetupProjection",
   "description": "Where a harness host declares its model and reasoning-effort setup surface. A declaration of surface, never a capability or runtime claim.",
   "type": "object",

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://pstack.dev/schemas/portability/model-plan.schema.json",
+  "$id": "https://pstack.dev/schemas/model-plan.schema.json",
   "title": "ModelPlan",
   "description": "Pure planning-only output for harness adapters. Never evidence of live model dispatch, verified isolation or agent completion.",
   "type": "object",

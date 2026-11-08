@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://pstack.dev/schemas/portability/model-role-policy.schema.json",
+  "$id": "https://pstack.dev/schemas/model-role-policy.schema.json",
   "title": "PstackModelRolePolicy",
   "description": "Host-resolved model policy extending pstack.package.json#/roles without a duplicate role registry. Static catalogs are not runtime availability evidence.",
   "type": "object",

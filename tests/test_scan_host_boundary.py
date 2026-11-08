@@ -134,7 +134,7 @@ def test_typed_exemptions():
     assert is_exempt("skills/poteto-mode/SKILL.md") is None
     assert is_exempt("skills/poteto-mode/playbooks/feature.md") is None
     assert is_exempt("skills/swarm/SKILL.md") is None
-    assert is_exempt("schemas/portability/binding.schema.json") is None
+    assert is_exempt("schemas/binding.schema.json") is None
 
 
 def test_cli_execution():

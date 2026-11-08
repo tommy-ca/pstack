@@ -83,7 +83,7 @@ def test_schema_rejects_unsupported_topology() -> None:
 
 def test_plan_wire_schema_accepts_pure_planner_and_forbids_fake_runtime_claims() -> None:
     plan_schema = json.loads(
-        (ROOT / "schemas/portability/model-plan.schema.json").read_text(encoding="utf-8")
+        (ROOT / "schemas/model-plan.schema.json").read_text(encoding="utf-8")
     )
     Draft202012Validator.check_schema(plan_schema)
     validate_plan = Draft202012Validator(plan_schema).validate
@@ -139,7 +139,7 @@ def test_inherit_tokens_rejected_as_catalog_ids_by_both_validators(token: str) -
 
 
 def test_inherit_set_matches_schema_def() -> None:
-    schema = json.loads((ROOT / "schemas/portability/model-role-policy.schema.json").read_text(encoding="utf-8"))
+    schema = json.loads((ROOT / "schemas/model-role-policy.schema.json").read_text(encoding="utf-8"))
     assert set(model_role_policy.INHERIT) == set(schema["$defs"]["inheritTokens"]["enum"])
 
 

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://pstack.dev/schemas/portability/profile.schema.json",
+  "$id": "https://pstack.dev/schemas/profile.schema.json",
   "title": "HarnessProfile",
   "description": "Typed capability profile and layout bindings for an agent harness.",
   "type": "object",

@@ -9,7 +9,7 @@ Specify optional `/setup-pstack` model and effort overlays, their plugin-qualifi
 
 Feature: pstack-setup-overlays
 
-`/setup-pstack` MUST be host-neutral: it MUST resolve the active host, read that host's `setup` projection from `profiles/<host>.json` (`schemas/portability/setup-projection.schema.json`), and hand off to the skill the projection names. It MUST hold no host file path, model slug, or effort enum itself. A host whose profile declares no `setup` block, or a candidate host that declares a CLI-probing surface, MUST produce a named GAP or BLOCKED report; it MUST NOT fall back to another host's setup.
+`/setup-pstack` MUST be host-neutral: it MUST resolve the active host, read that host's `setup` projection from `profiles/<host>.json` (`schemas/setup-projection.schema.json`), and hand off to the skill the projection names. It MUST hold no host file path, model slug, or effort enum itself. A host whose profile declares no `setup` block, or a candidate host that declares a CLI-probing surface, MUST produce a named GAP or BLOCKED report; it MUST NOT fall back to another host's setup.
 
 #### Scenario: no setup block is a reported gap
 

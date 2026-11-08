@@ -64,7 +64,7 @@ def _host_enum(schema: dict, enum_path: tuple) -> list:
         target, _, pointer = node["$ref"].partition("#")
         if target:
             document = json.loads(
-                (ROOT / "schemas" / "portability" / target).read_text(encoding="utf-8")
+                (ROOT / "schemas" / target).read_text(encoding="utf-8")
             )
         node = document
         for part in [p for p in pointer.split("/") if p]:
@@ -82,7 +82,7 @@ def test_schema_host_enums_accept_droid() -> None:
         ("receipt", ("host",)),
     ):
         schema = json.loads(
-            (ROOT / "schemas" / "portability" / f"{schema_name}.schema.json").read_text(encoding="utf-8")
+            (ROOT / "schemas" / f"{schema_name}.schema.json").read_text(encoding="utf-8")
         )
         enum = _host_enum(schema, enum_path)
         assert "droid" in enum, schema_name

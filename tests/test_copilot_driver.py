@@ -28,7 +28,7 @@ from scripts.portability_schema import (
 )
 from scripts.setup_pstack import resolve_profiles_dir
 
-SCHEMAS_DIR = ROOT / "schemas" / "portability"
+SCHEMAS_DIR = ROOT / "schemas"
 
 
 def _registry() -> Registry:

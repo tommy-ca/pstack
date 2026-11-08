@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://pstack.dev/schemas/portability/capability.schema.json",
+  "$id": "https://pstack.dev/schemas/capability.schema.json",
   "title": "Capability",
   "description": "A semantic capability required or optionally provided by an agent harness.",
   "type": "object",

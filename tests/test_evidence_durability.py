@@ -34,7 +34,7 @@ from tests.evidence_test_helpers import (
 
 SIX_HARNESSES = _declared_hosts()
 
-RECEIPT_SCHEMA = ROOT / "schemas" / "portability" / "receipt.schema.json"
+RECEIPT_SCHEMA = ROOT / "schemas" / "receipt.schema.json"
 EVIDENCE_DIR = ROOT / ".audit" / "evidence"
 
 

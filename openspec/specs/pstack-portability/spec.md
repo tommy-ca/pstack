@@ -89,7 +89,7 @@ A prompt-only "do not write" posture is advisory and MUST NOT be reported as har
 
 ### Requirement: Harness tool mappings are structured and schema-validated
 
-Each harness adapter profile MUST declare a typed `tool_mappings` object conforming to `schemas/portability/tool-mapping.schema.json`.
+Each harness adapter profile MUST declare a typed `tool_mappings` object conforming to `schemas/tool-mapping.schema.json`.
 
 The tool mapping defines explicit host primitives for file operations (`file_read`, `file_edit`, `file_write`), command execution (`shell_run`), network operations (`web_fetch`, `web_search`), subagent operations (`agent_spawn`, `agent_fanout`, `agent_join`, `agent_message`), background tasks (`task_background`), tool protocols (`tool_mcp`), plan updates (`plan_update`), and human questions (`human_ask`).
 
@@ -98,24 +98,24 @@ Upstream pstack skills MUST NOT be modified to hardcode host-specific execution 
 #### Scenario: tool mapping validation
 - **GIVEN** a harness profile in `profiles/`
 - **WHEN** portability verification executes
-- **THEN** the profile's `tool_mappings` object validates against `schemas/portability/tool-mapping.schema.json`
+- **THEN** the profile's `tool_mappings` object validates against `schemas/tool-mapping.schema.json`
 - **AND** missing or unmapped required capabilities fail the adapter gate
 
 ### Requirement: Harness runtime conventions are structured and schema-validated
 
-Each harness adapter profile MUST declare a typed `runtime_conventions` object conforming to `schemas/portability/runtime-conventions.schema.json`.
+Each harness adapter profile MUST declare a typed `runtime_conventions` object conforming to `schemas/runtime-conventions.schema.json`.
 
 The runtime conventions define maximum subagent depth (`max_subagent_depth`), supported workspace isolation modes (`supported_isolation_modes`), default model slug (`default_model`), allowed model-facing spawn fields (`allowed_spawn_fields`), forbidden spawn fields (`forbidden_spawn_fields`), and optional wire aliases (`wire_aliases`).
 
 #### Scenario: runtime convention validation
 - **GIVEN** a harness profile in `profiles/`
 - **WHEN** portability verification executes
-- **THEN** `runtime_conventions` validates against `schemas/portability/runtime-conventions.schema.json`
+- **THEN** `runtime_conventions` validates against `schemas/runtime-conventions.schema.json`
 - **AND** subagent recursion depth exceeding the configured maximum is rejected
 
 ### Requirement: Skill order resolution follows a declared 3-tier fallback matrix
 
-Each harness adapter profile MUST declare an ordered `skill_order` list conforming to `schemas/portability/skill-order.schema.json`.
+Each harness adapter profile MUST declare an ordered `skill_order` list conforming to `schemas/skill-order.schema.json`.
 
 For each capability need, resolution follows three strict tiers:
 1. Primary pstack skill or playbook.
@@ -261,7 +261,7 @@ A mapping document alone is not support.
 - **AND** documentation does not call it supported
 
 ### Requirement: Verification has three planes
-The port MUST separate three **conceptual** conformance concerns: canonical pin/inventory/drift, adapter/native projection, and runtime observed behavior. For the existing serialized verification receipt, these concerns MUST map to the **four required and separately verdict-bearing** `canonical`, `adapter`, `package`, `runtime` planes in `schemas/portability/receipt.schema.json`. The `package` plane audits host-native manifest generation, install/link/discovery and lifecycle independently of adapter binding validation and runtime child execution. A positive result in one serialized plane MUST NOT substitute for an absent mandatory result in another. The distinction MUST be documented in the verifier without changing the existing receipt schema or creating a fifth plane.
+The port MUST separate three **conceptual** conformance concerns: canonical pin/inventory/drift, adapter/native projection, and runtime observed behavior. For the existing serialized verification receipt, these concerns MUST map to the **four required and separately verdict-bearing** `canonical`, `adapter`, `package`, `runtime` planes in `schemas/receipt.schema.json`. The `package` plane audits host-native manifest generation, install/link/discovery and lifecycle independently of adapter binding validation and runtime child execution. A positive result in one serialized plane MUST NOT substitute for an absent mandatory result in another. The distinction MUST be documented in the verifier without changing the existing receipt schema or creating a fifth plane.
 
 #### Scenario: three plane separation
 - **GIVEN** canonical, adapter, and runtime verification checks
@@ -323,7 +323,7 @@ The port MUST model canonical upstream principles, skills, playbooks, roles and 
 - **AND** no portable WorkPool scheduler, engine, capability enum or duplicate playbook DSL is introduced
 
 ### Requirement: Capability postconditions drive behavioral parity
-A host binding MUST record its native mechanism, `implementation_status`, `enforcement`, `verification_status` and source/version attribution using the existing `schemas/portability/binding.schema.json` and `capability.schema.json`. The route/playbook contract MUST state which observations make each required postcondition true. A source reference or syntactically valid binding alone MUST NOT establish observed live parity.
+A host binding MUST record its native mechanism, `implementation_status`, `enforcement`, `verification_status` and source/version attribution using the existing `schemas/binding.schema.json` and `capability.schema.json`. The route/playbook contract MUST state which observations make each required postcondition true. A source reference or syntactically valid binding alone MUST NOT establish observed live parity.
 
 #### Scenario: mapped agent spawn lacks actual child terminal result
 - **GIVEN** an OMP binding names `task` for `agent.spawn`

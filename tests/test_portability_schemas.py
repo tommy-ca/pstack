@@ -28,7 +28,7 @@ from scripts.portability_schema import (
 from scripts.setup_pstack import resolve_profiles_dir
 
 ROOT = Path(__file__).resolve().parents[1]
-SCHEMAS_DIR = ROOT / "schemas" / "portability"
+SCHEMAS_DIR = ROOT / "schemas"
 
 
 def test_portability_json_schemas_are_valid_json() -> None:

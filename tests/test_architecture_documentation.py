@@ -46,7 +46,7 @@ def test_architecture_is_linked_from_readme_and_porting_guide() -> None:
 
 
 def test_current_schema_inventory_matches_documented_schema_names() -> None:
-    discovered = {p.name for p in (ROOT / "schemas" / "portability").glob("*.schema.json")}
+    discovered = {p.name for p in (ROOT / "schemas").glob("*.schema.json")}
     documented = set(re.findall(r"`([a-z-]+\.schema\.json)`", _doc()))
     assert discovered == documented, (
         f"documented schema inventory drift: missing={discovered - documented}, "

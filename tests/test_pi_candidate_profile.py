@@ -98,7 +98,7 @@ def test_pi_package_manifest_contract():
 def test_normative_profile_json_schema():
     import jsonschema
     import referencing
-    schema_dir = ROOT / "schemas/portability"
+    schema_dir = ROOT / "schemas"
     registry = referencing.Registry()
     for path in schema_dir.glob("*.json"):
         content = json.loads(path.read_text(encoding="utf-8"))
