@@ -192,55 +192,55 @@ Each live lane runs in its own worktree child at the PR head. Drive the real sur
 
 **Files.**
 
-- [ ] Edit `scripts/verification_skill_templates.py`.
-- [ ] Edit `scripts/scaffold_verification_skill.py`.
-- [ ] Edit `tests/test_scaffold_verification_skill.py`.
+- [x] Edit `scripts/verification_skill_templates.py`.
+- [x] Edit `scripts/scaffold_verification_skill.py`.
+- [x] Edit `tests/test_scaffold_verification_skill.py`.
 
 **Build.**
 
-- [ ] Update verification skill templates to reference flattened schemas.
-- [ ] Ensure scaffold verification tests validate updated schema locations.
-- [ ] Audit all ten verification skill drivers across all hosts.
+- [x] Update verification skill templates to reference flattened schemas.
+- [x] Ensure scaffold verification tests validate updated schema locations.
+- [x] Audit all ten verification skill drivers across all hosts.
 
 **You see.**
 
-- [ ] Verification scaffold audit reports 10 passed and 0 failed.
-- [ ] All verification skill drivers execute successfully.
+- [x] Verification scaffold audit reports 10 passed and 0 failed.
+- [x] All verification skill drivers execute successfully.
 
 **Verify, unit.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Run `python3 scripts/scaffold_verification_skill.py --audit --json`.
+- [x] Run `python3 scripts/scaffold_verification_skill.py --audit --json`.
 
 **Verify, live.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked. Ten lanes on `gemini-pro` at the PR head, per the boot recipe.
 
-- [ ] Lane 1. Grok driver probe. Save `/tmp/swarm-verification-tools/worker-1/grok.png`. Pass when Grok driver passes.
-- [ ] Lane 2. Codex driver probe. Save `/tmp/swarm-verification-tools/worker-2/codex.png`. Pass when Codex driver passes.
-- [ ] Lane 3. Codex LLM wiki driver probe. Save `/tmp/swarm-verification-tools/worker-3/wiki.png`. Pass when LLM wiki driver passes.
-- [ ] Lane 4. OMP driver probe. Save `/tmp/swarm-verification-tools/worker-4/omp.png`. Pass when OMP driver passes.
-- [ ] Lane 5. OpenCode driver probe. Save `/tmp/swarm-verification-tools/worker-5/opencode.png`. Pass when OpenCode driver passes.
-- [ ] Lane 6. Antigravity driver probe. Save `/tmp/swarm-verification-tools/worker-6/antigravity.png`. Pass when Antigravity driver passes.
-- [ ] Lane 7. Droid driver probe. Save `/tmp/swarm-verification-tools/worker-7/droid.png`. Pass when Droid driver passes.
-- [ ] Lane 8. Pi driver probe. Save `/tmp/swarm-verification-tools/worker-8/pi.png`. Pass when Pi driver passes.
-- [ ] Lane 9. Pi formal driver probe. Save `/tmp/swarm-verification-tools/worker-9/pi-formal.png`. Pass when Pi formal driver passes.
-- [ ] Lane 10. Status hygiene probe. Save `/tmp/swarm-verification-tools/worker-10/status.png`. Pass when git status is clean.
+- [x] Lane 1. Grok driver probe. Save `/tmp/swarm-verification-tools/worker-1/grok.png`. Pass when Grok driver passes.
+- [x] Lane 2. Codex driver probe. Save `/tmp/swarm-verification-tools/worker-2/codex.png`. Pass when Codex driver passes.
+- [x] Lane 3. Codex LLM wiki driver probe. Save `/tmp/swarm-verification-tools/worker-3/wiki.png`. Pass when LLM wiki driver passes.
+- [x] Lane 4. OMP driver probe. Save `/tmp/swarm-verification-tools/worker-4/omp.png`. Pass when OMP driver passes.
+- [x] Lane 5. OpenCode driver probe. Save `/tmp/swarm-verification-tools/worker-5/opencode.png`. Pass when OpenCode driver passes.
+- [x] Lane 6. Antigravity driver probe. Save `/tmp/swarm-verification-tools/worker-6/antigravity.png`. Pass when Antigravity driver passes.
+- [x] Lane 7. Droid driver probe. Save `/tmp/swarm-verification-tools/worker-7/droid.png`. Pass when Droid driver passes.
+- [x] Lane 8. Pi driver probe. Save `/tmp/swarm-verification-tools/worker-8/pi.png`. Pass when Pi driver passes.
+- [x] Lane 9. Pi formal driver probe. Save `/tmp/swarm-verification-tools/worker-9/pi-formal.png`. Pass when Pi formal driver passes.
+- [x] Lane 10. Status hygiene probe. Save `/tmp/swarm-verification-tools/worker-10/status.png`. Pass when git status is clean.
 
 **Verify, perf.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Metric. Scaffold audit duration in seconds.
-- [ ] Probe. Time python3 scripts/scaffold_verification_skill.py --audit --json.
-- [ ] Baseline. Record trunk duration of scaffold audit.
-- [ ] Rule. Head duration must not exceed trunk duration plus 1 second.
+- [x] Metric. Scaffold audit duration in seconds.
+- [x] Probe. Time python3 scripts/scaffold_verification_skill.py --audit --json.
+- [x] Baseline. Record trunk duration of scaffold audit.
+- [x] Rule. Head duration must not exceed trunk duration plus 1 second.
 
 **Review gate.** The operator reviews before merge.
 
-- [ ] Copy lane screenshots into `/tmp/verification-tools-review-gate.png`.
-- [ ] Record a 30 second video of the change and save as `/tmp/verification-tools-review.mp4`.
-- [ ] Post the screenshot and video in chat for operator review.
+- [x] Copy lane screenshots into `/tmp/verification-tools-review-gate.png`.
+- [x] Record a 30 second video of the change and save as `/tmp/verification-tools-review.mp4`.
+- [x] Post the screenshot and video in chat for operator review.
 
 **Merge.**
 
-- [ ] Root clean verdict at head SHA.
-- [ ] Squash merge to parent branch.
+- [x] Root clean verdict at head SHA.
+- [x] Squash merge to parent branch.
 
 ## Qualify 6-harness verification matrix and close Epic 1116 (gate-close-1116)
 
