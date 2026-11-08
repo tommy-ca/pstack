@@ -192,3 +192,15 @@ def test_poteto_agent_is_delegate_only_contract() -> None:
         assert "Delegated subagent worker" in text
         assert "parent session coordinates" in text
         assert "Depth is 1" in text
+
+
+def test_droid_role_projection_module_direct() -> None:
+    import scripts.droid_role_projection as droid_proj
+
+    desc, _ = project_package.load_package_descriptor()
+    marketplace = droid_proj.generate_droid_marketplace(desc)
+    assert marketplace["name"] == "pstack"
+
+    roles = droid_proj.generate_droid_roles()
+    assert len(roles) == 22
+    assert "pstack-poteto-agent.md" in roles
