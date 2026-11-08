@@ -3,11 +3,11 @@
   "hosts": {
     "grok": {
       "receipt": ".audit/evidence/grok-receipt.json",
-      "run_id": "grok-1794139573-387806b6",
-      "timestamp": "2026-11-08T12:06:18Z",
-      "overall_verdict": "FAIL",
+      "run_id": "grok-1794140222-8b5e5214",
+      "timestamp": "2026-11-08T12:17:08Z",
+      "overall_verdict": "UNTESTED",
       "planes": {
-        "canonical": "FAIL",
+        "canonical": "UNTESTED",
         "adapter": "PASS",
         "package": "PASS",
         "runtime": "UNTESTED"
@@ -29,11 +29,11 @@
     },
     "codex": {
       "receipt": ".audit/evidence/codex-receipt.json",
-      "run_id": "codex-1794139614-823c7f64",
-      "timestamp": "2026-11-08T12:06:59Z",
-      "overall_verdict": "FAIL",
+      "run_id": "codex-1794140255-7e2b3c9c",
+      "timestamp": "2026-11-08T12:17:42Z",
+      "overall_verdict": "UNTESTED",
       "planes": {
-        "canonical": "FAIL",
+        "canonical": "UNTESTED",
         "adapter": "PASS",
         "package": "PASS",
         "runtime": "UNTESTED"
@@ -81,11 +81,11 @@
     },
     "opencode": {
       "receipt": ".audit/evidence/opencode-receipt.json",
-      "run_id": "opencode-1794139625-682e6852",
-      "timestamp": "2026-11-08T12:07:10Z",
-      "overall_verdict": "FAIL",
+      "run_id": "opencode-1794140275-c3459a1b",
+      "timestamp": "2026-11-08T12:18:01Z",
+      "overall_verdict": "UNTESTED",
       "planes": {
-        "canonical": "FAIL",
+        "canonical": "UNTESTED",
         "adapter": "PASS",
         "package": "PASS",
         "runtime": "UNTESTED"
@@ -107,11 +107,11 @@
     },
     "antigravity": {
       "receipt": ".audit/evidence/antigravity-receipt.json",
-      "run_id": "antigravity-1794139643-99e44c64",
-      "timestamp": "2026-11-08T12:07:28Z",
-      "overall_verdict": "FAIL",
+      "run_id": "antigravity-1794140303-6b9e0115",
+      "timestamp": "2026-11-08T12:18:29Z",
+      "overall_verdict": "UNTESTED",
       "planes": {
-        "canonical": "FAIL",
+        "canonical": "UNTESTED",
         "adapter": "PASS",
         "package": "PASS",
         "runtime": "UNTESTED"
