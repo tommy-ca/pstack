@@ -1,0 +1,17 @@
+{
+  "host": "omp",
+  "app": "pstack",
+  "features": [
+    {
+      "id": "core",
+      "name": "Core OMP Integration",
+      "document": "core.md",
+      "sub_features": [
+        "manifest-projection",
+        "native-package-enrollment",
+        "doctor-checks",
+        "evidence-freshness"
+      ]
+    }
+  ]
+}
