@@ -368,4 +368,16 @@ All five planning artifacts must reach completion before implementation tasks be
 The CLI command `python3 scripts/openspec_change.py --status` inspects this artifact chain (`principle-prove-it-works`).
 Archived changes must preserve their complete planning chain under `openspec/changes/archive/` per the `archive-chain-integrity` specification (`principle-boundary-discipline`).
 
+### OpenSpec git discipline and dual-mode validation contracts
+
+Repository agents follow the `openspec-git-discipline` skill (`.agents/skills/openspec-git-discipline/SKILL.md` and `.opencode/skills/openspec-git-discipline/SKILL.md`).
+Every OpenSpec lifecycle phase must cross `main` before dependent phases begin (`principle-boundary-discipline`).
+Proposals must be committed and merged to `main` before apply starts.
+Archive operations must execute on `main` after implementation PRs merge.
+Validation uses dual-mode checks adapted from QStack toolchains (`principle-make-operations-idempotent`).
+The command `mise run verify:openspec` strictly validates active change proposals against intent-driven schemas.
+The command `mise run verify:openspec:all` validates all living specifications under `openspec/specs/`.
+The unified entry point `scripts/openspec_change.py` supports `--all`, `--status`, `--change`, and `--json` options.
+
+
 
