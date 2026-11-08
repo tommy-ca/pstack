@@ -23,6 +23,8 @@ import scripts.openspec_change as oc
 from scripts.openspec_change import (
     ChangeResolution,
     _active_openspec_changes,
+    inspect_intent_driven_change,
+    main,
     resolve_openspec_change,
     validate_openspec_change,
 )
@@ -198,3 +200,98 @@ def test_change_resolution_frozen_dataclass_and_semantics() -> None:
     assert ambig.name is None
     assert ambig.candidates == ["ch1", "ch2"]
     assert ambig[2] == ["ch1", "ch2"]
+
+
+def test_intent_driven_status_active_and_explicit(monkeypatch: pytest.MonkeyPatch) -> None:
+    seen: dict[str, list[str]] = {}
+
+    def _fake_run(*a: object, **k: object) -> subprocess.CompletedProcess[str]:
+        seen["argv"] = list(a[0]) if a else []
+        return subprocess.CompletedProcess(a, 0, "status ok", "")
+
+    monkeypatch.setattr(subprocess, "run", _fake_run)
+    monkeypatch.setattr(oc, "_active_openspec_changes", lambda *a, **k: ["active-unit"])
+
+    assert inspect_intent_driven_change() == 0
+    assert seen.get("argv", []) == ["openspec", "status", "--change", "active-unit"]
+
+    assert inspect_intent_driven_change("explicit-unit", as_json=True) == 0
+    assert seen.get("argv", []) == [
+        "openspec",
+        "status",
+        "--change",
+        "explicit-unit",
+        "--json",
+    ]
+
+
+def test_intent_driven_status_none_branches(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    monkeypatch.setattr(oc, "_active_openspec_changes", lambda *a, **k: [])
+
+    assert inspect_intent_driven_change(as_json=False) == 0
+    captured = capsys.readouterr()
+    assert "No active OpenSpec changes." in captured.out
+
+    assert inspect_intent_driven_change(as_json=True) == 0
+    captured_json = capsys.readouterr()
+    parsed = json.loads(captured_json.out)
+    assert parsed["status"] == "none"
+    assert parsed["changes"] == []
+
+
+def test_intent_driven_status_error_branches(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    monkeypatch.setattr(oc, "_active_openspec_changes", lambda *a, **k: None)
+    assert inspect_intent_driven_change() == 1
+    err = capsys.readouterr().err
+    assert "lookup failed" in err
+
+    monkeypatch.setattr(oc, "_active_openspec_changes", lambda *a, **k: ["c1", "c2"])
+    assert inspect_intent_driven_change() == 1
+    err2 = capsys.readouterr().err
+    assert "2 active openspec changes" in err2
+
+
+def test_intent_driven_status_main_cli(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    seen: dict[str, list[str]] = {}
+
+    def _fake_run(*a: object, **k: object) -> subprocess.CompletedProcess[str]:
+        seen["argv"] = list(a[0]) if a else []
+        return subprocess.CompletedProcess(a, 0, "{}", "")
+
+    monkeypatch.setattr(subprocess, "run", _fake_run)
+    monkeypatch.setattr(oc, "_active_openspec_changes", lambda *a, **k: ["active-flow"])
+
+    assert main(["--status"]) == 0
+    assert seen.get("argv", []) == ["openspec", "status", "--change", "active-flow"]
+
+    assert main(["--status", "--json"]) == 0
+    assert seen.get("argv", []) == [
+        "openspec",
+        "status",
+        "--change",
+        "active-flow",
+        "--json",
+    ]
+
+    assert main(["--status", "named-flow"]) == 0
+    assert seen.get("argv", []) == ["openspec", "status", "--change", "named-flow"]
+
+    assert main(["--status", "--change", "explicit-flow", "--json"]) == 0
+    assert seen.get("argv", []) == [
+        "openspec",
+        "status",
+        "--change",
+        "explicit-flow",
+        "--json",
+    ]
+
+    assert main(["--help"]) == 0
+    captured = capsys.readouterr()
+    assert "Usage" in captured.out
+
