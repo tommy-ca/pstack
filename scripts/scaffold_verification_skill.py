@@ -495,17 +495,18 @@ def check_skill(target_dir: pathlib.Path) -> List[str]:
     errors.extend(check_feature_map(target_dir / "features"))
 
     driver_script = target_dir / "scripts" / "driver.sh"
-    if driver_script.exists():
-        if driver_script.is_symlink():
-            errors.append(f"driver.sh must not be a symlink: {driver_script}")
-        elif not os.access(driver_script, os.X_OK):
-            errors.append(f"driver.sh is not executable: {driver_script}")
-        else:
-            driver_text = driver_script.read_text(encoding="utf-8")
-            if "PYTHON_EXEC" in driver_text and "uv run python" not in driver_text:
-                errors.append(f"driver.sh must resolve uv run python for reproducible execution: {driver_script}")
-            if "BUN_EXEC" in driver_text and "bun" not in driver_text:
-                errors.append(f"driver.sh must default BUN_EXEC to bun for reproducible execution: {driver_script}")
+    if not driver_script.exists():
+        errors.append(f"Missing driver.sh in {target_dir / 'scripts'}")
+    elif driver_script.is_symlink():
+        errors.append(f"driver.sh must not be a symlink: {driver_script}")
+    elif not os.access(driver_script, os.X_OK):
+        errors.append(f"driver.sh is not executable: {driver_script}")
+    else:
+        driver_text = driver_script.read_text(encoding="utf-8")
+        if "PYTHON_EXEC" in driver_text and "uv run python" not in driver_text:
+            errors.append(f"driver.sh must resolve uv run python for reproducible execution: {driver_script}")
+        if "BUN_EXEC" in driver_text and "bun" not in driver_text:
+            errors.append(f"driver.sh must default BUN_EXEC to bun for reproducible execution: {driver_script}")
 
     return errors
 
