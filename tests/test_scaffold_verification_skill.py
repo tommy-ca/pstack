@@ -593,6 +593,24 @@ def test_check_json_format(tmp_path: pathlib.Path) -> None:
     assert data["errors"] == []
 
 
+def test_check_skill_driver_executable_validation(tmp_path: pathlib.Path) -> None:
+    cli(tmp_path, "--host", "grok", "--app", "app-a", "--write")
+    target = tmp_path / ".grok/skills/verify-app-a"
+    driver = target / "scripts" / "driver.sh"
+
+    driver.chmod(0o644)
+    res = cli(tmp_path, "--check", "--target-dir", str(target), "--json")
+    assert res.returncode == 1
+    data = json.loads(res.stdout)
+    assert any("driver.sh is not executable" in err for err in data["errors"])
+
+    driver.chmod(0o755)
+    res = cli(tmp_path, "--check", "--target-dir", str(target), "--json")
+    assert res.returncode == 0
+    data = json.loads(res.stdout)
+    assert data["status"] == "PASS"
+
+
 
 
 

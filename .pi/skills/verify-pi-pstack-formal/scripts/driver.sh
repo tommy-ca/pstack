@@ -21,9 +21,9 @@ run_bounded() {
     shift
     echo "==> Running $label (bounded by ${TIMEOUT_SECONDS}s)..."
     if command -v timeout >/dev/null 2>&1; then
-        timeout "${TIMEOUT_SECONDS}" "$@"
+        timeout "${TIMEOUT_SECONDS}" "$@" < /dev/null
     else
-        "$@"
+        "$@" < /dev/null
     fi
 }
 
