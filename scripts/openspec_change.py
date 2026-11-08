@@ -5,12 +5,8 @@ Separated from verify-portable.py for modular decomposition.
 
 from __future__ import annotations
 
-import argparse
-import json
-import re
 import subprocess
 import sys
-from pathlib import Path
 from dataclasses import dataclass, field
 from typing import Any, Callable, Iterator, List, Literal, Optional, Tuple
 
@@ -121,190 +117,76 @@ def validate_openspec_change(
     return 1
 
 
-
-# This inspector reports *repository artifact presence*, not OpenSpec CLI validity,
-# applied behavior, or archival eligibility. Native OpenSpec validation is separate.
-INTENT_STAGES = ("proposal", "specs", "design", "adr", "tasks")
-
-
-def _intent_manifest_fields(path: Path) -> dict[str, str]:
-    if not path.is_file() or path.is_symlink():
-        return {}
-    fields: dict[str, str] = {}
-    for line in path.read_text(encoding="utf-8").splitlines():
-        key, separator, value = line.partition(":")
-        if separator and key.strip() in ("schema", "skip_specs"):
-            fields[key.strip()] = value.strip().strip("\"'").lower()
-    return fields
-
-
 def inspect_intent_driven_change(
-    change: str, *, root: Path | None = None,
-) -> dict[str, Any]:
-    """Inspect the five intent artifacts without depending on a host or OpenSpec CLI."""
-    if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", change) or change == "archive":
-        raise ValueError("change name must be a simple kebab-case directory")
-    repo = root if root is not None else Path(_repo_root())
-    changes = repo / "openspec" / "changes"
-    directory = changes / change
-    if directory.is_symlink() or not directory.is_dir():
-        raise FileNotFoundError(f"active OpenSpec change not found: {change}")
-
-    manifest = _intent_manifest_fields(directory / ".openspec.yaml")
-    schema_ok = manifest.get("schema") == "intent-driven"
-    skip_specs = manifest.get("skip_specs") == "true"
-
-    def regular_file(path: Path) -> bool:
-        return path.is_file() and not path.is_symlink()
-
-    specs = directory / "specs"
-    specs_found = (
-        specs.is_dir()
-        and not specs.is_symlink()
-        and any(
-            regular_file(p) and not any(a.is_symlink() for a in p.parents if a != directory)
-            for p in specs.rglob("spec.md")
-        )
-    )
-    artifacts = {
-        "proposal": regular_file(directory / "proposal.md"),
-        "specs": bool(specs_found or skip_specs),
-        "design": regular_file(directory / "design.md"),
-        "adr": regular_file(directory / "adr.md"),
-        "tasks": regular_file(directory / "tasks.md"),
-    }
-    missing = [stage for stage in INTENT_STAGES if not artifacts[stage]]
-    if not schema_ok:
-        missing.insert(0, ".openspec.yaml:schema=intent-driven")
-    tasks_text = (directory / "tasks.md").read_text(encoding="utf-8") if artifacts["tasks"] else ""
-    task_marks = re.findall(r"(?m)^- \[([ xX])\]\s+", tasks_text)
-    task_status = (
-        "untracked" if not task_marks
-        else "complete" if all(mark.lower() == "x" for mark in task_marks)
-        else "in-progress"
-    )
-    return {
-        "name": change,
-        "schema": manifest.get("schema"),
-        "skip_specs": skip_specs,
-        "artifacts": artifacts,
-        "specs_exempt": skip_specs and not specs_found,
-        "missing": missing,
-        "next_stage": next((stage for stage in INTENT_STAGES if not artifacts[stage]), None),
-        "planning_chain_ready": not missing,
-        "tasks": {"total": len(task_marks), "done": sum(m.lower() == "x" for m in task_marks), "status": task_status},
-        "evidence": "filesystem-only; OpenSpec CLI and execution unverified",
-    }
-
-
-def inspect_intent_driven_changes(
-    *, root: Path | None = None, change: str | None = None,
-) -> list[dict[str, Any]]:
-    repo = root if root is not None else Path(_repo_root())
-    folder = repo / "openspec" / "changes"
-    if not folder.is_dir():
-        raise FileNotFoundError("openspec/changes directory missing")
-    if change is not None:
-        return [inspect_intent_driven_change(change, root=repo)]
-    return [
-        inspect_intent_driven_change(p.name, root=repo)
-        for p in sorted(folder.iterdir())
-        if p.is_dir() and not p.is_symlink() and p.name not in ("archive", ".archive")
-    ]
-
-
-def print_intent_status(
-    *, root: Path | None = None, change: str | None = None, as_json: bool = False,
+    change: str | None = None,
+    *,
+    as_json: bool = False,
+    active_resolver: Optional[Callable[[], list[str] | None]] = None,
+    cwd: str | None = None,
 ) -> int:
-    try:
-        changes = inspect_intent_driven_changes(root=root, change=change)
-    except (ValueError, FileNotFoundError) as exc:
-        print(f"ERROR: {exc}", file=sys.stderr)
-        return 1
-    payload = {
-        "schema": "intent-driven",
-        "stage_order": list(INTENT_STAGES),
-        "inspection_level": "filesystem-only; not OpenSpec validation",
-        "summary": {
-            "total": len(changes),
-            "planning_ready": sum(bool(x["planning_chain_ready"]) for x in changes),
-            "incomplete": sum(not x["planning_chain_ready"] for x in changes),
-        },
-        "changes": changes,
-    }
-    if as_json:
-        print(json.dumps(payload, indent=2, sort_keys=True))
-    else:
-        for entry in changes:
-            label = "ARTIFACTS_PRESENT" if entry["planning_chain_ready"] else "INCOMPLETE"
-            missing = ", ".join(entry["missing"]) if entry["missing"] else "none"
-            print(f'{entry["name"]}: {label}; missing: {missing}; tasks: {entry["tasks"]["status"]}')
-        print("NOTE: filesystem inspection only; run OpenSpec CLI validation separately.")
-    return 0
-
-
-def verify_intent_driven_changes(
-    *, root: Path | None = None, change: str | None = None,
-) -> int:
-    """Strict verification, deliberately BLOCKED if CLI or artifact chain is missing."""
-    repo = root if root is not None else Path(_repo_root())
-    try:
-        changes = inspect_intent_driven_changes(root=repo, change=change)
-    except (ValueError, FileNotFoundError) as exc:
-        print(f"BLOCKED: {exc}", file=sys.stderr)
-        return 2
-    unready = [x for x in changes if not x["planning_chain_ready"]]
-    if unready:
-        for entry in unready:
-            print(f'BLOCKED: {entry["name"]}: missing {", ".join(entry["missing"])}', file=sys.stderr)
-        return 2
-    try:
-        commands = [["openspec", "schema", "validate", "intent-driven"]]
-        commands.extend(
-            ["openspec", "validate", x["name"], "--type", "change", "--strict"]
-            for x in changes
+    resolution = resolve_openspec_change(change, active_resolver=active_resolver)
+    if resolution.state in ("explicit", "active"):
+        assert resolution.name is not None
+        cmd = ["openspec", "status", "--change", resolution.name]
+        if as_json:
+            cmd.append("--json")
+        probed = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            check=False,
+            cwd=cwd if cwd is not None else _repo_root(),
         )
-        for command in commands:
-            result = subprocess.run(
-                command, cwd=str(repo), capture_output=True, text=True, check=False,
-            )
-            sys.stdout.write(result.stdout)
-            sys.stderr.write(result.stderr)
-            if result.returncode != 0:
-                print(f"FAIL: OpenSpec command exited {result.returncode}: {' '.join(command)}", file=sys.stderr)
-                return 1
-    except OSError as exc:
-        print(f"BLOCKED: OpenSpec CLI unavailable: {exc}", file=sys.stderr)
-        return 2
-    print(f"PASS: schema and {len(changes)} active change(s) strictly validated with OpenSpec CLI.")
-    return 0
+        sys.stdout.write(probed.stdout)
+        sys.stderr.write(probed.stderr)
+        return probed.returncode
+    if resolution.state == "none":
+        if as_json:
+            import json as _json
 
-
-def main(argv: Optional[List[str]] = None) -> int:
-    args = sys.argv[1:] if argv is None else argv
-    if args and args[0] in ("-h", "--help"):
-        print("Usage: python3 scripts/openspec_change.py [validate [CHANGE] | --status [--json] [--change NAME] | verify [--change NAME]]")
+            print(_json.dumps({"status": "none", "changes": []}))
+        else:
+            print("No active OpenSpec changes.")
         return 0
-    if args and (args[0] in ("status", "verify") or "--status" in args):
-        mode = "verify" if args[0] == "verify" else "status"
-        parsed = argparse.ArgumentParser(prog=f"openspec_change.py {mode}")
-        parsed.add_argument("--change", metavar="NAME")
-        if mode == "status":
-            parsed.add_argument("--status", action="store_true")
-            parsed.add_argument("--json", action="store_true")
-        try:
-            opts = parsed.parse_args(args[1:] if args[0] in ("status", "verify") else args)
-        except SystemExit as exc:
-            return int(exc.code)
-        if mode == "verify":
-            return verify_intent_driven_changes(change=opts.change)
-        return print_intent_status(change=opts.change, as_json=opts.json)
-    if args and args[0] == "--change":
-        change = args[1] if len(args) > 1 else None
+    if resolution.state == "lookup-failed":
+        print("ERROR: `openspec list --json` lookup failed; cannot determine active changes.", file=sys.stderr)
+        print("Resolve the openspec CLI failure, then rerun.", file=sys.stderr)
+        return 1
+    print(f"ERROR: {len(resolution.names)} active openspec changes; pass one explicitly via --change.", file=sys.stderr)
+    for entry in resolution.names:
+        print(f"  - {entry}", file=sys.stderr)
+    return 1
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = list(sys.argv[1:] if argv is None else argv)
+    if any(arg in ("-h", "--help") for arg in args):
+        print("Usage: python3 scripts/openspec_change.py [--status] [--json] [--change CHANGE] [CHANGE]", file=sys.stdout)
+        return 0
+    status_mode = "--status" in args
+    if status_mode:
+        args.remove("--status")
+    as_json = "--json" in args
+    if as_json:
+        args.remove("--json")
+
+    change: str | None = None
+    if "--change" in args:
+        idx = args.index("--change")
+        if idx + 1 < len(args):
+            change = args[idx + 1]
+            del args[idx : idx + 2]
+        else:
+            args.remove("--change")
     elif args and args[0] == "validate":
-        change = args[1] if len(args) > 1 else None
-    else:
-        change = args[0] if args else None
+        args.pop(0)
+        if args:
+            change = args.pop(0)
+    elif args:
+        change = args.pop(0)
+
+    if status_mode or as_json:
+        return inspect_intent_driven_change(change, as_json=as_json)
     return validate_openspec_change(change)
 
 

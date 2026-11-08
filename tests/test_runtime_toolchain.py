@@ -26,10 +26,6 @@ def test_mise_toml_configuration() -> None:
     assert "test:offline" in tasks, "mise.toml must declare test:offline task"
     assert "test:scripts" in tasks, "mise.toml must declare test:scripts task"
     assert "plan:check" in tasks, "mise.toml must declare plan:check task"
-    assert "verify:openspec" in tasks, "mise.toml must provide strict OpenSpec validation"
-    assert "openspec:status" in tasks, "mise.toml must provide read-only intent flow inspection"
-    assert "openspec_change.py verify" in tasks["verify:openspec"]["run"]
-    assert "openspec_change.py --status --json" in tasks["openspec:status"]["run"]
     assert "verify:portable" in tasks, "mise.toml must declare verify:portable task"
     assert "verify:lifecycle" in tasks, "mise.toml must declare verify:lifecycle task"
     assert "verify:sync" in tasks, "mise.toml must declare verify:sync task"
@@ -43,6 +39,10 @@ def test_mise_toml_configuration() -> None:
     assert tasks["verify:cleanup:skills"]["run"] == "uv run python scripts/scaffold_verification_skill.py --cleanup-all"
     assert "verify:drivers" in tasks, "mise.toml must declare verify:drivers task"
     assert tasks["verify:drivers"]["run"] == "uv run python scripts/scaffold_verification_skill.py --drive-all"
+    assert "openspec:status" in tasks, "mise.toml must declare openspec:status task"
+    assert tasks["openspec:status"]["run"] == "uv run python scripts/openspec_change.py --status"
+    assert "verify:openspec" in tasks, "mise.toml must declare verify:openspec task"
+    assert tasks["verify:openspec"]["run"] == "uv run python scripts/openspec_change.py validate"
     assert "worktree:check" in tasks, "mise.toml must declare worktree:check task"
     assert "worktree:audit" in tasks, "mise.toml must declare worktree:audit task"
 
