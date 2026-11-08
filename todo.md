@@ -493,6 +493,13 @@
 - [x] Unit 4 (Issue #1063, #1064, PR #1065): [Gate & Integrity][P0] Qualify PR #1065, run full multi-harness verification gate, and close Epics #1060 and #1072
 *(Epic #1072 CLOSED)*
 
+## Epic #1078: [Epic][Multi-Harness Verification Skills] Complete native verification skills for OpenCode and Droid and wire CI drivers
+- [x] Unit 1 (Issue #1079, PR #1083): [OpenCode Verification][P0] Scaffold and tailor verify-opencode-pstack verification skill
+- [x] Unit 2 (Issue #1080, PR #1084): [Droid Verification][P0] Scaffold and tailor verify-droid-pstack verification skill
+- [x] Unit 3 (Issue #1081, PR #1085): [CI & Tools][P0] Wire OMP, OpenCode, and Droid verification drivers into portability-offline workflow and update tests
+- [x] Unit 4 (Issue #1082): [Gate & Close][P0] Run multi-harness verification gate, reconcile plan, and close Epic #1078
+*(Epic #1078 CLOSED)*
+
 
 
 

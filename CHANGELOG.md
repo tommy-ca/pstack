@@ -29,6 +29,10 @@ This ledger distinguishes **observed canonical upstream changes** from **applied
 - Scaffolded and tailored verify-omp-pstack verification skill in .omp/skills/ (#1074, #1076).
 - Curated portable DeepSeek skills and reconciled 22-source OpenSpec without DSH-specific workflows (#1049, #1061, #1062).
 - Hardened make-pr-easy-to-review verification claims against unrun and stale evidence (#1065, #1063, #1064).
+- Scaffolded and tailored verify-opencode-pstack verification skill in .opencode/skills/ (#1079, #1083).
+- Scaffolded and tailored verify-droid-pstack verification skill in .factory/skills/ (#1080, #1084).
+- Wired OMP, OpenCode, and Droid verification drivers into portability-offline CI workflow and updated tests (#1081, #1085).
+- Completed multi-harness verification gate across all six declared hosts and closed Epic #1078 (#1082).
 
 ## [Unreleased] — upstream 0.15.36 candidate (2026-10-31)
 
