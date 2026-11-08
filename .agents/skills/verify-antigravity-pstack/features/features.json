@@ -1,0 +1,17 @@
+{
+  "host": "antigravity",
+  "app": "pstack",
+  "features": [
+    {
+      "id": "core",
+      "name": "Core Antigravity Integration",
+      "document": "core.md",
+      "sub_features": [
+        "manifest-projection",
+        "command-sync",
+        "doctor-checks",
+        "evidence-freshness"
+      ]
+    }
+  ]
+}
