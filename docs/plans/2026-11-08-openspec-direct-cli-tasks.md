@@ -122,24 +122,24 @@ Each live lane runs in its own worktree child at the PR head. Drive the real sur
 
 **Files.**
 
-- [ ] Edit `tests/test_runtime_toolchain.py`.
-- [ ] Edit `tests/test_openspec_change.py`.
+- [x] Edit `tests/test_runtime_toolchain.py`.
+- [x] Edit `tests/test_openspec_change.py`.
 
 **Build.**
 
-- [ ] Update `tests/test_runtime_toolchain.py` assertions for direct CLI commands across all openspec tasks.
-- [ ] Ensure `tests/test_openspec_change.py` passes completely without regressions.
-- [ ] Validate both `verify:openspec` and `validate:openspec` task definitions in toolchain tests.
-- [ ] Verify zero unnecessary wrappers per SOLID, KISS, DRY, and YAGNI.
+- [x] Update `tests/test_runtime_toolchain.py` assertions for direct CLI commands across all openspec tasks.
+- [x] Ensure `tests/test_openspec_change.py` passes completely without regressions.
+- [x] Validate both `verify:openspec` and `validate:openspec` task definitions in toolchain tests.
+- [x] Verify zero unnecessary wrappers per SOLID, KISS, DRY, and YAGNI.
 
 **You see.**
 
-- [ ] Green test suites for both `tests/test_runtime_toolchain.py` and `tests/test_openspec_change.py`.
-- [ ] Direct validation contracts verified against actual `mise.toml` contents.
+- [x] Green test suites for both `tests/test_runtime_toolchain.py` and `tests/test_openspec_change.py`.
+- [x] Direct validation contracts verified against actual `mise.toml` contents.
 
 **Verify, unit.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Run `uv run pytest tests/test_runtime_toolchain.py tests/test_openspec_change.py`.
+- [x] Run `uv run pytest tests/test_runtime_toolchain.py tests/test_openspec_change.py`.
 
 **Verify, live.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked. Ten lanes on `gemini-pro` at the PR head, per the boot recipe.
 
