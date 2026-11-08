@@ -558,7 +558,7 @@ class PortableVerifier:
             surface_revisions=surface_revisions,
             scenarios=scenarios,
             artifacts=[str(self.run_dir / "receipt.json"), f".audit/evidence/{self.host}-receipt.json"],
-            claim=f"{self.host} 5-harness portability conformance verification",
+            claim=f"{self.host} 6-harness portability conformance verification",
             kind="runtime",
         )
 

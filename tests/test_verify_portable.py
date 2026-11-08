@@ -108,6 +108,13 @@ def test_portable_verifier_launch_and_doctor(tmp_path: Path) -> None:
     )
 
 
+def test_portable_verifier_claim_reflects_six_harnesses(tmp_path: Path) -> None:
+    verifier = PortableVerifier(host="codex", evidence_root=tmp_path)
+    assert verifier.launch()
+    receipt = verifier.proof_bar()
+    assert receipt.claim == "codex 6-harness portability conformance verification"
+
+
 def test_portable_verifier_codex_doctor(tmp_path: Path) -> None:
     verifier = PortableVerifier(host="codex", evidence_root=tmp_path)
     assert verifier.launch()
