@@ -177,54 +177,54 @@ Each live lane runs in its own worktree child at the PR head. Drive the real sur
 
 **Files.**
 
-- [ ] Edit `mise.toml`.
-- [ ] Edit `tests/test_runtime_toolchain.py`.
+- [x] Edit `mise.toml`.
+- [x] Edit `tests/test_runtime_toolchain.py`.
 
 **Build.**
 
-- [ ] Add `verify:doctor:skills` task to `mise.toml` executing `uv run python scripts/scaffold_verification_skill.py --doctor-all`.
-- [ ] Update `tests/test_runtime_toolchain.py` assertions for new task contract.
-- [ ] Verify test suite passes cleanly with zero errors.
+- [x] Add `verify:doctor:skills` task to `mise.toml` executing `uv run python scripts/scaffold_verification_skill.py --doctor-all`.
+- [x] Update `tests/test_runtime_toolchain.py` assertions for new task contract.
+- [x] Verify test suite passes cleanly with zero errors.
 
 **You see.**
 
-- [ ] Updated `mise.toml` with new verify:doctor:skills task.
-- [ ] Passing toolchain tests asserting task definition.
+- [x] Updated `mise.toml` with new verify:doctor:skills task.
+- [x] Passing toolchain tests asserting task definition.
 
 **Verify, unit.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Run `uv run pytest tests/test_runtime_toolchain.py`.
+- [x] Run `uv run pytest tests/test_runtime_toolchain.py`.
 
 **Verify, live.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked. Ten lanes on `gemini-pro` at the PR head, per the boot recipe.
 
-- [ ] Lane 1. Mise tasks list probe. Save `/tmp/swarm-mise-doctor-skills-task/worker-1/tasks.png`. Pass when verify:doctor:skills appears.
-- [ ] Lane 2. Mise verify:doctor:skills execution probe. Save `/tmp/swarm-mise-doctor-skills-task/worker-2/run-doctor.png`. Pass when task exits 0.
-- [ ] Lane 3. Toolchain test suite probe. Save `/tmp/swarm-mise-doctor-skills-task/worker-3/toolchain.png`. Pass when toolchain tests pass.
-- [ ] Lane 4. Worktree confinement probe. Save `/tmp/swarm-mise-doctor-skills-task/worker-4/confinement.png`. Pass when worktrees are confined.
-- [ ] Lane 5. Package projection probe. Save `/tmp/swarm-mise-doctor-skills-task/worker-5/projection.png`. Pass when projection check passes.
-- [ ] Lane 6. Verification skills audit probe. Save `/tmp/swarm-mise-doctor-skills-task/worker-6/audit.png`. Pass when 10 skills pass.
-- [ ] Lane 7. Poteto test suite probe. Save `/tmp/swarm-mise-doctor-skills-task/worker-7/poteto.png`. Pass when 104 tests pass.
-- [ ] Lane 8. Python line ceiling probe. Save `/tmp/swarm-mise-doctor-skills-task/worker-8/ceiling.png`. Pass when zero files exceed 1000 lines.
-- [ ] Lane 9. Untracked file probe. Save `/tmp/swarm-mise-doctor-skills-task/worker-9/untracked.png`. Pass when untracked files are expected.
-- [ ] Lane 10. Status hygiene probe. Save `/tmp/swarm-mise-doctor-skills-task/worker-10/status.png`. Pass when git status is clean.
+- [x] Lane 1. Mise tasks list probe. Save `/tmp/swarm-mise-doctor-skills-task/worker-1/tasks.png`. Pass when verify:doctor:skills appears.
+- [x] Lane 2. Mise verify:doctor:skills execution probe. Save `/tmp/swarm-mise-doctor-skills-task/worker-2/run-doctor.png`. Pass when task exits 0.
+- [x] Lane 3. Toolchain test suite probe. Save `/tmp/swarm-mise-doctor-skills-task/worker-3/toolchain.png`. Pass when toolchain tests pass.
+- [x] Lane 4. Worktree confinement probe. Save `/tmp/swarm-mise-doctor-skills-task/worker-4/confinement.png`. Pass when worktrees are confined.
+- [x] Lane 5. Package projection probe. Save `/tmp/swarm-mise-doctor-skills-task/worker-5/projection.png`. Pass when projection check passes.
+- [x] Lane 6. Verification skills audit probe. Save `/tmp/swarm-mise-doctor-skills-task/worker-6/audit.png`. Pass when 10 skills pass.
+- [x] Lane 7. Poteto test suite probe. Save `/tmp/swarm-mise-doctor-skills-task/worker-7/poteto.png`. Pass when 104 tests pass.
+- [x] Lane 8. Python line ceiling probe. Save `/tmp/swarm-mise-doctor-skills-task/worker-8/ceiling.png`. Pass when zero files exceed 1000 lines.
+- [x] Lane 9. Untracked file probe. Save `/tmp/swarm-mise-doctor-skills-task/worker-9/untracked.png`. Pass when untracked files are expected.
+- [x] Lane 10. Status hygiene probe. Save `/tmp/swarm-mise-doctor-skills-task/worker-10/status.png`. Pass when git status is clean.
 
 **Verify, perf.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Metric. Mise verify:doctor:skills task duration in seconds.
-- [ ] Probe. Time mise run verify:doctor:skills.
-- [ ] Baseline. Record trunk duration of doctor execution.
-- [ ] Rule. Head duration must not exceed trunk duration plus 2 seconds.
+- [x] Metric. Mise verify:doctor:skills task duration in seconds.
+- [x] Probe. Time mise run verify:doctor:skills.
+- [x] Baseline. Record trunk duration of doctor execution.
+- [x] Rule. Head duration must not exceed trunk duration plus 2 seconds.
 
 **Review gate.** The operator reviews before merge.
 
-- [ ] Copy lane screenshots into `/tmp/mise-doctor-skills-task-review-gate.png`.
-- [ ] Record a 30 second video of the change and save as `/tmp/mise-doctor-skills-task-review.mp4`.
-- [ ] Post the screenshot and video in chat for operator review.
+- [x] Copy lane screenshots into `/tmp/mise-doctor-skills-task-review-gate.png`.
+- [x] Record a 30 second video of the change and save as `/tmp/mise-doctor-skills-task-review.mp4`.
+- [x] Post the screenshot and video in chat for operator review.
 
 **Merge.**
 
-- [ ] Root clean verdict at head SHA.
-- [ ] Squash merge to parent branch.
+- [x] Root clean verdict at head SHA.
+- [x] Squash merge to parent branch.
 
 ## Qualify 6-harness verification matrix and close Epic 1143 (gate-close-1143)
 

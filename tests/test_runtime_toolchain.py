@@ -33,6 +33,8 @@ def test_mise_toml_configuration() -> None:
     assert "verify:staleness" in tasks, "mise.toml must declare verify:staleness task"
     assert "verify:projection" in tasks, "mise.toml must declare verify:projection task"
     assert "verify:skills" in tasks, "mise.toml must declare verify:skills task"
+    assert "verify:doctor:skills" in tasks, "mise.toml must declare verify:doctor:skills task"
+    assert tasks["verify:doctor:skills"]["run"] == "uv run python scripts/scaffold_verification_skill.py --doctor-all"
     assert "verify:drivers" in tasks, "mise.toml must declare verify:drivers task"
     assert tasks["verify:drivers"]["run"] == "uv run python scripts/scaffold_verification_skill.py --drive-all"
     assert "worktree:check" in tasks, "mise.toml must declare worktree:check task"
