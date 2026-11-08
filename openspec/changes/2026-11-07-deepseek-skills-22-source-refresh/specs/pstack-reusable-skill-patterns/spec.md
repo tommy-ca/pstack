@@ -1,7 +1,5 @@
 # pstack-reusable-skill-patterns — delta: keep only portable development contracts
 
-**Source:** `deepseek-ai/deepseek-harness@fcc0ad462172522aaf5c93a7b2e01f6b9f0b0159` (22/22 SOURCE_STATIC); see `../../source-crosswalk.md`. **Disposition:** 12 GENERAL, 5 CONDITIONAL, 5 EXCLUDE. Runtime skill changes and multi-agent evaluation are NOT_RUN.
-
 ## MODIFIED Requirements
 
 ### Requirement: source provenance and curatorial decisions
@@ -52,7 +50,7 @@ Optional UI, i18n, release, archive, and browser evidence workflows MUST activat
 
 ### Requirement: reusable guidance is decomposed into existing leaf, principle and playbook owners
 
-For each retained source-derived behavior, PStack MUST name its existing atomic leaf skill, cross-task principle and sequencing playbook (or explicitly state when a category is inapplicable). An upstream source SKILL.md MUST NOT be treated as a requirement to register a new PStack skill. A proposed new leaf MUST have a recurring standalone trigger, unique testable output and absence of a current owner; a new principle MUST own a previously unowned invariant; a new playbook MUST add genuinely distinct sequencing. The source ledger itself SHALL NOT authorize runtime changes.
+For each retained source behavior, PStack MUST name its atomic leaf skill, principle, and playbook (or state when inapplicable). An upstream SKILL.md MUST NOT register a redundant PStack skill. A proposed new leaf MUST have a recurring trigger and unique output; a new principle MUST own an unowned invariant; a new playbook MUST add distinct sequencing. The source ledger SHALL NOT authorize runtime changes.
 
 #### Scenario: generic code-review pattern is already owned
 
