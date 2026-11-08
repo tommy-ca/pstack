@@ -568,7 +568,8 @@
 - [x] Unit 1 (Issue #1180): [Intent-Driven & Template][P0] Ingest OpenSpec git discipline and install template configurations (opencode.json, AGENTS.md, .agents/skills/openspec-git-discipline)
 - [x] Unit 2 (Issue #1181): [Runtime & Mise][P0] Harmonize OpenSpec mise tasks with dual-mode validation from qstack/mise.toml and update toolchain tests
 - [x] Unit 3 (Issue #1182): [Tooling & Verification][P0] Update verification skills and scaffolders with intent-driven template conformance
-- [ ] Unit 4 (Issue #1183): [Gate & Close][P0] Qualify 6-harness verification matrix, reconcile plan, and close Epic #1178
+- [x] Unit 4 (Issue #1183): [Gate & Close][P0] Qualify 6-harness verification matrix, reconcile plan, and close Epic #1178
+*(Epic #1178 CLOSED)*
 
 
 
