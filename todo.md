@@ -524,7 +524,7 @@
 
 ## Epic #1116: [Epic][Architecture & Schema] Flatten schemas/portability to schemas, prune clutter, and update verification tools
 - [x] Unit 1 (Issue #1117): [Schema Flattening][P0] Move schemas/portability to schemas and update references
-- [ ] Unit 2 (Issue #1118): [Hygiene & Clutter][P0] Prune stale cache clutter and enforce KISS/DRY/YAGNI
+- [x] Unit 2 (Issue #1118): [Hygiene & Clutter][P0] Prune stale cache clutter and enforce KISS/DRY/YAGNI
 - [ ] Unit 3 (Issue #1119): [Verification Tools][P0] Update verification skill templates and audit all 10 drivers
 - [ ] Unit 4 (Issue #1120): [Gate & Close][P0] Qualify 6-harness verification matrix, reconcile plan, and close Epic #1116
 
