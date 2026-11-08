@@ -33,6 +33,10 @@ This ledger distinguishes **observed canonical upstream changes** from **applied
 - Scaffolded and tailored verify-droid-pstack verification skill in .factory/skills/ (#1080, #1084).
 - Wired OMP, OpenCode, and Droid verification drivers into portability-offline CI workflow and updated tests (#1081, #1085).
 - Completed multi-harness verification gate across all six declared hosts and closed Epic #1078 (#1082).
+- Extracted Antigravity command projection into dedicated module scripts/antigravity_command_projection.py (#1088, #1092).
+- Added reproducible driver.sh to verify-pstack and required driver in scaffolder (#1089, #1093).
+- Wired Grok verification driver into portability-offline CI workflow and updated tests (#1090, #1094).
+- Qualified 6-harness verification gate across all 10 verification skills and closed Epic #1087 (#1091).
 
 ## [Unreleased] — upstream 0.15.36 candidate (2026-10-31)
 
