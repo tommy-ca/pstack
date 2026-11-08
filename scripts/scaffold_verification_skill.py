@@ -11,7 +11,9 @@ import json
 import os
 import pathlib
 import re
+import subprocess
 import sys
+import time
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -346,6 +348,132 @@ def audit_verification_skills(workspace: pathlib.Path) -> Tuple[int, List[str]]:
     return data["exit_code"], results
 
 
+def drive_verification_skill(
+    target_dir: pathlib.Path,
+    *,
+    command: Optional[str] = None,
+    timeout: float = 60.0,
+) -> Dict[str, Any]:
+    """Execute verification driver script for a single skill."""
+    rel = str(target_dir)
+    driver_script = target_dir / "scripts" / "driver.sh"
+    if not driver_script.is_file() or not os.access(driver_script, os.X_OK):
+        return {
+            "path": rel,
+            "status": "FAIL",
+            "command": command or "default",
+            "exit_code": 127,
+            "duration_s": 0.0,
+            "stdout": "",
+            "stderr": f"Driver script missing or not executable: {driver_script}",
+        }
+
+    t0 = time.time()
+    try:
+        if command:
+            proc = subprocess.run(
+                ["bash", str(driver_script), command],
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+            )
+            dur = time.time() - t0
+            status = "PASS" if proc.returncode == 0 else "FAIL"
+            return {
+                "path": rel,
+                "status": status,
+                "command": command,
+                "exit_code": proc.returncode,
+                "duration_s": round(dur, 3),
+                "stdout": proc.stdout.strip()[:300],
+                "stderr": proc.stderr.strip()[:300],
+            }
+
+        primary = "doctor" if target_dir.name == "verify-decision-contract" else "drive"
+        p_launch = subprocess.run(
+            ["bash", str(driver_script), "launch"],
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+        if p_launch.returncode != 0:
+            dur = time.time() - t0
+            return {
+                "path": rel,
+                "status": "FAIL",
+                "command": "launch",
+                "exit_code": p_launch.returncode,
+                "duration_s": round(dur, 3),
+                "stdout": p_launch.stdout.strip()[:300],
+                "stderr": p_launch.stderr.strip()[:300],
+            }
+
+        p_primary = subprocess.run(
+            ["bash", str(driver_script), primary],
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+
+        subprocess.run(
+            ["bash", str(driver_script), "cleanup"],
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+        dur = time.time() - t0
+        status = "PASS" if p_primary.returncode == 0 else "FAIL"
+        return {
+            "path": rel,
+            "status": status,
+            "command": f"launch && {primary}",
+            "exit_code": p_primary.returncode,
+            "duration_s": round(dur, 3),
+            "stdout": p_primary.stdout.strip()[:300],
+            "stderr": p_primary.stderr.strip()[:300],
+        }
+    except subprocess.TimeoutExpired as exc:
+        dur = time.time() - t0
+        return {
+            "path": rel,
+            "status": "FAIL",
+            "command": command or "auto",
+            "exit_code": 124,
+            "duration_s": round(dur, 3),
+            "stdout": "",
+            "stderr": f"Command timed out after {timeout}s: {exc}",
+        }
+
+
+def drive_all_verification_skills(
+    workspace: pathlib.Path,
+    *,
+    command: Optional[str] = None,
+    timeout: float = 60.0,
+) -> Dict[str, Any]:
+    """Execute drivers across all discovered verification skills."""
+    skills = list_verification_skills(workspace, all_dirs=True)
+    results: List[Dict[str, Any]] = []
+    passed_count = 0
+    failed_count = 0
+    for skill in skills:
+        res = drive_verification_skill(skill, command=command, timeout=timeout)
+        rel = skill.relative_to(workspace).as_posix() if skill.is_relative_to(workspace) else str(skill)
+        res["path"] = rel
+        if res["status"] == "PASS":
+            passed_count += 1
+        else:
+            failed_count += 1
+        results.append(res)
+    return {
+        "exit_code": 1 if failed_count > 0 else 0,
+        "total_skills": len(skills),
+        "passed": passed_count,
+        "failed": failed_count,
+        "skills": results,
+    }
+
+
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="Scaffold or check portable verification skills.")
     parser.add_argument(
@@ -361,6 +489,10 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--check", action="store_true", help="Validate existing verification skill")
     parser.add_argument("--list", action="store_true", help="Discover verification skills across harnesses")
     parser.add_argument("--audit", action="store_true", help="Audit all verification skills across all 6 harnesses")
+    parser.add_argument("--drive-all", action="store_true", help="Execute launch and drive/doctor across all verification skills")
+    parser.add_argument("--drive", action="store_true", help="Execute driver for a single verification skill specified by --target-dir or --app")
+    parser.add_argument("--command", choices=["doctor", "launch", "drive", "cleanup", "all"], default=None, help="Explicit driver verb to execute")
+    parser.add_argument("--timeout", type=float, default=60.0, help="Per-command timeout in seconds (default: 60.0)")
     parser.add_argument("--json", action="store_true", help="Output audit, list, or check results as JSON")
 
     args = parser.parse_args(argv)
@@ -382,6 +514,15 @@ def main(argv: Optional[List[str]] = None) -> int:
         for line in lines:
             print(line)
         return code
+
+    if args.drive_all:
+        data = drive_all_verification_skills(workspace, command=args.command, timeout=args.timeout)
+        if args.json:
+            print(json.dumps(data, indent=2))
+            return data["exit_code"]
+        for item in data["skills"]:
+            print(f"[{item['status']}] {item['path']} ({item.get('command')}) {item.get('duration_s', 0):.2f}s")
+        return data["exit_code"]
 
     if args.list:
         skills = list_verification_skills(workspace)
@@ -442,6 +583,24 @@ def main(argv: Optional[List[str]] = None) -> int:
             return 1
         print(f"PASS: Structural validation of verification skill at {target}; runtime proof unassessed.")
         return 0
+
+    if args.drive:
+        if args.target_dir:
+            target = args.target_dir
+        elif args.app:
+            target = get_skill_dir(workspace, host, args.app, formal=args.formal)
+        else:
+            print("Error: --target-dir or --app required with --drive", file=sys.stderr)
+            return 2
+
+        res = drive_verification_skill(target, command=args.command, timeout=args.timeout)
+        if args.json:
+            print(json.dumps(res, indent=2))
+            return res["exit_code"]
+        print(f"[{res['status']}] {res['path']} ({res.get('command')}) {res.get('duration_s', 0):.2f}s")
+        if res["exit_code"] != 0 and res.get("stderr"):
+            print(f"Error: {res['stderr']}", file=sys.stderr)
+        return res["exit_code"]
 
     parser.print_help()
     return 0

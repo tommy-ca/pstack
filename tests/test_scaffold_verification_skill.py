@@ -627,6 +627,63 @@ def test_check_skill_missing_driver_validation(tmp_path: pathlib.Path) -> None:
     assert any("Missing driver.sh" in err for err in data["errors"])
 
 
+def test_drive_verification_skill_success(tmp_path: pathlib.Path) -> None:
+    cli(tmp_path, "--host", "grok", "--app", "app-a", "--write")
+    target = tmp_path / ".grok/skills/verify-app-a"
+    driver = target / "scripts" / "driver.sh"
+    driver.write_text("#!/usr/bin/env bash\necho mock-$1\nexit 0\n")
+    driver.chmod(0o755)
+
+    res = scaffold_mod.drive_verification_skill(target, command="drive")
+    assert res["status"] == "PASS"
+    assert res["exit_code"] == 0
+    assert "mock-drive" in res["stdout"]
+
+
+def test_drive_verification_skill_failure(tmp_path: pathlib.Path) -> None:
+    cli(tmp_path, "--host", "grok", "--app", "app-a", "--write")
+    target = tmp_path / ".grok/skills/verify-app-a"
+    driver = target / "scripts" / "driver.sh"
+    driver.write_text("#!/usr/bin/env bash\nif [ \"$1\" = \"drive\" ]; then exit 2; fi\nexit 0\n")
+    driver.chmod(0o755)
+
+    res = scaffold_mod.drive_verification_skill(target, command="drive")
+    assert res["status"] == "FAIL"
+    assert res["exit_code"] == 2
+
+
+def test_drive_verification_skill_missing_driver(tmp_path: pathlib.Path) -> None:
+    cli(tmp_path, "--host", "grok", "--app", "app-a", "--write")
+    target = tmp_path / ".grok/skills/verify-app-a"
+    driver = target / "scripts" / "driver.sh"
+    driver.unlink()
+
+    res = scaffold_mod.drive_verification_skill(target)
+    assert res["status"] == "FAIL"
+    assert "missing or not executable" in res["stderr"]
+
+
+def test_cli_drive_all_and_single(tmp_path: pathlib.Path) -> None:
+    cli(tmp_path, "--host", "grok", "--app", "app-a", "--write")
+    cli(tmp_path, "--host", "codex", "--app", "app-b", "--write")
+
+    for p in [tmp_path / ".grok/skills/verify-app-a", tmp_path / ".codex/skills/verify-app-b"]:
+        driver = p / "scripts" / "driver.sh"
+        driver.write_text("#!/usr/bin/env bash\nexit 0\n")
+        driver.chmod(0o755)
+
+    target_a = tmp_path / ".grok/skills/verify-app-a"
+    res_single = cli(tmp_path, "--drive", "--target-dir", str(target_a))
+    assert res_single.returncode == 0
+    assert "[PASS]" in res_single.stdout
+
+    res_all = cli(tmp_path, "--drive-all")
+    assert res_all.returncode == 0
+    assert "[PASS] .grok/skills/verify-app-a" in res_all.stdout
+    assert "[PASS] .codex/skills/verify-app-b" in res_all.stdout
+
+
+
 
 
 
