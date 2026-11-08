@@ -348,3 +348,10 @@ deletion, schema deletion) and `test_mutated_planner_module_stales_the_package_p
 constants feed the adapter plane via validation), and the probe modules stay out of
 `driver_revision`, so a planner behaviour edit costs one package-plane re-proof, not five
 host re-proofs. (#473)
+
+### Worktree confinement and local branch lifecycle invariants
+
+Linked worktrees must reside strictly inside `<repo_root>/.worktrees/<slug>` per `scripts/worktree_protocol.py` (principle-boundary-discipline).
+Arbitrary external workspace directories are forbidden.
+Local git branches that have been cherry-merged into `main` or correspond to completed subagent execution runs must be pruned to preserve repository cleanliness and avoid branch explosion.
+
