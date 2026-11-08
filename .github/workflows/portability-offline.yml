@@ -126,6 +126,20 @@ jobs:
           bash .codex/skills/verify-decision-contract/scripts/driver.sh doctor
         # This validates only hermetic bounded checks. Upstream commit/tree
         # captures, native hosts, and authenticated providers remain UNTESTED.
+      - name: Verify project-local formal LLM Wiki model driver
+        run: |
+          uv run python scripts/scaffold_verification_skill.py --check --target-dir .codex/skills/verify-llm-wiki-formal
+          bash .codex/skills/verify-llm-wiki-formal/scripts/driver.sh launch
+          bash .codex/skills/verify-llm-wiki-formal/scripts/driver.sh doctor
+        # Bounded actual-code formal checks only.
+      - name: Verify Antigravity verification skill driver
+        run: |
+          uv run python scripts/scaffold_verification_skill.py --check --target-dir .agents/skills/verify-antigravity-pstack
+          bash .agents/skills/verify-antigravity-pstack/scripts/driver.sh launch
+          bash .agents/skills/verify-antigravity-pstack/scripts/driver.sh drive
+        # Hermetic environment readiness and four-plane evidence contracts.
+      - name: Audit all verification skills across harnesses
+        run: uv run python scripts/scaffold_verification_skill.py --audit --json
       - name: Validate checked-in model policy against canonical role registry
         run: uv run python -m scripts.model_role_policy
       # Native host spawn/join/isolation are intentionally NOT covered here.
