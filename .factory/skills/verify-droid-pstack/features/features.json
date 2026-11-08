@@ -1,0 +1,17 @@
+{
+  "host": "droid",
+  "app": "pstack",
+  "features": [
+    {
+      "id": "core",
+      "name": "Core Droid Integration",
+      "document": "core.md",
+      "sub_features": [
+        "manifest-projection",
+        "marketplace-sync",
+        "doctor-checks",
+        "evidence-freshness"
+      ]
+    }
+  ]
+}
