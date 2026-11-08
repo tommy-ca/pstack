@@ -499,6 +499,11 @@ class PortableVerifier:
         """Doctor scenarios 1-7; every command runs under fixture_home."""
         print(f"[{self.host}] Running Doctor checks...")
         env = {"HOME": str(fixture_home)}
+        real_home = os.environ.get("HOME")
+        if real_home:
+            env.setdefault("MISE_DATA_DIR", str(Path(real_home) / ".local" / "share" / "mise"))
+            env.setdefault("MISE_CONFIG_DIR", str(Path(real_home) / ".config" / "mise"))
+            env.setdefault("MISE_YES", "1")
 
         canon_pass = self._check_canonical_plane(env)
         adapter_pass = self._check_adapter_plane(env)

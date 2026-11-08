@@ -514,6 +514,14 @@
 - [x] Unit 4 (Issue #1100): [Gate & Close][P0] Run multi-harness verification gate, reconcile plan, and close Epic #1096
 *(Epic #1096 CLOSED)*
 
+## Epic #1105: [Epic][Code Quality & Hygiene] Enforce Pi fail-closed cleanup, cleanse thermo style rules, prune workspace clutter, and expand offline CI
+- [x] Unit 1 (Issue #1106, PR #1111): [Pi Driver & Contract][P0] Restore fail-closed exit code 2 cleanup contract in Pi verification drivers
+- [x] Unit 2 (Issue #1107, PR #1112): [Style & Frontmatter][P0] Cleanse thermo-nuclear-code-quality-review skill style rules and add frontmatter validation
+- [x] Unit 3 (Issue #1108, PR #1113): [Hygiene & Cleanup][P0] Prune obsolete workspace clutter and non-evidence ephemeral scratch files
+- [x] Unit 4 (Issue #1109, PR #1114): [CI & Tooling][P0] Wire hermetic safety tests into portability-offline workflow and update select-checks
+- [x] Unit 5 (Issue #1110): [Gate & Close][P0] Run multi-harness verification gate, reconcile plan, and close Epic #1105
+*(Epic #1105 CLOSED)*
+
 
 
 
