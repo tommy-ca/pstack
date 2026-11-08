@@ -33,3 +33,28 @@ run = "uv run python scripts/sync_antigravity_plugin.py --check"
 [tasks."verify:canonical"]
 description = "Verify canonical inventory and conformance"
 run = "uv run python scripts/canonical_index.py --check || [ $? -eq 2 ]"
+
+[tasks."verify:doctor"]
+description = "Run 6-harness doctor matrix across all hosts"
+run = "uv run python scripts/verify_portable.py doctor --host all"
+
+[tasks."verify:staleness"]
+description = "Verify static evidence staleness across all hosts"
+run = "uv run python scripts/verify_portable.py check-staleness --host all"
+
+[tasks."verify:projection"]
+description = "Verify package manifest and model projections across hosts"
+run = "uv run python scripts/package_projection.py --check"
+
+[tasks."verify:skills"]
+description = "Audit all verification skills across harnesses"
+run = "uv run python scripts/scaffold_verification_skill.py --audit --json"
+
+[tasks."worktree:check"]
+description = "Validate worktree confinement protocol"
+run = "uv run python scripts/worktree_protocol.py check"
+
+[tasks."worktree:audit"]
+description = "Audit registered and leftover worktrees"
+run = "bash skills/poteto-mode/scripts/worktree-audit.sh"
+
