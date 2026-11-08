@@ -12,11 +12,15 @@ run = "uv run pytest"
 
 [tasks."test:offline"]
 description = "Run offline contract pytest suite"
-run = "uv run pytest tests/test_portability_schemas.py tests/test_pi_candidate_profile.py tests/test_host_identity.py tests/test_model_role_schema.py tests/test_model_role_constraints.py tests/test_model_role_profiles.py tests/test_droid_integration.py tests/test_droid_routing.py tests/test_route_resolver.py tests/test_verdict_reduction.py tests/test_harness_drivers.py tests/test_omp_rpc.py tests/test_omp_rpc_cancel.py tests/test_project_package.py tests/test_skill_frontmatter.py tests/test_scan_host_boundary.py tests/test_setup_projection.py tests/test_package_lifecycle.py tests/test_package_lifecycle_safety.py tests/test_evidence_durability.py tests/test_evidence_refresh_static.py tests/test_surface_cache.py tests/test_evidence_settlement.py tests/test_evidence_cancellation.py tests/test_evidence_index_resilience.py tests/test_evidence_receipts.py tests/test_select_checks.py tests/test_scaffold_verification_skill.py tests/test_sync_antigravity_plugin.py tests/test_ci_resource_isolation.py tests/test_playbook_parity.py tests/test_shipping_safety.py tests/test_review_effect_contracts.py tests/test_context_overlays.py tests/test_context_budget_contracts.py tests/test_eval_blinded_pstack_dsh_candidate.py tests/test_eval_blinded_pstack_dsh.py tests/test_canonical_index.py tests/test_upstream_pstack_01536.py tests/test_worktree_protocol.py"
+run = "uv run pytest tests/test_portability_schemas.py tests/test_runtime_toolchain.py tests/test_pi_candidate_profile.py tests/test_host_identity.py tests/test_model_role_schema.py tests/test_model_role_constraints.py tests/test_model_role_profiles.py tests/test_droid_integration.py tests/test_droid_routing.py tests/test_route_resolver.py tests/test_verdict_reduction.py tests/test_harness_drivers.py tests/test_omp_rpc.py tests/test_omp_rpc_cancel.py tests/test_project_package.py tests/test_skill_frontmatter.py tests/test_scan_host_boundary.py tests/test_setup_projection.py tests/test_package_lifecycle.py tests/test_package_lifecycle_safety.py tests/test_evidence_durability.py tests/test_evidence_refresh_static.py tests/test_surface_cache.py tests/test_evidence_settlement.py tests/test_evidence_cancellation.py tests/test_evidence_index_resilience.py tests/test_evidence_receipts.py tests/test_select_checks.py tests/test_scaffold_verification_skill.py tests/test_sync_antigravity_plugin.py tests/test_omp_native_package.py tests/test_ci_resource_isolation.py tests/test_playbook_parity.py tests/test_shipping_safety.py tests/test_review_effect_contracts.py tests/test_context_overlays.py tests/test_context_budget_contracts.py tests/test_eval_blinded_pstack_dsh_candidate.py tests/test_eval_blinded_pstack_dsh.py tests/test_canonical_index.py tests/test_upstream_pstack_01536.py tests/test_worktree_protocol.py tests/test_antigravity_command_projection.py tests/test_droid_projection.py tests/test_thermos_skills.py tests/test_worktree_cleanup.py tests/test_verification_skill_templates.py tests/test_verify_harness.py tests/test_pi_authorization_contracts.py tests/test_harness_profiles_sync.py tests/test_interrogate_pack.py tests/test_swarm_apply.py tests/test_swarm_partition.py tests/test_print_coverage_decoy_nested.py tests/test_plugin_agents.py tests/test_principle_test_behavior.py tests/test_type_annotations_hygiene.py tests/test_executable_lookup.py tests/test_absorbed_intent.py tests/test_architecture_documentation.py tests/test_decision_bounded_invariants.py tests/test_paid_budget_concurrency.py tests/test_decision_adapter.py tests/test_jev_transport_and_profiles.py tests/test_advisory_promotion.py tests/test_shadow_routing.py tests/test_class_calibration_policy.py tests/test_rollback_equivalence.py tests/test_verify_decision_contract.py tests/test_eval_decision_routing.py tests/test_jev_privacy_and_bypass.py tests/test_jev_mapping_and_calibrated_evidence.py tests/test_fast_role_task_fit.py"
 
 [tasks."test:scripts"]
 description = "Run poteto-mode and statechart tool tests via bun"
 run = "bun test --timeout 30000 --cwd skills/poteto-mode/scripts && bun test --cwd skills/statechart/scripts"
+
+[tasks."plan:check"]
+description = "Validate all execution plans via check-plan script"
+run = "bun skills/poteto-mode/scripts/check-plan.mjs docs/plans/*.md"
 
 [tasks."verify:portable"]
 description = "Verify portable evidence durability across all hosts"
@@ -50,6 +54,10 @@ run = "uv run python scripts/package_projection.py --check"
 description = "Audit all verification skills across harnesses"
 run = "uv run python scripts/scaffold_verification_skill.py --audit --json"
 
+[tasks."verify:drivers"]
+description = "Execute launch and drive across all 10 verification drivers"
+run = "bash .grok/skills/verify-pstack/scripts/driver.sh launch && bash .grok/skills/verify-pstack/scripts/driver.sh drive && bash .codex/skills/verify-decision-contract/scripts/driver.sh launch && bash .codex/skills/verify-decision-contract/scripts/driver.sh doctor && bash .codex/skills/verify-llm-wiki/scripts/driver.sh launch && bash .codex/skills/verify-llm-wiki/scripts/driver.sh drive && bash .codex/skills/verify-llm-wiki-formal/scripts/driver.sh launch && bash .codex/skills/verify-llm-wiki-formal/scripts/driver.sh doctor && bash .omp/skills/verify-omp-pstack/scripts/driver.sh launch && bash .omp/skills/verify-omp-pstack/scripts/driver.sh drive && bash .opencode/skills/verify-opencode-pstack/scripts/driver.sh launch && bash .opencode/skills/verify-opencode-pstack/scripts/driver.sh drive && bash .agents/skills/verify-antigravity-pstack/scripts/driver.sh launch && bash .agents/skills/verify-antigravity-pstack/scripts/driver.sh drive && bash .factory/skills/verify-droid-pstack/scripts/driver.sh launch && bash .factory/skills/verify-droid-pstack/scripts/driver.sh drive && bash .pi/skills/verify-pi-pstack/scripts/driver.sh launch && bash .pi/skills/verify-pi-pstack/scripts/driver.sh drive && bash .pi/skills/verify-pi-pstack-formal/scripts/driver.sh launch && bash .pi/skills/verify-pi-pstack-formal/scripts/driver.sh drive"
+
 [tasks."worktree:check"]
 description = "Validate worktree confinement protocol"
 run = "uv run python scripts/worktree_protocol.py check"
@@ -57,4 +65,3 @@ run = "uv run python scripts/worktree_protocol.py check"
 [tasks."worktree:audit"]
 description = "Audit registered and leftover worktrees"
 run = "bash skills/poteto-mode/scripts/worktree-audit.sh"
-
