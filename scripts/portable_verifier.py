@@ -104,6 +104,8 @@ from scripts.evidence_index import (
     evidence_index_row,
     get_declared_hosts,
     index_row_mismatch,
+    prune_ephemeral_action,
+    prune_ephemeral_evidence,
     receipt_payload,
     rows_from_receipts,
     write_verification_evidence,
@@ -654,13 +656,14 @@ def main(
     canon_fn = get_canonical_root
 
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=["doctor", "drive", "run", "refresh-static", "check-evidence", "check-staleness", "select-checks"], help="Action to execute")
+    parser.add_argument("action", choices=["doctor", "drive", "run", "refresh-static", "check-evidence", "check-staleness", "select-checks", "prune-ephemeral"], help="Action to execute")
     parser.add_argument("--host", choices=[*SUPPORTED_HOSTS, "all"], default="grok", help="Target harness (or 'all' for all declared hosts)")
     parser.add_argument("--feature", help="Feature to drive (for 'drive' action)")
     parser.add_argument("--evidence-dir", type=Path, default=default_ev_dir, help="Evidence directory")
     parser.add_argument("--allow-stale", action="store_true", help="Allow stale evidence during durability check")
     parser.add_argument("--change", default=None, help="Target OpenSpec change to validate in doctor (default: checkout's single active change, or no-op when none)")
     parser.add_argument("--json", action="store_true", help="Emit JSON output for machine consumption")
+    parser.add_argument("--keep-last", type=int, default=5, help="Number of recent ephemeral runs to keep per host during prune")
     parser.add_argument("--base", help="Base ref to diff against (select-checks)")
     parser.add_argument("--head", default="HEAD", help="Head ref to scope (select-checks)")
     parser.add_argument("--record", type=Path, help="Write the check evidence receipt for this selection to a path")
@@ -678,6 +681,9 @@ def main(
 
     if args.action == "select-checks":
         sys.exit(select_checks_action(args, active_root))
+
+    if args.action == "prune-ephemeral":
+        sys.exit(prune_ephemeral_action(args.evidence_dir, keep_last=args.keep_last, json_output=args.json))
 
     all_pass = True
     receipts: List[VerificationReceipt] = []

@@ -380,3 +380,71 @@ def check_staleness_action(
         print(f"Overall Matrix Evidence: {'ALL FRESH' if all_fresh else 'REGENERATION NEEDED'}\n")
     return 0 if all_fresh else 1
 
+
+def prune_ephemeral_evidence(
+    evidence_dir: Path,
+    *,
+    keep_last: int = 5,
+    dry_run: bool = False,
+) -> Dict[str, Any]:
+    """Prune historical ephemeral doctor run directories (<host>-<timestamp>-<hash>)."""
+    import shutil
+    import re
+
+    pattern = re.compile(r"^([a-z0-9_-]+)-(\d+)-([0-9a-f]+)$")
+    by_host: Dict[str, List[Tuple[int, Path]]] = {}
+
+    if evidence_dir.is_dir():
+        for d in evidence_dir.iterdir():
+            if not d.is_dir():
+                continue
+            m = pattern.match(d.name)
+            if m:
+                host, ts_str, _ = m.groups()
+                try:
+                    ts = int(ts_str)
+                except ValueError:
+                    continue
+                by_host.setdefault(host, []).append((ts, d))
+
+    pruned = 0
+    freed_bytes = 0
+    kept = 0
+
+    for host, dirs in by_host.items():
+        dirs.sort(key=lambda x: x[0], reverse=True)
+        to_keep = dirs[:keep_last]
+        to_prune = dirs[keep_last:]
+        kept += len(to_keep)
+        for _, p in to_prune:
+            size = sum(f.stat().st_size for f in p.rglob("*") if f.is_file())
+            freed_bytes += size
+            if not dry_run:
+                shutil.rmtree(p, ignore_errors=True)
+            pruned += 1
+
+    return {
+        "pruned_count": pruned,
+        "freed_bytes": freed_bytes,
+        "kept_count": kept,
+        "dry_run": dry_run,
+    }
+
+
+def prune_ephemeral_action(
+    evidence_dir: Path,
+    keep_last: int = 5,
+    json_output: bool = False,
+) -> int:
+    result = prune_ephemeral_evidence(evidence_dir, keep_last=keep_last)
+    if json_output:
+        print(json.dumps(result, indent=2))
+    else:
+        freed_mb = result["freed_bytes"] / (1024 * 1024)
+        print(
+            f"Pruned {result['pruned_count']} ephemeral run directories "
+            f"({freed_mb:.1f} MB freed, {result['kept_count']} kept)."
+        )
+    return 0
+
+
