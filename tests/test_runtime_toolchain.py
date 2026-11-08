@@ -106,3 +106,24 @@ def test_uv_lockfile_exists() -> None:
     content = uv_lock.read_text(encoding="utf-8")
     assert 'name = "pytest"' in content, "pytest must be in uv.lock"
     assert 'name = "jsonschema"' in content, "jsonschema must be in uv.lock"
+
+
+def test_openspec_tasks_direct_cli_and_qstack_parity() -> None:
+    mise_path = ROOT / "mise.toml"
+    with open(mise_path, "rb") as f:
+        tasks = tomllib.load(f)["tasks"]
+
+    openspec_task_names = [
+        "openspec:status",
+        "validate:openspec",
+        "validate:openspec:all",
+        "validate:openspec:changes",
+        "verify:openspec",
+        "verify:openspec:all",
+        "verify:openspec:changes",
+    ]
+    for name in openspec_task_names:
+        assert name in tasks, f"mise.toml must define {name}"
+        run_cmd = tasks[name]["run"]
+        assert "python" not in run_cmd, f"{name} must not use python wrapper"
+        assert run_cmd.startswith("openspec"), f"{name} must invoke openspec directly"
