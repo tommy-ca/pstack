@@ -615,6 +615,18 @@ def test_check_skill_driver_executable_validation(tmp_path: pathlib.Path) -> Non
     assert data["status"] == "PASS"
 
 
+def test_check_skill_missing_driver_validation(tmp_path: pathlib.Path) -> None:
+    cli(tmp_path, "--host", "grok", "--app", "app-a", "--write")
+    target = tmp_path / ".grok/skills/verify-app-a"
+    driver = target / "scripts" / "driver.sh"
+    driver.unlink()
+
+    res = cli(tmp_path, "--check", "--target-dir", str(target), "--json")
+    assert res.returncode == 1
+    data = json.loads(res.stdout)
+    assert any("Missing driver.sh" in err for err in data["errors"])
+
+
 
 
 
