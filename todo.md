@@ -540,7 +540,8 @@
 - [x] Unit 1 (Issue #1135): [Tooling & Verification][P0] Add --drive-all command to scaffold_verification_skill.py and update test suite
 - [x] Unit 2 (Issue #1136): [Runtime & Mise][P0] Streamline mise.toml verify:drivers task to use the new driver orchestrator lever
 - [x] Unit 3 (Issue #1137): [Architecture & Conformance][P0] Align verifier claim to 6 declared harnesses and prune stale test cache
-- [ ] Unit 4 (Issue #1138): [Gate & Close][P0] Qualify 6-harness verification matrix, reconcile plan, and close Epic #1134
+- [x] Unit 4 (Issue #1138): [Gate & Close][P0] Qualify 6-harness verification matrix, reconcile plan, and close Epic #1134
+*(Epic #1134 CLOSED)*
 
 
 
