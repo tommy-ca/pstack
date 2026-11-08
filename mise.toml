@@ -5,6 +5,7 @@ lockfile = true
 bun = "1.4.4"
 python = "3.12"
 uv = "0.13.7"
+"npm:@fission-ai/openspec" = "1.16.1"
 
 [tasks."test"]
 description = "Run full test suite via uv"
@@ -68,31 +69,31 @@ run = "uv run python scripts/scaffold_verification_skill.py --drive-all"
 
 [tasks."openspec:status"]
 description = "Inspect active intent-driven OpenSpec planning flow status"
-run = "openspec status --all"
+run = "bunx --yes @fission-ai/openspec@1.16.1 status --all"
 
 [tasks."validate:openspec"]
 description = "Run dual-mode OpenSpec validation (all specs and strict active changes)"
-run = "openspec validate --all && openspec validate --changes --strict"
+run = "bunx --yes @fission-ai/openspec@1.16.1 validate --all && bunx --yes @fission-ai/openspec@1.16.1 validate --changes --strict"
 
 [tasks."validate:openspec:all"]
 description = "Validate all living OpenSpec specifications and schemas"
-run = "openspec validate --all"
+run = "bunx --yes @fission-ai/openspec@1.16.1 validate --all"
 
 [tasks."validate:openspec:changes"]
 description = "Strictly validate active OpenSpec change proposals"
-run = "openspec validate --changes --strict"
+run = "bunx --yes @fission-ai/openspec@1.16.1 validate --changes --strict"
 
 [tasks."verify:openspec"]
 description = "Run dual-mode OpenSpec validation (all specs and strict active changes)"
-run = "openspec validate --all && openspec validate --changes --strict"
+run = "bunx --yes @fission-ai/openspec@1.16.1 validate --all && bunx --yes @fission-ai/openspec@1.16.1 validate --changes --strict"
 
 [tasks."verify:openspec:all"]
 description = "Validate all living OpenSpec specifications and schemas"
-run = "openspec validate --all"
+run = "bunx --yes @fission-ai/openspec@1.16.1 validate --all"
 
 [tasks."verify:openspec:changes"]
 description = "Strictly validate active OpenSpec change proposals"
-run = "openspec validate --changes --strict"
+run = "bunx --yes @fission-ai/openspec@1.16.1 validate --changes --strict"
 
 [tasks."worktree:check"]
 description = "Validate worktree confinement protocol"
