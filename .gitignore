@@ -8,6 +8,7 @@ __pycache__/
 !.audit/evidence/*-receipt.json
 !.audit/evidence/index.json
 .commandcode/
+.planning/
 .grok/agent-memory/
 node_modules/
 .atl/
