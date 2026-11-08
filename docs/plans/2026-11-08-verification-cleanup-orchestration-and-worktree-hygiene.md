@@ -122,54 +122,54 @@ Each live lane runs in its own worktree child at the PR head. Drive the real sur
 
 **Files.**
 
-- [ ] Edit `mise.toml`.
-- [ ] Edit `tests/test_runtime_toolchain.py`.
+- [x] Edit `mise.toml`.
+- [x] Edit `tests/test_runtime_toolchain.py`.
 
 **Build.**
 
-- [ ] Add `verify:cleanup:skills` task to `mise.toml` invoking `uv run python scripts/scaffold_verification_skill.py --cleanup-all`.
-- [ ] Update `tests/test_runtime_toolchain.py` to assert the new task presence and command string.
-- [ ] Verify test suite passes cleanly with zero errors.
+- [x] Add `verify:cleanup:skills` task to `mise.toml` invoking `uv run python scripts/scaffold_verification_skill.py --cleanup-all`.
+- [x] Update `tests/test_runtime_toolchain.py` to assert the new task presence and command string.
+- [x] Verify test suite passes cleanly with zero errors.
 
 **You see.**
 
-- [ ] Clean executable mise task `mise run verify:cleanup:skills`.
-- [ ] `tests/test_runtime_toolchain.py` asserting all verification driver tasks.
+- [x] Clean executable mise task `mise run verify:cleanup:skills`.
+- [x] `tests/test_runtime_toolchain.py` asserting all verification driver tasks.
 
 **Verify, unit.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Run `uv run pytest tests/test_runtime_toolchain.py`.
+- [x] Run `uv run pytest tests/test_runtime_toolchain.py`.
 
 **Verify, live.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked. Ten lanes on `gemini-pro` at the PR head, per the boot recipe.
 
-- [ ] Lane 1. Mise cleanup task probe. Save `/tmp/swarm-mise-cleanup-skills-task/worker-1/task.png`. Pass when task runs cleanly.
-- [ ] Lane 2. Mise doctor task probe. Save `/tmp/swarm-mise-cleanup-skills-task/worker-2/doctor.png`. Pass when doctor runs cleanly.
-- [ ] Lane 3. Verification skills audit probe. Save `/tmp/swarm-mise-cleanup-skills-task/worker-3/audit.png`. Pass when 10 skills pass.
-- [ ] Lane 4. Package projection probe. Save `/tmp/swarm-mise-cleanup-skills-task/worker-4/projection.png`. Pass when projection passes.
-- [ ] Lane 5. Worktree confinement probe. Save `/tmp/swarm-mise-cleanup-skills-task/worker-5/confinement.png`. Pass when worktrees are confined.
-- [ ] Lane 6. Evidence staleness probe. Save `/tmp/swarm-mise-cleanup-skills-task/worker-6/staleness.png`. Pass when staleness reports all fresh.
-- [ ] Lane 7. Poteto test suite probe. Save `/tmp/swarm-mise-cleanup-skills-task/worker-7/poteto.png`. Pass when 104 tests pass.
-- [ ] Lane 8. Python line ceiling probe. Save `/tmp/swarm-mise-cleanup-skills-task/worker-8/ceiling.png`. Pass when zero files exceed 1000 lines.
-- [ ] Lane 9. Untracked file probe. Save `/tmp/swarm-mise-cleanup-skills-task/worker-9/untracked.png`. Pass when untracked files are expected.
-- [ ] Lane 10. Status hygiene probe. Save `/tmp/swarm-mise-cleanup-skills-task/worker-10/status.png`. Pass when git status is clean.
+- [x] Lane 1. Mise cleanup task probe. Save `/tmp/swarm-mise-cleanup-skills-task/worker-1/task.png`. Pass when task runs cleanly.
+- [x] Lane 2. Mise doctor task probe. Save `/tmp/swarm-mise-cleanup-skills-task/worker-2/doctor.png`. Pass when doctor runs cleanly.
+- [x] Lane 3. Verification skills audit probe. Save `/tmp/swarm-mise-cleanup-skills-task/worker-3/audit.png`. Pass when 10 skills pass.
+- [x] Lane 4. Package projection probe. Save `/tmp/swarm-mise-cleanup-skills-task/worker-4/projection.png`. Pass when projection passes.
+- [x] Lane 5. Worktree confinement probe. Save `/tmp/swarm-mise-cleanup-skills-task/worker-5/confinement.png`. Pass when worktrees are confined.
+- [x] Lane 6. Evidence staleness probe. Save `/tmp/swarm-mise-cleanup-skills-task/worker-6/staleness.png`. Pass when staleness reports all fresh.
+- [x] Lane 7. Poteto test suite probe. Save `/tmp/swarm-mise-cleanup-skills-task/worker-7/poteto.png`. Pass when 104 tests pass.
+- [x] Lane 8. Python line ceiling probe. Save `/tmp/swarm-mise-cleanup-skills-task/worker-8/ceiling.png`. Pass when zero files exceed 1000 lines.
+- [x] Lane 9. Untracked file probe. Save `/tmp/swarm-mise-cleanup-skills-task/worker-9/untracked.png`. Pass when untracked files are expected.
+- [x] Lane 10. Status hygiene probe. Save `/tmp/swarm-mise-cleanup-skills-task/worker-10/status.png`. Pass when git status is clean.
 
 **Verify, perf.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Metric. Mise task execution duration in seconds.
-- [ ] Probe. Time mise run verify:cleanup:skills.
-- [ ] Baseline. Record trunk duration of driver executions.
-- [ ] Rule. Head duration must not exceed 30 seconds.
+- [x] Metric. Mise task execution duration in seconds.
+- [x] Probe. Time mise run verify:cleanup:skills.
+- [x] Baseline. Record trunk duration of driver executions.
+- [x] Rule. Head duration must not exceed 30 seconds.
 
 **Review gate.** The operator reviews before merge.
 
-- [ ] Copy lane screenshots into `/tmp/mise-cleanup-skills-task-review-gate.png`.
-- [ ] Record a 30 second video of the change and save as `/tmp/mise-cleanup-skills-task-review.mp4`.
-- [ ] Post the screenshot and video in chat for operator review.
+- [x] Copy lane screenshots into `/tmp/mise-cleanup-skills-task-review-gate.png`.
+- [x] Record a 30 second video of the change and save as `/tmp/mise-cleanup-skills-task-review.mp4`.
+- [x] Post the screenshot and video in chat for operator review.
 
 **Merge.**
 
-- [ ] Root clean verdict at head SHA.
-- [ ] Squash merge to parent branch.
+- [x] Root clean verdict at head SHA.
+- [x] Squash merge to parent branch.
 
 ## Prune obsolete merged local branches, verify worktree confinement, and enforce clean git state (worktree-branch-hygiene)
 
