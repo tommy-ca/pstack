@@ -81,6 +81,8 @@ def test_mise_lockfile_exists() -> None:
     assert "bun" in content, "bun must be locked in mise.lock"
     assert "python" in content, "python must be locked in mise.lock"
     assert "uv" in content, "uv must be locked in mise.lock"
+    assert "npm:@fission-ai/openspec" in content, "openspec must be locked in mise.lock"
+    assert "1.16.1" in content, "openspec version 1.16.1 must be locked in mise.lock"
 
 
 def test_pyproject_toml_configuration() -> None:
