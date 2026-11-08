@@ -122,24 +122,24 @@ Each live lane runs in its own worktree child at the PR head. Drive the real sur
 
 **Files.**
 
-- [ ] Edit `mise.toml`.
-- [ ] Edit `tests/test_runtime_toolchain.py`.
+- [x] Edit `mise.toml`.
+- [x] Edit `tests/test_runtime_toolchain.py`.
 
 **Build.**
 
-- [ ] Add `openspec:status` task to `mise.toml` executing `uv run python scripts/openspec_change.py --status`.
-- [ ] Add `verify:openspec` task to `mise.toml` executing `uv run python scripts/openspec_change.py validate`.
-- [ ] Update `tests/test_runtime_toolchain.py` to assert both tasks are defined.
-- [ ] Verify test suite passes cleanly with zero errors.
+- [x] Add `openspec:status` task to `mise.toml` executing `uv run python scripts/openspec_change.py --status`.
+- [x] Add `verify:openspec` task to `mise.toml` executing `uv run python scripts/openspec_change.py validate`.
+- [x] Update `tests/test_runtime_toolchain.py` to assert both tasks are defined.
+- [x] Verify test suite passes cleanly with zero errors.
 
 **You see.**
 
-- [ ] Clean executable mise tasks `mise run openspec:status` and `mise run verify:openspec`.
-- [ ] `tests/test_runtime_toolchain.py` asserting all OpenSpec tasks.
+- [x] Clean executable mise tasks `mise run openspec:status` and `mise run verify:openspec`.
+- [x] `tests/test_runtime_toolchain.py` asserting all OpenSpec tasks.
 
 **Verify, unit.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Run `uv run pytest tests/test_runtime_toolchain.py`.
+- [x] Run `uv run pytest tests/test_runtime_toolchain.py`.
 
 **Verify, live.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked. Ten lanes on `gemini-pro` at the PR head, per the boot recipe.
 
