@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import pathlib
 import re
 import sys
@@ -120,9 +121,9 @@ run_bounded() {{
     shift
     echo "==> Running $label (bounded by ${{TIMEOUT_SECONDS}}s)..."
     if command -v timeout >/dev/null 2>&1; then
-        timeout "${{TIMEOUT_SECONDS}}" "$@"
+        timeout "${{TIMEOUT_SECONDS}}" "$@" < /dev/null
     else
-        "$@"
+        "$@" < /dev/null
     fi
 }}
 
@@ -492,6 +493,13 @@ def check_skill(target_dir: pathlib.Path) -> List[str]:
             )
 
     errors.extend(check_feature_map(target_dir / "features"))
+
+    driver_script = target_dir / "scripts" / "driver.sh"
+    if driver_script.exists():
+        if driver_script.is_symlink():
+            errors.append(f"driver.sh must not be a symlink: {driver_script}")
+        elif not os.access(driver_script, os.X_OK):
+            errors.append(f"driver.sh is not executable: {driver_script}")
 
     return errors
 
