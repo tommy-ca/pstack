@@ -290,3 +290,43 @@ describe("fenced code blocks", () => {
     );
   });
 });
+
+describe("multi-file plan validation", () => {
+  async function runCheckerMulti(contents) {
+    const directory = await mkdtemp(join(tmpdir(), "check-plan-multi-"));
+    const files = [];
+    try {
+      for (let i = 0; i < contents.length; i++) {
+        const file = join(directory, `plan-${i}.md`);
+        await writeFile(file, contents[i]);
+        files.push(file);
+      }
+      const result = Bun.spawnSync([process.execPath, SCRIPT, ...files]);
+      return {
+        code: result.exitCode,
+        stdout: result.stdout.toString(),
+        stderr: result.stderr.toString(),
+      };
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  }
+
+  it("validates multiple plan files in a single invocation", async () => {
+    const plan1 = plan([section("Unit alpha (alpha)", "None.")]);
+    const plan2 = plan([section("Unit beta (beta)", "None.")]);
+    const result = await runCheckerMulti([plan1, plan2]);
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain("alpha");
+    expect(result.stdout).toContain("beta");
+    expect(result.stdout).toContain("2 PR sections, 0 problems");
+  });
+
+  it("fails with exit code 1 if any plan among multiple has problems", async () => {
+    const validPlan = plan([section("Unit valid (valid)", "None.")]);
+    const invalidPlan = plan([section("Unit bad (bad)", "missing")]);
+    const result = await runCheckerMulti([validPlan, invalidPlan]);
+    expect(result.code).toBe(1);
+    expect(result.stderr).toContain("unknown dependency missing");
+  });
+});
