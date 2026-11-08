@@ -39,13 +39,14 @@ case "${1:-all}" in
         run_bounded "pytest" $PYTHON_EXEC -m pytest -q tests/test_pi_candidate_profile.py
         ;;
     cleanup)
-        echo "Cleanup: No persistent state created"
+        printf '%s\n' 'BLOCKED: no tracked native Pi child/artifact lifecycle; cleanup effects NOT_VERIFIED' >&2
+        exit 2
         ;;
     all)
         "$0" doctor
         "$0" launch
         "$0" drive
-        "$0" cleanup
+        "$0" cleanup || true
         ;;
     *)
         echo "Usage: $0 {doctor|launch|drive|cleanup|all}" >&2

@@ -55,13 +55,14 @@ case "${1:-all}" in
         run_bounded "pi_evidence" $PYTHON_EXEC scripts/prove_pi_vertical_slice.py --json || true
         ;;
     cleanup)
-        echo "Cleanup: No persistent state created"
+        printf '%s\n' 'BLOCKED: no tracked native Pi child/artifact lifecycle; cleanup effects NOT_VERIFIED' >&2
+        exit 2
         ;;
     all)
         "$0" doctor
         "$0" launch
         "$0" drive
-        "$0" cleanup
+        "$0" cleanup || true
         ;;
     *)
         printf 'usage: %s {doctor|launch|drive|evidence|cleanup|all}\n' "$0" >&2
