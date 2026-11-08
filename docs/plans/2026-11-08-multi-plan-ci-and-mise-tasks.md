@@ -177,51 +177,52 @@ Each live lane runs in its own worktree child at the PR head. Drive the real sur
 
 **Files.**
 
-- [ ] Edit `todo.md`.
+- [x] Edit `todo.md`.
+- [x] Edit `docs/plans/2026-11-08-multi-plan-ci-and-mise-tasks.md`.
 
 **Build.**
 
-- [ ] Prune stale ephemeral evidence directories keeping only active receipts.
-- [ ] Verify zero unnecessary files and enforce style rules.
+- [x] Prune stale ephemeral evidence directories keeping only active receipts.
+- [x] Verify zero unnecessary files and enforce style rules.
 
 **You see.**
 
-- [ ] Workspace free of untracked temporary runs.
+- [x] Workspace free of untracked temporary runs.
 
 **Verify, unit.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Run `python3 scripts/portable_verifier.py prune-ephemeral --keep-last 1`.
+- [x] Run `python3 scripts/portable_verifier.py prune-ephemeral --keep-last 1`.
 
 **Verify, live.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked. Ten lanes on `gemini-pro` at the PR head, per the boot recipe.
 
-- [ ] Lane 1. Ephemeral prune probe. Save `/tmp/swarm-prune-ephemeral-clutter/worker-1/prune.png`. Pass when prune exits 0.
-- [ ] Lane 2. Evidence durability probe. Save `/tmp/swarm-prune-ephemeral-clutter/worker-2/durability.png`. Pass when receipts survive.
-- [ ] Lane 3. Evidence staleness probe. Save `/tmp/swarm-prune-ephemeral-clutter/worker-3/staleness.png`. Pass when evidence remains fresh.
-- [ ] Lane 4. Worktree confinement probe. Save `/tmp/swarm-prune-ephemeral-clutter/worker-4/confinement.png`. Pass when worktrees are confined.
-- [ ] Lane 5. Package projection probe. Save `/tmp/swarm-prune-ephemeral-clutter/worker-5/projection.png`. Pass when projection passes.
-- [ ] Lane 6. Verification skills audit probe. Save `/tmp/swarm-prune-ephemeral-clutter/worker-6/audit.png`. Pass when 10 skills pass.
-- [ ] Lane 7. Poteto test suite probe. Save `/tmp/swarm-prune-ephemeral-clutter/worker-7/poteto.png`. Pass when 102 tests pass.
-- [ ] Lane 8. Python line ceiling probe. Save `/tmp/swarm-prune-ephemeral-clutter/worker-8/ceiling.png`. Pass when zero files exceed 1000 lines.
-- [ ] Lane 9. Untracked file probe. Save `/tmp/swarm-prune-ephemeral-clutter/worker-9/untracked.png`. Pass when untracked files are expected.
-- [ ] Lane 10. Status hygiene probe. Save `/tmp/swarm-prune-ephemeral-clutter/worker-10/status.png`. Pass when git status is clean.
+- [x] Lane 1. Ephemeral prune probe. Save `/tmp/swarm-prune-ephemeral-clutter/worker-1/prune.png`. Pass when prune exits 0.
+- [x] Lane 2. Evidence durability probe. Save `/tmp/swarm-prune-ephemeral-clutter/worker-2/durability.png`. Pass when receipts survive.
+- [x] Lane 3. Evidence staleness probe. Save `/tmp/swarm-prune-ephemeral-clutter/worker-3/staleness.png`. Pass when evidence remains fresh.
+- [x] Lane 4. Worktree confinement probe. Save `/tmp/swarm-prune-ephemeral-clutter/worker-4/confinement.png`. Pass when worktrees are confined.
+- [x] Lane 5. Package projection probe. Save `/tmp/swarm-prune-ephemeral-clutter/worker-5/projection.png`. Pass when projection passes.
+- [x] Lane 6. Verification skills audit probe. Save `/tmp/swarm-prune-ephemeral-clutter/worker-6/audit.png`. Pass when 10 skills pass.
+- [x] Lane 7. Poteto test suite probe. Save `/tmp/swarm-prune-ephemeral-clutter/worker-7/poteto.png`. Pass when 102 tests pass.
+- [x] Lane 8. Python line ceiling probe. Save `/tmp/swarm-prune-ephemeral-clutter/worker-8/ceiling.png`. Pass when zero files exceed 1000 lines.
+- [x] Lane 9. Untracked file probe. Save `/tmp/swarm-prune-ephemeral-clutter/worker-9/untracked.png`. Pass when untracked files are expected.
+- [x] Lane 10. Status hygiene probe. Save `/tmp/swarm-prune-ephemeral-clutter/worker-10/status.png`. Pass when git status is clean.
 
 **Verify, perf.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Metric. Prune script duration in seconds.
-- [ ] Probe. Time python3 scripts/portable_verifier.py prune-ephemeral --keep-last 1.
-- [ ] Baseline. Record trunk duration of prune-ephemeral.
-- [ ] Rule. Head duration must not exceed trunk duration plus 1 second.
+- [x] Metric. Prune script duration in seconds.
+- [x] Probe. Time python3 scripts/portable_verifier.py prune-ephemeral --keep-last 1.
+- [x] Baseline. Record trunk duration of prune-ephemeral.
+- [x] Rule. Head duration must not exceed trunk duration plus 1 second.
 
 **Review gate.** The operator reviews before merge.
 
-- [ ] Copy lane screenshots into `/tmp/prune-ephemeral-clutter-review-gate.png`.
-- [ ] Record a 30 second video of the change and save as `/tmp/prune-ephemeral-clutter-review.mp4`.
-- [ ] Post the screenshot and video in chat for operator review.
+- [x] Copy lane screenshots into `/tmp/prune-ephemeral-clutter-review-gate.png`.
+- [x] Record a 30 second video of the change and save as `/tmp/prune-ephemeral-clutter-review.mp4`.
+- [x] Post the screenshot and video in chat for operator review.
 
 **Merge.**
 
-- [ ] Root clean verdict at head SHA.
-- [ ] Squash merge to parent branch.
+- [x] Root clean verdict at head SHA.
+- [x] Squash merge to parent branch.
 
 ## Qualify 6-harness verification matrix and close Epic 1125 (gate-close-1125)
 
