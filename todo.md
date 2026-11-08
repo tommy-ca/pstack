@@ -547,7 +547,7 @@
 - [x] Unit 1 (Issue #1144): [Tooling & Verification][P0] Harmonize OMP verification driver doctor command and prune stale pycache
 - [x] Unit 2 (Issue #1145): [Tooling & Verification][P0] Add --doctor-all flag to scaffold_verification_skill.py and update test suite
 - [x] Unit 3 (Issue #1146): [Runtime & Mise][P0] Add verify:doctor:skills task to mise.toml and update toolchain tests
-- [ ] Unit 4 (Issue #1147): [Gate & Close][P0] Qualify 6-harness verification matrix, reconcile plan, and close Epic #1143
+- [x] Unit 4 (Issue #1147): [Gate & Close][P0] Qualify 6-harness verification matrix, reconcile plan, and close Epic #1143
 
 
 
