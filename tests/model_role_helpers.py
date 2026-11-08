@@ -14,7 +14,7 @@ if str(ROOT) not in sys.path:
 from jsonschema import Draft202012Validator
 from scripts.model_role_policy import check_model_role_policy
 
-SCHEMA = json.loads((ROOT / "schemas/portability/model-role-policy.schema.json").read_text(encoding="utf-8"))
+SCHEMA = json.loads((ROOT / "schemas/model-role-policy.schema.json").read_text(encoding="utf-8"))
 EXAMPLE = json.loads((ROOT / "examples/portability/model-role-policy.example.json").read_text(encoding="utf-8"))
 PACKAGE = json.loads((ROOT / "pstack.package.json").read_text(encoding="utf-8"))
 VALIDATOR = Draft202012Validator(SCHEMA)

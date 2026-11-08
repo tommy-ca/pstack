@@ -147,7 +147,7 @@ def test_unproven_catalog_can_never_plan_clean(status: str) -> None:
     assert len(plan.seats) == 1 and plan.seats[0].model == "model-a"
     assert plan.reasons and "not live evidence" in plan.reasons[0]
     assert status in plan.reasons[0]
-    plan_schema = json.loads((ROOT / "schemas/portability/model-plan.schema.json").read_text(encoding="utf-8"))
+    plan_schema = json.loads((ROOT / "schemas/model-plan.schema.json").read_text(encoding="utf-8"))
     Draft202012Validator(plan_schema).validate(model_plan_to_wire(plan))
 
 
@@ -327,7 +327,7 @@ def test_reference_fork_ledger_records_completed_source_review() -> None:
 
 def test_cross_harness_promotion_gate_and_evidence_contract() -> None:
     from referencing import Registry, Resource
-    schemas_dir = ROOT / "schemas/portability"
+    schemas_dir = ROOT / "schemas"
     registry = Registry().with_resources(
         [
             (
@@ -396,7 +396,7 @@ def test_cross_harness_promotion_gate_and_evidence_contract() -> None:
         assert f"- [x] **G{g}**" in tasks_text, f"Gate G{g} must be marked completed in tasks.md"
     assert "- [ ] **G" not in tasks_text, "no uncompleted G-gates may remain"
 
-    plan_schema = json.loads((ROOT / "schemas/portability/model-plan.schema.json").read_text(encoding="utf-8"))
+    plan_schema = json.loads((ROOT / "schemas/model-plan.schema.json").read_text(encoding="utf-8"))
     wire_validator = Draft202012Validator(plan_schema)
     fake_wire = {
         "status": "VERIFIED",

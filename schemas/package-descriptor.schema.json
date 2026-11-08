@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://pstack.dev/schemas/portability/package-descriptor.schema.json",
+  "$id": "https://pstack.dev/schemas/package-descriptor.schema.json",
   "title": "PackageDescriptor",
   "description": "Portable pstack agent package descriptor separating metadata from runtime orchestration.",
   "type": "object",

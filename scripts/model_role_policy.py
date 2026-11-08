@@ -17,7 +17,7 @@ from scripts.portability_schema import VERIFICATION_STATUSES, PORTABLE_CAPABILIT
 
 ROOT = Path(__file__).resolve().parents[1]
 POLICY = ROOT / "examples/portability/model-role-policy.example.json"
-SCHEMA = ROOT / "schemas/portability/model-role-policy.schema.json"
+SCHEMA = ROOT / "schemas/model-role-policy.schema.json"
 
 
 @lru_cache(maxsize=1)

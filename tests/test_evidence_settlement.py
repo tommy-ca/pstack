@@ -30,7 +30,7 @@ from scripts.portability_schema import (
     settle_planes,
 )
 
-RECEIPT_SCHEMA = ROOT / "schemas" / "portability" / "receipt.schema.json"
+RECEIPT_SCHEMA = ROOT / "schemas" / "receipt.schema.json"
 EVIDENCE_DIR = ROOT / ".audit" / "evidence"
 
 from tests.evidence_test_helpers import (

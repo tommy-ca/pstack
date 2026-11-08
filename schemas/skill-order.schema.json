@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://pstack.dev/schemas/portability/skill-order.schema.json",
+  "$id": "https://pstack.dev/schemas/skill-order.schema.json",
   "title": "SkillOrderItem",
   "description": "Structured 3-tier skill resolution and fallback order for a portable pstack capability need.",
   "type": "object",

@@ -12,7 +12,7 @@ Harness adapters (Grok Build, Codex, OMP, OpenCode) require configuration files 
 
 Adopt the Arena Candidate 1 architecture with Candidate 2 native schema grafts:
 
-1. Maintain one canonical root package descriptor `pstack.package.json`. It conforms strictly to `schemas/portability/package-descriptor.schema.json`.
+1. Maintain one canonical root package descriptor `pstack.package.json`. It conforms strictly to `schemas/package-descriptor.schema.json`.
 2. Prohibit runtime orchestration fields inside package descriptors.
 3. Build a deterministic projection lever `scripts/project-package.py`. The lever projects `pstack.package.json` into harness native configurations:
    - `.grok-plugin/plugin.json` for Grok Build.

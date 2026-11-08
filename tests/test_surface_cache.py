@@ -241,7 +241,7 @@ def test_mutated_model_role_policy_stales_the_package_plane(tmp_path: Path) -> N
     with pytest.raises(ValidationError, match="evidence is stale for claimed packaged"):
         check_evidence_durability(prof, copy_root)
 
-    schema_file = copy_root / "schemas" / "portability" / "model-role-policy.schema.json"
+    schema_file = copy_root / "schemas" / "model-role-policy.schema.json"
     schema_file.unlink()
     assert compute_surface_revisions(copy_root, "grok").package_driver_revision != fresh.package_driver_revision
     with pytest.raises(ValidationError, match="evidence is stale for claimed packaged"):

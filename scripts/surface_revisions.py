@@ -497,7 +497,7 @@ def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path
         pkg_hasher.update(policy_file.read_bytes())
     else:
         pkg_hasher.update(b"model-role-policy.example.json:missing")
-    schema_file = root / "schemas" / "portability" / "model-role-policy.schema.json"
+    schema_file = root / "schemas" / "model-role-policy.schema.json"
     if schema_file.is_file():
         pkg_hasher.update(b"model-role-policy.schema.json")
         pkg_hasher.update(schema_file.read_bytes())

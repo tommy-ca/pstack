@@ -56,7 +56,7 @@ The portable architecture still owns **12 JSON schemas**, **9 descriptive harnes
 | Semantic skills, principle policies, playbooks | `skills/`; `skills/poteto-mode/` | Reuse upstream intent; never embed another host's tool ID in shared semantics |
 | Package & role registry | `pstack.package.json` | `roles[]`, `host_targets[]`, `host_adapters`; static metadata only |
 | Host identity | `scripts/host_identity.py`; `host-id.schema.json` | Six built-in IDs; namespaced declarations are candidate by default |
-| Capability/profile schema & models | `schemas/portability/`; `scripts/portability_types.py` | Descriptive claims validated independently from observed live proof |
+| Capability/profile schema & models | `schemas/`; `scripts/portability_types.py` | Descriptive claims validated independently from observed live proof |
 | Host role resolution | `scripts/model_role_policy.py`, `scripts/model_role_resolver.py` | Pure planning; model catalog != observed dispatch; no JEV model-choice authority |
 | Native projection | `scripts/project-package.py` | Generate host manifests/roles from descriptor; avoid hand-maintained duplicates |
 | Native execution and conformance | `scripts/drivers/*.py`, `scripts/verify-portable.py` | Live host-specific scenarios and honest BLOCKED/UNTESTED outcomes |
@@ -65,7 +65,7 @@ The portable architecture still owns **12 JSON schemas**, **9 descriptive harnes
 
 ## Schema registry (current checked-in shapes)
 
-All schemas are under `schemas/portability/`, Draft 2020-12. JSON-schema validation is supplemented by cross-document Python checks; standalone JSON Schema does not prove role/catalog/host/receipt consistency.
+All schemas are under `schemas/`, Draft 2020-12. JSON-schema validation is supplemented by cross-document Python checks; standalone JSON Schema does not prove role/catalog/host/receipt consistency.
 
 | Schema | Important data shape / invariant |
 | --- | --- |

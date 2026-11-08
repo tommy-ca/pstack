@@ -1,5 +1,5 @@
 {
-  "$schema": "./schemas/portability/package-descriptor.schema.json",
+  "$schema": "./schemas/package-descriptor.schema.json",
   "id": "pstack",
   "name": "pstack",
   "version": "0.15.36-preview.0",

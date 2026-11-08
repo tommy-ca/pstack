@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://pstack.dev/schemas/portability/runtime-conventions.schema.json",
+  "$id": "https://pstack.dev/schemas/runtime-conventions.schema.json",
   "title": "RuntimeConventions",
   "description": "Structured execution conventions and constraints for host agent runtimes.",
   "type": "object",

@@ -17,7 +17,7 @@ If no profile matches, or the profile declares no `setup` block, report a GAP na
 
 ## 2. Read the setup projection
 
-`profiles/<host>.json#setup` is a typed block (`schemas/portability/setup-projection.schema.json`, parsed by `scripts/portability_types.py`):
+`profiles/<host>.json#setup` is a typed block (`schemas/setup-projection.schema.json`, parsed by `scripts/portability_types.py`):
 
 | field | meaning |
 |---|---|

@@ -49,7 +49,7 @@ from scripts.portability_schema import (  # noqa: E402
     compute_surface_revisions,
 )
 
-SCHEMAS_DIR = ROOT / "schemas" / "portability"
+SCHEMAS_DIR = ROOT / "schemas"
 HOST_ID_SCHEMA = SCHEMAS_DIR / "host-id.schema.json"
 
 # The ten surfaces the seam replaced, as named in #446: six Python modules and
@@ -106,7 +106,7 @@ def _registry() -> Registry:
 def _validator(def_name: str = "host") -> Draft202012Validator:
     """A validator for one shared host-id definition, resolved through the registry."""
     probe = {
-        "$id": f"https://pstack.dev/schemas/portability/probe-{def_name}.schema.json",
+        "$id": f"https://pstack.dev/schemas/probe-{def_name}.schema.json",
         "$ref": f"host-id.schema.json#/$defs/{def_name}",
     }
     return Draft202012Validator(probe, registry=_registry())
@@ -150,7 +150,7 @@ def test_no_production_surface_keeps_its_own_host_enum() -> None:
             if path.suffix not in (".py", ".json") or not path.is_file():
                 continue
             rel = path.relative_to(ROOT).as_posix()
-            if rel in ("scripts/host_identity.py", "schemas/portability/host-id.schema.json"):
+            if rel in ("scripts/host_identity.py", "schemas/host-id.schema.json"):
                 continue
             if LOCAL_HOST_ENUM.search(path.read_text(encoding="utf-8")):
                 offenders.append(rel)
