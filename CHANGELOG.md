@@ -46,6 +46,10 @@ This ledger distinguishes **observed canonical upstream changes** from **applied
 - Pruned obsolete workspace clutter and non-evidence ephemeral scratch files (#1108, #1113).
 - Wired 11 hermetic safety tests into portability-offline CI workflow and updated select-checks (#1109, #1114).
 - Qualified 6-harness verification gate across all 10 verification skills and closed Epic #1105 (#1110).
+- Flattened schemas directory hierarchy by moving schemas/portability directly to schemas (#1117, #1121).
+- Pruned obsolete workspace cache clutter in .atl/ and reinforced style rules (#1118, #1122).
+- Audited all 10 verification skill drivers and updated templates for flattened schemas (#1119, #1123).
+- Qualified 6-harness verification gate across all 10 verification skills and closed Epic #1116 (#1120).
 
 ## [Unreleased] — upstream 0.15.36 candidate (2026-10-31)
 
