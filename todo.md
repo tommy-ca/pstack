@@ -574,7 +574,7 @@
 ## Epic #1191: [Epic][OpenSpec & Mise] Direct OpenSpec CLI Task Execution and Toolchain Verification Harmonization
 - [x] Unit 1 (Issue #1192): [Runtime & Mise][P0] Update OpenSpec tasks in mise.toml to invoke openspec CLI directly per qstack/mise.toml
 - [x] Unit 2 (Issue #1193): [Tooling & Tests][P0] Harmonize runtime toolchain and OpenSpec test suites with direct CLI contracts
-- [ ] Unit 3 (Issue #1194): [Docs & Verification][P0] Update verification documentation with direct OpenSpec CLI tasks and qstack parity
+- [x] Unit 3 (Issue #1194): [Docs & Verification][P0] Update verification documentation with direct OpenSpec CLI tasks and qstack parity
 - [ ] Unit 4 (Issue #1195): [Gate & Close][P0] Qualify 6-harness verification matrix, reconcile issue graph, and close Epic 1191
 
 
