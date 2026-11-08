@@ -1,17 +1,20 @@
 ---
 name: thermo-nuclear-code-quality-review
 description: Run an extremely strict maintainability review for abstraction quality, giant files, and spaghetti-condition growth. Use for a thermo-nuclear code quality review, thermonuclear review, deep code quality audit, or especially harsh maintainability review.
+disable-model-invocation: true
 ---
 
 # Thermo-Nuclear Code Quality Review
 
 Use this skill for an unusually strict review focused on implementation quality, maintainability, abstraction quality, and codebase health.
 
-Above all, this skill should push the reviewer to be **ambitious** about code structure. Do not merely identify local cleanup opportunities. Actively search for "code judo" moves: restructurings that preserve behavior while making the implementation dramatically simpler, smaller, more direct, and more elegant.
+Above all, this skill should push the reviewer to be **ambitious** about code structure.
+Do not merely identify local cleanup opportunities.
+Actively search for code judo moves that preserve behavior while making the implementation dramatically simpler, smaller, more direct, and more elegant.
 
 ## Core Prompt
 
-Start from this baseline:
+Start from this baseline.
 
 > Perform a deep code quality audit of the current branch's changes.
 > Rethink how to structure / implement the changes to meaningfully improve code quality without impacting behavior.
@@ -21,13 +24,13 @@ Start from this baseline:
 
 ## Non-Negotiable Additional Standards
 
-Apply the baseline prompt above, plus these explicit review rules:
+Apply the baseline prompt above, plus these explicit review rules.
 
 0. **Be ambitious about structural simplification.**
    - Do not stop at "this could be a bit cleaner."
    - Look for opportunities to reframe the change so that whole branches, helpers, modes, conditionals, or layers disappear entirely.
    - Prefer the solution that makes the code feel inevitable in hindsight.
-   - Assume there is often a "code judo" move available: a re-organization that uses the existing architecture more effectively and makes the change dramatically simpler and more elegant.
+   - Assume there is often a code judo move available through a re-organization that uses the existing architecture more effectively and makes the change dramatically simpler and more elegant.
    - If you see a path to delete complexity rather than rearrange it, push hard for that path.
 
 1. **Do not let a PR push a file from under 1k lines to over 1k lines without a very strong reason.**
@@ -69,43 +72,21 @@ Apply the baseline prompt above, plus these explicit review rules:
 
 ## Reachability, Behavior Pin and Evidence Standards
 
-Structural ambition does not license an unsupported deletion. Every finding that asks for a
-seam to be removed, moved, or collapsed carries the following, and a finding missing them is
-returned to its author rather than counted:
+Structural ambition does not license an unsupported deletion.
+Every finding that asks for a seam to be removed, moved, or collapsed carries the following, and a finding missing them is returned to its author rather than counted.
 
-- **Pin the base and head revision.** Name the resolved base, the head commit you reviewed,
-  and the diff between them. Each finding cites the revision it rests on. A finding against a
-  stale checkout, an old PR description, or an unmerged branch is not a finding against this
-  change, and it MUST be re-derived after any retarget or rebase that changes the patch.
-- **Consumer reachability.** Enumerate the seam's actual consumers before proposing its
-  removal: in-repo call sites, tests, docs and examples, generated or registry lookup,
-  published or external API surface, plugin, config and route seams, and any dynamic
-  dispatch by name. No in-repo reference is not evidence of deletability — the identifier may
-  still be reachable by name, by entry point, or by contract. State which consumers you
-  searched and which ones you could not rule out. A protected seam is removed only as an
-  explicit breaking change with a migration; never as cleanup.
-- **Behavior pin.** Name the observable behavior the change must preserve and the evidence
-  that it still holds — a test that exercises the path, a recorded before/after output, or a
-  measured number. A typecheck, a compile, or a green suite that never exercised the path is
-  not a behavior pin. When behavior intentionally changes, state the delta and who
-  it affects.
-- **Net maintained obligation.** Describe what the change removes as an obligation: the
-  concept, branch, mode, wrapper, config knob, error path, or duplicated contract that no
-  longer has to be maintained, and what it cost to keep. Removed line count is not the
-  measure, and neither is a refactor that relocates the same complexity.
-- **Ranking and recheck.** Order findings by observable impact — correctness, data or
-  security effects, lifecycle and consumer breakage, then structure — and give each one a
-  disposition and the recheck that would settle it. A list of style, naming, or formatting
-  nits MUST NOT stand in for the lifecycle, consumer, and security review.
-- **Unresolved partial effect.** When the change can leave partial state, do not report the
-  outcome as success and do not recommend a blind retry. Name the effect status, the state
-  owner who may declare recovery, and the safe next step for the author.
+- **Pin the base and head revision.** Name the resolved base, the head commit you reviewed, and the diff between them. Each finding cites the revision it rests on. A finding against a stale checkout, an old PR description, or an unmerged branch is not a finding against this change, and it MUST be re-derived after any retarget or rebase that changes the patch.
+- **Consumer reachability.** Enumerate the seam's actual consumers before proposing its removal. Check in-repo call sites, tests, docs and examples, generated or registry lookup, published or external API surface, plugin, config and route seams, and any dynamic dispatch by name. No in-repo reference is not evidence of deletability. The identifier may still be reachable by name, by entry point, or by contract. State which consumers you searched and which ones you could not rule out. A protected seam is removed only as an explicit breaking change with a migration; never as cleanup.
+- **Behavior pin.** Name the observable behavior the change must preserve and the evidence that it still holds. Provide a test that exercises the path, a recorded before/after output, or a measured number. A typecheck, a compile, or a green suite that never exercised the path is not a behavior pin. When behavior intentionally changes, state the delta and who it affects.
+- **Net maintained obligation.** Describe what the change removes as an obligation, including the concept, branch, mode, wrapper, config knob, error path, or duplicated contract that no longer has to be maintained, and what it cost to keep. Removed line count is not the measure, and neither is a refactor that relocates the same complexity.
+- **Ranking and recheck.** Order findings by observable impact, including correctness, data or security effects, lifecycle and consumer breakage, then structure. Give each one a disposition and the recheck that would settle it. A list of style, naming, or formatting nits MUST NOT stand in for the lifecycle, consumer, and security review.
+- **Unresolved partial effect.** When the change can leave partial state, do not report the outcome as success and do not recommend a blind retry. Name the effect status, the state owner who may declare recovery, and the safe next step for the author.
 
 ## Primary Review Questions
 
-For every meaningful change, ask:
+For every meaningful change, ask the following questions.
 
-- Is there a "code judo" move that would make this dramatically simpler?
+- Is there a code judo move that would make this dramatically simpler?
 - Can this change be reframed so fewer concepts, branches, or helper layers are needed?
 - Does this improve or worsen the local architecture?
 - Did the diff add branching complexity where a better abstraction should exist?
@@ -121,7 +102,7 @@ For every meaningful change, ask:
 
 ## What to Flag Aggressively
 
-Escalate findings when you see:
+Escalate findings when you see these patterns.
 
 - A complicated implementation where a cleaner reframing could delete whole categories of complexity.
 - Refactors that move code around but fail to reduce the number of concepts a reader must hold in their head.
@@ -129,13 +110,13 @@ Escalate findings when you see:
 - New conditionals bolted onto unrelated code paths.
 - One-off booleans, nullable modes, or flags that complicate existing control flow.
 - Feature-specific logic leaking into general-purpose modules.
-- Generic "magic" handling that hides simple structure and makes the code harder to reason about.
+- Generic magic handling that hides simple structure and makes the code harder to reason about.
 - Thin wrappers or identity abstractions that add indirection without simplifying anything.
 - Unnecessary casts, `any`, `unknown`, or optional params that muddy the real contract.
 - Copy-pasted logic instead of extracted helpers.
 - Narrow edge-case handling implemented in the middle of an already busy function.
 - Refactors that technically pass tests but make the code less modular or less readable.
-- "Temporary" branching that is likely to become permanent debt.
+- Temporary branching that is likely to become permanent debt.
 - Bespoke helpers where the codebase already has a canonical utility for the job.
 - Logic added in the wrong layer/package when it should live somewhere more central.
 - Sequential async flow where obviously independent work could stay simpler and clearer with parallel execution.
@@ -143,7 +124,7 @@ Escalate findings when you see:
 
 ## Preferred Remedies
 
-When you identify a code-quality problem, prefer suggestions like:
+When you identify a code-quality problem, prefer suggestions like these options.
 
 - Delete a whole layer of indirection rather than polishing it.
 - Reframe the state model so conditionals disappear instead of getting centralized.
@@ -172,7 +153,7 @@ Do not be rude, but do not soften major maintainability issues into mild suggest
 If the code is making the codebase messier, say so clearly.
 If the implementation missed an opportunity for a dramatic simplification, say that clearly too.
 
-Good phrases:
+Good phrases.
 
 - `this pushes the file past 1k lines. can we decompose this first?`
 - `this adds another special-case branch into an already busy flow. can we move this behind its own abstraction?`
@@ -186,7 +167,7 @@ Good phrases:
 
 ## Output Expectations
 
-Prioritize findings in this order:
+Prioritize findings in this order.
 
 1. Structural code-quality regressions
 2. Missed opportunities for dramatic simplification / code-judo restructuring
@@ -201,18 +182,18 @@ Prefer a smaller number of high-conviction comments over a long list of cosmetic
 
 ## Report Format
 
-The deliverable is layered, never a single monolithic file:
+The deliverable is layered, never a single monolithic file.
 
-- Write the review to its own directory (for example `/tmp/<project>-thermo/`): one summary report plus one detailed report per subsystem or reviewer (`01_<subsystem>.md`, `02_<subsystem>.md`, ...).
-- Keep the summary readable in one sitting, around 200 lines: the verdict, each finding as a short narrative paragraph, a proposed remediation sequence, and a pointer to the detail file that carries the finding's full evidence.
-- Detail files carry the depth: measurements, the commands that produced them, verification status, and worked code-judo proposals.
+- Write the review to its own directory such as `/tmp/<project>-thermo/`. Produce one summary report plus one detailed report per subsystem or reviewer (`01_<subsystem>.md`, `02_<subsystem>.md`, ...).
+- Keep the summary readable in one sitting around 200 lines. Include the verdict, each finding as a short narrative paragraph, a proposed remediation sequence, and a pointer to the detail file that carries the finding's full evidence.
+- Detail files carry the depth, including measurements, the commands that produced them, verification status, and worked code-judo proposals.
 - Write findings as prose paragraphs. Name the file and the evidence, then explain the problem and the remedy in sentences. Do not compress findings into fragment lines, tag soup, or inline command dumps in the summary.
-- When the review fans out parallel reviewers via the **swarm** skill, this section overrides swarm's aggregation rules: per-reviewer reports are the deliverable's detail files, not raw dumps to discard. Consolidate judgment into the summary; keep the details on disk and link to them.
+- When the review fans out parallel reviewers via the **swarm** skill, this section overrides swarm aggregation rules. Per-reviewer reports are the deliverable's detail files, not raw dumps to discard. Consolidate judgment into the summary. Keep the details on disk and link to them.
 
 ## Approval Bar
 
 Do not approve merely because behavior seems correct.
-The bar for approval is:
+The bar for approval requires meeting each of these conditions.
 
 - no clear structural regression
 - no obvious missed opportunity to make the implementation dramatically simpler when such a path is visible
@@ -223,7 +204,7 @@ The bar for approval is:
 - no clear architecture-boundary leak or avoidable canonical-helper duplication
 - no missed opportunity for an obvious decomposition that would materially improve maintainability
 
-Treat these as presumptive blockers unless the author can justify them clearly:
+Treat these conditions as presumptive blockers unless the author can justify them clearly.
 
 - the PR preserves a lot of incidental complexity when there is a plausible code-judo move that would delete it
 - the PR pushes a file from below 1000 lines to above 1000 lines
