@@ -183,24 +183,24 @@ Each live lane runs in its own worktree child at the PR head. Drive the real sur
 
 **Files.**
 
-- [ ] Edit `docs/verification-test-tiers.md`.
-- [ ] Edit `todo.md`.
+- [x] Edit `docs/verification-test-tiers.md`.
+- [x] Edit `todo.md`.
 
 **Build.**
 
-- [ ] Document intent-driven template files and git-discipline contracts in `docs/verification-test-tiers.md`.
-- [ ] Verify zero untracked clutter and clean worktree state across all 10 drivers.
-- [ ] Ensure strict adherence to SOLID, KISS, DRY, and YAGNI architectural principles.
-- [ ] Document dual-mode OpenSpec validation in test tier hierarchy.
+- [x] Document intent-driven template files and git-discipline contracts in `docs/verification-test-tiers.md`.
+- [x] Verify zero untracked clutter and clean worktree state across all 10 drivers.
+- [x] Ensure strict adherence to SOLID, KISS, DRY, and YAGNI architectural principles.
+- [x] Document dual-mode OpenSpec validation in test tier hierarchy.
 
 **You see.**
 
-- [ ] Accurate documentation of intent-driven template integration in `docs/verification-test-tiers.md`.
-- [ ] Updated execution plan reflecting completed verification tasks.
+- [x] Accurate documentation of intent-driven template integration in `docs/verification-test-tiers.md`.
+- [x] Updated execution plan reflecting completed verification tasks.
 
 **Verify, unit.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Run `uv run python scripts/openspec_change.py --status`.
+- [x] Run `uv run python scripts/openspec_change.py --status`.
 
 **Verify, live.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked. Ten lanes on `gemini-pro` at the PR head, per the boot recipe.
 
