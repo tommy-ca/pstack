@@ -1,1 +1,39 @@
 schema: intent-driven
+
+# PStack is a portable agent-harness engineering package, not a copied OpenCode
+# application. Keep the existing local intent-driven schema and host adapters.
+context: |
+  Product: PStack, a host-neutral implementation of canonical Cursor PStack semantics.
+  Source authority: applied UPSTREAM pin, pstack.package.json, and declared profiles.
+  Preserve SOLID, KISS, DRY, YAGNI and all six shipped host contracts.
+  Treat static/offline checks, CLI schema validation, independent reviews, and
+  observed model-backed harness evidence as distinct verification tiers.
+  Repository ADRs under adr/ are immutable; supersede, never rewrite.
+  Change lifecycle: proposal -> specs -> design -> adr -> tasks -> apply -> sync -> archive.
+
+rules:
+  proposal:
+    - State the user outcome, explicit non-goals, and changes to existing capability specs.
+    - Reference the current GitHub epic and source-pinned facts rather than reopening history.
+  specs:
+    - Prefer existing openspec/specs capability names and Gherkin GIVEN/WHEN/THEN steps.
+    - Use full MODIFIED requirement blocks; do not silently replace current behavior.
+  design:
+    - Explain host boundaries, code/data flows, typed schemas, risks and rollback.
+    - Inspect in-force ADRs before recommending an enduring architecture decision.
+  adr:
+    - Write change-local review manifest; create a new top-level ADR only for a durable decision.
+    - Do not edit previously accepted ADRs; explicitly link supersession when needed.
+  tasks:
+    - Write ordered, verifiable checkbox tasks with the existing issue dependency graph.
+    - Keep independent Swarm/Arena/Interrogate/Thermos executions NOT_RUN without receipts.
+
+operations:
+  apply:
+    guidance:
+      - Use existing PStack TDD and verification skills; change the minimal source boundary.
+      - Do not treat filesystem OpenSpec status as strict schema or runtime verification.
+  archive:
+    guidance:
+      - Sync specs and run strict OpenSpec validation before archive.
+      - Preserve accepted ADRs and the archive-chain skip_specs exception from ADR-0020.
