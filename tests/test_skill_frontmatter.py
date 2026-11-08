@@ -113,3 +113,26 @@ def test_adapter_validates_all_headers_before_writing(tmp_path: Path, monkeypatc
     with pytest.raises(ValueError):
         adapt.main()
     assert valid.read_text() == original
+
+
+def test_openspec_git_discipline_and_template_configurations() -> None:
+    import json
+
+    opencode_json = ROOT / "opencode.json"
+    assert opencode_json.is_file(), "opencode.json must exist at repo root"
+    config = json.loads(opencode_json.read_text(encoding="utf-8"))
+    assert config.get("$schema") == "https://opencode.ai/config.json"
+
+    agents_md = ROOT / "AGENTS.md"
+    assert agents_md.is_file(), "AGENTS.md must exist at repo root"
+    content = agents_md.read_text(encoding="utf-8")
+    assert "openspec-git-discipline" in content
+
+    for skill_path in [
+        ROOT / ".agents" / "skills" / "openspec-git-discipline" / "SKILL.md",
+        ROOT / ".opencode" / "skills" / "openspec-git-discipline" / "SKILL.md",
+    ]:
+        assert skill_path.is_file(), f"{skill_path} must exist"
+        text = skill_path.read_text(encoding="utf-8")
+        assert text.startswith("---\nname: openspec-git-discipline\n")
+
