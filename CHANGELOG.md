@@ -54,6 +54,10 @@ This ledger distinguishes **observed canonical upstream changes** from **applied
 - Synchronized mise.toml offline test tasks and added verification driver tasks (#1127, #1131).
 - Pruned ephemeral evidence runs and audited workspace clutter (#1128, #1132).
 - Qualified 6-harness verification matrix and closed Epic #1125 (#1129).
+- Added drive-all command to scripts/scaffold_verification_skill.py and expanded test suite (#1135, #1139).
+- Streamlined mise.toml verify:drivers task to use the driver orchestrator lever (#1136, #1140).
+- Aligned verifier receipt claim to 6 declared harnesses and refreshed evidence matrix (#1137, #1141).
+- Qualified 6-harness verification matrix and closed Epic #1134 (#1138).
 
 ## [Unreleased] — upstream 0.15.36 candidate (2026-10-31)
 
