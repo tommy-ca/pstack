@@ -123,52 +123,53 @@ Each live lane runs in its own worktree child at the PR head. Drive the real sur
 
 **Files.**
 
-- [ ] Edit `mise.toml`.
+- [x] Edit `mise.toml`.
+- [x] Edit `tests/test_runtime_toolchain.py`.
 
 **Build.**
 
-- [ ] Update test:offline task in mise.toml to include all 54 offline tests.
-- [ ] Add plan:check task to validate all plans via check-plan script.
-- [ ] Add verify:drivers task to execute launch and drive across all 10 drivers.
+- [x] Update test:offline task in mise.toml to include all 54 offline tests.
+- [x] Add plan:check task to validate all plans via check-plan script.
+- [x] Add verify:drivers task to execute launch and drive across all 10 drivers.
 
 **You see.**
 
-- [ ] Task configuration in mise.toml includes updated offline test lists and driver commands.
+- [x] Task configuration in mise.toml includes updated offline test lists and driver commands.
 
 **Verify, unit.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Run `python3 -m pytest tests/test_runtime_toolchain.py`.
+- [x] Run `python3 -m pytest tests/test_runtime_toolchain.py`.
 
 **Verify, live.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked. Ten lanes on `gemini-pro` at the PR head, per the boot recipe.
 
-- [ ] Lane 1. Mise plan check probe. Save `/tmp/swarm-mise-tasks-sync/worker-1/plan.png`. Pass when plan:check succeeds.
-- [ ] Lane 2. Mise offline test suite probe. Save `/tmp/swarm-mise-tasks-sync/worker-2/offline.png`. Pass when test:offline succeeds.
-- [ ] Lane 3. Verification skill audit probe. Save `/tmp/swarm-mise-tasks-sync/worker-3/audit.png`. Pass when 10 skills pass.
-- [ ] Lane 4. Package projection probe. Save `/tmp/swarm-mise-tasks-sync/worker-4/projection.png`. Pass when projection check passes.
-- [ ] Lane 5. Evidence staleness probe. Save `/tmp/swarm-mise-tasks-sync/worker-5/staleness.png`. Pass when staleness is fresh.
-- [ ] Lane 6. Evidence durability probe. Save `/tmp/swarm-mise-tasks-sync/worker-6/durability.png`. Pass when check-evidence passes.
-- [ ] Lane 7. Worktree confinement probe. Save `/tmp/swarm-mise-tasks-sync/worker-7/confinement.png`. Pass when worktrees are confined.
-- [ ] Lane 8. Python line ceiling probe. Save `/tmp/swarm-mise-tasks-sync/worker-8/ceiling.png`. Pass when zero files exceed 1000 lines.
-- [ ] Lane 9. Mise config validation probe. Save `/tmp/swarm-mise-tasks-sync/worker-9/mise.png`. Pass when mise.toml is valid.
-- [ ] Lane 10. Status hygiene probe. Save `/tmp/swarm-mise-tasks-sync/worker-10/status.png`. Pass when git status is clean.
+- [x] Lane 1. Mise plan check probe. Save `/tmp/swarm-mise-tasks-sync/worker-1/plan.png`. Pass when plan:check succeeds.
+- [x] Lane 2. Mise offline test suite probe. Save `/tmp/swarm-mise-tasks-sync/worker-2/offline.png`. Pass when test:offline succeeds.
+- [x] Lane 3. Verification skill audit probe. Save `/tmp/swarm-mise-tasks-sync/worker-3/audit.png`. Pass when 10 skills pass.
+- [x] Lane 4. Package projection probe. Save `/tmp/swarm-mise-tasks-sync/worker-4/projection.png`. Pass when projection check passes.
+- [x] Lane 5. Evidence staleness probe. Save `/tmp/swarm-mise-tasks-sync/worker-5/staleness.png`. Pass when staleness is fresh.
+- [x] Lane 6. Evidence durability probe. Save `/tmp/swarm-mise-tasks-sync/worker-6/durability.png`. Pass when check-evidence passes.
+- [x] Lane 7. Worktree confinement probe. Save `/tmp/swarm-mise-tasks-sync/worker-7/confinement.png`. Pass when worktrees are confined.
+- [x] Lane 8. Python line ceiling probe. Save `/tmp/swarm-mise-tasks-sync/worker-8/ceiling.png`. Pass when zero files exceed 1000 lines.
+- [x] Lane 9. Mise config validation probe. Save `/tmp/swarm-mise-tasks-sync/worker-9/mise.png`. Pass when mise.toml is valid.
+- [x] Lane 10. Status hygiene probe. Save `/tmp/swarm-mise-tasks-sync/worker-10/status.png`. Pass when git status is clean.
 
 **Verify, perf.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Metric. Mise offline test task execution duration in seconds.
-- [ ] Probe. Time uv run pytest tests/test_runtime_toolchain.py.
-- [ ] Baseline. Record execution duration of toolchain test.
-- [ ] Rule. Head duration must not exceed trunk duration plus 2 seconds.
+- [x] Metric. Mise offline test task execution duration in seconds.
+- [x] Probe. Time uv run pytest tests/test_runtime_toolchain.py.
+- [x] Baseline. Record execution duration of toolchain test.
+- [x] Rule. Head duration must not exceed trunk duration plus 2 seconds.
 
 **Review gate.** The operator reviews before merge.
 
-- [ ] Copy lane screenshots into `/tmp/mise-tasks-sync-review-gate.png`.
-- [ ] Record a 30 second video of the change and save as `/tmp/mise-tasks-sync-review.mp4`.
-- [ ] Post the screenshot and video in chat for operator review.
+- [x] Copy lane screenshots into `/tmp/mise-tasks-sync-review-gate.png`.
+- [x] Record a 30 second video of the change and save as `/tmp/mise-tasks-sync-review.mp4`.
+- [x] Post the screenshot and video in chat for operator review.
 
 **Merge.**
 
-- [ ] Root clean verdict at head SHA.
-- [ ] Squash merge to parent branch.
+- [x] Root clean verdict at head SHA.
+- [x] Squash merge to parent branch.
 
 ## Prune ephemeral evidence runs and audit clutter (prune-ephemeral-clutter)
 

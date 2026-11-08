@@ -1,7 +1,10 @@
+import sys
 import tomllib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 
 def test_mise_toml_configuration() -> None:
@@ -22,6 +25,7 @@ def test_mise_toml_configuration() -> None:
     assert "test" in tasks, "mise.toml must declare test task"
     assert "test:offline" in tasks, "mise.toml must declare test:offline task"
     assert "test:scripts" in tasks, "mise.toml must declare test:scripts task"
+    assert "plan:check" in tasks, "mise.toml must declare plan:check task"
     assert "verify:portable" in tasks, "mise.toml must declare verify:portable task"
     assert "verify:lifecycle" in tasks, "mise.toml must declare verify:lifecycle task"
     assert "verify:sync" in tasks, "mise.toml must declare verify:sync task"
@@ -29,6 +33,7 @@ def test_mise_toml_configuration() -> None:
     assert "verify:staleness" in tasks, "mise.toml must declare verify:staleness task"
     assert "verify:projection" in tasks, "mise.toml must declare verify:projection task"
     assert "verify:skills" in tasks, "mise.toml must declare verify:skills task"
+    assert "verify:drivers" in tasks, "mise.toml must declare verify:drivers task"
     assert "worktree:check" in tasks, "mise.toml must declare worktree:check task"
     assert "worktree:audit" in tasks, "mise.toml must declare worktree:audit task"
 
@@ -42,7 +47,7 @@ def test_release_workflow_uses_uv() -> None:
 
 
 def test_driver_template_runtime_contracts() -> None:
-    from scripts.scaffold_verification_skill import generate_driver_script
+    from scripts.verification_skill_templates import generate_driver_script
     script = generate_driver_script("test-app")
     assert 'PYTHON_EXEC="uv run python"' in script
     assert 'BUN_EXEC="bun"' in script
