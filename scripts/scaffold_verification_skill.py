@@ -378,7 +378,12 @@ def drive_verification_skill(
                 timeout=timeout,
             )
             dur = time.time() - t0
-            status = "PASS" if proc.returncode == 0 else "FAIL"
+            if proc.returncode == 0:
+                status = "PASS"
+            elif command == "cleanup" and proc.returncode == 2 and "BLOCKED" in proc.stderr:
+                status = "BLOCKED"
+            else:
+                status = "FAIL"
             return {
                 "path": rel,
                 "status": status,
@@ -455,6 +460,7 @@ def drive_all_verification_skills(
     skills = list_verification_skills(workspace, all_dirs=True)
     results: List[Dict[str, Any]] = []
     passed_count = 0
+    blocked_count = 0
     failed_count = 0
     for skill in skills:
         res = drive_verification_skill(skill, command=command, timeout=timeout)
@@ -462,6 +468,8 @@ def drive_all_verification_skills(
         res["path"] = rel
         if res["status"] == "PASS":
             passed_count += 1
+        elif res["status"] == "BLOCKED":
+            blocked_count += 1
         else:
             failed_count += 1
         results.append(res)
@@ -469,6 +477,7 @@ def drive_all_verification_skills(
         "exit_code": 1 if failed_count > 0 else 0,
         "total_skills": len(skills),
         "passed": passed_count,
+        "blocked": blocked_count,
         "failed": failed_count,
         "skills": results,
     }
@@ -491,6 +500,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--audit", action="store_true", help="Audit all verification skills across all 6 harnesses")
     parser.add_argument("--drive-all", action="store_true", help="Execute launch and drive/doctor across all verification skills")
     parser.add_argument("--doctor-all", action="store_true", help="Execute doctor across all verification skills")
+    parser.add_argument("--cleanup-all", action="store_true", help="Execute cleanup across all verification skills")
     parser.add_argument("--drive", action="store_true", help="Execute driver for a single verification skill specified by --target-dir or --app")
     parser.add_argument("--command", choices=["doctor", "launch", "drive", "cleanup", "all"], default=None, help="Explicit driver verb to execute")
     parser.add_argument("--timeout", type=float, default=60.0, help="Per-command timeout in seconds (default: 60.0)")
@@ -527,6 +537,15 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     if args.doctor_all:
         data = drive_all_verification_skills(workspace, command="doctor", timeout=args.timeout)
+        if args.json:
+            print(json.dumps(data, indent=2))
+            return data["exit_code"]
+        for item in data["skills"]:
+            print(f"[{item['status']}] {item['path']} ({item.get('command')}) {item.get('duration_s', 0):.2f}s")
+        return data["exit_code"]
+
+    if args.cleanup_all:
+        data = drive_all_verification_skills(workspace, command="cleanup", timeout=args.timeout)
         if args.json:
             print(json.dumps(data, indent=2))
             return data["exit_code"]

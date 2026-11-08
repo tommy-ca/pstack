@@ -705,6 +705,29 @@ def test_cli_doctor_all(tmp_path: pathlib.Path) -> None:
     assert data["failed"] == 0
 
 
+def test_cli_cleanup_all(tmp_path: pathlib.Path) -> None:
+    cli(tmp_path, "--host", "grok", "--app", "app-a", "--write")
+    cli(tmp_path, "--host", "codex", "--app", "app-b", "--write")
+
+    for p in [tmp_path / ".grok/skills/verify-app-a", tmp_path / ".codex/skills/verify-app-b"]:
+        driver = p / "scripts" / "driver.sh"
+        driver.write_text("#!/usr/bin/env bash\nif [ \"$1\" = \"cleanup\" ]; then echo mock-cleanup; exit 0; fi\nexit 1\n")
+        driver.chmod(0o755)
+
+    res_all = cli(tmp_path, "--cleanup-all")
+    assert res_all.returncode == 0
+    assert "[PASS] .grok/skills/verify-app-a (cleanup)" in res_all.stdout
+    assert "[PASS] .codex/skills/verify-app-b (cleanup)" in res_all.stdout
+
+    res_json = cli(tmp_path, "--cleanup-all", "--json")
+    assert res_json.returncode == 0
+    data = json.loads(res_json.stdout)
+    assert data["exit_code"] == 0
+    assert data["passed"] == 2
+    assert data["failed"] == 0
+
+
+
 
 
 
