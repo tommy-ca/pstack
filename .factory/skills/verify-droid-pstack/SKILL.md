@@ -1,0 +1,81 @@
+---
+name: verify-droid-pstack
+description: "Verify Droid host projection, marketplace manifests, and 4-plane doctor verification."
+disable-model-invocation: true
+---
+
+# Verify Droid PStack
+
+This skill verifies PStack integration with the Droid agent harness.
+It validates projection manifests, marketplace configurations, and 4-plane doctor health.
+Read the core feature map before executing verification routines.
+
+## Launch
+
+Verify the runtime environment and required profiles.
+Ensure `profiles/droid.json` is present and valid.
+Verify Python virtual environment availability.
+Run the launch routine using the verification driver.
+
+```bash
+bash .factory/skills/verify-droid-pstack/scripts/driver.sh launch
+```
+
+## Doctor
+
+The doctor command performs non-destructive health checks.
+It validates projection manifests for Droid plugin and marketplace.
+It verifies Droid role definitions remain synchronized.
+It executes the portable 4-plane doctor for the Droid host.
+
+```bash
+bash .factory/skills/verify-droid-pstack/scripts/driver.sh doctor
+```
+
+## Drive
+
+The drive command exercises verification checks.
+It confirms projection synchronization for marketplace catalogs.
+It checks static evidence receipt freshness.
+It verifies receipts against the four verification planes.
+
+```bash
+bash .factory/skills/verify-droid-pstack/scripts/driver.sh drive
+```
+
+## Proof bar
+
+All checks must pass with exit code zero.
+The plugin manifest at `.factory-plugin/plugin.json` must match.
+The marketplace manifest at `.factory-plugin/marketplace.json` must match.
+All 22 roles at `droids/` must match.
+The 4-plane evidence receipt must be fresh and valid.
+Unmet assertions yield exit code non-zero and prevent qualification.
+
+## Evidence
+
+Verification outputs are written to the audit evidence directory.
+Static receipts are recorded in `.audit/evidence/droid-*/receipt.json`.
+Evidence freshness is confirmed via `verify_portable.py check-staleness`.
+Commands are bounded by a 60-second execution timeout.
+
+## Cleanup
+
+The driver runs clean with no persistent background processes.
+Temporary test files are removed automatically upon completion.
+Run the cleanup routine to verify workspace cleanliness.
+
+```bash
+bash .factory/skills/verify-droid-pstack/scripts/driver.sh cleanup
+```
+
+## Helpers
+
+Run driver branches directly for focused verification.
+
+```bash
+bash .factory/skills/verify-droid-pstack/scripts/driver.sh doctor
+bash .factory/skills/verify-droid-pstack/scripts/driver.sh launch
+bash .factory/skills/verify-droid-pstack/scripts/driver.sh drive
+bash .factory/skills/verify-droid-pstack/scripts/driver.sh cleanup
+```
