@@ -312,3 +312,18 @@ def test_validate_all_flag_and_helper(monkeypatch: pytest.MonkeyPatch) -> None:
     assert seen.get("argv", []) == ["openspec", "validate", "--all"]
 
 
+def test_intent_driven_openspec_cli_execution_contract(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    seen: dict[str, list[str]] = {}
+
+    def _fake_run(*a: object, **k: object) -> subprocess.CompletedProcess[str]:
+        seen["argv"] = list(a[0]) if a else []
+        return subprocess.CompletedProcess(a, 0, "status ok", "")
+
+    monkeypatch.setattr(subprocess, "run", _fake_run)
+    assert inspect_intent_driven_change("test-change", as_json=False) == 0
+    assert seen["argv"] == ["openspec", "status", "--change", "test-change"]
+
+
+
