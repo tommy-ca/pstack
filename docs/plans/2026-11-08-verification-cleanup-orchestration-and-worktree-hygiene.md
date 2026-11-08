@@ -177,55 +177,55 @@ Each live lane runs in its own worktree child at the PR head. Drive the real sur
 
 **Files.**
 
-- [ ] Edit `docs/verification-test-tiers.md`.
-- [ ] Edit `todo.md`.
+- [x] Edit `docs/verification-test-tiers.md`.
+- [x] Edit `todo.md`.
 
 **Build.**
 
-- [ ] Verify worktree confinement with `python3 scripts/worktree_protocol.py check`.
-- [ ] Safely prune obsolete local branches cherry-merged into `main`.
-- [ ] Document worktree confinement and branch lifecycle invariants in `docs/verification-test-tiers.md`.
-- [ ] Verify zero untracked clutter and clean working tree.
+- [x] Verify worktree confinement with `python3 scripts/worktree_protocol.py check`.
+- [x] Safely prune obsolete local branches cherry-merged into `main`.
+- [x] Document worktree confinement and branch lifecycle invariants in `docs/verification-test-tiers.md`.
+- [x] Verify zero untracked clutter and clean working tree.
 
 **You see.**
 
-- [ ] Pruned local branch list with zero merged leftover branches.
-- [ ] Clean `git status` reporting zero untracked clutter.
+- [x] Pruned local branch list with zero merged leftover branches.
+- [x] Clean `git status` reporting zero untracked clutter.
 
 **Verify, unit.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Run `python3 scripts/worktree_protocol.py check`.
+- [x] Run `python3 scripts/worktree_protocol.py check`.
 
 **Verify, live.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked. Ten lanes on `gemini-pro` at the PR head, per the boot recipe.
 
-- [ ] Lane 1. Worktree confinement probe. Save `/tmp/swarm-worktree-branch-hygiene/worker-1/confinement.png`. Pass when worktrees are confined.
-- [ ] Lane 2. Local branch count probe. Save `/tmp/swarm-worktree-branch-hygiene/worker-2/branches.png`. Pass when stale branches are pruned.
-- [ ] Lane 3. Verification skills audit probe. Save `/tmp/swarm-worktree-branch-hygiene/worker-3/audit.png`. Pass when 10 skills pass.
-- [ ] Lane 4. Package projection probe. Save `/tmp/swarm-worktree-branch-hygiene/worker-4/projection.png`. Pass when projection passes.
-- [ ] Lane 5. Evidence staleness probe. Save `/tmp/swarm-worktree-branch-hygiene/worker-5/staleness.png`. Pass when staleness reports all fresh.
-- [ ] Lane 6. Poteto test suite probe. Save `/tmp/swarm-worktree-branch-hygiene/worker-6/poteto.png`. Pass when 104 tests pass.
-- [ ] Lane 7. Python line ceiling probe. Save `/tmp/swarm-worktree-branch-hygiene/worker-7/ceiling.png`. Pass when zero files exceed 1000 lines.
-- [ ] Lane 8. Untracked file probe. Save `/tmp/swarm-worktree-branch-hygiene/worker-8/untracked.png`. Pass when untracked files are expected.
-- [ ] Lane 9. Git status probe. Save `/tmp/swarm-worktree-branch-hygiene/worker-9/status.png`. Pass when status is clean.
-- [ ] Lane 10. OpenSpec change resolution probe. Save `/tmp/swarm-worktree-branch-hygiene/worker-10/openspec.png`. Pass when OpenSpec change validates.
+- [x] Lane 1. Worktree confinement probe. Save `/tmp/swarm-worktree-branch-hygiene/worker-1/confinement.png`. Pass when worktrees are confined.
+- [x] Lane 2. Local branch count probe. Save `/tmp/swarm-worktree-branch-hygiene/worker-2/branches.png`. Pass when stale branches are pruned.
+- [x] Lane 3. Verification skills audit probe. Save `/tmp/swarm-worktree-branch-hygiene/worker-3/audit.png`. Pass when 10 skills pass.
+- [x] Lane 4. Package projection probe. Save `/tmp/swarm-worktree-branch-hygiene/worker-4/projection.png`. Pass when projection passes.
+- [x] Lane 5. Evidence staleness probe. Save `/tmp/swarm-worktree-branch-hygiene/worker-5/staleness.png`. Pass when staleness reports all fresh.
+- [x] Lane 6. Poteto test suite probe. Save `/tmp/swarm-worktree-branch-hygiene/worker-6/poteto.png`. Pass when 104 tests pass.
+- [x] Lane 7. Python line ceiling probe. Save `/tmp/swarm-worktree-branch-hygiene/worker-7/ceiling.png`. Pass when zero files exceed 1000 lines.
+- [x] Lane 8. Untracked file probe. Save `/tmp/swarm-worktree-branch-hygiene/worker-8/untracked.png`. Pass when untracked files are expected.
+- [x] Lane 9. Git status probe. Save `/tmp/swarm-worktree-branch-hygiene/worker-9/status.png`. Pass when status is clean.
+- [x] Lane 10. OpenSpec change resolution probe. Save `/tmp/swarm-worktree-branch-hygiene/worker-10/openspec.png`. Pass when OpenSpec change validates.
 
 **Verify, perf.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Metric. Confinement check duration in seconds.
-- [ ] Probe. Time python3 scripts/worktree_protocol.py check.
-- [ ] Baseline. Record trunk duration of confinement check.
-- [ ] Rule. Head duration must not exceed 2 seconds.
+- [x] Metric. Confinement check duration in seconds.
+- [x] Probe. Time python3 scripts/worktree_protocol.py check.
+- [x] Baseline. Record trunk duration of confinement check.
+- [x] Rule. Head duration must not exceed 2 seconds.
 
 **Review gate.** The operator reviews before merge.
 
-- [ ] Copy lane screenshots into `/tmp/worktree-branch-hygiene-review-gate.png`.
-- [ ] Record a 30 second video of the change and save as `/tmp/worktree-branch-hygiene-review.mp4`.
-- [ ] Post the screenshot and video in chat for operator review.
+- [x] Copy lane screenshots into `/tmp/worktree-branch-hygiene-review-gate.png`.
+- [x] Record a 30 second video of the change and save as `/tmp/worktree-branch-hygiene-review.mp4`.
+- [x] Post the screenshot and video in chat for operator review.
 
 **Merge.**
 
-- [ ] Root clean verdict at head SHA.
-- [ ] Squash merge to parent branch.
+- [x] Root clean verdict at head SHA.
+- [x] Squash merge to parent branch.
 
 ## Qualify 6-harness verification matrix, reconcile plan, and close Epic 1152 (gate-close-1152)
 
