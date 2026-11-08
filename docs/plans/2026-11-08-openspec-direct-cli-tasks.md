@@ -178,24 +178,24 @@ Each live lane runs in its own worktree child at the PR head. Drive the real sur
 
 **Files.**
 
-- [ ] Edit `docs/verification-test-tiers.md`.
-- [ ] Edit `todo.md`.
+- [x] Edit `docs/verification-test-tiers.md`.
+- [x] Edit `todo.md`.
 
 **Build.**
 
-- [ ] Document direct OpenSpec CLI tasks in `docs/verification-test-tiers.md`.
-- [ ] Document qstack task parity (`validate:openspec`, `validate:openspec:all`, `validate:openspec:changes`).
-- [ ] Remove outdated references to Python wrapper task implementations.
-- [ ] Update todo.md with completed tasks under Epic 1191.
+- [x] Document direct OpenSpec CLI tasks in `docs/verification-test-tiers.md`.
+- [x] Document qstack task parity (`validate:openspec`, `validate:openspec:all`, `validate:openspec:changes`).
+- [x] Remove outdated references to Python wrapper task implementations.
+- [x] Update todo.md with completed tasks under Epic 1191.
 
 **You see.**
 
-- [ ] Accurate documentation of direct OpenSpec CLI tasks in `docs/verification-test-tiers.md`.
-- [ ] Updated execution plan and task ledger in `todo.md`.
+- [x] Accurate documentation of direct OpenSpec CLI tasks in `docs/verification-test-tiers.md`.
+- [x] Updated execution plan and task ledger in `todo.md`.
 
 **Verify, unit.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Run `openspec status --all`.
+- [x] Run `openspec status --all`.
 
 **Verify, live.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked. Ten lanes on `gemini-pro` at the PR head, per the boot recipe.
 
