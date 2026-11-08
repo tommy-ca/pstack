@@ -78,6 +78,11 @@ This ledger distinguishes **observed canonical upstream changes** from **applied
 - Harmonized runtime toolchain test assertions with direct OpenSpec CLI contracts (#1193, #1197).
 - Updated verification documentation with direct OpenSpec CLI tasks and qstack parity (#1194, #1198).
 - Qualified 6-harness verification matrix, reconciled issue graph, and closed Epic #1191 (#1195).
+- Managed @fission-ai/openspec in mise.toml tools and wrapped tasks with fixed bunx version (#1204, #1208).
+- Harmonized runtime toolchain and OpenSpec test assertions with pinned bunx and mise npm contracts (#1205, #1209).
+- Documented pinned bunx and mise npm OpenSpec lifecycle in test tiers documentation (#1206, #1210).
+- Qualified 6-harness verification matrix, reconciled issue graph, and closed Epic #1203 (#1207).
+
 
 ## [Unreleased] — upstream 0.15.36 candidate (2026-10-31)
 
