@@ -479,6 +479,20 @@
 - [x] Unit 4 (Issue #1058): [CI, Reconcile & Gate][P0] Update CI offline contracts, update changelog and plan, and run full multi-harness verification gate
 *(Epic #1054 CLOSED)*
 
+## Epic #1060: [Epic][DSH-22] Reconcile DeepSeek Harness 22-source skill inventory and harden PR evidence integrity
+- [x] Unit 1 (Issue #1061, PR #1049): [DSH-22][S0] Validate and reconcile 22-source reusable-skill OpenSpec PR #1049
+- [x] Unit 2 (Issue #1062, PR #1049): [DSH-22][S1] Falsify lifecycle, failure-effect and review gaps in existing PStack owners
+- [x] Unit 3 (Issue #1063, PR #1065): [DSH-22][S2] Bind direct PR polish to existing verification truth and freshness owners
+- [x] Unit 4 (Issue #1064): [DSH-22][S3] Multi-harness conformance and live verification proof
+*(Epic #1060 CLOSED)*
+
+## Epic #1072: [Epic][Runtime & Multi-Host Verification Levers] Enforce native uv and bun commands via mise and scaffold OMP verification skill
+- [x] Unit 1 (Issue #1073, PR #1075): [Runtime & Mise][P0] Update mise tasks, driver runtime contracts, and release workflow to enforce native uv run and bun commands
+- [x] Unit 2 (Issue #1074, PR #1076): [Verification Skills][P0] Scaffold and tailor verify-omp-pstack skill in .omp/skills/ with reproducible driver
+- [x] Unit 3 (Issue #1061, #1062, PR #1049): [OpenSpec Reconcile][P0] Reconcile DSH-22 OpenSpec without vendor workflow bloat
+- [x] Unit 4 (Issue #1063, #1064, PR #1065): [Gate & Integrity][P0] Qualify PR #1065, run full multi-harness verification gate, and close Epics #1060 and #1072
+*(Epic #1072 CLOSED)*
+
 
 
 

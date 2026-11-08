@@ -25,6 +25,10 @@ This ledger distinguishes **observed canonical upstream changes** from **applied
 - Added formal verification driver to .codex/skills/verify-llm-wiki-formal and hardened scaffolder executable driver checks (#1056).
 - Scaffolded and tailored verify-antigravity-pstack verification skill in .agents/skills/ (#1057).
 - Updated CI offline workflow with formal driver, Antigravity driver, and harness audit checks (#1058).
+- Added comprehensive mise tasks and driver contracts enforcing native uv and bun commands (#1073, #1075).
+- Scaffolded and tailored verify-omp-pstack verification skill in .omp/skills/ (#1074, #1076).
+- Curated portable DeepSeek skills and reconciled 22-source OpenSpec without DSH-specific workflows (#1049, #1061, #1062).
+- Hardened make-pr-easy-to-review verification claims against unrun and stale evidence (#1065, #1063, #1064).
 
 ## [Unreleased] — upstream 0.15.36 candidate (2026-10-31)
 
