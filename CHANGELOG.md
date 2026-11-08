@@ -41,6 +41,11 @@ This ledger distinguishes **observed canonical upstream changes** from **applied
 - Fixed OpenSpec strict validation warnings, unified Pi candidate verification driver, and added ephemeral prune (#1098, #1102).
 - Wired Pi verification drivers and projection tests into portability-offline CI workflow (#1099, #1103).
 - Qualified 6-harness verification gate across all 10 verification skills and closed Epic #1096 (#1100).
+- Restored fail-closed cleanup exit code 2 contract in Pi verification drivers (#1106, #1111).
+- Cleansed style violations in thermo-nuclear-code-quality-review and added frontmatter tests (#1107, #1112).
+- Pruned obsolete workspace clutter and non-evidence ephemeral scratch files (#1108, #1113).
+- Wired 11 hermetic safety tests into portability-offline CI workflow and updated select-checks (#1109, #1114).
+- Qualified 6-harness verification gate across all 10 verification skills and closed Epic #1105 (#1110).
 
 ## [Unreleased] — upstream 0.15.36 candidate (2026-10-31)
 
