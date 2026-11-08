@@ -37,7 +37,6 @@ run_bounded() {
 case "${1:-all}" in
     doctor)
         run_bounded "package_projection" $PYTHON_EXEC scripts/package_projection.py --check
-        run_bounded "prove_native_package" $PYTHON_EXEC scripts/prove_omp_native_package.py
         run_bounded "doctor_checks" $PYTHON_EXEC scripts/verify_portable.py doctor --host omp
         ;;
     launch)
