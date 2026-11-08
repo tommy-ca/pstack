@@ -158,12 +158,29 @@ def inspect_intent_driven_change(
     return 1
 
 
+def validate_all_openspec_specs(cwd: str | None = None) -> int:
+    probed = subprocess.run(
+        ["openspec", "validate", "--all"],
+        capture_output=True,
+        text=True,
+        check=False,
+        cwd=cwd if cwd is not None else _repo_root(),
+    )
+    sys.stdout.write(probed.stdout)
+    sys.stderr.write(probed.stderr)
+    return probed.returncode
+
+
 def main(argv: list[str] | None = None) -> int:
     args = list(sys.argv[1:] if argv is None else argv)
     if any(arg in ("-h", "--help") for arg in args):
-        print("Usage: python3 scripts/openspec_change.py [--status] [--json] [--change CHANGE] [CHANGE]", file=sys.stdout)
+        print("Usage: python3 scripts/openspec_change.py [--status] [--json] [--all] [--change CHANGE] [CHANGE]", file=sys.stdout)
         return 0
+    if "--all" in args:
+        args.remove("--all")
+        return validate_all_openspec_specs()
     status_mode = "--status" in args
+
     if status_mode:
         args.remove("--status")
     as_json = "--json" in args
