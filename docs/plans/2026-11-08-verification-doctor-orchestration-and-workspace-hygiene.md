@@ -121,55 +121,55 @@ Each live lane runs in its own worktree child at the PR head. Drive the real sur
 
 **Files.**
 
-- [ ] Edit `scripts/scaffold_verification_skill.py`.
-- [ ] Edit `tests/test_scaffold_verification_skill.py`.
+- [x] Edit `scripts/scaffold_verification_skill.py`.
+- [x] Edit `tests/test_scaffold_verification_skill.py`.
 
 **Build.**
 
-- [ ] Add `--doctor-all` command line option to `scripts/scaffold_verification_skill.py`.
-- [ ] Support structured JSON output with `--json`.
-- [ ] Add unit tests in `tests/test_scaffold_verification_skill.py` for `--doctor-all`.
-- [ ] Verify test suite passes cleanly with zero errors.
+- [x] Add `--doctor-all` command line option to `scripts/scaffold_verification_skill.py`.
+- [x] Support structured JSON output with `--json`.
+- [x] Add unit tests in `tests/test_scaffold_verification_skill.py` for `--doctor-all`.
+- [x] Verify test suite passes cleanly with zero errors.
 
 **You see.**
 
-- [ ] Clean executable CLI command `python3 scripts/scaffold_verification_skill.py --doctor-all`.
-- [ ] Detailed JSON summary with doctor execution duration, exit codes, and status.
+- [x] Clean executable CLI command `python3 scripts/scaffold_verification_skill.py --doctor-all`.
+- [x] Detailed JSON summary with doctor execution duration, exit codes, and status.
 
 **Verify, unit.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Run `uv run pytest tests/test_scaffold_verification_skill.py -k test_cli_doctor_all`.
+- [x] Run `uv run pytest tests/test_scaffold_verification_skill.py -k test_cli_doctor_all`.
 
 **Verify, live.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked. Ten lanes on `gemini-pro` at the PR head, per the boot recipe.
 
-- [ ] Lane 1. Scaffolder doctor-all probe. Save `/tmp/swarm-scaffold-doctor-all/worker-1/doctor-all.png`. Pass when doctor-all exits 0.
-- [ ] Lane 2. Doctor-all JSON output probe. Save `/tmp/swarm-scaffold-doctor-all/worker-2/json.png`. Pass when JSON matches schema.
-- [ ] Lane 3. Single skill drive probe. Save `/tmp/swarm-scaffold-doctor-all/worker-3/single.png`. Pass when single drive passes.
-- [ ] Lane 4. Worktree confinement probe. Save `/tmp/swarm-scaffold-doctor-all/worker-4/confinement.png`. Pass when worktrees are confined.
-- [ ] Lane 5. Package projection probe. Save `/tmp/swarm-scaffold-doctor-all/worker-5/projection.png`. Pass when projection check passes.
-- [ ] Lane 6. Verification skills audit probe. Save `/tmp/swarm-scaffold-doctor-all/worker-6/audit.png`. Pass when 10 skills pass.
-- [ ] Lane 7. Poteto test suite probe. Save `/tmp/swarm-scaffold-doctor-all/worker-7/poteto.png`. Pass when 104 tests pass.
-- [ ] Lane 8. Python line ceiling probe. Save `/tmp/swarm-scaffold-doctor-all/worker-8/ceiling.png`. Pass when zero files exceed 1000 lines.
-- [ ] Lane 9. Untracked file probe. Save `/tmp/swarm-scaffold-doctor-all/worker-9/untracked.png`. Pass when untracked files are expected.
-- [ ] Lane 10. Status hygiene probe. Save `/tmp/swarm-scaffold-doctor-all/worker-10/status.png`. Pass when git status is clean.
+- [x] Lane 1. Scaffolder doctor-all probe. Save `/tmp/swarm-scaffold-doctor-all/worker-1/doctor-all.png`. Pass when doctor-all exits 0.
+- [x] Lane 2. Doctor-all JSON output probe. Save `/tmp/swarm-scaffold-doctor-all/worker-2/json.png`. Pass when JSON matches schema.
+- [x] Lane 3. Single skill drive probe. Save `/tmp/swarm-scaffold-doctor-all/worker-3/single.png`. Pass when single drive passes.
+- [x] Lane 4. Worktree confinement probe. Save `/tmp/swarm-scaffold-doctor-all/worker-4/confinement.png`. Pass when worktrees are confined.
+- [x] Lane 5. Package projection probe. Save `/tmp/swarm-scaffold-doctor-all/worker-5/projection.png`. Pass when projection check passes.
+- [x] Lane 6. Verification skills audit probe. Save `/tmp/swarm-scaffold-doctor-all/worker-6/audit.png`. Pass when 10 skills pass.
+- [x] Lane 7. Poteto test suite probe. Save `/tmp/swarm-scaffold-doctor-all/worker-7/poteto.png`. Pass when 104 tests pass.
+- [x] Lane 8. Python line ceiling probe. Save `/tmp/swarm-scaffold-doctor-all/worker-8/ceiling.png`. Pass when zero files exceed 1000 lines.
+- [x] Lane 9. Untracked file probe. Save `/tmp/swarm-scaffold-doctor-all/worker-9/untracked.png`. Pass when untracked files are expected.
+- [x] Lane 10. Status hygiene probe. Save `/tmp/swarm-scaffold-doctor-all/worker-10/status.png`. Pass when git status is clean.
 
 **Verify, perf.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Metric. Doctor-all execution duration in seconds.
-- [ ] Probe. Time python3 scripts/scaffold_verification_skill.py --doctor-all.
-- [ ] Baseline. Record trunk duration of doctor-all execution.
-- [ ] Rule. Head duration must not exceed trunk duration plus 5 seconds.
+- [x] Metric. Doctor-all execution duration in seconds.
+- [x] Probe. Time python3 scripts/scaffold_verification_skill.py --doctor-all.
+- [x] Baseline. Record trunk duration of doctor-all execution.
+- [x] Rule. Head duration must not exceed trunk duration plus 5 seconds.
 
 **Review gate.** The operator reviews before merge.
 
-- [ ] Copy lane screenshots into `/tmp/scaffold-doctor-all-review-gate.png`.
-- [ ] Record a 30 second video of the change and save as `/tmp/scaffold-doctor-all-review.mp4`.
-- [ ] Post the screenshot and video in chat for operator review.
+- [x] Copy lane screenshots into `/tmp/scaffold-doctor-all-review-gate.png`.
+- [x] Record a 30 second video of the change and save as `/tmp/scaffold-doctor-all-review.mp4`.
+- [x] Post the screenshot and video in chat for operator review.
 
 **Merge.**
 
-- [ ] Root clean verdict at head SHA.
-- [ ] Squash merge to parent branch.
+- [x] Root clean verdict at head SHA.
+- [x] Squash merge to parent branch.
 
 ## Add verify:doctor:skills task to mise.toml and update toolchain tests (mise-doctor-skills-task)
 

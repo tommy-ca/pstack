@@ -490,6 +490,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--list", action="store_true", help="Discover verification skills across harnesses")
     parser.add_argument("--audit", action="store_true", help="Audit all verification skills across all 6 harnesses")
     parser.add_argument("--drive-all", action="store_true", help="Execute launch and drive/doctor across all verification skills")
+    parser.add_argument("--doctor-all", action="store_true", help="Execute doctor across all verification skills")
     parser.add_argument("--drive", action="store_true", help="Execute driver for a single verification skill specified by --target-dir or --app")
     parser.add_argument("--command", choices=["doctor", "launch", "drive", "cleanup", "all"], default=None, help="Explicit driver verb to execute")
     parser.add_argument("--timeout", type=float, default=60.0, help="Per-command timeout in seconds (default: 60.0)")
@@ -517,6 +518,15 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     if args.drive_all:
         data = drive_all_verification_skills(workspace, command=args.command, timeout=args.timeout)
+        if args.json:
+            print(json.dumps(data, indent=2))
+            return data["exit_code"]
+        for item in data["skills"]:
+            print(f"[{item['status']}] {item['path']} ({item.get('command')}) {item.get('duration_s', 0):.2f}s")
+        return data["exit_code"]
+
+    if args.doctor_all:
+        data = drive_all_verification_skills(workspace, command="doctor", timeout=args.timeout)
         if args.json:
             print(json.dumps(data, indent=2))
             return data["exit_code"]
