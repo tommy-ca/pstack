@@ -87,12 +87,23 @@ jobs:
             tests/test_eval_blinded_pstack_dsh.py \
             tests/test_canonical_index.py \
             tests/test_upstream_pstack_01536.py \
-            tests/test_worktree_protocol.py
+            tests/test_worktree_protocol.py \
+            tests/test_antigravity_command_projection.py \
+            tests/test_droid_projection.py \
+            tests/test_thermos_skills.py \
+            tests/test_worktree_cleanup.py \
+            tests/test_verification_skill_templates.py \
+            tests/test_verify_harness.py
       - name: Validate Pi candidate source-only skills and bounded model
         run: |
           uv run python scripts/verify_pi_candidate.py check
           uv run python scripts/verify_pi_candidate.py model
           uv run python scripts/scaffold_verification_skill.py --check --target-dir .pi/skills/verify-pi-pstack
+          bash .pi/skills/verify-pi-pstack/scripts/driver.sh launch
+          bash .pi/skills/verify-pi-pstack/scripts/driver.sh drive
+          uv run python scripts/scaffold_verification_skill.py --check --target-dir .pi/skills/verify-pi-pstack-formal
+          bash .pi/skills/verify-pi-pstack-formal/scripts/driver.sh launch
+          bash .pi/skills/verify-pi-pstack-formal/scripts/driver.sh drive
         # This does not run Pi or certify child, sandbox or permission behavior.
       - name: Validate worktree confinement protocol
         run: uv run python scripts/worktree_protocol.py check
