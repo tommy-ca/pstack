@@ -37,6 +37,10 @@ This ledger distinguishes **observed canonical upstream changes** from **applied
 - Added reproducible driver.sh to verify-pstack and required driver in scaffolder (#1089, #1093).
 - Wired Grok verification driver into portability-offline CI workflow and updated tests (#1090, #1094).
 - Qualified 6-harness verification gate across all 10 verification skills and closed Epic #1087 (#1091).
+- Extracted verification skill templates into dedicated module scripts/verification_skill_templates.py (#1097, #1101).
+- Fixed OpenSpec strict validation warnings, unified Pi candidate verification driver, and added ephemeral prune (#1098, #1102).
+- Wired Pi verification drivers and projection tests into portability-offline CI workflow (#1099, #1103).
+- Qualified 6-harness verification gate across all 10 verification skills and closed Epic #1096 (#1100).
 
 ## [Unreleased] — upstream 0.15.36 candidate (2026-10-31)
 

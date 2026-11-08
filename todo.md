@@ -507,6 +507,13 @@
 - [x] Unit 4 (Issue #1091): [Gate & Close][P0] Run multi-harness verification gate, reconcile plan, and close Epic #1087
 *(Epic #1087 CLOSED)*
 
+## Epic #1096: [Epic][Thermo-Nuclear Quality & Verification Tools] Decompose verification skill templates, unify Pi drivers, fix OpenSpec strict validation, and expand offline CI
+- [x] Unit 1 (Issue #1097, PR #1101): [Decomposition][P0] Extract verification skill templates into dedicated module scripts/verification_skill_templates.py
+- [x] Unit 2 (Issue #1098, PR #1102): [OpenSpec & Pi Driver][P0] Fix OpenSpec strict validation warnings, unify Pi candidate verification driver, and add ephemeral prune
+- [x] Unit 3 (Issue #1099, PR #1103): [CI & Tools][P0] Wire Pi verification drivers and projection tests into portability-offline workflow
+- [x] Unit 4 (Issue #1100): [Gate & Close][P0] Run multi-harness verification gate, reconcile plan, and close Epic #1096
+*(Epic #1096 CLOSED)*
+
 
 
 
