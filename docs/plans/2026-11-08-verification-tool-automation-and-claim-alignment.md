@@ -177,54 +177,54 @@ Each live lane runs in its own worktree child at the PR head. Drive the real sur
 
 **Files.**
 
-- [ ] Edit `scripts/portable_verifier.py`.
-- [ ] Edit `tests/test_verify_portable.py`.
+- [x] Edit `scripts/portable_verifier.py`.
+- [x] Edit `tests/test_verify_portable.py`.
 
 **Build.**
 
-- [ ] Update verifier claim from 5-harness to 6-harness in `scripts/portable_verifier.py`.
-- [ ] Add unit test assertions in `tests/test_verify_portable.py` validating claim formatting.
-- [ ] Ensure stale test caches in subdirectories are pruned.
+- [x] Update verifier claim from 5-harness to 6-harness in `scripts/portable_verifier.py`.
+- [x] Add unit test assertions in `tests/test_verify_portable.py` validating claim formatting.
+- [x] Ensure stale test caches in subdirectories are pruned.
 
 **You see.**
 
-- [ ] Updated claim string matching the 6 declared harnesses.
-- [ ] Passing portable verifier tests.
+- [x] Updated claim string matching the 6 declared harnesses.
+- [x] Passing portable verifier tests.
 
 **Verify, unit.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Run `uv run pytest tests/test_verify_portable.py -k test_proof_bar`.
+- [x] Run `uv run pytest tests/test_verify_portable.py -k test_proof_bar`.
 
 **Verify, live.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked. Ten lanes on `gemini-pro` at the PR head, per the boot recipe.
 
-- [ ] Lane 1. Claim verification probe. Save `/tmp/swarm-align-verifier-claim/worker-1/claim.png`. Pass when claim contains 6-harness.
-- [ ] Lane 2. Portable verifier test probe. Save `/tmp/swarm-align-verifier-claim/worker-2/portable-tests.png`. Pass when tests pass.
-- [ ] Lane 3. Evidence staleness probe. Save `/tmp/swarm-align-verifier-claim/worker-3/staleness.png`. Pass when evidence remains fresh.
-- [ ] Lane 4. Worktree confinement probe. Save `/tmp/swarm-align-verifier-claim/worker-4/confinement.png`. Pass when worktrees are confined.
-- [ ] Lane 5. Package projection probe. Save `/tmp/swarm-align-verifier-claim/worker-5/projection.png`. Pass when projection passes.
-- [ ] Lane 6. Verification skills audit probe. Save `/tmp/swarm-align-verifier-claim/worker-6/audit.png`. Pass when 10 skills pass.
-- [ ] Lane 7. Poteto test suite probe. Save `/tmp/swarm-align-verifier-claim/worker-7/poteto.png`. Pass when 104 tests pass.
-- [ ] Lane 8. Python line ceiling probe. Save `/tmp/swarm-align-verifier-claim/worker-8/ceiling.png`. Pass when zero files exceed 1000 lines.
-- [ ] Lane 9. Untracked file probe. Save `/tmp/swarm-align-verifier-claim/worker-9/untracked.png`. Pass when untracked files are expected.
-- [ ] Lane 10. Status hygiene probe. Save `/tmp/swarm-align-verifier-claim/worker-10/status.png`. Pass when git status is clean.
+- [x] Lane 1. Claim verification probe. Save `/tmp/swarm-align-verifier-claim/worker-1/claim.png`. Pass when claim contains 6-harness.
+- [x] Lane 2. Portable verifier test probe. Save `/tmp/swarm-align-verifier-claim/worker-2/portable-tests.png`. Pass when tests pass.
+- [x] Lane 3. Evidence staleness probe. Save `/tmp/swarm-align-verifier-claim/worker-3/staleness.png`. Pass when evidence remains fresh.
+- [x] Lane 4. Worktree confinement probe. Save `/tmp/swarm-align-verifier-claim/worker-4/confinement.png`. Pass when worktrees are confined.
+- [x] Lane 5. Package projection probe. Save `/tmp/swarm-align-verifier-claim/worker-5/projection.png`. Pass when projection passes.
+- [x] Lane 6. Verification skills audit probe. Save `/tmp/swarm-align-verifier-claim/worker-6/audit.png`. Pass when 10 skills pass.
+- [x] Lane 7. Poteto test suite probe. Save `/tmp/swarm-align-verifier-claim/worker-7/poteto.png`. Pass when 104 tests pass.
+- [x] Lane 8. Python line ceiling probe. Save `/tmp/swarm-align-verifier-claim/worker-8/ceiling.png`. Pass when zero files exceed 1000 lines.
+- [x] Lane 9. Untracked file probe. Save `/tmp/swarm-align-verifier-claim/worker-9/untracked.png`. Pass when untracked files are expected.
+- [x] Lane 10. Status hygiene probe. Save `/tmp/swarm-align-verifier-claim/worker-10/status.png`. Pass when git status is clean.
 
 **Verify, perf.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Metric. Proof bar computation duration in seconds.
-- [ ] Probe. Time python3 -c "import scripts.portable_verifier".
-- [ ] Baseline. Record trunk import duration.
-- [ ] Rule. Head duration must not exceed trunk duration plus 0.2 seconds.
+- [x] Metric. Proof bar computation duration in seconds.
+- [x] Probe. Time python3 -c "import scripts.portable_verifier".
+- [x] Baseline. Record trunk import duration.
+- [x] Rule. Head duration must not exceed trunk duration plus 0.2 seconds.
 
 **Review gate.** The operator reviews before merge.
 
-- [ ] Copy lane screenshots into `/tmp/align-verifier-claim-review-gate.png`.
-- [ ] Record a 30 second video of the change and save as `/tmp/align-verifier-claim-review.mp4`.
-- [ ] Post the screenshot and video in chat for operator review.
+- [x] Copy lane screenshots into `/tmp/align-verifier-claim-review-gate.png`.
+- [x] Record a 30 second video of the change and save as `/tmp/align-verifier-claim-review.mp4`.
+- [x] Post the screenshot and video in chat for operator review.
 
 **Merge.**
 
-- [ ] Root clean verdict at head SHA.
-- [ ] Squash merge to parent branch.
+- [x] Root clean verdict at head SHA.
+- [x] Squash merge to parent branch.
 
 ## Qualify 6-harness verification matrix and close Epic 1134 (gate-close-1134)
 
