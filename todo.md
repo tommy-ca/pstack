@@ -561,7 +561,8 @@
 - [x] Unit 1 (Issue #1165): [Tooling & OpenSpec][P0] Add intent-driven flow status inspection to scripts/openspec_change.py and update test suite
 - [x] Unit 2 (Issue #1166): [Runtime & Mise][P0] Add verify:openspec and openspec:status tasks to mise.toml and update toolchain tests
 - [x] Unit 3 (Issue #1167): [OpenSpec & Audit][P0] Audit intent-driven artifact chains across all changes and document flow contracts
-- [ ] Unit 4 (Issue #1168): [Gate & Close][P0] Qualify 6-harness verification matrix, reconcile plan, and close Epic #1164
+- [x] Unit 4 (Issue #1168): [Gate & Close][P0] Qualify 6-harness verification matrix, reconcile plan, and close Epic #1164
+*(Epic #1164 CLOSED)*
 
 
 
