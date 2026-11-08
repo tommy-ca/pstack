@@ -380,13 +380,17 @@ def test_scaffold_audit_mode(tmp_path):
 
 def test_repo_verification_skills_audit_clean():
     result = subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "scaffold_verification_skill.py"), "--audit"],
+        [sys.executable, str(ROOT / "scripts" / "scaffold_verification_skill.py"), "--audit", "--json"],
         capture_output=True,
         text=True,
         cwd=ROOT,
     )
     assert result.returncode == 0, result.stdout + result.stderr
-    assert "FAIL:" not in result.stdout
+    audit_data = json.loads(result.stdout)
+    assert audit_data["exit_code"] == 0
+    assert audit_data["total_skills"] == 10
+    assert audit_data["passed"] == 10
+    assert audit_data["failed"] == 0
 
 @pytest.mark.parametrize("mode", ["doctor", "launch", "drive", "cleanup", "all"])
 def test_generated_driver_stub_exits_nonzero_until_wired(draft, mode):

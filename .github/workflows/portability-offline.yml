@@ -132,11 +132,26 @@ jobs:
           bash .codex/skills/verify-llm-wiki-formal/scripts/driver.sh launch
           bash .codex/skills/verify-llm-wiki-formal/scripts/driver.sh doctor
         # Bounded actual-code formal checks only.
+      - name: Verify OMP verification skill driver
+        run: |
+          uv run python scripts/scaffold_verification_skill.py --check --target-dir .omp/skills/verify-omp-pstack
+          bash .omp/skills/verify-omp-pstack/scripts/driver.sh launch
+          bash .omp/skills/verify-omp-pstack/scripts/driver.sh drive
+      - name: Verify OpenCode verification skill driver
+        run: |
+          uv run python scripts/scaffold_verification_skill.py --check --target-dir .opencode/skills/verify-opencode-pstack
+          bash .opencode/skills/verify-opencode-pstack/scripts/driver.sh launch
+          bash .opencode/skills/verify-opencode-pstack/scripts/driver.sh drive
       - name: Verify Antigravity verification skill driver
         run: |
           uv run python scripts/scaffold_verification_skill.py --check --target-dir .agents/skills/verify-antigravity-pstack
           bash .agents/skills/verify-antigravity-pstack/scripts/driver.sh launch
           bash .agents/skills/verify-antigravity-pstack/scripts/driver.sh drive
+      - name: Verify Droid verification skill driver
+        run: |
+          uv run python scripts/scaffold_verification_skill.py --check --target-dir .factory/skills/verify-droid-pstack
+          bash .factory/skills/verify-droid-pstack/scripts/driver.sh launch
+          bash .factory/skills/verify-droid-pstack/scripts/driver.sh drive
         # Hermetic environment readiness and four-plane evidence contracts.
       - name: Audit all verification skills across harnesses
         run: uv run python scripts/scaffold_verification_skill.py --audit --json
