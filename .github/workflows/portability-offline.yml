@@ -43,11 +43,14 @@ jobs:
         # as an offline gate module in select_checks' workflow scan.
         working-directory: tests
         run: uv run pytest -q test_verify_portable.py -k "hermetic or fixture_install_fails"
+      - name: Inspect intent-driven change artifact status (filesystem only)
+        run: uv run python scripts/openspec_change.py --status --json
       - name: Validate portability and safety contracts
         run: |
           uv run pytest -q \
             tests/test_portability_schemas.py \
             tests/test_runtime_toolchain.py \
+            tests/test_openspec_change.py \
             tests/test_pi_candidate_profile.py \
             tests/test_host_identity.py \
             tests/test_model_role_schema.py \
