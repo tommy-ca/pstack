@@ -19,6 +19,7 @@ def test_mise_toml_configuration() -> None:
     assert tools.get("bun") == "1.4.4", "bun must be pinned in mise.toml"
     assert tools.get("python") == "3.12", "python must be pinned to 3.12 in mise.toml"
     assert tools.get("uv") == "0.13.7", "uv must be pinned in mise.toml"
+    assert tools.get("npm:@fission-ai/openspec") == "1.16.1", "openspec must be pinned to 1.16.1 via npm in mise.toml"
 
     assert "tasks" in data, "mise.toml must declare tasks"
     tasks = data["tasks"]
@@ -40,19 +41,19 @@ def test_mise_toml_configuration() -> None:
     assert "verify:drivers" in tasks, "mise.toml must declare verify:drivers task"
     assert tasks["verify:drivers"]["run"] == "uv run python scripts/scaffold_verification_skill.py --drive-all"
     assert "openspec:status" in tasks, "mise.toml must declare openspec:status task"
-    assert tasks["openspec:status"]["run"] == "openspec status --all"
+    assert tasks["openspec:status"]["run"] == "bunx --yes @fission-ai/openspec@1.16.1 status --all"
     assert "validate:openspec" in tasks, "mise.toml must declare validate:openspec task"
-    assert tasks["validate:openspec"]["run"] == "openspec validate --all && openspec validate --changes --strict"
+    assert tasks["validate:openspec"]["run"] == "bunx --yes @fission-ai/openspec@1.16.1 validate --all && bunx --yes @fission-ai/openspec@1.16.1 validate --changes --strict"
     assert "validate:openspec:all" in tasks, "mise.toml must declare validate:openspec:all task"
-    assert tasks["validate:openspec:all"]["run"] == "openspec validate --all"
+    assert tasks["validate:openspec:all"]["run"] == "bunx --yes @fission-ai/openspec@1.16.1 validate --all"
     assert "validate:openspec:changes" in tasks, "mise.toml must declare validate:openspec:changes task"
-    assert tasks["validate:openspec:changes"]["run"] == "openspec validate --changes --strict"
+    assert tasks["validate:openspec:changes"]["run"] == "bunx --yes @fission-ai/openspec@1.16.1 validate --changes --strict"
     assert "verify:openspec" in tasks, "mise.toml must declare verify:openspec task"
-    assert tasks["verify:openspec"]["run"] == "openspec validate --all && openspec validate --changes --strict"
+    assert tasks["verify:openspec"]["run"] == "bunx --yes @fission-ai/openspec@1.16.1 validate --all && bunx --yes @fission-ai/openspec@1.16.1 validate --changes --strict"
     assert "verify:openspec:all" in tasks, "mise.toml must declare verify:openspec:all task"
-    assert tasks["verify:openspec:all"]["run"] == "openspec validate --all"
+    assert tasks["verify:openspec:all"]["run"] == "bunx --yes @fission-ai/openspec@1.16.1 validate --all"
     assert "verify:openspec:changes" in tasks, "mise.toml must declare verify:openspec:changes task"
-    assert tasks["verify:openspec:changes"]["run"] == "openspec validate --changes --strict"
+    assert tasks["verify:openspec:changes"]["run"] == "bunx --yes @fission-ai/openspec@1.16.1 validate --changes --strict"
     assert "worktree:check" in tasks, "mise.toml must declare worktree:check task"
     assert "worktree:audit" in tasks, "mise.toml must declare worktree:audit task"
 
@@ -111,8 +112,12 @@ def test_uv_lockfile_exists() -> None:
 def test_openspec_tasks_direct_cli_and_qstack_parity() -> None:
     mise_path = ROOT / "mise.toml"
     with open(mise_path, "rb") as f:
-        tasks = tomllib.load(f)["tasks"]
+        data = tomllib.load(f)
 
+    tools = data.get("tools", {})
+    assert tools.get("npm:@fission-ai/openspec") == "1.16.1", "openspec must be pinned to 1.16.1 via npm in tools"
+
+    tasks = data["tasks"]
     openspec_task_names = [
         "openspec:status",
         "validate:openspec",
@@ -126,4 +131,4 @@ def test_openspec_tasks_direct_cli_and_qstack_parity() -> None:
         assert name in tasks, f"mise.toml must define {name}"
         run_cmd = tasks[name]["run"]
         assert "python" not in run_cmd, f"{name} must not use python wrapper"
-        assert run_cmd.startswith("openspec"), f"{name} must invoke openspec directly"
+        assert run_cmd.startswith("bunx --yes @fission-ai/openspec@1.16.1"), f"{name} must invoke fixed bunx openspec"

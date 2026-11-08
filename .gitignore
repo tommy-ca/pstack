@@ -13,4 +13,5 @@ __pycache__/
 node_modules/
 .atl/
 .venv/
+.mise/
 docs/research/arena-f2-seam-2026-10-17/ledger/

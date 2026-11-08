@@ -51,6 +51,12 @@ url = "https://github.com/oven-sh/bun/releases/download/bun-v1.4.4/bun-windows-x
 checksum = "sha256:0f20ce6674d4f2dbcc8c5d59fdf99f7ba45f8c3b367e0f5781cbfa30a1c78d99"
 url = "https://github.com/oven-sh/bun/releases/download/bun-v1.4.4/bun-windows-x64-baseline.zip"
 
+[[tools."npm:@fission-ai/openspec"]]
+version = "1.16.1"
+aube = { path = ".mise/locks/npm-fission-ai-openspec/1.16.1", digest = "sha256:7075d2e2ed4fb671f684562d50335a330da6b430c9ed83a006e06b5a3bcd8966" }
+backend = "npm:@fission-ai/openspec"
+specifiers = ["1.16.1"]
+
 [[tools.python]]
 version = "3.12.16"
 backend = "core:python"
