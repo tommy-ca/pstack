@@ -26,6 +26,7 @@ from scripts.openspec_change import (
     inspect_intent_driven_change,
     main,
     resolve_openspec_change,
+    validate_all_openspec_specs,
     validate_openspec_change,
 )
 
@@ -294,4 +295,20 @@ def test_intent_driven_status_main_cli(
     assert main(["--help"]) == 0
     captured = capsys.readouterr()
     assert "Usage" in captured.out
+
+
+def test_validate_all_flag_and_helper(monkeypatch: pytest.MonkeyPatch) -> None:
+    seen: dict[str, list[str]] = {}
+
+    def _fake_run(*a: object, **k: object) -> subprocess.CompletedProcess[str]:
+        seen["argv"] = list(a[0]) if a else []
+        return subprocess.CompletedProcess(a, 0, "all ok", "")
+
+    monkeypatch.setattr(subprocess, "run", _fake_run)
+    assert validate_all_openspec_specs() == 0
+    assert seen.get("argv", []) == ["openspec", "validate", "--all"]
+
+    assert main(["--all"]) == 0
+    assert seen.get("argv", []) == ["openspec", "validate", "--all"]
+
 
