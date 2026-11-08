@@ -62,6 +62,10 @@ This ledger distinguishes **observed canonical upstream changes** from **applied
 - Added doctor-all flag to scripts/scaffold_verification_skill.py and expanded test suite (#1145, #1149).
 - Added verify:doctor:skills task to mise.toml and updated toolchain tests (#1146, #1150).
 - Qualified 6-harness verification matrix and closed Epic #1143 (#1147).
+- Added cleanup-all flag to scripts/scaffold_verification_skill.py and expanded test suite (#1153, #1157).
+- Added verify:cleanup:skills task to mise.toml and updated toolchain tests (#1154, #1158).
+- Pruned 92 obsolete local branches and enforced worktree confinement protocol (#1155, #1159).
+- Qualified 6-harness verification matrix and closed Epic #1152 (#1156).
 
 ## [Unreleased] — upstream 0.15.36 candidate (2026-10-31)
 
