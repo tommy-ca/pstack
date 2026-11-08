@@ -132,6 +132,11 @@ jobs:
           bash .codex/skills/verify-llm-wiki-formal/scripts/driver.sh launch
           bash .codex/skills/verify-llm-wiki-formal/scripts/driver.sh doctor
         # Bounded actual-code formal checks only.
+      - name: Verify Grok verification skill driver
+        run: |
+          uv run python scripts/scaffold_verification_skill.py --check --target-dir .grok/skills/verify-pstack
+          bash .grok/skills/verify-pstack/scripts/driver.sh launch
+          bash .grok/skills/verify-pstack/scripts/driver.sh drive
       - name: Verify OMP verification skill driver
         run: |
           uv run python scripts/scaffold_verification_skill.py --check --target-dir .omp/skills/verify-omp-pstack
