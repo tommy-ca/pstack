@@ -70,6 +70,10 @@ This ledger distinguishes **observed canonical upstream changes** from **applied
 - Added verify:openspec and openspec:status tasks to mise.toml and updated toolchain tests (#1166, #1170).
 - Audited intent-driven artifact chains across all changes and documented planning lifecycle in docs/verification-test-tiers.md (#1167, #1171).
 - Qualified 6-harness verification matrix and closed Epic #1164 (#1168).
+- Ingested OpenSpec git discipline and installed template configurations (#1180, #1184).
+- Harmonized OpenSpec mise tasks with dual-mode validation from qstack/mise.toml and updated toolchain tests (#1181, #1185).
+- Updated verification skills and scaffolders with intent-driven template conformance (#1182, #1186).
+- Qualified 6-harness verification matrix, reconciled plan, and closed Epic #1178 (#1183).
 
 ## [Unreleased] — upstream 0.15.36 candidate (2026-10-31)
 
