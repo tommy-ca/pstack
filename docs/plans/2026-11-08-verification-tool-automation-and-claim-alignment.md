@@ -122,54 +122,54 @@ Each live lane runs in its own worktree child at the PR head. Drive the real sur
 
 **Files.**
 
-- [ ] Edit `mise.toml`.
-- [ ] Edit `tests/test_runtime_toolchain.py`.
+- [x] Edit `mise.toml`.
+- [x] Edit `tests/test_runtime_toolchain.py`.
 
 **Build.**
 
-- [ ] Update `mise.toml` `verify:drivers` task to call `uv run python scripts/scaffold_verification_skill.py --drive-all`.
-- [ ] Update `tests/test_runtime_toolchain.py` assertions for streamlined task definition.
-- [ ] Run test suite to verify toolchain consistency.
+- [x] Update `mise.toml` `verify:drivers` task to call `uv run python scripts/scaffold_verification_skill.py --drive-all`.
+- [x] Update `tests/test_runtime_toolchain.py` assertions for streamlined task definition.
+- [x] Run test suite to verify toolchain consistency.
 
 **You see.**
 
-- [ ] Simplified `mise.toml` with clean task invocation.
-- [ ] Passing toolchain tests across all tasks.
+- [x] Simplified `mise.toml` with clean task invocation.
+- [x] Passing toolchain tests across all tasks.
 
 **Verify, unit.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Run `uv run pytest tests/test_runtime_toolchain.py`.
+- [x] Run `uv run pytest tests/test_runtime_toolchain.py`.
 
 **Verify, live.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked. Ten lanes on `gemini-pro` at the PR head, per the boot recipe.
 
-- [ ] Lane 1. Mise tasks list probe. Save `/tmp/swarm-streamline-mise-drivers/worker-1/mise-tasks.png`. Pass when verify:drivers appears.
-- [ ] Lane 2. Mise verify:drivers execution probe. Save `/tmp/swarm-streamline-mise-drivers/worker-2/run-drivers.png`. Pass when task exits 0.
-- [ ] Lane 3. Toolchain test suite probe. Save `/tmp/swarm-streamline-mise-drivers/worker-3/toolchain.png`. Pass when toolchain tests pass.
-- [ ] Lane 4. Worktree confinement probe. Save `/tmp/swarm-streamline-mise-drivers/worker-4/confinement.png`. Pass when worktrees are confined.
-- [ ] Lane 5. Package projection probe. Save `/tmp/swarm-streamline-mise-drivers/worker-5/projection.png`. Pass when projection check passes.
-- [ ] Lane 6. Verification skills audit probe. Save `/tmp/swarm-streamline-mise-drivers/worker-6/audit.png`. Pass when 10 skills pass.
-- [ ] Lane 7. Poteto test suite probe. Save `/tmp/swarm-streamline-mise-drivers/worker-7/poteto.png`. Pass when 104 tests pass.
-- [ ] Lane 8. Python line ceiling probe. Save `/tmp/swarm-streamline-mise-drivers/worker-8/ceiling.png`. Pass when zero files exceed 1000 lines.
-- [ ] Lane 9. Untracked file probe. Save `/tmp/swarm-streamline-mise-drivers/worker-9/untracked.png`. Pass when untracked files are expected.
-- [ ] Lane 10. Status hygiene probe. Save `/tmp/swarm-streamline-mise-drivers/worker-10/status.png`. Pass when git status is clean.
+- [x] Lane 1. Mise tasks list probe. Save `/tmp/swarm-streamline-mise-drivers/worker-1/mise-tasks.png`. Pass when verify:drivers appears.
+- [x] Lane 2. Mise verify:drivers execution probe. Save `/tmp/swarm-streamline-mise-drivers/worker-2/run-drivers.png`. Pass when task exits 0.
+- [x] Lane 3. Toolchain test suite probe. Save `/tmp/swarm-streamline-mise-drivers/worker-3/toolchain.png`. Pass when toolchain tests pass.
+- [x] Lane 4. Worktree confinement probe. Save `/tmp/swarm-streamline-mise-drivers/worker-4/confinement.png`. Pass when worktrees are confined.
+- [x] Lane 5. Package projection probe. Save `/tmp/swarm-streamline-mise-drivers/worker-5/projection.png`. Pass when projection check passes.
+- [x] Lane 6. Verification skills audit probe. Save `/tmp/swarm-streamline-mise-drivers/worker-6/audit.png`. Pass when 10 skills pass.
+- [x] Lane 7. Poteto test suite probe. Save `/tmp/swarm-streamline-mise-drivers/worker-7/poteto.png`. Pass when 104 tests pass.
+- [x] Lane 8. Python line ceiling probe. Save `/tmp/swarm-streamline-mise-drivers/worker-8/ceiling.png`. Pass when zero files exceed 1000 lines.
+- [x] Lane 9. Untracked file probe. Save `/tmp/swarm-streamline-mise-drivers/worker-9/untracked.png`. Pass when untracked files are expected.
+- [x] Lane 10. Status hygiene probe. Save `/tmp/swarm-streamline-mise-drivers/worker-10/status.png`. Pass when git status is clean.
 
 **Verify, perf.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Metric. Mise verify:drivers task duration in seconds.
-- [ ] Probe. Time mise run verify:drivers.
-- [ ] Baseline. Record trunk duration of verify:drivers.
-- [ ] Rule. Head duration must not exceed trunk duration plus 2 seconds.
+- [x] Metric. Mise verify:drivers task duration in seconds.
+- [x] Probe. Time mise run verify:drivers.
+- [x] Baseline. Record trunk duration of verify:drivers.
+- [x] Rule. Head duration must not exceed trunk duration plus 2 seconds.
 
 **Review gate.** The operator reviews before merge.
 
-- [ ] Copy lane screenshots into `/tmp/streamline-mise-drivers-review-gate.png`.
-- [ ] Record a 30 second video of the change and save as `/tmp/streamline-mise-drivers-review.mp4`.
-- [ ] Post the screenshot and video in chat for operator review.
+- [x] Copy lane screenshots into `/tmp/streamline-mise-drivers-review-gate.png`.
+- [x] Record a 30 second video of the change and save as `/tmp/streamline-mise-drivers-review.mp4`.
+- [x] Post the screenshot and video in chat for operator review.
 
 **Merge.**
 
-- [ ] Root clean verdict at head SHA.
-- [ ] Squash merge to parent branch.
+- [x] Root clean verdict at head SHA.
+- [x] Squash merge to parent branch.
 
 ## Align verifier claim to 6 declared harnesses and prune stale test cache (align-verifier-claim)
 

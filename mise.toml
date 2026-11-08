@@ -56,7 +56,7 @@ run = "uv run python scripts/scaffold_verification_skill.py --audit --json"
 
 [tasks."verify:drivers"]
 description = "Execute launch and drive across all 10 verification drivers"
-run = "bash .grok/skills/verify-pstack/scripts/driver.sh launch && bash .grok/skills/verify-pstack/scripts/driver.sh drive && bash .codex/skills/verify-decision-contract/scripts/driver.sh launch && bash .codex/skills/verify-decision-contract/scripts/driver.sh doctor && bash .codex/skills/verify-llm-wiki/scripts/driver.sh launch && bash .codex/skills/verify-llm-wiki/scripts/driver.sh drive && bash .codex/skills/verify-llm-wiki-formal/scripts/driver.sh launch && bash .codex/skills/verify-llm-wiki-formal/scripts/driver.sh doctor && bash .omp/skills/verify-omp-pstack/scripts/driver.sh launch && bash .omp/skills/verify-omp-pstack/scripts/driver.sh drive && bash .opencode/skills/verify-opencode-pstack/scripts/driver.sh launch && bash .opencode/skills/verify-opencode-pstack/scripts/driver.sh drive && bash .agents/skills/verify-antigravity-pstack/scripts/driver.sh launch && bash .agents/skills/verify-antigravity-pstack/scripts/driver.sh drive && bash .factory/skills/verify-droid-pstack/scripts/driver.sh launch && bash .factory/skills/verify-droid-pstack/scripts/driver.sh drive && bash .pi/skills/verify-pi-pstack/scripts/driver.sh launch && bash .pi/skills/verify-pi-pstack/scripts/driver.sh drive && bash .pi/skills/verify-pi-pstack-formal/scripts/driver.sh launch && bash .pi/skills/verify-pi-pstack-formal/scripts/driver.sh drive"
+run = "uv run python scripts/scaffold_verification_skill.py --drive-all"
 
 [tasks."worktree:check"]
 description = "Validate worktree confinement protocol"
