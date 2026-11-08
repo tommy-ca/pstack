@@ -125,26 +125,26 @@ Each live lane runs in its own worktree child at the PR head. Drive the real sur
 
 **Files.**
 
-- [ ] Edit `mise.toml`.
-- [ ] Edit `scripts/openspec_change.py`.
-- [ ] Edit `tests/test_runtime_toolchain.py`.
-- [ ] Edit `tests/test_openspec_change.py`.
+- [x] Edit `mise.toml`.
+- [x] Edit `scripts/openspec_change.py`.
+- [x] Edit `tests/test_runtime_toolchain.py`.
+- [x] Edit `tests/test_openspec_change.py`.
 
 **Build.**
 
-- [ ] Add `verify:openspec:all` task to `mise.toml` running `openspec validate --all`.
-- [ ] Add `--all` CLI flag support to `scripts/openspec_change.py`.
-- [ ] Update `tests/test_runtime_toolchain.py` to assert `verify:openspec:all`.
-- [ ] Update `tests/test_openspec_change.py` with `--all` tests.
+- [x] Add `verify:openspec:all` task to `mise.toml` running `openspec validate --all`.
+- [x] Add `--all` CLI flag support to `scripts/openspec_change.py`.
+- [x] Update `tests/test_runtime_toolchain.py` to assert `verify:openspec:all`.
+- [x] Update `tests/test_openspec_change.py` with `--all` tests.
 
 **You see.**
 
-- [ ] Clean executable mise task `mise run verify:openspec:all`.
-- [ ] CLI command `python3 scripts/openspec_change.py --all` running all-spec validation.
+- [x] Clean executable mise task `mise run verify:openspec:all`.
+- [x] CLI command `python3 scripts/openspec_change.py --all` running all-spec validation.
 
 **Verify, unit.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Run `uv run pytest tests/test_runtime_toolchain.py tests/test_openspec_change.py -k "test_mise_toml_configuration or test_all_flag"`.
+- [x] Run `uv run pytest tests/test_runtime_toolchain.py tests/test_openspec_change.py -k "test_mise_toml_configuration or test_all_flag"`.
 
 **Verify, live.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked. Ten lanes on `gemini-pro` at the PR head, per the boot recipe.
 

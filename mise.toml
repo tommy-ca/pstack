@@ -74,6 +74,10 @@ run = "uv run python scripts/openspec_change.py --status"
 description = "Validate active OpenSpec changes against intent-driven schema"
 run = "uv run python scripts/openspec_change.py validate"
 
+[tasks."verify:openspec:all"]
+description = "Validate all living OpenSpec specifications and schemas"
+run = "openspec validate --all"
+
 [tasks."worktree:check"]
 description = "Validate worktree confinement protocol"
 run = "uv run python scripts/worktree_protocol.py check"
