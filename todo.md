@@ -554,7 +554,8 @@
 - [x] Unit 1 (Issue #1153): [Tooling & Verification][P0] Add --cleanup-all flag to scaffold_verification_skill.py and update test suite
 - [x] Unit 2 (Issue #1154): [Runtime & Mise][P0] Add verify:cleanup:skills task to mise.toml and update toolchain tests
 - [x] Unit 3 (Issue #1155): [Hygiene & Git][P0] Prune obsolete merged local branches, verify worktree confinement, and enforce clean git state
-- [ ] Unit 4 (Issue #1156): [Gate & Close][P0] Qualify 6-harness verification matrix, reconcile plan, and close Epic #1152
+- [x] Unit 4 (Issue #1156): [Gate & Close][P0] Qualify 6-harness verification matrix, reconcile plan, and close Epic #1152
+*(Epic #1152 CLOSED)*
 
 
 
