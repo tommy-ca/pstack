@@ -458,6 +458,7 @@ def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path
         "verify_harness.py",
         "adapt_harness.py",
         "scaffold_verification_skill.py",
+        "verification_skill_templates.py",
         "skill_frontmatter.py",
         "host_identity.py",
         "portability_schema.py",
