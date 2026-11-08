@@ -21,6 +21,10 @@ This ledger distinguishes **observed canonical upstream changes** from **applied
 - Added root bunfig.toml test timeout and converted check-plan shebang to bun (#1043).
 - Hardened verification skills scaffolder and drivers with reproducible uv run and bun runtime resolution (#1044).
 - Added setup-bun and reproducible uv run steps to GitHub Actions offline workflow (#1045).
+- Extracted Droid role projection from scripts/package_projection.py into dedicated module scripts/droid_role_projection.py (#1055).
+- Added formal verification driver to .codex/skills/verify-llm-wiki-formal and hardened scaffolder executable driver checks (#1056).
+- Scaffolded and tailored verify-antigravity-pstack verification skill in .agents/skills/ (#1057).
+- Updated CI offline workflow with formal driver, Antigravity driver, and harness audit checks (#1058).
 
 ## [Unreleased] — upstream 0.15.36 candidate (2026-10-31)
 

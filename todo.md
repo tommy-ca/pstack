@@ -472,6 +472,13 @@
 - [x] Unit 4 (Issue #1046): [Gate] Swarm, Arena, Interrogate adversarial verification, full test suite, and end-to-end workflow proof
 *(Epic #1042 CLOSED)*
 
+## Epic #1054: [Epic][Thermo-Nuclear Quality & Verification Tools] Decompose giant projection modules, harden driver executable guards, and scaffold Antigravity verification skill
+- [x] Unit 1 (Issue #1055, PR #1059): [Code Quality & Decomposition][P0] Extract Droid role projection from package_projection into dedicated module scripts/droid_role_projection.py
+- [x] Unit 2 (Issue #1056, PR #1066): [Verification Tools][P0] Add formal driver to verify-llm-wiki-formal and harden verification skill scaffolder with executable driver checks
+- [x] Unit 3 (Issue #1057, PR #1067): [Verification Skills][P0] Scaffold and tailor verify-antigravity-pstack skill in .agents/skills/
+- [x] Unit 4 (Issue #1058): [CI, Reconcile & Gate][P0] Update CI offline contracts, update changelog and plan, and run full multi-harness verification gate
+*(Epic #1054 CLOSED)*
+
 
 
 
