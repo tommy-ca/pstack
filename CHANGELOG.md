@@ -74,6 +74,10 @@ This ledger distinguishes **observed canonical upstream changes** from **applied
 - Harmonized OpenSpec mise tasks with dual-mode validation from qstack/mise.toml and updated toolchain tests (#1181, #1185).
 - Updated verification skills and scaffolders with intent-driven template conformance (#1182, #1186).
 - Qualified 6-harness verification matrix, reconciled plan, and closed Epic #1178 (#1183).
+- Updated OpenSpec tasks in mise.toml to invoke openspec CLI directly (#1192, #1196).
+- Harmonized runtime toolchain test assertions with direct OpenSpec CLI contracts (#1193, #1197).
+- Updated verification documentation with direct OpenSpec CLI tasks and qstack parity (#1194, #1198).
+- Qualified 6-harness verification matrix, reconciled issue graph, and closed Epic #1191 (#1195).
 
 ## [Unreleased] — upstream 0.15.36 candidate (2026-10-31)
 
