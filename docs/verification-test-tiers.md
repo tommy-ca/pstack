@@ -355,3 +355,53 @@ Linked worktrees must reside strictly inside `<repo_root>/.worktrees/<slug>` per
 Arbitrary external workspace directories are forbidden.
 Local git branches that have been cherry-merged into `main` or correspond to completed subagent execution runs must be pruned to preserve repository cleanliness and avoid branch explosion.
 
+
+
+## Intent-driven OpenSpec inspection versus validation (#1164)
+
+PStack already vendors a local intent-driven OpenSpec schema at
+\`openspec/schemas/intent-driven/\` and selects it in \`openspec/config.yaml\`.
+The upstream [intent-driven template](https://github.com/intent-driven-dev/intent-driven-template)
+offers \`proposal -> specs -> design -> adr -> tasks\`, with apply, sync and
+archive thereafter. PStack intentionally does **not** copy OpenCode commands,
+specialist agents, \`opencode.json\`, npm lockfiles, or Superpowers as generic
+requirements: the six supported harnesses retain their own tools and role owners.
+
+Use these **separate evidence tiers**:
+
+\`\`\`sh
+mise run openspec:status
+# Equivalent and usable without an OpenSpec binary:
+uv run python scripts/openspec_change.py --status --json
+uv run python scripts/openspec_change.py --status --json --change <name>
+
+# Strict CLI gate: fails closed when incomplete artifacts or CLI unavailable:
+mise run verify:openspec
+uv run python scripts/openspec_change.py verify --change <name>
+\`\`\`
+
+**Status** inspects direct active change directories only (never the archive),
+reports the five artifact-presence booleans, missing stages, first missing stage,
+task-checkbox counts and whether a change declares \`skip_specs: true\`. It does
+not execute OpenSpec, prove validity of spec deltas, or imply implementation
+completion when task checkboxes remain incomplete. The declared docs-only
+\`skip_specs\` exemption follows immutable ADR-0020; it is not a general bypass.
+Untrusted filenames and symlinked artifact paths do not count as valid files.
+
+**Verify** first requires the full planning chain, then executes real
+\`openspec schema validate intent-driven\` and strict
+\`openspec validate <name> --type change --strict\` for every selected change.
+It returns nonzero **BLOCKED** if required artifacts or the CLI are unavailable.
+Multi-change repositories should use the explicit \`--change <name>\` scope while
+work is in flight. Do not add a global strict-validation PR CI gate until active
+changes are ready and the CLI is installed/pinned; use the offline unit tests
+for the source inspector today, and record OpenSpec validation as NOT_RUN in
+the repo CI otherwise.
+
+**Workflow contract:** proposal specifies capabilities; specs record observable
+GIVEN/WHEN/THEN and full delta requirements; design establishes component,
+code/data flows, schema and migration; ADR reviews immutable decisions; tasks
+use orderable \`- [ ]\` checkboxes. Implementation may start only when its
+plan has been accepted. \`sync\` updates the living specs before \`archive\`.
+External model-backed Swarm/Arena/Interrogate/Thermos reviews require independent
+actor/model IDs; these are not satisfied by reading the skills or offline CI.

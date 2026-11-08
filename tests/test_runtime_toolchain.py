@@ -26,6 +26,10 @@ def test_mise_toml_configuration() -> None:
     assert "test:offline" in tasks, "mise.toml must declare test:offline task"
     assert "test:scripts" in tasks, "mise.toml must declare test:scripts task"
     assert "plan:check" in tasks, "mise.toml must declare plan:check task"
+    assert "verify:openspec" in tasks, "mise.toml must provide strict OpenSpec validation"
+    assert "openspec:status" in tasks, "mise.toml must provide read-only intent flow inspection"
+    assert "openspec_change.py verify" in tasks["verify:openspec"]["run"]
+    assert "openspec_change.py --status --json" in tasks["openspec:status"]["run"]
     assert "verify:portable" in tasks, "mise.toml must declare verify:portable task"
     assert "verify:lifecycle" in tasks, "mise.toml must declare verify:lifecycle task"
     assert "verify:sync" in tasks, "mise.toml must declare verify:sync task"

@@ -22,6 +22,15 @@ run = "bun test --timeout 30000 --cwd skills/poteto-mode/scripts && bun test --c
 description = "Validate all execution plans via check-plan script"
 run = "bun skills/poteto-mode/scripts/check-plan.mjs docs/plans/*.md"
 
+
+[tasks."openspec:status"]
+description = "Inspect intent-driven proposal/specs/design/ADR/tasks in active changes (filesystem only)"
+run = "uv run python scripts/openspec_change.py --status --json"
+
+[tasks."verify:openspec"]
+description = "Fail closed unless schema and every active intent change pass strict OpenSpec CLI validation"
+run = "uv run python scripts/openspec_change.py verify"
+
 [tasks."verify:portable"]
 description = "Verify portable evidence durability across all hosts"
 run = "uv run python scripts/verify_portable.py check-evidence --host all"
