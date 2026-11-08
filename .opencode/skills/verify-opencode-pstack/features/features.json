@@ -1,0 +1,16 @@
+{
+  "host": "opencode",
+  "app": "pstack",
+  "features": [
+    {
+      "id": "core",
+      "name": "Core OpenCode Integration",
+      "document": "core.md",
+      "sub_features": [
+        "manifest-projection",
+        "doctor-checks",
+        "evidence-freshness"
+      ]
+    }
+  ]
+}
