@@ -10,7 +10,7 @@ The existing OpenSpec change helper MUST expose a deterministic `proposal -> spe
 
 - **GIVEN** an active intent-driven change contains its metadata and all five required artifacts
 - **AND** `tasks.md` still has unchecked tasks
-- **WHEN** the operator runs `openspec_change.py --status --json`
+- **WHEN** the operator runs `openspec_change.py --artifacts --json`
 - **THEN** the response marks the planning artifact chain present and implementation tasks in progress
 - **AND** it explicitly describes its evidence as filesystem-only, not OpenSpec or host runtime proof
 

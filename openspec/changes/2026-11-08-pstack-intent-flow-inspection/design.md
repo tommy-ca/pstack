@@ -26,7 +26,7 @@
                 /                              \
   --status [--json] [--change]           verify [--change]
           |                                    |
-   inspect_intent_driven_change          check artifact chain
+   inspect_intent_chain          check artifact chain
           |                                    |
    Path inspection only                 subprocess: openspec schema
           |                             validate intent-driven
@@ -43,7 +43,7 @@
 - Output: JSON object with `schema`, `stage_order`, `inspection_level`, `changes[]` and `summary`. Each change includes `artifacts` (five bools), `schema`, `skip_specs`, `specs_exempt`, `missing[]`, `next_stage`, `planning_chain_ready`, `tasks` (`total`, `done`, `status`), `evidence`.
 - Status does **not** report "implemented", "validated" or "archived" from file presence. Strict validation uses OpenSpec subprocess and returns nonzero on CLI errors or artifact gaps; zero exit only after actual CLI validation.
 - Existing `resolve_openspec_change` and `validate_openspec_change` retain old tuple-compatible and single-active change semantics for downstream callers; the new status/verify modes extend the existing CLI rather than replacing it.
-- The shell/CLI is thin: pure, deterministic file scanner for offline tests; external OpenSpec at a single subprocess boundary; no global state, service, persistence, or host import.
+- The new offline inventory is explicitly a separate operation from the merged `--status` wrapper (which uses actual `openspec status` and may be ambiguous when multiple changes are active). The shell/CLI is thin: pure, deterministic file scanner for offline tests; external OpenSpec at a single subprocess boundary; no global state, service, persistence, or host import.
 
 ## Data schema (contract shape)
 
