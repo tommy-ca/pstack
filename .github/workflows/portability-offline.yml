@@ -93,7 +93,18 @@ jobs:
             tests/test_thermos_skills.py \
             tests/test_worktree_cleanup.py \
             tests/test_verification_skill_templates.py \
-            tests/test_verify_harness.py
+            tests/test_verify_harness.py \
+            tests/test_pi_authorization_contracts.py \
+            tests/test_harness_profiles_sync.py \
+            tests/test_interrogate_pack.py \
+            tests/test_swarm_apply.py \
+            tests/test_swarm_partition.py \
+            tests/test_print_coverage_decoy_nested.py \
+            tests/test_plugin_agents.py \
+            tests/test_principle_test_behavior.py \
+            tests/test_type_annotations_hygiene.py \
+            tests/test_executable_lookup.py \
+            tests/test_absorbed_intent.py
       - name: Validate Pi candidate source-only skills and bounded model
         run: |
           uv run python scripts/verify_pi_candidate.py check
