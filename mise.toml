@@ -58,6 +58,10 @@ run = "uv run python scripts/scaffold_verification_skill.py --audit --json"
 description = "Execute doctor command across all 10 verification drivers"
 run = "uv run python scripts/scaffold_verification_skill.py --doctor-all"
 
+[tasks."verify:cleanup:skills"]
+description = "Execute cleanup command across all 10 verification drivers"
+run = "uv run python scripts/scaffold_verification_skill.py --cleanup-all"
+
 [tasks."verify:drivers"]
 description = "Execute launch and drive across all 10 verification drivers"
 run = "uv run python scripts/scaffold_verification_skill.py --drive-all"
