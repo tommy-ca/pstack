@@ -489,3 +489,20 @@ def test_evaluate_durable_settlement_update_keep_live_and_write(tmp_path: Path) 
     assert dec_keep.action == "keep_live"
     assert len(dec_keep.dropped) > 0
 
+
+def test_driver_revision_uniformity_in_evidence_index() -> None:
+    index_file = EVIDENCE_DIR / "index.json"
+    assert index_file.is_file()
+    index_data = json.loads(index_file.read_text(encoding="utf-8"))
+    hosts = index_data.get("hosts", {})
+    driver_revs: dict[str, str] = {}
+    for host in ("grok", "codex", "omp", "opencode", "antigravity"):
+        assert host in hosts
+        revs = hosts[host].get("surface_revisions", {})
+        assert "driver_revision" in revs
+        driver_revs[host] = revs["driver_revision"]
+    distinct_revs = set(driver_revs.values())
+    assert len(distinct_revs) == 1, f"Driver revisions differ across packaged hosts: {driver_revs}"
+
+
+
