@@ -330,3 +330,19 @@ describe("multi-file plan validation", () => {
     expect(result.stderr).toContain("unknown dependency missing");
   });
 });
+
+describe("cli argument handling", () => {
+  it("prints usage and exits 0 when passed --help or -h", () => {
+    for (const flag of ["--help", "-h"]) {
+      const result = Bun.spawnSync([process.execPath, SCRIPT, flag]);
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout.toString()).toContain("Usage: bun check-plan.mjs <plan.md> [plan2.md ...]");
+    }
+  });
+
+  it("prints usage to stderr and exits 2 when passed no arguments", () => {
+    const result = Bun.spawnSync([process.execPath, SCRIPT]);
+    expect(result.exitCode).toBe(2);
+    expect(result.stderr.toString()).toContain("Usage: bun check-plan.mjs <plan.md> [plan2.md ...]");
+  });
+});

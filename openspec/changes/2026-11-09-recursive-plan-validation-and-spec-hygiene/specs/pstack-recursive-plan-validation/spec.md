@@ -3,7 +3,7 @@
 ## MODIFIED Requirements
 
 ### Requirement: Multi-phase plans expose a validated dependency graph
-Every PR section between `## Program checklist` and `## Close the program` MUST end its H2 title with a unique identifier in parentheses, matching letters, digits, and `_`, `.`, `/`, `#`, `-`. The identifier `None.` is reserved as the no-dependency sentinel. Its `**Depends on.**` line MUST contain `None.` or a comma-separated list of section identifiers. `check-plan.mjs` MUST resolve references, reject duplicate identifiers, reject unknown identifiers, and iteratively reject cycles.
+Every PR section between `## Program checklist` and `## Close the program` MUST end its title with a unique identifier in parentheses (`[a-zA-Z0-9_./#-]+`). The identifier `None.` is reserved as the no-dependency sentinel. Its `**Depends on.**` line MUST contain `None.` or comma-separated identifiers. `check-plan.mjs` MUST resolve references, reject duplicate identifiers, reject unknown identifiers, and reject cycles.
 
 #### Scenario: independent and nested tasks validate
 - **GIVEN** sections `(sync)`, `(checker)`, and `(smoke)` where `(checker)` depends on `(sync)` and `(smoke)` depends on `(checker)`
