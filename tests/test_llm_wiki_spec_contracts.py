@@ -13,7 +13,9 @@ import pytest
 from jsonschema import Draft202012Validator, ValidationError
 
 ROOT = Path(__file__).resolve().parents[1]
-CHANGE = ROOT / "openspec/changes/2026-10-31-llm-wiki-reference-contracts"
+_ACTIVE_CHANGE = ROOT / "openspec/changes/2026-10-31-llm-wiki-reference-contracts"
+_ARCHIVED_CHANGE = ROOT / "openspec/changes/archive/2026-10-31-llm-wiki-reference-contracts"
+CHANGE = _ACTIVE_CHANGE if _ACTIVE_CHANGE.is_dir() else _ARCHIVED_CHANGE
 SCHEMA = CHANGE / "schemas/candidate-envelope.v1.schema.json"
 
 
