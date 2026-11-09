@@ -383,14 +383,18 @@ def test_cross_harness_promotion_gate_and_evidence_contract() -> None:
     adr_text = adr_file.read_text(encoding="utf-8")
     assert "Status: **accepted**" in adr_text, "ADR-0021 must be accepted upon gate 445 fulfillment"
 
-    change_adr = ROOT / "openspec/changes/2026-10-15-harness-neutral-role-policy/adr.md"
+    change_dir = ROOT / "openspec/changes/2026-10-15-harness-neutral-role-policy"
+    if not change_dir.exists():
+        change_dir = ROOT / "openspec/changes/archive/2026-10-15-harness-neutral-role-policy"
+
+    change_adr = change_dir / "adr.md"
     assert "Status: accepted" in change_adr.read_text(encoding="utf-8")
 
-    change_design = ROOT / "openspec/changes/2026-10-15-harness-neutral-role-policy/design.md"
+    change_design = change_dir / "design.md"
     assert "Status: Accepted" in change_design.read_text(encoding="utf-8")
     assert "## Cross-harness contract promotion decision and evidence gate (#445)" in change_design.read_text(encoding="utf-8")
 
-    tasks_file = ROOT / "openspec/changes/2026-10-15-harness-neutral-role-policy/tasks.md"
+    tasks_file = change_dir / "tasks.md"
     tasks_text = tasks_file.read_text(encoding="utf-8")
     for g in range(9):
         assert f"- [x] **G{g}**" in tasks_text, f"Gate G{g} must be marked completed in tasks.md"

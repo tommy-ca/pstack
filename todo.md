@@ -615,7 +615,7 @@
 
 ## Epic #1263: [Epic][Quality & Offline CI] Fix Archived Doc Links, Harmonize Offline PR Gate, and Expose OpenSpec Audit Task
 - [x] Unit 1 (Issue #1264): [Docs & Architecture][P0] Update archived OpenSpec change link in architecture documentation
-- [ ] Unit 2 (Issue #1265): [Tests & OpenSpec][P0] Support archived change path resolution in model role profiles test
+- [x] Unit 2 (Issue #1265): [Tests & OpenSpec][P0] Support archived change path resolution in model role profiles test
 - [ ] Unit 3 (Issue #1266): [CI & Mise][P0] Wire direct OpenSpec and docs sync tests into offline CI gate and mise tasks
 - [ ] Unit 4 (Issue #1267): [Gate & Close][P0] Qualify 6-harness verification matrix, reconcile issue graph, and close Epic 1263
 
