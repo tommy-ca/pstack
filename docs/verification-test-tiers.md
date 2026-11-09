@@ -76,6 +76,8 @@ without installing proprietary agent harness binaries:
 - `tests/test_canonical_index.py`: canonical inventory conformance. Its
   classify-drift arm skips as contract BLOCKED when no upstream cache exists;
   the rest runs cache-free.
+- `tests/test_openspec_direct.py` validates direct bunx and mise execution of the OpenSpec CLI.
+- `tests/test_verify_docs_sync.py` validates verification documentation synchronization and principles conformance.
 
 Two suites in this list are tier-limited and a green job is not a pass for them.
 `tests/test_omp_native_package.py` skips without an `omp` binary, so the offline
@@ -386,6 +388,7 @@ The command `mise run validate:openspec` runs dual-mode validation across all sp
 It executes `bunx --yes @fission-ai/openspec@1.16.1 validate --all && bunx --yes @fission-ai/openspec@1.16.1 validate --changes --strict`.
 The command `mise run validate:openspec:all` validates all living specifications under `openspec/specs/`.
 The command `mise run validate:openspec:changes` strictly validates active change proposals.
+The command `mise run verify:openspec:audit` audits OpenSpec status and change readiness via the verification scaffolder.
 Redundant duplicate tasks and aliases have been eliminated to keep tasks concise and deduplicated (`principle-subtract-before-you-add`).
 
 ### Ten-skill verification driver matrix and orchestrator

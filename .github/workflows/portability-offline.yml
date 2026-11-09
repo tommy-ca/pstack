@@ -104,7 +104,8 @@ jobs:
             tests/test_principle_test_behavior.py \
             tests/test_type_annotations_hygiene.py \
             tests/test_executable_lookup.py \
-            tests/test_absorbed_intent.py
+            tests/test_absorbed_intent.py \
+            tests/test_openspec_direct.py
       - name: Validate Pi candidate source-only skills and bounded model
         run: |
           uv run python scripts/verify_pi_candidate.py check
