@@ -89,13 +89,6 @@ from scripts.select_checks import (
     select_checks_action,
     select_checks_plan,
 )
-from scripts.openspec_change import (
-    ChangeResolution,
-    _active_openspec_changes,
-    _validate_named_change,
-    resolve_openspec_change,
-    validate_openspec_change,
-)
 
 from scripts.evidence_index import (
     _file_or_denied,
@@ -364,45 +357,25 @@ class PortableVerifier:
             env=env,
         )
 
-        state, change_name, active_names = resolve_openspec_change(
-            self.change, active_resolver=lambda: _active_openspec_changes(cwd=str(self.root))
+        cmd: List[str]
+        desc: str
+        if self.change:
+            cmd = ["bunx", "--yes", "@fission-ai/openspec@1.16.1", "validate", self.change, "--type", "change", "--strict"]
+            desc = f"Verify {self.change} openspec change passes schema checks"
+        else:
+            cmd = ["bunx", "--yes", "@fission-ai/openspec@1.16.1", "validate", "--changes", "--strict"]
+            desc = "Verify active openspec changes pass schema checks"
+
+        r2 = self.run_command(
+            "doctor-openspec-validation",
+            desc,
+            "canonical",
+            cmd,
+            env=env,
         )
-        r2: Optional[ScenarioResult] = None
-        if state in ("explicit", "active"):
-            assert change_name is not None
-            r2 = self.run_command(
-                "doctor-openspec-validation",
-                f"Verify {change_name} openspec change passes schema checks",
-                "canonical",
-                [sys.executable, str(self.root / "scripts" / "openspec_change.py"), change_name],
-                env=env,
-            )
-        elif state == "lookup-failed":
-            r2 = ScenarioResult(
-                id="doctor-openspec-validation",
-                description="openspec list --json lookup failed; active change undetermined",
-                plane="canonical",
-                command="openspec list --json -> lookup failed",
-                exit_code=1,
-                stdout_snippet="lookup failed; cannot determine the active change",
-                verdict="FAIL",
-                duration_s=0.0,
-            )
-            self.scenarios.append(r2)
-        elif state == "ambiguous":
-            r2 = ScenarioResult(
-                id="doctor-openspec-validation",
-                description=f"{len(active_names)} active OpenSpec changes; pass one via --change",
-                plane="canonical",
-                command="openspec list --json -> multiple active changes",
-                exit_code=1,
-                stdout_snippet="; ".join(active_names),
-                verdict="FAIL",
-                duration_s=0.0,
-            )
-            self.scenarios.append(r2)
 
         return all(r.verdict in ("PASS", "UNTESTED") for r in (r1, r2) if r is not None)
+
 
     def _check_adapter_plane(self, env: Dict[str, str]) -> bool:
         """Execute static harness and host-neutral adapter boundary scenarios."""
