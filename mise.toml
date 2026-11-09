@@ -80,8 +80,8 @@ description = "List all active OpenSpec changes"
 run = "bunx --yes @fission-ai/openspec@1.16.1 list"
 
 [tasks."validate:openspec"]
-description = "Run dual-mode OpenSpec validation (all specs and strict active changes)"
-run = "bunx --yes @fission-ai/openspec@1.16.1 validate --all && bunx --yes @fission-ai/openspec@1.16.1 validate --changes --strict"
+description = "Run triple-mode OpenSpec validation (all specs, strict active changes, and complete archived changes)"
+run = "bunx --yes @fission-ai/openspec@1.16.1 validate --all && bunx --yes @fission-ai/openspec@1.16.1 validate --changes --strict && bunx --yes @fission-ai/openspec@1.16.1 validate --archived"
 
 [tasks."validate:openspec:all"]
 description = "Validate all living OpenSpec specifications and schemas"
@@ -90,6 +90,10 @@ run = "bunx --yes @fission-ai/openspec@1.16.1 validate --all"
 [tasks."validate:openspec:changes"]
 description = "Strictly validate active OpenSpec change proposals"
 run = "bunx --yes @fission-ai/openspec@1.16.1 validate --changes --strict"
+
+[tasks."validate:openspec:archived"]
+description = "Validate task completion across all archived OpenSpec changes"
+run = "bunx --yes @fission-ai/openspec@1.16.1 validate --archived"
 
 [tasks."worktree:check"]
 description = "Validate worktree confinement protocol"
