@@ -609,7 +609,7 @@
 ## Epic #1251: [Epic][Mise & Verification] Cleanup Mise OpenSpec Tasks, Harden Verification Scaffolding, and Reconcile Intent Flows
 - [x] Unit 1 (Issue #1252): [Runtime & Mise][P0] Clean up mise OpenSpec tasks and eliminate redundant verify duplicate tasks
 - [x] Unit 2 (Issue #1253): [Tooling & Skills][P0] Harden verification skill scaffolding and templates with OpenSpec audit checks
-- [ ] Unit 3 (Issue #1254): [OpenSpec & Docs][P0] Reconcile OpenSpec intent-driven flows and update test tiers documentation
+- [x] Unit 3 (Issue #1254): [OpenSpec & Docs][P0] Reconcile OpenSpec intent-driven flows and update test tiers documentation
 - [ ] Unit 4 (Issue #1255): [Gate & Close][P0] Qualify 6-harness verification matrix, reconcile issue graph, and close Epic 1251
 
 
