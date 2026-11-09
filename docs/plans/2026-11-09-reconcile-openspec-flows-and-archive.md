@@ -125,26 +125,26 @@ Each live lane runs in its own worktree child at the PR head. Drive the real sur
 
 **Files.**
 
-- [ ] Edit `openspec/specs/pstack-portability/spec.md`.
-- [ ] Edit `openspec/specs/pstack-quickstart/spec.md`.
-- [ ] Edit `openspec/specs/pstack-harness-map/spec.md`.
-- [ ] Edit `todo.md`.
+- [x] Edit `openspec/specs/pstack-portability/spec.md`.
+- [x] Edit `openspec/specs/pstack-quickstart/spec.md`.
+- [x] Edit `openspec/specs/pstack-harness-map/spec.md`.
+- [x] Edit `todo.md`.
 
 **Build.**
 
-- [ ] Archive `2026-10-15-harness-neutral-role-policy` into `openspec/changes/archive/`.
-- [ ] Archive `2026-10-20-cross-port-semantic-delta` into `openspec/changes/archive/`.
-- [ ] Archive `2026-10-21-fast-role-task-fit` into `openspec/changes/archive/`.
-- [ ] Archive `2026-10-31-llm-wiki-reference-contracts` into `openspec/changes/archive/`.
+- [x] Archive `2026-10-15-harness-neutral-role-policy` into `openspec/changes/archive/`.
+- [x] Archive `2026-10-20-cross-port-semantic-delta` into `openspec/changes/archive/`.
+- [x] Archive `2026-10-21-fast-role-task-fit` into `openspec/changes/archive/`.
+- [x] Archive `2026-10-31-llm-wiki-reference-contracts` into `openspec/changes/archive/`.
 
 **You see.**
 
-- [ ] Four completed October changes archived with complete planning chains preserved.
-- [ ] Living specifications updated cleanly in `openspec/specs/`.
+- [x] Four completed October changes archived with complete planning chains preserved.
+- [x] Living specifications updated cleanly in `openspec/specs/`.
 
 **Verify, unit.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Run `mise run validate:openspec`.
+- [x] Run `mise run validate:openspec`.
 
 **Verify, live.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked. Ten lanes on `gemini-pro` at the PR head, per the boot recipe.
 
