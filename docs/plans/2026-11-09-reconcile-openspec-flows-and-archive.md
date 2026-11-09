@@ -243,25 +243,25 @@ Each live lane runs in its own worktree child at the PR head. Drive the real sur
 
 **Files.**
 
-- [ ] Edit `docs/plans/2026-11-09-reconcile-openspec-flows-and-archive.md`.
-- [ ] Edit `todo.md`.
-- [ ] Edit `CHANGELOG.md`.
+- [x] Edit `docs/plans/2026-11-09-reconcile-openspec-flows-and-archive.md`.
+- [x] Edit `todo.md`.
+- [x] Edit `CHANGELOG.md`.
 
 **Build.**
 
-- [ ] Run full 6-harness verification matrix doctor across all declared hosts.
-- [ ] Run driver orchestrator across all 10 verification skills.
-- [ ] Update CHANGELOG.md with Epic 1239 deliverables.
-- [ ] Reconcile `todo.md` and close Epic #1239 on GitHub.
+- [x] Run full 6-harness verification matrix doctor across all declared hosts.
+- [x] Run driver orchestrator across all 10 verification skills.
+- [x] Update CHANGELOG.md with Epic 1239 deliverables.
+- [x] Reconcile `todo.md` and close Epic #1239 on GitHub.
 
 **You see.**
 
-- [ ] 6-Harness Matrix Verdict PASS in doctor output.
-- [ ] 10 of 10 verification skill drivers pass in drive-all output.
+- [x] 6-Harness Matrix Verdict PASS in doctor output.
+- [x] 10 of 10 verification skill drivers pass in drive-all output.
 
 **Verify, unit.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Run `bun skills/poteto-mode/scripts/check-plan.mjs docs/plans/2026-11-09-reconcile-openspec-flows-and-archive.md`.
+- [x] Run `bun skills/poteto-mode/scripts/check-plan.mjs docs/plans/2026-11-09-reconcile-openspec-flows-and-archive.md`.
 
 **Verify, live.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked. Ten lanes on `gemini-pro` at the PR head, per the boot recipe.
 
