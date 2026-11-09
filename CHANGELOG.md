@@ -86,6 +86,10 @@ This ledger distinguishes **observed canonical upstream changes** from **applied
 - Harmonized durable OMP live driver settlements and updated evidence index (#1217, #1221).
 - Updated verification test tiers documentation and harmonized plugin synchronization lifecycle (#1218, #1222).
 - Qualified 6-harness verification matrix, reconciled issue graph, and closed Epic #1215 (#1219).
+- Eliminated scripts/openspec_change.py and migrated portable verifier doctor to direct bunx execution (#1228, #1232).
+- Harmonized test suites, select-checks mappings, and toolchain tests with direct bunx/mise execution (#1229, #1233).
+- Updated verification documentation, added openspec:list and openspec:validate mise tasks, and eliminated Python wrappers (#1230, #1234).
+- Qualified 6-harness verification matrix, reconciled issue graph, and closed Epic #1227 (#1231).
 
 
 
