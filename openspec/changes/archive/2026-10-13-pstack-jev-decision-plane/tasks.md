@@ -1,20 +1,20 @@
 ## 1. Contract, boundaries, and seam selection
 
-- [x] #182 Accept the typed decision envelope, precedence, receipt, and fallback contract.
-- [x] #195 Accept the context-minimization and data-egress contract.
-- [x] #196 Accept the canonical playbook vocabulary and mapping contract.
-- [x] #183 Accept the Arena selection of the no-change runtime and future router-local candidate.
-- [x] #197 Reconcile, Interrogate, validate, and merge PR #194.
+- [x] #182 Accept the typed decision envelope, precedence, receipt, and fallback contract (resolved via merged PR #270).
+- [x] #195 Accept the context-minimization and data-egress contract (resolved via merged PR #270).
+- [x] #196 Accept the canonical playbook vocabulary and mapping contract (resolved via merged PR #271).
+- [x] #183 Accept the Arena selection of the no-change runtime and future router-local candidate (resolved via merged PR #272).
+- [x] #197 Reconcile, Interrogate, validate, and merge PR #194 (resolved via merged PR #272).
 
 ## 2. Shadow pilot and evidence
 
 After #197 and #209 close:
 
-- [x] #184 Add optional Jev provider adapter and default-OFF feature/config gate.
-- [x] #185 Add zero-behavior-change shadow playbook/skill routing.
-- [x] #186 Build offline routing corpus, calibration, latency, and cost lever.
-- [x] #199 Bind decision/eval evidence to implementation, canonical, provider/model, policy, and fixture revisions.
-- [x] #198 Run blinded pstack Eval for baseline versus Jev-assisted behavior.
+- [x] #184 Add optional Jev provider adapter and default-OFF feature/config gate (resolved via merged PR #274).
+- [x] #185 Add zero-behavior-change shadow playbook/skill routing (resolved via merged PR #275).
+- [x] #186 Build offline routing corpus, calibration, latency, and cost lever (resolved via merged PR #276).
+- [x] #199 Bind decision/eval evidence to implementation, canonical, provider/model, policy, and fixture revisions (resolved via merged PR #276).
+- [x] #198 Run blinded pstack Eval for baseline versus Jev-assisted behavior (resolved via merged PR #277).
 
 #184 and the baseline/corpus part of #186 may proceed in parallel after both implementation gates close. The final #186 calibration pass waits for #185. #198 waits for #185, #186, and #199.
 
@@ -22,10 +22,10 @@ After #197 and #209 close:
 
 After #198 completes with fresh #199 evidence:
 
-- [x] #187 Run exact-head Swarm regression matrix.
-- [x] #188 Run exact-head Interrogate on the implementation diff.
-- [x] #200 Prove kill-switch/fail-open rollback equivalence.
-- [x] #189 Promote only if every gate passes; otherwise preserve baseline pstack.
+- [x] #187 Run exact-head Swarm regression matrix (resolved via merged PR #280).
+- [x] #188 Run exact-head Interrogate on the implementation diff (resolved via merged PR #280).
+- [x] #200 Prove kill-switch/fail-open rollback equivalence (resolved via merged PR #278).
+- [x] #189 Promote only if every gate passes; otherwise preserve baseline pstack (resolved via merged PR #279: reversible non-promotion preserved).
 
 #187 and #188 run at the exact candidate head. #200 proves rollback at that same head. They may run in parallel where possible.
 
