@@ -71,6 +71,14 @@ run = "uv run python scripts/scaffold_verification_skill.py --drive-all"
 description = "Inspect active intent-driven OpenSpec planning flow status"
 run = "bunx --yes @fission-ai/openspec@1.16.1 status --all"
 
+[tasks."openspec:list"]
+description = "List all active OpenSpec changes"
+run = "bunx --yes @fission-ai/openspec@1.16.1 list"
+
+[tasks."openspec:validate"]
+description = "Strictly validate active OpenSpec change proposals"
+run = "bunx --yes @fission-ai/openspec@1.16.1 validate --changes --strict"
+
 [tasks."validate:openspec"]
 description = "Run dual-mode OpenSpec validation (all specs and strict active changes)"
 run = "bunx --yes @fission-ai/openspec@1.16.1 validate --all && bunx --yes @fission-ai/openspec@1.16.1 validate --changes --strict"
