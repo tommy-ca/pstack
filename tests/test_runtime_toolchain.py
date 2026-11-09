@@ -42,6 +42,10 @@ def test_mise_toml_configuration() -> None:
     assert tasks["verify:drivers"]["run"] == "uv run python scripts/scaffold_verification_skill.py --drive-all"
     assert "openspec:status" in tasks, "mise.toml must declare openspec:status task"
     assert tasks["openspec:status"]["run"] == "bunx --yes @fission-ai/openspec@1.16.1 status --all"
+    assert "openspec:list" in tasks, "mise.toml must declare openspec:list task"
+    assert tasks["openspec:list"]["run"] == "bunx --yes @fission-ai/openspec@1.16.1 list"
+    assert "openspec:validate" in tasks, "mise.toml must declare openspec:validate task"
+    assert tasks["openspec:validate"]["run"] == "bunx --yes @fission-ai/openspec@1.16.1 validate --changes --strict"
     assert "validate:openspec" in tasks, "mise.toml must declare validate:openspec task"
     assert tasks["validate:openspec"]["run"] == "bunx --yes @fission-ai/openspec@1.16.1 validate --all && bunx --yes @fission-ai/openspec@1.16.1 validate --changes --strict"
     assert "validate:openspec:all" in tasks, "mise.toml must declare validate:openspec:all task"
@@ -122,6 +126,8 @@ def test_openspec_tasks_direct_cli_and_qstack_parity() -> None:
     tasks = data["tasks"]
     openspec_task_names = [
         "openspec:status",
+        "openspec:list",
+        "openspec:validate",
         "validate:openspec",
         "validate:openspec:all",
         "validate:openspec:changes",
@@ -134,3 +140,8 @@ def test_openspec_tasks_direct_cli_and_qstack_parity() -> None:
         run_cmd = tasks[name]["run"]
         assert "python" not in run_cmd, f"{name} must not use python wrapper"
         assert run_cmd.startswith("bunx --yes @fission-ai/openspec@1.16.1"), f"{name} must invoke fixed bunx openspec"
+
+
+def test_no_openspec_python_wrapper_file() -> None:
+    wrapper_path = ROOT / "scripts" / "openspec_change.py"
+    assert not wrapper_path.exists(), "scripts/openspec_change.py must not exist"

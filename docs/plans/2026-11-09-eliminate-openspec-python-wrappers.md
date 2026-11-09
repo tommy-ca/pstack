@@ -183,56 +183,56 @@ Each live lane runs in its own worktree child at the PR head. Drive the real sur
 
 **Files.**
 
-- [ ] Edit `docs/verification-test-tiers.md`.
-- [ ] Edit `mise.toml`.
-- [ ] Edit `todo.md`.
+- [x] Edit `docs/verification-test-tiers.md`.
+- [x] Edit `mise.toml`.
+- [x] Edit `todo.md`.
 
 **Build.**
 
-- [ ] Document complete elimination of OpenSpec Python wrappers in `docs/verification-test-tiers.md`.
-- [ ] Add direct intent-driven OpenSpec helper tasks to `mise.toml`.
-- [ ] Document active change reconciliation and planning flow status.
-- [ ] Update `todo.md` with Epic 1227 progress.
+- [x] Document complete elimination of OpenSpec Python wrappers in `docs/verification-test-tiers.md`.
+- [x] Add direct intent-driven OpenSpec helper tasks to `mise.toml`.
+- [x] Document active change reconciliation and planning flow status.
+- [x] Update `todo.md` with Epic 1227 progress.
 
 **You see.**
 
-- [ ] Comprehensive documentation of direct bunx and mise OpenSpec execution.
-- [ ] Pinned mise tasks for intent-driven flows.
+- [x] Comprehensive documentation of direct bunx and mise OpenSpec execution.
+- [x] Pinned mise tasks for intent-driven flows.
 
 **Verify, unit.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Run `uv run pytest tests/test_runtime_toolchain.py`.
+- [x] Run `uv run pytest tests/test_runtime_toolchain.py`.
 
 **Verify, live.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked. Ten lanes on `gemini-pro` at the PR head, per the boot recipe.
 
-- [ ] Lane 1. Runtime toolchain test probe. Save `/tmp/swarm-openspec-direct-docs/worker-1/toolchain.png`. Pass when test_runtime_toolchain passes.
-- [ ] Lane 2. Dual validation probe. Save `/tmp/swarm-openspec-direct-docs/worker-2/validate.png`. Pass when validate:openspec exits 0.
-- [ ] Lane 3. Verification skills audit probe. Save `/tmp/swarm-openspec-direct-docs/worker-3/audit.png`. Pass when 10 skills pass.
-- [ ] Lane 4. Package projection probe. Save `/tmp/swarm-openspec-direct-docs/worker-4/projection.png`. Pass when projection check passes.
-- [ ] Lane 5. Worktree confinement probe. Save `/tmp/swarm-openspec-direct-docs/worker-5/confinement.png`. Pass when worktrees are confined.
-- [ ] Lane 6. Evidence staleness probe. Save `/tmp/swarm-openspec-direct-docs/worker-6/staleness.png`. Pass when check-staleness reports all fresh.
-- [ ] Lane 7. Poteto test suite probe. Save `/tmp/swarm-openspec-direct-docs/worker-7/poteto.png`. Pass when 104 tests pass.
-- [ ] Lane 8. Python line ceiling probe. Save `/tmp/swarm-openspec-direct-docs/worker-8/ceiling.png`. Pass when zero files exceed 1000 lines.
-- [ ] Lane 9. Untracked file probe. Save `/tmp/swarm-openspec-direct-docs/worker-9/untracked.png`. Pass when untracked files are expected.
-- [ ] Lane 10. Status hygiene probe. Save `/tmp/swarm-openspec-direct-docs/worker-10/status.png`. Pass when git status is clean.
+- [x] Lane 1. Runtime toolchain test probe. Save `/tmp/swarm-openspec-direct-docs/worker-1/toolchain.png`. Pass when test_runtime_toolchain passes.
+- [x] Lane 2. Dual validation probe. Save `/tmp/swarm-openspec-direct-docs/worker-2/validate.png`. Pass when validate:openspec exits 0.
+- [x] Lane 3. Verification skills audit probe. Save `/tmp/swarm-openspec-direct-docs/worker-3/audit.png`. Pass when 10 skills pass.
+- [x] Lane 4. Package projection probe. Save `/tmp/swarm-openspec-direct-docs/worker-4/projection.png`. Pass when projection check passes.
+- [x] Lane 5. Worktree confinement probe. Save `/tmp/swarm-openspec-direct-docs/worker-5/confinement.png`. Pass when worktrees are confined.
+- [x] Lane 6. Evidence staleness probe. Save `/tmp/swarm-openspec-direct-docs/worker-6/staleness.png`. Pass when check-staleness reports all fresh.
+- [x] Lane 7. Poteto test suite probe. Save `/tmp/swarm-openspec-direct-docs/worker-7/poteto.png`. Pass when 104 tests pass.
+- [x] Lane 8. Python line ceiling probe. Save `/tmp/swarm-openspec-direct-docs/worker-8/ceiling.png`. Pass when zero files exceed 1000 lines.
+- [x] Lane 9. Untracked file probe. Save `/tmp/swarm-openspec-direct-docs/worker-9/untracked.png`. Pass when untracked files are expected.
+- [x] Lane 10. Status hygiene probe. Save `/tmp/swarm-openspec-direct-docs/worker-10/status.png`. Pass when git status is clean.
 
 **Verify, perf.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Metric. Toolchain test duration in seconds.
-- [ ] Probe. Time uv run pytest tests/test_runtime_toolchain.py.
-- [ ] Baseline. Record trunk duration of runtime toolchain test.
-- [ ] Rule. Head duration must not exceed trunk duration plus 2 seconds.
+- [x] Metric. Toolchain test duration in seconds.
+- [x] Probe. Time uv run pytest tests/test_runtime_toolchain.py.
+- [x] Baseline. Record trunk duration of runtime toolchain test.
+- [x] Rule. Head duration must not exceed trunk duration plus 2 seconds.
 
 **Review gate.** The operator reviews before merge.
 
-- [ ] Copy lane screenshots into `/tmp/openspec-direct-docs-review-gate.png`.
-- [ ] Record a 30 second video of the change and save as `/tmp/openspec-direct-docs-review.mp4`.
-- [ ] Post the screenshot and video in chat for operator review.
+- [x] Copy lane screenshots into `/tmp/openspec-direct-docs-review-gate.png`.
+- [x] Record a 30 second video of the change and save as `/tmp/openspec-direct-docs-review.mp4`.
+- [x] Post the screenshot and video in chat for operator review.
 
 **Merge.**
 
-- [ ] Root clean verdict at head SHA.
-- [ ] Squash merge to parent branch.
+- [x] Root clean verdict at head SHA.
+- [x] Squash merge to parent branch.
 
 ## Qualify 6-harness verification matrix, reconcile issue graph, and close Epic 1227 (gate-close-1227)
 
