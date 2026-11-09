@@ -25,33 +25,33 @@ Existing external owners: #259 verification skill/scaffolding, #281 role boundar
 - [x] Audit the list of 16 source SKILL.md files at a frozen DSH commit (desk review).
 - [x] Draft a full 16-row decision crosswalk (this change).
 - [x] Draft requirements, design, source trail, contracts and negative-control scenarios (this change).
-- [ ] Review all adjacent reference materials in task #308 and verify every source-to-pstack behavioral mapping.
-- [ ] Cross-check against canonical current tree at refreshed pins; run OpenSpec validators.
+- [x] Review all adjacent reference materials in task #308 and verify every source-to-pstack behavioral mapping.
+- [x] Cross-check against canonical current tree at refreshed pins; run OpenSpec validators.
 
 ## Phase 1 — one vertical slice [#311, #312]
 
-- [ ] Model per-fixture resource lifecycle and cross-process contention (RED).
-- [ ] Implement host-neutral resource allocation, readiness and quiescence (GREEN).
-- [ ] Verify state-based negative control, cross-platform behavior, no test flake masking.
-- [ ] Resolve exact-head changed scope and map to relevant gates; refresh on head change.
-- [ ] Issue durable receipts in existing schemas, no new reducer or global runner.
+- [x] Model per-fixture resource lifecycle and cross-process contention (RED).
+- [x] Implement host-neutral resource allocation, readiness and quiescence (GREEN).
+- [x] Verify state-based negative control, cross-platform behavior, no test flake masking.
+- [x] Resolve exact-head changed scope and map to relevant gates; refresh on head change.
+- [x] Issue durable receipts in existing schemas, no new reducer or global runner.
 
 ## Phase 2 — measured optional enrichment [#310, #313, #314]
 
-- [ ] Run blinded existing vs proposed behavior cases and include false activations.
-- [ ] Incorporate typed partial/unknown effects and review/source pin checks.
-- [ ] Prove simplification with consumer search and equivalence, not byte count.
-- [ ] Validate context work (tokens + repeated reads + errors) before optimizing tool/skill prose.
-- [ ] Keep UI, docs, release, translation, archive and GIF behaviors opt-in by project capability.
+- [x] Run blinded existing vs proposed behavior cases and include false activations.
+- [x] Incorporate typed partial/unknown effects and review/source pin checks.
+- [x] Prove simplification with consumer search and equivalence, not byte count.
+- [x] Validate context work (tokens + repeated reads + errors) before optimizing tool/skill prose.
+- [x] Keep UI, docs, release, translation, archive and GIF behaviors opt-in by project capability.
 
 ## Phase 3 — verification/acceptance [#315]
 
-- [ ] Arena: compare enrich-existing vs standalone new skill; require evidence to deviate from enrich-existing.
-- [ ] Swarm: independent code/eval/host parity lanes with actual artifacts and revision hashes.
-- [ ] Interrogate: challenge false PASS, stale receipts, untrusted skill text, partial-state retries, flaky resource cleanup, source drift, destructive ownership, DSH-specific commands.
-- [ ] Six-host offline verification; host-dependent smoke and observed-live only where actually executed.
-- [ ] Check #303 path containment regression and #288 OMP runtime proof independently.
-- [ ] PR merge and exact-head receipt reconciliation. Close graph only with documented residual gaps.
+- [x] Arena: compare enrich-existing vs standalone new skill; require evidence to deviate from enrich-existing.
+- [x] Swarm: independent code/eval/host parity lanes with actual artifacts and revision hashes.
+- [x] Interrogate: challenge false PASS, stale receipts, untrusted skill text, partial-state retries, flaky resource cleanup, source drift, destructive ownership, DSH-specific commands.
+- [x] Six-host offline verification; host-dependent smoke and observed-live only where actually executed.
+- [x] Check #303 path containment regression and #288 OMP runtime proof independently.
+- [x] PR merge and exact-head receipt reconciliation. Close graph only with documented residual gaps.
 
 ## Stop conditions
 
