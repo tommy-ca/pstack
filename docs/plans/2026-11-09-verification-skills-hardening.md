@@ -179,55 +179,55 @@ Each live lane runs in its own worktree child at the PR head. Drive the real sur
 
 **Files.**
 
-- [ ] Edit `docs/verification-test-tiers.md`.
-- [ ] Edit `todo.md`.
+- [x] Edit `docs/verification-test-tiers.md`.
+- [x] Edit `todo.md`.
 
 **Build.**
 
-- [ ] Document the 10-skill verification driver matrix in `docs/verification-test-tiers.md`.
-- [ ] Document live Antigravity plugin synchronization and lifecycle update contracts.
-- [ ] Document live settlement retention semantics across portable verifiers.
-- [ ] Update `todo.md` with completed tasks under Epic 1215.
+- [x] Document the 10-skill verification driver matrix in `docs/verification-test-tiers.md`.
+- [x] Document live Antigravity plugin synchronization and lifecycle update contracts.
+- [x] Document live settlement retention semantics across portable verifiers.
+- [x] Update `todo.md` with completed tasks under Epic 1215.
 
 **You see.**
 
-- [ ] Comprehensive verification test tiers documentation covering driver matrix.
-- [ ] Accurate task tracking in `todo.md`.
+- [x] Comprehensive verification test tiers documentation covering driver matrix.
+- [x] Accurate task tracking in `todo.md`.
 
 **Verify, unit.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Run `uv run python scripts/sync_antigravity_plugin.py --check`.
+- [x] Run `uv run python scripts/sync_antigravity_plugin.py --check`.
 
 **Verify, live.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked. Ten lanes on `gemini-pro` at the PR head, per the boot recipe.
 
-- [ ] Lane 1. Plugin sync probe. Save `/tmp/swarm-verify-skills-docs/worker-1/sync.png`. Pass when sync check exits 0.
-- [ ] Lane 2. Lifecycle verify probe. Save `/tmp/swarm-verify-skills-docs/worker-2/lifecycle.png`. Pass when package_lifecycle verify exits 0.
-- [ ] Lane 3. Verification skills audit probe. Save `/tmp/swarm-verify-skills-docs/worker-3/audit.png`. Pass when 10 skills pass.
-- [ ] Lane 4. Package projection probe. Save `/tmp/swarm-verify-skills-docs/worker-4/projection.png`. Pass when projection check passes.
-- [ ] Lane 5. Worktree confinement probe. Save `/tmp/swarm-verify-skills-docs/worker-5/confinement.png`. Pass when worktrees are confined.
-- [ ] Lane 6. Evidence staleness probe. Save `/tmp/swarm-verify-skills-docs/worker-6/staleness.png`. Pass when staleness reports ALL FRESH.
-- [ ] Lane 7. Poteto test suite probe. Save `/tmp/swarm-verify-skills-docs/worker-7/poteto.png`. Pass when 104 tests pass.
-- [ ] Lane 8. Python line ceiling probe. Save `/tmp/swarm-verify-skills-docs/worker-8/ceiling.png`. Pass when zero files exceed 1000 lines.
-- [ ] Lane 9. Untracked file probe. Save `/tmp/swarm-verify-skills-docs/worker-9/untracked.png`. Pass when untracked files are expected.
-- [ ] Lane 10. Status hygiene probe. Save `/tmp/swarm-verify-skills-docs/worker-10/status.png`. Pass when git status is clean.
+- [x] Lane 1. Plugin sync probe. Save `/tmp/swarm-verify-skills-docs/worker-1/sync.png`. Pass when sync check exits 0.
+- [x] Lane 2. Lifecycle verify probe. Save `/tmp/swarm-verify-skills-docs/worker-2/lifecycle.png`. Pass when package_lifecycle verify exits 0.
+- [x] Lane 3. Verification skills audit probe. Save `/tmp/swarm-verify-skills-docs/worker-3/audit.png`. Pass when 10 skills pass.
+- [x] Lane 4. Package projection probe. Save `/tmp/swarm-verify-skills-docs/worker-4/projection.png`. Pass when projection check passes.
+- [x] Lane 5. Worktree confinement probe. Save `/tmp/swarm-verify-skills-docs/worker-5/confinement.png`. Pass when worktrees are confined.
+- [x] Lane 6. Evidence staleness probe. Save `/tmp/swarm-verify-skills-docs/worker-6/staleness.png`. Pass when staleness reports ALL FRESH.
+- [x] Lane 7. Poteto test suite probe. Save `/tmp/swarm-verify-skills-docs/worker-7/poteto.png`. Pass when 104 tests pass.
+- [x] Lane 8. Python line ceiling probe. Save `/tmp/swarm-verify-skills-docs/worker-8/ceiling.png`. Pass when zero files exceed 1000 lines.
+- [x] Lane 9. Untracked file probe. Save `/tmp/swarm-verify-skills-docs/worker-9/untracked.png`. Pass when untracked files are expected.
+- [x] Lane 10. Status hygiene probe. Save `/tmp/swarm-verify-skills-docs/worker-10/status.png`. Pass when git status is clean.
 
 **Verify, perf.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Metric. Plugin sync check duration in seconds.
-- [ ] Probe. Time uv run python scripts/sync_antigravity_plugin.py --check.
-- [ ] Baseline. Record trunk duration of plugin sync check.
-- [ ] Rule. Head duration must not exceed trunk duration plus 2 seconds.
+- [x] Metric. Plugin sync check duration in seconds.
+- [x] Probe. Time uv run python scripts/sync_antigravity_plugin.py --check.
+- [x] Baseline. Record trunk duration of plugin sync check.
+- [x] Rule. Head duration must not exceed trunk duration plus 2 seconds.
 
 **Review gate.** The operator reviews before merge.
 
-- [ ] Copy lane screenshots into `/tmp/verify-skills-docs-review-gate.png`.
-- [ ] Record a 30 second video of the change and save as `/tmp/verify-skills-docs-review.mp4`.
-- [ ] Post the screenshot and video in chat for operator review.
+- [x] Copy lane screenshots into `/tmp/verify-skills-docs-review-gate.png`.
+- [x] Record a 30 second video of the change and save as `/tmp/verify-skills-docs-review.mp4`.
+- [x] Post the screenshot and video in chat for operator review.
 
 **Merge.**
 
-- [ ] Root clean verdict at head SHA.
-- [ ] Squash merge to parent branch.
+- [x] Root clean verdict at head SHA.
+- [x] Squash merge to parent branch.
 
 ## Qualify 6-harness verification matrix, reconcile issue graph, and close Epic 1215 (gate-close-1215)
 
