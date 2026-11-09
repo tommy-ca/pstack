@@ -128,24 +128,24 @@ Each live lane runs in its own worktree child at the PR head. Drive the real sur
 
 **Files.**
 
-- [ ] Edit `scripts/scaffold_verification_skill.py`.
-- [ ] Edit `tests/test_scaffold_verification_skill.py`.
-- [ ] Edit `todo.md`.
+- [x] Edit `scripts/scaffold_verification_skill.py`.
+- [x] Edit `tests/test_scaffold_verification_skill.py`.
+- [x] Edit `todo.md`.
 
 **Build.**
 
-- [ ] Add OpenSpec change audit validation checks to `scripts/scaffold_verification_skill.py`.
-- [ ] Expand `tests/test_scaffold_verification_skill.py` with OpenSpec validation audit test cases.
-- [ ] Verify all 10 verification skill drivers and formal drivers are validated.
+- [x] Add OpenSpec change audit validation checks to `scripts/scaffold_verification_skill.py`.
+- [x] Expand `tests/test_scaffold_verification_skill.py` with OpenSpec validation audit test cases.
+- [x] Verify all 10 verification skill drivers and formal drivers are validated.
 
 **You see.**
 
-- [ ] Structured OpenSpec audit capabilities in verification skill scaffolding.
-- [ ] Green test suite in `tests/test_scaffold_verification_skill.py`.
+- [x] Structured OpenSpec audit capabilities in verification skill scaffolding.
+- [x] Green test suite in `tests/test_scaffold_verification_skill.py`.
 
 **Verify, unit.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Run `uv run pytest tests/test_scaffold_verification_skill.py`.
+- [x] Run `uv run pytest tests/test_scaffold_verification_skill.py`.
 
 **Verify, live.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked. Ten lanes on `gemini-pro` at the PR head, per the boot recipe.
 
