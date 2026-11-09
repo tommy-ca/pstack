@@ -107,7 +107,7 @@ Nine profile files and eight Python driver modules do **not** imply nine fully i
 4. For a panel, make distinct **seats**; separate model-family diversity is an independently checked requirement. Cross-judge cannot label same-family evaluation as independent.
 5. Translate the plan to native spawn arguments only in the respective host adapter; collect runtime settlement, model identity, workspace proof and a receipt. `PLANNED` never means `VERIFIED`.
 
-Refer to [ADR-0021](../../adr/0021-harness-neutral-model-role-policy.md), [design](../../openspec/changes/2026-10-15-harness-neutral-role-policy/design.md), and [porting guide](../guide/12-porting.md).
+Refer to [ADR-0021](../../adr/0021-harness-neutral-model-role-policy.md), [design](../../openspec/changes/archive/2026-10-15-harness-neutral-role-policy/design.md), and [porting guide](../guide/12-porting.md).
 
 ## JEV / System One: exact present behavior vs accepted contract
 
