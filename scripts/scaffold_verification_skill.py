@@ -348,6 +348,49 @@ def audit_verification_skills(workspace: pathlib.Path) -> Tuple[int, List[str]]:
     return data["exit_code"], results
 
 
+def audit_openspec_status(workspace: pathlib.Path) -> Dict[str, Any]:
+    """Audit OpenSpec active changes and living specifications for verification readiness."""
+    openspec_dir = workspace / "openspec"
+    if not openspec_dir.is_dir():
+        return {
+            "exit_code": 1,
+            "status": "FAIL",
+            "errors": [f"openspec directory missing: {openspec_dir}"],
+            "active_changes": [],
+            "living_specs": [],
+        }
+
+    errors: List[str] = []
+    active_changes: List[str] = []
+    changes_dir = openspec_dir / "changes"
+    if changes_dir.is_dir():
+        for change in sorted(changes_dir.iterdir()):
+            if not change.is_dir() or change.name == "archive":
+                continue
+            active_changes.append(change.name)
+            for req in ("proposal.md", "tasks.md", ".openspec.yaml"):
+                if not (change / req).is_file():
+                    errors.append(f"Change '{change.name}' missing {req}")
+
+    living_specs: List[str] = []
+    specs_dir = openspec_dir / "specs"
+    if specs_dir.is_dir():
+        for spec in sorted(specs_dir.iterdir()):
+            if not spec.is_dir():
+                continue
+            living_specs.append(spec.name)
+            if not (spec / "spec.md").is_file():
+                errors.append(f"Living spec '{spec.name}' missing spec.md")
+
+    return {
+        "exit_code": 1 if errors else 0,
+        "status": "FAIL" if errors else "PASS",
+        "errors": errors,
+        "active_changes": active_changes,
+        "living_specs": living_specs,
+    }
+
+
 def drive_verification_skill(
     target_dir: pathlib.Path,
     *,
@@ -498,6 +541,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--check", action="store_true", help="Validate existing verification skill")
     parser.add_argument("--list", action="store_true", help="Discover verification skills across harnesses")
     parser.add_argument("--audit", action="store_true", help="Audit all verification skills across all 6 harnesses")
+    parser.add_argument("--check-openspec", action="store_true", help="Audit OpenSpec active changes and living specifications")
     parser.add_argument("--drive-all", action="store_true", help="Execute launch and drive/doctor across all verification skills")
     parser.add_argument("--doctor-all", action="store_true", help="Execute doctor across all verification skills")
     parser.add_argument("--cleanup-all", action="store_true", help="Execute cleanup across all verification skills")
@@ -525,6 +569,19 @@ def main(argv: Optional[List[str]] = None) -> int:
         for line in lines:
             print(line)
         return code
+
+    if args.check_openspec:
+        data = audit_openspec_status(workspace)
+        if args.json:
+            print(json.dumps(data, indent=2))
+            return data["exit_code"]
+        if data["exit_code"] != 0:
+            print("FAIL: OpenSpec audit found errors:")
+            for err in data["errors"]:
+                print(f"  - {err}")
+            return data["exit_code"]
+        print(f"PASS: OpenSpec audit verified {len(data['active_changes'])} active change(s) and {len(data['living_specs'])} living spec(s).")
+        return 0
 
     if args.drive_all:
         data = drive_all_verification_skills(workspace, command=args.command, timeout=args.timeout)
