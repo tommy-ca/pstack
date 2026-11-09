@@ -240,62 +240,62 @@ Each live lane runs in its own worktree child at the PR head. Drive the real sur
 
 **Files.**
 
-- [ ] Edit `docs/plans/2026-11-09-eliminate-openspec-python-wrappers.md`.
-- [ ] Edit `todo.md`.
-- [ ] Edit `CHANGELOG.md`.
+- [x] Edit `docs/plans/2026-11-09-eliminate-openspec-python-wrappers.md`.
+- [x] Edit `todo.md`.
+- [x] Edit `CHANGELOG.md`.
 
 **Build.**
 
-- [ ] Run full 6-harness verification matrix doctor across all declared hosts.
-- [ ] Run driver orchestrator across all 10 verification skills.
-- [ ] Update CHANGELOG.md with Epic 1227 deliverables.
-- [ ] Reconcile `todo.md` and close Epic #1227 on GitHub.
+- [x] Run full 6-harness verification matrix doctor across all declared hosts.
+- [x] Run driver orchestrator across all 10 verification skills.
+- [x] Update CHANGELOG.md with Epic 1227 deliverables.
+- [x] Reconcile `todo.md` and close Epic #1227 on GitHub.
 
 **You see.**
 
-- [ ] 6-Harness Matrix Verdict PASS in doctor output.
-- [ ] 10 of 10 verification skill drivers pass in drive-all output.
+- [x] 6-Harness Matrix Verdict PASS in doctor output.
+- [x] 10 of 10 verification skill drivers pass in drive-all output.
 
 **Verify, unit.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Run `bun skills/poteto-mode/scripts/check-plan.mjs docs/plans/2026-11-09-eliminate-openspec-python-wrappers.md`.
+- [x] Run `bun skills/poteto-mode/scripts/check-plan.mjs docs/plans/2026-11-09-eliminate-openspec-python-wrappers.md`.
 
 **Verify, live.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked. Ten lanes on `gemini-pro` at the PR head, per the boot recipe.
 
-- [ ] Lane 1. Driver orchestrator probe. Save `/tmp/swarm-gate-close-1227/worker-1/drivers.png`. Pass when drive-all exits 0.
-- [ ] Lane 2. Package projection probe. Save `/tmp/swarm-gate-close-1227/worker-2/projection.png`. Pass when package_projection check passes.
-- [ ] Lane 3. Verification skills audit probe. Save `/tmp/swarm-gate-close-1227/worker-3/audit.png`. Pass when 10 skills pass.
-- [ ] Lane 4. Evidence staleness probe. Save `/tmp/swarm-gate-close-1227/worker-4/staleness.png`. Pass when check-staleness reports all fresh.
-- [ ] Lane 5. Evidence durability probe. Save `/tmp/swarm-gate-close-1227/worker-5/evidence.png`. Pass when check-evidence passes.
-- [ ] Lane 6. Portable doctor probe. Save `/tmp/swarm-gate-close-1227/worker-6/doctor.png`. Pass when 6-harness matrix verdict is PASS.
-- [ ] Lane 7. Poteto script tests probe. Save `/tmp/swarm-gate-close-1227/worker-7/poteto-tests.png`. Pass when 104 tests pass.
-- [ ] Lane 8. Python line ceiling probe. Save `/tmp/swarm-gate-close-1227/worker-8/ceiling.png`. Pass when zero files exceed 1000 lines.
-- [ ] Lane 9. Pinned bunx dual validation probe. Save `/tmp/swarm-gate-close-1227/worker-9/dual.png`. Pass when dual validation exits 0.
-- [ ] Lane 10. Status hygiene probe. Save `/tmp/swarm-gate-close-1227/worker-10/status.png`. Pass when git status is clean.
+- [x] Lane 1. Driver orchestrator probe. Save `/tmp/swarm-gate-close-1227/worker-1/drivers.png`. Pass when drive-all exits 0.
+- [x] Lane 2. Package projection probe. Save `/tmp/swarm-gate-close-1227/worker-2/projection.png`. Pass when package_projection check passes.
+- [x] Lane 3. Verification skills audit probe. Save `/tmp/swarm-gate-close-1227/worker-3/audit.png`. Pass when 10 skills pass.
+- [x] Lane 4. Evidence staleness probe. Save `/tmp/swarm-gate-close-1227/worker-4/staleness.png`. Pass when check-staleness reports all fresh.
+- [x] Lane 5. Evidence durability probe. Save `/tmp/swarm-gate-close-1227/worker-5/evidence.png`. Pass when check-evidence passes.
+- [x] Lane 6. Portable doctor probe. Save `/tmp/swarm-gate-close-1227/worker-6/doctor.png`. Pass when 6-harness matrix verdict is PASS.
+- [x] Lane 7. Poteto script tests probe. Save `/tmp/swarm-gate-close-1227/worker-7/poteto-tests.png`. Pass when 104 tests pass.
+- [x] Lane 8. Python line ceiling probe. Save `/tmp/swarm-gate-close-1227/worker-8/ceiling.png`. Pass when zero files exceed 1000 lines.
+- [x] Lane 9. Pinned bunx dual validation probe. Save `/tmp/swarm-gate-close-1227/worker-9/dual.png`. Pass when dual validation exits 0.
+- [x] Lane 10. Status hygiene probe. Save `/tmp/swarm-gate-close-1227/worker-10/status.png`. Pass when git status is clean.
 
 **Verify, perf.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Metric. Full verification gate duration in seconds.
-- [ ] Probe. Time python3 scripts/verify_portable.py doctor --host all.
-- [ ] Baseline. Record trunk duration of doctor across all hosts.
-- [ ] Rule. Head duration must not exceed trunk duration plus 10 seconds.
+- [x] Metric. Full verification gate duration in seconds.
+- [x] Probe. Time python3 scripts/verify_portable.py doctor --host all.
+- [x] Baseline. Record trunk duration of doctor across all hosts.
+- [x] Rule. Head duration must not exceed trunk duration plus 10 seconds.
 
 **Review gate.** The operator reviews before merge.
 
-- [ ] Copy lane screenshots into `/tmp/gate-close-1227-review-gate.png`.
-- [ ] Record a 30 second video of the change and save as `/tmp/gate-close-1227-review.mp4`.
-- [ ] Post the screenshot and video in chat for operator review.
+- [x] Copy lane screenshots into `/tmp/gate-close-1227-review-gate.png`.
+- [x] Record a 30 second video of the change and save as `/tmp/gate-close-1227-review.mp4`.
+- [x] Post the screenshot and video in chat for operator review.
 
 **Merge.**
 
-- [ ] Root clean verdict at head SHA.
-- [ ] Squash merge to parent branch.
+- [x] Root clean verdict at head SHA.
+- [x] Squash merge to parent branch.
 
 ## Close the program
 
-- [ ] Every PR merged to trunk in bottom-up order.
-- [ ] Every box in this plan checked with its evidence.
-- [ ] Post final status message to operator.
+- [x] Every PR merged to trunk in bottom-up order.
+- [x] Every box in this plan checked with its evidence.
+- [x] Post final status message to operator.
 
 ## Appendix A. Prototype evidence
 
