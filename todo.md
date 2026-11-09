@@ -603,7 +603,8 @@
 - [x] Unit 1 (Issue #1240): [Tooling & Checks][P0] Update select-checks OpenSpec mappings and harden verification skill scaffolding
 - [x] Unit 2 (Issue #1241): [OpenSpec & Specs][P0] Reconcile and archive completed active changes into living specifications (Batch 1: 2026-10 changes)
 - [x] Unit 3 (Issue #1242): [OpenSpec & Specs][P0] Reconcile and archive completed active changes into living specifications (Batch 2: 2026-11 changes)
-- [ ] Unit 4 (Issue #1243): [Gate & Close][P0] Qualify 6-harness verification matrix, reconcile issue graph, and close Epic 1239
+- [x] Unit 4 (Issue #1243): [Gate & Close][P0] Qualify 6-harness verification matrix, reconcile issue graph, and close Epic 1239
+*(Epic #1239 CLOSED)*
 
 
 

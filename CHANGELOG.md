@@ -90,6 +90,10 @@ This ledger distinguishes **observed canonical upstream changes** from **applied
 - Harmonized test suites, select-checks mappings, and toolchain tests with direct bunx/mise execution (#1229, #1233).
 - Updated verification documentation, added openspec:list and openspec:validate mise tasks, and eliminated Python wrappers (#1230, #1234).
 - Qualified 6-harness verification matrix, reconciled issue graph, and closed Epic #1227 (#1231).
+- Mapped OpenSpec changes directly to tests/test_openspec_direct.py in select-checks and hardened verification scaffolding (#1240, #1244).
+- Archived completed October 2026 OpenSpec changes to openspec/changes/archive/ and updated living specifications (#1241, #1245).
+- Archived completed November 2026 OpenSpec changes to openspec/changes/archive/ and updated living specifications (#1242, #1246).
+- Qualified 6-harness verification matrix, reconciled receipts, and closed Epic #1239 (#1243).
 
 
 
