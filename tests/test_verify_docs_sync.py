@@ -178,3 +178,14 @@ def test_porting_table_is_twenty_four() -> None:
     assert "UPSTREAM" in text
     readme = (ROOT / "docs" / "guide" / "README.md").read_text(encoding="utf-8")
     assert "The 24 names that redirect an agent mid-task" in readme
+
+
+def test_verification_test_tiers_deduplicated_mise_openspec_tasks() -> None:
+    tiers_text = (ROOT / "docs" / "verification-test-tiers.md").read_text(encoding="utf-8")
+    assert "`mise run validate:openspec`" in tiers_text
+    assert "`mise run validate:openspec:all`" in tiers_text
+    assert "`mise run validate:openspec:changes`" in tiers_text
+    assert "`mise run openspec:status`" in tiers_text
+    assert "`mise run openspec:list`" in tiers_text
+    assert "`mise run verify:openspec`" not in tiers_text
+    assert "`mise run openspec:validate`" not in tiers_text
