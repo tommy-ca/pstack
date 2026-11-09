@@ -98,6 +98,10 @@ This ledger distinguishes **observed canonical upstream changes** from **applied
 - Hardened verification skill scaffolding with OpenSpec audit checks and expanded test suite (#1253, #1257).
 - Reconciled OpenSpec intent-driven flows and updated test tiers documentation (#1254, #1258).
 - Qualified 6-harness verification matrix, reconciled receipts, and closed Epic #1251 (#1255).
+- Updated archived OpenSpec change link in architecture documentation (#1264, #1268).
+- Supported archived change path resolution in model role profiles test (#1265, #1269).
+- Wired direct OpenSpec and docs sync tests into offline CI gate and exposed verify:openspec:audit task (#1266, #1270).
+- Qualified 6-harness verification matrix, reconciled issue graph, and closed Epic #1263 (#1267).
 
 
 
