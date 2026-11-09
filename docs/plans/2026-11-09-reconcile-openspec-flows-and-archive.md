@@ -183,28 +183,28 @@ Each live lane runs in its own worktree child at the PR head. Drive the real sur
 
 **Files.**
 
-- [ ] Edit `openspec/specs/pstack-portability/spec.md`.
-- [ ] Edit `openspec/specs/pstack-reusable-skill-patterns/spec.md`.
-- [ ] Edit `openspec/specs/pstack-setup-overlays/spec.md`.
-- [ ] Edit `todo.md`.
+- [x] Edit `openspec/specs/pstack-portability/spec.md`.
+- [x] Edit `openspec/specs/pstack-reusable-skill-patterns/spec.md`.
+- [x] Edit `openspec/specs/pstack-setup-overlays/spec.md`.
+- [x] Edit `todo.md`.
 
 **Build.**
 
-- [ ] Archive `2026-11-05-pi-standalone-candidate` into `openspec/changes/archive/`.
-- [ ] Archive `2026-11-06-cross-port-parity` into `openspec/changes/archive/`.
-- [ ] Archive `2026-11-06-cross-port-semantic-parity` into `openspec/changes/archive/`.
-- [ ] Archive `2026-11-06-single-entry-setup-pstack` into `openspec/changes/archive/`.
-- [ ] Archive `2026-11-06-upstream-semantic-boundary` into `openspec/changes/archive/`.
-- [ ] Archive `2026-11-07-deepseek-skills-22-source-refresh` into `openspec/changes/archive/`.
+- [x] Archive `2026-11-05-pi-standalone-candidate` into `openspec/changes/archive/`.
+- [x] Archive `2026-11-06-cross-port-parity` into `openspec/changes/archive/`.
+- [x] Archive `2026-11-06-cross-port-semantic-parity` into `openspec/changes/archive/`.
+- [x] Archive `2026-11-06-single-entry-setup-pstack` into `openspec/changes/archive/`.
+- [x] Archive `2026-11-06-upstream-semantic-boundary` into `openspec/changes/archive/`.
+- [x] Archive `2026-11-07-deepseek-skills-22-source-refresh` into `openspec/changes/archive/`.
 
 **You see.**
 
-- [ ] Six completed November changes archived with complete planning chains preserved.
-- [ ] Living specifications updated cleanly in `openspec/specs/`.
+- [x] Six completed November changes archived with complete planning chains preserved.
+- [x] Living specifications updated cleanly in `openspec/specs/`.
 
 **Verify, unit.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Run `mise run validate:openspec`.
+- [x] Run `mise run validate:openspec`.
 
 **Verify, live.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked. Ten lanes on `gemini-pro` at the PR head, per the boot recipe.
 

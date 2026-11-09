@@ -208,7 +208,7 @@ Candidate changes MUST be evaluated using the existing blinded `eval` playbook p
 
 ### Requirement: reusable guidance is decomposed into existing leaf, principle and playbook owners
 
-For each retained source-derived behavior, PStack MUST name its existing atomic leaf skill, cross-task principle and sequencing playbook (or explicitly state when a category is inapplicable). An upstream source SKILL.md MUST NOT be treated as a requirement to register a new PStack skill. A proposed new leaf MUST have a recurring standalone trigger, unique testable output and absence of a current owner; a new principle MUST own a previously unowned invariant; a new playbook MUST add genuinely distinct sequencing. The source ledger itself SHALL NOT authorize runtime changes.
+For each retained source behavior, PStack MUST name its atomic leaf skill, principle, and playbook (or state when inapplicable). An upstream SKILL.md MUST NOT register a redundant PStack skill. A proposed new leaf MUST have a recurring trigger and unique output; a new principle MUST own an unowned invariant; a new playbook MUST add distinct sequencing. The source ledger SHALL NOT authorize runtime changes.
 
 #### Scenario: generic code-review pattern is already owned
 
