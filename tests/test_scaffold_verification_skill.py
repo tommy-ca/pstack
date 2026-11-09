@@ -727,6 +727,50 @@ def test_cli_cleanup_all(tmp_path: pathlib.Path) -> None:
     assert data["failed"] == 0
 
 
+def test_audit_openspec_status_real_repo() -> None:
+    data = scaffold_mod.audit_openspec_status(ROOT)
+    assert data["exit_code"] == 0
+    assert data["status"] == "PASS"
+    assert data["errors"] == []
+    assert "2026-11-07-pi-extension-package-proof" in data["active_changes"]
+    assert "pstack-portability" in data["living_specs"]
+    assert len(data["living_specs"]) >= 30
+
+
+def test_cli_check_openspec_real_repo() -> None:
+    res = cli(ROOT, "--check-openspec")
+    assert res.returncode == 0
+    assert "PASS: OpenSpec audit verified" in res.stdout
+
+    res_json = cli(ROOT, "--check-openspec", "--json")
+    assert res_json.returncode == 0
+    data = json.loads(res_json.stdout)
+    assert data["exit_code"] == 0
+    assert data["status"] == "PASS"
+
+
+def test_audit_openspec_status_missing_artifacts(tmp_path: pathlib.Path) -> None:
+    data_no_dir = scaffold_mod.audit_openspec_status(tmp_path)
+    assert data_no_dir["exit_code"] == 1
+    assert data_no_dir["status"] == "FAIL"
+
+    openspec_dir = tmp_path / "openspec"
+    openspec_dir.mkdir()
+    change_dir = openspec_dir / "changes" / "demo-change"
+    change_dir.mkdir(parents=True)
+    (change_dir / "proposal.md").write_text("# Proposal\n")
+
+    spec_dir = openspec_dir / "specs" / "demo-spec"
+    spec_dir.mkdir(parents=True)
+
+    data = scaffold_mod.audit_openspec_status(tmp_path)
+    assert data["exit_code"] == 1
+    assert data["status"] == "FAIL"
+    assert any("tasks.md" in err for err in data["errors"])
+    assert any(".openspec.yaml" in err for err in data["errors"])
+    assert any("spec.md" in err for err in data["errors"])
+
+
 
 
 
