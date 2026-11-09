@@ -187,5 +187,8 @@ def test_verification_test_tiers_deduplicated_mise_openspec_tasks() -> None:
     assert "`mise run validate:openspec:changes`" in tiers_text
     assert "`mise run openspec:status`" in tiers_text
     assert "`mise run openspec:list`" in tiers_text
+    assert "`mise run verify:openspec:audit`" in tiers_text
+    assert "tests/test_openspec_direct.py" in tiers_text
+    assert "tests/test_verify_docs_sync.py" in tiers_text
     assert "`mise run verify:openspec`" not in tiers_text
     assert "`mise run openspec:validate`" not in tiers_text
