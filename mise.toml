@@ -75,10 +75,6 @@ run = "bunx --yes @fission-ai/openspec@1.16.1 status --all"
 description = "List all active OpenSpec changes"
 run = "bunx --yes @fission-ai/openspec@1.16.1 list"
 
-[tasks."openspec:validate"]
-description = "Strictly validate active OpenSpec change proposals"
-run = "bunx --yes @fission-ai/openspec@1.16.1 validate --changes --strict"
-
 [tasks."validate:openspec"]
 description = "Run dual-mode OpenSpec validation (all specs and strict active changes)"
 run = "bunx --yes @fission-ai/openspec@1.16.1 validate --all && bunx --yes @fission-ai/openspec@1.16.1 validate --changes --strict"
@@ -88,18 +84,6 @@ description = "Validate all living OpenSpec specifications and schemas"
 run = "bunx --yes @fission-ai/openspec@1.16.1 validate --all"
 
 [tasks."validate:openspec:changes"]
-description = "Strictly validate active OpenSpec change proposals"
-run = "bunx --yes @fission-ai/openspec@1.16.1 validate --changes --strict"
-
-[tasks."verify:openspec"]
-description = "Run dual-mode OpenSpec validation (all specs and strict active changes)"
-run = "bunx --yes @fission-ai/openspec@1.16.1 validate --all && bunx --yes @fission-ai/openspec@1.16.1 validate --changes --strict"
-
-[tasks."verify:openspec:all"]
-description = "Validate all living OpenSpec specifications and schemas"
-run = "bunx --yes @fission-ai/openspec@1.16.1 validate --all"
-
-[tasks."verify:openspec:changes"]
 description = "Strictly validate active OpenSpec change proposals"
 run = "bunx --yes @fission-ai/openspec@1.16.1 validate --changes --strict"
 

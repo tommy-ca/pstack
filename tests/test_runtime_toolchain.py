@@ -44,20 +44,16 @@ def test_mise_toml_configuration() -> None:
     assert tasks["openspec:status"]["run"] == "bunx --yes @fission-ai/openspec@1.16.1 status --all"
     assert "openspec:list" in tasks, "mise.toml must declare openspec:list task"
     assert tasks["openspec:list"]["run"] == "bunx --yes @fission-ai/openspec@1.16.1 list"
-    assert "openspec:validate" in tasks, "mise.toml must declare openspec:validate task"
-    assert tasks["openspec:validate"]["run"] == "bunx --yes @fission-ai/openspec@1.16.1 validate --changes --strict"
     assert "validate:openspec" in tasks, "mise.toml must declare validate:openspec task"
     assert tasks["validate:openspec"]["run"] == "bunx --yes @fission-ai/openspec@1.16.1 validate --all && bunx --yes @fission-ai/openspec@1.16.1 validate --changes --strict"
     assert "validate:openspec:all" in tasks, "mise.toml must declare validate:openspec:all task"
     assert tasks["validate:openspec:all"]["run"] == "bunx --yes @fission-ai/openspec@1.16.1 validate --all"
     assert "validate:openspec:changes" in tasks, "mise.toml must declare validate:openspec:changes task"
     assert tasks["validate:openspec:changes"]["run"] == "bunx --yes @fission-ai/openspec@1.16.1 validate --changes --strict"
-    assert "verify:openspec" in tasks, "mise.toml must declare verify:openspec task"
-    assert tasks["verify:openspec"]["run"] == "bunx --yes @fission-ai/openspec@1.16.1 validate --all && bunx --yes @fission-ai/openspec@1.16.1 validate --changes --strict"
-    assert "verify:openspec:all" in tasks, "mise.toml must declare verify:openspec:all task"
-    assert tasks["verify:openspec:all"]["run"] == "bunx --yes @fission-ai/openspec@1.16.1 validate --all"
-    assert "verify:openspec:changes" in tasks, "mise.toml must declare verify:openspec:changes task"
-    assert tasks["verify:openspec:changes"]["run"] == "bunx --yes @fission-ai/openspec@1.16.1 validate --changes --strict"
+    assert "verify:openspec" not in tasks, "mise.toml must not have redundant verify:openspec task"
+    assert "verify:openspec:all" not in tasks, "mise.toml must not have redundant verify:openspec:all task"
+    assert "verify:openspec:changes" not in tasks, "mise.toml must not have redundant verify:openspec:changes task"
+    assert "openspec:validate" not in tasks, "mise.toml must not have redundant openspec:validate task"
     assert "worktree:check" in tasks, "mise.toml must declare worktree:check task"
     assert "worktree:audit" in tasks, "mise.toml must declare worktree:audit task"
 
@@ -127,19 +123,24 @@ def test_openspec_tasks_direct_cli_and_qstack_parity() -> None:
     openspec_task_names = [
         "openspec:status",
         "openspec:list",
-        "openspec:validate",
         "validate:openspec",
         "validate:openspec:all",
         "validate:openspec:changes",
-        "verify:openspec",
-        "verify:openspec:all",
-        "verify:openspec:changes",
     ]
     for name in openspec_task_names:
         assert name in tasks, f"mise.toml must define {name}"
         run_cmd = tasks[name]["run"]
         assert "python" not in run_cmd, f"{name} must not use python wrapper"
         assert run_cmd.startswith("bunx --yes @fission-ai/openspec@1.16.1"), f"{name} must invoke fixed bunx openspec"
+
+    redundant_tasks = [
+        "verify:openspec",
+        "verify:openspec:all",
+        "verify:openspec:changes",
+        "openspec:validate",
+    ]
+    for name in redundant_tasks:
+        assert name not in tasks, f"mise.toml must not define redundant {name}"
 
 
 def test_no_openspec_python_wrapper_file() -> None:
