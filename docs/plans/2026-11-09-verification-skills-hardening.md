@@ -122,56 +122,56 @@ Each live lane runs in its own worktree child at the PR head. Drive the real sur
 
 **Files.**
 
-- [ ] Edit `.audit/evidence/omp-receipt.json`.
-- [ ] Edit `.audit/evidence/index.json`.
-- [ ] Edit `tests/test_evidence_durability.py`.
+- [x] Edit `.audit/evidence/omp-receipt.json`.
+- [x] Edit `.audit/evidence/index.json`.
+- [x] Edit `tests/test_evidence_durability.py`.
 
 **Build.**
 
-- [ ] Commit verified live OMP RPC settlements matching current driver revision.
-- [ ] Synchronize `.audit/evidence/index.json` OMP entry timestamp and revision.
-- [ ] Add test asserting driver revision uniformity across declared packaged hosts in index.
-- [ ] Verify zero regressions in durability and receipt test suites.
+- [x] Commit verified live OMP RPC settlements matching current driver revision.
+- [x] Synchronize `.audit/evidence/index.json` OMP entry timestamp and revision.
+- [x] Add test asserting driver revision uniformity across declared packaged hosts in index.
+- [x] Verify zero regressions in durability and receipt test suites.
 
 **You see.**
 
-- [ ] Synchronized driver revisions in `index.json` and durable receipts.
-- [ ] Green test suite in `tests/test_evidence_durability.py`.
+- [x] Synchronized driver revisions in `index.json` and durable receipts.
+- [x] Green test suite in `tests/test_evidence_durability.py`.
 
 **Verify, unit.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Run `uv run python scripts/verify_portable.py check-staleness --host all`.
+- [x] Run `uv run python scripts/verify_portable.py check-staleness --host all`.
 
 **Verify, live.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked. Ten lanes on `gemini-pro` at the PR head, per the boot recipe.
 
-- [ ] Lane 1. Staleness check probe. Save `/tmp/swarm-omp-live-settlements/worker-1/staleness.png`. Pass when staleness reports ALL FRESH.
-- [ ] Lane 2. Evidence durability probe. Save `/tmp/swarm-omp-live-settlements/worker-2/durability.png`. Pass when check-evidence passes.
-- [ ] Lane 3. Verification skills audit probe. Save `/tmp/swarm-omp-live-settlements/worker-3/audit.png`. Pass when 10 skills pass.
-- [ ] Lane 4. Package projection probe. Save `/tmp/swarm-omp-live-settlements/worker-4/projection.png`. Pass when projection check passes.
-- [ ] Lane 5. Worktree confinement probe. Save `/tmp/swarm-omp-live-settlements/worker-5/confinement.png`. Pass when worktrees are confined.
-- [ ] Lane 6. Evidence test suite probe. Save `/tmp/swarm-omp-live-settlements/worker-6/evidence-tests.png`. Pass when durability tests pass.
-- [ ] Lane 7. Poteto test suite probe. Save `/tmp/swarm-omp-live-settlements/worker-7/poteto.png`. Pass when 104 tests pass.
-- [ ] Lane 8. Python line ceiling probe. Save `/tmp/swarm-omp-live-settlements/worker-8/ceiling.png`. Pass when zero files exceed 1000 lines.
-- [ ] Lane 9. Untracked file probe. Save `/tmp/swarm-omp-live-settlements/worker-9/untracked.png`. Pass when untracked files are expected.
-- [ ] Lane 10. Status hygiene probe. Save `/tmp/swarm-omp-live-settlements/worker-10/status.png`. Pass when git status is clean.
+- [x] Lane 1. Staleness check probe. Save `/tmp/swarm-omp-live-settlements/worker-1/staleness.png`. Pass when staleness reports ALL FRESH.
+- [x] Lane 2. Evidence durability probe. Save `/tmp/swarm-omp-live-settlements/worker-2/durability.png`. Pass when check-evidence passes.
+- [x] Lane 3. Verification skills audit probe. Save `/tmp/swarm-omp-live-settlements/worker-3/audit.png`. Pass when 10 skills pass.
+- [x] Lane 4. Package projection probe. Save `/tmp/swarm-omp-live-settlements/worker-4/projection.png`. Pass when projection check passes.
+- [x] Lane 5. Worktree confinement probe. Save `/tmp/swarm-omp-live-settlements/worker-5/confinement.png`. Pass when worktrees are confined.
+- [x] Lane 6. Evidence test suite probe. Save `/tmp/swarm-omp-live-settlements/worker-6/evidence-tests.png`. Pass when durability tests pass.
+- [x] Lane 7. Poteto test suite probe. Save `/tmp/swarm-omp-live-settlements/worker-7/poteto.png`. Pass when 104 tests pass.
+- [x] Lane 8. Python line ceiling probe. Save `/tmp/swarm-omp-live-settlements/worker-8/ceiling.png`. Pass when zero files exceed 1000 lines.
+- [x] Lane 9. Untracked file probe. Save `/tmp/swarm-omp-live-settlements/worker-9/untracked.png`. Pass when untracked files are expected.
+- [x] Lane 10. Status hygiene probe. Save `/tmp/swarm-omp-live-settlements/worker-10/status.png`. Pass when git status is clean.
 
 **Verify, perf.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Metric. Staleness check duration in seconds.
-- [ ] Probe. Time uv run python scripts/verify_portable.py check-staleness --host all.
-- [ ] Baseline. Record trunk duration of staleness check.
-- [ ] Rule. Head duration must not exceed trunk duration plus 2 seconds.
+- [x] Metric. Staleness check duration in seconds.
+- [x] Probe. Time uv run python scripts/verify_portable.py check-staleness --host all.
+- [x] Baseline. Record trunk duration of staleness check.
+- [x] Rule. Head duration must not exceed trunk duration plus 2 seconds.
 
 **Review gate.** The operator reviews before merge.
 
-- [ ] Copy lane screenshots into `/tmp/omp-live-settlements-review-gate.png`.
-- [ ] Record a 30 second video of the change and save as `/tmp/omp-live-settlements-review.mp4`.
-- [ ] Post the screenshot and video in chat for operator review.
+- [x] Copy lane screenshots into `/tmp/omp-live-settlements-review-gate.png`.
+- [x] Record a 30 second video of the change and save as `/tmp/omp-live-settlements-review.mp4`.
+- [x] Post the screenshot and video in chat for operator review.
 
 **Merge.**
 
-- [ ] Root clean verdict at head SHA.
-- [ ] Squash merge to parent branch.
+- [x] Root clean verdict at head SHA.
+- [x] Squash merge to parent branch.
 
 ## Update verification test tiers documentation and harmonize plugin synchronization lifecycle (verify-skills-docs)
 
