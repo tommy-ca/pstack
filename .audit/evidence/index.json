@@ -3,8 +3,8 @@
   "hosts": {
     "grok": {
       "receipt": ".audit/evidence/grok-receipt.json",
-      "run_id": "grok-1794255028-e60bf697",
-      "timestamp": "2026-11-09T20:10:34Z",
+      "run_id": "grok-1794260010-bed3bb88",
+      "timestamp": "2026-11-09T21:33:35Z",
       "overall_verdict": "UNTESTED",
       "planes": {
         "canonical": "UNTESTED",
@@ -14,8 +14,8 @@
       },
       "surface_revisions": {
         "canonical_pin": "c742dd61706fbacc1b95f1a20b7b988cf096ce6c",
-        "upstream_head": "6b0300214a09fd6029cfb7077043125758cd1fd2",
-        "spec_hash": "08c4169c3343b35a77a5da7cf53b326af275e512007289cde3131da137114092",
+        "upstream_head": "236e5481d05cbadc315b374a5de54971858c27bb",
+        "spec_hash": "6a40100eb2d2a576dd4e3a1619fa7b6767c3ee85a839c1ab0c756d1061ba8f6c",
         "skills_tree_hash": "afece48b4a0ee670ccb2af306c8afb75e9837fbfd84c62846cb356c11f34bb2b",
         "profile_hash": "f57cc1a10aac1aae75b7bea4ec30b76ae920c0815938292cc2ae36609ec46808",
         "package_descriptor_hash": "86246513da28b81e6a1da3de80692fd4b93c0b2aac71d6d898fc088822611b07",
@@ -24,13 +24,13 @@
         "package_driver_revision": "ebc73adc399f36ed7cfc0e8930efe4abc96250cc5886b6994bfa24d2bbc3b31e",
         "boundary_driver_revision": "ded4475d707124d6db00167347a2a7217255f3b55e689b647f716617e79a82eb",
         "upstream_freshness": "DRIFT",
-        "commits_ahead": 38
+        "commits_ahead": 40
       }
     },
     "codex": {
       "receipt": ".audit/evidence/codex-receipt.json",
-      "run_id": "codex-1794255034-a9412b70",
-      "timestamp": "2026-11-09T20:10:41Z",
+      "run_id": "codex-1794260015-113f7ce7",
+      "timestamp": "2026-11-09T21:33:42Z",
       "overall_verdict": "UNTESTED",
       "planes": {
         "canonical": "UNTESTED",
@@ -40,8 +40,8 @@
       },
       "surface_revisions": {
         "canonical_pin": "c742dd61706fbacc1b95f1a20b7b988cf096ce6c",
-        "upstream_head": "6b0300214a09fd6029cfb7077043125758cd1fd2",
-        "spec_hash": "08c4169c3343b35a77a5da7cf53b326af275e512007289cde3131da137114092",
+        "upstream_head": "236e5481d05cbadc315b374a5de54971858c27bb",
+        "spec_hash": "6a40100eb2d2a576dd4e3a1619fa7b6767c3ee85a839c1ab0c756d1061ba8f6c",
         "skills_tree_hash": "afece48b4a0ee670ccb2af306c8afb75e9837fbfd84c62846cb356c11f34bb2b",
         "profile_hash": "29213226c5c9f8a47be13fbb4a6c5dff242773c0182e2bb4af69c3cd1d01fd8e",
         "package_descriptor_hash": "86246513da28b81e6a1da3de80692fd4b93c0b2aac71d6d898fc088822611b07",
@@ -50,7 +50,7 @@
         "package_driver_revision": "ebc73adc399f36ed7cfc0e8930efe4abc96250cc5886b6994bfa24d2bbc3b31e",
         "boundary_driver_revision": "ded4475d707124d6db00167347a2a7217255f3b55e689b647f716617e79a82eb",
         "upstream_freshness": "DRIFT",
-        "commits_ahead": 38
+        "commits_ahead": 40
       }
     },
     "omp": {
@@ -67,7 +67,7 @@
       "surface_revisions": {
         "canonical_pin": "c742dd61706fbacc1b95f1a20b7b988cf096ce6c",
         "upstream_head": "6b0300214a09fd6029cfb7077043125758cd1fd2",
-        "spec_hash": "08c4169c3343b35a77a5da7cf53b326af275e512007289cde3131da137114092",
+        "spec_hash": "6a40100eb2d2a576dd4e3a1619fa7b6767c3ee85a839c1ab0c756d1061ba8f6c",
         "skills_tree_hash": "afece48b4a0ee670ccb2af306c8afb75e9837fbfd84c62846cb356c11f34bb2b",
         "profile_hash": "42587dd6c3939ad4a7140e32952d8a37d39224fe5e0c68c8a55bdf2e58588207",
         "package_descriptor_hash": "86246513da28b81e6a1da3de80692fd4b93c0b2aac71d6d898fc088822611b07",
@@ -81,8 +81,8 @@
     },
     "opencode": {
       "receipt": ".audit/evidence/opencode-receipt.json",
-      "run_id": "opencode-1794255047-b4e46335",
-      "timestamp": "2026-11-09T20:10:52Z",
+      "run_id": "opencode-1794260027-6c9cf996",
+      "timestamp": "2026-11-09T21:33:52Z",
       "overall_verdict": "UNTESTED",
       "planes": {
         "canonical": "UNTESTED",
@@ -92,8 +92,8 @@
       },
       "surface_revisions": {
         "canonical_pin": "c742dd61706fbacc1b95f1a20b7b988cf096ce6c",
-        "upstream_head": "6b0300214a09fd6029cfb7077043125758cd1fd2",
-        "spec_hash": "08c4169c3343b35a77a5da7cf53b326af275e512007289cde3131da137114092",
+        "upstream_head": "236e5481d05cbadc315b374a5de54971858c27bb",
+        "spec_hash": "6a40100eb2d2a576dd4e3a1619fa7b6767c3ee85a839c1ab0c756d1061ba8f6c",
         "skills_tree_hash": "afece48b4a0ee670ccb2af306c8afb75e9837fbfd84c62846cb356c11f34bb2b",
         "profile_hash": "12fa3f0e01d564c0f35cdb400d89b5dc2f3bfa02558b1994d5ff63fd6165f832",
         "package_descriptor_hash": "86246513da28b81e6a1da3de80692fd4b93c0b2aac71d6d898fc088822611b07",
@@ -102,13 +102,13 @@
         "package_driver_revision": "ebc73adc399f36ed7cfc0e8930efe4abc96250cc5886b6994bfa24d2bbc3b31e",
         "boundary_driver_revision": "ded4475d707124d6db00167347a2a7217255f3b55e689b647f716617e79a82eb",
         "upstream_freshness": "DRIFT",
-        "commits_ahead": 38
+        "commits_ahead": 40
       }
     },
     "antigravity": {
       "receipt": ".audit/evidence/antigravity-receipt.json",
-      "run_id": "antigravity-1794255052-776c7c4f",
-      "timestamp": "2026-11-09T20:10:58Z",
+      "run_id": "antigravity-1794260032-71697402",
+      "timestamp": "2026-11-09T21:33:58Z",
       "overall_verdict": "UNTESTED",
       "planes": {
         "canonical": "UNTESTED",
@@ -118,8 +118,8 @@
       },
       "surface_revisions": {
         "canonical_pin": "c742dd61706fbacc1b95f1a20b7b988cf096ce6c",
-        "upstream_head": "6b0300214a09fd6029cfb7077043125758cd1fd2",
-        "spec_hash": "08c4169c3343b35a77a5da7cf53b326af275e512007289cde3131da137114092",
+        "upstream_head": "236e5481d05cbadc315b374a5de54971858c27bb",
+        "spec_hash": "6a40100eb2d2a576dd4e3a1619fa7b6767c3ee85a839c1ab0c756d1061ba8f6c",
         "skills_tree_hash": "afece48b4a0ee670ccb2af306c8afb75e9837fbfd84c62846cb356c11f34bb2b",
         "profile_hash": "c760cbea72a76b9fd769560621ba81160fa9aa50f383f220502fa47a1963bdd2",
         "package_descriptor_hash": "86246513da28b81e6a1da3de80692fd4b93c0b2aac71d6d898fc088822611b07",
@@ -128,7 +128,7 @@
         "package_driver_revision": "ebc73adc399f36ed7cfc0e8930efe4abc96250cc5886b6994bfa24d2bbc3b31e",
         "boundary_driver_revision": "ded4475d707124d6db00167347a2a7217255f3b55e689b647f716617e79a82eb",
         "upstream_freshness": "DRIFT",
-        "commits_ahead": 38
+        "commits_ahead": 40
       }
     }
   }

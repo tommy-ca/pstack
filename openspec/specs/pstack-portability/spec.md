@@ -9,17 +9,7 @@ Official `cursor/plugins/pstack` at the immutable `UPSTREAM` pin is the canonica
 ## Requirements
 
 ### Requirement: Canonical intent is upstream-owned
-
-Feature: pstack-portability
-
-Principles, skills, router behavior, playbook intent, roles, ordering, and verification rules MUST derive from the pinned official pstack tree. A host adapter MUST NOT become an intermediate source of truth for another host.
-
-A port MUST track two independent states:
-
-- `pin_conformance`: whether the port covers the immutable canonical pin.
-- `upstream_freshness`: whether newer canonical changes remain unclassified.
-
-A port MAY pass pin conformance while reporting upstream drift.
+Principles, skills, router behavior, playbook intent, roles, ordering, and verification rules MUST derive from the pinned official pstack tree. A host adapter MUST NOT become an intermediate source of truth for another host. A port MUST track two independent states: `pin_conformance` (covering the canonical pin) and `upstream_freshness` (unclassified newer canonical changes). A port MAY pass pin conformance while reporting upstream drift.
 
 #### Scenario: reference port is not canonical
 
@@ -30,34 +20,7 @@ A port MAY pass pin conformance while reporting upstream drift.
 - **AND** Codex, Claude Code, or future adapters do not normatively derive from the Grok mapping
 
 ### Requirement: Portable core stays small
-
-The portable core MUST consist of canonical principles, skills, playbook intent, router semantics, roles, verification contracts, and the following host-bound semantic capabilities:
-
-```text
-agent.spawn
-agent.join
-agent.message
-agent.cancel
-agent.resume
-
-workspace.shared
-workspace.isolated
-workspace.readonly
-
-human.ask
-human.gate
-plan.update
-
-schedule
-monitor
-session.persist
-session.resume
-
-evidence.capture
-verify
-```
-
-The portability layer MUST NOT introduce a generic scheduler, task database, session manager, workflow DSL, provider gateway, or orchestration runtime when the host already owns those concerns.
+The portable core MUST consist of canonical principles, skills, playbook intent, router semantics, roles, verification contracts, and declared host-bound semantic capabilities (agent lifecycle, workspace isolation, human gates, schedule/monitor, session persistence, and verification). The portability layer MUST NOT introduce a generic scheduler, task database, session manager, workflow DSL, provider gateway, or orchestration runtime when the host owns those concerns.
 
 #### Scenario: new harness
 
@@ -88,12 +51,7 @@ A prompt-only "do not write" posture is advisory and MUST NOT be reported as har
 - **AND** the adapter does not claim semantic equivalence silently
 
 ### Requirement: Harness tool mappings are structured and schema-validated
-
-Each harness adapter profile MUST declare a typed `tool_mappings` object conforming to `schemas/tool-mapping.schema.json`.
-
-The tool mapping defines explicit host primitives for file operations (`file_read`, `file_edit`, `file_write`), command execution (`shell_run`), network operations (`web_fetch`, `web_search`), subagent operations (`agent_spawn`, `agent_fanout`, `agent_join`, `agent_message`), background tasks (`task_background`), tool protocols (`tool_mcp`), plan updates (`plan_update`), and human questions (`human_ask`).
-
-Upstream pstack skills MUST NOT be modified to hardcode host-specific execution commands. Primitives are resolved dynamically from the active harness profile.
+Each harness adapter profile MUST declare a typed `tool_mappings` object conforming to `schemas/tool-mapping.schema.json`. The mapping defines host primitives for file operations, command execution, network access, subagent lifecycle, background tasks, tool protocols, plan updates, and human questions. Upstream pstack skills MUST NOT hardcode host-specific execution commands; primitives are resolved dynamically from the active harness profile.
 
 #### Scenario: tool mapping validation
 - **GIVEN** a harness profile in `profiles/`
@@ -166,16 +124,7 @@ Conceptual durable state includes work units, owners, claims, frontier, verifica
 - **AND** it does not add a parallel pstack database by default
 
 ### Requirement: Swarm is a composition, not a harness primitive
-
-The `swarm` skill MUST preserve this semantic shape:
-
-```text
-frame -> fan-out -> join -> evidence validation -> aggregate -> report
-```
-
-Workers MUST receive independent slices or explicitly declared race arms. Each brief MUST name goal, scope, verification method, and output contract. Missing or invalid worker evidence becomes a dropout or gap; a gap does not count as PASS.
-
-Required host capabilities are `agent.spawn` and `agent.join`. Workspace isolation is required when workers write overlapping-risk state.
+The `swarm` skill MUST preserve this semantic shape: `frame -> fan-out -> join -> evidence validation -> aggregate -> report`. Workers MUST receive independent slices or explicitly declared race arms. Each brief MUST name goal, scope, verification method, and output contract. Missing or invalid worker evidence becomes a dropout or gap; a gap does not count as PASS. Required host capabilities are `agent.spawn` and `agent.join`.
 
 #### Scenario: host cannot parallelize
 
@@ -216,23 +165,7 @@ Model diversity is a useful adapter choice, not a portable semantic requirement.
 - **AND** the lead reviewer synthesizes findings into act on, consider, noted, or dismissed
 
 ### Requirement: Lever verification is the preferred proof pattern
-
-The combination of **Build the Lever**, **Prove It Works**, and `create-verification-skill` defines the portable verification pattern. The port MUST prefer a deterministic lever over hand repetition.
-
-For non-trivial work, the adapter MUST prefer the smallest rerunnable script, codemod, generator, skill, or driver that does or proves the work. When a project lacks a proof surface, the verification skill SHOULD expose:
-
-```text
-Launch
-Doctor
-Drive
-Proof Bar
-Evidence
-Cleanup
-```
-
-with a maintained feature map.
-
-A deterministic lever SHOULD be preferred over subagent fan-out when it can cover the work in one reliable pass.
+The combination of **Build the Lever**, **Prove It Works**, and `create-verification-skill` defines the portable verification pattern. The port MUST prefer a deterministic lever over hand repetition. For non-trivial work, the adapter MUST prefer the smallest rerunnable script, codemod, generator, skill, or driver that proves the work with standard sections (Launch, Doctor, Drive, Proof Bar, Evidence, Cleanup). A deterministic lever SHOULD be preferred over subagent fan-out.
 
 #### Scenario: completion claim
 
@@ -261,7 +194,7 @@ A mapping document alone is not support.
 - **AND** documentation does not call it supported
 
 ### Requirement: Verification has three planes
-The port MUST separate three **conceptual** conformance concerns: canonical pin/inventory/drift, adapter/native projection, and runtime observed behavior. For the existing serialized verification receipt, these concerns MUST map to the **four required and separately verdict-bearing** `canonical`, `adapter`, `package`, `runtime` planes in `schemas/receipt.schema.json`. The `package` plane audits host-native manifest generation, install/link/discovery and lifecycle independently of adapter binding validation and runtime child execution. A positive result in one serialized plane MUST NOT substitute for an absent mandatory result in another. The distinction MUST be documented in the verifier without changing the existing receipt schema or creating a fifth plane.
+The port MUST separate three conformance concerns: canonical pin/inventory/drift, adapter/native projection, and runtime observed behavior. In serialized receipts, these concerns MUST map to the four required verdict-bearing planes (`canonical`, `adapter`, `package`, `runtime`) in `schemas/receipt.schema.json`. The package plane audits manifest generation, install, and discovery. A positive result in one plane MUST NOT substitute for an absent mandatory result in another.
 
 #### Scenario: three plane separation
 - **GIVEN** canonical, adapter, and runtime verification checks
@@ -277,17 +210,7 @@ The port MUST separate three **conceptual** conformance concerns: canonical pin/
 - **AND** the output validates against the existing four-key receipt schema
 
 ### Requirement: Port architecture follows pstack principles
-
-Portability changes MUST apply these design constraints:
-
-- **Laziness Protocol**: smallest adapter and schema that preserve behavior.
-- **Model the Domain**: explicit capability, binding, evidence, adaptation, and gap types.
-- **Boundary Discipline**: host syntax stops at the adapter.
-- **Build the Lever**: automate canonical indexing, drift classification, and conformance.
-- **Prove It Works**: runtime claims require runtime proof.
-- **Separate Before Serializing Shared State**: isolate writers before adding coordination.
-- **Encode Lessons in Structure**: repeated port rules become checks or schemas.
-- SOLID, KISS, DRY, and YAGNI constrain implementation.
+Portability changes MUST apply key design constraints: Laziness Protocol (smallest adapter that proves compatibility), Subtract Before You Add (delete dead abstractions before adding features), Build the Lever (codify checks in scripts), Boundary Discipline (keep host specifics in adapter profiles), and Prove It Works (require evidence receipts for claims). Adapters MUST NOT introduce speculative abstractions or wrapper layers that duplicate host capabilities.
 
 #### Scenario: boundary enforcement
 
@@ -314,7 +237,7 @@ The pilot reconciliation MUST:
 - **AND** secondary harnesses build directly on the reconciled contract
 
 ### Requirement: Canonical semantic decomposition without a second engine
-The port MUST model canonical upstream principles, skills, playbooks, roles and route behavior as distinct upstream-owned artifacts. The portable execution vocabulary MUST remain the existing 17 `agent.*`, `workspace.*`, `human.*`, `plan.update`, `schedule`, `monitor`, `session.*`, `evidence.capture` and `verify` capabilities until a separately accepted portability contract change proves another atomic postcondition is required. Swarm, Arena, Interrogate, Orchestrate, WorkPool, `model.role`, `agent.fan_out` and RPC message types MUST NOT be added as portable capability identifiers merely because a harness exposes their names. Recomposition MUST use canonical Markdown plus existing capability postconditions.
+Playbook intent, review postures, and role definitions MUST resolve to canonical PStack behaviors rather than introducing an alternate execution engine. Adapters MAY adapt host-native dispatch conventions but MUST NOT alter canonical role contracts, prompt invariants, or verification criteria. Composite operations such as Swarm, Arena, and Interrogate MUST compose existing portable primitives rather than requiring bespoke runtime primitives.
 
 #### Scenario: port to a new harness that has WorkPool
 - **GIVEN** a host exposes a native worker pool and pstack needs to run Arena
@@ -350,7 +273,7 @@ Each worker/verifier spawned by a compositional pstack playbook MUST receive a b
 - **AND** passing static profile validation does not satisfy the workspace-isolation proof
 
 ### Requirement: Native host owns long-horizon durable state
-A pstack adapter MUST use its host's existing session, task and approval facilities to implement the portable `session.*`, `agent.*`, `plan.update` and `monitor` postconditions when available. If the host cannot meet `schedule` or a durable nested-coordinator requirement, the adapter MUST declare `gap` or `adapted` rather than create a competing state store, scheduler, session manager or job database. A model-backed child-handle resume MUST NOT be inferred from a successful parent session resume.
+A pstack adapter MUST use host session, task, and approval facilities to implement `session.*`, `agent.*`, `plan.update`, and `monitor` postconditions when available. If the host cannot meet `schedule` or durable nested coordination, the adapter MUST declare `gap` or `adapted` rather than create a competing state store, scheduler, session manager, or job database. Child-handle resume MUST NOT be inferred from parent session resume.
 
 #### Scenario: canonical orchestrate nests track coordinators
 - **GIVEN** the pinned canonical Orchestrate playbook has coordinator, track sub-coordinator and worker ownership
@@ -359,7 +282,7 @@ A pstack adapter MUST use its host's existing session, task and approval facilit
 - **AND** the host's native durable state remains authoritative
 
 ### Requirement: Independent candidate and reviewer semantics survive composition
-Swarm MUST fan out work under a frozen coverage or race rule and join completed child results before synthesis. Arena MUST freeze its scoring rubric before generation, isolate candidate artifacts, cross-judge only completed candidates, choose/graft a coherent base and run post-graft verification. Interrogate MUST use independent contexts and an identical review pack, preserve disagreement, produce lead dispositions and MUST NOT auto-apply fixes. A reused worker context MUST NOT be passed off as a fresh independent reviewer.
+Swarm MUST fan out work under a frozen coverage or race rule and join completed child results before synthesis. Arena MUST freeze its scoring rubric before generation, isolate candidate artifacts, cross-judge only completed candidates, choose/graft a base, and verify post-graft. Interrogate MUST use independent contexts with identical review packs, preserve disagreement, and produce lead dispositions without auto-applying fixes. Context reuse is prohibited for reviewers.
 
 #### Scenario: WorkPool repeats reviewer context
 - **GIVEN** OMP WorkPool reuses a warmed reviewer after the first Interrogate arm
@@ -374,9 +297,7 @@ Swarm MUST fan out work under a frozen coverage or race rule and join completed 
 - **AND** incomplete coverage cannot become a full PASS
 
 ### Requirement: Verification evidence shapes remain separate and existing
-The port MUST reuse `binding.schema.json` for capability classification, `evidence.schema.json` for evidence ledger entries, and `receipt.schema.json` for the four-plane verification receipt without inventing new incompatible enums. The receipt scenario `evidence_level` MUST be `static | offline | observed_live | legacy`. The evidence-ledger `kind` field MUST retain its own `static | runtime | external` semantics; its verdict enum is narrower than the receipt verdict enum. A proposed cross-schema mapping MUST be explicit and schema-validated rather than silently collapsing unlike types. Source-documented/static/offline work MUST NOT prove an `observed_live` runtime claim. Revision freshness and evidence strength MUST be evaluated separately from nominal PASS/FAIL verdict.
-
-Specifically for standalone Pi, a version/package listing and a `pi -p --no-session --no-tools` preflight MUST NEVER alone cause `agent.spawn`, `agent.join`, authorization or sandbox runtime PASS. The existing Pi verifier MUST remain BLOCKED until effect-bound native child and OS policy receipts exist. A cleanup command MUST NOT claim PASS for untracked actors, artifacts or worktrees. The 53 bounded invalid input mutations MUST be called source-contract verification, not native formal model checking.
+The port MUST reuse `binding.schema.json` for classification, `evidence.schema.json` for ledger entries, and `receipt.schema.json` for four-plane receipts. Receipt evidence levels MUST be `static | offline | observed_live | legacy`. The evidence ledger `kind` MUST retain `static | runtime | external`. Static work MUST NOT prove `observed_live` runtime claims. For candidate Pi, preflights without tools MUST NOT cause runtime PASS; verifier remains BLOCKED until native receipts exist.
 
 #### Scenario: existing ledger and receipt distinguish untested execution
 - **GIVEN** no OMP model-backed worker could run but offline profile checks passed
@@ -397,9 +318,7 @@ Specifically for standalone Pi, a version/package listing and a `pi -p --no-sess
 - **AND** a lack of detected side effects MUST NOT be described as proof of cleanup
 
 ### Requirement: Portable package projection preserves roles and lifecycle boundaries
-A portable plugin descriptor MUST remain the single package-source authority. Each host projection MUST produce actual host-recognized skill and role artifacts required by the pinned playbooks, and prove discovery by host-native source attribution rather than file existence or generic `plugin list`. Package operations MUST preserve unmanaged user/project files and host settings; when plugin link/install operations target user-scoped roots, native tests MUST first prove the effective root is disposable.
-
-For standalone Pi, the PStack package SHOULD be a thin, opt-in Pi-native **skills resource projection** (no bundled executable extensions); the existing project-local `.pi/settings.json` and reference `pi-essential-extensions.json` MUST NOT be treated as an installed package. Pi package `pi.skills` resource discovery MUST be checked separately from external `pi-subagents` role directory discovery. Package absence, duplicate legacy `@zenspc/pi-pstack` skills or unresolved agent definitions remain PACKAGE GAP, never runtime proof or justification for a new generic PStack dispatcher.
+A portable plugin descriptor MUST remain the single package-source authority. Each host projection MUST produce host-recognized skill and role artifacts required by pinned playbooks, proving discovery by native source attribution. Package operations MUST preserve unmanaged user files and host settings. For candidate Pi, package projection is a thin opt-in skills resource projection without bundled executable extensions; package absence remains PACKAGE GAP.
 
 #### Scenario: OMP install omits agents
 - **GIVEN** OMP package projection includes skills and a generated pseudo-manifest but no installed `agents/*.md`
@@ -420,7 +339,7 @@ For standalone Pi, the PStack package SHOULD be a thin, opt-in Pi-native **skill
 - **AND** no untrusted package activation may be claimed as PStack security enforcement
 
 ### Requirement: Parity reports have independent canonical and runtime dimensions
-A conformance report MUST distinguish: (1) coverage against the immutable `UPSTREAM` pin; (2) drift against newly observed upstream head; (3) per-host implementation/enforcement strength; (4) evidence level and current exact-revision native outcome; and (5) per-playbook semantic result `preserve | adapt | exclude | gap`. The test suite MUST include positive and negative fixtures for these dimensions. A missing host CLI or model provider MUST result in BLOCKED/UNTESTED where allowed, not invented PASS.
+A conformance report MUST distinguish: (1) coverage against the immutable `UPSTREAM` pin; (2) drift against newly observed upstream head; (3) per-host implementation strength; (4) evidence level and exact-revision native outcome; and (5) per-playbook semantic result (`preserve | adapt | exclude | gap`). The test suite MUST include positive and negative fixtures. A missing host CLI or provider MUST result in BLOCKED/UNTESTED where allowed, never an invented PASS.
 
 #### Scenario: green offline tests with unavailable native runner
 - **GIVEN** all portable Python contract tests pass and an OMP model provider is unavailable
