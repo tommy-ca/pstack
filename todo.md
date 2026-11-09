@@ -638,22 +638,8 @@
 - [x] Unit 3 (Issue #1293): [Gate, Evidence & Verification][P0] Refresh 6-harness static evidence with new spec hash, qualify triple OpenSpec validation, sync test tiers documentation, and close Epic 1290
 *(Epic #1290 CLOSED)*
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+## Epic #1297: [Epic][Thermo & OpenSpec] Reconcile 1,000-Line Ceiling and Strict Validation in Living Portability Specification
+- [x] Unit 1 (Issue #1298): [OpenSpec & Proposal][P0] Propose OpenSpec change 2026-11-09-pstack-portability-spec-hygiene (PR #1301)
+- [x] Unit 2 (Issue #1299): [Spec & Refactor][P0] Apply spec hygiene to openspec/specs/pstack-portability/spec.md, compacting 11 requirements <= 500 chars and total lines <= 900 lines (PR #1302)
+- [x] Unit 3 (Issue #1300): [Gate, Evidence & Archive][P0] Refresh static evidence, archive change, qualify 6-harness matrix, and close Epic 1297 (PR #1303)
+*(Epic #1297 CLOSED)*
