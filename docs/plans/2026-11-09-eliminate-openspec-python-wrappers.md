@@ -125,57 +125,57 @@ Each live lane runs in its own worktree child at the PR head. Drive the real sur
 
 **Files.**
 
-- [ ] Delete `tests/test_openspec_change.py`.
-- [ ] Create `tests/test_openspec_direct.py`.
-- [ ] Edit `tests/test_verify_portable.py`.
-- [ ] Edit `tests/test_select_checks.py`.
+- [x] Delete `tests/test_openspec_change.py`.
+- [x] Create `tests/test_openspec_direct.py`.
+- [x] Edit `tests/test_verify_portable.py`.
+- [x] Edit `tests/test_select_checks.py`.
 
 **Build.**
 
-- [ ] Replace wrapper test file with direct openspec test suite.
-- [ ] Add assertions proving absence of openspec python wrappers.
-- [ ] Add assertions proving direct bunx and mise execution contracts.
-- [ ] Remove wrapper dependencies from verify_portable and select_checks tests.
+- [x] Replace wrapper test file with direct openspec test suite.
+- [x] Add assertions proving absence of openspec python wrappers.
+- [x] Add assertions proving direct bunx and mise execution contracts.
+- [x] Remove wrapper dependencies from verify_portable and select_checks tests.
 
 **You see.**
 
-- [ ] Green test suite in `tests/test_openspec_direct.py`.
-- [ ] Clean test execution across full offline test suite.
+- [x] Green test suite in `tests/test_openspec_direct.py`.
+- [x] Clean test execution across full offline test suite.
 
 **Verify, unit.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Run `uv run pytest tests/test_openspec_direct.py tests/test_verify_portable.py tests/test_select_checks.py`.
+- [x] Run `uv run pytest tests/test_openspec_direct.py tests/test_verify_portable.py tests/test_select_checks.py`.
 
 **Verify, live.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked. Ten lanes on `gemini-pro` at the PR head, per the boot recipe.
 
-- [ ] Lane 1. Direct openspec test probe. Save `/tmp/swarm-direct-openspec-tests/worker-1/direct-tests.png`. Pass when test_openspec_direct passes.
-- [ ] Lane 2. Select checks test probe. Save `/tmp/swarm-direct-openspec-tests/worker-2/select-tests.png`. Pass when test_select_checks passes.
-- [ ] Lane 3. Verification skills audit probe. Save `/tmp/swarm-direct-openspec-tests/worker-3/audit.png`. Pass when 10 skills pass.
-- [ ] Lane 4. Package projection probe. Save `/tmp/swarm-direct-openspec-tests/worker-4/projection.png`. Pass when projection check passes.
-- [ ] Lane 5. Worktree confinement probe. Save `/tmp/swarm-direct-openspec-tests/worker-5/confinement.png`. Pass when worktrees are confined.
-- [ ] Lane 6. Evidence staleness probe. Save `/tmp/swarm-direct-openspec-tests/worker-6/staleness.png`. Pass when check-staleness reports all fresh.
-- [ ] Lane 7. Poteto test suite probe. Save `/tmp/swarm-direct-openspec-tests/worker-7/poteto.png`. Pass when 104 tests pass.
-- [ ] Lane 8. Python line ceiling probe. Save `/tmp/swarm-direct-openspec-tests/worker-8/ceiling.png`. Pass when zero files exceed 1000 lines.
-- [ ] Lane 9. Untracked file probe. Save `/tmp/swarm-direct-openspec-tests/worker-9/untracked.png`. Pass when untracked files are expected.
-- [ ] Lane 10. Status hygiene probe. Save `/tmp/swarm-direct-openspec-tests/worker-10/status.png`. Pass when git status is clean.
+- [x] Lane 1. Direct openspec test probe. Save `/tmp/swarm-direct-openspec-tests/worker-1/direct-tests.png`. Pass when test_openspec_direct passes.
+- [x] Lane 2. Select checks test probe. Save `/tmp/swarm-direct-openspec-tests/worker-2/select-tests.png`. Pass when test_select_checks passes.
+- [x] Lane 3. Verification skills audit probe. Save `/tmp/swarm-direct-openspec-tests/worker-3/audit.png`. Pass when 10 skills pass.
+- [x] Lane 4. Package projection probe. Save `/tmp/swarm-direct-openspec-tests/worker-4/projection.png`. Pass when projection check passes.
+- [x] Lane 5. Worktree confinement probe. Save `/tmp/swarm-direct-openspec-tests/worker-5/confinement.png`. Pass when worktrees are confined.
+- [x] Lane 6. Evidence staleness probe. Save `/tmp/swarm-direct-openspec-tests/worker-6/staleness.png`. Pass when check-staleness reports all fresh.
+- [x] Lane 7. Poteto test suite probe. Save `/tmp/swarm-direct-openspec-tests/worker-7/poteto.png`. Pass when 104 tests pass.
+- [x] Lane 8. Python line ceiling probe. Save `/tmp/swarm-direct-openspec-tests/worker-8/ceiling.png`. Pass when zero files exceed 1000 lines.
+- [x] Lane 9. Untracked file probe. Save `/tmp/swarm-direct-openspec-tests/worker-9/untracked.png`. Pass when untracked files are expected.
+- [x] Lane 10. Status hygiene probe. Save `/tmp/swarm-direct-openspec-tests/worker-10/status.png`. Pass when git status is clean.
 
 **Verify, perf.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Metric. Direct test suite duration in seconds.
-- [ ] Probe. Time uv run pytest tests/test_openspec_direct.py.
-- [ ] Baseline. Record trunk duration of direct openspec test suite.
-- [ ] Rule. Head duration must not exceed trunk duration plus 2 seconds.
+- [x] Metric. Direct test suite duration in seconds.
+- [x] Probe. Time uv run pytest tests/test_openspec_direct.py.
+- [x] Baseline. Record trunk duration of direct openspec test suite.
+- [x] Rule. Head duration must not exceed trunk duration plus 2 seconds.
 
 **Review gate.** The operator reviews before merge.
 
-- [ ] Copy lane screenshots into `/tmp/direct-openspec-tests-review-gate.png`.
-- [ ] Record a 30 second video of the change and save as `/tmp/direct-openspec-tests-review.mp4`.
-- [ ] Post the screenshot and video in chat for operator review.
+- [x] Copy lane screenshots into `/tmp/direct-openspec-tests-review-gate.png`.
+- [x] Record a 30 second video of the change and save as `/tmp/direct-openspec-tests-review.mp4`.
+- [x] Post the screenshot and video in chat for operator review.
 
 **Merge.**
 
-- [ ] Root clean verdict at head SHA.
-- [ ] Squash merge to parent branch.
+- [x] Root clean verdict at head SHA.
+- [x] Squash merge to parent branch.
 
 ## Update verification documentation, mise tasks, and intent-driven flow guidance with direct bunx/mise execution (openspec-direct-docs)
 

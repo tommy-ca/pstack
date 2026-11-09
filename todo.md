@@ -594,7 +594,7 @@
 
 ## Epic #1227: [Epic][OpenSpec & Tooling] Eliminate OpenSpec Python Wrappers, Direct Bunx Execution, and Intent-Driven Flow Reconciliation
 - [x] Unit 1 (Issue #1228): [Runtime & Tooling][P0] Eliminate scripts/openspec_change.py and migrate portable verifier doctor to direct bunx execution
-- [ ] Unit 2 (Issue #1229): [Tooling & Tests][P0] Harmonize test suites, select-checks mappings, and toolchain tests with direct bunx/mise execution
+- [x] Unit 2 (Issue #1229): [Tooling & Tests][P0] Harmonize test suites, select-checks mappings, and toolchain tests with direct bunx/mise execution
 - [ ] Unit 3 (Issue #1230): [Docs & Verification][P0] Update verification documentation, mise tasks, and intent-driven flow guidance with direct bunx/mise execution
 - [ ] Unit 4 (Issue #1231): [Gate & Close][P0] Qualify 6-harness verification matrix, reconcile issue graph, and close Epic 1227
 
