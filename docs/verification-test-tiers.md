@@ -389,7 +389,7 @@ It executes `bunx --yes @fission-ai/openspec@1.16.1 validate --all && bunx --yes
 The command `mise run validate:openspec:all` validates all living specifications under `openspec/specs/`.
 The command `mise run validate:openspec:changes` strictly validates active change proposals.
 The command `mise run validate:openspec:archived` validates task completion across all archived changes per the `archive-chain-integrity` specification.
-The command `mise run verify:openspec:audit` audits OpenSpec status, active changes, archived changes, and living specifications via the verification scaffolder.
+The command `mise run verify:openspec:audit` audits OpenSpec status and active changes directly via `bunx --yes @fission-ai/openspec@1.16.1 status --all`.
 Redundant duplicate tasks and aliases have been eliminated to keep tasks concise and deduplicated (`principle-subtract-before-you-add`).
 
 ### Ten-skill verification driver matrix and orchestrator
