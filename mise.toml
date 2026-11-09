@@ -68,8 +68,8 @@ description = "Execute launch and drive across all 10 verification drivers"
 run = "uv run python scripts/scaffold_verification_skill.py --drive-all"
 
 [tasks."verify:openspec:audit"]
-description = "Audit OpenSpec status and changes via verification scaffolder"
-run = "uv run python scripts/scaffold_verification_skill.py --check-openspec"
+description = "Audit OpenSpec status and changes via direct bunx execution"
+run = "bunx --yes @fission-ai/openspec@1.16.1 status --all"
 
 [tasks."openspec:status"]
 description = "Inspect active intent-driven OpenSpec planning flow status"

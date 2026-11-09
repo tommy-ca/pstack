@@ -41,7 +41,7 @@ def test_mise_toml_configuration() -> None:
     assert "verify:drivers" in tasks, "mise.toml must declare verify:drivers task"
     assert tasks["verify:drivers"]["run"] == "uv run python scripts/scaffold_verification_skill.py --drive-all"
     assert "verify:openspec:audit" in tasks, "mise.toml must declare verify:openspec:audit task"
-    assert tasks["verify:openspec:audit"]["run"] == "uv run python scripts/scaffold_verification_skill.py --check-openspec"
+    assert tasks["verify:openspec:audit"]["run"] == "bunx --yes @fission-ai/openspec@1.16.1 status --all"
     assert "openspec:status" in tasks, "mise.toml must declare openspec:status task"
     assert tasks["openspec:status"]["run"] == "bunx --yes @fission-ai/openspec@1.16.1 status --all"
     assert "openspec:list" in tasks, "mise.toml must declare openspec:list task"

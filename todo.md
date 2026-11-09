@@ -626,9 +626,11 @@
 - [x] Unit 3 (Issue #1275): [Docs & Gate][P0] Qualify 6-harness verification matrix, sync test tiers documentation, and close Epic 1272
 *(Epic #1272 CLOSED)*
 
-
-
-
+## Epic #1281: [Epic][Architecture & OpenSpec] Eliminate Scaffold OpenSpec Wrapper, Unify Direct Bunx Execution, and Truthfully Annotate Archived Task Outcomes
+- [x] Unit 1 (Issue #1282): [OpenSpec & Archive][P0] Truthfully annotate historical PR resolution and follow-up outcomes on all 77 reconciled tasks in the 3 archived changes
+- [x] Unit 2 (Issue #1283): [Architecture & Scaffolder][P0] Remove redundant audit_openspec_status and --check-openspec from scripts/scaffold_verification_skill.py
+- [x] Unit 3 (Issue #1284): [Mise & Gate][P0] Direct verify:openspec:audit in mise.toml to direct bunx execution, tighten tests, sync docs, and close Epic 1281
+*(Epic #1281 CLOSED)*
 
 
 

@@ -22,6 +22,8 @@ def test_no_openspec_python_wrappers_in_scripts() -> None:
         assert "class ChangeResolution" not in text
         assert "def _active_openspec_changes" not in text
         assert "def resolve_openspec_change" not in text
+        assert "audit_openspec_status" not in text
+        assert "--check-openspec" not in text
 
 
 def test_active_change_spec_deltas_align_with_base_specs() -> None:
