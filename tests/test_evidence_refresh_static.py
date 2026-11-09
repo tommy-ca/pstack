@@ -66,7 +66,6 @@ def test_refresh_static_is_partial_and_never_rounds_a_failure_up(
         )
         return False
 
-    monkeypatch.setattr(module, "resolve_openspec_change", lambda change: ("none", None, []))
     monkeypatch.setattr(
         sys,
         "argv",
@@ -148,7 +147,6 @@ def test_refresh_static_refuses_when_prior_live_rows_cannot_be_reobserved(
             )
         return True
 
-    monkeypatch.setattr(module, "resolve_openspec_change", lambda change: ("none", None, []))
     monkeypatch.setattr(
         sys,
         "argv",
@@ -190,7 +188,6 @@ def test_refresh_static_host_all_skips_live_holding_hosts_and_exits_zero(
             )
         return True
 
-    monkeypatch.setattr(module, "resolve_openspec_change", lambda change: ("none", None, []))
     monkeypatch.setattr(module, "get_declared_hosts", lambda root=None: ["grok", "omp"])
     monkeypatch.setattr(
         sys,
@@ -260,7 +257,6 @@ def test_refresh_static_refusal_names_host_appropriate_remedy(
             )
         return True
 
-    monkeypatch.setattr(module, "resolve_openspec_change", lambda change: ("none", None, []))
     monkeypatch.setattr(
         sys,
         "argv",
