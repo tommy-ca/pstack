@@ -307,6 +307,10 @@ export function checkPlan(file) {
 }
 
 const files = process.argv.slice(2);
+if (files.includes("--help") || files.includes("-h")) {
+	console.log("Usage: bun check-plan.mjs <plan.md> [plan2.md ...]");
+	process.exit(0);
+}
 if (files.length === 0) {
 	console.error("Usage: bun check-plan.mjs <plan.md> [plan2.md ...]");
 	process.exit(2);

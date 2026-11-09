@@ -9,7 +9,7 @@ Define machine-readable plan section identifiers and the recursively validated d
 
 Feature: pstack-recursive-plan-validation
 
-Every PR/task section between `## Program checklist` and `## Close the program` MUST end its H2 title with a unique identifier in parentheses, for example `## Harden the watcher (#watcher-errors)`. The identifier MUST start with a letter, digit, or `#` and continue with only letters, digits, `_`, `.`, `/`, `#`, or `-`; the exact identifier `None.` is reserved for the no-dependency sentinel and MUST NOT be used as a section identifier. Its `**Depends on.**` line MUST contain exactly `None.` or a comma-separated list of identifiers from those section titles. `check-plan.mjs` MUST resolve every reference, reject duplicate identifiers, reject unknown identifiers, and iteratively traverse dependencies to reject cycles. Independent roots and arbitrarily deep acyclic chains MUST remain valid.
+Every PR section between `## Program checklist` and `## Close the program` MUST end its title with a unique identifier in parentheses (`[a-zA-Z0-9_./#-]+`). The identifier `None.` is reserved as the no-dependency sentinel. Its `**Depends on.**` line MUST contain `None.` or comma-separated identifiers. `check-plan.mjs` MUST resolve references, reject duplicate identifiers, reject unknown identifiers, and reject cycles.
 
 #### Scenario: independent and nested tasks validate
 
