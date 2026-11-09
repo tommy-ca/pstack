@@ -46,7 +46,7 @@ Optional UI, i18n, release, archive, and browser evidence workflows MUST activat
 - **THEN** `visual-parity` MAY be selected with the target project's real baseline and comparison surface
 - **AND** DSH-specific theme tokens, viewport defaults and publication commands MUST NOT be imposed.
 
-## ADDED Requirements
+## MODIFIED Requirements
 
 ### Requirement: reusable guidance is decomposed into existing leaf, principle and playbook owners
 

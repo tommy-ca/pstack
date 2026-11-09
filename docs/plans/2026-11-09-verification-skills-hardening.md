@@ -1,0 +1,306 @@
+# Verification Skills Hardening and Live Settlements
+
+This program aligns OpenSpec spec delta headers for reusable skill patterns, updates durable OMP live driver settlements with current surface revisions, documents the 10-skill verification driver matrix in test tiers documentation, and qualifies the 6-harness verification matrix.
+Work proceeds in four stacked pull requests under Epic 1215.
+
+## How to read this
+
+One box is one unit of work. Every box names the evidence that verifies it.
+Check a box only when its evidence exists.
+Follow procedures in playbooks/ when executing tasks.
+Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
+
+## Program checklist
+
+### Arm the program
+
+- [ ] State the protocol and this plan to the operator, then stop. Start execution only on an explicit go.
+- [ ] On that go, persist the plan path on disk with this exact text. "docs/plans/2026-11-09-verification-skills-hardening.md, PR ids in order openspec-delta-align, omp-live-settlements, verify-skills-docs, gate-close-1215, the verification rule, the root merges, and the done condition is every box checked with its evidence."
+- [ ] Read these from trunk at program start. Re-read them at every tick.
+  - [ ] `git show origin/main:skills/poteto-mode/playbooks/autopilot-stack.md`
+  - [ ] `git show origin/main:skills/swarm/SKILL.md`
+  - [ ] `git show origin/main:profiles/antigravity.json`
+  - [ ] `git show origin/main:skills/poteto-mode/playbooks/opening-a-pr.md`
+  - [ ] `git show origin/main:skills/poteto-mode/playbooks/shipping.md`
+- [ ] Arm the 30-minute audit tick with the host schedule capability. Never leave the cadence to memory.
+- [ ] Use this tick prompt. "Re-read the execution playbook from trunk and the persisted plan. Audit the operation against both and fix drift in this tick. Probe every active lane and judge progress by side effects only. Stand down a stuck lane and dispatch its replacement now. Then send the operator a status message with the queue table of PR, owner, state, and head SHA, the verdicts since the last tick, what merged, open operator gates, and blockers."
+- [ ] On the operator hold or stand-down, send every owner a zero-writes order at once.
+
+### Spawn owners
+
+- [ ] From this parent session, spawn one owner per PR using the host spawn primitive. Depth is 1.
+- [ ] Follow this dependency graph.
+  - [ ] openspec-delta-align is first and branches from main.
+  - [ ] omp-live-settlements after openspec-delta-align.
+  - [ ] verify-skills-docs after omp-live-settlements.
+  - [ ] gate-close-1215 after verify-skills-docs.
+- [ ] Hold the file boundaries strictly per task files list.
+- [ ] Hold the review gate for every PR before merge.
+
+### PR mechanics, for every PR
+
+- [ ] Resolve the forge once. Default to `gh`.
+- [ ] Open each PR ready with `gh pr create --base <parent-branch>`.
+- [ ] Run unslop before each commit and no-comments before review.
+- [ ] Rebase onto current trunk before babysit and again before merge.
+
+### Verdict and merge, for every PR
+
+- [ ] A full swarm runs once at the code-ready head.
+- [ ] Ten live lanes verify the real surface.
+- [ ] Four perf lanes verify timings against baseline.
+- [ ] Clean only when every lane is PASS.
+- [ ] The root merges verified PRs bottom-up.
+
+### Boot recipe, for every live lane
+
+Each live lane runs in its own worktree child at the PR head. Drive the real surface.
+
+- [ ] `git fetch origin <head-branch> && git checkout <head SHA>`.
+- [ ] Start the environment and verify toolchains.
+- [ ] Execute the live test and save evidence screenshots.
+
+## Reconcile OpenSpec spec delta headers and align reusable skill pattern requirements (openspec-delta-align)
+
+**Depends on.** None.
+
+**Files.**
+
+- [x] Edit `openspec/changes/2026-11-07-deepseek-skills-22-source-refresh/specs/pstack-reusable-skill-patterns/spec.md`.
+- [x] Edit `tests/test_openspec_change.py`.
+
+**Build.**
+
+- [x] Change `## ADDED Requirements` to `## MODIFIED Requirements` in deepseek skills spec delta.
+- [x] Verify validation passes with zero archive refusal warnings.
+- [x] Add test assertion verifying active change spec deltas align with base specs.
+- [x] Enforce SOLID, KISS, DRY, and YAGNI architectural principles.
+
+**You see.**
+
+- [x] Clean OpenSpec validation with zero warnings about refused deltas.
+- [x] Passing test suite in `tests/test_openspec_change.py`.
+
+**Verify, unit.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
+
+- [x] Run `bunx --yes @fission-ai/openspec@1.16.1 validate --all`.
+
+**Verify, live.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked. Ten lanes on `gemini-pro` at the PR head, per the boot recipe.
+
+- [x] Lane 1. Dual validation probe. Save `/tmp/swarm-openspec-delta-align/worker-1/validate.png`. Pass when validate:openspec exits 0.
+- [x] Lane 2. OpenSpec change suite probe. Save `/tmp/swarm-openspec-delta-align/worker-2/openspec.png`. Pass when test_openspec_change passes.
+- [x] Lane 3. Verification skills audit probe. Save `/tmp/swarm-openspec-delta-align/worker-3/audit.png`. Pass when 10 skills pass.
+- [x] Lane 4. Package projection probe. Save `/tmp/swarm-openspec-delta-align/worker-4/projection.png`. Pass when projection check passes.
+- [x] Lane 5. Worktree confinement probe. Save `/tmp/swarm-openspec-delta-align/worker-5/confinement.png`. Pass when worktrees are confined.
+- [x] Lane 6. Evidence staleness probe. Save `/tmp/swarm-openspec-delta-align/worker-6/staleness.png`. Pass when check-staleness reports all fresh.
+- [x] Lane 7. Poteto test suite probe. Save `/tmp/swarm-openspec-delta-align/worker-7/poteto.png`. Pass when 104 tests pass.
+- [x] Lane 8. Python line ceiling probe. Save `/tmp/swarm-openspec-delta-align/worker-8/ceiling.png`. Pass when zero files exceed 1000 lines.
+- [x] Lane 9. Untracked file probe. Save `/tmp/swarm-openspec-delta-align/worker-9/untracked.png`. Pass when untracked files are expected.
+- [x] Lane 10. Status hygiene probe. Save `/tmp/swarm-openspec-delta-align/worker-10/status.png`. Pass when git status is clean.
+
+**Verify, perf.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
+
+- [x] Metric. OpenSpec validate duration in seconds.
+- [x] Probe. Time bunx --yes @fission-ai/openspec@1.16.1 validate --all.
+- [x] Baseline. Record trunk duration of OpenSpec validation.
+- [x] Rule. Head duration must not exceed trunk duration plus 2 seconds.
+
+**Review gate.** The operator reviews before merge.
+
+- [x] Copy lane screenshots into `/tmp/openspec-delta-align-review-gate.png`.
+- [x] Record a 30 second video of the change and save as `/tmp/openspec-delta-align-review.mp4`.
+- [x] Post the screenshot and video in chat for operator review.
+
+**Merge.**
+
+- [x] Root clean verdict at head SHA.
+- [x] Squash merge to parent branch.
+
+## Harmonize durable OMP live driver settlements and update evidence index (omp-live-settlements)
+
+**Depends on.** openspec-delta-align
+
+**Files.**
+
+- [ ] Edit `.audit/evidence/omp-receipt.json`.
+- [ ] Edit `.audit/evidence/index.json`.
+- [ ] Edit `tests/test_evidence_durability.py`.
+
+**Build.**
+
+- [ ] Commit verified live OMP RPC settlements matching current driver revision.
+- [ ] Synchronize `.audit/evidence/index.json` OMP entry timestamp and revision.
+- [ ] Add test asserting driver revision uniformity across declared packaged hosts in index.
+- [ ] Verify zero regressions in durability and receipt test suites.
+
+**You see.**
+
+- [ ] Synchronized driver revisions in `index.json` and durable receipts.
+- [ ] Green test suite in `tests/test_evidence_durability.py`.
+
+**Verify, unit.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
+
+- [ ] Run `uv run python scripts/verify_portable.py check-staleness --host all`.
+
+**Verify, live.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked. Ten lanes on `gemini-pro` at the PR head, per the boot recipe.
+
+- [ ] Lane 1. Staleness check probe. Save `/tmp/swarm-omp-live-settlements/worker-1/staleness.png`. Pass when staleness reports ALL FRESH.
+- [ ] Lane 2. Evidence durability probe. Save `/tmp/swarm-omp-live-settlements/worker-2/durability.png`. Pass when check-evidence passes.
+- [ ] Lane 3. Verification skills audit probe. Save `/tmp/swarm-omp-live-settlements/worker-3/audit.png`. Pass when 10 skills pass.
+- [ ] Lane 4. Package projection probe. Save `/tmp/swarm-omp-live-settlements/worker-4/projection.png`. Pass when projection check passes.
+- [ ] Lane 5. Worktree confinement probe. Save `/tmp/swarm-omp-live-settlements/worker-5/confinement.png`. Pass when worktrees are confined.
+- [ ] Lane 6. Evidence test suite probe. Save `/tmp/swarm-omp-live-settlements/worker-6/evidence-tests.png`. Pass when durability tests pass.
+- [ ] Lane 7. Poteto test suite probe. Save `/tmp/swarm-omp-live-settlements/worker-7/poteto.png`. Pass when 104 tests pass.
+- [ ] Lane 8. Python line ceiling probe. Save `/tmp/swarm-omp-live-settlements/worker-8/ceiling.png`. Pass when zero files exceed 1000 lines.
+- [ ] Lane 9. Untracked file probe. Save `/tmp/swarm-omp-live-settlements/worker-9/untracked.png`. Pass when untracked files are expected.
+- [ ] Lane 10. Status hygiene probe. Save `/tmp/swarm-omp-live-settlements/worker-10/status.png`. Pass when git status is clean.
+
+**Verify, perf.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
+
+- [ ] Metric. Staleness check duration in seconds.
+- [ ] Probe. Time uv run python scripts/verify_portable.py check-staleness --host all.
+- [ ] Baseline. Record trunk duration of staleness check.
+- [ ] Rule. Head duration must not exceed trunk duration plus 2 seconds.
+
+**Review gate.** The operator reviews before merge.
+
+- [ ] Copy lane screenshots into `/tmp/omp-live-settlements-review-gate.png`.
+- [ ] Record a 30 second video of the change and save as `/tmp/omp-live-settlements-review.mp4`.
+- [ ] Post the screenshot and video in chat for operator review.
+
+**Merge.**
+
+- [ ] Root clean verdict at head SHA.
+- [ ] Squash merge to parent branch.
+
+## Update verification test tiers documentation and harmonize plugin synchronization lifecycle (verify-skills-docs)
+
+**Depends on.** omp-live-settlements
+
+**Files.**
+
+- [ ] Edit `docs/verification-test-tiers.md`.
+- [ ] Edit `todo.md`.
+
+**Build.**
+
+- [ ] Document the 10-skill verification driver matrix in `docs/verification-test-tiers.md`.
+- [ ] Document live Antigravity plugin synchronization and lifecycle update contracts.
+- [ ] Document live settlement retention semantics across portable verifiers.
+- [ ] Update `todo.md` with completed tasks under Epic 1215.
+
+**You see.**
+
+- [ ] Comprehensive verification test tiers documentation covering driver matrix.
+- [ ] Accurate task tracking in `todo.md`.
+
+**Verify, unit.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
+
+- [ ] Run `uv run python scripts/sync_antigravity_plugin.py --check`.
+
+**Verify, live.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked. Ten lanes on `gemini-pro` at the PR head, per the boot recipe.
+
+- [ ] Lane 1. Plugin sync probe. Save `/tmp/swarm-verify-skills-docs/worker-1/sync.png`. Pass when sync check exits 0.
+- [ ] Lane 2. Lifecycle verify probe. Save `/tmp/swarm-verify-skills-docs/worker-2/lifecycle.png`. Pass when package_lifecycle verify exits 0.
+- [ ] Lane 3. Verification skills audit probe. Save `/tmp/swarm-verify-skills-docs/worker-3/audit.png`. Pass when 10 skills pass.
+- [ ] Lane 4. Package projection probe. Save `/tmp/swarm-verify-skills-docs/worker-4/projection.png`. Pass when projection check passes.
+- [ ] Lane 5. Worktree confinement probe. Save `/tmp/swarm-verify-skills-docs/worker-5/confinement.png`. Pass when worktrees are confined.
+- [ ] Lane 6. Evidence staleness probe. Save `/tmp/swarm-verify-skills-docs/worker-6/staleness.png`. Pass when staleness reports ALL FRESH.
+- [ ] Lane 7. Poteto test suite probe. Save `/tmp/swarm-verify-skills-docs/worker-7/poteto.png`. Pass when 104 tests pass.
+- [ ] Lane 8. Python line ceiling probe. Save `/tmp/swarm-verify-skills-docs/worker-8/ceiling.png`. Pass when zero files exceed 1000 lines.
+- [ ] Lane 9. Untracked file probe. Save `/tmp/swarm-verify-skills-docs/worker-9/untracked.png`. Pass when untracked files are expected.
+- [ ] Lane 10. Status hygiene probe. Save `/tmp/swarm-verify-skills-docs/worker-10/status.png`. Pass when git status is clean.
+
+**Verify, perf.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
+
+- [ ] Metric. Plugin sync check duration in seconds.
+- [ ] Probe. Time uv run python scripts/sync_antigravity_plugin.py --check.
+- [ ] Baseline. Record trunk duration of plugin sync check.
+- [ ] Rule. Head duration must not exceed trunk duration plus 2 seconds.
+
+**Review gate.** The operator reviews before merge.
+
+- [ ] Copy lane screenshots into `/tmp/verify-skills-docs-review-gate.png`.
+- [ ] Record a 30 second video of the change and save as `/tmp/verify-skills-docs-review.mp4`.
+- [ ] Post the screenshot and video in chat for operator review.
+
+**Merge.**
+
+- [ ] Root clean verdict at head SHA.
+- [ ] Squash merge to parent branch.
+
+## Qualify 6-harness verification matrix, reconcile issue graph, and close Epic 1215 (gate-close-1215)
+
+**Depends on.** verify-skills-docs
+
+**Files.**
+
+- [ ] Edit `docs/plans/2026-11-09-verification-skills-hardening.md`.
+- [ ] Edit `todo.md`.
+- [ ] Edit `CHANGELOG.md`.
+
+**Build.**
+
+- [ ] Run full 6-harness verification matrix doctor across all declared hosts.
+- [ ] Run driver orchestrator across all 10 verification skills.
+- [ ] Update CHANGELOG.md with Epic 1215 deliverables.
+- [ ] Reconcile `todo.md` and close Epic #1215 on GitHub.
+
+**You see.**
+
+- [ ] 6-Harness Matrix Verdict PASS in doctor output.
+- [ ] 10 of 10 verification skill drivers pass in drive-all output.
+
+**Verify, unit.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
+
+- [ ] Run `bun skills/poteto-mode/scripts/check-plan.mjs docs/plans/2026-11-09-verification-skills-hardening.md`.
+
+**Verify, live.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked. Ten lanes on `gemini-pro` at the PR head, per the boot recipe.
+
+- [ ] Lane 1. Driver orchestrator probe. Save `/tmp/swarm-gate-close-1215/worker-1/drivers.png`. Pass when drive-all exits 0.
+- [ ] Lane 2. Package projection probe. Save `/tmp/swarm-gate-close-1215/worker-2/projection.png`. Pass when package_projection check passes.
+- [ ] Lane 3. Verification skills audit probe. Save `/tmp/swarm-gate-close-1215/worker-3/audit.png`. Pass when 10 skills pass.
+- [ ] Lane 4. Evidence staleness probe. Save `/tmp/swarm-gate-close-1215/worker-4/staleness.png`. Pass when check-staleness reports all fresh.
+- [ ] Lane 5. Evidence durability probe. Save `/tmp/swarm-gate-close-1215/worker-5/evidence.png`. Pass when check-evidence passes.
+- [ ] Lane 6. Portable doctor probe. Save `/tmp/swarm-gate-close-1215/worker-6/doctor.png`. Pass when 6-harness matrix verdict is PASS.
+- [ ] Lane 7. Poteto script tests probe. Save `/tmp/swarm-gate-close-1215/worker-7/poteto-tests.png`. Pass when 104 tests pass.
+- [ ] Lane 8. Python line ceiling probe. Save `/tmp/swarm-gate-close-1215/worker-8/ceiling.png`. Pass when zero files exceed 1000 lines.
+- [ ] Lane 9. Pinned bunx dual validation probe. Save `/tmp/swarm-gate-close-1215/worker-9/dual.png`. Pass when dual validation exits 0.
+- [ ] Lane 10. Status hygiene probe. Save `/tmp/swarm-gate-close-1215/worker-10/status.png`. Pass when git status is clean.
+
+**Verify, perf.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
+
+- [ ] Metric. Full verification gate duration in seconds.
+- [ ] Probe. Time python3 scripts/verify_portable.py doctor --host all.
+- [ ] Baseline. Record trunk duration of doctor across all hosts.
+- [ ] Rule. Head duration must not exceed trunk duration plus 10 seconds.
+
+**Review gate.** The operator reviews before merge.
+
+- [ ] Copy lane screenshots into `/tmp/gate-close-1215-review-gate.png`.
+- [ ] Record a 30 second video of the change and save as `/tmp/gate-close-1215-review.mp4`.
+- [ ] Post the screenshot and video in chat for operator review.
+
+**Merge.**
+
+- [ ] Root clean verdict at head SHA.
+- [ ] Squash merge to parent branch.
+
+## Close the program
+
+- [ ] Every PR merged to trunk in bottom-up order.
+- [ ] Every box in this plan checked with its evidence.
+- [ ] Post final status message to operator.
+
+## Appendix A. Prototype evidence
+
+- Evaluated live OMP RPC v2 subagent operations with real model openai-codex/gpt-6-luna.
+- Evaluated scaffold_verification_skill.py --drive-all across all 10 verification skills with 10/10 PASS.
+- Evaluated sync_antigravity_plugin.py --force --sync and package_lifecycle.py update --host all convergence.
+- Evaluated check-staleness --host all with ALL FRESH.
+
+## Appendix B. Alternatives rejected
+
+- Leaving OMP receipt stale rejected per principle-prove-it-works.
+- Leaving duplicate ADDED delta headers in OpenSpec rejected per principle-boundary-discipline.
+- Skipping live harness matrix verification rejected per principle-make-operations-idempotent.
