@@ -382,11 +382,11 @@ Mise manages `@fission-ai/openspec` via `"npm:@fission-ai/openspec" = "1.16.1"` 
 Direct bunx invocation provides reproducible and hermetic execution across environments with zero global installation overhead (`principle-subtract-before-you-add`).
 The command `mise run openspec:status` runs `bunx --yes @fission-ai/openspec@1.16.1 status --all` directly (`principle-prove-it-works`).
 The command `mise run openspec:list` lists all active changes directly via `bunx --yes @fission-ai/openspec@1.16.1 list`.
-The command `mise run openspec:validate` strictly validates active change proposals.
-The commands `mise run validate:openspec` and `mise run verify:openspec` run dual-mode validation across all specifications and active changes.
-Both commands execute `bunx --yes @fission-ai/openspec@1.16.1 validate --all && bunx --yes @fission-ai/openspec@1.16.1 validate --changes --strict`.
-The commands `mise run validate:openspec:all` and `mise run verify:openspec:all` validate all living specifications under `openspec/specs/`.
-The commands `mise run validate:openspec:changes` and `mise run verify:openspec:changes` strictly validate active change proposals.
+The command `mise run validate:openspec` runs dual-mode validation across all specifications and active changes.
+It executes `bunx --yes @fission-ai/openspec@1.16.1 validate --all && bunx --yes @fission-ai/openspec@1.16.1 validate --changes --strict`.
+The command `mise run validate:openspec:all` validates all living specifications under `openspec/specs/`.
+The command `mise run validate:openspec:changes` strictly validates active change proposals.
+Redundant duplicate tasks and aliases have been eliminated to keep tasks concise and deduplicated (`principle-subtract-before-you-add`).
 
 ### Ten-skill verification driver matrix and orchestrator
 

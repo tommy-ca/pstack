@@ -184,24 +184,24 @@ Each live lane runs in its own worktree child at the PR head. Drive the real sur
 
 **Files.**
 
-- [ ] Edit `docs/verification-test-tiers.md`.
-- [ ] Edit `tests/test_verify_docs_sync.py`.
-- [ ] Edit `todo.md`.
+- [x] Edit `docs/verification-test-tiers.md`.
+- [x] Edit `tests/test_verify_docs_sync.py`.
+- [x] Edit `todo.md`.
 
 **Build.**
 
-- [ ] Update `docs/verification-test-tiers.md` with the clean, deduplicated mise OpenSpec tasks.
-- [ ] Document the canonical separation between operational commands and validation commands.
-- [ ] Verify docs sync test suite passes cleanly.
+- [x] Update `docs/verification-test-tiers.md` with the clean, deduplicated mise OpenSpec tasks.
+- [x] Document the canonical separation between operational commands and validation commands.
+- [x] Verify docs sync test suite passes cleanly.
 
 **You see.**
 
-- [ ] Accurate and concise verification test tiers documentation.
-- [ ] Green test suite in `tests/test_verify_docs_sync.py`.
+- [x] Accurate and concise verification test tiers documentation.
+- [x] Green test suite in `tests/test_verify_docs_sync.py`.
 
 **Verify, unit.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked.
 
-- [ ] Run `uv run pytest tests/test_verify_docs_sync.py`.
+- [x] Run `uv run pytest tests/test_verify_docs_sync.py`.
 
 **Verify, live.** Tests alone are not sufficient verification. A PR is verified only when its unit, live, and perf boxes are all checked. Ten lanes on `gemini-pro` at the PR head, per the boot recipe.
 
