@@ -125,7 +125,11 @@ CHECK_SELECTION_TABLE: List[CheckRule] = [
     ),
     ("*.md", ("tests/test_verify_docs_sync.py",), ()),
     ("**/*.md", ("tests/test_verify_docs_sync.py",), ()),
-    ("openspec/**", ("tests/test_verify_docs_sync.py",), ()),
+    (
+        "openspec/**",
+        ("tests/test_verify_docs_sync.py", "tests/test_openspec_direct.py"),
+        (),
+    ),
     ("LICENSE", ("tests/test_verify_docs_sync.py",), ()),
     (".github/**", ("{offline}",), ()),
     ("schemas/**", ("tests/test_portability_schemas.py",), ()),

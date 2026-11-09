@@ -182,11 +182,17 @@ class TestCheckSelectionTable:
         )
 
         assert result["unmapped_paths"] == []
-        assert _ids(result) == ["pytest:tests/test_verify_docs_sync.py"]
-        assert _commands(result) == [[PY, "-m", "pytest", "-q", "tests/test_verify_docs_sync.py"]]
+        assert _ids(result) == [
+            "pytest:tests/test_openspec_direct.py",
+            "pytest:tests/test_verify_docs_sync.py",
+        ]
+        assert _commands(result) == [
+            [PY, "-m", "pytest", "-q", "tests/test_openspec_direct.py"],
+            [PY, "-m", "pytest", "-q", "tests/test_verify_docs_sync.py"],
+        ]
         # Negative control: spec prose must not select the whole offline matrix.
         assert _ids(result) != sorted(f"pytest:{m}" for m in OFFLINE_GATE)
-        assert len(result["checks"]) == 1
+        assert len(result["checks"]) == 2
 
     def test_root_level_prose_selects_the_docs_gate(self) -> None:
         """Root markdown has no directory prefix, so it needs its own table row."""
