@@ -10,8 +10,8 @@ S5: "A task that required an unavailable external repository, host, or credentia
 
 ## Tasks
 - [x] T1 (S1, S3, S5) [route: inline] [commit: 04f2d53] Truthfully annotate 14 deferred runtime/formal tasks in openspec/changes/2026-11-07-pi-extension-package-proof/tasks.md per archive-chain-integrity.
-- [ ] T2 (S1, S3, S4) [route: inline] [commit: pending] Merge 4 delta requirements into openspec/specs/pstack-portability/spec.md, adapt doctor test in tests/test_verify_portable.py, and archive the change via bunx openspec archive.
-- [ ] T3 (S1, S2, S4) [route: inline] [commit: pending] Refresh 6-harness static evidence with updated spec hash, qualify 6-harness verification matrix and triple-mode validate:openspec, update docs and todo.md, and close Epic 1290.
+- [x] T2 (S1, S3, S4) [route: inline] [commit: b876ab9] Merge 4 delta requirements into openspec/specs/pstack-portability/spec.md, adapt doctor test in tests/test_verify_portable.py, and archive the change via bunx openspec archive.
+- [x] T3 (S1, S2, S4) [route: inline] [commit: pending] Refresh 6-harness static evidence with updated spec hash, qualify 6-harness verification matrix and triple-mode validate:openspec, update docs and todo.md, and close Epic 1290.
 
 ## Log
 L1: "pick up and resume clean up worktrees, explore, review and aduit with /pstack:thermo-nuclear-code-quality-review build and update verification skills/tools, clean up, reconcile, recursive openspec intent driven flows, plan and update into github epics/issues graph, build and verify with SOLID, KISS, DRY, YAGNI with swarm, arena, interrogate, new stacked prs, merge and ship then, end to end verify the workflows then"
