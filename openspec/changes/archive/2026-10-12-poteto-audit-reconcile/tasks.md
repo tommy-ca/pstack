@@ -87,12 +87,12 @@ Stop rules, unchanged from both programs and enforced by this plan:
 - **Observable result**: `python scripts/verify-portable.py check-evidence --host omp`
   exits 0 while omp `derived_support_state` drops from `verified` to at most `packaged`,
   because the unproven rows no longer claim `verified`.
-- [ ] 2.1 unit: `tests/test_portability_schemas.py tests/test_evidence_durability.py` green,
+- [x] 2.1 unit: `tests/test_portability_schemas.py tests/test_evidence_durability.py` green,
       including a new rejection case for `hard` + `verified` citing a scenario that does not
       exist or is not `observed_live`.
-- [ ] 2.2 live: `PSTACK_RUN_OMP_LIVE=1 pytest -q tests/test_omp_rpc.py` records the scenario
+- [x] 2.2 live: `PSTACK_RUN_OMP_LIVE=1 pytest -q tests/test_omp_rpc.py` records the scenario
       ids that exist at the head; every surviving `verified` row cites one of them.
-- [ ] 2.3 perf: profile validation stays O(bindings) with one receipt parse per profile,
+- [x] 2.3 perf: profile validation stays O(bindings) with one receipt parse per profile,
       not one per capability; record `verify-portable.py doctor --host omp` wall clock
       before and after against the same baseline.
 
@@ -107,10 +107,10 @@ Stop rules, unchanged from both programs and enforced by this plan:
   `specs/pstack-omp-native-adapter/spec.md:76`), but nothing asserts the rejection. Add the
   two negative fixtures; assert the OMP live receipt keeps `observed_live` after the run.
 - **Observable result**: a receipt-shaped scenario with `evidence_level: "live"` and one with `"documented"` both fail schema validation; #296 stays open when this lands, because the package-precedence fixture (P8) is still owed.
-- [ ] 3.1 unit: the two negative fixtures raise `ValidationError`; suite green.
-- [ ] 3.2 live: `.audit/evidence/omp-receipt.json` still validates and still carries
+- [x] 3.1 unit: the two negative fixtures raise `ValidationError`; suite green.
+- [x] 3.2 live: `.audit/evidence/omp-receipt.json` still validates and still carries
       `runtime-child-spawn-omp` as `observed_live` after a live refresh.
-- [ ] 3.3 perf: no runtime path — record "schema validation only, no measured counter".
+- [x] 3.3 perf: no runtime path — record "schema validation only, no measured counter".
 
 ## 4. P3 — #297 remainder: cancellation and steering with negative receipts
 
@@ -124,11 +124,11 @@ Stop rules, unchanged from both programs and enforced by this plan:
   claim.
 - **Observable result**: a `runtime-child-cancel-omp` scenario at `observed_live` with a
   typed settlement, and a truthful gap note for steering.
-- [ ] 4.1 unit: reducer tests over recorded frames cover cancel, timeout and dropped frame
+- [x] 4.1 unit: reducer tests over recorded frames cover cancel, timeout and dropped frame
       without a binary.
-- [ ] 4.2 live: the bounded session cancels a real child and tears the process tree down;
+- [x] 4.2 live: the bounded session cancels a real child and tears the process tree down;
       no orphan process, no orphan worktree.
-- [ ] 4.3 perf: cancellation latency recorded and bounded by the runner timeout.
+- [x] 4.3 perf: cancellation latency recorded and bounded by the runner timeout.
 
 ## 5. P4 — #290/#298 package precedence and disabled plugin
 
@@ -143,11 +143,11 @@ Stop rules, unchanged from both programs and enforced by this plan:
 - **Observable result**: with the package disabled, none of its skills or agents are
   advertised; each negative case produces a recorded observation, and the unmanaged sentinel
   survives link, disable, re-enable and uninstall.
-- [ ] 5.1 unit: `tests/test_omp_native_package.py tests/test_package_lifecycle_safety.py`
+- [x] 5.1 unit: `tests/test_omp_native_package.py tests/test_package_lifecycle_safety.py`
       green, with the four new cases skipping (not passing) when `omp` is absent.
-- [ ] 5.2 live: `scripts/prove-omp-native-package.py --live` under a disposable config root
+- [x] 5.2 live: `scripts/prove-omp-native-package.py --live` under a disposable config root
       records precedence and the disabled-plugin observation.
-- [ ] 5.3 perf: lifecycle stays idempotent — link, disable, re-enable, uninstall each under
+- [x] 5.3 perf: lifecycle stays idempotent — link, disable, re-enable, uninstall each under
       the recorded wall-clock budget; no unbounded retry.
 
 ## 6. P5 — #291 isolation at `observed_live`
@@ -159,11 +159,11 @@ Stop rules, unchanged from both programs and enforced by this plan:
   isolation scenario for real — isolated worktree, parent sentinel, explicit `apply:false`
   — then promote the row to `observed_live` and delete the CLI-probe description.
 - **Observable result**: the runtime plane no longer derives support from a static row.
-- [ ] 6.1 unit: profile/plane reduction tests still show the isolation row's evidence level
+- [x] 6.1 unit: profile/plane reduction tests still show the isolation row's evidence level
       truthfully, including the negative direction (a static row cannot satisfy the runtime
       plane on its own).
-- [ ] 6.2 live: the worktree and sentinel are observed; cleanup leaves nothing behind.
-- [ ] 6.3 perf: the isolation scenario stays bounded by its declared timeout.
+- [x] 6.2 live: the worktree and sentinel are observed; cleanup leaves nothing behind.
+- [x] 6.3 perf: the isolation scenario stays bounded by its declared timeout.
 
 ## 7. P6 — #292 vertical slice
 
@@ -177,11 +177,11 @@ Stop rules, unchanged from both programs and enforced by this plan:
   when no model route exists; do not fan out before this passes.
 - **Observable result**: one run whose receipt carries the whole chain, plus an uninstall
   diff that removes only owned paths.
-- [ ] 7.1 unit: the offline half (package projection, manifest shape, uninstall plan) runs
+- [x] 7.1 unit: the offline half (package projection, manifest shape, uninstall plan) runs
       without a binary.
-- [ ] 7.2 live: observed child output, resolved role model, parent sentinel, cleaned
+- [x] 7.2 live: observed child output, resolved role model, parent sentinel, cleaned
       workspace, exact SHAs.
-- [ ] 7.3 perf: one child, one session; record session wall clock and that it stays inside
+- [x] 7.3 perf: one child, one session; record session wall clock and that it stays inside
       the bounded runner rather than tail-spinning.
 
 ## 8. P7 — #293 native swarm/arena/interrogate recomposition
@@ -198,10 +198,10 @@ Stop rules, unchanged from both programs and enforced by this plan:
   and cancellation negatives per route.
 - **Observable result**: each playbook's observable outcome plus an exact-revision receipt
   and a dropout case; still no second scheduler or durable store.
-- [ ] 8.1 unit: pack/partition/apply suites green with the new negative cases.
-- [ ] 8.2 live: distinct workers observed as completed, with a bounded join and one root
+- [x] 8.1 unit: pack/partition/apply suites green with the new negative cases.
+- [x] 8.2 live: distinct workers observed as completed, with a bounded join and one root
       report; cancelled and dropped lanes appear as dropouts, not passes.
-- [ ] 8.3 perf: N lanes bounded by the declared join deadline; record the wall clock for
+- [x] 8.3 perf: N lanes bounded by the declared join deadline; record the wall clock for
       N=2 and N=4 so the next run has a comparison.
 
 ## 9. P8 — #294 adversarial acceptance and six-harness regression
@@ -222,10 +222,10 @@ Stop rules, unchanged from both programs and enforced by this plan:
   open until P2 and this case both land with observations.
 - **Observable result**: published dispositions (act-on/consider/noted/dismissed) plus a
   per-host receipt at exact SHAs, and an explicit statement of any host left blocked.
-- [ ] 9.1 unit: verdict lattice and evidence durability suites green at the reviewed head, including the adapter-PASS-plus-package-FAIL rejection.
-- [ ] 9.2 live: independent reviewer contexts, two models where available, disagreement
+- [x] 9.1 unit: verdict lattice and evidence durability suites green at the reviewed head, including the adapter-PASS-plus-package-FAIL rejection.
+- [x] 9.2 live: independent reviewer contexts, two models where available, disagreement
       published rather than averaged.
-- [ ] 9.3 perf: six-host offline matrix wall clock recorded; a failure budget, not a vanity
+- [x] 9.3 perf: six-host offline matrix wall clock recorded; a failure budget, not a vanity
       metric.
 
 ## 10. P9 — verification parity: join deadline, evidence binding, host census
@@ -243,11 +243,11 @@ Stop rules, unchanged from both programs and enforced by this plan:
   a missing host is a stated gap, not silence.
 - **Observable result**: a run whose workers never returned cannot be reported as a pass,
   and a claim of six-host parity names the six hosts and their evidence tier.
-- [ ] 10.1 unit: the new parity test asserts each playbook names a deadline, an evidence
+- [x] 10.1 unit: the new parity test asserts each playbook names a deadline, an evidence
       binding and the census source; the existing three skill suites stay green.
-- [ ] 10.2 live: one real swarm run at the head records the deadline it enforced and the
+- [x] 10.2 live: one real swarm run at the head records the deadline it enforced and the
       dropouts it observed.
-- [ ] 10.3 perf: the deadline becomes the measured budget — record lanes joined within it
+- [x] 10.3 perf: the deadline becomes the measured budget — record lanes joined within it
       versus dropped.
 
 ## 11. P10 — DSH carrier: merge #317
@@ -261,10 +261,10 @@ Stop rules, unchanged from both programs and enforced by this plan:
   artifact the branch lacks, add a manifest stating no durable decision was introduced.
 - **Observable result**: nine files on `main`, validator exit 0, and #308/#309 either closed
   with the review link or annotated with their residual.
-- [ ] 11.1 unit: `openspec validate … --strict` and the offline gate suite green on the
+- [x] 11.1 unit: `openspec validate … --strict` and the offline gate suite green on the
       rebased head.
-- [ ] 11.2 live: not applicable — spec-only carrier; record "no runtime artifact".
-- [ ] 11.3 perf: not applicable; record "no measured counter".
+- [x] 11.2 live: not applicable — spec-only carrier; record "no runtime artifact".
+- [x] 11.3 perf: not applicable; record "no measured counter".
 
 ## 12. P11 — #310 baseline and candidate eval corpus
 
@@ -277,11 +277,11 @@ Stop rules, unchanged from both programs and enforced by this plan:
   recorded per case.
 - **Observable result**: a corpus directory plus a sanitized scoring table with raw counts
   and pinned model/tool budgets; a no-change verdict is a valid outcome.
-- [ ] 12.1 unit: corpus cases run deterministically offline; negative controls do not
+- [x] 12.1 unit: corpus cases run deterministically offline; negative controls do not
       trigger.
-- [ ] 12.2 live: candidate phase runs on a real model route; artifacts verified independently
+- [x] 12.2 live: candidate phase runs on a real model route; artifacts verified independently
       of the judge summary.
-- [ ] 12.3 perf: context work (tool tokens, re-reads, search retries) recorded per case.
+- [x] 12.3 perf: context work (tool tokens, re-reads, search retries) recorded per case.
 
 ## 13. P12 — #311 verdict; #312 stays gated
 
@@ -295,11 +295,11 @@ Stop rules, unchanged from both programs and enforced by this plan:
   Unit 11 records it as pending its #309, #311 and #310 prerequisites.
 - **Observable result**: #311 closed with fixture paths and the negative-control evidence;
   #312 carries a comment naming the open prerequisite, not a closure.
-- [ ] 13.1 unit: the merged isolation suite green, with the colliding half failing before
+- [x] 13.1 unit: the merged isolation suite green, with the colliding half failing before
       the fix (recorded, not bypassed).
-- [ ] 13.2 live: not applicable — deterministic process fixtures; record "no model route
+- [x] 13.2 live: not applicable — deterministic process fixtures; record "no model route
       involved".
-- [ ] 13.3 perf: the fixtures stay bounded by their barrier timeout rather than sleeps.
+- [x] 13.3 perf: the fixtures stay bounded by their barrier timeout rather than sleeps.
 
 ## 14. P13 — #313 review, failure ownership, simplification
 
@@ -312,9 +312,9 @@ Stop rules, unchanged from both programs and enforced by this plan:
   `/error` skill.
 - **Observable result**: tests for partial-commit retry safety, fake-positive review and
   unsafe dead-code removal, plus a read-only audit that triggers no mutation.
-- [ ] 14.1 unit: the three negative cases above run offline.
-- [ ] 14.2 live: one read-only audit on a real diff proves no write occurred.
-- [ ] 14.3 perf: record maintained-obligation reduction (files/lines removed with
+- [x] 14.1 unit: the three negative cases above run offline.
+- [x] 14.2 live: one read-only audit on a real diff proves no write occurred.
+- [x] 14.3 perf: record maintained-obligation reduction (files/lines removed with
       equivalence evidence), not a byte count alone.
 
 ## 15. P14 — #314 context, prose and optional overlays
@@ -328,9 +328,9 @@ Stop rules, unchanged from both programs and enforced by this plan:
   test.
 - **Observable result**: two task traces with reduced or equal total work and no quality
   loss; a docs-only project invokes no browser, bilingual or DSH-specific command.
-- [ ] 15.1 unit: non-trigger tests for each overlay.
-- [ ] 15.2 live: traces show no quality regression on a real task.
-- [ ] 15.3 perf: total work including re-reads and search retries, measured before/after.
+- [x] 15.1 unit: non-trigger tests for each overlay.
+- [x] 15.2 live: traces show no quality regression on a real task.
+- [x] 15.3 perf: total work including re-reads and search retries, measured before/after.
 
 ## 16. P15 — #315 six-host gate and program reconciliation
 
@@ -343,11 +343,11 @@ Stop rules, unchanged from both programs and enforced by this plan:
   model-backed evidence stays `BLOCKED`/`UNTESTED`.
 - **Observable result**: linked PRs, runnable verification output, per-plane receipts, and a
   truthful close only when each host's status is stated at its actual tier.
-- [ ] 16.1 unit: offline matrix green on all six hosts; unavailable hosts recorded, never
+- [x] 16.1 unit: offline matrix green on all six hosts; unavailable hosts recorded, never
       fabricated.
-- [ ] 16.2 live: only where a binary and provider genuinely exist; #288's OMP work may stay
+- [x] 16.2 live: only where a binary and provider genuinely exist; #288's OMP work may stay
       blocked without failing this gate.
-- [ ] 16.3 perf: record the matrix wall clock and the per-PR selection savings where
+- [x] 16.3 perf: record the matrix wall clock and the per-PR selection savings where
       `--select-checks` applies.
 
 ## 17. Per-issue verdict table (all 21 open issues)
