@@ -294,9 +294,9 @@ Each live lane runs in its own worktree child at the PR head. Drive the real sur
 
 ## Close the program
 
-- [ ] Every PR merged to trunk in bottom-up order.
-- [ ] Every box in this plan checked with its evidence.
-- [ ] Post final status message to operator.
+- [x] Every PR merged to trunk in bottom-up order.
+- [x] Every box in this plan checked with its evidence.
+- [x] Post final status message to operator.
 
 ## Appendix A. Prototype evidence
 

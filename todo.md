@@ -617,7 +617,8 @@
 - [x] Unit 1 (Issue #1264): [Docs & Architecture][P0] Update archived OpenSpec change link in architecture documentation
 - [x] Unit 2 (Issue #1265): [Tests & OpenSpec][P0] Support archived change path resolution in model role profiles test
 - [x] Unit 3 (Issue #1266): [CI & Mise][P0] Wire direct OpenSpec and docs sync tests into offline CI gate and mise tasks
-- [ ] Unit 4 (Issue #1267): [Gate & Close][P0] Qualify 6-harness verification matrix, reconcile issue graph, and close Epic 1263
+- [x] Unit 4 (Issue #1267): [Gate & Close][P0] Qualify 6-harness verification matrix, reconcile issue graph, and close Epic 1263
+*(Epic #1263 CLOSED)*
 
 
 
