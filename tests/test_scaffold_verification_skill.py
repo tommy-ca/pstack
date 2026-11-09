@@ -733,6 +733,8 @@ def test_audit_openspec_status_real_repo() -> None:
     assert data["status"] == "PASS"
     assert data["errors"] == []
     assert "2026-11-07-pi-extension-package-proof" in data["active_changes"]
+    assert "archived_changes" in data
+    assert len(data["archived_changes"]) >= 50
     assert "pstack-portability" in data["living_specs"]
     assert len(data["living_specs"]) >= 30
 

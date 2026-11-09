@@ -357,6 +357,7 @@ def audit_openspec_status(workspace: pathlib.Path) -> Dict[str, Any]:
             "status": "FAIL",
             "errors": [f"openspec directory missing: {openspec_dir}"],
             "active_changes": [],
+            "archived_changes": [],
             "living_specs": [],
         }
 
@@ -371,6 +372,25 @@ def audit_openspec_status(workspace: pathlib.Path) -> Dict[str, Any]:
             for req in ("proposal.md", "tasks.md", ".openspec.yaml"):
                 if not (change / req).is_file():
                     errors.append(f"Change '{change.name}' missing {req}")
+
+    archived_changes: List[str] = []
+    archive_dir = changes_dir / "archive"
+    if archive_dir.is_dir():
+        for change in sorted(archive_dir.iterdir()):
+            if not change.is_dir():
+                continue
+            archived_changes.append(change.name)
+            for req in ("proposal.md", "tasks.md", ".openspec.yaml"):
+                if not (change / req).is_file():
+                    errors.append(f"Archived change '{change.name}' missing {req}")
+            tasks_file = change / "tasks.md"
+            if tasks_file.is_file():
+                content = tasks_file.read_text(encoding="utf-8")
+                for line_no, line in enumerate(content.splitlines(), start=1):
+                    stripped = line.strip()
+                    if stripped.startswith("- [ ]"):
+                        errors.append(f"Archived change '{change.name}' has incomplete task at line {line_no}")
+                        break
 
     living_specs: List[str] = []
     specs_dir = openspec_dir / "specs"
@@ -387,6 +407,7 @@ def audit_openspec_status(workspace: pathlib.Path) -> Dict[str, Any]:
         "status": "FAIL" if errors else "PASS",
         "errors": errors,
         "active_changes": active_changes,
+        "archived_changes": archived_changes,
         "living_specs": living_specs,
     }
 
@@ -580,7 +601,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             for err in data["errors"]:
                 print(f"  - {err}")
             return data["exit_code"]
-        print(f"PASS: OpenSpec audit verified {len(data['active_changes'])} active change(s) and {len(data['living_specs'])} living spec(s).")
+        print(f"PASS: OpenSpec audit verified {len(data['active_changes'])} active change(s), {len(data['archived_changes'])} archived change(s), and {len(data['living_specs'])} living spec(s).")
         return 0
 
     if args.drive_all:
