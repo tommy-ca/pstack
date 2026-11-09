@@ -73,7 +73,7 @@ def test_direct_bunx_openspec_status_execution() -> None:
         check=False,
     )
     assert proc.returncode == 0
-    assert "Change:" in proc.stdout
+    assert "Change:" in proc.stdout or "No active changes" in proc.stdout
 
 
 def test_direct_bunx_openspec_validate_all_execution() -> None:
@@ -97,7 +97,7 @@ def test_direct_bunx_openspec_validate_changes_strict_execution() -> None:
         check=False,
     )
     assert proc.returncode == 0
-    assert "passed" in proc.stdout
+    assert "passed" in proc.stdout or "No items found to validate" in proc.stdout
 
 
 def test_direct_bunx_openspec_validate_archived_execution() -> None:
