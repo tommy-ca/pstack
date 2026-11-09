@@ -589,7 +589,9 @@
 - [x] Unit 1 (Issue #1216): [OpenSpec & Specs][P0] Reconcile OpenSpec spec delta headers and align reusable skill pattern requirements
 - [x] Unit 2 (Issue #1217): [Verification & Evidence][P0] Harmonize durable OMP live driver settlements and update evidence index
 - [x] Unit 3 (Issue #1218): [Tooling & Docs][P0] Update verification test tiers documentation and harmonize plugin synchronization lifecycle
-- [ ] Unit 4 (Issue #1219): [Gate & Close][P0] Qualify 6-harness verification matrix, reconcile issue graph, and close Epic 1215
+- [x] Unit 4 (Issue #1219): [Gate & Close][P0] Qualify 6-harness verification matrix, reconcile issue graph, and close Epic 1215
+*(Epic #1215 CLOSED)*
+
 
 
 

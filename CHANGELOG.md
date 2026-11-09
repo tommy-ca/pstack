@@ -82,6 +82,11 @@ This ledger distinguishes **observed canonical upstream changes** from **applied
 - Harmonized runtime toolchain and OpenSpec test assertions with pinned bunx and mise npm contracts (#1205, #1209).
 - Documented pinned bunx and mise npm OpenSpec lifecycle in test tiers documentation (#1206, #1210).
 - Qualified 6-harness verification matrix, reconciled issue graph, and closed Epic #1203 (#1207).
+- Reconciled OpenSpec spec delta headers and aligned reusable skill pattern requirements (#1216, #1220).
+- Harmonized durable OMP live driver settlements and updated evidence index (#1217, #1221).
+- Updated verification test tiers documentation and harmonized plugin synchronization lifecycle (#1218, #1222).
+- Qualified 6-harness verification matrix, reconciled issue graph, and closed Epic #1215 (#1219).
+
 
 
 ## [Unreleased] — upstream 0.15.36 candidate (2026-10-31)
