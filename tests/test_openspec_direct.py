@@ -96,3 +96,15 @@ def test_direct_bunx_openspec_validate_changes_strict_execution() -> None:
     )
     assert proc.returncode == 0
     assert "passed" in proc.stdout
+
+
+def test_direct_bunx_openspec_validate_archived_execution() -> None:
+    proc = subprocess.run(
+        ["bunx", "--yes", "@fission-ai/openspec@1.16.1", "validate", "--archived"],
+        cwd=str(ROOT),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert proc.returncode == 0
+    assert "passed" in proc.stdout
