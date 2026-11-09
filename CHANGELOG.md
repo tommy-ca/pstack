@@ -94,6 +94,10 @@ This ledger distinguishes **observed canonical upstream changes** from **applied
 - Archived completed October 2026 OpenSpec changes to openspec/changes/archive/ and updated living specifications (#1241, #1245).
 - Archived completed November 2026 OpenSpec changes to openspec/changes/archive/ and updated living specifications (#1242, #1246).
 - Qualified 6-harness verification matrix, reconciled receipts, and closed Epic #1239 (#1243).
+- Cleaned up redundant OpenSpec tasks and duplicate aliases in mise.toml configuration (#1252, #1256).
+- Hardened verification skill scaffolding with OpenSpec audit checks and expanded test suite (#1253, #1257).
+- Reconciled OpenSpec intent-driven flows and updated test tiers documentation (#1254, #1258).
+- Qualified 6-harness verification matrix, reconciled receipts, and closed Epic #1251 (#1255).
 
 
 
