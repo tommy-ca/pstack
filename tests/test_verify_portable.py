@@ -157,14 +157,6 @@ def test_doctor_is_hermetic_against_ambient_plugin_mirrors(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """#709: the doctor verdict must not change when the live mirrors change."""
-    # The doctor's OpenSpec step shells out to a CLI the offline gate does not
-    # install; pin it to "no active change" so this case exercises only the
-    # HOME-bound install/verify path (#717 follow-up).
-    monkeypatch.setattr(
-        verify_portable,
-        "resolve_openspec_change",
-        lambda *a, **k: verify_portable.ChangeResolution(state="none", name=None, names=[]),
-    )
     hosts = ("omp", "antigravity")
     fixture_home = tmp_path / "fixture-home"
     mirrors = _host_plugin_rel_paths()
@@ -364,35 +356,30 @@ def test_portable_verifier_cli_failing_change_observable(tmp_path: Path) -> None
     assert "Verify nonexistent-target-change openspec change passes schema checks" in res.stdout or res.returncode == 1
 
 
-def test_doctor_labels_each_resolution_state(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    import scripts.openspec_change as oc
+def test_doctor_executes_direct_bunx_openspec_validation(tmp_path: Path) -> None:
+    verifier = PortableVerifier(host="grok", evidence_root=tmp_path)
+    assert verifier.launch()
+    assert verifier.doctor(check_durability=False) is True
+    scenarios = [s for s in verifier.scenarios if s.id == "doctor-openspec-validation"]
+    assert len(scenarios) == 1
+    assert scenarios[0].verdict == "PASS"
+    assert "bunx" in scenarios[0].command
+    assert "@fission-ai/openspec@1.16.1" in scenarios[0].command
+    assert "validate" in scenarios[0].command
 
-    def scenarios_for(state_values: list[str] | None, **kwargs: object) -> list:
-        monkeypatch.setattr(oc, "_active_openspec_changes", lambda *a, _sv=state_values, **k: _sv)
-        monkeypatch.setattr(verify_portable, "_active_openspec_changes", lambda *a, _sv=state_values, **k: _sv)
-        verifier = PortableVerifier(host="grok", evidence_root=tmp_path, **kwargs)  # type: ignore[arg-type]
-        verifier.launch()
-        verifier.doctor(check_durability=False)
-        return [s for s in verifier.scenarios if s.id == "doctor-openspec-validation"]
-
-    none_matches = scenarios_for([])
-    assert none_matches == []
-
-    failed_matches = scenarios_for(None)
-    assert len(failed_matches) == 1
-    assert failed_matches[0].verdict == "FAIL"
-    assert "lookup failed" in failed_matches[0].description
-
-    ambiguous_matches = scenarios_for(["a", "b"])
-    assert len(ambiguous_matches) == 1
-    assert ambiguous_matches[0].verdict == "FAIL"
-    assert "2 active OpenSpec changes" in ambiguous_matches[0].description
-
-    active_matches = scenarios_for(["only-active"])
-    assert len(active_matches) == 1
-    assert "only-active" in active_matches[0].description
+    verifier_with_change = PortableVerifier(
+        host="grok",
+        evidence_root=tmp_path,
+        change="2026-11-07-pi-extension-package-proof",
+    )
+    assert verifier_with_change.launch()
+    assert verifier_with_change.doctor(check_durability=False) is True
+    scenarios_change = [
+        s for s in verifier_with_change.scenarios if s.id == "doctor-openspec-validation"
+    ]
+    assert len(scenarios_change) == 1
+    assert scenarios_change[0].verdict == "PASS"
+    assert "2026-11-07-pi-extension-package-proof" in scenarios_change[0].command
 
 
 def test_doctor_resolves_openspec_from_repo_root_not_caller_cwd(
@@ -423,24 +410,21 @@ def test_change_named_like_a_flag_still_validates_as_a_name(
     verifier.launch()
     verifier.doctor(check_durability=False)
     scenario = next(s for s in verifier.scenarios if s.id == "doctor-openspec-validation")
-    assert any(argv and argv[-1] == "--no-active-change" for argv in seen)
+    assert any(argv and "--no-active-change" in argv for argv in seen)
     assert scenario.verdict == "FAIL"
 
 
 def test_verify_portable_modular_decomposition_and_backwards_compatibility() -> None:
     vp_path = ROOT / "scripts" / "verify_portable.py"
     sc_path = ROOT / "scripts" / "select_checks.py"
-    oc_path = ROOT / "scripts" / "openspec_change.py"
     ei_path = ROOT / "scripts" / "evidence_index.py"
     hs_path = ROOT / "scripts" / "harness_scenarios.py"
     assert len(vp_path.read_text(encoding="utf-8").splitlines()) < 750
     assert len(sc_path.read_text(encoding="utf-8").splitlines()) < 1000
-    assert len(oc_path.read_text(encoding="utf-8").splitlines()) < 1000
     assert len(ei_path.read_text(encoding="utf-8").splitlines()) < 1000
     assert len(hs_path.read_text(encoding="utf-8").splitlines()) < 400
 
     import scripts.select_checks as sc
-    import scripts.openspec_change as oc
     import scripts.evidence_index as ei
     import scripts.harness_scenarios as hs
 
@@ -454,16 +438,6 @@ def test_verify_portable_modular_decomposition_and_backwards_compatibility() -> 
     ):
         assert hasattr(verify_portable, name)
         assert getattr(verify_portable, name) is getattr(sc, name)
-
-    for name in (
-        "ChangeResolution",
-        "_active_openspec_changes",
-        "_validate_named_change",
-        "resolve_openspec_change",
-        "validate_openspec_change",
-    ):
-        assert hasattr(verify_portable, name)
-        assert getattr(verify_portable, name) is getattr(oc, name)
 
     for name in (
         "_file_or_denied",
@@ -489,7 +463,7 @@ def test_verify_portable_modular_decomposition_and_backwards_compatibility() -> 
     cmd = [
         sys.executable,
         "-c",
-        "import scripts.select_checks; import scripts.openspec_change; import scripts.evidence_index; import scripts.harness_scenarios; print('ok')",
+        "import scripts.select_checks; import scripts.evidence_index; import scripts.harness_scenarios; print('ok')",
     ]
     proc = subprocess.run(cmd, cwd=str(ROOT), capture_output=True, text=True, check=True)
     assert proc.stdout.strip() == "ok"
