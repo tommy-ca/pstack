@@ -6,27 +6,155 @@ Specify optional `/setup-pstack` model and effort overlays, their plugin-qualifi
 ## Requirements
 
 ### Requirement: Host-neutral entry dispatches to the declared setup skill
-
 Feature: pstack-setup-overlays
 
-`/setup-pstack` MUST be host-neutral: it MUST resolve the active host, read that host's `setup` projection from `profiles/<host>.json` (`schemas/setup-projection.schema.json`), and hand off to the skill the projection names. It MUST hold no host file path, model slug, or effort enum itself. A host whose profile declares no `setup` block, or a candidate host that declares a CLI-probing surface, MUST produce a named GAP or BLOCKED report; it MUST NOT fall back to another host's setup.
+`/setup-pstack` MUST remain the sole user-facing setup entry, preserving applied upstream Cursor setup semantics without defining a new orchestration or model-provider runtime. It MUST resolve an active host against the exactly matched typed host profile and dispatch by the profile's declared `setup.source`. For `host-cli`, it MUST read a **host-local setup reference** at `skills/setup-pstack/references/<matched-profile-filename-stem>.md`, after confined regular-file validation, and MUST NOT invoke a second public setup skill. After migration, `SetupProjection` MUST have no `skill` or `reference` pointer; the reference is derived from the validated profile filename. The shared skill MUST NOT inline any host home path, CLI, model slug or effort enum. No missing/invalid/candidate host may borrow a different host's setup.
 
 #### Scenario: no setup block is a reported gap
-
 - **GIVEN** a host profile with no `setup` key
 - **WHEN** `/setup-pstack` resolves that host
-- **THEN** it reports a GAP naming the host and the missing declaration
+- **THEN** it reports a GAP naming the host and missing declaration
 - **AND** it runs no host-specific setup steps and writes no other host's files
 
-### Requirement: Optional setup writes grok overlays
+#### Scenario: host-cli setup is read only from the matching trusted reference
+- **GIVEN** a supported Grok profile file `grok.json` with `source: host-cli`
+- **WHEN** `/setup-pstack` resolves the active host and exact profile `host` field
+- **THEN** it reads only `skills/setup-pstack/references/grok.md` after path validation
+- **AND** it MUST NOT launch `setup-pstack-grok` as another user-facing skill
 
+### Requirement: Optional setup writes grok overlays
 Feature: pstack-setup-overlays
 
-Official `/setup-pstack` writes `~/.cursor/rules/pstack-models.mdc`. This port's Grok Build adapter skill `/setup-pstack-grok` (dispatched from the host-neutral entry when `profiles/grok.json#setup.source` is `host-cli`) MUST write `~/.grok/pstack-models.toml` with **top-level** role keys (`feature = "grok-4.6"`) plus `[effort]`, and `~/.grok/roles/pstack:<key>.toml` (`description`, `reasoning_effort`). It MUST NOT use a `[models]` table. It MUST NOT write Cursor mdc. Absent overlay: shipped `grok-4.6` plus agent frontmatter effort. A projected profile or a written config file is a declaration, never evidence that the host accepted the model or the level.
+Official Cursor `/setup-pstack` writes `~/.cursor/rules/pstack-models.mdc`; that path and Cursor model variants are NOT native Grok setup. This port's Grok-only setup reference MUST preserve the current Grok Build file shapes: `~/.grok/pstack-models.toml` with top-level role keys (not a `[models]` table) and separate `[effort]`, and scoped `~/.grok/roles/pstack:<role-key>.toml` containing only `description` and `reasoning_effort`. Missing override uses the shipped Grok default and agent-frontmatter effort; any real chosen slug or effort token requires host-specific validation before write. It MUST NOT read or write Cursor mdc paths. A static projection or config write MUST NOT be mistaken for verified native model acceptance.
 
 #### Scenario: overlay stem matches spawn type
-
-- **GIVEN** `/setup-pstack-grok` accepted defaults
-- **WHEN** it writes a role file for `feature`
+- **GIVEN** the Grok-only setup reference accepted valid detected effort choices for `feature`
+- **WHEN** it writes the managed role overlay
 - **THEN** the path is `~/.grok/roles/pstack:feature.toml`
-- **AND** toml **keys** stay the bare role name (`feature`)
+- **AND** model TOML keys stay bare (`feature`, not `pstack:feature`)
+- **AND** neither a `[models]` table nor a Cursor mdc file is written
+
+#### Scenario: model inheritance differs from Grok effort fallback
+- **GIVEN** the Grok role agent has shipped frontmatter `effort`
+- **WHEN** a role's model and effort both select `inherit-parent` or `auto`
+- **THEN** the model override is omitted and the pstack-managed effort role file is removed
+- **AND** the effective effort MUST be described as agent-frontmatter fallback unless the actual host proves otherwise
+
+### Requirement: Setup reference paths are derived, confined, and host-bound
+Feature: pstack-setup-overlays
+
+The host-local setup reference path MUST be derived exclusively from the basename of the exact validated profile file found for the active `host` ID. It MUST resolve under `skills/setup-pstack/references/`, reject symlinks/path traversal/absolute paths/nonfiles, and fail closed if missing. No configuration field, path supplied by a user, or filename stem masquerading as a host ID may select a different host's instructions.
+
+#### Scenario: a host ID is not a filename
+- **GIVEN** a profile file `copilot.json` declaring `host: github:copilot`
+- **WHEN** the active host is resolved
+- **THEN** lookup MUST compare the exact declared `host` ID before deriving any reference
+- **AND** the bare `copilot` string MUST NOT be accepted as a valid equivalent host ID
+
+#### Scenario: reference is missing or escapes the trusted directory
+- **GIVEN** a supported host-cli profile whose convention-derived reference is missing, symlinked or not a regular file
+- **WHEN** setup attempts to load native instructions
+- **THEN** it reports GAP/BLOCKED without invoking a different host's reference
+- **AND** it performs no probe and no configuration write
+
+### Requirement: Setup source modes have one typed, closed schema
+Feature: pstack-setup-overlays
+
+`schemas/portability/setup-projection.schema.json` and `SetupProjection` MUST express the same discriminated matrix without `skill` or `reference` fields. `host-cli` requires `live-enum` and host-home catalog. `host-catalog` requires `none` and an existing repo catalog. `inherit` and `none` forbid paths. Candidate hosts MUST NOT claim `host-cli`.
+
+#### Scenario: invalid source or leftover dispatch field
+- **GIVEN** a setup JSON object containing `skill`, `reference`, an unsupported source or an invalid effort/field combination
+- **WHEN** profile-schema validation runs after migration
+- **THEN** it fails before any reference lookup, model discovery or write
+- **AND** the other host's defaults MUST NOT be used as a fallback
+
+#### Scenario: unsupported host cannot probe native CLI
+- **GIVEN** a candidate host profile configured with `source: host-cli`
+- **WHEN** setup projection validation runs
+- **THEN** it is rejected as unproven
+- **AND** neither native CLI discovery nor configuration writes run
+
+### Requirement: Role and budget choices reuse existing authorities
+Feature: pstack-setup-overlays
+
+Canonical `pstack.package.json#roles` MUST remain the sole role taxonomy, and `scripts/model_role_resolver.py` MUST remain the sole precedence implementation. Setup MUST retain upstream steps for discovery, load, choices, validation, and confirmation. Detected available slugs/tokens are the only real values offered.
+
+#### Scenario: invalid or unavailable chosen model
+- **GIVEN** a role choice names an unconfirmed model or an effort token absent from the host's usable enum
+- **WHEN** setup validates it
+- **THEN** it requests a valid choice or reports BLOCKED
+- **AND** it persists no substituted or unverified model/effort value
+
+#### Scenario: panel list is not independent evidence
+- **GIVEN** a panel role configured as a list with repeated model-family entries
+- **WHEN** setup reports the mapping
+- **THEN** the panel retains requested seat cardinality
+- **AND** configuration of seats MUST NOT be described as completed or independent reviewers
+
+### Requirement: Both optional verification creation paths remain available
+Feature: pstack-setup-overlays
+
+The unified setup workflow MUST preserve optional post-setup offers to `create-verification-skill` (app verification) and `create-formal-verification-skill` (formal verification). Each MUST be offered only when missing, requested before invocation, and routed through the existing skill rather than a duplicate generator. Generation of a project-local skill requires a separate authorized follow-up action.
+
+#### Scenario: project already has a formal verifier
+- **GIVEN** the project contains a relevant formal verification skill, but no applicable behavioral verification skill
+- **WHEN** model setup completes
+- **THEN** it MAY offer only the missing behavioral verification skill
+- **AND** it MUST NOT regenerate or replace the existing formal verifier unasked
+
+#### Scenario: operator declines optional verification
+- **GIVEN** setup completes and the operator declines both optional offers
+- **WHEN** confirmation is emitted
+- **THEN** no app verification skill or formal-verification output is created
+- **AND** only the explicitly chosen host-native setup files may have changed
+
+### Requirement: Packaged profiles are the only editable host authority
+Feature: pstack-setup-overlays
+
+The nine host profiles MUST remain under `skills/setup-pstack/profiles/` as the only editable source. The root `profiles/` tree MAY remain as a byte-identical generated compatibility output. `resolve_profiles_dir` MUST prefer canonical packaged data; if both copies exist, a mismatch MUST fail validation rather than silently preferring a stale root copy. Profiles MUST NOT be moved to `poteto-mode/references` or used to assert unverified capabilities.
+
+#### Scenario: root profile diverges from the packaged profile
+- **GIVEN** both trees exist and one root profile is stale
+- **WHEN** profile resolution, validation or packaging runs
+- **THEN** the parity gate fails deterministically
+- **AND** no stale root content is allowed to choose a setup target
+
+#### Scenario: installed plugin only includes packaged source
+- **GIVEN** an installed plugin includes `skills/setup-pstack/profiles` but no root compatibility mirror
+- **WHEN** `/setup-pstack` resolves the host
+- **THEN** it loads the packaged profile without requiring root files
+- **AND** it does not invent unsupported host capabilities
+
+### Requirement: Native setup writes are scoped, idempotent and evidence-graded
+Feature: pstack-setup-overlays
+
+Setup MUST preserve user configuration outside explicitly managed paths, converge idempotently on repeated runs, and report only actually written paths. `host-catalog`, `inherit`, `none` and absent setup MUST perform no runtime setup writes. Planning validation may report PLANNED/DEGRADED/BLOCKED, never VERIFIED solely because a file exists. Missing hosts, checkers or reviews MUST remain NOT_RUN/BLOCKED.
+
+#### Scenario: repeat Grok setup with unrelated user files
+- **GIVEN** existing valid managed Grok overlays and an unrelated user-owned native role file
+- **WHEN** setup runs twice with identical validated choices
+- **THEN** the final pstack-managed content is byte-equivalent and unrelated files remain unchanged
+- **AND** no native execution success is claimed without direct observation
+
+#### Scenario: host-catalog is a project-time projection
+- **GIVEN** a Codex profile with `source: host-catalog`
+- **WHEN** `/setup-pstack` reports setup status
+- **THEN** it names the existing projected catalog and its provenance
+- **AND** it does not write `~/.grok` or claim the catalog was modified at runtime
+
+### Requirement: Retire legacy setup only after all callers and package surfaces migrate
+Feature: pstack-setup-overlays
+
+The implementation MUST migrate native setup references, role links, profile copies, schema, verifiers, manifests, scanner, docs and tests before deleting `skills/setup-pstack-grok/` and `SetupProjection.skill` together. Historical audits MAY retain those names but MUST NOT advertise them as live. The refactor MUST NOT introduce a second dispatcher, model registry, adapter SDK or QStack reverse dependency.
+
+#### Scenario: one caller still depends on the removed skill
+- **GIVEN** a shipped/current test, manifest, resolver, schema or skill link still requires `setup-pstack-grok`
+- **WHEN** the old skill is removed
+- **THEN** the package or static caller gate MUST fail
+- **AND** the migration MUST NOT be marked complete
+
+#### Scenario: old spec still requires dispatch to a separate setup skill
+- **GIVEN** the living `pstack-setup-overlays` requirement still describes `setup.skill` dispatch
+- **WHEN** the new setup reference behavior is applied
+- **THEN** the change MUST modify that original requirement, not only add a competing one
+- **AND** stale spec/implementation parity MUST be reported as a failed gate
