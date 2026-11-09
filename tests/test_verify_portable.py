@@ -356,7 +356,9 @@ def test_portable_verifier_cli_failing_change_observable(tmp_path: Path) -> None
     assert "Verify nonexistent-target-change openspec change passes schema checks" in res.stdout or res.returncode == 1
 
 
-def test_doctor_executes_direct_bunx_openspec_validation(tmp_path: Path) -> None:
+def test_doctor_executes_direct_bunx_openspec_validation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     verifier = PortableVerifier(host="grok", evidence_root=tmp_path)
     assert verifier.launch()
     assert verifier.doctor(check_durability=False) is True
@@ -367,10 +369,15 @@ def test_doctor_executes_direct_bunx_openspec_validation(tmp_path: Path) -> None
     assert "@fission-ai/openspec@1.16.1" in scenarios[0].command
     assert "validate" in scenarios[0].command
 
+    def _fake_run(*a: object, **k: object) -> subprocess.CompletedProcess[str]:
+        argv = list(a[0]) if a else []
+        return subprocess.CompletedProcess(argv, 0, "Change 'candidate-change' is valid", "")
+
+    monkeypatch.setattr(verify_portable.subprocess, "run", _fake_run)
     verifier_with_change = PortableVerifier(
         host="grok",
         evidence_root=tmp_path,
-        change="2026-11-07-pi-extension-package-proof",
+        change="candidate-change",
     )
     assert verifier_with_change.launch()
     assert verifier_with_change.doctor(check_durability=False) is True
@@ -379,7 +386,10 @@ def test_doctor_executes_direct_bunx_openspec_validation(tmp_path: Path) -> None
     ]
     assert len(scenarios_change) == 1
     assert scenarios_change[0].verdict == "PASS"
-    assert "2026-11-07-pi-extension-package-proof" in scenarios_change[0].command
+    assert "candidate-change" in scenarios_change[0].command
+    assert "--type" in scenarios_change[0].command
+    assert "change" in scenarios_change[0].command
+    assert "--strict" in scenarios_change[0].command
 
 
 def test_doctor_resolves_openspec_from_repo_root_not_caller_cwd(
