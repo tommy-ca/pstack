@@ -632,6 +632,12 @@
 - [x] Unit 3 (Issue #1284): [Mise & Gate][P0] Direct verify:openspec:audit in mise.toml to direct bunx execution, tighten tests, sync docs, and close Epic 1281
 *(Epic #1281 CLOSED)*
 
+## Epic #1290: [Epic][OpenSpec & Portability] Truthfully Reconcile Deferred Tasks, Merge Living Specification Deltas, and Archive Pi Extension Package Proof Change
+- [x] Unit 1 (Issue #1291): [OpenSpec & Tasks][P0] Truthfully annotate 14 deferred runtime/formal tasks in openspec/changes/2026-11-07-pi-extension-package-proof/tasks.md per archive-chain-integrity
+- [x] Unit 2 (Issue #1292): [OpenSpec & Spec Merge][P0] Merge delta requirements into openspec/specs/pstack-portability/spec.md, adapt doctor test for clean active change state, and archive the completed change
+- [x] Unit 3 (Issue #1293): [Gate, Evidence & Verification][P0] Refresh 6-harness static evidence with new spec hash, qualify triple OpenSpec validation, sync test tiers documentation, and close Epic 1290
+*(Epic #1290 CLOSED)*
+
 
 
 
