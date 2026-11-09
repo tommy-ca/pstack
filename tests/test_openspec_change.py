@@ -326,4 +326,43 @@ def test_intent_driven_openspec_cli_execution_contract(
     assert seen["argv"] == ["openspec", "status", "--change", "test-change"]
 
 
+def test_active_change_spec_deltas_align_with_base_specs() -> None:
+    changes_dir = ROOT / "openspec" / "changes"
+    specs_dir = ROOT / "openspec" / "specs"
+    if not changes_dir.exists() or not specs_dir.exists():
+        return
+    for change_dir in sorted(changes_dir.iterdir()):
+        if not change_dir.is_dir():
+            continue
+        specs_subdir = change_dir / "specs"
+        if not specs_subdir.exists():
+            continue
+        for cap_dir in sorted(specs_subdir.iterdir()):
+            delta_file = cap_dir / "spec.md"
+            base_file = specs_dir / cap_dir.name / "spec.md"
+            if not delta_file.exists() or not base_file.exists():
+                continue
+            base_content = base_file.read_text(encoding="utf-8")
+            base_reqs = {
+                line.strip()
+                for line in base_content.splitlines()
+                if line.strip().startswith("### Requirement:")
+            }
+            delta_content = delta_file.read_text(encoding="utf-8")
+            current_section = None
+            for line in delta_content.splitlines():
+                stripped = line.strip()
+                if stripped.startswith("## "):
+                    current_section = stripped
+                elif (
+                    stripped.startswith("### Requirement:")
+                    and current_section == "## ADDED Requirements"
+                ):
+                    assert stripped not in base_reqs, (
+                        f"Requirement '{stripped}' in {delta_file} is listed under "
+                        f"'## ADDED Requirements' but already exists in base spec {base_file}."
+                    )
+
+
+
 
