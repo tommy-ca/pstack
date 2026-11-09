@@ -384,6 +384,32 @@ Both commands execute `bunx --yes @fission-ai/openspec@1.16.1 validate --all && 
 The commands `mise run validate:openspec:all` and `mise run verify:openspec:all` validate all living specifications under `openspec/specs/`.
 The commands `mise run validate:openspec:changes` and `mise run verify:openspec:changes` strictly validate active change proposals.
 
+### Ten-skill verification driver matrix and orchestrator
+
+PStack declares ten portable verification skills across all supported harnesses (`principle-boundary-discipline`).
+The suite covers Grok, Codex, OMP, OpenCode, Antigravity, Droid, and specialized verification targets.
+These skills reside in `.grok/skills/verify-pstack`, `.codex/skills/verify-decision-contract`, `.codex/skills/verify-llm-wiki`, `.codex/skills/verify-llm-wiki-formal`, `.omp/skills/verify-omp-pstack`, `.opencode/skills/verify-opencode-pstack`, `.agents/skills/verify-antigravity-pstack`, `.factory/skills/verify-droid-pstack`, `.pi/skills/verify-pi-pstack`, and `.pi/skills/verify-pi-pstack-formal`.
+The orchestrator command `python3 scripts/scaffold_verification_skill.py --drive-all` executes driver verification across all ten skills sequentially (`principle-prove-it-works`).
+The command `python3 scripts/scaffold_verification_skill.py --audit` audits the structural readiness and disk existence of all ten verification skills (`principle-make-operations-idempotent`).
+
+### Durable live settlement retention and revision harmonization
+
+Static evidence refreshes inspect durable receipts for observed live executions (`principle-boundary-discipline`).
+When static refresh encounters verified live rows, it retains those settlements rather than overwriting them with untested status (`principle-prove-it-works`).
+Retained settlements must harmonize driver revisions across declared packaged hosts.
+Executing live verification via `PSTACK_RUN_OMP_LIVE=1 python3 scripts/verify_portable.py run --host omp` refreshes durable receipts with active driver revisions.
+Synchronizing `.audit/evidence/index.json` maintains uniform driver revisions across all packaged hosts (`principle-make-operations-idempotent`).
+
+### Live Antigravity plugin synchronization and lifecycle convergence
+
+The installed Antigravity plugin directory mirrors repository skills, agents, commands, and rules.
+The script `scripts/sync_antigravity_plugin.py` enforces bidirectional synchronization.
+Running `python3 scripts/sync_antigravity_plugin.py --force --sync` installs current repository state directly into the local Antigravity environment (`principle-boundary-discipline`).
+The task `mise run verify:sync` asserts zero drift between repository source files and the installed plugin (`principle-prove-it-works`).
+Package lifecycle operations across all declared hosts run via `python3 scripts/package_lifecycle.py update --host all`.
+The task `mise run verify:lifecycle` verifies that all installed host plugins remain converged and healthy (`principle-make-operations-idempotent`).
+
+
 
 
 
