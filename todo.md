@@ -620,6 +620,12 @@
 - [x] Unit 4 (Issue #1267): [Gate & Close][P0] Qualify 6-harness verification matrix, reconcile issue graph, and close Epic 1263
 *(Epic #1263 CLOSED)*
 
+## Epic #1272: [Epic][OpenSpec & Archive] Archive Chain Integrity, Task Completion Reconciliation, and Archived Validation Tooling
+- [x] Unit 1 (Issue #1273): [OpenSpec & Archive][P0] Reconcile archived task completion and close task outcomes in 3 historical changes per archive-chain-integrity
+- [x] Unit 2 (Issue #1274): [Verification & Mise][P0] Wire validate --archived into mise.toml, scripts/scaffold_verification_skill.py, and tests/test_openspec_direct.py
+- [x] Unit 3 (Issue #1275): [Docs & Gate][P0] Qualify 6-harness verification matrix, sync test tiers documentation, and close Epic 1272
+*(Epic #1272 CLOSED)*
+
 
 
 
