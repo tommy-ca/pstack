@@ -649,3 +649,9 @@
 - [x] Unit 2 (Issue #1306): [Tooling & Spec][P0] Support --help in check-plan.mjs and decompose recursive plan validation requirement (PR #1309)
 - [x] Unit 3 (Issue #1307): [Gate, Evidence & Archive][P0] Refresh 6-harness static evidence, archive change, and close Epic 1304 (PR #1310)
 *(Epic #1304 CLOSED)*
+
+## Epic #1311: [Epic][OpenSpec & Specs] Reconcile Living Spec Strict Warnings for Intent, Playbooks, and Principles
+- [x] Unit 1 (Issue #1312): [OpenSpec & Proposal][P0] Propose change 2026-11-10-core-spec-hygiene-and-intent-reconciliation (PR #1315)
+- [x] Unit 2 (Issue #1313): [Spec & Refactor][P0] Compact requirement texts in archive-chain-integrity, pstack-playbooks-not-rhai, and pstack-principles (PR #1316)
+- [x] Unit 3 (Issue #1314): [Gate, Evidence & Archive][P0] Refresh 6-harness static evidence, archive change, and close Epic 1311 (PR #1317)
+*(Epic #1311 CLOSED)*
