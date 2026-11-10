@@ -10,9 +10,7 @@ Require this port to cover the principle skills present in the pinned canonical 
 
 Feature: pstack-principles
 
-The plugin MUST ship 24 `skills/principle-*/SKILL.md` files for the canonical reference pin. The port MUST cover every canonical `skills/principle-*/SKILL.md` artifact at the `UPSTREAM` pin unless an explicit adaptation record classifies it as exclude or gap. The verifier MUST derive the expected inventory from the pin rather than a literal count.
-
-`/poteto-mode` MUST surface the applicable principles and require a real decision citation when a principle is claimed: the response names the principle and the concrete choice it changed.
+The plugin MUST ship 24 `skills/principle-*/SKILL.md` files for the canonical reference pin, covering every canonical artifact unless classified as exclude or gap. The verifier MUST derive the expected inventory from the pin. `/poteto-mode` MUST surface applicable principles and require a concrete decision citation when a principle is claimed.
 
 #### Scenario: principle count
 
