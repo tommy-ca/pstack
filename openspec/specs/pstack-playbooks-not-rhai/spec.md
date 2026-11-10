@@ -10,7 +10,7 @@ Keep PStack playbooks as the markdown `/poteto-mode` router rather than plugin-s
 
 Feature: pstack-playbooks-not-rhai
 
-The live pstack router MUST remain `/poteto-mode` and markdown playbooks under `skills/poteto-mode/playbooks/`. This plugin MUST NOT add a `workflows` key to `plugin.json`. This repo MUST NOT contain `.grok/workflows/` playbook clones. `skills/poteto-mode/playbooks/` MUST NOT contain `.rhai` files. Grok discovers workflows from a target repo's `.grok/workflows/` or `~/.grok/workflows/`, not from plugin install. Optional `automations/benny-grok/workflows/*.rhai` MAY exist as copies. They MUST NOT replace `/benny-triage` slash skills or `/poteto-mode`.
+The live pstack router MUST remain `/poteto-mode` with markdown playbooks under `skills/poteto-mode/playbooks/`. The manifest `plugin.json` MUST NOT add a `workflows` key, and the repository MUST NOT contain `.grok/workflows/` playbook clones or `.rhai` files under playbooks. Workflow discovery occurs from target repository paths rather than plugin installation. Any optional `.rhai` automations MUST NOT replace `/benny-triage` or `/poteto-mode`.
 
 #### Scenario: plugin manifest has no workflows key
 

@@ -9,7 +9,7 @@ intent-driven artifact chain.
 
 ### Requirement: Archived intent-driven changes retain the full chain
 
-Every completed archived OpenSpec change MUST contain `proposal.md`, at least one Markdown specification under `specs/`, `design.md`, `adr.md`, `tasks.md`, and `.openspec.yaml`. The integrity check MUST inspect every immediate archive directory and MUST fail with the missing artifact paths. Each task checkbox MUST have a closed outcome. A task that required an unavailable external repository, host, or credential MAY close with an explicit outcome annotation only when the annotation states that the action was deferred, names the reason, and points to the follow-up; it MUST NOT claim that the external action ran.
+Every completed archived OpenSpec change MUST contain `proposal.md`, at least one specification under `specs/`, `design.md`, `adr.md`, `tasks.md`, and `.openspec.yaml`. The integrity check MUST inspect every archive directory and fail with any missing artifact paths. Each task checkbox MUST have a closed outcome. External operations that cannot be proven locally MAY close with an explicit deferred outcome annotation naming the reason and follow-up without claiming execution.
 
 #### Scenario: Complete archived chains pass
 
