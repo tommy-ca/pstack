@@ -67,7 +67,91 @@ def test_generate_manifests() -> None:
 
     antigravity_models = project_package.generate_antigravity_models(desc)
     assert antigravity_models["singleRoleDefault"] == "pro"
-    assert "roles" in antigravity_models
+    assert antigravity_models["panel"] == ["pro", "flash"]
+    assert "gpt-oss" not in json.dumps(antigravity_models)
+    assert antigravity_models["drivers"] == {
+        "mainReasoning": "gemini-4-hydrogen-high",
+        "deepReasoning": "gemini-4-hydrogen-xhigh",
+        "fastWorker": "gemini-3.8-flash-high",
+        "fastVerifier": "gemini-3.8-flash-medium",
+        "paidProOrchestrator": "gemini-pro-orchestrator-g1-pro",
+        "paidProReasoning": "gemini-4-argon-high",
+        "minimalSpecialist": "claude-opus-5-5-high",
+    }
+    assert len(antigravity_models["available"]) == 12
+    avail = {m["slug"]: m for m in antigravity_models["available"]}
+    assert avail["pro"] == {
+        "label": "Gemini 4 Hydrogen (Pro Tier)",
+        "slug": "pro",
+        "family": "gemini-4-hydrogen",
+        "driver": "gemini-4-hydrogen-high",
+        "paidProDriver": "gemini-4-argon-high",
+    }
+    assert avail["flash"] == {
+        "label": "Gemini 3.8 Flash (Flash Tier)",
+        "slug": "flash",
+        "family": "gemini-3.8-flash",
+        "driver": "gemini-3.8-flash-high",
+    }
+    assert avail["flash_lite"] == {
+        "label": "Gemini 3.8 Flash Lite (Flash Lite Tier)",
+        "slug": "flash_lite",
+        "family": "gemini-3.8-flash",
+        "driver": "gemini-3.8-flash-low",
+    }
+    assert avail["inherit"] == {
+        "label": "Inherited Model",
+        "slug": "inherit",
+        "family": "inherit",
+        "driver": "inherit",
+    }
+    concrete_invariants = {
+        "gemini-4-hydrogen-high": ("gemini-4-hydrogen", "pro"),
+        "gemini-4-hydrogen-xhigh": ("gemini-4-hydrogen", "pro"),
+        "gemini-3.8-flash-high": ("gemini-3.8-flash", "flash"),
+        "gemini-3.8-flash-medium": ("gemini-3.8-flash", "flash"),
+        "gemini-3.8-flash-low": ("gemini-3.8-flash", "flash_lite"),
+        "gemini-4-argon-high": ("gemini-4-argon", "paid-pro"),
+        "gemini-pro-orchestrator-g1-pro": ("gemini-4-argon", "paid-pro"),
+        "claude-opus-5-5-high": ("claude-opus-5-5", "minimal-specialist"),
+    }
+    for slug, (family, tier) in concrete_invariants.items():
+        assert avail[slug]["family"] == family, slug
+        assert avail[slug]["tier"] == tier, slug
+    assert set(avail) == {"pro", "flash", "flash_lite", "inherit"} | set(concrete_invariants)
+    assert [m["slug"] for m in antigravity_models["available"] if m["slug"].startswith("claude-")] == [
+        "claude-opus-5-5-high"
+    ]
+    agy_roles = {r["role"]: r["models"] for r in antigravity_models["roles"]}
+    assert set(agy_roles) == {r["id"] for r in desc.roles}
+    assert {role for role, models in agy_roles.items() if models == ["flash"]} == {
+        "comment-sicko",
+        "how-explorer",
+        "swarm-workers",
+        "why-investigators",
+    }
+    assert {role for role, models in agy_roles.items() if models == ["pro"]} == {
+        "bug-fix",
+        "feature",
+        "hardest-tasks",
+        "hillclimb",
+        "how-critics",
+        "how-explainer",
+        "independent-verifier",
+        "judgment-and-prose",
+        "perf-issue",
+        "poteto-agent",
+        "refactoring",
+        "reflect-judgment",
+        "reflect-tooling",
+        "why-synthesizer",
+    }
+    assert {role for role, models in agy_roles.items() if models == "panel"} == {
+        "architect-runners",
+        "arena-cross-judge-pool",
+        "arena-runners",
+        "interrogate-reviewers",
+    }
 
     codex_models = project_package.generate_codex_models(desc)
     assert codex_models["singleRoleDefault"] == "gpt-6.1-sol"

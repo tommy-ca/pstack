@@ -4,26 +4,88 @@
     "pro",
     "flash"
   ],
+  "drivers": {
+    "mainReasoning": "gemini-4-hydrogen-high",
+    "deepReasoning": "gemini-4-hydrogen-xhigh",
+    "fastWorker": "gemini-3.8-flash-high",
+    "fastVerifier": "gemini-3.8-flash-medium",
+    "paidProOrchestrator": "gemini-pro-orchestrator-g1-pro",
+    "paidProReasoning": "gemini-4-argon-high",
+    "minimalSpecialist": "claude-opus-5-5-high"
+  },
   "available": [
     {
-      "label": "Gemini Pro 3.1",
+      "label": "Gemini 4 Hydrogen (Pro Tier)",
       "slug": "pro",
-      "family": "gemini-pro-3.1"
+      "family": "gemini-4-hydrogen",
+      "driver": "gemini-4-hydrogen-high",
+      "paidProDriver": "gemini-4-argon-high"
     },
     {
-      "label": "Gemini Flash 3.8",
+      "label": "Gemini 3.8 Flash (Flash Tier)",
       "slug": "flash",
-      "family": "gemini-flash-3.8"
+      "family": "gemini-3.8-flash",
+      "driver": "gemini-3.8-flash-high"
     },
     {
-      "label": "Gemini Flash 3.8 Lite",
+      "label": "Gemini 3.8 Flash Lite (Flash Lite Tier)",
       "slug": "flash_lite",
-      "family": "gemini-flash-3.8-lite"
+      "family": "gemini-3.8-flash",
+      "driver": "gemini-3.8-flash-low"
     },
     {
       "label": "Inherited Model",
       "slug": "inherit",
-      "family": "inherit"
+      "family": "inherit",
+      "driver": "inherit"
+    },
+    {
+      "label": "Gemini 4 Hydrogen (High)",
+      "slug": "gemini-4-hydrogen-high",
+      "family": "gemini-4-hydrogen",
+      "tier": "pro"
+    },
+    {
+      "label": "Gemini 4 Hydrogen (XHigh)",
+      "slug": "gemini-4-hydrogen-xhigh",
+      "family": "gemini-4-hydrogen",
+      "tier": "pro"
+    },
+    {
+      "label": "Gemini 3.8 Flash (High)",
+      "slug": "gemini-3.8-flash-high",
+      "family": "gemini-3.8-flash",
+      "tier": "flash"
+    },
+    {
+      "label": "Gemini 3.8 Flash (Medium)",
+      "slug": "gemini-3.8-flash-medium",
+      "family": "gemini-3.8-flash",
+      "tier": "flash"
+    },
+    {
+      "label": "Gemini 3.8 Flash (Low)",
+      "slug": "gemini-3.8-flash-low",
+      "family": "gemini-3.8-flash",
+      "tier": "flash_lite"
+    },
+    {
+      "label": "Gemini 4 Argon (High)",
+      "slug": "gemini-4-argon-high",
+      "family": "gemini-4-argon",
+      "tier": "paid-pro"
+    },
+    {
+      "label": "Orchestrator (Argon)",
+      "slug": "gemini-pro-orchestrator-g1-pro",
+      "family": "gemini-4-argon",
+      "tier": "paid-pro"
+    },
+    {
+      "label": "Claude Opus 5.5 (High)",
+      "slug": "claude-opus-5-5-high",
+      "family": "claude-opus-5-5",
+      "tier": "minimal-specialist"
     }
   ],
   "roles": [
@@ -94,7 +156,7 @@
     {
       "role": "how-explorer",
       "models": [
-        "pro"
+        "flash"
       ],
       "skill": "how"
     },
@@ -162,7 +224,7 @@
     {
       "role": "why-investigators",
       "models": [
-        "pro"
+        "flash"
       ],
       "skill": "why"
     },
