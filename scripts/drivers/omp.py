@@ -34,11 +34,11 @@ LIVE_PROMPT = (
 # told to hold a shell for two minutes. The parent's own reply is not part of the proof:
 # the evidence is the cancelled child's terminal lifecycle frame.
 CANCEL_PROMPT = (
-    "Use the task tool exactly once to spawn a subagent whose assignment is: "
+    "Do not call the bash tool yourself. Use the task tool exactly once to spawn a subagent whose assignment is: "
     "Run the shell command `sleep 120` with the bash tool, then reply with exactly CHILD_OK. "
-    "Do not reply before that command returns."
+    "Wait for that subagent result, then reply with exactly PARENT_DONE."
 )
-CHILD_START_TIMEOUT_S = 60.0
+CHILD_START_TIMEOUT_S = 120.0
 CANCEL_SETTLE_TIMEOUT_S = 30.0
 
 # A failed provider turn is not a failed child: these route-specific phrases mean the
