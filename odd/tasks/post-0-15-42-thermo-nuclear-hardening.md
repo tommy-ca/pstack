@@ -10,10 +10,10 @@ S5: Build and verify Unit 2 (Issue #1378) cleansing import blocks, unsorted impo
 S6: Build and verify Unit 3 (Issue #1379) synchronizing live Antigravity plugin, verifying 6-harness package lifecycle, refreshing durable receipts, opening stacked PRs, shipping the stack, and closing Epic #1376.
 
 ## Tasks
-- [ ] T1: S1, S2, S3 Audit delta, verify worktrees, and initialize graph (inline direct) - Epic #1376
-- [ ] T2: S4 Implement Unit 1 (Issue #1377) scripts/ import hygiene and facade preservation (inline direct)
-- [ ] T3: S5 Implement Unit 2 (Issue #1378) tests/ import block and typing hygiene (inline direct)
-- [ ] T4: S6 Implement Unit 3 (Issue #1379) gate qualification, 6-harness receipts, and shipping (inline direct)
+- [x] T1: S1, S2, S3 Audit delta, verify worktrees, and initialize graph (inline direct) - Epic #1376
+- [x] T2: S4 Implement Unit 1 (Issue #1377) scripts/ import hygiene and facade preservation (inline direct) - commit a5b8a962 (PR #1380)
+- [x] T3: S5 Implement Unit 2 (Issue #1378) tests/ import block and typing hygiene (inline direct) - commit 2ddc2d7d (PR #1381)
+- [x] T4: S6 Implement Unit 3 (Issue #1379) gate qualification, 6-harness receipts, and shipping (inline direct)
 
 ## Log
 L1: /pstack:poteto-mode clean up worktrees, research, explore, review and audit the recent prs, recursive plan and update to epics/issues graph, with /thermos, build and verify with swarm, arena, interrogate, new stacked prs, ship the stack then
