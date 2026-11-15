@@ -15,7 +15,7 @@ S6. Qualify six-harness skill package and evidence gates (Issue #1389).
 - [x] T3 (S3) Implement Unit 3 (Issue #1386) cross-skill link and script layout policy checks (inline direct) - commit 815f3d96 (PR #1401)
 - [x] T4 (S4) Implement Unit 4 (Issue #1387) verify-skill proof bounds and mutation tests (inline direct) - commit 00424855 (PR #1404)
 - [x] T5 (S5) Implement Unit 5 (Issue #1388) LLM Wiki source ingestion and provenance (inline direct) - commit 62eaa9f7 (PR #1405)
-- [ ] T6 (S6) Implement Unit 6 (Issue #1389) six-harness qualification and final landing (inline direct)
+- [x] T6 (S6) Implement Unit 6 (Issue #1389) six-harness qualification and final landing (inline direct) - commit e4cdf56d (PR #1406)
 
 ## Log
 L1. /pstack:poteto-mode clean up worktrees, research, explore, review and audit the recent prs, recursive plan and update to epics/issues graph, with /thermos, build and verify with swarm, arena, interrogate, new stacked prs, ship the stack then
