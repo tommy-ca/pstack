@@ -24,7 +24,7 @@ import sys
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List
 from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -32,8 +32,6 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts.decision_adapter import (
-    ChoiceOption,
-    ChoiceRequest,
     DecisionOutcome,
     FakeDecisionProvider,
     JevDecisionAdapter,

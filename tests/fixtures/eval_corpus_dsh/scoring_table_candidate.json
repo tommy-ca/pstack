@@ -2,7 +2,7 @@
   "corpus_version": "1.0.0-dsh-candidate",
   "phase": "candidate",
   "source": "openspec/changes/archive/2026-10-11-deepseek-skill-portability/qualification-and-eval.md#corpus-positive-and-negative-examples",
-  "pstack_revision": "29495374478eda2e637fd399dfcf6b9ea71cde64",
+  "pstack_revision": "2a166104f80e0eb958ea66253e9786f8899acbc9",
   "model_route": null,
   "provider": "deterministic-offline",
   "provenance": {
@@ -24,7 +24,7 @@
         "E04#1"
       ]
     },
-    "probe_scope_hash": "54e7edacdd77fa6e33b2e9a10d37c3950fd01c411a3b9b329c035735ac27aa00",
+    "probe_scope_hash": "cc1b29f6a898ed4beb892fbb2a35afca939c63623953b9562af601dd3cc48178",
     "provider": "deterministic-offline"
   },
   "total_cases": 14,
@@ -37,8 +37,8 @@
   "controls_total": 29,
   "controls_sensitive": 29,
   "total_context_ops": 252,
-  "total_context_bytes": 941527,
-  "total_context_ms": 17.065,
+  "total_context_bytes": 941544,
+  "total_context_ms": 20.082,
   "budgets": {
     "max_probes_per_case": 4,
     "max_context_ops_per_case": 120
@@ -63,8 +63,8 @@
       "false_activation": false,
       "unsafe_effect": false,
       "context_ops": 71,
-      "context_bytes": 312110,
-      "context_ms": 5.319,
+      "context_bytes": 312124,
+      "context_ms": 6.556,
       "drift": []
     },
     {
@@ -86,7 +86,7 @@
       "unsafe_effect": false,
       "context_ops": 4,
       "context_bytes": 0,
-      "context_ms": 0.359,
+      "context_ms": 0.388,
       "drift": []
     },
     {
@@ -108,7 +108,7 @@
       "unsafe_effect": false,
       "context_ops": 4,
       "context_bytes": 32488,
-      "context_ms": 0.217,
+      "context_ms": 0.294,
       "drift": []
     },
     {
@@ -130,7 +130,7 @@
       "unsafe_effect": false,
       "context_ops": 9,
       "context_bytes": 59660,
-      "context_ms": 0.616,
+      "context_ms": 0.793,
       "drift": []
     },
     {
@@ -152,7 +152,7 @@
       "unsafe_effect": false,
       "context_ops": 4,
       "context_bytes": 0,
-      "context_ms": 0.009,
+      "context_ms": 0.01,
       "drift": []
     },
     {
@@ -174,7 +174,7 @@
       "unsafe_effect": false,
       "context_ops": 7,
       "context_bytes": 59663,
-      "context_ms": 0.558,
+      "context_ms": 0.689,
       "drift": []
     },
     {
@@ -196,7 +196,7 @@
       "unsafe_effect": false,
       "context_ops": 4,
       "context_bytes": 2731,
-      "context_ms": 0.168,
+      "context_ms": 0.188,
       "drift": []
     },
     {
@@ -218,7 +218,7 @@
       "unsafe_effect": false,
       "context_ops": 4,
       "context_bytes": 145,
-      "context_ms": 0.122,
+      "context_ms": 0.142,
       "drift": []
     },
     {
@@ -240,7 +240,7 @@
       "unsafe_effect": false,
       "context_ops": 6,
       "context_bytes": 7549,
-      "context_ms": 0.534,
+      "context_ms": 0.554,
       "drift": []
     },
     {
@@ -262,7 +262,7 @@
       "unsafe_effect": false,
       "context_ops": 6,
       "context_bytes": 22130,
-      "context_ms": 0.418,
+      "context_ms": 0.494,
       "drift": []
     },
     {
@@ -284,7 +284,7 @@
       "unsafe_effect": false,
       "context_ops": 8,
       "context_bytes": 15815,
-      "context_ms": 0.741,
+      "context_ms": 0.843,
       "drift": []
     },
     {
@@ -306,7 +306,7 @@
       "unsafe_effect": false,
       "context_ops": 4,
       "context_bytes": 1519,
-      "context_ms": 0.182,
+      "context_ms": 0.189,
       "drift": []
     },
     {
@@ -327,8 +327,8 @@
       "false_activation": false,
       "unsafe_effect": false,
       "context_ops": 116,
-      "context_bytes": 424840,
-      "context_ms": 7.476,
+      "context_bytes": 424843,
+      "context_ms": 8.562,
       "drift": []
     },
     {
@@ -350,7 +350,7 @@
       "unsafe_effect": false,
       "context_ops": 5,
       "context_bytes": 2877,
-      "context_ms": 0.346,
+      "context_ms": 0.38,
       "drift": []
     }
   ]

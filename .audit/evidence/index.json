@@ -3,8 +3,8 @@
   "hosts": {
     "grok": {
       "receipt": ".audit/evidence/grok-receipt.json",
-      "run_id": "grok-1794737367-7ebdc897",
-      "timestamp": "2026-11-15T10:09:32Z",
+      "run_id": "grok-1794740937-00ab00a0",
+      "timestamp": "2026-11-15T11:09:03Z",
       "overall_verdict": "UNTESTED",
       "planes": {
         "canonical": "UNTESTED",
@@ -29,8 +29,8 @@
     },
     "codex": {
       "receipt": ".audit/evidence/codex-receipt.json",
-      "run_id": "codex-1794737372-2335a951",
-      "timestamp": "2026-11-15T10:09:37Z",
+      "run_id": "codex-1794740943-f4d1e1a3",
+      "timestamp": "2026-11-15T11:09:11Z",
       "overall_verdict": "UNTESTED",
       "planes": {
         "canonical": "UNTESTED",
@@ -55,8 +55,8 @@
     },
     "omp": {
       "receipt": ".audit/evidence/omp-receipt.json",
-      "run_id": "omp-1794733791-a60b5cbb",
-      "timestamp": "2026-11-15T09:11:16Z",
+      "run_id": "omp-1794740834-e2d465b5",
+      "timestamp": "2026-11-15T11:08:42Z",
       "overall_verdict": "UNTESTED",
       "planes": {
         "canonical": "UNTESTED",
@@ -68,7 +68,7 @@
         "canonical_pin": "c742dd61706fbacc1b95f1a20b7b988cf096ce6c",
         "upstream_head": "bf0c7cd80abdbf7fe47b634978a7d1b4071f71a7",
         "spec_hash": "6a40100eb2d2a576dd4e3a1619fa7b6767c3ee85a839c1ab0c756d1061ba8f6c",
-        "skills_tree_hash": "2f20cdffe0841f163b20e4429e539d134043c11e1e59f6447267ded1a6e746fa",
+        "skills_tree_hash": "8cf0625a19b7f0355489f2a09ee3a54ed9244bbe51a3652c6830aefc8e462b15",
         "profile_hash": "42587dd6c3939ad4a7140e32952d8a37d39224fe5e0c68c8a55bdf2e58588207",
         "package_descriptor_hash": "86246513da28b81e6a1da3de80692fd4b93c0b2aac71d6d898fc088822611b07",
         "manifest_hash": "7ac6a1385b63cf2300e27af0ddd2057c45ddc9f4a845392dc144c12cf0977520",
@@ -81,8 +81,8 @@
     },
     "opencode": {
       "receipt": ".audit/evidence/opencode-receipt.json",
-      "run_id": "opencode-1794737382-2ae0b362",
-      "timestamp": "2026-11-15T10:09:47Z",
+      "run_id": "opencode-1794740956-e51bce31",
+      "timestamp": "2026-11-15T11:09:21Z",
       "overall_verdict": "UNTESTED",
       "planes": {
         "canonical": "UNTESTED",
@@ -107,8 +107,8 @@
     },
     "antigravity": {
       "receipt": ".audit/evidence/antigravity-receipt.json",
-      "run_id": "antigravity-1794737387-47c1aefc",
-      "timestamp": "2026-11-15T10:09:53Z",
+      "run_id": "antigravity-1794740961-bd033894",
+      "timestamp": "2026-11-15T11:09:26Z",
       "overall_verdict": "UNTESTED",
       "planes": {
         "canonical": "UNTESTED",

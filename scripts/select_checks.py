@@ -11,7 +11,7 @@ import shlex
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, NamedTuple, Optional, Tuple, TypedDict
+from typing import Dict, Iterable, List, NamedTuple, Optional, Tuple, TypedDict
 
 from scripts.evidence_receipts import (
     can_claim_current_ci,

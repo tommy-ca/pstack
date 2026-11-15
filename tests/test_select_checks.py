@@ -439,7 +439,15 @@ class TestCheckEvidenceBinding:
 
     def test_select_checks_cli_refuses_corrupt_receipt(self, tmp_path: Path) -> None:
         import argparse
+        import shutil
         from scripts.select_checks import select_checks_action
+
+        repo = _init_repo(tmp_path)
+        wf_dest = repo / ".github" / "workflows"
+        wf_dest.mkdir(parents=True)
+        shutil.copy2(ROOT / ".github" / "workflows" / "portability-offline.yml", wf_dest)
+        _git(repo, "add", "-A")
+        _git(repo, "commit", "-m", "workflow")
 
         corrupt = tmp_path / "bad_receipt.json"
         corrupt.write_text("{not valid json", encoding="utf-8")
@@ -452,7 +460,7 @@ class TestCheckEvidenceBinding:
             receipt=corrupt,
             outcome=None,
         )
-        code = select_checks_action(args)
+        code = select_checks_action(args, root=repo)
         assert code == 2
 
 

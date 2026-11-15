@@ -5,7 +5,6 @@ Separated from portability_schema.py for modular decomposition (#593).
 
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -16,7 +15,6 @@ from scripts.portability_types import (
     SETTLEMENT_PROMOTIONS,
     SUPPORT_STATES,
     Binding,
-    ChildSettlement,
     HarnessProfile,
     ScenarioResult,
     ValidationError,
