@@ -13,5 +13,13 @@ __pycache__/
 node_modules/
 .atl/
 .venv/
-.mise/
+.mise/*
+!.mise/locks/
+.mise/locks/*
+!.mise/locks/npm-fission-ai-openspec/
+.mise/locks/npm-fission-ai-openspec/*
+!.mise/locks/npm-fission-ai-openspec/1.16.1/
+.mise/locks/npm-fission-ai-openspec/1.16.1/*
+!.mise/locks/npm-fission-ai-openspec/1.16.1/package.json
+!.mise/locks/npm-fission-ai-openspec/1.16.1/aube-lock.yaml
 docs/research/arena-f2-seam-2026-10-17/ledger/
