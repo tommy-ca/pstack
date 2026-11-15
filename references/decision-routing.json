@@ -3,9 +3,9 @@
   "source": {
     "repository": "cursor/plugins",
     "path_prefix": "pstack/",
-    "revision": "c742dd61706fbacc1b95f1a20b7b988cf096ce6c",
-    "tree": "dab86ab4f12c5fdc853a28045f25cd1610aa8b6b",
-    "router_blob": "2dd5e76fde228141d3fe78b0b09ca68456b49531"
+    "revision": "bf0c7cd80abdbf7fe47b634978a7d1b4071f71a7",
+    "tree": "82c5c5ba85db652adb25ada0ff9c9ed2635096df",
+    "router_blob": "98b16f9e79b37283050f1051ff6b0fec490108ff"
   },
   "fallback": "baseline",
   "routes": [
@@ -36,7 +36,7 @@
     },
     {
       "playbook": "bug-fix",
-      "canonical_blob": "b5de0bfa63add6ed38a38a8bd668cf36ac009c61",
+      "canonical_blob": "8f76e32fa47a6573dbb4e245bc66be64792fa1c1",
       "selection": "semantic_candidate",
       "class": "defect"
     },
@@ -47,23 +47,23 @@
     },
     {
       "playbook": "feature",
-      "canonical_blob": "eb1040cb2631f3eeacd8f9f6469d7e97277f24ef",
+      "canonical_blob": "17e7f004099844971c130a579a8bce615a6eecfa",
       "selection": "system_two"
     },
     {
       "playbook": "hillclimb",
-      "canonical_blob": "e9cf267908a9737236b3a8a8a5a99fe9066f7554",
+      "canonical_blob": "d135cf36764eeca9b8f7c1777c43c291316b0b2b",
       "selection": "system_two"
     },
     {
       "playbook": "investigation",
-      "canonical_blob": "cd119f04f23e0b7acb3f8cc5ba13ce4ab7aa6c7d",
+      "canonical_blob": "854d56f69388e24d0d9262cb6b545e1484873ca1",
       "selection": "semantic_candidate",
       "class": "explain"
     },
     {
       "playbook": "multi-phase-plan",
-      "canonical_blob": "7101aa71dbc08f2b84baa227a7bd589f800f13e8",
+      "canonical_blob": "277091a630232000fbe1d22de7bc65914df61f5d",
       "selection": "system_two"
     },
     {
@@ -83,7 +83,7 @@
     },
     {
       "playbook": "perf-issue",
-      "canonical_blob": "46dcc9963366992016dfb1d59ccaae977930f982",
+      "canonical_blob": "adf5c26611496729dd392a6ddebecd9ba322ae67",
       "selection": "semantic_candidate",
       "class": "performance"
     },
@@ -95,7 +95,7 @@
     },
     {
       "playbook": "refactoring",
-      "canonical_blob": "c04b07eeb8b8fa651d080729363466ab73d2fe40",
+      "canonical_blob": "8a76dc2ea3a808018792bedd34533753d6c21b78",
       "selection": "semantic_candidate",
       "class": "refactor"
     },

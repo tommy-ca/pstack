@@ -9,7 +9,7 @@ S4: Regenerate openspec/canonical-inventory.json and openspec/canonical-drift.js
 S5: Build and verify with swarm, arena, and interrogate, project manifests, sync live Antigravity plugin, refresh 6-harness receipts with ALL FRESH status, ship new stacked PRs, and close Epic #1358.
 
 ## Tasks
-- [ ] T1: S1, S2, S3, Issue #1359 Update UPSTREAM pin and pstack.package.json to 0.15.42 (inline direct, pending)
+- [x] T1: S1, S2, S3, Issue #1359 Update UPSTREAM pin and pstack.package.json to 0.15.42 (inline direct, pending PR #1362)
 - [ ] T2: S4, Issue #1360 Regenerate canonical inventory and canonical drift artifacts (inline direct, pending)
 - [ ] T3: S5, Issue #1361 Sync Antigravity plugin, refresh 6-harness receipts, qualify full gate, and close Epic 1358 (inline direct, pending)
 
