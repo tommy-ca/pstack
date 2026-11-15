@@ -7,8 +7,8 @@ S2: Cleanse 78 unused imports and redundant references across tests/ to reduce t
 S3: Project package manifests, synchronize live Antigravity plugin, refresh 6-harness durable evidence receipts, verify zero drift with ALL FRESH status, and close Epic #1351.
 
 ## Tasks
-- [ ] T1: S1, Issue #1352 Eliminate unused imports and dead symbols in scripts/ (inline direct, pending)
-- [ ] T2: S2, Issue #1353 Cleanse unused imports and redundant references in tests/ (inline direct, pending)
+- [x] T1: S1, Issue #1352 Eliminate unused imports and dead symbols in scripts/ (inline direct, commit 73a090fb, PR #1355)
+- [x] T2: S2, Issue #1353 Cleanse unused imports and redundant references in tests/ (inline direct, completed)
 - [ ] T3: S3, Issue #1354 Sync Antigravity plugin, refresh 6-harness receipts, qualify full gate, and close Epic 1351 (inline direct, pending)
 
 ## Log

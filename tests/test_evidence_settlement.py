@@ -9,14 +9,10 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts.portability_schema import (
-    Binding,
     ChildSettlement,
     CONFORMANCE_PLANES,
-    Evidence,
-    HarnessProfile,
     MANDATORY_SUPPORT_FLOOR,
     ScenarioResult,
-    SurfaceRevisions,
     ValidationError,
     VerificationReceipt,
     _is_observed_settlement,
@@ -25,8 +21,6 @@ from scripts.portability_schema import (
     check_scenario_pins,
     compute_surface_revisions,
     derive_support_state,
-    preserve_observed_settlements,
-    reduce_verdicts,
     settle_planes,
 )
 
@@ -34,13 +28,10 @@ RECEIPT_SCHEMA = ROOT / "schemas" / "receipt.schema.json"
 EVIDENCE_DIR = ROOT / ".audit" / "evidence"
 
 from tests.evidence_test_helpers import (
-    _adversarial_receipt,
     _declared_from,
-    _observed_scenario,
     _omp_live_root,
     _omp_spawn_scenario,
     _plane_rows,
-    _portable_verifier,
     _profile_pinning,
     _proof_bar_refresh,
     _success_settlement,

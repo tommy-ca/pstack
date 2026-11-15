@@ -10,9 +10,6 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts.eval_decision_routing import (
-    MAX_COST_PER_DECISION_BUDGET,
-    MAX_P95_LATENCY_MS_BUDGET,
-    MIN_BYPASS_ACCURACY_PERCENT,
     run_evaluation,
 )
 

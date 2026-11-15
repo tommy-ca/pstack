@@ -11,8 +11,6 @@ Validates Requirements R-JEV-01 through R-JEV-10, addressing:
 
 from __future__ import annotations
 
-import json
-import os
 import sys
 from pathlib import Path
 from typing import Any, Dict
@@ -26,12 +24,10 @@ if str(ROOT) not in sys.path:
 from scripts.decision_adapter import (
     ChoiceOption,
     ChoiceRequest,
-    DecisionOutcome,
     EgressClass,
     JevDecisionAdapter,
     JevProviderProfile,
     KNOWN_PROFILES,
-    ProviderObservation,
     ScoreRange,
     ScoreRequest,
     validate_and_create_safe_context,

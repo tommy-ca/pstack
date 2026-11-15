@@ -25,7 +25,7 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
-from typing import Dict, List, Sequence
+from typing import Dict
 
 import pytest
 

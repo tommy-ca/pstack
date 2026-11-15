@@ -7,7 +7,6 @@ repository-owned lifecycle round trip for the droid host.
 
 from __future__ import annotations
 
-import importlib.util
 import json
 import sys
 from pathlib import Path

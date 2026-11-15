@@ -23,7 +23,6 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts.decision_adapter import (
-    ChoiceOption,
     ChoiceRequest,
     DecisionOutcome,
     DecisionRequest,
@@ -31,11 +30,8 @@ from scripts.decision_adapter import (
     ProviderObservation,
     SafeContext,
     SemanticDecisionProvider,
-    validate_and_create_safe_context,
 )
 from scripts.route_resolver import (
-    RouteResolution,
-    resolve_skill_order,
     resolve_skill_order_with_shadow,
 )
 from scripts.setup_pstack import resolve_profiles_dir

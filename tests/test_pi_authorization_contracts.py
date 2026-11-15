@@ -1,12 +1,11 @@
 """Pi verdict autonomous authorization, confinement proof, and gate tests (#897, #902)."""
 from __future__ import annotations
 
-import copy
 import json
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 
 import pytest
 
@@ -14,13 +13,10 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from scripts.portability_schema import VerificationReceipt
 from scripts.prove_pi_vertical_slice import (
     build_receipt,
     build_scenarios,
-    live_slice,
     offline_slice,
-    probe_pi_packages,
 )
 from scripts.verify_pi_candidate import from_disk
 

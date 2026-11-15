@@ -11,10 +11,8 @@ import sys
 import scripts.portable_verifier as portable_verifier
 
 from scripts.portability_types import (
-    Binding,
     ChildSettlement,
     CONFORMANCE_PLANES,
-    Evidence,
     HarnessProfile,
     ScenarioResult,
     VerificationReceipt,

@@ -15,7 +15,6 @@ from scripts.evidence_receipts import (
     check_receipt_staleness,
     compute_file_sha256,
     create_decision_receipt,
-    get_git_revision_and_tree,
 )
 
 

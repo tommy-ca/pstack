@@ -10,7 +10,6 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-import pytest
 import tomllib
 
 from scripts.setup_pstack import (
@@ -20,7 +19,6 @@ from scripts.setup_pstack import (
     evaluate_hook_lifecycle,
     generate_pstack_models_toml,
     get_hook_opt_out,
-    load_canonical_roles,
     parse_pstack_models_toml,
     set_hook_opt_out,
     sync_grok_role_overlays,

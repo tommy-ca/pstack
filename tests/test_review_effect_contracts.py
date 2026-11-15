@@ -17,7 +17,6 @@ The predicates are intentionally small text contracts, the same shape
 from __future__ import annotations
 
 import hashlib
-import importlib.util
 import re
 import shutil
 import sys
