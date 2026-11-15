@@ -16,6 +16,7 @@ from typing import Any, Dict, List, NoReturn, Optional
 from scripts.evidence_durability import (
     evaluate_durable_settlement_update,
     get_live_remedy,
+    load_verification_receipt,
     preserve_observed_settlements,
 )
 from scripts.host_identity import BUILTIN_HOSTS
@@ -83,6 +84,31 @@ def evidence_index_row(host: str, receipt: VerificationReceipt) -> Dict[str, Any
     }
 
 
+def _update_evidence_index(
+    index_file: Path,
+    index_data: Dict[str, Any],
+    host: str,
+    row_receipt: VerificationReceipt,
+    *,
+    durable_file: Optional[Path] = None,
+) -> None:
+    index_data.setdefault("hosts", {})[host] = evidence_index_row(host, row_receipt)
+    try:
+        _write_json(index_file, index_data)
+    except OSError as err:
+        if durable_file is not None:
+            _fail(
+                f"FAILED to write the evidence index at {index_file}: "
+                f"{type(err).__name__}: {err}. The durable receipt at {durable_file} is "
+                f"already written, so the inventory trails it until the file is writable "
+                f"and this check is re-run."
+            )
+        _fail(
+            f"REFUSING to write the evidence index at {index_file}: "
+            f"{type(err).__name__}: {err}."
+        )
+
+
 def rows_from_receipts(evidence_root: Path, root: Path = ROOT) -> Dict[str, Any]:
     rows: Dict[str, Any] = {}
     for host in get_declared_hosts(root):
@@ -90,8 +116,7 @@ def rows_from_receipts(evidence_root: Path, root: Path = ROOT) -> Dict[str, Any]
         if not _file_or_denied(receipt_file):
             continue
         try:
-            receipt = VerificationReceipt(**json.loads(receipt_file.read_text(encoding="utf-8")))
-            receipt.validate()
+            receipt = load_verification_receipt(receipt_file)
             if receipt.host != host:
                 raise ValueError(f"{receipt_file} is the receipt for {receipt.host!r}, not {host!r}")
         except Exception:
@@ -168,14 +193,7 @@ def write_verification_evidence(
                     f"{', '.join(decision.dropped)}"
                 )
                 assert decision.previous is not None
-                index_data.setdefault("hosts", {})[host] = evidence_index_row(host, decision.previous)
-                try:
-                    _write_json(index_file, index_data)
-                except OSError as err:
-                    _fail(
-                        f"REFUSING to write the evidence index at {index_file}: "
-                        f"{type(err).__name__}: {err}."
-                    )
+                _update_evidence_index(index_file, index_data, host, decision.previous)
                 return durable_file
             elif decision.action == "write" and decision.preserved:
                 receipt.planes = settle_planes(receipt.scenarios)
@@ -187,17 +205,7 @@ def write_verification_evidence(
                     f"{', '.join(decision.preserved)}"
                 )
         _write_json(durable_file, durable_data)
-
-        index_data.setdefault("hosts", {})[host] = evidence_index_row(host, receipt)
-        try:
-            _write_json(index_file, index_data)
-        except OSError as err:
-            _fail(
-                f"FAILED to write the evidence index at {index_file}: "
-                f"{type(err).__name__}: {err}. The durable receipt at {durable_file} is "
-                f"already written, so the inventory trails it until the file is writable "
-                f"and this check is re-run."
-            )
+        _update_evidence_index(index_file, index_data, host, receipt, durable_file=durable_file)
         print(f"Evidence captured at {receipt_file} (durable: {durable_file})")
     else:
         print(f"Evidence captured at {receipt_file}")
@@ -224,7 +232,7 @@ def index_row_mismatch(host: str, index_file: Path, receipt_root: Path) -> Optio
         if not _file_or_denied(durable_file):
             return None
         try:
-            VerificationReceipt(**json.loads(durable_file.read_text(encoding="utf-8"))).validate()
+            load_verification_receipt(durable_file)
         except Exception as err:
             return (
                 f"index {index_file} has no row for {host} and its durable receipt "
@@ -338,8 +346,7 @@ def check_staleness_action(
             all_fresh = False
             continue
         try:
-            rdata = json.loads(receipt_file.read_text(encoding="utf-8"))
-            receipt = VerificationReceipt(**rdata)
+            receipt = load_verification_receipt(receipt_file, validate=False)
             stale_map = receipt.evaluate_plane_staleness(current_revs)
             stale_planes = [p for p, reasons in stale_map.items() if reasons]
             needs_regen = bool(stale_planes)

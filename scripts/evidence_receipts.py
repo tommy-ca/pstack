@@ -90,7 +90,7 @@ class ReceiptBase:
         filtered = {k: v for k, v in data.items() if k in valid_fields}
         try:
             return cls(**filtered)
-        except Exception:
+        except (TypeError, ValueError, KeyError):
             return None
 
     @classmethod
@@ -104,7 +104,7 @@ class ReceiptBase:
         try:
             raw = json.loads(p.read_text(encoding="utf-8"))
             return cls.from_dict(raw)
-        except Exception:
+        except (OSError, json.JSONDecodeError, UnicodeDecodeError):
             return None
 
 
@@ -150,8 +150,8 @@ class CalibratedEvidenceReceipt(ReceiptBase):
     metadata: Dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
-        if self.provenance is None and "provenance" in self.metadata:
-            self.provenance = self.metadata.get("provenance")
+        if self.provenance is None and isinstance(self.metadata, dict) and "provenance" in self.metadata:
+            object.__setattr__(self, "provenance", self.metadata.get("provenance"))
 
 
 def is_fixture_evidence_allowed() -> bool:

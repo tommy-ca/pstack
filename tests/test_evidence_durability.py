@@ -204,6 +204,41 @@ def test_verified_binding_cannot_pin_a_non_live_scenario() -> None:
         check_evidence_durability(_omp_profile(d), ROOT, check_freshness=False)
 
 
+def test_load_verification_receipt_and_preloaded_derive_support_state(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from scripts.evidence_durability import derive_support_state, load_verification_receipt
+
+    valid_path = EVIDENCE_DIR / "omp-receipt.json"
+    receipt = load_verification_receipt(valid_path)
+    assert receipt.host == "omp"
+    assert VerificationReceipt.from_file(valid_path).host == "omp"
+
+    with pytest.raises(ValidationError, match="Receipt file not found"):
+        load_verification_receipt(tmp_path / "missing.json")
+
+    prof = _omp_profile()
+    revs = compute_surface_revisions(ROOT, "omp")
+    receipts_by_ref = {".audit/evidence/omp-receipt.json": receipt}
+    staleness_by_ref = {".audit/evidence/omp-receipt.json": receipt.evaluate_plane_staleness(revs)}
+    expected = derive_support_state(prof, ROOT, current_revisions=revs)
+
+    def fail_read(*args, **kwargs):
+        raise RuntimeError("Disk read not allowed when preloaded")
+
+    monkeypatch.setattr(Path, "read_text", fail_read)
+    assert (
+        derive_support_state(
+            prof,
+            ROOT,
+            current_revisions=revs,
+            receipts_by_ref=receipts_by_ref,
+            staleness_by_ref=staleness_by_ref,
+        )
+        == expected
+    )
+
+
 def test_stale_skills_tree_hash_invalidates_runtime() -> None:
     current_revs = compute_surface_revisions(ROOT, "codex")
     receipt_data = json.loads((EVIDENCE_DIR / "codex-receipt.json").read_text(encoding="utf-8"))

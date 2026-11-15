@@ -727,6 +727,28 @@ class VerificationReceipt:
                 raise ValidationError(f"Invalid scenario item: {s!r}")
         self.scenarios = parsed_scenarios
 
+    @classmethod
+    def from_file(cls, path: str | Path, *, validate: bool = True) -> VerificationReceipt:
+        """Load and validate a VerificationReceipt from disk."""
+        import json
+
+        p = Path(path)
+        if not p.is_file():
+            raise ValidationError(f"Receipt file not found: {p}")
+        try:
+            data = json.loads(p.read_text(encoding="utf-8"))
+        except Exception as err:
+            raise ValidationError(f"Corrupt or unreadable receipt at {p}: {err}") from err
+        if not isinstance(data, dict):
+            raise ValidationError(f"Receipt JSON at {p} must be an object")
+        try:
+            receipt = cls(**data)
+        except TypeError as err:
+            raise ValidationError(f"Invalid receipt fields at {p}: {err}") from err
+        if validate:
+            receipt.validate()
+        return receipt
+
     def validate(self) -> None:
         if not self.run_id:
             raise ValidationError("run_id cannot be empty")
