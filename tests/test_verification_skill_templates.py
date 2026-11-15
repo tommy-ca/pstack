@@ -7,9 +7,10 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from skill_frontmatter import read_scalar, split_frontmatter
+
 import scripts.scaffold_verification_skill as scaffolder
 import scripts.verification_skill_templates as templates
-from skill_frontmatter import split_frontmatter, read_scalar
 
 
 def test_reexport_parity() -> None:

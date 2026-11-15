@@ -5,12 +5,14 @@ import os
 import sys
 from pathlib import Path
 from unittest.mock import patch
+
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+import scripts.portable_verifier as verify_portable
 from scripts.drivers import (
     AntigravityDriver,
     ClaudeDriver,
@@ -23,7 +25,7 @@ from scripts.drivers import (
 )
 from scripts.drivers.omp import ISOLATION_CHILD_FILE, ISOLATION_TOKEN
 from scripts.drivers.omp_rpc import negotiated_descriptor
-import scripts.portable_verifier as verify_portable
+
 PortableVerifier = verify_portable.PortableVerifier
 
 # These tests interrogate locally installed host CLIs; they do not prove
@@ -353,6 +355,7 @@ def test_omp_isolation_live_requires_the_gate(tmp_path: Path, monkeypatch: pytes
 
 def test_omp_isolation_residue_detects_untracked_files_with_show_untracked_files_no(tmp_path: Path) -> None:
     import subprocess
+
     from scripts.drivers.omp import _isolation_residue
 
     repo = tmp_path / "repo"

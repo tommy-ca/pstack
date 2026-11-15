@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from scripts.setup_pstack import resolve_profiles_dir
 from scripts.verify_rollback_equivalence import (
     run_all_rollback_scenarios,
     verify_scenario_abstention,
@@ -22,7 +23,6 @@ from scripts.verify_rollback_equivalence import (
     verify_scenario_receipt_failure,
     verify_scenario_stale_evidence,
 )
-from scripts.setup_pstack import resolve_profiles_dir
 
 
 @pytest.fixture

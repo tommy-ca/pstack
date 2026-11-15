@@ -1,26 +1,25 @@
 from __future__ import annotations
 
-from dataclasses import asdict
 import json
 import os
-from pathlib import Path
 import shutil
 import subprocess
 import sys
+from dataclasses import asdict
+from pathlib import Path
 
-import scripts.portable_verifier as portable_verifier
-
+from scripts import portable_verifier
 from scripts.portability_types import (
-    ChildSettlement,
     CONFORMANCE_PLANES,
+    ChildSettlement,
     HarnessProfile,
     ScenarioResult,
     VerificationReceipt,
     reduce_verdicts,
     settle_planes,
 )
-from scripts.surface_revisions import compute_surface_revisions
 from scripts.setup_pstack import resolve_profiles_dir
+from scripts.surface_revisions import compute_surface_revisions
 
 ROOT = Path(__file__).resolve().parents[1]
 EVIDENCE_DIR = ROOT / ".audit" / "evidence"

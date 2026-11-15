@@ -19,13 +19,14 @@ import json
 import os
 import sys
 from pathlib import Path
+
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from scripts.route_resolver import resolve_skill_order, resolve_primary_artifact
+from scripts.route_resolver import resolve_primary_artifact, resolve_skill_order
 from scripts.setup_pstack import resolve_profiles_dir
 
 

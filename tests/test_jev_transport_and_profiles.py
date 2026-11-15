@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 import pytest
 
@@ -22,12 +22,12 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts.decision_adapter import (
+    KNOWN_PROFILES,
     ChoiceOption,
     ChoiceRequest,
     EgressClass,
     JevDecisionAdapter,
     JevProviderProfile,
-    KNOWN_PROFILES,
     ScoreRange,
     ScoreRequest,
     validate_and_create_safe_context,
@@ -216,9 +216,9 @@ class TestJevTransportAndGuards:
         monkeypatch.setenv("PSTACK_JEV_ALLOW_PAID", "1")
         monkeypatch.setenv("OPENROUTER_API_KEY", "sk-mock-key")
 
-        captured: Dict[str, Any] = {}
+        captured: dict[str, Any] = {}
 
-        def mock_transport(url: str, payload: Dict[str, Any], api_key: str) -> Dict[str, Any]:
+        def mock_transport(url: str, payload: dict[str, Any], api_key: str) -> dict[str, Any]:
             captured["url"] = url
             captured["payload"] = payload
             captured["api_key"] = api_key
@@ -262,7 +262,7 @@ class TestJevTransportAndGuards:
 
         captured_url = None
 
-        def mock_transport(url: str, payload: Dict[str, Any], api_key: str) -> Dict[str, Any]:
+        def mock_transport(url: str, payload: dict[str, Any], api_key: str) -> dict[str, Any]:
             nonlocal captured_url
             captured_url = url
             return {
@@ -292,7 +292,7 @@ class TestJevTransportAndGuards:
     ) -> None:
         monkeypatch.setenv("OPENCODE_API_KEY", "opencode-key")
 
-        def mock_transport(url: str, payload: Dict[str, Any], api_key: str) -> Dict[str, Any]:
+        def mock_transport(url: str, payload: dict[str, Any], api_key: str) -> dict[str, Any]:
             return {
                 "model": "jev-1.13-free",
                 "results": [
@@ -315,7 +315,7 @@ class TestJevTransportAndGuards:
     ) -> None:
         monkeypatch.setenv("OPENCODE_API_KEY", "opencode-key")
 
-        def mock_transport(url: str, payload: Dict[str, Any], api_key: str) -> Any:
+        def mock_transport(url: str, payload: dict[str, Any], api_key: str) -> Any:
             # Not a dictionary or missing results
             return ["malformed", "list"]
 
@@ -330,7 +330,7 @@ class TestJevTransportAndGuards:
     ) -> None:
         monkeypatch.setenv("OPENCODE_API_KEY", "opencode-key")
 
-        def mock_transport(url: str, payload: Dict[str, Any], api_key: str) -> Any:
+        def mock_transport(url: str, payload: dict[str, Any], api_key: str) -> Any:
             raise ConnectionResetError("Connection dropped by peer")
 
         adapter = JevDecisionAdapter(enabled=True, profile="opencode-zen", transport_fn=mock_transport)
@@ -350,7 +350,7 @@ class TestJevTransportAndGuards:
 
         transport_called = False
 
-        def mock_transport(url: str, payload: Dict[str, Any], api_key: str) -> Any:
+        def mock_transport(url: str, payload: dict[str, Any], api_key: str) -> Any:
             nonlocal transport_called
             transport_called = True
             return {}
@@ -368,7 +368,7 @@ class TestJevTransportAndGuards:
     ) -> None:
         monkeypatch.setenv("OPENCODE_API_KEY", "opencode-key")
 
-        def mock_transport(url: str, payload: Dict[str, Any], api_key: str) -> Dict[str, Any]:
+        def mock_transport(url: str, payload: dict[str, Any], api_key: str) -> dict[str, Any]:
             return {
                 "model": "jev-1.13-free",
                 "provider": "opencode",
@@ -392,7 +392,7 @@ class TestJevTransportAndGuards:
     ) -> None:
         monkeypatch.setenv("OPENCODE_API_KEY", "opencode-key")
 
-        def mock_transport(url: str, payload: Dict[str, Any], api_key: str) -> Dict[str, Any]:
+        def mock_transport(url: str, payload: dict[str, Any], api_key: str) -> dict[str, Any]:
             return {
                 "model": "jev-1.13-free",
                 "provider": "opencode",
@@ -416,7 +416,7 @@ class TestJevTransportAndGuards:
     ) -> None:
         monkeypatch.setenv("OPENCODE_API_KEY", "opencode-key")
 
-        def mock_transport(url: str, payload: Dict[str, Any], api_key: str) -> Dict[str, Any]:
+        def mock_transport(url: str, payload: dict[str, Any], api_key: str) -> dict[str, Any]:
             return {
                 "model": "jev-1.13-free",
                 "provider": "opencode",
@@ -438,7 +438,7 @@ class TestJevTransportAndGuards:
     ) -> None:
         monkeypatch.setenv("OPENCODE_API_KEY", "opencode-key")
 
-        def mock_transport(url: str, payload: Dict[str, Any], api_key: str) -> Dict[str, Any]:
+        def mock_transport(url: str, payload: dict[str, Any], api_key: str) -> dict[str, Any]:
             return {
                 # missing model and provider
                 "answers": {
@@ -462,7 +462,7 @@ class TestJevTransportAndGuards:
 
         call_count = 0
 
-        def mock_transport(url: str, payload: Dict[str, Any], api_key: str) -> Dict[str, Any]:
+        def mock_transport(url: str, payload: dict[str, Any], api_key: str) -> dict[str, Any]:
             nonlocal call_count
             call_count += 1
             return {

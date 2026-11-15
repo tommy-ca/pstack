@@ -2,6 +2,7 @@ import json
 import subprocess
 import sys
 from pathlib import Path
+
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -9,16 +10,16 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts.portability_schema import (
+    CONDITIONAL_CAPABILITIES,
+    CONFORMANCE_PLANES,
+    MANDATORY_SUPPORT_FLOOR,
+    PORTABLE_CAPABILITY_UNIVERSE,
     Adaptation,
     Binding,
     Capability,
-    CONDITIONAL_CAPABILITIES,
-    CONFORMANCE_PLANES,
     Evidence,
     HarnessProfile,
-    MANDATORY_SUPPORT_FLOOR,
     PackageDescriptor,
-    PORTABLE_CAPABILITY_UNIVERSE,
     RuntimeConventions,
     SetupProjection,
     SkillOrderItem,
@@ -497,9 +498,9 @@ def test_normative_profile_json_schema_fails_closed_on_invalid_primitive_or_shap
 
 def test_portability_schema_modular_decomposition_and_backwards_compatibility() -> None:
     """Validate that portability_schema decomposition maintains sub-1000 lines and 100% parity."""
+    import scripts.evidence_durability as ed
     import scripts.portability_schema as ps
     import scripts.surface_revisions as sr
-    import scripts.evidence_durability as ed
 
     schema_file = ROOT / "scripts" / "portability_schema.py"
     lines = schema_file.read_text(encoding="utf-8").splitlines()

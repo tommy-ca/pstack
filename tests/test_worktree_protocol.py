@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
+
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -12,13 +13,13 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts.worktree_protocol import (
+    add_worktree,
+    check_worktrees,
     find_repo_root,
+    list_confined_worktrees,
+    remove_worktree,
     slugify_branch_name,
     validate_worktree_path,
-    check_worktrees,
-    add_worktree,
-    remove_worktree,
-    list_confined_worktrees,
 )
 
 

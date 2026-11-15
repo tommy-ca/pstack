@@ -14,7 +14,8 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 import pytest
-from jsonschema import Draft202012Validator, ValidationError as JsonSchemaError
+from jsonschema import Draft202012Validator
+from jsonschema import ValidationError as JsonSchemaError
 
 from scripts import model_role_policy
 from scripts.model_role_policy import check_model_role_policy
@@ -26,8 +27,8 @@ from tests.model_role_helpers import (
     ROOT,
     SCHEMA,
     VALIDATOR,
-    catalog_plan_policy,
     capability_bindings,
+    catalog_plan_policy,
     validate,
 )
 

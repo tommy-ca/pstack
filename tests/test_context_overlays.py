@@ -27,11 +27,11 @@ import re
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Iterable, List, Sequence, Tuple
-
-from scripts.setup_pstack import resolve_profiles_dir
+from typing import Iterable, Sequence
 
 import pytest
+
+from scripts.setup_pstack import resolve_profiles_dir
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = Path(__file__).resolve().parent / "fixtures" / "context-overlays"
@@ -70,27 +70,27 @@ CONDITIONAL_MARKERS = (
 )
 
 
-def _load(path: Path) -> Dict:
+def _load(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
 REGISTRY = _load(REGISTRY_PATH)
-OVERLAYS: List[Dict] = REGISTRY["overlays"]
-OVERLAY_INDEX: Dict[str, Dict] = {overlay["id"]: overlay for overlay in OVERLAYS}
-CASES: List[Dict] = _load(CASES_PATH)["cases"]
+OVERLAYS: list[dict] = REGISTRY["overlays"]
+OVERLAY_INDEX: dict[str, dict] = {overlay["id"]: overlay for overlay in OVERLAYS}
+CASES: list[dict] = _load(CASES_PATH)["cases"]
 
 
 @dataclass(frozen=True)
 class Activation:
     """Result of gating the registry against one case."""
 
-    activated: Tuple[str, ...]
-    blocked: Tuple[Tuple[str, str], ...]
-    inactive: Tuple[str, ...]
+    activated: tuple[str, ...]
+    blocked: tuple[tuple[str, str], ...]
+    inactive: tuple[str, ...]
 
 
 def select_overlays(
-    registry: Sequence[Dict],
+    registry: Sequence[dict],
     *,
     capabilities: Iterable[str],
     domain: str,
@@ -136,7 +136,7 @@ def ungated_bytes() -> int:
     return prose_bytes(OVERLAY_INDEX)
 
 
-def measure_case(case: Dict) -> Dict:
+def measure_case(case: dict) -> dict:
     """Activation plus measured context work for one corpus case."""
     activation = select_overlays(
         OVERLAYS,
@@ -165,7 +165,7 @@ def measure_case(case: Dict) -> Dict:
     }
 
 
-def overlay_costs() -> Dict[str, Dict[str, int]]:
+def overlay_costs() -> dict[str, dict[str, int]]:
     """Measured agent-facing cost of each overlay pack."""
     return {
         overlay["id"]: {
@@ -176,7 +176,7 @@ def overlay_costs() -> Dict[str, Dict[str, int]]:
     }
 
 
-def build_trace() -> Dict:
+def build_trace() -> dict:
     records = [measure_case(case) for case in CASES]
     ungated_per_case = ungated_bytes()
     gated_total = sum(record["measured_bytes"] for record in records)
@@ -213,11 +213,11 @@ def write_trace() -> Path:
     return TRACE_PATH
 
 
-def _case_ids() -> List[str]:
+def _case_ids() -> list[str]:
     return [case["id"] for case in CASES]
 
 
-def _corpus_case(case_id: str) -> Dict:
+def _corpus_case(case_id: str) -> dict:
     return next(case for case in CASES if case["id"] == case_id)
 
 
@@ -230,7 +230,7 @@ def test_registry_is_non_empty_and_ids_are_unique() -> None:
 
 
 @pytest.mark.parametrize("overlay", OVERLAYS, ids=[o["id"] for o in OVERLAYS])
-def test_overlay_declares_predicate_prohibition_and_typed_response(overlay: Dict) -> None:
+def test_overlay_declares_predicate_prohibition_and_typed_response(overlay: dict) -> None:
     assert overlay["required_capability"], "overlay needs a positive applicability predicate"
     assert overlay["prohibited_contexts"], "overlay needs explicit prohibited contexts"
     assert overlay["unsupported_response"] in UNSUPPORTED_RESPONSES
@@ -300,7 +300,7 @@ def test_non_trigger_case_loads_zero_overlay_prose(case_id: str) -> None:
 
 
 @pytest.mark.parametrize("overlay", OVERLAYS, ids=[o["id"] for o in OVERLAYS])
-def test_overlay_never_fires_without_its_capability(overlay: Dict) -> None:
+def test_overlay_never_fires_without_its_capability(overlay: dict) -> None:
     gated = select_overlays(
         OVERLAYS,
         capabilities=[],
@@ -313,7 +313,7 @@ def test_overlay_never_fires_without_its_capability(overlay: Dict) -> None:
 
 
 @pytest.mark.parametrize("overlay", OVERLAYS, ids=[o["id"] for o in OVERLAYS])
-def test_prohibited_context_deactivates_the_overlay(overlay: Dict) -> None:
+def test_prohibited_context_deactivates_the_overlay(overlay: dict) -> None:
     for context in overlay["prohibited_contexts"]:
         gated = select_overlays(
             OVERLAYS,
@@ -415,7 +415,7 @@ def test_shared_agent_prose_has_no_unconditional_domain_tooling() -> None:
     surfaces = sorted(ROOT.glob("skills/*/SKILL.md")) + sorted(ROOT.glob("agents/*.md"))
     assert surfaces, "expected shared agent-facing prose surfaces to exist"
     pattern = re.compile("|".join(FORBIDDEN_UNCONDITIONAL), re.IGNORECASE)
-    offenders: List[str] = []
+    offenders: list[str] = []
     for surface in surfaces:
         for line in surface.read_text(encoding="utf-8").splitlines():
             if not pattern.search(line):

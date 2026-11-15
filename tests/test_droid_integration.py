@@ -17,26 +17,22 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+import scripts.package_lifecycle as lifecycle
+import scripts.portable_verifier as verify_portable
+import scripts.scaffold_verification_skill as scaffold
+import scripts.scan_host_boundary as scan_boundary
+from scripts import verify_harness
+from scripts.drivers import DroidDriver, get_driver
 from scripts.portability_schema import (
     DEFAULT_PLUGIN_MANIFESTS,
     DEFAULT_SKILLS_DIRS,
     HOSTS,
-    HarnessProfile,
     Binding,
     Evidence,
+    HarnessProfile,
     derive_support_state,
 )
 from scripts.setup_pstack import resolve_profiles_dir
-
-
-import scripts.package_lifecycle as lifecycle
-import scripts.portable_verifier as verify_portable
-import scripts.verify_harness as verify_harness
-import scripts.scan_host_boundary as scan_boundary
-import scripts.scaffold_verification_skill as scaffold
-
-from scripts.drivers import DroidDriver, get_driver
-
 
 # --- VAL-DROID-001: descriptor, schema enums, and host census ---
 

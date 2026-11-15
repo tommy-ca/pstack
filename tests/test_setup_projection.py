@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
-
 import json
+import sys
 from dataclasses import asdict
 from pathlib import Path
-import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -18,7 +17,11 @@ from scripts.host_identity import BUILTIN_HOSTS
 from scripts.model_role_policy import check_model_role_policy
 from scripts.model_role_resolver import plan_role
 from scripts.portability_types import SetupProjection, ValidationError
-from scripts.setup_pstack import PACKAGE_JSON, resolve_setup_projection, resolve_profiles_dir
+from scripts.setup_pstack import (
+    PACKAGE_JSON,
+    resolve_profiles_dir,
+    resolve_setup_projection,
+)
 from tests.model_role_helpers import (
     available_catalog_policy,
     invalid_catalog_policy,

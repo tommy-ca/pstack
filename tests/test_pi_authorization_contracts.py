@@ -5,7 +5,7 @@ import json
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 import pytest
 
@@ -67,9 +67,9 @@ def test_manifest_authorization_invariants():
 
 
 def evaluate_simulated_verdict(
-    policy: Dict[str, Any],
+    policy: dict[str, Any],
     tool_name: str,
-    tool_args: Dict[str, Any],
+    tool_args: dict[str, Any],
     *,
     headless: bool = True,
     user_confirmed: bool = False,
@@ -173,7 +173,7 @@ def test_package_parsing_and_conflict_detection():
         "    /path/to/pstack\n"
     )
     # Simulate parser logic
-    packages: Dict[str, str] = {}
+    packages: dict[str, str] = {}
     import re
     for line in sample_list.splitlines():
         line = line.strip()

@@ -8,9 +8,9 @@ caller-controlled summaries are public. Mutation probe demonstrates sensitivity.
 
 from __future__ import annotations
 
-from itertools import product
 import json
 import sys
+from itertools import product
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]

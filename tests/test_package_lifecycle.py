@@ -5,6 +5,7 @@ import json
 import subprocess
 import sys
 from pathlib import Path
+
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -13,7 +14,7 @@ if str(ROOT) not in sys.path:
 
 LIFECYCLE_SCRIPT = ROOT / "scripts" / "package_lifecycle.py"
 
-import scripts.package_lifecycle as package_lifecycle
+from scripts import package_lifecycle
 
 
 @pytest.mark.parametrize("host", ["grok", "codex", "omp", "opencode", "antigravity"])

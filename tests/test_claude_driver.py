@@ -13,15 +13,14 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts.drivers import ClaudeDriver, get_driver
-from scripts.host_identity import is_declared_host, is_builtin
+from scripts.host_identity import is_builtin, is_declared_host
+from scripts.package_projection import check_claude_plugin, load_package_descriptor
 from scripts.portability_schema import (
     Binding,
     Evidence,
     HarnessProfile,
     ValidationError,
 )
-
-from scripts.package_projection import check_claude_plugin, load_package_descriptor
 from scripts.setup_pstack import resolve_profiles_dir
 
 

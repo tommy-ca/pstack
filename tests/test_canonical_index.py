@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-import scripts.canonical_index as canonical_index
+from scripts import canonical_index
 
 SCRIPT = ROOT / "scripts" / "canonical_index.py"
 INVENTORY = ROOT / "openspec" / "canonical-inventory.json"

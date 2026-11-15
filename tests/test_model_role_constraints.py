@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import copy
-from pathlib import Path
 import sys
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -18,8 +18,8 @@ from scripts.portability_schema import ValidationError
 from tests.model_role_helpers import (
     PACKAGE,
     ROOT,
-    catalog_plan_policy,
     capability_bindings,
+    catalog_plan_policy,
     live_policy,
     validate,
 )

@@ -2,6 +2,7 @@ import json
 import sys
 from dataclasses import asdict, replace
 from pathlib import Path
+
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -9,9 +10,9 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts.portability_schema import (
-    ChildSettlement,
     CONFORMANCE_PLANES,
     MANDATORY_SUPPORT_FLOOR,
+    ChildSettlement,
     ScenarioResult,
     ValidationError,
     VerificationReceipt,

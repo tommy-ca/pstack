@@ -7,6 +7,7 @@ import subprocess
 import sys
 from dataclasses import asdict, replace
 from pathlib import Path
+
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -14,11 +15,11 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts.portability_schema import (
-    Binding,
     CONFORMANCE_PLANES,
+    PLANE_SURFACE_DEPENDENCIES,
+    Binding,
     Evidence,
     HarnessProfile,
-    PLANE_SURFACE_DEPENDENCIES,
     SurfaceRevisions,
     ValidationError,
     VerificationReceipt,
@@ -587,8 +588,9 @@ def test_driver_core_cache_unavailable_path_preserves_core(
 def test_driver_core_cache_is_disabled_without_posix_permission_checks(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    import scripts.portability_schema as schema
     from pathlib import PosixPath
+
+    import scripts.portability_schema as schema
 
     cache_home = tmp_path / "cache-home"
     monkeypatch.setenv("XDG_CACHE_HOME", str(cache_home))
@@ -667,7 +669,7 @@ def test_driver_core_cache_rejects_world_writable_ancestor_before_writing(
 def test_driver_core_disk_cache_prunes_to_record_and_byte_bounds(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    import scripts.surface_revisions as surface_revisions
+    from scripts import surface_revisions
 
     monkeypatch.setattr(surface_revisions, "_DRIVER_CORE_CACHE_MAX_RECORDS", 2)
     record_home = tmp_path / "record-bound"
@@ -732,7 +734,7 @@ def test_hash_json_file_handles_missing_corrupt_and_valid(tmp_path: Path) -> Non
 
 
 def test_evaluate_plane_staleness_guards_missing_current_val(tmp_path: Path) -> None:
-    from scripts.portability_types import VerificationReceipt, CONFORMANCE_PLANES
+    from scripts.portability_types import CONFORMANCE_PLANES, VerificationReceipt
     from scripts.surface_revisions import SurfaceRevisions
 
     base_rev = SurfaceRevisions(

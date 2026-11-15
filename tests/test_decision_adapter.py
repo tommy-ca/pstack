@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -7,6 +8,10 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts.decision_adapter import (
+    MAX_CHOICE_ID_BYTES,
+    MAX_CHOICE_LABEL_BYTES,
+    MAX_CHOICES_COUNT,
+    MAX_CONTEXT_BYTES,
     BooleanRequest,
     ChoiceOption,
     ChoiceRequest,
@@ -14,10 +19,6 @@ from scripts.decision_adapter import (
     EgressClass,
     FakeDecisionProvider,
     JevDecisionAdapter,
-    MAX_CHOICE_ID_BYTES,
-    MAX_CHOICE_LABEL_BYTES,
-    MAX_CHOICES_COUNT,
-    MAX_CONTEXT_BYTES,
     ProviderObservation,
     ScoreRange,
     ScoreRequest,

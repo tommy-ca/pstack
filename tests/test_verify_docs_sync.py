@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-import scripts.verify_harness as verify_harness
+from scripts import verify_harness
 
 OWNED_MAPS = frozenset(
     {

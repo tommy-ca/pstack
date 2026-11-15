@@ -10,10 +10,11 @@ if str(ROOT) not in sys.path:
 
 SCRIPT = ROOT / "scripts" / "scan_host_boundary.py"
 from scripts.setup_pstack import resolve_profiles_dir
+
 PROFILES_DIR = resolve_profiles_dir(ROOT)
 BOUNDARY_FIXTURES = Path(__file__).resolve().parent / "fixtures" / "boundary"
 
-import scripts.scan_host_boundary as scan_host_boundary
+from scripts import scan_host_boundary
 
 extract_forbidden_vocabulary = scan_host_boundary.extract_forbidden_vocabulary
 run_scan = scan_host_boundary.run_scan

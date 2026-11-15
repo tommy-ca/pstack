@@ -3,6 +3,7 @@
 
 import sys
 from pathlib import Path
+
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -176,7 +177,7 @@ def test_calibrated_evidence_receipt_post_init_sets_provenance_from_metadata() -
 
 
 def test_receipt_base_from_dict_does_not_swallow_frozen_instance_error() -> None:
-    from dataclasses import dataclass, FrozenInstanceError
+    from dataclasses import FrozenInstanceError, dataclass
 
     @dataclass(frozen=True)
     class BuggyReceipt(evidence_receipts.ReceiptBase):

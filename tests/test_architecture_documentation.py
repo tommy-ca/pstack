@@ -18,6 +18,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts.setup_pstack import resolve_profiles_dir
+
 ARCH = ROOT / "docs" / "architecture" / "harness-adapters-and-jev-2026-10-20.md"
 
 
