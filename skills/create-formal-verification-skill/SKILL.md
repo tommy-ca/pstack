@@ -10,7 +10,7 @@ A test checks the cases that someone thought to write. Formal verification check
 
 Project-local formal verification skills live under the active harness's native skills directory (`skills_dir` in `skills/setup-pstack/profiles/<host>.json` or repository `profiles/<host>.json`, resolved canonically via `scripts.setup_pstack.resolve_profiles_dir`). Formal verification skill directories and frontmatter use the naming convention `verify-<app>-formal` (or `verify-<property>-formal`).
 
-Use `scripts/scaffold_verification_skill.py --formal --host <host> --app <app> --write` to scaffold a draft at `<skills-dir>/verify-<app>-formal/`. The generator creates `SKILL.md`, `features/README.md`, `features/formal-model.md`, and an executable driver script at `scripts/driver.sh`. Run `scripts/scaffold_verification_skill.py --check --target-dir <skill-dir>` for Tier 1 structural validation.
+Use `scripts/scaffold_verification_skill.py --formal --host <host> --app <app> --write` to scaffold a draft at `<skills-dir>/verify-<app>-formal/`. The generator creates `SKILL.md`, `features/README.md`, `features/formal-model.md`, and an executable driver script at `scripts/driver.sh`. Agnix can reject malformed skill, agent, and rule configuration, but cannot prove code invariants. In PStack, first run `mise run verify:agnix:policy` and pinned `mise run verify:agnix` static lint, then `mise run verify:agnix:formal` for the bounded receipt guard only. A formal target still requires its own code-linked property, checker, bound, counterexample, and negative mutant. Never equate an Agnix PASS with runtime or formal proof. Run `scripts/scaffold_verification_skill.py --check --target-dir <skill-dir>` for Tier 1 structural validation.
 
 ## Why not a wiki
 

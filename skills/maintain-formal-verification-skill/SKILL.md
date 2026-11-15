@@ -25,6 +25,10 @@ Edit only the verification: models, harnesses, property files, feature maps unde
 
 Keep the skill body under 24,000 bytes to preserve Antigravity compatibility.
 
+## Optional Agnix static guard
+
+If PStack skill metadata, agent definitions, or host rules change, run `mise run verify:agnix:policy` and pinned `mise run verify:agnix` before model reconciliation. The task `mise run verify:agnix:formal` proves only bounded receipt-policy properties; the maintained target model must still synchronize with current production code and demonstrate a failing mutant. A static pass must never advance a blocked formal sync commit.
+
 ## Upkeep Pass
 
 1. **Find the checks.**
