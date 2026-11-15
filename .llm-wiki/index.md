@@ -1,6 +1,7 @@
 # Knowledge Base Index: PStack multi-harness portability and canonical upstream 0.15.36 reconciliation
 
 ## Sources
+- [Agent Skills Specification and Audit Source Reference](wiki/sources/agent-skills-specification.md): - Raw Source: `raw/sources/agent-skills-conformance-audit-2026-11-15.md`.
 - [Upstream Cursor PStack 0.15.36 Source Reference](wiki/sources/upstream-0.15.36.md): - **Source:** `cursor/plugins@c742dd61706fbacc1b95f1a20b7b988cf096ce6c` (release 0.15.36)
 
 ## Entities
