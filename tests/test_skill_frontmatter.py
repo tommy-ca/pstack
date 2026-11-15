@@ -294,7 +294,7 @@ def test_host_package_projections_skill_drift() -> None:
         assert ag_data.get("skills") in ["./skills/", "./skills", "skills", ["./skills/"], ["./skills"]]
 
 
-def test_validate_skill_script_layout_valid(tmp_path: pathlib.Path) -> None:
+def test_validate_skill_script_layout_valid(tmp_path: Path) -> None:
     from scripts.skill_frontmatter import validate_skill_script_layout
 
     skill_dir = tmp_path / "sample-skill"
@@ -308,8 +308,7 @@ def test_validate_skill_script_layout_valid(tmp_path: pathlib.Path) -> None:
     assert violations == []
 
 
-def test_validate_skill_script_layout_misplaced_script(tmp_path: pathlib.Path) -> None:
-    import pytest
+def test_validate_skill_script_layout_misplaced_script(tmp_path: Path) -> None:
     from scripts.skill_frontmatter import validate_skill_script_layout
 
     skill_dir = tmp_path / "bad-skill"
@@ -321,8 +320,7 @@ def test_validate_skill_script_layout_misplaced_script(tmp_path: pathlib.Path) -
         validate_skill_script_layout(skill_dir)
 
 
-def test_validate_skill_script_layout_misplaced_subfolder(tmp_path: pathlib.Path) -> None:
-    import pytest
+def test_validate_skill_script_layout_misplaced_subfolder(tmp_path: Path) -> None:
     from scripts.skill_frontmatter import validate_skill_script_layout
 
     skill_dir = tmp_path / "bad-subfolder"
@@ -334,10 +332,9 @@ def test_validate_skill_script_layout_misplaced_subfolder(tmp_path: pathlib.Path
         validate_skill_script_layout(skill_dir)
 
 
-def test_validate_skill_script_layout_executable_binary(tmp_path: pathlib.Path) -> None:
+def test_validate_skill_script_layout_executable_binary(tmp_path: Path) -> None:
     import os
     import stat
-    import pytest
     from scripts.skill_frontmatter import validate_skill_script_layout
 
     skill_dir = tmp_path / "binary-skill"
@@ -350,7 +347,7 @@ def test_validate_skill_script_layout_executable_binary(tmp_path: pathlib.Path) 
         validate_skill_script_layout(skill_dir)
 
 
-def test_validate_skill_script_layout_ignores_vendor(tmp_path: pathlib.Path) -> None:
+def test_validate_skill_script_layout_ignores_vendor(tmp_path: Path) -> None:
     from scripts.skill_frontmatter import validate_skill_script_layout
 
     skill_dir = tmp_path / "vendor-skill"
@@ -362,7 +359,7 @@ def test_validate_skill_script_layout_ignores_vendor(tmp_path: pathlib.Path) -> 
     assert violations == []
 
 
-def test_validate_skill_links_valid(tmp_path: pathlib.Path) -> None:
+def test_validate_skill_links_valid(tmp_path: Path) -> None:
     from scripts.skill_frontmatter import validate_skill_links
 
     repo_root = tmp_path
@@ -388,8 +385,7 @@ def test_validate_skill_links_valid(tmp_path: pathlib.Path) -> None:
     assert len(verified) == 2
 
 
-def test_validate_skill_links_broken_relative(tmp_path: pathlib.Path) -> None:
-    import pytest
+def test_validate_skill_links_broken_relative(tmp_path: Path) -> None:
     from scripts.skill_frontmatter import validate_skill_links
 
     repo_root = tmp_path
@@ -404,8 +400,7 @@ def test_validate_skill_links_broken_relative(tmp_path: pathlib.Path) -> None:
         validate_skill_links(skill_dir, repo_root=repo_root)
 
 
-def test_validate_skill_links_cross_skill(tmp_path: pathlib.Path) -> None:
-    import pytest
+def test_validate_skill_links_cross_skill(tmp_path: Path) -> None:
     from scripts.skill_frontmatter import validate_skill_links
 
     repo_root = tmp_path
@@ -431,8 +426,7 @@ def test_validate_skill_links_cross_skill(tmp_path: pathlib.Path) -> None:
         validate_skill_links(skill_a, repo_root=repo_root)
 
 
-def test_validate_skill_links_symlink_escape(tmp_path: pathlib.Path) -> None:
-    import pytest
+def test_validate_skill_links_symlink_escape(tmp_path: Path) -> None:
     from scripts.skill_frontmatter import validate_skill_links
 
     repo_root = tmp_path / "repo"
@@ -448,7 +442,7 @@ def test_validate_skill_links_symlink_escape(tmp_path: pathlib.Path) -> None:
         validate_skill_links(skill_dir, repo_root=repo_root)
 
 
-def test_validate_skill_links_code_blocks_and_allowlist(tmp_path: pathlib.Path) -> None:
+def test_validate_skill_links_code_blocks_and_allowlist(tmp_path: Path) -> None:
     from scripts.skill_frontmatter import validate_skill_links
 
     repo_root = tmp_path
