@@ -293,3 +293,182 @@ def test_host_package_projections_skill_drift() -> None:
         ag_data = json.loads(antigravity_plugin.read_text(encoding="utf-8"))
         assert ag_data.get("skills") in ["./skills/", "./skills", "skills", ["./skills/"], ["./skills"]]
 
+
+def test_validate_skill_script_layout_valid(tmp_path: Path) -> None:
+    from scripts.skill_frontmatter import validate_skill_script_layout
+
+    skill_dir = tmp_path / "sample-skill"
+    scripts_dir = skill_dir / "scripts"
+    scripts_dir.mkdir(parents=True)
+    (scripts_dir / "runner.py").write_text("print('hello')\n")
+    (scripts_dir / "helper.sh").write_text("#!/bin/sh\nexit 0\n")
+    (skill_dir / "SKILL.md").write_text("---\nname: sample-skill\ndescription: Test.\n---\n")
+
+    violations = validate_skill_script_layout(skill_dir)
+    assert violations == []
+
+
+def test_validate_skill_script_layout_misplaced_script(tmp_path: Path) -> None:
+    from scripts.skill_frontmatter import validate_skill_script_layout
+
+    skill_dir = tmp_path / "bad-skill"
+    skill_dir.mkdir(parents=True)
+    (skill_dir / "loose_helper.py").write_text("print('bad')\n")
+    (skill_dir / "SKILL.md").write_text("---\nname: bad-skill\ndescription: Test.\n---\n")
+
+    with pytest.raises(ValueError, match="executable helpers must reside under scripts/"):
+        validate_skill_script_layout(skill_dir)
+
+
+def test_validate_skill_script_layout_misplaced_subfolder(tmp_path: Path) -> None:
+    from scripts.skill_frontmatter import validate_skill_script_layout
+
+    skill_dir = tmp_path / "bad-subfolder"
+    ref_dir = skill_dir / "references"
+    ref_dir.mkdir(parents=True)
+    (ref_dir / "script.sh").write_text("#!/bin/sh\n")
+
+    with pytest.raises(ValueError, match="executable helpers must reside under scripts/"):
+        validate_skill_script_layout(skill_dir)
+
+
+def test_validate_skill_script_layout_executable_binary(tmp_path: Path) -> None:
+    import os
+    import stat
+    from scripts.skill_frontmatter import validate_skill_script_layout
+
+    skill_dir = tmp_path / "binary-skill"
+    skill_dir.mkdir(parents=True)
+    loose_bin = skill_dir / "custom-tool"
+    loose_bin.write_text("#!/bin/sh\necho hi\n")
+    os.chmod(loose_bin, loose_bin.stat().st_mode | stat.S_IXUSR)
+
+    with pytest.raises(ValueError, match="executable helpers must reside under scripts/"):
+        validate_skill_script_layout(skill_dir)
+
+
+def test_validate_skill_script_layout_ignores_vendor(tmp_path: Path) -> None:
+    from scripts.skill_frontmatter import validate_skill_script_layout
+
+    skill_dir = tmp_path / "vendor-skill"
+    vendor_dir = skill_dir / "scripts" / "node_modules" / "some-lib"
+    vendor_dir.mkdir(parents=True)
+    (vendor_dir / "index.js").write_text("module.exports = {};\n")
+
+    violations = validate_skill_script_layout(skill_dir)
+    assert violations == []
+
+
+def test_validate_skill_links_valid(tmp_path: Path) -> None:
+    from scripts.skill_frontmatter import validate_skill_links
+
+    repo_root = tmp_path
+    skill_dir = repo_root / "skills" / "demo-skill"
+    scripts_dir = skill_dir / "scripts"
+    refs_dir = skill_dir / "references"
+    scripts_dir.mkdir(parents=True)
+    refs_dir.mkdir(parents=True)
+
+    (scripts_dir / "driver.sh").write_text("#!/bin/sh\n")
+    (refs_dir / "guide.md").write_text("# Guide\n")
+
+    skill_md = skill_dir / "SKILL.md"
+    skill_md.write_text(
+        "---\nname: demo-skill\ndescription: Test.\n---\n"
+        "# Demo\n\n"
+        "See [Guide](references/guide.md) and [Driver](scripts/driver.sh).\n"
+        "Anchor link: [Section](#demo).\n"
+        "External link: [Site](https://example.com).\n"
+    )
+
+    verified = validate_skill_links(skill_dir, repo_root=repo_root)
+    assert len(verified) == 2
+
+
+def test_validate_skill_links_broken_relative(tmp_path: Path) -> None:
+    from scripts.skill_frontmatter import validate_skill_links
+
+    repo_root = tmp_path
+    skill_dir = repo_root / "skills" / "broken-skill"
+    skill_dir.mkdir(parents=True)
+    (skill_dir / "SKILL.md").write_text(
+        "---\nname: broken-skill\ndescription: Test.\n---\n"
+        "Check [Missing](scripts/missing.py).\n"
+    )
+
+    with pytest.raises(ValueError, match="broken relative link"):
+        validate_skill_links(skill_dir, repo_root=repo_root)
+
+
+def test_validate_skill_links_cross_skill(tmp_path: Path) -> None:
+    from scripts.skill_frontmatter import validate_skill_links
+
+    repo_root = tmp_path
+    skill_a = repo_root / "skills" / "skill-a"
+    skill_b = repo_root / "skills" / "skill-b"
+    skill_a.mkdir(parents=True)
+    skill_b.mkdir(parents=True)
+
+    (skill_b / "SKILL.md").write_text("---\nname: skill-b\ndescription: Skill B.\n---\n")
+    (skill_a / "SKILL.md").write_text(
+        "---\nname: skill-a\ndescription: Skill A.\n---\n"
+        "Check [B](../skill-b/SKILL.md).\n"
+    )
+
+    verified = validate_skill_links(skill_a, repo_root=repo_root)
+    assert len(verified) == 1
+
+    (skill_a / "SKILL.md").write_text(
+        "---\nname: skill-a\ndescription: Skill A.\n---\n"
+        "Check [C](../skill-c/SKILL.md).\n"
+    )
+    with pytest.raises(ValueError, match="broken relative link"):
+        validate_skill_links(skill_a, repo_root=repo_root)
+
+
+def test_validate_skill_links_symlink_escape(tmp_path: Path) -> None:
+    from scripts.skill_frontmatter import validate_skill_links
+
+    repo_root = tmp_path / "repo"
+    skill_dir = repo_root / "skills" / "escape-skill"
+    skill_dir.mkdir(parents=True)
+
+    (skill_dir / "SKILL.md").write_text(
+        "---\nname: escape-skill\ndescription: Escape.\n---\n"
+        "Escape link: [Outside](../../../../etc/passwd).\n"
+    )
+
+    with pytest.raises(ValueError, match="escapes repository boundary"):
+        validate_skill_links(skill_dir, repo_root=repo_root)
+
+
+def test_validate_skill_links_code_blocks_and_allowlist(tmp_path: Path) -> None:
+    from scripts.skill_frontmatter import validate_skill_links
+
+    repo_root = tmp_path
+    skill_dir = repo_root / "skills" / "template-skill"
+    skill_dir.mkdir(parents=True)
+
+    (skill_dir / "SKILL.md").write_text(
+        "---\nname: template-skill\ndescription: Template.\n---\n"
+        "Example citation: [PR #123](url).\n"
+        "Template param: [Field]({param_name}).\n"
+        "```markdown\n[Fake Link](nonexistent/fake.md)\n```\n"
+    )
+
+    verified = validate_skill_links(skill_dir, repo_root=repo_root)
+    assert verified == []
+
+
+def test_verify_all_skills_policy_live_repo() -> None:
+    from scripts.skill_frontmatter import verify_all_skills_policy
+
+    verify_all_skills_policy(ROOT)
+
+
+def test_verify_skills_policy_harness_integration() -> None:
+    from scripts.verify_harness import verify_skills_policy
+
+    verify_skills_policy(ROOT)
+
+

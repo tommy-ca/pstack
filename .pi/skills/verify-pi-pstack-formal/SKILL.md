@@ -54,7 +54,7 @@ All 59 enumerated invalid source-contract mutations are rejected. The regression
 
 Record exact source revision, package pins, executed command, exit code, rejection class counts, and the changed source hash. If source/manifest changes, re-run and re-review the model; no copy-forward PASS. Reserve formal VERIFIED for a real checker receipt with version, bounded model, source mapping, counterexample and replay. The current finite test suite is static/contract evidence.
 
-See [functional Pi feature map](../verify-pi-pstack/features/extension-package.md) and [existing Pi requirements](../../../openspec/changes/2026-11-05-pi-standalone-candidate/specs/pstack-portability/spec.md) for separate runtime-level claims.
+See [functional Pi feature map](../verify-pi-pstack/features/extension-package.md) and [existing Pi requirements](../../../openspec/specs/pstack-portability/spec.md) for separate runtime-level claims.
 
 ## Cleanup
 

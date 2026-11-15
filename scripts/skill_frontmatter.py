@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import json
+import os
 import pathlib
 import re
+import stat
 from dataclasses import dataclass
 from typing import Any
 
@@ -45,6 +47,31 @@ FORBIDDEN_FIELDS: frozenset[str] = frozenset({
 })
 
 ALL_RECOGNIZED_FIELDS: frozenset[str] = STANDARD_SPEC_FIELDS | PSTACK_EXTENSION_FIELDS
+
+SCRIPT_EXTENSIONS: frozenset[str] = frozenset({
+    ".py",
+    ".sh",
+    ".bash",
+    ".js",
+    ".ts",
+    ".mjs",
+    ".rb",
+    ".pl",
+    ".bin",
+})
+
+LINK_ALLOWLIST: frozenset[str] = frozenset({
+    "url",
+})
+
+IGNORED_SKILL_SUBDIRECTORIES: frozenset[str] = frozenset({
+    "node_modules",
+    ".venv",
+    "__pycache__",
+    ".git",
+    "dist",
+    "build",
+})
 
 
 @dataclass(frozen=True)
@@ -429,3 +456,118 @@ def discover_skills_inventory(root: pathlib.Path | None = None) -> list[SkillRec
             )
 
     return records
+
+
+def validate_skill_script_layout(skill_dir: pathlib.Path) -> list[pathlib.Path]:
+    """Validate that executable helpers within a skill live under scripts/."""
+    violations: list[pathlib.Path] = []
+    if not skill_dir.is_dir():
+        return violations
+
+    for root, dirs, files in os.walk(skill_dir):
+        dirs[:] = [d for d in dirs if d not in IGNORED_SKILL_SUBDIRECTORIES]
+        rel_root = pathlib.Path(root).relative_to(skill_dir)
+        for f in files:
+            p = pathlib.Path(root) / f
+            rel_file = rel_root / f
+            ext = p.suffix.lower()
+            try:
+                mode = p.stat().st_mode
+                is_exec = bool(mode & (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH))
+            except OSError:
+                is_exec = False
+
+            if ext in SCRIPT_EXTENSIONS or (is_exec and ext != ".md" and not rel_file.name.endswith(".example")):
+                if len(rel_file.parts) == 0 or rel_file.parts[0] != "scripts":
+                    violations.append(rel_file)
+
+    if violations:
+        violation_strs = ", ".join(str(v) for v in sorted(violations))
+        raise ValueError(
+            f"skill script layout policy violation in {skill_dir.name}: "
+            f"executable helpers must reside under scripts/ (found: {violation_strs})"
+        )
+    return violations
+
+
+_LINK_PATTERN = re.compile(r"!?\[([^\]]*)\]\(([^)]+)\)")
+
+
+def validate_skill_links(
+    skill_dir: pathlib.Path,
+    repo_root: pathlib.Path | None = None,
+) -> list[tuple[str, str]]:
+    """Validate relative paths and cross-skill links in skill markdown files."""
+    active_root = repo_root if repo_root is not None else pathlib.Path(__file__).resolve().parents[1]
+    verified_links: list[tuple[str, str]] = []
+
+    if not skill_dir.is_dir():
+        return verified_links
+
+    for root, dirs, files in os.walk(skill_dir):
+        dirs[:] = [d for d in dirs if d not in IGNORED_SKILL_SUBDIRECTORIES]
+        for f in sorted(files):
+            if not f.endswith(".md"):
+                continue
+            doc_path = pathlib.Path(root) / f
+            try:
+                text = doc_path.read_text(encoding="utf-8")
+            except OSError as exc:
+                raise ValueError(f"failed to read markdown file {doc_path}: {exc}") from exc
+
+            clean_text = re.sub(r"```.*?```", "", text, flags=re.DOTALL)
+            clean_text = re.sub(r"~~~.*?~~~", "", clean_text, flags=re.DOTALL)
+
+            for match in _LINK_PATTERN.finditer(clean_text):
+                raw_target = match.group(2).strip()
+                if " " in raw_target:
+                    raw_target = raw_target.split()[0]
+                target = raw_target.strip("\"'")
+                if not target:
+                    continue
+
+                if target.startswith(("http://", "https://", "ftp://", "mailto:", "git://", "#")):
+                    continue
+                if target in LINK_ALLOWLIST:
+                    continue
+                if (target.startswith("{") and target.endswith("}")) or (
+                    target.startswith("<") and target.endswith(">")
+                ):
+                    continue
+
+                target_file = target.split("#")[0]
+                if not target_file:
+                    continue
+
+                resolved_path = (doc_path.parent / target_file).resolve()
+
+                try:
+                    resolved_path.relative_to(active_root)
+                except ValueError:
+                    raise ValueError(
+                        f"link target escapes repository boundary in {doc_path.name}: {target!r}"
+                    )
+
+                if not resolved_path.exists():
+                    try:
+                        display_target = resolved_path.relative_to(active_root)
+                    except ValueError:
+                        display_target = resolved_path
+                    raise ValueError(
+                        f"broken relative link in {doc_path.name}: {target!r} "
+                        f"(resolved to {display_target})"
+                    )
+
+                verified_links.append((str(doc_path), target))
+
+    return verified_links
+
+
+def verify_all_skills_policy(root: pathlib.Path | None = None) -> None:
+    """Validate script layout and relative link policies across all discovered skills."""
+    active_root = root if root is not None else pathlib.Path(__file__).resolve().parents[1]
+    records = discover_skills_inventory(active_root)
+    for record in records:
+        validate_skill_script_layout(record.directory)
+        validate_skill_links(record.directory, repo_root=active_root)
+
