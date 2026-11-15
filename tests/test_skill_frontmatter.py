@@ -137,13 +137,12 @@ def test_openspec_git_discipline_and_template_configurations() -> None:
         assert text.startswith("---\nname: openspec-git-discipline\n")
 
 
-
 @pytest.mark.parametrize("description", ["", " ", "x" * 1025])
 def test_verifier_rejects_invalid_description(tmp_path: Path, description: str) -> None:
     skill = tmp_path / "demo"
     skill.mkdir()
     (skill / "SKILL.md").write_text(
-        f"---\\nname: demo\\ndescription: {description}\\n---\\n"
+        f"---\nname: demo\ndescription: {description}\n---\n"
     )
     with pytest.raises(SystemExit):
         vh.verify_skills_frontmatter(tmp_path)
@@ -152,7 +151,7 @@ def test_verifier_rejects_invalid_description(tmp_path: Path, description: str) 
 def test_verifier_rejects_missing_description(tmp_path: Path) -> None:
     skill = tmp_path / "demo"
     skill.mkdir()
-    (skill / "SKILL.md").write_text("---\\nname: demo\\n---\\n")
+    (skill / "SKILL.md").write_text("---\nname: demo\n---\n")
     with pytest.raises(SystemExit):
         vh.verify_skills_frontmatter(tmp_path)
 
