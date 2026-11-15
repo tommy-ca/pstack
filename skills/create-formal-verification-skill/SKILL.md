@@ -38,6 +38,8 @@ Write `SKILL.md` at `<skills-dir>/verify-<app>-formal/` with YAML frontmatter:
 - `description`: Use-when triggers only. Name the verified invariant, the code surface, and when to reach for the skill.
 - `disable-model-invocation: true`
 
+Apply the shared Agent Skills metadata contract before checking proof behavior. The name must match the native skill directory, use lowercase kebab-case, and be at most 64 characters. The description must be nonblank and at most 1024 characters. Use `scripts/skill_frontmatter.py` and `scripts/scaffold_verification_skill.py --check` for structural constraints. These checks cannot prove an invariant, model-to-code synchrony, or actual checker execution; retain bounded negative-control proof as a distinct requirement.
+
 Keep the generated skill body under 24,000 bytes. Google Antigravity imposes a strict 24,000-byte body limit and truncates oversized skills. `scripts/scaffold_verification_skill.py --check` enforces this bound.
 
 Without frontmatter the skill never registers. To satisfy structural verification standards (`scripts/scaffold_verification_skill.py --check`), write the following required sections:

@@ -58,7 +58,11 @@ from scripts.harness_scenarios import (
     execute_local_scenarios,
 )
 from scripts.select_checks import (
+    changed_paths,  # noqa: F401
+    offline_contract_tests,  # noqa: F401
+    select_checks,  # noqa: F401
     select_checks_action,
+    select_checks_plan,  # noqa: F401
 )
 
 # Re-exported from scripts.evidence_index (#613)

@@ -30,6 +30,7 @@ from skill_frontmatter import (
     SKILL_NAME_RE,
     read_scalar,
     split_frontmatter,
+    validate_skill_description,
     validate_skill_name,
 )
 
@@ -251,8 +252,7 @@ def check_skill(target_dir: pathlib.Path) -> List[str]:
             name = validate_skill_name(read_scalar(header, "name"), expected)
             if not name.startswith("verify-") or not SKILL_NAME_RE.fullmatch(name[7:]):
                 raise ValueError("frontmatter name must be verify-<app>")
-            if not read_scalar(header, "description"):
-                raise ValueError("frontmatter requires a nonempty description")
+            validate_skill_description(read_scalar(header, "description"))
             if read_scalar(header, "disable-model-invocation") != "true":
                 raise ValueError("frontmatter requires 'disable-model-invocation: true'")
         except ValueError as exc:

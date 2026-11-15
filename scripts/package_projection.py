@@ -55,6 +55,7 @@ from scripts.antigravity_command_projection import (
     project_antigravity_auxiliary,
 )
 from scripts.droid_role_projection import (
+    _split_frontmatter,  # noqa: F401
     generate_droid_marketplace,
     generate_droid_roles,
 )

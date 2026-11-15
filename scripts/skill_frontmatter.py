@@ -72,4 +72,15 @@ def validate_skill_name(name: str | None, expected: str | None = None) -> str:
         raise ValueError(f"frontmatter name {name!r} is not kebab-case")
     if expected is not None and name != expected:
         raise ValueError(f"frontmatter name {name!r} does not match directory name {expected!r}")
+    if len(name) > 64:
+        raise ValueError("frontmatter name must be at most 64 characters")
     return name
+
+
+def validate_skill_description(description: str | None) -> str:
+    """Enforce the Agent Skills required description length and nonblank value."""
+    if description is None or not description.strip():
+        raise ValueError("frontmatter requires a nonempty description")
+    if len(description) > 1024:
+        raise ValueError("frontmatter description must be at most 1024 characters")
+    return description

@@ -7,6 +7,7 @@
 - [PStack Six-Harness Architecture and Profiles](wiki/entities/pstack-harnesses.md): PStack formally declares six supported host environments with native adapters and truthful evidence reporting:
 
 ## Concepts
+- [Agent Skills Specification, Semantic Atoms, and PStack Conformance](wiki/concepts/agent-skills-conformance.md): PStack skill conformance has three independent layers: vendor-neutral Agent Skills metadata, repository-specific layout policy, and observable runtime/formal proof.
 - [Agentic Orchestrate Architecture](wiki/concepts/agentic-orchestrate.md): In upstream release 0.15.36 (commit #1043), canonical PStack retired the `orch` CLI and SQLite store (`skills/poteto-mode/scripts/orch/orch.ts`, `store.ts`), replacing it with agentic coordination where the parent chat acts as the coordinator owning briefs, queue draining, and stack frontier tracking.
 - [Project-Local LLM Wiki Knowledge System](wiki/concepts/llm-wiki-project-knowledge.md): PStack's `.llm-wiki/` is a Markdown-first, Git-reviewed knowledge store used by engineering agents and human maintainers. It is not a mandatory semantic compiler or QStack's governed knowledge publisher.
 - [Review Semantics and Verification Discipline](wiki/concepts/review-semantics-and-verification.md): Upstream 0.15.36 introduces rigorous adversarial review and verification contracts across Arena, Interrogate, Autopilot, and principles.
