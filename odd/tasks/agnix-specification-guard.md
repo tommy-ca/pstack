@@ -13,7 +13,7 @@ S5. Curate source-grounded LLMWiki concept and research design documentation wit
 - [x] T2 (S2) Implement Unit 2 (Issue #1395) baseline diagnosis across active inventory and ratchet warning budget (inline direct) - 416ca0b0
 - [x] T3 (S3) Implement Unit 3 (Issue #1396) Codex verification skills and canonical skill instruction updates (inline direct) - 86a721e7
 - [x] T4 (S4) Implement Unit 4 (Issue #1397) dedicated CI workflow and mise task bindings (inline direct) - d2d319ba
-- [ ] T5 (S5) Implement Unit 5 (Issue #1398) LLMWiki concept, research design doc, and immutable source ingestion (inline direct)
+- [x] T5 (S5) Implement Unit 5 (Issue #1398) LLMWiki concept, research design doc, and immutable source ingestion (inline direct) - dac9c146
 
 ## Log
 L1. /pstack:poteto-mode clean up worktrees, research, explore, review and audit the recent prs, recursive plan and update to epics/issues graph, with /thermos, build and verify with swarm, arena, interrogate, new stacked prs, ship the stack then
