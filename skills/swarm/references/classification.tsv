@@ -4,15 +4,15 @@ path	change	bucket	note
 .cursor-plugin/plugin.json	M	skip	Cursor packaging. Version 0.15.21 to 0.15.29. Excluded from portable root.
 README.md	M	host-owned	Adapter README. Retain six-harness documentation and portable layout.
 agents/comment-sicko.md	M	port	Reconciled 0.15.42 intent with portable dispatch.
-automations/benny/FOR_AGENTS.md	M	audit	Benny automation updates; port uses host-remapped drivers.
-automations/benny/skills/reproduce-and-fix-issues/SKILL.md	M	audit	Benny automation updates; port uses host-remapped drivers.
-automations/benny/skills/setup-benny/SKILL.md	M	audit	Benny automation updates; port uses host-remapped drivers.
-automations/benny/skills/triage-issue-reports/SKILL.md	M	audit	Benny automation updates; port uses host-remapped drivers.
+automations/benny/FOR_AGENTS.md	M	port	Reconciled 0.15.42 intent with portable dispatch.
+automations/benny/skills/reproduce-and-fix-issues/SKILL.md	M	port	Reconciled 0.15.42 intent with portable dispatch.
+automations/benny/skills/setup-benny/SKILL.md	M	port	Reconciled 0.15.42 intent with portable dispatch.
+automations/benny/skills/triage-issue-reports/SKILL.md	M	port	Reconciled 0.15.42 intent with portable dispatch.
 docs/guide/01-setup.md	M	audit	Guide setup updates. Retain six-harness conventions.
-docs/guide/02-poteto-mode.md	M	audit	Guide poteto-mode updates. Retain host-neutral primitives.
-docs/guide/03-understand.md	M	audit	Guide understand updates.
-docs/guide/04-design.md	M	audit	Guide design updates.
-docs/guide/10-recipes-and-pitfalls.md	M	audit	Recipes and pitfalls guide updates.
+docs/guide/02-poteto-mode.md	M	port	Reconciled 0.15.42 intent with portable dispatch.
+docs/guide/03-understand.md	M	port	Reconciled 0.15.42 intent with portable dispatch.
+docs/guide/04-design.md	M	port	Reconciled 0.15.42 intent with portable dispatch.
+docs/guide/10-recipes-and-pitfalls.md	M	port	Reconciled 0.15.42 intent with portable dispatch.
 docs/harness/claude-code.md	M	audit	New upstream Claude Code guide. Reconcile under #628 without overstating host runtime.
 plugin.json	M	host-owned	Upstream root plugin manifest. Port uses pstack.package.json and host generator.
 skills/architect/SKILL.md	M	port	Reconciled 0.15.42 intent with portable dispatch.
