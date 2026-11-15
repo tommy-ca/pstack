@@ -30,6 +30,10 @@ During maintenance sweeps, enforce clean design standards:
 - **KISS & DRY:** Remove duplicated driver steps and redundant environment assertions. Favor simple native assertions over complex helper hierarchies.
 - **YAGNI:** Remove dead gotchas, obsolete workarounds, and speculative feature drafts that no longer correspond to real code paths.
 
+## Optional Agnix static guard
+
+On PStack changes to `SKILL.md`, agent definitions, `AGENTS.md`, or host rules, run `mise run verify:agnix:policy` and (when the pinned executable is installed) `mise run verify:agnix`. Classify missing executable as BLOCKED, not a clean result; preserve the separately required live feature proof. Do not enable auto-fix or relax scope to force green.
+
 ## Pass
 
 0. **Locate the target.** Find the verification skill to maintain: the project-local skill whose body has launch/drive sections and a feature map. Look in the harness skill locations: run `scripts/scaffold_verification_skill.py --list` to enumerate the `verify-*` skills under them, or read the harness-to-directory mapping from `skills_dir` in `skills/setup-pstack/profiles/<host>.json` (or root `profiles/<host>.json`, resolved via `scripts.setup_pstack.resolve_profiles_dir`, mirrored by `DEFAULT_SKILLS_DIRS` in `scripts/portability_schema.py`).
