@@ -10,15 +10,15 @@ uv = "0.13.7"
 
 [tasks."verify:agnix:policy"]
 description = "Check scoped Agnix policy without requiring a binary"
-run = "uv run python scripts/agnix_guard.py --check-policy"
+run = "python3 scripts/agnix_guard.py --check-policy"
 
 [tasks."verify:agnix"]
 description = "Run pinned, read-only Agnix configuration lint (static, not host execution)"
-run = "uv run python scripts/agnix_guard.py"
+run = "python3 scripts/agnix_guard.py"
 
 [tasks."verify:agnix:formal"]
 description = "Run bounded verdict invariants and a deliberately failing mutant"
-run = "uv run python scripts/agnix_guard.py --formal"
+run = "python3 scripts/agnix_guard.py --formal"
 
 [tasks."test"]
 description = "Run full test suite via uv"
