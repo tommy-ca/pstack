@@ -33,7 +33,7 @@ from effort_ladder import (
     role_effort_map,
     self_check,
 )
-from skill_frontmatter import read_scalar, split_frontmatter, validate_skill_name
+from skill_frontmatter import read_scalar, split_frontmatter, validate_skill_name, validate_skill_description
 
 import scripts.adapt_harness as adapt
 
@@ -225,6 +225,7 @@ def verify_skills_frontmatter(skills_dir: pathlib.Path) -> None:
         try:
             header, _ = split_frontmatter(skill_file.read_text(encoding="utf-8"))
             validate_skill_name(read_scalar(header, "name"), skill_dir.name)
+            validate_skill_description(read_scalar(header, "description"))
             if read_scalar(header, "mode") is not None:
                 raise ValueError("retains Cursor-only frontmatter 'mode'")
         except ValueError as exc:
