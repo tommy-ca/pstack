@@ -471,4 +471,42 @@ def test_verify_skills_policy_harness_integration() -> None:
 
     verify_skills_policy(ROOT)
 
+@pytest.mark.parametrize(
+    ("optional_fields", "reason"),
+    [
+        ("compatibility:", "1-500"),
+        ("compatibility: " + "x" * 501, "1-500"),
+        ("allowed-tools: [Read, Bash(git:*)]", "space-separated string"),
+        ("metadata:\n  enabled: true", "string values"),
+        ("metadata: {enabled: true}", "string values"),
+        ("metadata:\n  author: first\n  author: second", "duplicate"),
+        ("metadata: {author: first, author: second}", "duplicate"),
+    ],
+)
+def test_reference_rejects_invalid_optional_fields(optional_fields: str, reason: str) -> None:
+    from scripts.skill_frontmatter import validate_skill_frontmatter
 
+    header = f"---\nname: demo\ndescription: Example skill.\n{optional_fields}\n---\n"
+    with pytest.raises(ValueError, match=reason):
+        validate_skill_frontmatter(header, expected_dir="demo", strict_spec=True)
+
+
+def test_reference_accepts_valid_optional_fields_and_native_list_remains_supported() -> None:
+    from scripts.skill_frontmatter import validate_skill_frontmatter
+
+    header = (
+        "---\nname: demo\ndescription: Example skill.\n"
+        "compatibility: POSIX tools required\n"
+        "allowed-tools: Bash(git:*) Read\n"
+        "metadata:\n  author: pstack\n"
+        "---\n"
+    )
+    strict = validate_skill_frontmatter(header, expected_dir="demo", strict_spec=True)
+    assert strict["metadata"] == {"author": "pstack"}
+    assert strict["allowed-tools"] == "Bash(git:*) Read"
+
+    native = (
+        "---\nname: demo\ndescription: Example skill.\n"
+        "allowed-tools: [Read, Bash]\n---\n"
+    )
+    assert validate_skill_frontmatter(native, expected_dir="demo")["allowed-tools"] == ["Read", "Bash"]
