@@ -19,7 +19,8 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 VERSION = "0.61.0"
-MIN_FILES = 84  # the audited 2026-11-15 SKILL.md population
+MIN_FILES = 327  # measured active-file coverage, CI run 43742912824
+BASELINE_WARNINGS = 37  # exact-head v0.61.0 warning budget, CI run 43742912824
 MAX_SECONDS = 120
 EXPECTED_EXCLUDES = frozenset({
     ".git/**", ".worktrees/**", ".audit/**", ".llm-wiki/**", "docs/**",
@@ -138,9 +139,10 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Read-only Agnix guard for PStack")
     parser.add_argument("--binary", type=Path, default=None)
     parser.add_argument("--check-policy", action="store_true")
+    parser.add_argument("--doctor", action="store_true", help="check pinned executable and version")
     parser.add_argument("--formal", action="store_true",
                         help="run bounded real-code receipt invariants and a negative mutant")
-    parser.add_argument("--warning-budget", type=int, default=None)
+    parser.add_argument("--warning-budget", type=int, default=BASELINE_WARNINGS)
     args = parser.parse_args(argv)
     if args.formal:
         count, failures = bounded_model()
@@ -158,14 +160,26 @@ def main(argv: list[str] | None = None) -> int:
     if args.check_policy:
         print("AGNIX_POLICY PASS (configuration only; execution UNTESTED)")
         return 0
+    if args.warning_budget < 0 or args.warning_budget > BASELINE_WARNINGS:
+        print("AGNIX_POLICY FAIL: warning budget must not exceed reviewed baseline", file=sys.stderr)
+        return 1
 
     binary = resolve_binary(args.binary)
     if binary is None:
         print("AGNIX_BLOCKED: run `mise install` for pinned github:agent-sh/agnix", file=sys.stderr)
         return 2
-    if args.warning_budget is not None and args.warning_budget < 0:
-        print("AGNIX_POLICY FAIL: negative warning budget", file=sys.stderr)
-        return 1
+    if args.doctor:
+        try:
+            version = subprocess.run([str(binary), "--version"], capture_output=True, text=True,
+                                     timeout=MAX_SECONDS, env={"LC_ALL": "C.UTF-8", "NO_COLOR": "1"})
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            print(f"AGNIX_BLOCKED: {exc}", file=sys.stderr)
+            return 2
+        if version.returncode != 0 or VERSION not in version.stdout:
+            print("AGNIX_BLOCKED: pinned executable version mismatch", file=sys.stderr)
+            return 2
+        print(f"AGNIX_DOCTOR PASS version={VERSION} (static only)")
+        return 0
     try:
         proc = subprocess.run(
             [str(binary), "--format", "json", "--config", str(ROOT / ".agnix.toml"), str(ROOT)],
