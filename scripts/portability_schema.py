@@ -6,22 +6,28 @@ statically for modular decomposition and backwards compatibility (#603).
 
 from __future__ import annotations
 
-import os
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional, Tuple
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from scripts.evidence_durability import (
+    _is_preservable_settlement,
+    _row_level,
+    _row_receipt,
+    check_evidence_durability,
+    check_scenario_pins,
+    derive_support_state,
+    preserve_observed_settlements,
+)
 from scripts.host_identity import (
     KNOWN_HOSTS,
     is_declared_host,
     is_valid_host_id,
     is_valid_receipt_host,
 )
-
 from scripts.portability_types import (
     ADAPTATION_MODES,
     ALLOWED_TOOL_MAPPINGS,
@@ -67,12 +73,12 @@ from scripts.portability_types import (
     validate_profile_file,
 )
 from scripts.surface_revisions import (
-    DOCSTRING_CONSUMED_DRIVERS,
-    RecipeError,
     _DRIVER_CORE_CACHE_MAX_BYTES,
     _DRIVER_CORE_CACHE_MAX_RECORDS,
     _DRIVER_CORE_CACHE_VERSION,
     _DRIVER_CORE_MEMO,
+    DOCSTRING_CONSUMED_DRIVERS,
+    RecipeError,
     _driver_core,
     _driver_core_cache_dir,
     _module_docstring,
@@ -82,15 +88,6 @@ from scripts.surface_revisions import (
     _update_driver_digest,
     _write_driver_core_cache,
     compute_surface_revisions,
-)
-from scripts.evidence_durability import (
-    _is_preservable_settlement,
-    _row_level,
-    _row_receipt,
-    check_evidence_durability,
-    check_scenario_pins,
-    derive_support_state,
-    preserve_observed_settlements,
 )
 
 __all__ = [

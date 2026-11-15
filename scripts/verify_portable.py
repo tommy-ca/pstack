@@ -16,7 +16,7 @@ if str(ROOT) not in sys.path:
 
 import scripts.portable_verifier as _pv
 from scripts.portable_verifier import *
-from scripts.portable_verifier import _receipt_payload
+from scripts.portable_verifier import _receipt_payload  # noqa: F401
 
 
 def main() -> None:

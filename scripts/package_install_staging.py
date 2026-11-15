@@ -13,11 +13,10 @@ import shutil
 import subprocess
 import tempfile
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, List, Optional, Set
 
 ROOT = Path(__file__).resolve().parents[1]
 
-from scripts.setup_pstack import resolve_profiles_dir
 from scripts.package_projection import (
     generate_antigravity_commands,
     generate_antigravity_manifest,
@@ -30,6 +29,7 @@ from scripts.package_projection import (
     generate_omp_manifest,
     generate_opencode_manifest,
 )
+from scripts.setup_pstack import resolve_profiles_dir
 
 
 def copy_skills(dest_skills: Path, source_root: Optional[Path] = None) -> List[str]:

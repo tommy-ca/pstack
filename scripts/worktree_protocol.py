@@ -16,10 +16,10 @@ Usage:
 from __future__ import annotations
 
 import argparse
-from pathlib import Path
 import re
 import subprocess
 import sys
+from pathlib import Path
 
 
 def find_repo_root(start_dir: Path | None = None) -> Path:

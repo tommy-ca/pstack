@@ -23,7 +23,12 @@ import re
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
-from skill_frontmatter import is_scalar_key, read_scalar, split_frontmatter, validate_skill_name
+from skill_frontmatter import (
+    is_scalar_key,
+    read_scalar,
+    split_frontmatter,
+    validate_skill_name,
+)
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:

@@ -13,7 +13,11 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
-from scripts.portability_schema import VERIFICATION_STATUSES, PORTABLE_CAPABILITY_UNIVERSE, ValidationError
+from scripts.portability_schema import (
+    PORTABLE_CAPABILITY_UNIVERSE,
+    VERIFICATION_STATUSES,
+    ValidationError,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 POLICY = ROOT / "examples/portability/model-role-policy.example.json"

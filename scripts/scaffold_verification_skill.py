@@ -14,7 +14,7 @@ import re
 import subprocess
 import sys
 import time
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SCRIPTS = pathlib.Path(__file__).resolve().parent
@@ -26,8 +26,15 @@ if str(SCRIPTS) not in sys.path:
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from scripts.portability_schema import DEFAULT_SKILLS_DIRS
+from skill_frontmatter import (
+    SKILL_NAME_RE,
+    read_scalar,
+    split_frontmatter,
+    validate_skill_name,
+)
+
 from scripts.host_identity import require_builtin_host_keys
+from scripts.portability_schema import DEFAULT_SKILLS_DIRS
 from scripts.setup_pstack import resolve_profiles_dir
 from scripts.verification_skill_templates import (
     generate_driver_script,
@@ -35,7 +42,6 @@ from scripts.verification_skill_templates import (
     generate_features_readme,
     generate_skill_content,
 )
-from skill_frontmatter import SKILL_NAME_RE, read_scalar, split_frontmatter, validate_skill_name
 
 REQUIRED_SECTIONS = [
     "Launch",

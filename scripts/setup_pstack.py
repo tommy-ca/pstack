@@ -13,9 +13,9 @@ Provides:
 from __future__ import annotations
 
 import json
+import tomllib
 from pathlib import Path
 from typing import Any, Mapping, Optional, Sequence
-import tomllib
 
 from scripts.host_identity import is_valid_host_id
 from scripts.model_role_resolver import resolve_role_source

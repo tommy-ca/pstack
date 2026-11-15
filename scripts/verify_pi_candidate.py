@@ -15,7 +15,11 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
-from scripts.portability_types import HarnessProfile, PORTABLE_CAPABILITY_UNIVERSE, ValidationError
+from scripts.portability_types import (
+    PORTABLE_CAPABILITY_UNIVERSE,
+    HarnessProfile,
+    ValidationError,
+)
 from scripts.setup_pstack import resolve_profiles_dir
 
 HOST = "pstack:pi"

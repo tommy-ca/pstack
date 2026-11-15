@@ -8,8 +8,6 @@ spawn/join/cancel) are never invoked here and stay explicitly untested.
 
 from __future__ import annotations
 
-import re
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional, Tuple
 
@@ -17,11 +15,6 @@ from .base import DriverScenarioResult, HarnessDriver, find_executable
 
 REQUIRED_SPAWN_FIELDS = ("subagent_type", "description", "prompt")
 
-from ..route_resolver import (
-    SkillRoute,
-    resolve_primary_artifact as _resolve_primary_artifact,
-    resolve_skill_order,
-)
 
 
 class DroidDriver(HarnessDriver):

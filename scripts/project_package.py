@@ -15,7 +15,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts.package_projection import *
-from scripts.package_projection import _split_frontmatter, main
+from scripts.package_projection import main
 
 if __name__ == "__main__":
     main()

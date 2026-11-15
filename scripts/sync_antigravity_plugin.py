@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import shutil
 import subprocess
 import sys
@@ -24,18 +23,17 @@ SYNCED_PATHS = ("skills", "agents", "pstack.package.json")
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from scripts.portability_schema import (
-    SKILLS_HASH_IGNORED_DIRS,
-    SKILLS_HASH_IGNORED_SUFFIXES,
-)
-
-import scripts.package_projection as _pp_mod
+import scripts.package_projection as _pp_mod  # noqa: F401
 from scripts.package_projection import (
     generate_antigravity_commands,
     generate_antigravity_manifest,
     generate_antigravity_models,
     load_package_descriptor,
     project_all,
+)
+from scripts.portability_schema import (
+    SKILLS_HASH_IGNORED_DIRS,
+    SKILLS_HASH_IGNORED_SUFFIXES,
 )
 
 

@@ -6,6 +6,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Dict, Type
 
+from scripts.host_identity import require_builtin_host_keys
+
 from .antigravity import AntigravityDriver
 from .base import DriverScenarioResult, HarnessDriver
 from .claude import ClaudeDriver
@@ -15,8 +17,6 @@ from .droid import DroidDriver
 from .grok import GrokDriver
 from .omp import OMPDriver
 from .opencode import OpenCodeDriver
-
-from scripts.host_identity import require_builtin_host_keys
 
 DRIVER_REGISTRY: Dict[str, Type[HarnessDriver]] = {
     "grok": GrokDriver,

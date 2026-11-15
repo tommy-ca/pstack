@@ -30,7 +30,10 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from scripts.evidence_receipts import load_calibrated_evidence_receipt, validate_calibrated_evidence
+from scripts.evidence_receipts import (
+    load_calibrated_evidence_receipt,
+    validate_calibrated_evidence,
+)
 
 # Cognitive Frontier Roles: immutable frontier tier, zero demotion permitted
 COGNITIVE_FRONTIER_ROLES: frozenset[str] = frozenset({
