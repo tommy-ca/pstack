@@ -21,3 +21,4 @@
 - **2026-10-31 17:13 UTC**: Ingested `thermo-nuclear-llm-wiki-v3-acceptance-2026-10-31.md` (SHA256: `686d22a0dd55...`) - Thermo-Nuclear LLM Wiki v3 Acceptance Audit
 - **2026-11-06 00:26 UTC**: Ingested `cross-port-semantic-delta-2026-11-06.md` (SHA256: `5f58cac149ce...`) - Cross-port 2026-11-06 3-source semantic delta audit
 - **2026-11-15 20:02 UTC**: Ingested `agent-skills-conformance-audit-2026-11-15.md` (SHA256: `e5612e142259...`) - Agent Skills conformance audit and semantic crosswalk snapshot
+- **2026-11-15 21:49 UTC**: Ingested `agnix-agent-config-guard-2026-11-15.md` (SHA256: `6aa82ed538b3...`) - Agnix agent configuration guard research and design document
