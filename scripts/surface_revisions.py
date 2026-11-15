@@ -188,7 +188,7 @@ def _read_driver_core_cache(
         if not stat.S_ISREG(info.st_mode) or info.st_size > _DRIVER_CORE_CACHE_MAX_BYTES:
             return None
         if os.name == "posix" and (
-            info.st_uid != os.getuid() or info.st_mode & 0o077
+            info.st_uid != os.geteuid() or info.st_mode & 0o077
         ):
             return None
         record = json.loads(cache_file.read_text(encoding="utf-8"))
@@ -342,6 +342,20 @@ def _update_driver_digest(hasher: Any, path: Path) -> None:
     hasher.update(_driver_core(path, path.read_bytes()))
 
 
+def _hash_json_file(file_path: Optional[Path]) -> Tuple[str, Optional[Dict[str, Any]]]:
+    if not file_path or not file_path.is_file():
+        return "missing", None
+    try:
+        data = json.loads(file_path.read_text(encoding="utf-8"))
+        canonical = json.dumps(data, sort_keys=True, indent=2).encode("utf-8")
+        return hashlib.sha256(canonical).hexdigest(), data
+    except Exception:
+        try:
+            return hashlib.sha256(file_path.read_bytes()).hexdigest(), None
+        except Exception:
+            return "missing", None
+
+
 def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path] = None) -> SurfaceRevisions:
     upstream_file = root / "UPSTREAM"
     canonical_pin = "unknown"
@@ -403,52 +417,18 @@ def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path
                 alt_path = profiles_dir / f"{host.split(':')[-1]}.json"
                 if alt_path.is_file():
                     profile_path = alt_path
-    if profile_path.is_file():
-        try:
-            profile_data = json.loads(profile_path.read_text(encoding="utf-8"))
-            profile_hash = hashlib.sha256(
-                json.dumps(profile_data, sort_keys=True, indent=2).encode("utf-8")
-            ).hexdigest()
-        except Exception:
-            profile_hash = hashlib.sha256(profile_path.read_bytes()).hexdigest()
-    else:
-        profile_hash = "missing"
-
-    pkg_file = root / "pstack.package.json"
-    if pkg_file.is_file():
-        try:
-            pkg_data = json.loads(pkg_file.read_text(encoding="utf-8"))
-            package_descriptor_hash = hashlib.sha256(
-                json.dumps(pkg_data, sort_keys=True, indent=2).encode("utf-8")
-            ).hexdigest()
-        except Exception:
-            package_descriptor_hash = hashlib.sha256(pkg_file.read_bytes()).hexdigest()
-    else:
-        package_descriptor_hash = "missing"
+    profile_hash, profile_data = _hash_json_file(profile_path)
+    package_descriptor_hash, _ = _hash_json_file(root / "pstack.package.json")
 
     manifest_rel = None
-    if profile_path.is_file():
-        try:
-            pdata = json.loads(profile_path.read_text(encoding="utf-8"))
-            if pdata.get("plugin_manifest"):
-                manifest_rel = pdata["plugin_manifest"]
-        except Exception:
-            pass
+    if isinstance(profile_data, dict) and profile_data.get("plugin_manifest"):
+        manifest_rel = profile_data["plugin_manifest"]
     if manifest_rel is None:
         from scripts.portability_types import DEFAULT_PLUGIN_MANIFESTS
 
         manifest_rel = DEFAULT_PLUGIN_MANIFESTS.get(host)
     manifest_file = root / manifest_rel if manifest_rel else None
-    if manifest_file and manifest_file.is_file():
-        try:
-            man_data = json.loads(manifest_file.read_text(encoding="utf-8"))
-            manifest_hash = hashlib.sha256(
-                json.dumps(man_data, sort_keys=True, indent=2).encode("utf-8")
-            ).hexdigest()
-        except Exception:
-            manifest_hash = hashlib.sha256(manifest_file.read_bytes()).hexdigest()
-    else:
-        manifest_hash = "missing"
+    manifest_hash, _ = _hash_json_file(manifest_file)
 
     hasher = hashlib.sha256()
     for fname in (

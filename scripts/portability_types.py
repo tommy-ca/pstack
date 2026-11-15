@@ -792,6 +792,8 @@ class VerificationReceipt:
                 curr_val = current_dict.get(dep)
                 if not rec_val:
                     reasons[plane].append(f"missing {dep} in receipt")
+                elif not curr_val:
+                    reasons[plane].append(f"missing {dep} in current")
                 elif rec_val != curr_val:
                     reasons[plane].append(
                         f"{dep} mismatch (receipt={rec_val[:8]}..., current={curr_val[:8]}...)"
