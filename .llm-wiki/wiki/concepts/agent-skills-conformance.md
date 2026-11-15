@@ -8,22 +8,23 @@ PStack skill conformance has three independent layers: vendor-neutral Agent Skil
 - PStack reference: https://github.com/tommy-ca/pstack/tree/main/skills and https://github.com/tommy-ca/pstack/blob/main/scripts/skill_frontmatter.py
 - Canonical upstream: https://github.com/cursor/plugins/tree/main/pstack
 - Audit snapshot: 2026-11-15, main tree `2f82965aa0eb6e697446505c5fd696e955756e78`; 84 SKILL.md files total, 67 under canonical skills/, 12 host-local, 5 automation.
-- Evidence level: **static/source review only**. No native six-host or independent multi-model verification was performed. This page is curated, **not** an immutable raw-source ingestion or proven semantic compiler run; raw ingestion is tracked by issue #1388.
+- Ingested source snapshot: [Agent Skills Specification Source Reference](../sources/agent-skills-specification.md).
+- Evidence level: **static/source review only**. No native six-host or independent multi-model verification was performed. This page is curated. It is not an automated LLM compilation. Raw ingestion provenance is validated via `scripts/llm_wiki.py verify-sources`.
 
 ## Atomic building blocks
 
 | Atom | Inputs | Contract | Output |
 | --- | --- | --- | --- |
-| Skill identity | Skill directory and SKILL.md | `name` matches directory; kebab-case; length 1-64 | Stable skill ID |
-| Activation metadata | YAML frontmatter | Nonblank `description` length 1-1024, says what/when | Discovery trigger |
-| Instructions | SKILL.md body | Purpose, steps, failure cases and referenced resources | Agent procedure |
-| Executable helper | Optional skill `scripts/` or repository tool | Dependencies, isolation, timeout, exit contract | Reproducible command |
-| Reference | Optional `references/`, cross-skill link | Relative path resolves without unintended escape | On-demand context |
-| Asset | Optional `assets/` | Exists and has declared usage | Template/data |
-| Host binding | Profile + plugin projection | Preserve canonical intent, disclose host gaps | Harness-specific route |
-| Structural verifier | Skill files + metadata parser | Reject malformed/omitted fields; do not infer runtime proof | Offline PASS/FAIL |
-| Behavioral verifier | Driver + feature map | Launch, doctor, drive, evidence, cleanup | Observed result at revision |
-| Formal verifier | Property + code revision + bound | Counterexample or bound-limited proof and failing mutant | Scoped proof evidence |
+| `metadata` | YAML frontmatter | Name kebab-case length 1-64, description 1-1024, strict optional fields | Validated skill metadata |
+| `activation` | Description triggers | Nonblank description says what/when | Discovery match |
+| `instruction` | SKILL.md body | Clear procedures, requirements, and invariants | Deterministic workflow |
+| `resource` | `references/`, `assets/`, links | Resolves inside skill boundaries without unintended escape | Structured context |
+| `adapter` | Host profile mapping | Preserves canonical behavior without duplicating skill intent | Thin harness adapter |
+| `checker` | Skill files + parser | Enforces metadata, link validity, and script layout rules | Offline PASS/FAIL |
+| `evidence` | Driver execution | Receipts, exit codes, transcripts, and timeout bounds | Cryptographic record |
+| `property` | Model assertions | Safety and bounded liveness invariants | Formal property claim |
+| `mutation` | Failing mutant fixtures | Asserts negative controls fail closed | Falsification witness |
+| `projection` | Manifest descriptors | Synchronizes host profiles with canonical packages | Packaging receipt |
 
 The Agent Skills specification **allows additional directories**. `scripts/`, `references/`, and `assets/` are conventions; a stricter PStack placement rule must be labeled as a project policy, not as a normative violation.
 
