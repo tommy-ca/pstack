@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import pathlib
+import re
 import subprocess
 import sys
 
@@ -725,4 +726,75 @@ def test_cli_cleanup_all(tmp_path: pathlib.Path) -> None:
     assert data["exit_code"] == 0
     assert data["passed"] == 2
     assert data["failed"] == 0
+
+
+@pytest.mark.parametrize(
+    ("mutation", "error_match"),
+    [
+        ("drop_coverage_section", "missing required section '## Coverage and sync record'"),
+        ("drop_model_choice_section", "missing required section '## Model and checker choice'"),
+        ("drop_code_pin", "missing code-under-test pin"),
+        ("drop_property", "missing property or invariant declaration"),
+        ("drop_bound", "missing state or input bound declaration"),
+        ("drop_bound_proof_distinction", "must distinguish bounded exploration from unbounded proof"),
+        ("drop_mutant", "missing deliberate failing mutant or counterexample"),
+        ("drop_lattice", "missing failure-first verdict lattice"),
+        ("drop_receipt", "missing effect-level receipt or exit code"),
+        ("drop_scratch", "missing isolated scratch behavior declaration"),
+    ],
+)
+def test_formal_verification_contract_negative_controls(tmp_path: pathlib.Path, mutation: str, error_match: str) -> None:
+    target = tmp_path / ".codex/skills/verify-queue-formal"
+    scaffold_mod.scaffold_skill(target, "queue", "codex", formal=True)
+    skill_file = target / "SKILL.md"
+    text = skill_file.read_text(encoding="utf-8")
+
+    if mutation == "drop_coverage_section":
+        text = text.replace("## Coverage and sync record", "## Coverage notes")
+    elif mutation == "drop_model_choice_section":
+        text = text.replace("## Model and checker choice", "## Notes on tools")
+    elif mutation == "drop_code_pin":
+        text = re.sub(r"(?i)\b(commit|revision|git\s+rev-parse|HEAD)\b", "unspecified", text)
+    elif mutation == "drop_property":
+        text = re.sub(r"(?i)\b(propert(?:y|ies)|invariant(?:s)?|safety|liveness)\b", "behavior", text)
+    elif mutation == "drop_bound":
+        text = re.sub(r"(?i)\b(bound|bounded|traces|finite|domain)\b", "scope", text)
+    elif mutation == "drop_bound_proof_distinction":
+        text = re.sub(r"(?i)\b(bounded|finite)\b", "scoped", text)
+    elif mutation == "drop_mutant":
+        text = re.sub(r"(?i)\b(mutant(?:s)?|counterexample(?:s)?|negative\s+control(?:s)?|negatives)\b", "test_case", text)
+    elif mutation == "drop_lattice":
+        text = re.sub(r"(?i)\b(FAIL\s*>\s*BLOCKED\s*>\s*UNTESTED\s*>\s*PASS|failure-first|fail-closed)\b", "standard-verdict", text)
+    elif mutation == "drop_receipt":
+        text = re.sub(r"(?i)\b(receipt(?:s)?|exit\s+code|counterexample\s+trace|digest(?:s)?)\b", "outcome", text)
+    elif mutation == "drop_scratch":
+        text = re.sub(r"(?i)\b(scratch|temporary|temp|mktemp|isolated)\b", "persistent", text)
+
+    skill_file.write_text(text, encoding="utf-8")
+    errors = scaffold_mod.check_skill(target)
+    assert any(error_match in err for err in errors), f"expected {error_match!r} in {errors}"
+
+
+def test_formal_verification_driver_contract_negative_controls(tmp_path: pathlib.Path) -> None:
+    target = tmp_path / ".codex/skills/verify-driver-formal"
+    scaffold_mod.scaffold_skill(target, "driver", "codex", formal=True)
+    driver_script = target / "scripts" / "driver.sh"
+
+    original_driver = driver_script.read_text(encoding="utf-8")
+    driver_script.write_text(original_driver.replace("doctor)", "doc_check)"), encoding="utf-8")
+    errors = scaffold_mod.check_skill(target)
+    assert any("formal driver.sh missing support for 'doctor'" in err for err in errors)
+
+    driver_script.write_text(original_driver.replace("TIMEOUT_SECONDS=60", "TIMEOUT_SECONDS=300").replace("run_bounded", "run_raw"), encoding="utf-8")
+    errors = scaffold_mod.check_skill(target)
+    assert any("formal driver.sh must enforce 60s timeout bound" in err for err in errors)
+
+
+def test_existing_formal_verification_skills_pass_contract() -> None:
+    for rel_path in (".codex/skills/verify-llm-wiki-formal", ".pi/skills/verify-pi-pstack-formal"):
+        target = ROOT / rel_path
+        if target.is_dir():
+            errors = scaffold_mod.check_skill(target)
+            assert errors == [], f"{rel_path} failed formal contract checks: {errors}"
+
 

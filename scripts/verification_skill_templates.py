@@ -128,7 +128,7 @@ Reduce scenario verdicts with the strict failure-first lattice: FAIL > BLOCKED >
 
 ## Evidence
 
-Capture counterexample traces, state space size, and git revision. Distinguish offline trace checks from live host observation.
+Capture exit code receipts, counterexample traces, state space size, and git revision. Distinguish offline trace checks from live host observation.
 Bound driver command executions to 60 seconds with strict timeout handling once each branch is wired to the real checker.
 
 ## Cleanup
