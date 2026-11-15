@@ -14,9 +14,7 @@ if str(ROOT) not in sys.path:
 from scripts.worktree_protocol import (
     find_repo_root,
     slugify_branch_name,
-    get_allowed_worktree_root,
     validate_worktree_path,
-    get_canonical_worktree_path,
     check_worktrees,
     add_worktree,
     remove_worktree,
