@@ -238,7 +238,7 @@ def test_refresh_static_refusal_names_host_appropriate_remedy(
     }
     grok_receipt["scenarios"].append(live_scenario)
     grok_receipt["planes"]["runtime"] = "PASS"
-    grok_receipt["overall_verdict"] = "UNTESTED"
+    grok_receipt["overall_verdict"] = "PASS"
     (evidence_root / "grok-receipt.json").write_text(json.dumps(grok_receipt), encoding="utf-8")
 
     def static_doctor(self, check_durability: bool = True, allow_stale: bool = False) -> bool:

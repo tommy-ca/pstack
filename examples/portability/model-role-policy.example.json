@@ -2,7 +2,7 @@
   "version": 1,
   "canonical_source": {
     "repository": "cursor/plugins",
-    "pin": "c742dd61706fbacc1b95f1a20b7b988cf096ce6c"
+    "pin": "bf0c7cd80abdbf7fe47b634978a7d1b4071f71a7"
   },
   "role_source": "pstack.package.json#/roles",
   "role_constraints": {

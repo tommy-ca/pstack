@@ -507,6 +507,7 @@ def test_evaluate_durable_settlement_update_keep_live_and_write(tmp_path: Path) 
         s for s in current_data["scenarios"] if s.get("evidence_level") != "observed_live"
     ]
     current_data["planes"]["runtime"] = "UNTESTED"
+    current_data["overall_verdict"] = "UNTESTED"
     current = VerificationReceipt(**current_data)
 
     dec_refuse = evaluate_durable_settlement_update(durable, current, tmp_path / "run.json", allow_keep_live=False)

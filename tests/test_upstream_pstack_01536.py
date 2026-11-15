@@ -98,7 +98,7 @@ def test_applied_and_candidate_release_are_distinct() -> None:
     changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
     descriptor = (ROOT / "pstack.package.json").read_text(encoding="utf-8")
     assert "0.15.36-preview.0" in changelog
-    assert '"upstream_pin": "c742dd61706fbacc1b95f1a20b7b988cf096ce6c"' in descriptor
+    assert '"upstream_pin": "bf0c7cd80abdbf7fe47b634978a7d1b4071f71a7"' in descriptor
     assert "0.15.36-preview.0" in descriptor
 
 
