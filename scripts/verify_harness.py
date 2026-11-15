@@ -34,9 +34,12 @@ from effort_ladder import (
     self_check,
 )
 from skill_frontmatter import (
+    SkillRecord,
+    discover_skills_inventory,
     read_scalar,
     split_frontmatter,
     validate_skill_description,
+    validate_skill_frontmatter,
     validate_skill_name,
 )
 
@@ -229,12 +232,20 @@ def verify_skills_frontmatter(skills_dir: pathlib.Path) -> None:
 
         try:
             header, _ = split_frontmatter(skill_file.read_text(encoding="utf-8"))
-            validate_skill_name(read_scalar(header, "name"), skill_dir.name)
-            validate_skill_description(read_scalar(header, "description"))
-            if read_scalar(header, "mode") is not None:
-                raise ValueError("retains Cursor-only frontmatter 'mode'")
+            validate_skill_frontmatter(header, expected_dir=skill_dir.name)
         except ValueError as exc:
             fail(f"{skill_dir.name}/SKILL.md {exc}")
+
+
+def verify_all_skills_inventory(root: pathlib.Path | None = None) -> list[SkillRecord]:
+    active_root = root if root is not None else ROOT
+    try:
+        records = discover_skills_inventory(active_root)
+        if len(records) != 84:
+            fail(f"expected 84 skills across repository roots, discovered {len(records)}")
+        return records
+    except ValueError as exc:
+        fail(f"skill inventory verification failure: {exc}")
 
 
 def fail(msg: str) -> None:
@@ -248,6 +259,7 @@ def main(root: pathlib.Path | None = None) -> int:
     skill_file = active_root / "skills" / "poteto-mode" / "SKILL.md"
 
     verify_skills_frontmatter(active_root / "skills")
+    verify_all_skills_inventory(active_root)
     files = {p.stem for p in playbooks_dir.glob("*.md")}
     intent_missing = archivable_changes_missing_artifacts(
         active_root / "openspec" / "changes"

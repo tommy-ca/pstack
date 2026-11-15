@@ -161,3 +161,135 @@ def test_name_validator_rejects_overlong_name() -> None:
 
     with pytest.raises(ValueError, match="64"):
         validate_skill_name("a" * 65)
+
+
+def test_discover_all_84_skills() -> None:
+    from scripts.skill_frontmatter import discover_skills_inventory
+
+    records = discover_skills_inventory(ROOT)
+    assert len(records) == 84
+
+    canonical = [r for r in records if r.root_rel == "skills"]
+    assert len(canonical) == 67
+
+    automations = [r for r in records if r.root_rel.startswith("automations/")]
+    assert len(automations) == 5
+
+    host_specific = [r for r in records if r.root_rel.startswith(".")]
+    assert len(host_specific) == 12
+
+
+def test_all_84_skills_conform_to_frontmatter_contract() -> None:
+    from scripts.skill_frontmatter import discover_skills_inventory
+
+    records = discover_skills_inventory(ROOT)
+    assert len(records) == 84
+
+    for record in records:
+        assert record.frontmatter["name"] == record.directory.name
+        desc = record.frontmatter["description"]
+        assert isinstance(desc, str)
+        assert 1 <= len(desc.strip()) <= 1024
+
+
+def test_inventory_detects_directory_missing_skill_md(tmp_path: Path) -> None:
+    from scripts.skill_frontmatter import discover_skills_inventory
+
+    sdir = tmp_path / "skills" / "empty-skill"
+    sdir.mkdir(parents=True)
+    with pytest.raises(ValueError, match="missing SKILL.md"):
+        discover_skills_inventory(tmp_path)
+
+
+def test_inventory_detects_duplicate_skill_in_same_scope(tmp_path: Path) -> None:
+    from scripts.skill_frontmatter import discover_skills_inventory
+
+    s1 = tmp_path / "skills" / "alpha"
+    s1.mkdir(parents=True)
+    (s1 / "SKILL.md").write_text("---\nname: alpha\ndescription: First alpha skill.\n---\n")
+
+    s2 = tmp_path / "skills" / "alpha-clone"
+    s2.mkdir(parents=True)
+    (s2 / "SKILL.md").write_text("---\nname: alpha\ndescription: Duplicate alpha skill.\n---\n")
+
+    with pytest.raises(ValueError, match="does not match directory name"):
+        discover_skills_inventory(tmp_path)
+
+
+@pytest.mark.parametrize("payload,error_match", [
+    ("---\nname: \"unclosed quote\n---\n", "invalid YAML"),
+    ("---\nname: NotKebab\ndescription: Valid description.\n---\n", "not kebab-case"),
+    ("---\nname: wrong-name\ndescription: Valid description.\n---\n", "does not match directory"),
+    ("---\nname: demo\ndescription: Valid description.\nmode: true\n---\n", "Cursor-only"),
+    ("---\nname: demo\ndescription: Valid description.\ncompatibility: 123\n---\n", "compatibility must be a string"),
+    ("---\nname: demo\ndescription: Valid description.\nlicense: 456\n---\n", "license must be a string"),
+    ("---\nname: demo\ndescription: Valid description.\nallowed-tools: {bad: true}\n---\n", "allowed-tools must be a string"),
+    ("---\nname: demo\ndescription: Valid description.\nmetadata: [not, a, dict]\n---\n", "metadata must be a mapping"),
+    ("---\nname: demo\ndescription: Valid description.\ndisable-model-invocation: 'yes'\n---\n", "disable-model-invocation must be a boolean"),
+    ("---\nname: demo\ndescription: Valid description.\nunknown-field: true\n---\n", "unexpected frontmatter fields"),
+])
+def test_validate_skill_frontmatter_negative_controls(payload: str, error_match: str) -> None:
+    from scripts.skill_frontmatter import validate_skill_frontmatter
+
+    with pytest.raises(ValueError, match=error_match):
+        validate_skill_frontmatter(payload, expected_dir="demo")
+
+
+def test_project_spec_frontmatter_and_reference_validation(tmp_path: Path) -> None:
+    import shutil
+    import subprocess
+    from scripts.skill_frontmatter import dump_frontmatter_yaml, project_spec_frontmatter, validate_skill_frontmatter
+
+    native_frontmatter = {
+        "name": "projected-demo",
+        "description": "Projected demo skill description.",
+        "compatibility": "All POSIX platforms",
+        "license": "MIT",
+        "disable-model-invocation": True,
+        "color": "#123456",
+        "reminder": "Always verify proofs.",
+    }
+    projected = project_spec_frontmatter(native_frontmatter)
+    assert projected["name"] == "projected-demo"
+    assert projected["description"] == "Projected demo skill description."
+    assert projected["compatibility"] == "All POSIX platforms"
+    assert projected["license"] == "MIT"
+    assert projected["metadata"]["disable-model-invocation"] == "true"
+    assert projected["metadata"]["color"] == "#123456"
+    assert projected["metadata"]["reminder"] == "Always verify proofs."
+
+    yaml_text = dump_frontmatter_yaml(projected)
+    validated = validate_skill_frontmatter(
+        yaml_text,
+        expected_dir="projected-demo",
+        strict_spec=True,
+    )
+    assert validated["name"] == "projected-demo"
+
+    npx_bin = shutil.which("npx")
+    if npx_bin:
+        sdir = tmp_path / "projected-demo"
+        sdir.mkdir()
+        (sdir / "SKILL.md").write_text(f"{yaml_text}# Projected Demo Body\n")
+        proc = subprocess.run([npx_bin, "--yes", "skills-ref@0.1.5", "validate", str(sdir)], capture_output=True, text=True)
+        assert proc.returncode == 0, f"skills-ref validation failed: {proc.stderr}"
+
+
+def test_host_package_projections_skill_drift() -> None:
+    import json
+    from scripts.skill_frontmatter import discover_skills_inventory
+
+    records = discover_skills_inventory(ROOT)
+    known_skill_names = {r.name for r in records}
+
+    pstack_package_file = ROOT / "pstack.package.json"
+    assert pstack_package_file.is_file()
+    pkg_data = json.loads(pstack_package_file.read_text(encoding="utf-8"))
+    skills_root = pkg_data.get("skills_root", "skills")
+    assert (ROOT / skills_root).is_dir()
+
+    antigravity_plugin = ROOT / ".antigravity-plugin" / "plugin.json"
+    if antigravity_plugin.is_file():
+        ag_data = json.loads(antigravity_plugin.read_text(encoding="utf-8"))
+        assert ag_data.get("skills") in ["./skills/", "./skills", "skills", ["./skills/"], ["./skills"]]
+
