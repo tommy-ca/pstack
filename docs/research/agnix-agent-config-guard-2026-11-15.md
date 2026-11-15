@@ -1,6 +1,6 @@
 # Agnix static guard for PStack agent configuration
 
-**Status:** Draft design and source-level implementation, awaiting executable lint/CI evidence.
+**Status:** Source-level integration and isolated Agnix CI verified (run #43743339184, 2026-11-15); repository-wide portability CI remains independently failing (#1392).
 **Tracking:** [Epic #1393](https://github.com/tommy-ca/pstack/issues/1393), under [Agent Skills epic #1383](https://github.com/tommy-ca/pstack/issues/1383).
 
 ## 1. Requirements
@@ -62,7 +62,7 @@ The implementation is stdlib Python `scripts/agnix_guard.py`; canonical agent/sk
 }
 ```
 
-This is a *field-level model of the expected Agnix JSON interface*, not a published machine-validated JSON Schema. The values above are illustrative and **not** a result measured on PStack. The guard separately checks the process exit status; no JSON field may overrule a nonzero exit. A binary that is missing is BLOCKED, not a PASS.
+This is a *field-level model of the expected Agnix JSON interface*, not a published machine-validated JSON Schema. The displayed JSON is illustrative, not the full PStack linter receipt. A separate observed [CI run #43743339184](https://github.com/tommy-ca/pstack/actions/runs/43743339184) reported version 0.61.0, 327 checked files, **zero errors, 37 warnings, 102 informational diagnostics**. Eight unit negative tests and the 216-state bounded acceptance checker passed; both Codex verification skills and wiki links passed structural validation. The guard separately checks the process exit status; no JSON field may overrule a nonzero exit. A binary that is missing is BLOCKED, not a PASS.
 
 ## 5. Verification
 
@@ -81,7 +81,7 @@ This is a *field-level model of the expected Agnix JSON interface*, not a publis
 - **Boundary discipline:** no implicit binary PATH fallback; project-specific Droid semantic schema validation remains in existing PStack scripts.
 - **Evidence integrity:** generic multi-host scanning is intentional; target narrowing would conceal PStack harness variants.
 - **Agnix vs Agent Skills:** official Agent Skills requires metadata shape, while `scripts/`, `references/`, and `assets/` are recommendations; stricter PStack layout policy belongs to #1386, not an invented official MUST.
-- **Warnings:** no budget is enforced until the exact-head Agnix baseline is measured and triaged under #1395.
+- **Warnings:** the observed 37-warning ceiling is enforced by default; higher ceilings are refused. Remaining warnings require classification and reduction under #1395, not global suppression.
 - **Swarm/Arena/Interrogate:** independent worker runs remain NOT_RUN; their planned tests should challenge exclusions, invalid receipts, model bounds, and raw-source wiki promotion.
 
 ## 7. Provenance
