@@ -389,8 +389,8 @@ def test_repo_verification_skills_audit_clean():
     assert result.returncode == 0, result.stdout + result.stderr
     audit_data = json.loads(result.stdout)
     assert audit_data["exit_code"] == 0
-    assert audit_data["total_skills"] == 10
-    assert audit_data["passed"] == 10
+    assert audit_data["total_skills"] == 12
+    assert audit_data["passed"] == 12
     assert audit_data["failed"] == 0
 
 @pytest.mark.parametrize("mode", ["doctor", "launch", "drive", "cleanup", "all"])
