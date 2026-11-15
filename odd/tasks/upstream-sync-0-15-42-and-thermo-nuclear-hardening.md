@@ -9,7 +9,7 @@ S3: Re-sync live Antigravity plugin, refresh 6-harness durable evidence receipts
 ## Tasks
 - [x] T1: S1, Issue #1345 Audit 0.15.42 delta, reconcile classification, and align core skills (inline direct, 33d858fa, PR #1348)
 - [x] T2: S2, Issue #1346 Statechart parent border routing, SANY error fallback, and script hygiene (inline direct, aae220c2, PR #1349)
-- [ ] T3: S3, Issue #1347 Sync Antigravity plugin, refresh 6-harness receipts, qualify full gate, and close Epic 1344 (inline direct, pending)
+- [x] T3: S3, Issue #1347 Sync Antigravity plugin, refresh 6-harness receipts, qualify full gate, and close Epic 1344 (inline direct, dace7439, PR #1350)
 
 ## Log
 L1: /pstack:poteto-mode clean up worktrees, research, explore, review and audit, sync upstream cursor pstack, recursive plan and update to epics/issues graph, with /thermos, build and verify with swarm, arena, interrogate, new stacked prs, ship the stack then
