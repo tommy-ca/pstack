@@ -6,6 +6,7 @@ statically for modular decomposition and backwards compatibility (#603).
 
 from __future__ import annotations
 
+import os  # noqa: F401
 import sys
 from pathlib import Path
 
