@@ -45,11 +45,11 @@ python3 -m pytest -q tests/test_llm_wiki_bounded_model.py
 
 ## Proof bar
 
-The 39 real-code traces pass; an intentionally overwritten raw source causes `broken_overwrite` to fail a reachable trace; a changing real-code implementation triggers requalification. A missing tool, stale sync commit, unexecuted model, or a mutant that no longer fails is NOT a proof. Any failed actual code invariant is a finding, not something to weaken away.
+The 39 real-code traces pass. An intentionally overwritten raw source causes `broken_overwrite` to fail a reachable trace. A changing real-code implementation triggers requalification. A missing tool, stale sync commit, unexecuted model, or a mutant that no longer fails is NOT a proof. Reduce scenario verdicts with the strict failure-first lattice: FAIL > BLOCKED > UNTESTED > PASS. Any failed actual code invariant is a finding, not something to weaken away.
 
 ## Evidence
 
-Capture git commit, coverage bounds, command/output, touched code/functions, actual negative counterexample and model assumptions. Separate `offline` finite trace proof from `formal-TLC` (UNTESTED unless TLC really runs) and from host-live observation. Do not promote a code sync record merely because tests pass on an unchanged model.
+Capture git commit, exit code receipts, coverage bounds, command output, touched code and functions, actual negative counterexample and model assumptions. Separate `offline` finite trace proof from `formal-TLC` (UNTESTED unless TLC really runs) and from host-live observation. Do not promote a code sync record merely because tests pass on an unchanged model.
 
 ## Cleanup
 

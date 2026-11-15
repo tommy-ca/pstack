@@ -46,11 +46,15 @@ from scripts.setup_pstack import resolve_profiles_dir
 SUPPORTED_HOSTS = BUILTIN_HOSTS
 
 from scripts.evidence_index import (
+    _file_or_denied,  # noqa: F401
     check_evidence_action,
     check_staleness_action,
+    evidence_index_row,  # noqa: F401
     get_declared_hosts,
+    index_row_mismatch,  # noqa: F401
     prune_ephemeral_action,
     receipt_payload,
+    rows_from_receipts,  # noqa: F401
     write_verification_evidence,
 )
 from scripts.harness_scenarios import (
@@ -58,6 +62,7 @@ from scripts.harness_scenarios import (
     execute_local_scenarios,
 )
 from scripts.select_checks import (
+    CHECK_SELECTION_TABLE,  # noqa: F401
     changed_paths,  # noqa: F401
     offline_contract_tests,  # noqa: F401
     select_checks,  # noqa: F401

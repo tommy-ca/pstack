@@ -54,6 +54,18 @@ REQUIRED_SECTIONS = [
     "Helpers",
 ]
 
+FORMAL_REQUIRED_SECTIONS = [
+    ("Coverage and sync record", "Target and source relation"),
+    ("Model and checker choice", "Bounded properties"),
+    ("Launch",),
+    ("Doctor",),
+    ("Drive",),
+    ("Proof bar",),
+    ("Evidence",),
+    ("Cleanup",),
+    ("Helpers",),
+]
+
 
 # Detection order matters: a workspace can carry several host markers, so
 # more specific hosts are probed first. Droid's `.factory` marker is last
@@ -232,17 +244,68 @@ def get_candidate_skills_dirs(workspace: pathlib.Path) -> List[str]:
     return candidate_dirs
 
 
+def check_formal_contract(
+    target_dir: pathlib.Path,
+    body: str,
+    driver_script: pathlib.Path,
+) -> List[str]:
+    """Validate formal verification skill proof bounds, invariants, and driver contracts."""
+    errors: List[str] = []
+
+    for sec_tuple in FORMAL_REQUIRED_SECTIONS:
+        found = False
+        for sec in sec_tuple:
+            pattern = rf"^##\s+{re.escape(sec)}\b"
+            if re.search(pattern, body, re.MULTILINE | re.IGNORECASE):
+                found = True
+                break
+        if not found:
+            primary = sec_tuple[0]
+            errors.append(f"formal SKILL.md missing required section '## {primary}'")
+
+    if not re.search(r"\b(commit|revision|git\s+rev-parse|HEAD)\b", body, re.IGNORECASE):
+        errors.append("formal SKILL.md missing code-under-test pin (commit, revision, or HEAD)")
+    if not re.search(r"\b(propert(?:y|ies)|invariant(?:s)?|safety|liveness)\b", body, re.IGNORECASE):
+        errors.append("formal SKILL.md missing property or invariant declaration")
+    if not re.search(r"\b(bound|bounded|traces|finite|domain)\b", body, re.IGNORECASE):
+        errors.append("formal SKILL.md missing state or input bound declaration")
+    if not (re.search(r"\b(bounded|finite)\b", body, re.IGNORECASE) and re.search(r"\b(proof|formal)\b", body, re.IGNORECASE)):
+        errors.append("formal SKILL.md must distinguish bounded exploration from unbounded proof")
+    if not re.search(r"\b(mutant(?:s)?|counterexample(?:s)?|negative\s+control(?:s)?|negatives)\b", body, re.IGNORECASE):
+        errors.append("formal SKILL.md missing deliberate failing mutant or counterexample")
+    if not re.search(r"\b(FAIL\s*>\s*BLOCKED\s*>\s*UNTESTED\s*>\s*PASS|failure-first|fail-closed)\b", body, re.IGNORECASE):
+        errors.append("formal SKILL.md missing failure-first verdict lattice (FAIL > BLOCKED > UNTESTED > PASS)")
+    if not re.search(r"\b(receipt(?:s)?|exit\s+code|counterexample\s+trace|digest(?:s)?)\b", body, re.IGNORECASE):
+        errors.append("formal SKILL.md missing effect-level receipt or exit code in Evidence")
+    if not re.search(r"\b(scratch|temporary|temp|mktemp|isolated)\b", body, re.IGNORECASE):
+        errors.append("formal SKILL.md missing isolated scratch behavior declaration in Launch or Cleanup")
+
+    if driver_script.is_file():
+        try:
+            dtext = driver_script.read_text(encoding="utf-8")
+            for subcmd in ("doctor", "drive", "cleanup", "all"):
+                pattern = rf'(?m)^\s*(?:["\']?{re.escape(subcmd)}["\']?\s*[|)]|\b{re.escape(subcmd)}\s*\(\))'
+                if not re.search(pattern, dtext):
+                    errors.append(f"formal driver.sh missing support for '{subcmd}' command: {driver_script}")
+            if not re.search(r"\b(TIMEOUT_SECONDS=60|timeout\s+.*60|run_bounded)\b", dtext):
+                errors.append(f"formal driver.sh must enforce 60s timeout bound: {driver_script}")
+        except OSError as exc:
+            errors.append(f"failed reading driver.sh: {exc}")
+
+    return errors
+
+
 def check_skill(target_dir: pathlib.Path) -> List[str]:
     errors: List[str] = []
     if target_dir.is_symlink() or not target_dir.is_dir():
         return [f"Directory does not exist: {target_dir}"]
 
     skill_md = target_dir / "SKILL.md"
+    body = ""
     if skill_md.is_symlink() or not skill_md.is_file():
         errors.append(f"Missing SKILL.md in {target_dir}")
     else:
         text = skill_md.read_text(encoding="utf-8")
-        body = ""
         try:
             header, body = split_frontmatter(text)
             candidate_dirs = get_candidate_skills_dirs(target_dir.parents[2]) if len(target_dir.parents) >= 3 else []
@@ -282,6 +345,9 @@ def check_skill(target_dir: pathlib.Path) -> List[str]:
             errors.append(f"driver.sh must resolve uv run python for reproducible execution: {driver_script}")
         if "BUN_EXEC" in driver_text and "bun" not in driver_text:
             errors.append(f"driver.sh must default BUN_EXEC to bun for reproducible execution: {driver_script}")
+
+    if target_dir.name.endswith("-formal"):
+        errors.extend(check_formal_contract(target_dir, body, driver_script))
 
     return errors
 
