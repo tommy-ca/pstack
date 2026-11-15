@@ -8,8 +8,8 @@ S3: Project package manifests, synchronize live Antigravity plugin, refresh 6-ha
 
 ## Tasks
 - [x] T1: S1, Issue #1352 Eliminate unused imports and dead symbols in scripts/ (inline direct, commit 73a090fb, PR #1355)
-- [x] T2: S2, Issue #1353 Cleanse unused imports and redundant references in tests/ (inline direct, completed)
-- [ ] T3: S3, Issue #1354 Sync Antigravity plugin, refresh 6-harness receipts, qualify full gate, and close Epic 1351 (inline direct, pending)
+- [x] T2: S2, Issue #1353 Cleanse unused imports and redundant references in tests/ (inline direct, commit 84c58151, PR #1356)
+- [x] T3: S3, Issue #1354 Sync Antigravity plugin, refresh 6-harness receipts, qualify full gate, and close Epic 1351 (inline direct, pending PR #1357)
 
 ## Log
 L1: /pstack:poteto-mode clean up worktrees, research, explore, review and audit the abve, recursive plan and update to epics/issues graph, with /thermos, build and verify with swarm, arena, interrogate, new stacked prs, ship the stack then
