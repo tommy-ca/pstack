@@ -34,6 +34,7 @@ from effort_ladder import (
     self_check,
 )
 from skill_frontmatter import read_scalar, split_frontmatter, validate_skill_name
+
 import scripts.adapt_harness as adapt
 
 NAMED_22 = [

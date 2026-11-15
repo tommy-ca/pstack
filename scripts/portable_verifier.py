@@ -16,96 +16,49 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import fnmatch
 import json
 import os
-import re
 import secrets
-import shlex
-import stat
 import subprocess
 import sys
 import tempfile
 import time
 from contextlib import contextmanager
-from dataclasses import asdict, dataclass, field, replace
+from dataclasses import replace
 from pathlib import Path
-from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Tuple
+from typing import Callable, Dict, Iterator, List, Optional, Tuple
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from scripts.portability_schema import (
-    Binding,
-    Capability,
-    ChildSettlement,
-    Evidence,
-    HarnessProfile,
-    PackageDescriptor,
-    REQUIRED_CAPABILITIES,
-    ScenarioResult,
-    SurfaceRevisions,
-    VerificationReceipt,
-    ValidationError,
-    check_evidence_durability,
-    compute_surface_revisions,
-    derive_support_state,
-    preserve_observed_settlements,
-    reduce_verdicts,
-    settle_planes,
-    _is_observed_settlement,
-)
 from scripts.drivers import get_driver
 from scripts.host_identity import BUILTIN_HOSTS
-from scripts.setup_pstack import resolve_profiles_dir
-from scripts.evidence_receipts import (
-    can_claim_current_ci,
-    check_check_evidence_staleness,
-    compute_patch_id,
-    create_check_evidence_receipt,
-    load_check_evidence_receipt,
-    resolve_merge_base,
-    resolve_revision,
+from scripts.portability_schema import (
+    ScenarioResult,
+    VerificationReceipt,
+    compute_surface_revisions,
+    reduce_verdicts,
+    settle_planes,
 )
+from scripts.setup_pstack import resolve_profiles_dir
 
 SUPPORTED_HOSTS = BUILTIN_HOSTS
 
-from scripts.select_checks import (
-    CANONICAL_INDEX_CHECK,
-    CHECK_SELECTION_TABLE,
-    OFFLINE_WORKFLOW,
-    SCAN_HOST_BOUNDARY,
-    _check_id,
-    _command_for,
-    _expand,
-    _git_lines,
-    _print_selection_plan,
-    _tier,
-    changed_paths,
-    offline_contract_tests,
-    pattern_matches,
-    select_checks,
-    select_checks_action,
-    select_checks_plan,
-)
-
 from scripts.evidence_index import (
-    _file_or_denied,
     check_evidence_action,
     check_staleness_action,
-    evidence_index_row,
     get_declared_hosts,
-    index_row_mismatch,
     prune_ephemeral_action,
-    prune_ephemeral_evidence,
     receipt_payload,
-    rows_from_receipts,
     write_verification_evidence,
 )
 from scripts.harness_scenarios import (
     execute_driver_scenarios,
     execute_local_scenarios,
+)
+from scripts.select_checks import (
+    select_checks_action,
 )
 
 # Re-exported from scripts.evidence_index (#613)

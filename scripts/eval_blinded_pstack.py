@@ -24,6 +24,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts.decision_adapter import FakeDecisionProvider
+
 # The behaviour-bearing fingerprint recipe the surface revisions use (#444). Imported, not
 # restated: the probe scope must not grow a second copy of the normalizer.
 from scripts.portability_schema import _update_driver_digest
@@ -231,6 +232,7 @@ class DshEvalResult:
 # file, so the recorded result carries no live/native claim.
 
 import copy
+
 from scripts.portable_verifier import reduce_verdicts
 
 DSH_CORPUS_DIR = ROOT / "tests" / "fixtures" / "eval_corpus_dsh"

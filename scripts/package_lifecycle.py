@@ -29,25 +29,24 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts.host_identity import BUILTIN_HOSTS, require_builtin_host_keys  # noqa: E402
-from scripts.portability_schema import (  # noqa: E402
-    SKILLS_HASH_IGNORED_DIRS,
-    SKILLS_HASH_IGNORED_SUFFIXES,
-)
-from scripts.package_projection import (
-    check_all as check_all_projected,
-    load_package_descriptor,
-)
 from scripts.package_install_staging import (
     clean_stale_managed_files,
     compute_managed_files,
-    copy_agents,
-    copy_skills,
     get_unmanaged_paths,
     record_managed_manifest,
     remove_managed_files_and_empty_dirs,
-    safe_scan_plugin_tree,
     stage_antigravity_native_install,
     write_host_plugin_assets,
+)
+from scripts.package_projection import (
+    check_all as check_all_projected,
+)
+from scripts.package_projection import (
+    load_package_descriptor,
+)
+from scripts.portability_schema import (  # noqa: E402
+    SKILLS_HASH_IGNORED_DIRS,
+    SKILLS_HASH_IGNORED_SUFFIXES,
 )
 
 SUPPORTED_HOSTS = BUILTIN_HOSTS
@@ -372,7 +371,8 @@ def uninstall_plugin(host: str, target_base: Optional[Path] = None, force: bool 
 
     agy_bin = shutil.which("agy")
     if host == "antigravity" and agy_bin and (force or not unmanaged_before):
-        import os, subprocess
+        import os
+        import subprocess
         cmd = [agy_bin, "plugin", "uninstall", "pstack"]
         env = dict(os.environ)
         if target_base is not None:

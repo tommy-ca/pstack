@@ -20,9 +20,9 @@ import hashlib
 import json
 import os
 import re
-from pathlib import Path
 import sys
 import tempfile
+from pathlib import Path
 from typing import Any
 
 DEFAULT_WIKI_DIR = Path(__file__).resolve().parents[1] / ".llm-wiki"

@@ -15,9 +15,7 @@ from __future__ import annotations
 
 import argparse
 import json
-import re
 import sys
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
@@ -51,24 +49,14 @@ CLAUDE_MANIFEST_SHAPE = {"name": str, "version": str, "skills": str, "agents": (
 HOOKS_TRACKER = "#438"
 HOOKS_SURFACE_GLOB = ".*-plugin/hooks*"
 
-from scripts.droid_role_projection import (
-    AGENT_ROLE_CONTRACT,
-    DROID_EXECUTE_TOOLS,
-    DROID_FILE_EDIT_TOOL_IDS,
-    FORBIDDEN_DROID_TOOLS,
-    HOST_PRIMITIVES,
-    LEFTOVER_CALL_SITES,
-    _split_frontmatter,
-    adapt_droid_description,
-    generate_droid_marketplace,
-    generate_droid_role,
-    generate_droid_roles,
-    validate_droid_role,
-)
 from scripts.antigravity_command_projection import (
     check_antigravity_auxiliary,
-    generate_antigravity_commands,
+    generate_antigravity_commands,  # noqa: F401
     project_antigravity_auxiliary,
+)
+from scripts.droid_role_projection import (
+    generate_droid_marketplace,
+    generate_droid_roles,
 )
 
 

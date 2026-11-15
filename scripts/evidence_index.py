@@ -19,7 +19,6 @@ from scripts.evidence_durability import (
     load_verification_receipt,
 )
 from scripts.host_identity import BUILTIN_HOSTS
-from scripts.setup_pstack import resolve_profiles_dir
 from scripts.portability_schema import (
     HarnessProfile,
     SurfaceRevisions,
@@ -29,6 +28,7 @@ from scripts.portability_schema import (
     reduce_verdicts,
     settle_planes,
 )
+from scripts.setup_pstack import resolve_profiles_dir
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -392,8 +392,8 @@ def prune_ephemeral_evidence(
     dry_run: bool = False,
 ) -> Dict[str, Any]:
     """Prune historical ephemeral doctor run directories (<host>-<timestamp>-<hash>)."""
-    import shutil
     import re
+    import shutil
 
     pattern = re.compile(r"^([a-z0-9_-]+)-(\d+)-([0-9a-f]+)$")
     by_host: Dict[str, List[Tuple[int, Path]]] = {}

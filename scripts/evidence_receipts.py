@@ -13,7 +13,6 @@ patch cannot quote its previous result as current CI (#312).
 
 from __future__ import annotations
 
-from functools import lru_cache
 import hashlib
 import json
 import os
@@ -21,6 +20,7 @@ import stat
 import subprocess
 from dataclasses import asdict, dataclass, field, fields
 from datetime import datetime, timezone
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar, Union
 

@@ -21,7 +21,7 @@ from scripts.model_role_policy import (
     check_model_role_policy,
     unproven_catalog_reason,
 )
-from scripts.portability_schema import IMPLEMENTATION_STATUSES, ENFORCEMENT_LEVELS
+from scripts.portability_schema import ENFORCEMENT_LEVELS, IMPLEMENTATION_STATUSES
 
 
 @dataclass(frozen=True)

@@ -7,9 +7,9 @@ A broken overwrite mutant must be detected as a negative control.
 """
 from __future__ import annotations
 
+import sys
 from itertools import product
 from pathlib import Path
-import sys
 from tempfile import TemporaryDirectory
 
 ROOT = Path(__file__).resolve().parents[1]

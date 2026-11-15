@@ -18,8 +18,8 @@
     "profile_hash": "42587dd6c3939ad4a7140e32952d8a37d39224fe5e0c68c8a55bdf2e58588207",
     "package_descriptor_hash": "a5168007056331f892900921c75b4e11d7cb9e911ebce776db20eaf91810397f",
     "manifest_hash": "7ac6a1385b63cf2300e27af0ddd2057c45ddc9f4a845392dc144c12cf0977520",
-    "driver_revision": "fa95277606eff069e13d7c018cb22c1f93f98c35a568727eab203f95ea134a26",
-    "package_driver_revision": "1d32ae290fe1e19e95fe543ef0d242cc296e706b678caeb271b4473355013506",
+    "driver_revision": "3ce97821b1791e460e79903c26b32ed9b7ed2bd629d1b5d8c4c35d2c8d9244bb",
+    "package_driver_revision": "aed3a25902dd76dbc7b5b555ccfe98ab761016cae7ed983043e987a1c980cca9",
     "boundary_driver_revision": "ded4475d707124d6db00167347a2a7217255f3b55e689b647f716617e79a82eb",
     "upstream_freshness": "CURRENT",
     "commits_ahead": 0

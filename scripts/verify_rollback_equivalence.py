@@ -37,7 +37,10 @@ from scripts.decision_adapter import (
     JevDecisionAdapter,
     ProviderObservation,
 )
-from scripts.evidence_receipts import can_authorize_controlling_mode, create_decision_receipt
+from scripts.evidence_receipts import (
+    can_authorize_controlling_mode,
+    create_decision_receipt,
+)
 from scripts.route_resolver import resolve_skill_order, resolve_skill_order_with_shadow
 from scripts.setup_pstack import resolve_profiles_dir
 
