@@ -12,14 +12,12 @@ Implements the 6 required observable postcondition scenarios from pstack-claude
 
 from __future__ import annotations
 
-import json
 import os
 import subprocess
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
 
-import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -170,7 +168,7 @@ def test_restored_child_status_not_mistaken_for_new_spawn_or_persistent_proof() 
 
 def test_stop_cancel_requires_native_settlement_and_does_not_kill_unrelated_process() -> None:
     """Stop/cancel reports success only after native settlement; cannot terminate unrelated PID."""
-    from scripts.drivers.omp_rpc import TERMINAL_LIFECYCLE_STATUS, reduce_child_settlement
+    from scripts.drivers.omp_rpc import reduce_child_settlement
 
     # Cancel request where child was already dead / not running
     # Upstream RPC protocol: data.cancelled is False when no running subagent exists

@@ -18,7 +18,6 @@ if str(ROOT) not in sys.path:
 
 from scripts.drivers import get_driver
 from scripts.drivers.omp_rpc import (
-    OmpRpcSession,
     reduce_child_settlement,
 )
 from tests.test_omp_rpc import (

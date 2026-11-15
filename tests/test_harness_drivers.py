@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Tests for host-native harness drivers and runtime plane conformance."""
 
-import json
 import os
 import sys
 from pathlib import Path
@@ -18,7 +17,6 @@ from scripts.drivers import (
     CodexDriver,
     CopilotDriver,
     GrokDriver,
-    HarnessDriver,
     OMPDriver,
     OpenCodeDriver,
     get_driver,
@@ -416,7 +414,6 @@ def test_driver_route_playbook_and_evidence_capture_inheritance() -> None:
         CodexDriver,
         CopilotDriver,
         GrokDriver,
-        HarnessDriver,
         OMPDriver,
         OpenCodeDriver,
     )

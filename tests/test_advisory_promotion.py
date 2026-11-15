@@ -11,7 +11,6 @@ Implements Task #189 and ADR-0017 / ADR-0018 requirements:
 from __future__ import annotations
 
 import json
-import os
 import sys
 from pathlib import Path
 
@@ -27,7 +26,6 @@ from scripts.decision_adapter import (
     ProviderObservation,
 )
 from scripts.route_resolver import (
-    RouteResolution,
     resolve_skill_order,
     resolve_skill_order_with_shadow,
 )

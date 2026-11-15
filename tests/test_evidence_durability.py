@@ -1,7 +1,4 @@
-import importlib.util
 import json
-import os
-import shutil
 import subprocess
 import sys
 from dataclasses import replace
@@ -13,9 +10,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts.portability_schema import (
-    Binding,
     CONFORMANCE_PLANES,
-    Evidence,
     HarnessProfile,
     PLANE_SURFACE_DEPENDENCIES,
     ValidationError,
@@ -27,7 +22,6 @@ from scripts.setup_pstack import resolve_profiles_dir
 from tests.evidence_test_helpers import (
     _declared_hosts,
     _disposable_copy,
-    _load_verify_portable_module,
     _omp_profile,
 )
 

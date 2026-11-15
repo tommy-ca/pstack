@@ -19,7 +19,6 @@ from scripts.decision_adapter import (
     MAX_CHOICES_COUNT,
     MAX_CONTEXT_BYTES,
     ProviderObservation,
-    SafeContext,
     ScoreRange,
     ScoreRequest,
     validate_and_create_safe_context,

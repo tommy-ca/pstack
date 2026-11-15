@@ -14,7 +14,6 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
-import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -22,7 +21,6 @@ if str(ROOT) not in sys.path:
 
 from scripts.llm_wiki import (
     check_wiki,
-    generate_index_markdown,
     ingest_file,
     compute_sha256,
     verify_sources,

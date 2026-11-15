@@ -25,10 +25,8 @@ if str(ROOT) not in sys.path:
 from scripts.eval_fast_role_task_fit import (
     COGNITIVE_FRONTIER_ROLES,
     FAST_WORKER_ELIGIBLE_ROLES,
-    HOLDOUT_CORPUS,
     HoldoutTask,
     _validated_calibrated_evidence,
-    evaluate_task_baseline,
     evaluate_task_deterministic,
     evaluate_task_semantic,
     load_host_model_catalog,

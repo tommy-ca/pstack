@@ -21,15 +21,12 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts.decision_adapter import (
-    ChoiceOption,
-    ChoiceRequest,
     DecisionOutcome,
     FakeDecisionProvider,
     JevDecisionAdapter,
     ProviderObservation,
 )
 from scripts.route_resolver import (
-    RouteResolution,
     resolve_skill_order,
     resolve_skill_order_with_shadow,
 )

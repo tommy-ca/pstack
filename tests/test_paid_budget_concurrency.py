@@ -10,8 +10,6 @@ Verifies:
 from __future__ import annotations
 
 import concurrent.futures
-from dataclasses import dataclass
-import math
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
@@ -25,7 +23,6 @@ import pytest
 from scripts.decision_adapter import (
     ChoiceOption,
     ChoiceRequest,
-    DecisionOutcome,
     JevDecisionAdapter,
     JevProviderProfile,
     ProviderObservation,

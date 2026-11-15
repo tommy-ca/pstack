@@ -12,7 +12,6 @@ Validates acceptance criteria for Issue #847 (Parent #842 / Epic #840):
 
 from __future__ import annotations
 
-import os
 import signal
 from pathlib import Path
 import pytest
