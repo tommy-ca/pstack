@@ -17,11 +17,14 @@ from pathlib import Path
 from typing import Optional, Tuple
 
 from .base import DriverScenarioResult, HarnessDriver, find_executable
-from ..route_resolver import resolve_skill_order
 
 
 class ClaudeDriver(HarnessDriver):
     """Host driver for Anthropic Claude Code harness."""
+
+    display_name = "Claude Code"
+    route_cmd = "claude"
+    route_requires_available = False
 
     def __init__(self, root: Path):
         super().__init__("claude", root)
@@ -78,41 +81,6 @@ class ClaudeDriver(HarnessDriver):
             stderr=err[:250],
             verdict=verdict,
             duration_s=dur,
-        )
-
-    def route_playbook(self, playbook: str, run_dir: Path) -> DriverScenarioResult:
-        route = resolve_skill_order(self.profile_data, playbook, self.root)
-        if route.kind == "no-route":
-            return DriverScenarioResult(
-                scenario_id="runtime-route-playbook-claude",
-                description=f"Verify Claude Code routes '{playbook}' via profile skill_order",
-                command=f"claude route-check --playbook {playbook}",
-                exit_code=1,
-                stdout=f"No route for '{playbook}'",
-                stderr=route.error_reason,
-                verdict="FAIL",
-                duration_s=0.01,
-            )
-
-        if route.kind == "declared-fallback":
-            verdict = "PASS" if route.target is not None else "FAIL"
-            stdout = f"Routed '{playbook}' to declared fallback '{route.target}'"
-        elif route.is_matched and route.artifact_exists:
-            verdict = "PASS"
-            stdout = f"Routed '{playbook}' to {route.kind} '{route.target}' ({route.artifact}; exists=True)"
-        else:
-            verdict = "FAIL"
-            stdout = f"No valid route/artifact for '{playbook}' (status={route.status}, target={route.target})"
-
-        return DriverScenarioResult(
-            scenario_id="runtime-route-playbook-claude",
-            description=f"Verify Claude Code routes '{playbook}' via profile skill_order ({route.target})",
-            command=f"claude route-check --playbook {playbook} -> {route.target}",
-            exit_code=0 if verdict == "PASS" else 1,
-            stdout=stdout,
-            stderr=route.error_reason,
-            verdict=verdict,
-            duration_s=0.01,
         )
 
     def child_spawn(self, run_dir: Path) -> DriverScenarioResult:

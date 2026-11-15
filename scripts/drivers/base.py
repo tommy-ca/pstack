@@ -91,10 +91,43 @@ class HarnessDriver(ABC):
     - Host-native verification scenarios (discover, route, spawn, isolation, evidence)
     """
 
+    display_name: str = ""
+    route_cmd: Optional[str] = None
+    route_requires_available: bool = True
+    is_advisory_routing: bool = False
+
     def __init__(self, host: str, root: Path):
         self.host = host
         self.root = root
         self._profile_data: Optional[Dict] = None
+
+    @property
+    def host_id(self) -> str:
+        return self.host.split(":")[-1]
+
+    @property
+    def effective_display_name(self) -> str:
+        if self.display_name:
+            return self.display_name
+        name_map = {
+            "antigravity": "Antigravity",
+            "codex": "Codex",
+            "grok": "Grok",
+            "opencode": "OpenCode",
+            "omp": "OMP",
+            "claude": "Claude Code",
+            "copilot": "Copilot",
+            "droid": "Droid",
+        }
+        return name_map.get(self.host_id, self.host_id.capitalize())
+
+    @property
+    def effective_route_cmd(self) -> str:
+        if self.route_cmd:
+            return self.route_cmd
+        if self.host_id == "antigravity":
+            return "agy"
+        return self.host_id
 
     @property
     def profile_data(self) -> Dict:
@@ -181,10 +214,101 @@ class HarnessDriver(ABC):
         """Scenario: Live harness discovers and validates pstack plugin or configuration."""
         pass
 
-    @abstractmethod
     def route_playbook(self, playbook: str, run_dir: Path) -> DriverScenarioResult:
         """Scenario: Live harness routes representative playbook under its native conventions."""
-        pass
+        if self.route_requires_available:
+            avail, reason = self.is_available()
+            if not avail:
+                return self.blocked_result(
+                    f"runtime-route-playbook-{self.host_id}",
+                    f"{self.effective_display_name} playbook routing for '{playbook}'",
+                    reason,
+                )
+
+        try:
+            from ..route_resolver import resolve_skill_order
+        except (ImportError, ValueError):
+            from scripts.route_resolver import resolve_skill_order
+
+        route = resolve_skill_order(self.profile_data, playbook, self.root)
+        if self.is_advisory_routing:
+            return self._route_playbook_advisory(playbook, route)
+        return self._route_playbook_standard(playbook, route)
+
+    def _route_playbook_advisory(self, playbook: str, route: Any) -> DriverScenarioResult:
+        if route.kind == "no-route":
+            return DriverScenarioResult(
+                scenario_id=f"runtime-route-playbook-{self.host_id}",
+                description=f"Verify {self.effective_display_name} advisory skill_order routing for '{playbook}'; no row matches",
+                command=f"offline profile skill_order check (playbook {playbook}; no CLI invocation)",
+                exit_code=1,
+                stdout=f"No skill_order row matches '{playbook}'; advisory routing declares no route",
+                stderr="",
+                verdict="FAIL",
+                duration_s=0.01,
+            )
+
+        if route.kind == "declared-fallback":
+            routed = route.target is not None
+            verdict = "PASS" if routed else "FAIL"
+            stdout = (
+                f"Null-primary row '{route.need}' routes to declared fallback '{route.target}' (configuration-routing claim; no primary artifact)"
+                if routed
+                else f"Null-primary row '{route.need}' declares no fallback to route"
+            )
+        else:
+            exists = bool(route.artifact and route.artifact.exists())
+            verdict = "PASS" if exists else "FAIL"
+            stdout = (
+                f"Advisory-routed '{playbook}' to '{route.target}' ({route.artifact}; exists={exists})"
+                if exists
+                else f"Row '{route.need}' declares '{route.target}' but no artifact exists at {route.artifact}"
+            )
+
+        return DriverScenarioResult(
+            scenario_id=f"runtime-route-playbook-{self.host_id}",
+            description=f"Verify {self.effective_display_name} advisory skill_order routing for '{playbook}' ({route.target}); native precedence shadows plugin skills",
+            command=f"offline profile skill_order check (playbook {playbook} -> {route.target}; no CLI invocation)",
+            exit_code=0 if verdict == "PASS" else 1,
+            stdout=stdout,
+            stderr="",
+            verdict=verdict,
+            duration_s=0.01,
+        )
+
+    def _route_playbook_standard(self, playbook: str, route: Any) -> DriverScenarioResult:
+        if route.kind == "no-route":
+            return DriverScenarioResult(
+                scenario_id=f"runtime-route-playbook-{self.host_id}",
+                description=f"Verify {self.effective_display_name} routes '{playbook}' via profile skill_order",
+                command=f"{self.effective_route_cmd} route-check --playbook {playbook}",
+                exit_code=1,
+                stdout=f"No route for '{playbook}'",
+                stderr=route.error_reason,
+                verdict="FAIL",
+                duration_s=0.01,
+            )
+
+        if route.kind == "declared-fallback":
+            verdict = "PASS" if route.target is not None else "FAIL"
+            stdout = f"Routed '{playbook}' to declared fallback '{route.target}'"
+        elif route.is_matched and route.artifact_exists:
+            verdict = "PASS"
+            stdout = f"Routed '{playbook}' to {route.kind} '{route.target}' ({route.artifact}; exists=True)"
+        else:
+            verdict = "FAIL"
+            stdout = f"No valid route/artifact for '{playbook}' (status={route.status}, target={route.target})"
+
+        return DriverScenarioResult(
+            scenario_id=f"runtime-route-playbook-{self.host_id}",
+            description=f"Verify {self.effective_display_name} routes '{playbook}' via profile skill_order ({route.target})",
+            command=f"{self.effective_route_cmd} route-check --playbook {playbook} -> {route.target}",
+            exit_code=0 if verdict == "PASS" else 1,
+            stdout=stdout,
+            stderr=route.error_reason,
+            verdict=verdict,
+            duration_s=0.01,
+        )
 
     @abstractmethod
     def child_spawn(self, run_dir: Path) -> DriverScenarioResult:
@@ -196,7 +320,17 @@ class HarnessDriver(ABC):
         """Scenario: Verify workspace isolation contract (e.g. worktree, readonly)."""
         pass
 
-    @abstractmethod
     def evidence_capture(self, run_dir: Path) -> DriverScenarioResult:
         """Scenario: Verify evidence capture binding for this host."""
-        pass
+        receipt_path = self.root / ".audit" / "evidence" / f"{self.host_id}-receipt.json"
+        has_receipt = receipt_path.is_file()
+        return DriverScenarioResult(
+            scenario_id=f"runtime-evidence-capture-{self.host_id}",
+            description=f"Verify {self.effective_display_name} durable evidence receipt binding",
+            command=f"test -f {receipt_path}",
+            exit_code=0 if has_receipt else 1,
+            stdout=f"Durable receipt located at {receipt_path} (exists={has_receipt})",
+            stderr="",
+            verdict="PASS" if has_receipt else "FAIL",
+            duration_s=0.01,
+        )

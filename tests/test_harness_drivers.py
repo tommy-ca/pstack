@@ -409,3 +409,42 @@ def test_driver_scenario_result_to_scenario_result_mapping() -> None:
     assert sc2 == sc
 
 
+def test_driver_route_playbook_and_evidence_capture_inheritance() -> None:
+    from scripts.drivers import (
+        AntigravityDriver,
+        ClaudeDriver,
+        CodexDriver,
+        CopilotDriver,
+        GrokDriver,
+        HarnessDriver,
+        OMPDriver,
+        OpenCodeDriver,
+    )
+    from scripts.drivers.droid import DroidDriver
+
+    all_drivers = [
+        AntigravityDriver,
+        CodexDriver,
+        GrokDriver,
+        OpenCodeDriver,
+        OMPDriver,
+        ClaudeDriver,
+        CopilotDriver,
+        DroidDriver,
+    ]
+
+    for cls in all_drivers:
+        assert "route_playbook" not in cls.__dict__, f"{cls.__name__} must inherit route_playbook from HarnessDriver"
+
+    receipt_drivers = [
+        AntigravityDriver,
+        CodexDriver,
+        GrokDriver,
+        OpenCodeDriver,
+        OMPDriver,
+    ]
+    for cls in receipt_drivers:
+        assert "evidence_capture" not in cls.__dict__, f"{cls.__name__} must inherit evidence_capture from HarnessDriver"
+
+
+

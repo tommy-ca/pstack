@@ -157,6 +157,28 @@ def test_canonical_index_classify_drift_cli(tmp_path: Path) -> None:
     assert (tracked.read_bytes() if tracked.is_file() else None) == tracked_before
 
 
+def test_canonical_index_compacted_statechart_exclusions(tmp_path: Path) -> None:
+    """Prove statechart test exclusions are compacted to a single prefix entry without blanket local overrides."""
+    statechart_keys = [k for k in canonical_index.EXCLUSIONS if k.startswith("skills/statechart/scripts/test")]
+    assert statechart_keys == ["skills/statechart/scripts/test"], f"Expected single prefix entry, got {statechart_keys}"
+
+    # Verify classify_artifact preserves messages.test.ts when present and reports gap if deleted
+    preserved_res = canonical_index.classify_artifact("skills/statechart/scripts/test/messages.test.ts", "dummy_hash")
+    assert preserved_res["mode"] == "preserve"
+    gap_res = canonical_index.classify_artifact("skills/statechart/scripts/test/messages.test.ts", "dummy_hash", root=tmp_path)
+    assert gap_res["mode"] == "gap"
+
+    # Excluded files stay excluded even if present locally
+    leaked = tmp_path / "skills/make-bot-ui/SKILL.md"
+    leaked.parent.mkdir(parents=True, exist_ok=True)
+    leaked.write_text("leaked", encoding="utf-8")
+    assert canonical_index.classify_artifact("skills/make-bot-ui/SKILL.md", "dummy_hash", root=tmp_path)["mode"] == "exclude"
+
+    # And excludes omitted fixtures/tests under the prefix
+    excluded_res = canonical_index.classify_artifact("skills/statechart/scripts/test/corpus/Counter/chart.mmd", "dummy_hash")
+    assert excluded_res["mode"] == "exclude"
+
+
 def test_vendored_entrypoints_stay_executable() -> None:
     for path in (
         "skills/poteto-mode/scripts/watch-pr/watch-pr",
