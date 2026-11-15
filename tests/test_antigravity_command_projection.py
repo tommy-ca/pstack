@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import dataclasses
 import json
 import sys
+import tomllib
 from pathlib import Path
 
 import pytest
@@ -73,3 +75,34 @@ def test_package_projection_reexport_parity() -> None:
     cmds_reexport = pkg_proj.generate_antigravity_commands(desc)
     assert cmds_direct == cmds_reexport
     assert len(cmds_direct) >= 21
+
+
+def test_generate_antigravity_commands_escapes_toml_special_chars(
+    sample_descriptor: PackageDescriptor,
+) -> None:
+    tricky_desc = 'Watch "PR" — check C:\\temp\\path\nand tabs\there'
+    tricky_prompt = 'Run /cmd "arg1" with \\backslash\\\nline2\tand emoji'
+    custom_desc = dataclasses.replace(
+        sample_descriptor,
+        commands=[
+            {
+                "name": "tricky",
+                "description": tricky_desc,
+                "prompt": tricky_prompt,
+            }
+        ],
+    )
+    cmds = ag_proj.generate_antigravity_commands(custom_desc)
+    parsed = tomllib.loads(cmds["tricky.toml"])
+    assert parsed["description"] == tricky_desc
+    assert parsed["prompt"] == tricky_prompt
+
+
+def test_generated_antigravity_commands_are_valid_toml(
+    sample_descriptor: PackageDescriptor,
+) -> None:
+    cmds = ag_proj.generate_antigravity_commands(sample_descriptor)
+    for fname, content in cmds.items():
+        parsed = tomllib.loads(content)
+        assert isinstance(parsed["description"], str) and parsed["description"]
+        assert isinstance(parsed["prompt"], str) and parsed["prompt"]
