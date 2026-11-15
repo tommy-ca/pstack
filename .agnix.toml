@@ -1,0 +1,22 @@
+# Agnix v0.61.0 configuration for active PStack agent configs.
+# Generic multi-tool mode is deliberate because this repository ships multiple harnesses.
+# No fix flag, broad skill exclusions, rule disablement, or silent warning suppression.
+severity = "Warning"
+
+exclude = [
+  ".git/**",
+  ".worktrees/**",
+  ".audit/**",
+  ".llm-wiki/**",
+  "docs/**",
+  "openspec/changes/archive/**",
+  "tests/**",
+  "examples/**",
+]
+
+[rules]
+disabled_rules = []
+
+[files]
+# Droid definitions have their own PStack schema checker. Agnix checks markdown prompt and rule hygiene only.
+include_as_generic = ["droids/*.md"]
