@@ -152,6 +152,19 @@ Type [`/poteto-mode`](./skills/poteto-mode/SKILL.md) when a playbook matches or 
 
 The vendored GitHub watcher is a compatibility utility, not the stack landing controller. With Bun installed, run `skills/poteto-mode/scripts/watch-pr/watch-pr --help` directly on Linux for its options.
 
+## Agent configuration guard (Agnix)
+
+PStack uses [Agnix v0.61.0](https://github.com/agent-sh/agnix) to lint active `SKILL.md`, agent definitions, `AGENTS.md`, and recognized harness rule/configuration files. It is a **read-only static guard**, not an agent execution proof.
+
+```sh
+mise install --locked github:agent-sh/agnix@0.61.0
+python3 scripts/agnix_guard.py --check-policy
+python3 scripts/agnix_guard.py
+python3 scripts/agnix_guard.py --formal
+```
+
+The recorded baseline is 327 active files, zero errors and 37 existing warnings under a 37-warning ceiling (see [Agnix epic #1393](https://github.com/tommy-ca/pstack/issues/1393)). The bounded model covers 216 receipt-admission states and a failing error-filter mutant, **not** host-native model/agent behavior. `.github/workflows/agnix-guard.yml` is a separate CI gate; the broader PStack test failures are tracked independently under [#1392](https://github.com/tommy-ca/pstack/issues/1392).
+
 ## Skills
 
 [`/poteto-mode`](./skills/poteto-mode/SKILL.md) runs most of these for you when a step needs them (`how`, `why`, `architect`, `arena`, `swarm`, `interrogate`, `unslop`, `no-comments`, `technical-writing`, `tdd`, and the principles). The table below is for when you want one directly:
