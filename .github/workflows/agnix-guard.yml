@@ -35,6 +35,10 @@ jobs:
           mise run verify:agnix:policy
           mise run verify:agnix:formal
           mise run verify:agnix
+      - name: Drive project-local Agnix behavioral and bounded-formal verification skills
+        run: |
+          bash .codex/skills/verify-agnix-pstack/scripts/driver.sh all
+          bash .codex/skills/verify-agnix-pstack-formal/scripts/driver.sh all
       - name: Verify Codex Agnix skill structure and Wiki links
         run: |
           python scripts/scaffold_verification_skill.py --check --target-dir .codex/skills/verify-agnix-pstack
