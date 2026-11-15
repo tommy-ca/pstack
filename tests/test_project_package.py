@@ -316,3 +316,51 @@ def test_hooks_probe_fails_closed_once_hook_data_appears(capsys, tmp_path) -> No
     assert project_package.hook_surface_paths(tmp_path) == [host_dir / "hooks.json"]
     assert project_package.check_hooks({}, tmp_path) is False
 
+
+def test_check_droid_auxiliary_handles_malformed_json(capsys, tmp_path, monkeypatch) -> None:
+    desc, _ = project_package.load_package_descriptor()
+    factory_dir = tmp_path / ".factory-plugin"
+    factory_dir.mkdir()
+    (factory_dir / "marketplace.json").write_text("{not valid json", encoding="utf-8")
+    monkeypatch.setattr(project_package, "FACTORY_PLUGIN_DIR", factory_dir)
+
+    assert project_package._check_droid_auxiliary(desc) is False
+    out = capsys.readouterr().out
+    assert "ERROR:" in out
+    assert "failed to parse" in out
+
+
+def test_check_pi_package_reports_missing_error_drift_and_pass(capsys, tmp_path) -> None:
+    desc, _ = project_package.load_package_descriptor()
+    pi_dir = tmp_path / ".pi"
+
+    assert project_package.check_pi_package(desc, pi_dir) is False
+    assert "MISSING:" in capsys.readouterr().out
+
+    pi_dir.mkdir()
+    pkg_file = pi_dir / "package.json"
+    pkg_file.write_text("{bad json", encoding="utf-8")
+    assert project_package.check_pi_package(desc, pi_dir) is False
+    assert "ERROR:" in capsys.readouterr().out
+
+    pkg_file.write_text(json.dumps({"name": "drifted"}), encoding="utf-8")
+    assert project_package.check_pi_package(desc, pi_dir) is False
+    assert "DRIFT:" in capsys.readouterr().out
+
+    project_package._write_json(pkg_file, project_package.generate_pi_manifest(desc), "pi package")
+    capsys.readouterr()
+    assert project_package.check_pi_package(desc, pi_dir) is True
+    assert "PASS: pi package" in capsys.readouterr().out
+
+
+def test_write_and_check_json_roundtrip(capsys, tmp_path) -> None:
+    target = tmp_path / "nested" / "manifest.json"
+    payload = {"name": "pstack", "version": "1.0.0"}
+
+    project_package._write_json(target, payload, "sample")
+    assert "Projected sample ->" in capsys.readouterr().out
+    assert target.read_text(encoding="utf-8") == json.dumps(payload, indent=2) + "\n"
+
+    assert project_package._check_json(target, payload, "sample") is True
+    assert "PASS: sample" in capsys.readouterr().out
+

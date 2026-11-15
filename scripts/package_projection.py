@@ -416,6 +416,33 @@ def projected_model_catalog(host: str) -> Path:
     return ROOT / projection.catalog
 
 
+def _display_path(path: Path) -> Path:
+    return path.relative_to(ROOT) if path.is_relative_to(ROOT) else path
+
+
+def _write_json(path: Path, payload: Any, label: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    print(f"Projected {label} -> {_display_path(path)}")
+
+
+def _check_json(path: Path, expected: Any, label: str, *, drift_target: str = "expected") -> bool:
+    rel = _display_path(path)
+    if not path.is_file():
+        print(f"MISSING: {label} not found at {rel}")
+        return False
+    try:
+        actual = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError, UnicodeDecodeError) as e:
+        print(f"ERROR: {rel} failed to parse: {e}")
+        return False
+    if actual != expected:
+        print(f"DRIFT: {label} at {rel} does not match {drift_target}")
+        return False
+    print(f"PASS: {label} at {rel} in sync")
+    return True
+
+
 def _project_antigravity_auxiliary(desc: PackageDescriptor) -> None:
     models_file = projected_model_catalog("antigravity")
     project_antigravity_auxiliary(desc, models_file, generate_antigravity_models(desc))
@@ -423,16 +450,12 @@ def _project_antigravity_auxiliary(desc: PackageDescriptor) -> None:
 
 def _project_codex_auxiliary(desc: PackageDescriptor) -> None:
     models_file = projected_model_catalog("codex")
-    models_file.write_text(json.dumps(generate_codex_models(desc), indent=2) + "\n", encoding="utf-8")
-    print(f"Projected codex models -> {models_file.relative_to(ROOT)}")
+    _write_json(models_file, generate_codex_models(desc), "codex models")
 
 
 def _project_droid_auxiliary(desc: PackageDescriptor) -> None:
     marketplace_file = FACTORY_PLUGIN_DIR / "marketplace.json"
-    marketplace_file.write_text(
-        json.dumps(generate_droid_marketplace(desc), indent=2) + "\n", encoding="utf-8"
-    )
-    print(f"Projected droid marketplace -> {marketplace_file.relative_to(ROOT)}")
+    _write_json(marketplace_file, generate_droid_marketplace(desc), "droid marketplace")
 
     roles = generate_droid_roles()
     DROIDS_DIR.mkdir(parents=True, exist_ok=True)
@@ -453,29 +476,18 @@ AUXILIARY_PROJECTORS: Dict[str, Callable[[PackageDescriptor], None]] = {
 
 
 def project_all(desc: PackageDescriptor, hosts: List[str] | None = None) -> None:
-    targets = hosts or list(TARGET_MAP.keys())
+    targets = hosts or (list(TARGET_MAP.keys()) + list(CANDIDATE_TARGET_MAP.keys()))
     for host in targets:
         if host in TARGET_MAP:
             dest_file, generator = TARGET_MAP[host]
-            dest_file.parent.mkdir(parents=True, exist_ok=True)
-            content = generator(desc)
-            dest_file.write_text(json.dumps(content, indent=2) + "\n", encoding="utf-8")
-            print(f"Projected {host} -> {dest_file.relative_to(ROOT)}")
+            _write_json(dest_file, generator(desc), host)
 
             aux_projector = AUXILIARY_PROJECTORS.get(host)
             if aux_projector is not None:
                 aux_projector(desc)
         elif host in CANDIDATE_TARGET_MAP:
             dest_file, generator = CANDIDATE_TARGET_MAP[host]
-            dest_file.parent.mkdir(parents=True, exist_ok=True)
-            content = generator(desc)
-            dest_file.write_text(json.dumps(content, indent=2) + "\n", encoding="utf-8")
-            print(f"Projected {host} -> {dest_file.relative_to(ROOT)}")
-    if hosts is None:
-        dest_file, generator = CANDIDATE_TARGET_MAP["pi"]
-        dest_file.parent.mkdir(parents=True, exist_ok=True)
-        dest_file.write_text(json.dumps(generator(desc), indent=2) + "\n", encoding="utf-8")
-        print(f"Projected pi -> {dest_file.relative_to(ROOT)}")
+            _write_json(dest_file, generator(desc), host)
 
 
 def _check_antigravity_auxiliary(desc: PackageDescriptor) -> bool:
@@ -494,40 +506,13 @@ def _check_codex_auxiliary(desc: PackageDescriptor) -> bool:
         expected_models = generate_codex_models(desc)
     except ValidationError as e:
         print(f"ERROR: codex models cannot be projected: {e}")
-        expected_models = None
-    if expected_models is None:
         return False
-    elif not models_file.is_file():
-        print(f"MISSING: codex models not found at {models_file.relative_to(ROOT)}")
-        return False
-    else:
-        try:
-            actual_models = json.loads(models_file.read_text(encoding="utf-8"))
-            if actual_models != expected_models:
-                print(f"DRIFT: codex models at {models_file.relative_to(ROOT)} does not match expected")
-                return False
-            else:
-                print(f"PASS: codex models at {models_file.relative_to(ROOT)} in sync")
-                return True
-        except Exception as e:
-            print(f"ERROR: {models_file.relative_to(ROOT)} failed to parse: {e}")
-            return False
+    return _check_json(models_file, expected_models, "codex models")
 
 
 def _check_droid_auxiliary(desc: PackageDescriptor) -> bool:
-    all_ok = True
     marketplace_file = FACTORY_PLUGIN_DIR / "marketplace.json"
-    expected_marketplace = generate_droid_marketplace(desc)
-    if not marketplace_file.is_file():
-        print(f"MISSING: droid marketplace not found at {marketplace_file.relative_to(ROOT)}")
-        all_ok = False
-    else:
-        actual_marketplace = json.loads(marketplace_file.read_text(encoding="utf-8"))
-        if actual_marketplace != expected_marketplace:
-            print(f"DRIFT: droid marketplace at {marketplace_file.relative_to(ROOT)} does not match expected")
-            all_ok = False
-        else:
-            print(f"PASS: droid marketplace at {marketplace_file.relative_to(ROOT)} in sync")
+    all_ok = _check_json(marketplace_file, generate_droid_marketplace(desc), "droid marketplace")
 
     expected_roles = generate_droid_roles()
     roles_ok = True
@@ -646,31 +631,12 @@ def check_hooks(raw: Dict[str, Any], root: Path = ROOT) -> bool:
 def check_pi_package(desc: PackageDescriptor, pi_dir: Optional[Path] = None) -> bool:
     resolved_dir = pi_dir if pi_dir is not None else PI_DIR
     target_file = resolved_dir / "package.json"
-    if not target_file.is_file():
-        label = target_file.relative_to(ROOT) if target_file.is_relative_to(ROOT) else target_file
-        print(f"MISSING: {label} (Pi package manifest)")
-        return False
-    try:
-        actual = json.loads(target_file.read_text(encoding="utf-8"))
-        expected = generate_pi_manifest(desc)
-        if actual != expected:
-            print(f"DRIFT: {target_file.relative_to(ROOT)} does not match expected Pi manifest")
-            return False
-        pi_field = actual.get("pi", {})
-        if "extensions" in pi_field or "packages" in actual:
-            print(f"ERROR: {target_file.relative_to(ROOT)} must not bundle executable extensions")
-            return False
-        if pi_field.get("skills") != ["./skills"]:
-            print(f"ERROR: {target_file.relative_to(ROOT)} must expose canonical ./skills")
-            return False
-        if pi_field.get("subagents", {}).get("agents") != ["./agents"]:
-            print(f"ERROR: {target_file.relative_to(ROOT)} must expose canonical ./agents")
-            return False
-        print(f"PASS: pi package at {target_file.relative_to(ROOT)} in sync")
-        return True
-    except Exception as e:
-        print(f"ERROR: {target_file.relative_to(ROOT)} failed to parse: {e}")
-        return False
+    return _check_json(
+        target_file,
+        generate_pi_manifest(desc),
+        "pi package",
+        drift_target="expected Pi manifest",
+    )
 
 
 def check_all(
@@ -689,21 +655,8 @@ def check_all(
             print(f"ERROR: {host} manifest cannot be projected: {e}")
             all_ok = False
             continue
-        if not dest_file.is_file():
-            print(f"MISSING: {host} manifest not found at {dest_file.relative_to(ROOT)}")
+        if not _check_json(dest_file, expected, f"{host} manifest", drift_target="pstack.package.json"):
             all_ok = False
-            continue
-        try:
-            actual = json.loads(dest_file.read_text(encoding="utf-8"))
-        except Exception as e:
-            print(f"ERROR: {dest_file.relative_to(ROOT)} failed to parse: {e}")
-            all_ok = False
-            continue
-        if actual != expected:
-            print(f"DRIFT: {host} manifest at {dest_file.relative_to(ROOT)} does not match pstack.package.json")
-            all_ok = False
-        else:
-            print(f"PASS: {host} manifest at {dest_file.relative_to(ROOT)} in sync")
 
         aux_checker = AUXILIARY_CHECKERS.get(host)
         if aux_checker is not None:
