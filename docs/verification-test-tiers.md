@@ -98,6 +98,17 @@ A green PR job proves **only these selected contract scenarios**.
 unexpected user-authored files inside plugin directories (see `tests/test_package_lifecycle_safety.py`).
 None of these checks prove that a real child model was spawned and joined.
 
+## Agnix cross-tool static configuration gate (separate CI job)
+
+The dedicated `.github/workflows/agnix-guard.yml` runs pinned agnix v0.61.0 (via mise) with no `--fix`, plus reviewed-scope assertions and the Codex-local creator/verification contract checks. See [#1393](https://github.com/tommy-ca/pstack/issues/1393).
+
+- `python3 scripts/agnix_guard.py --check-policy` proves config/pin/exclusion policy only.
+- `python3 scripts/agnix_guard.py` runs active static file lint and rejects a missing binary, wrong version, non-JSON, nonzero exit, error diagnostics, below-baseline 327-file coverage, or warnings above the observed ceiling of 37. Its CI outcome is **static**, not a live host run.
+- `python3 scripts/agnix_guard.py --formal` exercises 216 bounded, production-Python receipt-acceptance states with a failing diagnostic-masking mutant. This is a bounded predicate proof, not a proof of the external Agnix implementation.
+- `tests/test_agnix_guard.py` tests malicious exclusions, rule-disable flags, shadowed executable attempts, invalid receipts and negative controls. A valid Agnix report does not replace `verify:portable`, native host doctors, real user-path verification, or app-specific model checks.
+
+The initial CI [run #43743339184](https://github.com/tommy-ca/pstack/actions/runs/43743339184) passed this isolated static gate with 327 files, zero errors, 37 warnings, and 102 informational diagnostics; other portable-offline tests remain separately red (#1392). Warning triage is #1395, not an authorization to globally disable rules.
+
 ## Host-dependent smoke (opt-in)
 
 In `tests/test_harness_drivers.py`, the native CLI discovery/route/spawn-contract/
