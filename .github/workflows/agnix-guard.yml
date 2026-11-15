@@ -32,6 +32,11 @@ jobs:
         run: python scripts/agnix_guard.py --formal
       - name: Lint active agent configs with pinned Agnix
         run: python scripts/agnix_guard.py
+      - name: Inspect locked OpenSpec dependency sidecar (temporary diagnostic)
+        run: |
+          mise lock
+          git diff --exit-code mise.lock
+          python3 -c 'import base64,pathlib; paths = sorted(pathlib.Path(".mise/locks/npm-fission-ai-openspec/1.16.1").glob("*")); [print("AGNIX_SIDECAR_B64="+p.name+":"+base64.b64encode(p.read_bytes()).decode()) for p in paths]'
       - name: Verify pinned mise task entrypoints
         run: |
           mise run verify:agnix:policy
