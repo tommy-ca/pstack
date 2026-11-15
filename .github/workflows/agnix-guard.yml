@@ -1,0 +1,29 @@
+name: Agnix agent configuration guard
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  agnix-static-guard:
+    name: Pinned Agnix static guard (not native runtime proof)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@82a612c5ab8bcda7cc5db6b7e81a8e7584c3dc6e # v5.2.3
+        with:
+          install: true
+      - name: Guard negative witnesses and bounded real-code verdict invariants
+        run: mise exec -- python -m unittest discover -s tests -p 'test_agnix_guard.py' -v
+      - name: Check reviewed scope and tool pin
+        run: mise exec -- python scripts/agnix_guard.py --check-policy
+      - name: Run bounded verdict model and failing mutant
+        run: mise exec -- python scripts/agnix_guard.py --formal
+      - name: Lint active agent configs with pinned Agnix
+        run: mise exec -- python scripts/agnix_guard.py
