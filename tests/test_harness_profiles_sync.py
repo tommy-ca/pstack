@@ -20,7 +20,12 @@ import pytest
 
 from scripts.portability_schema import HarnessProfile
 from scripts.portability_types import ValidationError
-from scripts.setup_pstack import assert_profiles_parity, resolve_profiles_dir, sync_root_profiles_mirror
+from scripts.setup_pstack import (
+    assert_profiles_parity,
+    resolve_profiles_dir,
+    sync_root_profiles_mirror,
+)
+
 CANONICAL_PROFILES = ROOT / "skills" / "setup-pstack" / "profiles"
 ROOT_PROFILES = ROOT / "profiles"
 

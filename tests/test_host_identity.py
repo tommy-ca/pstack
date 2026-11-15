@@ -305,7 +305,7 @@ def test_a_reserved_namespace_and_a_trailing_newline_are_refused_by_both_carrier
 
 
 def test_the_six_builtin_hosts_are_unchanged_everywhere() -> None:
-    import scripts.portability_schema as portability_schema
+    from scripts import portability_schema
     from scripts.drivers import DRIVER_REGISTRY
 
     lifecycle = _load_module("package_lifecycle_seam", "scripts/package_lifecycle.py")

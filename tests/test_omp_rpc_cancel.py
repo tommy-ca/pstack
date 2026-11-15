@@ -23,11 +23,11 @@ from scripts.drivers.omp_rpc import (
 from tests.test_omp_rpc import (
     NEGOTIATED,
     READY,
-    _StubSession,
     _expected,
     _lifecycle,
     _progress,
     _session,
+    _StubSession,
 )
 
 
@@ -255,8 +255,8 @@ def test_verifier_dispatch_records_the_cancel_scenario_for_omp_only(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     """The cancel scenario reaches a receipt only because drive() dispatches it."""
-    from scripts.drivers import omp as omp_driver
     import scripts.portable_verifier as verify_portable
+    from scripts.drivers import omp as omp_driver
 
     monkeypatch.delenv(omp_driver.LIVE_GATE_ENV, raising=False)
     monkeypatch.setattr(omp_driver.OMPDriver, "is_available", lambda self: (True, "stubbed host"))

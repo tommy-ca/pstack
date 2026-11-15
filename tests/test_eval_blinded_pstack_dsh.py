@@ -20,11 +20,11 @@ which re-runs the same frozen cases with the re-derived controls and records the
 `scoring_table_candidate.json`. The frozen JSON is never edited by either phase.
 """
 
+import json
+import shutil
 import sys
 from dataclasses import asdict
-import json
 from pathlib import Path
-import shutil
 
 import pytest
 

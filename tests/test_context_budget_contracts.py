@@ -25,7 +25,6 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
-from typing import Dict
 
 import pytest
 
@@ -92,7 +91,7 @@ def owner(path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
 
-def load_json(path: Path) -> Dict:
+def load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
@@ -111,7 +110,7 @@ def registry_pack_bytes() -> int:
     return sum(len(overlay["prose"].encode("utf-8")) for overlay in registry["overlays"])
 
 
-def no_worse_work(after: Dict[str, int], before: Dict[str, int]) -> bool:
+def no_worse_work(after: dict[str, int], before: dict[str, int]) -> bool:
     """Every recorded work category is equal or lower in the gated arm."""
     return all(after[key] <= before[key] for key in REQUIRED_WORK_KEYS)
 
@@ -301,7 +300,7 @@ def test_the_docs_surfaces_name_the_contracts_they_describe() -> None:
 # --- the recorded task-work traces ----------------------------------------
 
 
-def traces() -> Dict:
+def traces() -> dict:
     assert TRACES_PATH.is_file(), "record the two task-work traces"
     return load_json(TRACES_PATH)
 

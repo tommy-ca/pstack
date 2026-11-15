@@ -33,7 +33,7 @@ CHANGE = ROOT / "openspec" / "changes" / "archive" / "2026-10-11-deepseek-skill-
 ATOM_TABLE = CHANGE / "atomic-patterns.md"
 SPEC = CHANGE / "specs" / "pstack-reusable-skill-patterns" / "spec.md"
 
-import scripts.scan_host_boundary as scan_host_boundary
+from scripts import scan_host_boundary
 
 # The atoms this unit owns, and the owners this unit extends. `bug-fix`, `refactoring`,
 # `perf-issue` and `shipping` are poteto-mode playbooks; `review` is the host's bundled

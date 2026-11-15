@@ -15,7 +15,7 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
-from typing import List, Optional
+
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -42,7 +42,7 @@ class SpyDecisionProvider(SemanticDecisionProvider):
 
     def __init__(
         self,
-        canned_observation: Optional[ProviderObservation] = None,
+        canned_observation: ProviderObservation | None = None,
         provider_identity: str = "spy-provider",
         model_identity: str = "spy-model-v1",
     ) -> None:
@@ -55,7 +55,7 @@ class SpyDecisionProvider(SemanticDecisionProvider):
         )
         self.provider_identity = provider_identity
         self.model_identity = model_identity
-        self.calls: List[DecisionRequest] = []
+        self.calls: list[DecisionRequest] = []
 
     def decide(self, request: DecisionRequest) -> ProviderObservation:
         self.calls.append(request)

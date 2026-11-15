@@ -3,12 +3,15 @@ from __future__ import annotations
 import pathlib
 import sys
 
-
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from scripts.skill_frontmatter import split_frontmatter, read_scalar, validate_skill_name
+from scripts.skill_frontmatter import (
+    read_scalar,
+    split_frontmatter,
+    validate_skill_name,
+)
 from scripts.sync_antigravity_plugin import skill_names
 
 

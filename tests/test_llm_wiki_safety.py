@@ -6,11 +6,11 @@ extraction, arbitrary Markdown parsing, or a cross-file transaction.
 
 from __future__ import annotations
 
-from concurrent.futures import ThreadPoolExecutor
-from pathlib import Path
 import shutil
 import subprocess
 import sys
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 
 import pytest
 
@@ -18,12 +18,12 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 from scripts.llm_wiki import (
+    build_knowledge_graph,
     check_wiki,
     generate_index_markdown,
     ingest_file,
-    verify_sources,
-    build_knowledge_graph,
     search_wiki,
+    verify_sources,
 )
 
 BASE_WIKI = ROOT / ".llm-wiki"

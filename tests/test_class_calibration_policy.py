@@ -14,7 +14,7 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 import pytest
 
@@ -36,7 +36,7 @@ from scripts.setup_pstack import resolve_profiles_dir
 
 
 @pytest.fixture
-def grok_profile() -> Dict[str, Any]:
+def grok_profile() -> dict[str, Any]:
     profile_path = resolve_profiles_dir(ROOT) / "grok.json"
     return json.loads(profile_path.read_text(encoding="utf-8"))
 
@@ -70,7 +70,7 @@ class TestClassConfidenceCalibration:
         assert CLASS_CONFIDENCE_THRESHOLDS["prototype"] == 0.70
 
     def test_universal_threshold_rejection_for_higher_consequence_classes(
-        self, grok_profile: Dict[str, Any]
+        self, grok_profile: dict[str, Any]
     ) -> None:
         """A confidence of 0.72 passes a generic 0.70 threshold, but MUST FAIL for defect (0.85)."""
         query = "Auth endpoint throws 500 on valid credentials"
@@ -94,7 +94,7 @@ class TestClassConfidenceCalibration:
         assert res.advisory_promoted is False
 
     def test_prototype_admits_lower_consequence_threshold(
-        self, grok_profile: Dict[str, Any]
+        self, grok_profile: dict[str, Any]
     ) -> None:
         """Prototype class has lower consequence of error (0.70 threshold)."""
         query = "Try out a quick spike for graph rendering"
@@ -117,7 +117,7 @@ class TestClassConfidenceCalibration:
         assert res.advisory_promoted is True
 
     def test_investigation_adheres_to_explain_threshold(
-        self, grok_profile: Dict[str, Any]
+        self, grok_profile: dict[str, Any]
     ) -> None:
         """Explain class requires 0.75 threshold."""
         query = "How does the caching layer invalidate stale keys"
@@ -151,7 +151,7 @@ class TestClassConfidenceCalibration:
         assert res_above.target == "investigation"
 
     def test_decision_margin_gate_rejects_ambiguous_distribution(
-        self, grok_profile: Dict[str, Any]
+        self, grok_profile: dict[str, Any]
     ) -> None:
         """When probabilities are present, margin between top 2 choices must be >= 0.10."""
         query = "Auth endpoint throws 500 on valid credentials"

@@ -20,6 +20,7 @@ import json
 import sys
 from dataclasses import replace
 from pathlib import Path
+
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -27,13 +28,9 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 import scripts.portable_verifier as verify_portable
-
-import scripts.scan_host_boundary as scan_host_boundary
-
-import scripts.prove_omp_vertical_slice as vertical_slice
-
 import scripts.prove_omp_native_package as native_package
-
+import scripts.prove_omp_vertical_slice as vertical_slice
+from scripts import scan_host_boundary
 from scripts.drivers.omp import OMPDriver, _model_route_error  # noqa: E402
 from scripts.drivers.opencode import OpenCodeDriver  # noqa: E402
 from scripts.portability_schema import ChildSettlement  # noqa: E402

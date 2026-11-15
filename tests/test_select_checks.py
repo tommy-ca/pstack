@@ -18,8 +18,8 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from scripts import evidence_receipts
 import scripts.portable_verifier as vp
+from scripts import evidence_receipts
 
 PY = sys.executable
 
@@ -440,6 +440,7 @@ class TestCheckEvidenceBinding:
     def test_select_checks_cli_refuses_corrupt_receipt(self, tmp_path: Path) -> None:
         import argparse
         import shutil
+
         from scripts.select_checks import select_checks_action
 
         repo = _init_repo(tmp_path)

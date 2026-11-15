@@ -20,12 +20,12 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts.llm_wiki import (
-    check_wiki,
-    ingest_file,
-    compute_sha256,
-    verify_sources,
     build_knowledge_graph,
+    check_wiki,
+    compute_sha256,
+    ingest_file,
     search_wiki,
+    verify_sources,
 )
 
 WIKI_DIR = ROOT / ".llm-wiki"

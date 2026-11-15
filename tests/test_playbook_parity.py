@@ -30,6 +30,7 @@ CENSUS_TOKENS = ("pstack.package.json#host_targets", "get_declared_hosts")
 
 from scripts.evidence_index import get_declared_hosts
 
+
 def playbook(name: str) -> str:
     path = ROOT / "skills" / name / "SKILL.md"
     assert path.is_file(), path

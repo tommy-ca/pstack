@@ -16,8 +16,7 @@ import os
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
-
+from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -34,10 +33,10 @@ class ToolCallTracker:
     """Models stable call-ID tracking for concurrent tool invocations."""
 
     def __init__(self) -> None:
-        self.active_calls: Dict[str, Dict[str, Any]] = {}
-        self.completed_calls: Dict[str, Dict[str, Any]] = {}
+        self.active_calls: dict[str, dict[str, Any]] = {}
+        self.completed_calls: dict[str, dict[str, Any]] = {}
 
-    def start_call(self, call_id: str, tool_name: str, args: Dict[str, Any]) -> None:
+    def start_call(self, call_id: str, tool_name: str, args: dict[str, Any]) -> None:
         self.active_calls[call_id] = {"tool": tool_name, "args": args, "status": "running"}
 
     def complete_call(self, call_id: str, result: Any) -> None:
@@ -92,9 +91,9 @@ class AgentActivityManager:
     """Models ephemeral agent progress/activity tracking without leaking to session store."""
 
     def __init__(self) -> None:
-        self.live_activity: Dict[str, Dict[str, Any]] = {}
+        self.live_activity: dict[str, dict[str, Any]] = {}
 
-    def update_activity(self, agent_id: str, activity_summary: str, details: Dict[str, Any]) -> None:
+    def update_activity(self, agent_id: str, activity_summary: str, details: dict[str, Any]) -> None:
         self.live_activity[agent_id] = {
             "summary": activity_summary,
             "details": details,
@@ -105,7 +104,7 @@ class AgentActivityManager:
         # Ephemeral activity is cleared when the agent reaches a terminal status
         self.live_activity.pop(agent_id, None)
 
-    def current_activity(self, agent_id: str) -> Optional[Dict[str, Any]]:
+    def current_activity(self, agent_id: str) -> dict[str, Any] | None:
         return self.live_activity.get(agent_id)
 
 
@@ -196,7 +195,7 @@ def test_stop_cancel_requires_native_settlement_and_does_not_kill_unrelated_proc
     real_pid = os.getpid()
     stale_or_changed_pid = real_pid + 999999
 
-    def safe_terminate_process(target_pid: int, expected_owner_token: str, actual_token: Optional[str]) -> bool:
+    def safe_terminate_process(target_pid: int, expected_owner_token: str, actual_token: str | None) -> bool:
         if target_pid <= 1:
             # Never signal non-positive PIDs (0=process group, negative=broadcast) or init (1)
             return False
@@ -263,7 +262,11 @@ def test_worktree_cleanup_preserves_hidden_untracked_files(tmp_path: Path) -> No
 def test_reference_model_alias_cannot_claim_native_host_capability() -> None:
     """A foreign model alias/provider in a reference generator cannot promote native host capabilities."""
     from scripts.model_role_resolver import plan_role
-    from tests.model_role_helpers import PACKAGE, catalog_plan_policy, capability_bindings
+    from tests.model_role_helpers import (
+        PACKAGE,
+        capability_bindings,
+        catalog_plan_policy,
+    )
 
     policy = catalog_plan_policy()
 
@@ -288,7 +291,11 @@ def test_reference_model_alias_cannot_claim_native_host_capability() -> None:
 def test_single_model_family_panel_reports_degraded_diversity() -> None:
     """Panel with multiple seats sharing one model family honestly reports degraded diversity or blocks."""
     from scripts.model_role_resolver import plan_role
-    from tests.model_role_helpers import PACKAGE, catalog_plan_policy, capability_bindings
+    from tests.model_role_helpers import (
+        PACKAGE,
+        capability_bindings,
+        catalog_plan_policy,
+    )
 
     # Case 1: Standard panel with single family degrades diversity honestly
     policy_standard = catalog_plan_policy()
@@ -472,8 +479,8 @@ def test_scheduler_cancellation_suppresses_late_wakeups() -> None:
     """A canceled scheduler job drops late wakeups and does not trigger agent resume."""
     class JobScheduler:
         def __init__(self) -> None:
-            self.active_jobs: Set[str] = set()
-            self.delivered_wakeups: List[str] = []
+            self.active_jobs: set[str] = set()
+            self.delivered_wakeups: list[str] = []
 
         def schedule(self, job_id: str) -> None:
             self.active_jobs.add(job_id)

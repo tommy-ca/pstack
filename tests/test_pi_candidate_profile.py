@@ -13,7 +13,14 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts.portability_types import PORTABLE_CAPABILITY_UNIVERSE
-from scripts.verify_pi_candidate import CandidateContractError, bounded_negative_controls, check_contract, check_verdict_template, from_disk, smoke
+from scripts.verify_pi_candidate import (
+    CandidateContractError,
+    bounded_negative_controls,
+    check_contract,
+    check_verdict_template,
+    from_disk,
+    smoke,
+)
 
 
 def test_candidate_profile_all_17():
@@ -84,7 +91,7 @@ def test_bounded_mutants_rejected():
 
 
 def test_pi_package_manifest_contract():
-    from scripts.verify_pi_candidate import load_package, _check_package_contract
+    from scripts.verify_pi_candidate import _check_package_contract, load_package
     pkg = load_package()
     _check_package_contract(pkg)
     assert pkg["name"] == "pstack"

@@ -13,15 +13,17 @@ Verifies:
 from __future__ import annotations
 
 import json
-from pathlib import Path
 import sys
-from typing import Any, Dict
+from pathlib import Path
+from typing import Any
+
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from scripts import route_resolver
 from scripts.decision_adapter import (
     DecisionOutcome,
     FakeDecisionProvider,
@@ -38,12 +40,11 @@ from scripts.route_resolver import (
     resolve_skill_order,
     resolve_skill_order_with_shadow,
 )
-import scripts.route_resolver as route_resolver
 from scripts.setup_pstack import resolve_profiles_dir
 
 
 @pytest.fixture
-def grok_profile() -> Dict[str, Any]:
+def grok_profile() -> dict[str, Any]:
     profile_path = resolve_profiles_dir(ROOT) / "grok.json"
     return json.loads(profile_path.read_text(encoding="utf-8"))
 
@@ -67,7 +68,7 @@ class TestCanonicalMappingFreshness:
         assert pin == "bf0c7cd80abdbf7fe47b634978a7d1b4071f71a7"
 
     def test_stale_mapping_revision_fails_closed_to_baseline(
-        self, grok_profile: Dict[str, Any], valid_candidate_observation: ProviderObservation, monkeypatch: pytest.MonkeyPatch
+        self, grok_profile: dict[str, Any], valid_candidate_observation: ProviderObservation, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         query = "Fix null pointer exception in auth handler"
         baseline = resolve_skill_order(grok_profile, query, ROOT)
@@ -95,7 +96,7 @@ class TestCanonicalMappingFreshness:
         assert res.status == baseline.status
 
     def test_stale_router_blob_fails_closed_to_baseline(
-        self, grok_profile: Dict[str, Any], valid_candidate_observation: ProviderObservation, monkeypatch: pytest.MonkeyPatch
+        self, grok_profile: dict[str, Any], valid_candidate_observation: ProviderObservation, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         query = "Fix null pointer exception in auth handler"
         baseline = resolve_skill_order(grok_profile, query, ROOT)
@@ -123,7 +124,7 @@ class TestCanonicalMappingFreshness:
         assert res.status == baseline.status
 
     def test_corrupted_mapping_fails_closed_to_baseline(
-        self, grok_profile: Dict[str, Any], valid_candidate_observation: ProviderObservation, monkeypatch: pytest.MonkeyPatch
+        self, grok_profile: dict[str, Any], valid_candidate_observation: ProviderObservation, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         query = "Fix null pointer exception in auth handler"
         baseline = resolve_skill_order(grok_profile, query, ROOT)
@@ -141,7 +142,7 @@ class TestPersistedCalibratedEvidenceGate:
     """Tests for Issue #659: Gate advisory promotion on persisted pre-existing calibrated evidence."""
 
     def test_missing_persisted_evidence_fails_closed_to_baseline(
-        self, grok_profile: Dict[str, Any], valid_candidate_observation: ProviderObservation, tmp_path: Path
+        self, grok_profile: dict[str, Any], valid_candidate_observation: ProviderObservation, tmp_path: Path
     ) -> None:
         query = "Fix null pointer exception in auth handler"
         baseline = resolve_skill_order(grok_profile, query, ROOT)
@@ -162,7 +163,7 @@ class TestPersistedCalibratedEvidenceGate:
         assert res.status == baseline.status
 
     def test_synthetic_self_receipt_cannot_self_authorize(
-        self, grok_profile: Dict[str, Any], valid_candidate_observation: ProviderObservation, tmp_path: Path
+        self, grok_profile: dict[str, Any], valid_candidate_observation: ProviderObservation, tmp_path: Path
     ) -> None:
         # A synthetic in-memory or unpersisted self-receipt cannot authorize route promotion
         query = "Fix null pointer exception in auth handler"
@@ -326,7 +327,7 @@ class TestPersistedCalibratedEvidenceGate:
         assert any("Canonical mapping drift" in r for r in reasons)
 
     def test_default_specimen_fixture_fails_closed_without_explicit_provenance(
-        self, grok_profile: Dict[str, Any], valid_candidate_observation: ProviderObservation
+        self, grok_profile: dict[str, Any], valid_candidate_observation: ProviderObservation
     ) -> None:
         """The default checked-in specimen fixture must never authorize live promotion (#676)."""
         query = "Fix null pointer exception in auth handler"
@@ -346,7 +347,7 @@ class TestPersistedCalibratedEvidenceGate:
         assert res.status == baseline.status
 
     def test_known_good_fixture_promotes_under_explicitly_promoted_policy(
-        self, grok_profile: Dict[str, Any], valid_candidate_observation: ProviderObservation, monkeypatch: pytest.MonkeyPatch
+        self, grok_profile: dict[str, Any], valid_candidate_observation: ProviderObservation, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         monkeypatch.setenv("PSTACK_JEV_ALLOW_FIXTURE_EVIDENCE", "1")
         query = "Fix null pointer exception in auth handler"
@@ -368,7 +369,7 @@ class TestPersistedCalibratedEvidenceGate:
         assert res.kind == "playbook"
 
     def test_promoted_provenance_receipt_authorizes_advisory_promotion(
-        self, grok_profile: Dict[str, Any], valid_candidate_observation: ProviderObservation, tmp_path: Path
+        self, grok_profile: dict[str, Any], valid_candidate_observation: ProviderObservation, tmp_path: Path
     ) -> None:
         """A genuine signed provenance receipt authorizes advisory promotion (#676)."""
         receipt_path = tmp_path / "provenance-receipt.json"

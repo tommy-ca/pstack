@@ -12,7 +12,7 @@ from __future__ import annotations
 import concurrent.futures
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -53,7 +53,7 @@ class TestPaidBudgetConcurrency:
         monkeypatch.setenv("PSTACK_JEV_ALLOW_PAID", "1")
         monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
 
-        def mock_transport(url: str, payload: Dict[str, Any], api_key: str) -> Dict[str, Any]:
+        def mock_transport(url: str, payload: dict[str, Any], api_key: str) -> dict[str, Any]:
             return {
                 "model": "typesafe/jev-1.14",
                 "provider": "openrouter",
@@ -79,7 +79,7 @@ class TestPaidBudgetConcurrency:
         )
         adapter = JevDecisionAdapter(enabled=True, profile=profile, transport_fn=mock_transport)
 
-        results: List[ProviderObservation] = []
+        results: list[ProviderObservation] = []
         with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
             futures = [executor.submit(adapter.decide, sample_choice_request) for _ in range(16)]
             for fut in concurrent.futures.as_completed(futures):
@@ -102,7 +102,7 @@ class TestPaidBudgetConcurrency:
 
         import urllib.error
 
-        def mock_transport(url: str, payload: Dict[str, Any], api_key: str) -> Dict[str, Any]:
+        def mock_transport(url: str, payload: dict[str, Any], api_key: str) -> dict[str, Any]:
             raise urllib.error.HTTPError(url, 429, "Too Many Requests", {}, None)
 
         profile = JevProviderProfile(
@@ -137,7 +137,7 @@ class TestPaidBudgetConcurrency:
         monkeypatch.setenv("PSTACK_JEV_ALLOW_PAID", "1")
         monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
 
-        def mock_transport(url: str, payload: Dict[str, Any], api_key: str) -> Dict[str, Any]:
+        def mock_transport(url: str, payload: dict[str, Any], api_key: str) -> dict[str, Any]:
             return {
                 "model": "typesafe/jev-1.14",
                 "provider": "openrouter",
@@ -176,7 +176,7 @@ class TestPaidBudgetConcurrency:
         monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
 
         # Provider returns unexpected actual charge of $0.025 (higher than $0.005 reservation and $0.010 cap)
-        def mock_transport(url: str, payload: Dict[str, Any], api_key: str) -> Dict[str, Any]:
+        def mock_transport(url: str, payload: dict[str, Any], api_key: str) -> dict[str, Any]:
             return {
                 "model": "typesafe/jev-1.14",
                 "provider": "openrouter",
@@ -223,13 +223,13 @@ class TestPaidBudgetFormalInterleavingModel:
         reservation: float,
         max_depth: int,
         allow_unbounded_charge: bool = False,
-    ) -> Tuple[int, Optional[str]]:
+    ) -> tuple[int, str | None]:
         """Exhaustively explore interleaved request transitions and check safety invariants."""
         # State: (spent, reserved, tuple of request states for 3 request slots)
         # Request slot state in: "IDLE", "RESERVED", "SETTLED"
-        visited: Set[Tuple[float, float, Tuple[str, ...]]] = set()
+        visited: set[tuple[float, float, tuple[str, ...]]] = set()
         queue = [(0.0, 0.0, ("IDLE", "IDLE", "IDLE"), 0)]
-        counterexample: Optional[str] = None
+        counterexample: str | None = None
         states_explored = 0
 
         while queue:
@@ -317,7 +317,7 @@ class TestPaidBudgetFormalInterleavingModel:
     def test_negative_mutation_control_trips_counterexample(self) -> None:
         """Mutant: remove reservation check, checker must catch the overspend violation (#680)."""
         class MutatedSpendLedger(SpendLedger):
-            def reserve(self, amount: Optional[float] = None) -> bool:
+            def reserve(self, amount: float | None = None) -> bool:
                 amt = self.reservation_usd if amount is None else float(amount)
                 # MUTATION: blind reservation without checking cumulative + reserved <= max_spend
                 self.reserved_spend_usd += amt

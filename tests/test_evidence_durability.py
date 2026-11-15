@@ -3,6 +3,7 @@ import subprocess
 import sys
 from dataclasses import replace
 from pathlib import Path
+
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -11,8 +12,8 @@ if str(ROOT) not in sys.path:
 
 from scripts.portability_schema import (
     CONFORMANCE_PLANES,
-    HarnessProfile,
     PLANE_SURFACE_DEPENDENCIES,
+    HarnessProfile,
     ValidationError,
     VerificationReceipt,
     check_evidence_durability,
@@ -24,7 +25,6 @@ from tests.evidence_test_helpers import (
     _disposable_copy,
     _omp_profile,
 )
-
 
 SIX_HARNESSES = _declared_hosts()
 
@@ -201,7 +201,10 @@ def test_verified_binding_cannot_pin_a_non_live_scenario() -> None:
 def test_load_verification_receipt_and_preloaded_derive_support_state(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    from scripts.evidence_durability import derive_support_state, load_verification_receipt
+    from scripts.evidence_durability import (
+        derive_support_state,
+        load_verification_receipt,
+    )
 
     valid_path = EVIDENCE_DIR / "omp-receipt.json"
     receipt = load_verification_receipt(valid_path)
@@ -277,7 +280,10 @@ def test_stale_package_driver_rejected_for_packaged_claim(host: str) -> None:
 
 
 def test_a_verified_claim_evaluates_the_package_plane(tmp_path: Path) -> None:
-    from tests.test_evidence_settlement import _synthetic_evidence_root, _success_settlement
+    from tests.test_evidence_settlement import (
+        _success_settlement,
+        _synthetic_evidence_root,
+    )
 
     root, prof = _synthetic_evidence_root(
         tmp_path,

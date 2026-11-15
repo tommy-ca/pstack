@@ -14,7 +14,7 @@ from __future__ import annotations
 import copy
 import sys
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 import pytest
 
@@ -35,7 +35,7 @@ from scripts.eval_fast_role_task_fit import (
 
 
 @pytest.fixture
-def antigravity_catalog() -> Dict[str, Any]:
+def antigravity_catalog() -> dict[str, Any]:
     return load_host_model_catalog("antigravity", ROOT)
 
 
@@ -43,7 +43,7 @@ class TestFastRoleTaskFitInvariants:
     """Invariant enforcement tests for fast worker role-fit."""
 
     def test_cognitive_frontier_roles_cannot_be_demoted(
-        self, antigravity_catalog: Dict[str, Any]
+        self, antigravity_catalog: dict[str, Any]
     ) -> None:
         """Cognitive frontier roles MUST remain in frontier/panel/strongest tier."""
         for role in COGNITIVE_FRONTIER_ROLES:
@@ -76,7 +76,7 @@ class TestFastRoleTaskFitInvariants:
             assert sem_outcome.assigned_tier not in ("fast-worker", "fast-verifier")
 
     def test_catalog_confinement_contract_429(
-        self, antigravity_catalog: Dict[str, Any]
+        self, antigravity_catalog: dict[str, Any]
     ) -> None:
         """Candidate models must exist in host catalog; invented slugs are blocked."""
         restricted_catalog = copy.deepcopy(antigravity_catalog)
@@ -113,7 +113,7 @@ class TestFastRoleTaskFitInvariants:
             assert role not in FAST_WORKER_ELIGIBLE_ROLES
 
     def test_refactoring_loc_and_coverage_boundary(
-        self, antigravity_catalog: Dict[str, Any]
+        self, antigravity_catalog: dict[str, Any]
     ) -> None:
         """Refactoring role is eligible for fast-worker ONLY when < 100 LOC, low risk, and tested."""
         # 1. Under 100 LOC, low consequence, with tests -> fast-worker
@@ -177,7 +177,7 @@ class TestFastRoleTaskFitInvariants:
         assert out_untested.assigned_tier == "strongest"
 
     def test_shadow_mode_when_calibrated_evidence_absent(
-        self, antigravity_catalog: Dict[str, Any]
+        self, antigravity_catalog: dict[str, Any]
     ) -> None:
         """When calibrated evidence is absent, semantic suggestions remain in shadow mode."""
         task = HoldoutTask(

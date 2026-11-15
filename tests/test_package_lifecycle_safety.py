@@ -15,13 +15,14 @@ from __future__ import annotations
 import os
 import sys
 from pathlib import Path
+
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-import scripts.package_lifecycle as package_lifecycle
+from scripts import package_lifecycle
 
 
 @pytest.mark.parametrize("host", ["grok", "antigravity", "codex", "omp", "opencode", "droid"])
