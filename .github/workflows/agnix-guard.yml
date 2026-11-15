@@ -1,0 +1,46 @@
+name: Agnix agent configuration guard
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  agnix-static-guard:
+    name: Pinned Agnix static guard (not native runtime proof)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: jdx/mise-action@82a612c5ab8bcda7cc5db6b7e81a8e7584c3dc6e # v5.2.3
+        with:
+          install: true
+      - name: Guard negative witnesses and bounded real-code verdict invariants
+        run: uv run pytest -q tests/test_agnix_guard.py
+      - name: Check reviewed scope and tool pin
+        run: python3 scripts/agnix_guard.py --check-policy
+      - name: Run bounded verdict model and failing mutant
+        run: python3 scripts/agnix_guard.py --formal
+      - name: Lint active agent configs with pinned Agnix
+        run: python3 scripts/agnix_guard.py
+      - name: Verify pinned mise task entrypoints
+        run: |
+          mise run verify:agnix:policy
+          mise run verify:agnix:formal
+          mise run verify:agnix
+      - name: Drive project-local Agnix behavioral and bounded formal verification skills
+        run: |
+          bash .codex/skills/verify-agnix-pstack/scripts/driver.sh all
+          bash .codex/skills/verify-agnix-pstack-formal/scripts/driver.sh all
+      - name: Verify Codex Agnix skill structure and Wiki links
+        run: |
+          python3 scripts/scaffold_verification_skill.py --check --target-dir .codex/skills/verify-agnix-pstack
+          python3 scripts/scaffold_verification_skill.py --check --target-dir .codex/skills/verify-agnix-pstack-formal
+          python3 scripts/llm_wiki.py check
