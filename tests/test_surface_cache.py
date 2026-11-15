@@ -710,3 +710,64 @@ def test_harness_verifier_dynamic_import_does_not_self_invalidate(tmp_path: Path
     pycache = partition_script.parent / "__pycache__"
     assert pycache.is_dir(), "verifier import should have produced bytecode artifacts"
     assert compute_surface_revisions(copy_root, "grok").skills_tree_hash == fresh
+
+
+def test_hash_json_file_handles_missing_corrupt_and_valid(tmp_path: Path) -> None:
+    from scripts.surface_revisions import _hash_json_file
+
+    assert _hash_json_file(None) == ("missing", None)
+    assert _hash_json_file(tmp_path / "nonexistent.json") == ("missing", None)
+
+    valid = tmp_path / "valid.json"
+    valid.write_text('{"b": 2, "a": 1}', encoding="utf-8")
+    h, data = _hash_json_file(valid)
+    assert data == {"b": 2, "a": 1}
+    assert isinstance(h, str) and len(h) == 64
+
+    corrupt = tmp_path / "corrupt.json"
+    corrupt.write_text("not json content", encoding="utf-8")
+    h_c, data_c = _hash_json_file(corrupt)
+    assert data_c is None
+    assert isinstance(h_c, str) and len(h_c) == 64
+
+
+def test_evaluate_plane_staleness_guards_missing_current_val(tmp_path: Path) -> None:
+    from scripts.portability_types import VerificationReceipt, CONFORMANCE_PLANES
+    from scripts.surface_revisions import SurfaceRevisions
+
+    base_rev = SurfaceRevisions(
+        canonical_pin="a" * 40,
+        upstream_head="b" * 40,
+        spec_hash="c" * 64,
+        skills_tree_hash="d" * 64,
+        profile_hash="e" * 64,
+        package_descriptor_hash="f" * 64,
+        manifest_hash="g" * 64,
+        driver_revision="h" * 64,
+        package_driver_revision="i" * 64,
+        boundary_driver_revision="j" * 64,
+    )
+    receipt = VerificationReceipt(
+        run_id="run-1",
+        host="grok",
+        host_version="1.0.0",
+        timestamp="2026-11-15T00:00:00Z",
+        overall_verdict="PASS",
+        planes={plane: "PASS" for plane in CONFORMANCE_PLANES},
+        surface_revisions=base_rev,
+    )
+
+    empty_current = SurfaceRevisions(
+        canonical_pin="",
+        upstream_head="",
+        spec_hash="",
+        skills_tree_hash="",
+        profile_hash="",
+        package_descriptor_hash="",
+        manifest_hash="",
+        driver_revision="",
+        package_driver_revision="",
+        boundary_driver_revision="",
+    )
+    stale_map = receipt.evaluate_plane_staleness(empty_current)
+    assert any("missing" in r for reasons in stale_map.values() for r in reasons)
