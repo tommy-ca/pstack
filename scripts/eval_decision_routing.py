@@ -17,22 +17,17 @@ import sys
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts.decision_adapter import (
-    ChoiceOption,
-    ChoiceRequest,
-    DecisionOutcome,
     FakeDecisionProvider,
     JevDecisionAdapter,
-    ProviderObservation,
 )
-from scripts.evidence_receipts import create_decision_receipt
-from scripts.route_resolver import resolve_skill_order, resolve_skill_order_with_shadow
+from scripts.route_resolver import resolve_skill_order_with_shadow
 from scripts.setup_pstack import resolve_profiles_dir
 
 

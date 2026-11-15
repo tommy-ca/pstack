@@ -17,13 +17,10 @@ from scripts.evidence_durability import (
     evaluate_durable_settlement_update,
     get_live_remedy,
     load_verification_receipt,
-    preserve_observed_settlements,
 )
 from scripts.host_identity import BUILTIN_HOSTS
 from scripts.setup_pstack import resolve_profiles_dir
 from scripts.portability_schema import (
-    Binding,
-    Evidence,
     HarnessProfile,
     SurfaceRevisions,
     VerificationReceipt,
