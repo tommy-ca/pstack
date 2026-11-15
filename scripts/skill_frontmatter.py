@@ -233,6 +233,8 @@ def _parse_frontmatter_dict(header: str | list[str]) -> dict[str, Any]:
                     raise ValueError(f"invalid YAML in frontmatter: {sub_stripped!r}")
                 sub_k, sub_v = sub_stripped.split(":", 1)
                 sub_k = sub_k.strip().strip("\"'")
+                if sub_k in nested:
+                    raise ValueError(f"duplicate frontmatter nested key {sub_k!r}")
                 sub_val_str = sub_v.strip()
                 if "#" in sub_val_str and not (sub_val_str.startswith('"') or sub_val_str.startswith("'")):
                     sub_val_str = sub_val_str.split("#", 1)[0].strip()
@@ -284,6 +286,8 @@ def _parse_frontmatter_dict(header: str | list[str]) -> dict[str, Any]:
                         raise ValueError(f"invalid YAML in frontmatter: {part!r}")
                     mk, mv = part.split(":", 1)
                     mk = mk.strip().strip("\"'")
+                    if mk in mapping:
+                        raise ValueError(f"duplicate frontmatter inline key {mk!r}")
                     mv = mv.strip().strip("\"'")
                     if mv.lower() == "true":
                         mapping[mk] = True
@@ -343,18 +347,26 @@ def validate_skill_frontmatter(
             fields_str = ", ".join(sorted(unexpected))
             raise ValueError(f"unexpected frontmatter fields: {fields_str}")
 
-    if "compatibility" in parsed and not isinstance(parsed["compatibility"], str):
-        raise ValueError("frontmatter compatibility must be a string")
+    if "compatibility" in parsed:
+        compatibility = parsed["compatibility"]
+        if not isinstance(compatibility, str) or not 1 <= len(compatibility) <= 500:
+            raise ValueError("frontmatter compatibility must be a string of length 1-500")
     if "license" in parsed and not isinstance(parsed["license"], str):
         raise ValueError("frontmatter license must be a string")
     if "allowed-tools" in parsed:
         allowed = parsed["allowed-tools"]
-        if not (isinstance(allowed, str) or (isinstance(allowed, list) and all(isinstance(x, str) for x in allowed))):
+        # Strict Agent Skills reference syntax is a space-separated string.
+        # Retain native host list syntax outside reference projection.
+        if strict_spec and not isinstance(allowed, str):
+            raise ValueError("frontmatter allowed-tools must be a space-separated string in strict spec mode")
+        if not (isinstance(allowed, str) or (not strict_spec and isinstance(allowed, list) and all(isinstance(x, str) for x in allowed))):
             raise ValueError("frontmatter allowed-tools must be a string or list of strings")
     if "metadata" in parsed:
         metadata = parsed["metadata"]
-        if not isinstance(metadata, dict) or not all(isinstance(k, str) for k in metadata.keys()):
+        if not isinstance(metadata, dict) or not all(isinstance(k, str) for k in metadata):
             raise ValueError("frontmatter metadata must be a mapping of string keys")
+        if strict_spec and not all(isinstance(v, str) for v in metadata.values()):
+            raise ValueError("frontmatter metadata must have string values in strict spec mode")
     if "disable-model-invocation" in parsed and not isinstance(parsed["disable-model-invocation"], bool):
         raise ValueError("frontmatter disable-model-invocation must be a boolean")
     if "paths" in parsed:
