@@ -422,6 +422,39 @@ class TestCheckEvidenceBinding:
         assert loaded.check_ids == ["pytest:tests/test_x.py"]
         assert loaded.outcomes == {"pytest:tests/test_x.py": "PASS"}
 
+    def test_specific_skills_rules_precede_general_skills_rule(self) -> None:
+        res_interrogate = vp.select_checks(["skills/interrogate/SKILL.md"])
+        assert "pytest:tests/test_interrogate_pack.py" in _ids(res_interrogate)
+
+        res_swarm = vp.select_checks(["skills/swarm/SKILL.md"])
+        assert "pytest:tests/test_swarm_apply.py" in _ids(res_swarm)
+        assert "pytest:tests/test_swarm_partition.py" in _ids(res_swarm)
+
+        res_profiles = vp.select_checks(["skills/setup-pstack/profiles/antigravity.json"])
+        assert "pytest:tests/test_harness_profiles_sync.py" in _ids(res_profiles)
+
+    def test_markdown_in_openspec_precedes_general_md(self) -> None:
+        res_openspec = vp.select_checks(["openspec/specs/foo/spec.md"])
+        assert "pytest:tests/test_openspec_direct.py" in _ids(res_openspec)
+
+    def test_select_checks_cli_refuses_corrupt_receipt(self, tmp_path: Path) -> None:
+        import argparse
+        from scripts.select_checks import select_checks_action
+
+        corrupt = tmp_path / "bad_receipt.json"
+        corrupt.write_text("{not valid json", encoding="utf-8")
+
+        args = argparse.Namespace(
+            base="main",
+            head="HEAD",
+            json=False,
+            record=None,
+            receipt=corrupt,
+            outcome=None,
+        )
+        code = select_checks_action(args)
+        assert code == 2
+
 
 if __name__ == "__main__":  # pragma: no cover - manual self-check
     raise SystemExit(pytest.main([__file__, "-q"]))

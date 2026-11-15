@@ -97,47 +97,89 @@ CHECK_SELECTION_TABLE: List[CheckRule] = [
     CheckRule(*entry)
     for entry in [
         ("tests/*.py", ("{changed}",), ()),
-    ("docs/**", ("tests/test_verify_docs_sync.py",), ()),
-    (
-        "skills/**",
-        ("tests/test_skill_frontmatter.py", "tests/test_scan_host_boundary.py"),
-        (SCAN_HOST_BOUNDARY,),
-    ),
-    (
-        "agents/**",
+        ("docs/**", ("tests/test_verify_docs_sync.py",), ()),
         (
-            "tests/test_plugin_agents.py",
-            "tests/test_scan_host_boundary.py",
-            "tests/test_droid_projection.py",
-            "tests/test_verify_harness.py",
+            "skills/setup-pstack/profiles/**",
+            (
+                "tests/test_harness_profiles_sync.py",
+                "tests/test_portability_schemas.py",
+            ),
+            (),
         ),
-        (SCAN_HOST_BOUNDARY,),
-    ),
-    (
-        "droids/**",
         (
-            "tests/test_plugin_agents.py",
-            "tests/test_scan_host_boundary.py",
-            "tests/test_droid_projection.py",
-            "tests/test_verify_harness.py",
+            "skills/interrogate/**",
+            ("tests/test_interrogate_pack.py", "tests/test_skill_frontmatter.py"),
+            (),
         ),
-        (SCAN_HOST_BOUNDARY,),
-    ),
-    ("*.md", ("tests/test_verify_docs_sync.py",), ()),
-    ("**/*.md", ("tests/test_verify_docs_sync.py",), ()),
-    (
-        "openspec/**",
-        ("tests/test_verify_docs_sync.py", "tests/test_openspec_direct.py"),
-        (),
-    ),
-    ("LICENSE", ("tests/test_verify_docs_sync.py",), ()),
-    (".github/**", ("{offline}",), ()),
-    ("schemas/**", ("tests/test_portability_schemas.py",), ()),
-    ("profiles/**", ("tests/test_portability_schemas.py", "tests/test_evidence_durability.py", "tests/test_harness_profiles_sync.py"), ()),
-    ("skills/setup-pstack/profiles/**", ("tests/test_harness_profiles_sync.py", "tests/test_portability_schemas.py"), ()),
-    ("skills/interrogate/**", ("tests/test_interrogate_pack.py", "tests/test_skill_frontmatter.py"), ()),
-    ("skills/swarm/**", ("tests/test_swarm_apply.py", "tests/test_swarm_partition.py", "tests/test_skill_frontmatter.py"), ()),
-    (".pi/**", ("tests/test_pi_candidate_profile.py", "tests/test_pi_authorization_contracts.py"), ()),
+        (
+            "skills/swarm/**",
+            (
+                "tests/test_swarm_apply.py",
+                "tests/test_swarm_partition.py",
+                "tests/test_skill_frontmatter.py",
+            ),
+            (),
+        ),
+        (
+            "skills/**",
+            ("tests/test_skill_frontmatter.py", "tests/test_scan_host_boundary.py"),
+            (SCAN_HOST_BOUNDARY,),
+        ),
+        (
+            "agents/**",
+            (
+                "tests/test_plugin_agents.py",
+                "tests/test_scan_host_boundary.py",
+                "tests/test_droid_projection.py",
+                "tests/test_verify_harness.py",
+            ),
+            (SCAN_HOST_BOUNDARY,),
+        ),
+        (
+            "droids/**",
+            (
+                "tests/test_plugin_agents.py",
+                "tests/test_scan_host_boundary.py",
+                "tests/test_droid_projection.py",
+                "tests/test_verify_harness.py",
+            ),
+            (SCAN_HOST_BOUNDARY,),
+        ),
+        (
+            "openspec/**",
+            ("tests/test_verify_docs_sync.py", "tests/test_openspec_direct.py"),
+            (),
+        ),
+        (
+            ".pi/**",
+            (
+                "tests/test_pi_candidate_profile.py",
+                "tests/test_pi_authorization_contracts.py",
+            ),
+            (),
+        ),
+        (
+            "references/**",
+            (
+                "tests/test_route_resolver.py",
+                "tests/test_evidence_receipts.py",
+                "tests/test_droid_routing.py",
+            ),
+            (CANONICAL_INDEX_CHECK,),
+        ),
+        ("*.md", ("tests/test_verify_docs_sync.py",), ()),
+        ("LICENSE", ("tests/test_verify_docs_sync.py",), ()),
+        (".github/**", ("{offline}",), ()),
+        ("schemas/**", ("tests/test_portability_schemas.py",), ()),
+        (
+            "profiles/**",
+            (
+                "tests/test_portability_schemas.py",
+                "tests/test_evidence_durability.py",
+                "tests/test_harness_profiles_sync.py",
+            ),
+            (),
+        ),
     ("scripts/verify_pi_candidate.py", ("tests/test_pi_candidate_profile.py", "tests/test_pi_authorization_contracts.py"), ()),
     (
         "scripts/portability_types.py",
@@ -216,15 +258,6 @@ CHECK_SELECTION_TABLE: List[CheckRule] = [
         "scripts/sync_from_upstream.py",
         ("tests/test_verify_harness_guides.py", "tests/test_refresh_hygiene.py"),
         (),
-    ),
-    (
-        "references/**",
-        (
-            "tests/test_route_resolver.py",
-            "tests/test_evidence_receipts.py",
-            "tests/test_droid_routing.py",
-        ),
-        (CANONICAL_INDEX_CHECK,),
     ),
     (
         "pstack.package.json",
@@ -493,7 +526,7 @@ def select_checks_action(args, root: Path = ROOT) -> int:
             return 2
         try:
             receipt = load_check_evidence_receipt(args.receipt)
-        except OSError as err:
+        except (OSError, ValueError) as err:
             print(
                 f"REFUSING to evaluate unreadable recorded evidence {args.receipt}: "
                 f"{type(err).__name__}: {err}"
