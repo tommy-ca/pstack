@@ -32,6 +32,11 @@ jobs:
         run: python scripts/agnix_guard.py --formal
       - name: Lint active agent configs with pinned Agnix
         run: python scripts/agnix_guard.py
+      - name: Verify pinned mise task entrypoints
+        run: |
+          mise run verify:agnix:policy
+          mise run verify:agnix:formal
+          mise run verify:agnix
       - name: Verify Codex Agnix skill structure and Wiki links
         run: |
           python scripts/scaffold_verification_skill.py --check --target-dir .codex/skills/verify-agnix-pstack
