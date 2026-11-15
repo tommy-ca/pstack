@@ -45,6 +45,13 @@ The Agent Skills specification **allows additional directories**. `scripts/`, `r
 - The path inventory found no skill-local `.py`, `.sh`, `.js`, `.ts`, or `.mjs` file outside its own `scripts/`; executable-bit and extensionless checks remain unverified.
 - Global `scripts/` is a repository tooling boundary and is not a misplaced skill-specific directory.
 
+## Proven reusable patterns and boundaries
+
+- [Canonical Cursor PStack create-verification-skill](https://github.com/cursor/plugins/blob/main/pstack/skills/create-verification-skill/SKILL.md) defines behavior-first user journey proof. Port the contract via a host adapter; do not reimplement the workflow per host.
+- [QStack formal-verify-llmwiki-layout](https://github.com/tommy-ca/qstack/blob/main/.agents/skills/formal-verify-llmwiki-layout/SKILL.md) explicitly distinguishes prior static checks from a source-bound formal proof. PStack should adopt the same claim discipline, not QStack's domain-specific models.
+- [QStack verify-governance-hygiene](https://github.com/tommy-ca/qstack/blob/main/.agents/skills/verify-governance-hygiene/SKILL.md) demonstrates typed authority boundaries, negative witnesses, and a GitHub issue graph. Reuse the evidence and planning pattern without transferring quant-specific governance.
+- [QStack worktree-protocol](https://github.com/tommy-ca/qstack/blob/main/.agents/skills/worktree-protocol/SKILL.md) keeps executable implementation in skill `scripts/` and detailed docs in `references/`; this is a useful local PStack convention, not an additional mandate of agentskills.io.
+
 ## Work graph
 
 Parent: [#1383](https://github.com/tommy-ca/pstack/issues/1383). Shared metadata [#1384](https://github.com/tommy-ca/pstack/issues/1384) precedes complete inventory [#1385](https://github.com/tommy-ca/pstack/issues/1385); path/link policy [#1386](https://github.com/tommy-ca/pstack/issues/1386) and formal proof [#1387](https://github.com/tommy-ca/pstack/issues/1387) feed provenance [#1388](https://github.com/tommy-ca/pstack/issues/1388) and six-host acceptance [#1389](https://github.com/tommy-ca/pstack/issues/1389).
