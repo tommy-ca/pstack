@@ -35,7 +35,7 @@ def test_verifier_rejects_invalid_frontmatter(tmp_path: Path, text: str) -> None
 def test_verifier_allows_metadata_examples_in_body(tmp_path: Path) -> None:
     skill = tmp_path / "demo"
     skill.mkdir()
-    (skill / "SKILL.md").write_text('---\nname: "demo" # skill name\n---\nExample\n```yaml\nmode: true\n```\n')
+    (skill / "SKILL.md").write_text('---\nname: "demo" # skill name\ndescription: Sample verification skill.\n---\nExample\n```yaml\nmode: true\n```\n')
     vh.verify_skills_frontmatter(tmp_path)
 
 
@@ -84,7 +84,7 @@ def test_adapter_normalizes_quoted_name_key() -> None:
 def test_verifier_accepts_supported_name_scalars(tmp_path: Path, name: str) -> None:
     skill = tmp_path / "demo"
     skill.mkdir()
-    (skill / "SKILL.md").write_text(f"---\nname: {name}\n---\n")
+    (skill / "SKILL.md").write_text(f"---\nname: {name}\ndescription: Sample verification skill.\n---\n")
     vh.verify_skills_frontmatter(tmp_path)
 
 
@@ -136,3 +136,29 @@ def test_openspec_git_discipline_and_template_configurations() -> None:
         text = skill_path.read_text(encoding="utf-8")
         assert text.startswith("---\nname: openspec-git-discipline\n")
 
+
+
+@pytest.mark.parametrize("description", ["", " ", "x" * 1025])
+def test_verifier_rejects_invalid_description(tmp_path: Path, description: str) -> None:
+    skill = tmp_path / "demo"
+    skill.mkdir()
+    (skill / "SKILL.md").write_text(
+        f"---\\nname: demo\\ndescription: {description}\\n---\\n"
+    )
+    with pytest.raises(SystemExit):
+        vh.verify_skills_frontmatter(tmp_path)
+
+
+def test_verifier_rejects_missing_description(tmp_path: Path) -> None:
+    skill = tmp_path / "demo"
+    skill.mkdir()
+    (skill / "SKILL.md").write_text("---\\nname: demo\\n---\\n")
+    with pytest.raises(SystemExit):
+        vh.verify_skills_frontmatter(tmp_path)
+
+
+def test_name_validator_rejects_overlong_name() -> None:
+    from scripts.skill_frontmatter import validate_skill_name
+
+    with pytest.raises(ValueError, match="64"):
+        validate_skill_name("a" * 65)
