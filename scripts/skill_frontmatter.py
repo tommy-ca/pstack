@@ -8,8 +8,6 @@ import re
 from dataclasses import dataclass
 from typing import Any
 
-import yaml
-
 SKILL_NAME_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 SKILL_ROOTS: tuple[str, ...] = (
@@ -47,28 +45,6 @@ FORBIDDEN_FIELDS: frozenset[str] = frozenset({
 })
 
 ALL_RECOGNIZED_FIELDS: frozenset[str] = STANDARD_SPEC_FIELDS | PSTACK_EXTENSION_FIELDS
-
-
-class StrictUniqueKeyLoader(yaml.SafeLoader):
-    """Safe YAML loader that rejects duplicate mapping keys."""
-    pass
-
-
-def _construct_mapping_without_duplicates(loader: yaml.Loader, node: yaml.Node, deep: bool = False) -> dict[Any, Any]:
-    loader.flatten_mapping(node)
-    mapping: dict[Any, Any] = {}
-    for key_node, value_node in node.value:
-        key = loader.construct_object(key_node, deep=deep)
-        if key in mapping:
-            raise ValueError(f"duplicate frontmatter '{key}'")
-        mapping[key] = loader.construct_object(value_node, deep=deep)
-    return mapping
-
-
-StrictUniqueKeyLoader.add_constructor(
-    yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
-    _construct_mapping_without_duplicates,
-)
 
 
 @dataclass(frozen=True)
@@ -152,11 +128,159 @@ def validate_skill_name(name: str | None, expected: str | None = None) -> str:
 
 def validate_skill_description(description: str | None) -> str:
     """Enforce the Agent Skills required description length and nonblank value."""
-    if description is None or not description.strip():
+    if not isinstance(description, str) or not description.strip():
         raise ValueError("frontmatter requires a nonempty description")
     if len(description) > 1024:
         raise ValueError("frontmatter description must be at most 1024 characters")
     return description
+
+
+def _parse_frontmatter_dict(header: str | list[str]) -> dict[str, Any]:
+    lines = header if isinstance(header, list) else header.splitlines(keepends=True)
+    clean_lines: list[str] = []
+    in_block = False
+    for line in lines:
+        stripped = line.rstrip("\r\n")
+        if stripped == "---":
+            if not in_block:
+                in_block = True
+                continue
+            break
+        if in_block:
+            clean_lines.append(stripped)
+
+    data: dict[str, Any] = {}
+    idx = 0
+    while idx < len(clean_lines):
+        line = clean_lines[idx]
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            idx += 1
+            continue
+        if ":" not in line:
+            raise ValueError(f"invalid YAML in frontmatter: {line!r}")
+
+        key_part, val_part = line.split(":", 1)
+        key = key_part.strip()
+        if key.startswith('"'):
+            try:
+                key = json.loads(key)
+            except Exception as exc:
+                raise ValueError(f"invalid YAML in frontmatter key: {exc}") from exc
+        elif key.startswith("'"):
+            key = key[1:-1].replace("''", "'")
+
+        if key in data:
+            raise ValueError(f"duplicate frontmatter '{key}'")
+
+        val_stripped = val_part.strip()
+        if "#" in val_stripped and not (val_stripped.startswith('"') or val_stripped.startswith("'")):
+            val_stripped = val_stripped.split("#", 1)[0].strip()
+
+        if not val_stripped:
+            has_indented_child = False
+            for peek_idx in range(idx + 1, len(clean_lines)):
+                peek_line = clean_lines[peek_idx]
+                if not peek_line.strip() or peek_line.strip().startswith("#"):
+                    continue
+                if peek_line.startswith(" ") or peek_line.startswith("\t"):
+                    has_indented_child = True
+                break
+
+            if not has_indented_child:
+                data[key] = ""
+                idx += 1
+                continue
+
+            nested: dict[str, Any] = {}
+            idx += 1
+            while idx < len(clean_lines):
+                next_line = clean_lines[idx]
+                if not next_line.strip() or next_line.strip().startswith("#"):
+                    idx += 1
+                    continue
+                if not next_line.startswith(" ") and not next_line.startswith("\t"):
+                    break
+                sub_stripped = next_line.strip()
+                if ":" not in sub_stripped:
+                    raise ValueError(f"invalid YAML in frontmatter: {sub_stripped!r}")
+                sub_k, sub_v = sub_stripped.split(":", 1)
+                sub_k = sub_k.strip().strip("\"'")
+                sub_val_str = sub_v.strip()
+                if "#" in sub_val_str and not (sub_val_str.startswith('"') or sub_val_str.startswith("'")):
+                    sub_val_str = sub_val_str.split("#", 1)[0].strip()
+
+                if sub_val_str.startswith('"'):
+                    try:
+                        v, end = json.JSONDecoder().raw_decode(sub_val_str)
+                        sub_parsed: Any = v
+                    except Exception as exc:
+                        raise ValueError(f"invalid YAML in frontmatter: {exc}") from exc
+                elif sub_val_str.startswith("'"):
+                    sub_parsed = sub_val_str[1:-1].replace("''", "'")
+                elif sub_val_str.lower() == "true":
+                    sub_parsed = True
+                elif sub_val_str.lower() == "false":
+                    sub_parsed = False
+                elif sub_val_str.isdigit():
+                    sub_parsed = int(sub_val_str)
+                else:
+                    sub_parsed = sub_val_str.strip("\"'")
+                nested[sub_k] = sub_parsed
+                idx += 1
+            data[key] = nested
+            continue
+
+        if val_stripped.startswith('"'):
+            try:
+                v, end = json.JSONDecoder().raw_decode(val_stripped)
+                rest = val_stripped[end:].strip()
+                if rest and not rest.startswith("#"):
+                    raise ValueError("invalid YAML in frontmatter: trailing content after quote")
+                val: Any = v
+            except Exception as exc:
+                raise ValueError(f"invalid YAML in frontmatter: {exc}") from exc
+        elif val_stripped.startswith("'"):
+            match = re.fullmatch(r"'((?:[^']|'')*)'\s*(?:#.*)?", val_stripped)
+            if match is None:
+                raise ValueError("invalid YAML in frontmatter: unclosed single quote")
+            val = match.group(1).replace("''", "'")
+        elif val_stripped.startswith("{") and val_stripped.endswith("}"):
+            inner = val_stripped[1:-1].strip()
+            mapping: dict[str, Any] = {}
+            if inner:
+                for part in inner.split(","):
+                    part = part.strip()
+                    if not part:
+                        continue
+                    if ":" not in part:
+                        raise ValueError(f"invalid YAML in frontmatter: {part!r}")
+                    mk, mv = part.split(":", 1)
+                    mk = mk.strip().strip("\"'")
+                    mv = mv.strip().strip("\"'")
+                    if mv.lower() == "true":
+                        mapping[mk] = True
+                    elif mv.lower() == "false":
+                        mapping[mk] = False
+                    else:
+                        mapping[mk] = mv
+            val = mapping
+        elif val_stripped.lower() == "true":
+            val = True
+        elif val_stripped.lower() == "false":
+            val = False
+        elif val_stripped.isdigit():
+            val = int(val_stripped)
+        elif val_stripped.startswith("[") and val_stripped.endswith("]"):
+            inner = val_stripped[1:-1].strip()
+            val = [x.strip().strip("\"'") for x in inner.split(",") if x.strip()]
+        else:
+            val = val_stripped
+
+        data[key] = val
+        idx += 1
+
+    return data
 
 
 def validate_skill_frontmatter(
@@ -166,23 +290,7 @@ def validate_skill_frontmatter(
     strict_spec: bool = False,
 ) -> dict[str, Any]:
     """Validate skill YAML frontmatter against specification contracts."""
-    raw = "".join(header) if isinstance(header, list) else header
-    lines = raw.splitlines()
-    if lines and lines[0].strip() == "---":
-        lines = lines[1:]
-    if lines and lines[-1].strip() == "---":
-        lines = lines[:-1]
-    yaml_content = "\n".join(lines)
-
-    try:
-        parsed = yaml.load(yaml_content, Loader=StrictUniqueKeyLoader)
-    except Exception as exc:
-        raise ValueError(f"invalid YAML in frontmatter: {exc}") from exc
-
-    if parsed is None:
-        parsed = {}
-    if not isinstance(parsed, dict):
-        raise ValueError("frontmatter must be a YAML mapping")
+    parsed = _parse_frontmatter_dict(header)
 
     for forbidden in FORBIDDEN_FIELDS:
         if forbidden in parsed:
@@ -236,6 +344,30 @@ def validate_skill_frontmatter(
     return parsed
 
 
+def dump_frontmatter_yaml(frontmatter: dict[str, Any]) -> str:
+    """Format frontmatter mapping into valid YAML frontmatter block."""
+    lines = ["---"]
+    for key, value in frontmatter.items():
+        if isinstance(value, dict):
+            lines.append(f"{key}:")
+            for sub_k, sub_v in value.items():
+                lines.append(f'  {sub_k}: "{sub_v}"')
+        elif isinstance(value, list):
+            items_str = ", ".join(f'"{x}"' for x in value)
+            lines.append(f"{key}: [{items_str}]")
+        elif isinstance(value, bool):
+            lines.append(f"{key}: {str(value).lower()}")
+        elif isinstance(value, str):
+            if "\n" in value or ":" in value or "#" in value or value.startswith(("{", "[")):
+                lines.append(f"{key}: {json.dumps(value)}")
+            else:
+                lines.append(f"{key}: {value}")
+        else:
+            lines.append(f"{key}: {value}")
+    lines.append("---\n")
+    return "\n".join(lines)
+
+
 def project_spec_frontmatter(frontmatter: dict[str, Any]) -> dict[str, Any]:
     """Project native PStack frontmatter into strict Agent Skills reference format."""
     projected: dict[str, Any] = {}
@@ -261,7 +393,7 @@ def project_spec_frontmatter(frontmatter: dict[str, Any]) -> dict[str, Any]:
 
 def discover_skills_inventory(root: pathlib.Path | None = None) -> list[SkillRecord]:
     """Discover and validate all Agent Skills across canonical and host-specific roots."""
-    active_root = root if root is not None else pathlib.Path.cwd()
+    active_root = root if root is not None else pathlib.Path(__file__).resolve().parents[1]
     records: list[SkillRecord] = []
     seen_by_root: dict[str, set[str]] = {}
 

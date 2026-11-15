@@ -238,8 +238,7 @@ def test_validate_skill_frontmatter_negative_controls(payload: str, error_match:
 def test_project_spec_frontmatter_and_reference_validation(tmp_path: Path) -> None:
     import shutil
     import subprocess
-    import yaml
-    from scripts.skill_frontmatter import project_spec_frontmatter, validate_skill_frontmatter
+    from scripts.skill_frontmatter import dump_frontmatter_yaml, project_spec_frontmatter, validate_skill_frontmatter
 
     native_frontmatter = {
         "name": "projected-demo",
@@ -259,8 +258,9 @@ def test_project_spec_frontmatter_and_reference_validation(tmp_path: Path) -> No
     assert projected["metadata"]["color"] == "#123456"
     assert projected["metadata"]["reminder"] == "Always verify proofs."
 
+    yaml_text = dump_frontmatter_yaml(projected)
     validated = validate_skill_frontmatter(
-        f"---\n{yaml.dump(projected)}---\n",
+        yaml_text,
         expected_dir="projected-demo",
         strict_spec=True,
     )
@@ -270,7 +270,7 @@ def test_project_spec_frontmatter_and_reference_validation(tmp_path: Path) -> No
     if npx_bin:
         sdir = tmp_path / "projected-demo"
         sdir.mkdir()
-        (sdir / "SKILL.md").write_text(f"---\n{yaml.dump(projected)}---\n# Projected Demo Body\n")
+        (sdir / "SKILL.md").write_text(f"{yaml_text}# Projected Demo Body\n")
         proc = subprocess.run([npx_bin, "--yes", "skills-ref@0.1.5", "validate", str(sdir)], capture_output=True, text=True)
         assert proc.returncode == 0, f"skills-ref validation failed: {proc.stderr}"
 
