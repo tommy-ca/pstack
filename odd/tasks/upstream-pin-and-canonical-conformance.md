@@ -10,8 +10,8 @@ S5: Build and verify with swarm, arena, and interrogate, project manifests, sync
 
 ## Tasks
 - [x] T1: S1, S2, S3, Issue #1359 Update UPSTREAM pin and pstack.package.json to 0.15.42 (inline direct, pending PR #1362)
-- [ ] T2: S4, Issue #1360 Regenerate canonical inventory and canonical drift artifacts (inline direct, pending)
-- [ ] T3: S5, Issue #1361 Sync Antigravity plugin, refresh 6-harness receipts, qualify full gate, and close Epic 1358 (inline direct, pending)
+- [x] T2: S4, Issue #1360 Regenerate canonical inventory and canonical drift artifacts (inline direct, pending PR #1362)
+- [x] T3: S5, Issue #1361 Sync Antigravity plugin, refresh 6-harness receipts, qualify full gate, and close Epic 1358 (inline direct, pending PR #1362)
 
 ## Log
 L1: /pstack:poteto-mode clean up worktrees, research, explore, review and audit the abve, recursive plan and update to epics/issues graph, with /thermos, build and verify with swarm, arena, interrogate, new stacked prs, ship the stack then
