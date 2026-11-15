@@ -37,6 +37,45 @@ You don't write a spec. You say what's wrong or what you want, plus anything you
 
 That's a Bug fix prompt. "repro first" is a real constraint, not politeness, and the playbook honors it. Watch the todo list fill with the Bug fix steps. A skipped step stays visible with `skip: <reason>`.
 
+## What goes in a prompt
+
+A useful prompt carries up to five things, and each one fits in a sentence:
+
+- **The goal.** Say what's wrong, or what you want.
+- **The done check.** It must be able to pass or fail. "Make it better" and "work on it for an hour" aren't checks.
+- **The proof you want to see.** Ask for the real command output, a video of the flow, the stored value, or a before-and-after number.
+- **What you already know.** A symptom, a repro step, a log line, or a link saves the agent a search.
+- **The real constraints.** "repro first", "don't change any code yet", "zero behavior change", and "let me review before proceeding" each change what the agent does.
+
+Here's one prompt with all five:
+
+```text
+/poteto-mode the csv export drops its last row since yesterday's deploy. failing job id is 4812. repro first, then fix. done means the 60k-row fixture exports every row. show me the row counts before and after.
+```
+
+Two things are worth leaving out:
+
+- **The how.** Say what to achieve, and leave the agent room to find a better path than the one you'd pick. The same goes for a list of skills, covered in the pitfall below.
+- **Your theory of the cause, at first.** A stated guess narrows the search to wherever you pointed. Let the agent restate the problem before you share your hunch.
+
+For a noisy report, such as a long thread or a vague bug, make the restatement the first step:
+
+```text
+/poteto-mode read this thread. restate the underlying issue in your own words, in plain english. don't change any code yet.
+```
+
+A misreading shows up in the restatement, before any code exists. Correct it there, and it costs you one message instead of one wrong fix. For the restatement alone, with no playbook, run [`/in-your-own-words`](../../skills/in-your-own-words/SKILL.md). It restates what the agent thinks your goals are and what problem you're trying to solve.
+
+When you're unsure whether a prompt is aimed right, run [`/sharpen`](../../skills/sharpen/SKILL.md) on it before you send it:
+
+```text
+/sharpen write a migration guide for the v2 config format.
+```
+
+The agent says what a top professional would do that you didn't ask for, the rawest material they would start from, the methods and tools they would use, and what other than you or the agent would show the result is right. Then it rewrites your prompt to ask for exactly that, deeper but not bigger. The rewrite asks the agent to prototype any choice an experiment can settle and to recommend an option from what it observed, and it leaves product and preference choices to you. It doesn't do the task. Read the rewrite, then send it, for example with `/poteto-mode`.
+
+## Follow up short
+
 When the conversation already carries the context, the prompt shrinks to almost nothing. All of these are enough:
 
 ```text
@@ -91,7 +130,7 @@ When you step away, say what done means and go:
 
 Work you'll review later routes through [`/figure-it-out`](../../skills/figure-it-out/SKILL.md), which designs the run's phases and keeps a [`/show-me-your-work`](../../skills/show-me-your-work/SKILL.md) decision log. [Run work while you sleep](./07-overnight.md) covers the full overnight contract.
 
-**Pitfall:** don't enumerate skills in your prompt ("use /how, then /architect, then /arena..."). The playbook already sequences them, and a hand-written sequence usually reorders or drops steps the playbook would have kept. Name a skill only when you want to override a specific choice.
+**Pitfall:** don't enumerate skills in your prompt ("use /architect, then /arena, then /interrogate..."). The playbook already sequences them, and a hand-written sequence usually reorders or drops steps the playbook would have kept. Name a skill only when you want to override a specific choice.
 
 Read [`poteto-mode`](../../skills/poteto-mode/SKILL.md) itself for the full routing rules.
 
