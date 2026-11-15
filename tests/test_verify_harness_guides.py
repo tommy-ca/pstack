@@ -192,7 +192,7 @@ def test_guide_teaches_sync_then_adapt() -> None:
     assert logged.returncode == 0, logged.stderr
     assert f"pin {sha}" in logged.stdout
     assert "up to date" in logged.stdout or re.search(
-        r"^[0-9a-f]{7} ", logged.stdout, re.MULTILINE
+        r"^[0-9a-f]{7,40} ", logged.stdout, re.MULTILINE
     )
     sync = sync_mod
     cache = sync.remote_cache()
