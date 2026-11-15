@@ -35,7 +35,7 @@ Run `bash .codex/skills/verify-agnix-pstack-formal/scripts/driver.sh drive`. Thi
 
 ## Proof bar
 
-All 288 bounded real-code receipt states must match expected verdicts. The deliberate negative mutant must be caught. Reduce scenario verdicts with the strict failure-first lattice: FAIL > BLOCKED > UNTESTED > PASS.
+All 288 bounded real-code receipt states must match expected verdicts. The deliberate negative mutant must be caught. Reduce scenario verdicts with the strict failure-first lattice FAIL > BLOCKED > UNTESTED > PASS.
 
 ## Evidence
 
