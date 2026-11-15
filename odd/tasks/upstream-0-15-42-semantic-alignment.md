@@ -10,10 +10,10 @@ S5: Build and verify Unit 2 (Issue #1365) reconciling how and why skills with 0.
 S6: Build and verify with swarm, arena, and interrogate, qualify 6-harness receipts, open new stacked PRs, and ship the stack then close Epic #1363.
 
 ## Tasks
-- [ ] T1: S1, S2, S3 Audit delta, verify worktrees, and initialize graph (inline direct)
-- [ ] T2: S4 Implement Unit 1 (Issue #1364) playbooks, poteto-mode, and peripheral skills (inline direct)
-- [ ] T3: S5 Implement Unit 2 (Issue #1365) how and why skills density and test contracts (inline direct)
-- [ ] T4: S6 Verify 6-harness durability, ship stacked PRs, and close Epic #1363 (inline direct)
+- [x] T1: S1, S2, S3 Audit delta, verify worktrees, and initialize graph (inline direct) - completed in Epic #1363 setup
+- [x] T2: S4 Implement Unit 1 (Issue #1364) playbooks, poteto-mode, and peripheral skills (inline direct) - commit 9f8c4b3b (PR #1366)
+- [x] T3: S5 Implement Unit 2 (Issue #1365) how and why skills density and test contracts (inline direct) - commit f3be2e1a (PR #1367)
+- [x] T4: S6 Verify 6-harness durability, ship stacked PRs, and close Epic #1363 (inline direct) - verified ALL FRESH, landed PRs #1366 and #1367
 
 ## Log
 L1: /pstack:poteto-mode clean up worktrees, research, explore, review and audit the abve, recursive plan and update to epics/issues graph, with /thermos, build and verify with swarm, arena, interrogate, new stacked prs, ship the stack then
