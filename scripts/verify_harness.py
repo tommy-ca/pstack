@@ -41,6 +41,7 @@ from skill_frontmatter import (
     validate_skill_description,
     validate_skill_frontmatter,
     validate_skill_name,
+    verify_all_skills_policy,
 )
 
 import scripts.adapt_harness as adapt
@@ -248,6 +249,14 @@ def verify_all_skills_inventory(root: pathlib.Path | None = None) -> list[SkillR
         fail(f"skill inventory verification failure: {exc}")
 
 
+def verify_skills_policy(root: pathlib.Path | None = None) -> None:
+    active_root = root if root is not None else ROOT
+    try:
+        verify_all_skills_policy(active_root)
+    except ValueError as exc:
+        fail(f"skill policy verification failure: {exc}")
+
+
 def fail(msg: str) -> None:
     print(f"FAIL: {msg}", file=sys.stderr)
     raise SystemExit(1)
@@ -260,6 +269,7 @@ def main(root: pathlib.Path | None = None) -> int:
 
     verify_skills_frontmatter(active_root / "skills")
     verify_all_skills_inventory(active_root)
+    verify_skills_policy(active_root)
     files = {p.stem for p in playbooks_dir.glob("*.md")}
     intent_missing = archivable_changes_missing_artifacts(
         active_root / "openspec" / "changes"
