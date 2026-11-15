@@ -8,7 +8,7 @@ Agnix v0.61.0 provides cross-tool static lint of Agent Skills, AGENTS.md, agents
 - Configuration reference: [Agnix docs](https://github.com/agent-sh/agnix/blob/main/docs/CONFIGURATION.md)
 - Proven precedent: [QStack Agnix guard](https://github.com/tommy-ca/qstack/blob/main/validate/agnix-config/run.py)
 - Native skills baseline: [PStack skills](https://github.com/tommy-ca/pstack/tree/main/skills)
-- Implementation and acceptance: [Epic #1393](https://github.com/tommy-ca/pstack/issues/1393) and [design](../../../docs/research/agnix-agent-config-guard-2026-11-15.md)
+- Implementation and acceptance: [Epic #1393](https://github.com/tommy-ca/pstack/issues/1393) and [design](https://github.com/tommy-ca/pstack/blob/feat/agnix-agent-guards-20261115/docs/research/agnix-agent-config-guard-2026-11-15.md)
 - Evidence: source review; live CLI baseline, immutable raw ingestion, verified independent agents **NOT_RUN** unless separate receipts show otherwise.
 
 ## Minimal semantic atoms
