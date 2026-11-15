@@ -26,6 +26,11 @@ from scripts.portability_types import (
 from scripts.surface_revisions import SurfaceRevisions, compute_surface_revisions
 
 
+def load_verification_receipt(path: str | Path, *, validate: bool = True) -> VerificationReceipt:
+    """Load and validate a VerificationReceipt from file."""
+    return VerificationReceipt.from_file(path, validate=validate)
+
+
 def _is_preservable_settlement(scenario: ScenarioResult) -> bool:
     return _is_observed_settlement(scenario) or any(
         _is_observed_settlement(scenario, capability) for capability in SETTLEMENT_PROMOTIONS
@@ -107,7 +112,7 @@ def evaluate_durable_settlement_update(
 ) -> SettlementUpdateDecision:
     """Evaluate durable receipt settlement preservation and return a settlement update decision."""
     try:
-        previous = VerificationReceipt(**json.loads(durable_file.read_text(encoding="utf-8")))
+        previous = load_verification_receipt(durable_file)
         preservation = preserve_observed_settlements(previous, current)
     except Exception as err:
         return SettlementUpdateDecision(
@@ -154,16 +159,12 @@ def evaluate_durable_settlement_update(
 def _row_receipt(binding: Binding, root: Path) -> Optional[VerificationReceipt]:
     if binding.verification_status != "verified":
         return None
-    if not binding.receipt_ref or not (root / binding.receipt_ref).is_file():
+    if not binding.receipt_ref:
         return None
     try:
-        receipt = VerificationReceipt(
-            **json.loads((root / binding.receipt_ref).read_text(encoding="utf-8"))
-        )
-        receipt.validate()
+        return load_verification_receipt(root / binding.receipt_ref)
     except Exception:
         return None
-    return receipt
 
 
 def _row_level(
@@ -172,6 +173,7 @@ def _row_level(
     current_revisions: SurfaceRevisions,
     *,
     require_package: bool,
+    stale_map: Optional[Dict[str, List[str]]] = None,
 ) -> str:
     if receipt is None or receipt.host != profile.host:
         return ""
@@ -180,7 +182,7 @@ def _row_level(
         receipt.planes.get(p) != "PASS" for p in rest
     ):
         return ""
-    stale = receipt.evaluate_plane_staleness(current_revisions)
+    stale = stale_map if stale_map is not None else receipt.evaluate_plane_staleness(current_revisions)
     if any(stale.get(p) for p in ("runtime", *rest)):
         return ""
     if profile.host == "omp" and (
@@ -195,6 +197,8 @@ def derive_support_state(
     profile: HarnessProfile,
     root: Path,
     current_revisions: Optional[SurfaceRevisions] = None,
+    receipts_by_ref: Optional[Dict[str, VerificationReceipt]] = None,
+    staleness_by_ref: Optional[Dict[str, Dict[str, List[str]]]] = None,
 ) -> str:
     profile.validate()
     bound_caps = {b.capability: b for b in profile.bindings}
@@ -212,21 +216,42 @@ def derive_support_state(
     if not (root / "pstack.package.json").is_file():
         return "mapped"
 
+    def _get_receipt_and_stale(
+        binding: Binding,
+    ) -> tuple[Optional[VerificationReceipt], Optional[Dict[str, List[str]]]]:
+        if binding.verification_status != "verified" or not binding.receipt_ref:
+            return None, None
+        receipt = (
+            receipts_by_ref[binding.receipt_ref]
+            if receipts_by_ref is not None and binding.receipt_ref in receipts_by_ref
+            else _row_receipt(binding, root)
+        )
+        stale = (
+            staleness_by_ref[binding.receipt_ref]
+            if staleness_by_ref is not None and binding.receipt_ref in staleness_by_ref
+            else None
+        )
+        return receipt, stale
+
     for cap_id in MANDATORY_SUPPORT_FLOOR:
+        rec, st = _get_receipt_and_stale(bound_caps[cap_id])
         if _row_level(
-            _row_receipt(bound_caps[cap_id], root),
+            rec,
             profile,
             current_revisions,
             require_package=False,
+            stale_map=st,
         ) != "verified":
             return "packaged"
 
     for binding in bound_caps.values():
+        rec, st = _get_receipt_and_stale(binding)
         if _row_level(
-            _row_receipt(binding, root),
+            rec,
             profile,
             current_revisions,
             require_package=True,
+            stale_map=st,
         ) != "supported":
             return "verified"
 
@@ -285,9 +310,7 @@ def check_evidence_durability(
                 f"Dangling evidence path for {profile.host}: {ref}"
             )
         try:
-            rdata = json.loads(path.read_text(encoding="utf-8"))
-            receipt = VerificationReceipt(**rdata)
-            receipt.validate()
+            receipt = load_verification_receipt(path)
         except Exception as err:
             raise ValidationError(
                 f"Evidence file {ref} for {profile.host} is not a valid VerificationReceipt: {err}"
@@ -306,7 +329,13 @@ def check_evidence_durability(
     for ref, receipt in receipts_by_ref.items():
         staleness_by_ref[ref] = receipt.evaluate_plane_staleness(current_revisions)
 
-    derived_state = derive_support_state(profile, root, current_revisions=current_revisions)
+    derived_state = derive_support_state(
+        profile,
+        root,
+        current_revisions=current_revisions,
+        receipts_by_ref=receipts_by_ref,
+        staleness_by_ref=staleness_by_ref,
+    )
 
     check_scenario_pins(profile, receipts_by_ref)
 

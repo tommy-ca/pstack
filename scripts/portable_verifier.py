@@ -28,7 +28,7 @@ import sys
 import tempfile
 import time
 from contextlib import contextmanager
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
 from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Tuple
 
@@ -179,21 +179,7 @@ def normalize_scenarios(
             if s.stdout_snippet
             else s.stdout_snippet
         )
-        normalized.append(
-            ScenarioResult(
-                id=s.id,
-                description=s.description,
-                plane=s.plane,
-                command=cmd,
-                exit_code=s.exit_code,
-                stdout_snippet=snip,
-                verdict=s.verdict,
-                duration_s=s.duration_s,
-                evidence_level=getattr(s, "evidence_level", "offline"),
-                settlement=getattr(s, "settlement", None),
-                live_attempted=getattr(s, "live_attempted", False),
-            )
-        )
+        normalized.append(replace(s, command=cmd, stdout_snippet=snip))
     return normalized
 
 

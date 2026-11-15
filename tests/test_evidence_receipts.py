@@ -150,3 +150,41 @@ def test_worktree_digest_hashes_symlink_text_without_following_it(tmp_path: Path
     link.unlink()
     link.symlink_to(tmp_path / "other.txt")
     assert evidence_receipts.compute_worktree_digest(repo) != with_link
+
+
+def test_calibrated_evidence_receipt_post_init_sets_provenance_from_metadata() -> None:
+    data = {
+        "receipt_type": "calibrated_routing_evidence",
+        "status": "valid",
+        "review_decision": "accepted",
+        "source_revision": "88d47514b82e7c44f00f2b2a72ff6dd12158038c",
+        "canonical_mapping_revision": "a" * 64,
+        "provider_identity": "typesafe-jev",
+        "model_identity": "jev-pilot-v1",
+        "policy_revision": "1.0.0",
+        "class_thresholds": {"defect": 0.70},
+        "eval_evidence": {"pass_rate": 0.95},
+        "created_at": "2026-10-21T00:00:00Z",
+        "expires_at": "2028-10-21T00:00:00Z",
+        "metadata": {"provenance": {"kind": "fixture", "evaluator_run_id": "eval-1"}},
+    }
+    receipt = evidence_receipts.CalibratedEvidenceReceipt(**data)
+    assert receipt.provenance == {"kind": "fixture", "evaluator_run_id": "eval-1"}
+
+    loaded = evidence_receipts.CalibratedEvidenceReceipt.from_dict(data)
+    assert loaded is not None
+    assert loaded.provenance == {"kind": "fixture", "evaluator_run_id": "eval-1"}
+
+
+def test_receipt_base_from_dict_does_not_swallow_frozen_instance_error() -> None:
+    from dataclasses import dataclass, FrozenInstanceError
+
+    @dataclass(frozen=True)
+    class BuggyReceipt(evidence_receipts.ReceiptBase):
+        name: str
+
+        def __post_init__(self) -> None:
+            self.name = "mutated"
+
+    with pytest.raises(FrozenInstanceError):
+        BuggyReceipt.from_dict({"name": "test"})

@@ -692,6 +692,31 @@ def test_normalize_scenarios_replaces_worktree_paths() -> None:
     assert same == scenarios
 
 
+def test_normalize_scenarios_preserves_preserved_from_and_all_fields() -> None:
+    root = Path("/tmp/worktree/pstack")
+    canon = Path("/home/user/pstack")
+    scenario = ScenarioResult(
+        id="s1",
+        description="run command",
+        plane="runtime",
+        command=f"python3 {root}/scripts/test.py",
+        exit_code=0,
+        stdout_snippet=f"output at {root}/log.txt",
+        verdict="PASS",
+        duration_s=0.5,
+        evidence_level="observed_live",
+        preserved_from="prior-run-abc",
+        live_attempted=True,
+    )
+    normalized = verify_portable.normalize_scenarios([scenario], root, canon)
+    assert len(normalized) == 1
+    assert normalized[0].preserved_from == "prior-run-abc"
+    assert normalized[0].evidence_level == "observed_live"
+    assert normalized[0].live_attempted is True
+    assert normalized[0].command == f"python3 {canon}/scripts/test.py"
+    assert normalized[0].stdout_snippet == f"output at {canon}/log.txt"
+
+
 def test_run_verifier_action_doctor(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     import argparse
     verifier = PortableVerifier("grok", tmp_path / "evidence")
