@@ -32,9 +32,9 @@ def generate_antigravity_commands(desc: PackageDescriptor) -> Dict[str, str]:
     cmds: Dict[str, str] = {}
     for cmd in desc.commands:
         name = cmd["name"]
-        d = cmd["description"]
-        p = cmd["prompt"]
-        cmds[f"{name}.toml"] = f'description = "{d}"\nprompt = "{p}"\n'
+        d = json.dumps(cmd["description"], ensure_ascii=False).replace("\x7f", "\\u007f")
+        p = json.dumps(cmd["prompt"], ensure_ascii=False).replace("\x7f", "\\u007f")
+        cmds[f"{name}.toml"] = f"description = {d}\nprompt = {p}\n"
     return cmds
 
 
