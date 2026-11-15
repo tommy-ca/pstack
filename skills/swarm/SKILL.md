@@ -6,8 +6,6 @@ disable-model-invocation: true
 
 # Swarm
 
-Fan out N parallel workers. They may cover separate slices, race the same brief, or mix both. The parent waits, aggregates, and returns one report.
-
 ## Start
 
 Open a todolist with one entry per phase before launching anything.
