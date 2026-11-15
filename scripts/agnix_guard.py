@@ -200,9 +200,12 @@ def main(argv: list[str] | None = None) -> int:
           f"errors={summary.get('errors')} warnings={summary.get('warnings')} "
           f"info={summary.get('info')} verdict={'FAIL' if errors else 'PASS'}")
     if isinstance(payload.get("diagnostics"), list):
-        for d in payload["diagnostics"][:25]:
-            if isinstance(d, dict):
-                print(f"  {d.get('level')} {d.get('rule')} {d.get('file')}:{d.get('line')}")
+        actionable = [d for d in payload["diagnostics"]
+                      if isinstance(d, dict) and d.get("level") in ("error", "warning")]
+        for d in actionable[:100]:
+            print(f"  {d.get('level')} {d.get('rule')} {d.get('file')}:{d.get('line')}")
+        if len(actionable) > 100:
+            print(f"  {len(actionable) - 100} additional actionable diagnostics omitted")
     for error in errors:
         print(f"AGNIX_FAIL: {error}", file=sys.stderr)
     return 1 if errors else 0
