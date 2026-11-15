@@ -50,6 +50,14 @@
 - Curate semantic atoms and crosslinks, regenerate index using `python scripts/llm_wiki.py index --write`, run `check` plus `check --sources`.
 - QStack's knowledge governance remains independent; PStack owns development skills and spec semantics.
 
+## Reference patterns (semantic crosswalk)
+
+- Canonical Cursor PStack: behavior-first `create-verification-skill`; source of the user-path / proof-bar semantics.
+- QStack `.agents/skills/formal-verify-llmwiki-layout`: honest distinction between static negative fixtures and real source-bound formal proof; recompose as a general evidence-grading rule, not a copied formal model.
+- QStack `.agents/skills/verify-governance-hygiene`: authority-boundary crosswalks, graph frontier checks, and negative control witnesses; reuse the method while retaining PStack's upstream semantics.
+- QStack `.agents/skills/worktree-protocol`: local helper placement under `scripts/`, on-demand references under `references/`, and fail-closed cleanup policies; recommend for PStack's own repository policy rather than claiming a standard MUST.
+- Swarm partitions inventory, reference links and runtime validation by independent bounded slices; Arena compares competing checker approaches; Interrogate tries to falsify evidence labels and assumption boundaries. These are planned methods, **not executed independent agent sessions**.
+
 ## Dependency graph
 
 ```mermaid
