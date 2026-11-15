@@ -27,6 +27,9 @@ from ..route_resolver import (
 class DroidDriver(HarnessDriver):
     """Host driver for Factory Droid harness (offline surfaces only)."""
 
+    display_name = "Droid"
+    is_advisory_routing = True
+
     def __init__(self, root: Path):
         super().__init__("droid", root)
         self._binary: Optional[Path] = None
@@ -73,59 +76,6 @@ class DroidDriver(HarnessDriver):
             stderr=err[:250],
             verdict=verdict,
             duration_s=dur,
-        )
-
-    def route_playbook(self, playbook: str, run_dir: Path) -> DriverScenarioResult:
-        avail, reason = self.is_available()
-        if not avail:
-            return self.blocked_result("runtime-route-playbook-droid", f"Droid playbook routing for '{playbook}'", reason)
-
-        # Droid skill precedence inverts pstack-first hosts: folder/project and
-        # personal skills shadow plugin skills. The profile table is advisory.
-        route = resolve_skill_order(self.profile_data, playbook, self.root)
-
-        if route.kind == "no-route":
-            # Unknown query: report no route honestly. Never present None/null
-            # as a routed target and never claim success.
-            return DriverScenarioResult(
-                scenario_id="runtime-route-playbook-droid",
-                description=f"Verify Droid advisory skill_order routing for '{playbook}'; no row matches",
-                command=f"offline profile skill_order check (playbook {playbook}; no CLI invocation)",
-                exit_code=1,
-                stdout=f"No skill_order row matches '{playbook}'; advisory routing declares no route",
-                stderr="",
-                verdict="FAIL",
-                duration_s=0.01,
-            )
-
-        if route.kind == "declared-fallback":
-            # Null-primary row: resolve the declared fallback as an honest
-            # configuration-routing claim (no primary artifact to check).
-            routed = route.target is not None
-            verdict = "PASS" if routed else "FAIL"
-            stdout = (
-                f"Null-primary row '{route.need}' routes to declared fallback '{route.target}' (configuration-routing claim; no primary artifact)"
-                if routed
-                else f"Null-primary row '{route.need}' declares no fallback to route"
-            )
-        else:
-            exists = bool(route.artifact and route.artifact.exists())
-            verdict = "PASS" if exists else "FAIL"
-            stdout = (
-                f"Advisory-routed '{playbook}' to '{route.target}' ({route.artifact}; exists={exists})"
-                if exists
-                else f"Row '{route.need}' declares '{route.target}' but no artifact exists at {route.artifact}"
-            )
-
-        return DriverScenarioResult(
-            scenario_id="runtime-route-playbook-droid",
-            description=f"Verify Droid advisory skill_order routing for '{playbook}' ({route.target}); native precedence shadows plugin skills",
-            command=f"offline profile skill_order check (playbook {playbook} -> {route.target}; no CLI invocation)",
-            exit_code=0 if verdict == "PASS" else 1,
-            stdout=stdout,
-            stderr="",
-            verdict=verdict,
-            duration_s=0.01,
         )
 
     def child_spawn(self, run_dir: Path) -> DriverScenarioResult:

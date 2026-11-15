@@ -55,71 +55,16 @@ EXCLUSIONS = {
         "mode": "exclude",
         "reason": "Cursor-side bun:test twin of the retained check-plan.mjs; the port carries the same fence cases adapted in check-plan.test.mjs",
     },
-    "skills/statechart/scripts/test/corpus": {
+    "skills/statechart/scripts/test": {
         "mode": "exclude",
-        "reason": "Static statechart TLA+ corpus test fixtures; excluded per Laziness Protocol and YAGNI to prevent repo bloat",
-    },
-    "skills/statechart/scripts/test/charts": {
-        "mode": "exclude",
-        "reason": "Static statechart test output charts; excluded per Laziness Protocol",
-    },
-    "skills/statechart/scripts/test/ConfigOracle.java": {
-        "mode": "exclude",
-        "reason": "Java test oracle for TLC config parser; runtime compiler uses TypeScript parser",
-    },
-    "skills/statechart/scripts/test/chart.test.ts": {
-        "mode": "exclude",
-        "reason": "Statechart corpus integration tests; excluded per YAGNI as corpus fixtures are omitted",
-    },
-    "skills/statechart/scripts/test/cli.test.ts": {
-        "mode": "exclude",
-        "reason": "Statechart CLI corpus integration tests; excluded per YAGNI as corpus fixtures are omitted",
-    },
-    "skills/statechart/scripts/test/config-fuzz.test.ts": {
-        "mode": "exclude",
-        "reason": "Statechart TLC config fuzz tests; excluded per YAGNI as live TLC runtime is host-dependent",
-    },
-    "skills/statechart/scripts/test/corpus.test.ts": {
-        "mode": "exclude",
-        "reason": "Statechart corpus tests; excluded per YAGNI as corpus fixtures are omitted",
-    },
-    "skills/statechart/scripts/test/differential.test.ts": {
-        "mode": "exclude",
-        "reason": "Statechart differential tests; excluded per YAGNI as fast-check and corpus are omitted",
-    },
-    "skills/statechart/scripts/test/grid": {
-        "mode": "exclude",
-        "reason": "Statechart TLC grid test fixtures; excluded per YAGNI",
-    },
-    "skills/statechart/scripts/test/java.ts": {
-        "mode": "exclude",
-        "reason": "Statechart Java runner helper; excluded per YAGNI",
-    },
-    "skills/statechart/scripts/test/labels.ts": {
-        "mode": "exclude",
-        "reason": "Statechart corpus label helper; excluded per YAGNI",
-    },
-    "skills/statechart/scripts/test/pipeline.test.ts": {
-        "mode": "exclude",
-        "reason": "Statechart Node registerHooks test; excluded as runtime is consolidated on Bun",
-    },
-    "skills/statechart/scripts/test/plain-tlc.test.ts": {
-        "mode": "exclude",
-        "reason": "Statechart plain TLC runner tests; excluded per YAGNI",
-    },
-    "skills/statechart/scripts/test/render.test.ts": {
-        "mode": "exclude",
-        "reason": "Statechart chart render tests; excluded per YAGNI as charts are omitted",
-    },
-    "skills/statechart/scripts/test/tlc-out.test.ts": {
-        "mode": "exclude",
-        "reason": "Statechart TLC output parser tests; covered hermetically by messages.test.ts",
-    },
-    "skills/statechart/scripts/test/tlc.ts": {
-        "mode": "exclude",
-        "reason": "Statechart TLC process helper; excluded per YAGNI",
+        "reason": "Static statechart test fixtures, oracles, and integration tests; excluded per Laziness Protocol and YAGNI",
     },
 }
+
+# Explicit preserved files nested inside an excluded prefix (#1328)
+PRESERVED_UNDER_EXCLUSIONS = frozenset({
+    "skills/statechart/scripts/test/messages.test.ts",
+})
 
 # Known upstream semantic defects with tracked local adaptations (#204, #205)
 KNOWN_DEFECT_EXCEPTIONS = {
@@ -230,6 +175,8 @@ def classify_artifact(canonical_path: str, blob_hash: str, root: Path | None = N
     # Check explicit exclusions
     for exc_path, info in EXCLUSIONS.items():
         if canonical_path == exc_path or canonical_path.startswith(exc_path + "/"):
+            if canonical_path in PRESERVED_UNDER_EXCLUSIONS:
+                continue
             return {
                 "path": canonical_path,
                 "canonical_hash": blob_hash,
@@ -300,7 +247,7 @@ def classify_artifact(canonical_path: str, blob_hash: str, root: Path | None = N
 
 def classify_drift_entry(rel_path: str, status: str) -> Dict[str, Any]:
     """Partition upstream changes into Swarm buckets and assess portability impact."""
-    if rel_path in EXCLUSIONS or any(rel_path.startswith(k + "/") for k in EXCLUSIONS):
+    if (rel_path in EXCLUSIONS or any(rel_path.startswith(k + "/") for k in EXCLUSIONS)) and rel_path not in PRESERVED_UNDER_EXCLUSIONS:
         ex = EXCLUSIONS.get(rel_path) or next(v for k, v in EXCLUSIONS.items() if rel_path.startswith(k + "/"))
         return {
             "path": rel_path,

@@ -218,6 +218,9 @@ def _assistant_text(frames: Sequence[Dict[str, Any]]) -> str:
 class OMPDriver(HarnessDriver):
     """Host driver for Oh-My-Pi (OMP) harness."""
 
+    display_name = "OMP"
+    route_cmd = "omp"
+
     def __init__(self, root: Path):
         super().__init__("omp", root)
         self._binary: Optional[Path] = None
@@ -276,35 +279,6 @@ class OMPDriver(HarnessDriver):
             stderr=err[:250],
             verdict=verdict,
             duration_s=dur,
-        )
-
-    def route_playbook(self, playbook: str, run_dir: Path) -> DriverScenarioResult:
-        avail, reason = self.is_available()
-        if not avail:
-            return self.blocked_result("runtime-route-playbook-omp", f"OMP playbook routing for '{playbook}'", reason)
-
-        from ..route_resolver import resolve_skill_order
-
-        route = resolve_skill_order(self.profile_data, playbook, self.root)
-        if route.kind == "declared-fallback":
-            verdict = "PASS" if route.target is not None else "FAIL"
-            stdout = f"Routed '{playbook}' to declared fallback '{route.target}'"
-        elif route.is_matched and route.artifact_exists:
-            verdict = "PASS"
-            stdout = f"Routed '{playbook}' to {route.kind} '{route.target}' ({route.artifact}; exists=True)"
-        else:
-            verdict = "FAIL"
-            stdout = f"No valid route/artifact for '{playbook}' (status={route.status}, target={route.target})"
-
-        return DriverScenarioResult(
-            scenario_id="runtime-route-playbook-omp",
-            description=f"Verify OMP routes '{playbook}' via profile skill_order ({route.target})",
-            command=f"omp route-check --playbook {playbook} -> {route.target}",
-            exit_code=0 if verdict == "PASS" else 1,
-            stdout=stdout,
-            stderr=route.error_reason,
-            verdict=verdict,
-            duration_s=0.01,
         )
 
     def child_spawn(self, run_dir: Path) -> DriverScenarioResult:
@@ -822,16 +796,3 @@ class OMPDriver(HarnessDriver):
             evidence_level="offline",
         )
 
-    def evidence_capture(self, run_dir: Path) -> DriverScenarioResult:
-        receipt_path = self.root / ".audit" / "evidence" / "omp-receipt.json"
-        has_receipt = receipt_path.is_file()
-        return DriverScenarioResult(
-            scenario_id="runtime-evidence-capture-omp",
-            description="Verify OMP durable evidence receipt binding",
-            command=f"test -f {receipt_path}",
-            exit_code=0 if has_receipt else 1,
-            stdout=f"Durable receipt located at {receipt_path} (exists={has_receipt})",
-            stderr="",
-            verdict="PASS" if has_receipt else "FAIL",
-            duration_s=0.01,
-        )
