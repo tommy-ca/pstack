@@ -1,4 +1,4 @@
-# Agent Skills: Specification, Semantic Atoms, and PStack Conformance
+# Agent Skills Specification, Semantic Atoms, and PStack Conformance
 
 PStack skill conformance has three independent layers: vendor-neutral Agent Skills metadata, repository-specific layout policy, and observable runtime/formal proof.
 
@@ -14,8 +14,8 @@ PStack skill conformance has three independent layers: vendor-neutral Agent Skil
 
 | Atom | Inputs | Contract | Output |
 | --- | --- | --- | --- |
-| Skill identity | Skill directory and SKILL.md | `name` matches directory; kebab-case; length 1–64 | Stable skill ID |
-| Activation metadata | YAML frontmatter | Nonblank `description` length 1–1024, says what/when | Discovery trigger |
+| Skill identity | Skill directory and SKILL.md | `name` matches directory; kebab-case; length 1-64 | Stable skill ID |
+| Activation metadata | YAML frontmatter | Nonblank `description` length 1-1024, says what/when | Discovery trigger |
 | Instructions | SKILL.md body | Purpose, steps, failure cases and referenced resources | Agent procedure |
 | Executable helper | Optional skill `scripts/` or repository tool | Dependencies, isolation, timeout, exit contract | Reproducible command |
 | Reference | Optional `references/`, cross-skill link | Relative path resolves without unintended escape | On-demand context |

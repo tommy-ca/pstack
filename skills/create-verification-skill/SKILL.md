@@ -40,7 +40,7 @@ Write `SKILL.md` at the path above with YAML frontmatter:
 - `description` that is Use-when triggers only. Name the app, the surface, and when to reach for the skill. Do not dump Launch/Doctor/Drive into the description.
 - `disable-model-invocation: true`
 
-Before runtime tailoring, enforce the vendor-neutral Agent Skills frontmatter contract: `name` MUST match the skill directory, use lowercase kebab-case, and be at most 64 characters; `description` MUST be nonblank and at most 1024 characters. Both the repository's shared verifier and the scaffold use `scripts/skill_frontmatter.py`; structural PASS is not a live app PASS. The official Agent Skills specification recommends `scripts/`, `references/` and `assets/` but does not mandate these directories.
+Before runtime tailoring, enforce the vendor-neutral Agent Skills frontmatter contract. The name must match the skill directory, use lowercase kebab-case, and be at most 64 characters. The description must be nonblank and at most 1024 characters. Both the repository's shared verifier and the scaffold use `scripts/skill_frontmatter.py`; structural PASS is not a live app PASS. The official Agent Skills specification recommends `scripts/`, `references/` and `assets/` but does not mandate these directories.
 
 Keep the generated skill body under 24,000 bytes. Google Antigravity imposes a strict 24,000-byte body limit and truncates oversized skills. `scripts/scaffold_verification_skill.py --check` enforces this bound.
 

@@ -1,4 +1,4 @@
-# PStack Agent Skills Conformance Audit — 2026-11-15
+# PStack Agent Skills Conformance Audit (2026-11-15)
 
 ## Sources and method
 
@@ -29,33 +29,33 @@
 
 ## Minimal repair and verification plan
 
-### Slice A — shared metadata gate (#1384)
-- Enforce 1–64-character name and nonblank 1–1024-character description, keep parent directory matching.
+### Slice A. Shared metadata gate (#1384)
+- Enforce 1-64-character name and nonblank 1-1024-character description, keep parent directory matching.
 - One implementation for shared verifier and generated verification scaffolds.
 - Negative tests for missing/blank/overlong values; existing valid fixtures updated.
 - Run `uv run pytest -q tests/test_skill_frontmatter.py tests/test_scaffold_verification_skill.py tests/test_verify_harness.py`. Report results at exact commit; this document does not assert they passed.
 
-### Slice B — full reference and layout policy (#1385, #1386)
+### Slice B. Full reference and layout policy (#1385, #1386)
 - Enumerate every skill root in a single, typed root registry; detect missing SKILL.md, inconsistent projections and link escapes.
 - Prefer pinned `skills-ref validate` for YAML conformance; test PStack's own stricter policy separately.
 - Broken link, misplaced local script and symlink cases must fail intentionally.
 
-### Slice C — formal proof and live harnesses (#1387, #1389)
+### Slice C. Formal proof and live harnesses (#1387, #1389)
 - Reuse existing creator/maintainer verification skills; do not fork a new framework.
 - For each property: code SHA, model assumptions, bound, proof tool, counterexample, failing mutant, cleanup.
 - Record offline, static, host-dependent and observed-live evidence separately; qualify six hosts independently.
 
-### Slice D — LLM Wiki (#1388)
+### Slice D. LLM Wiki (#1388)
 - Ingest immutable snapshots with `python scripts/llm_wiki.py ingest`, not manual raw copies.
 - Curate semantic atoms and crosslinks, regenerate index using `python scripts/llm_wiki.py index --write`, run `check` plus `check --sources`.
 - QStack's knowledge governance remains independent; PStack owns development skills and spec semantics.
 
 ## Reference patterns (semantic crosswalk)
 
-- Canonical Cursor PStack: behavior-first `create-verification-skill`; source of the user-path / proof-bar semantics.
-- QStack `.agents/skills/formal-verify-llmwiki-layout`: honest distinction between static negative fixtures and real source-bound formal proof; recompose as a general evidence-grading rule, not a copied formal model.
-- QStack `.agents/skills/verify-governance-hygiene`: authority-boundary crosswalks, graph frontier checks, and negative control witnesses; reuse the method while retaining PStack's upstream semantics.
-- QStack `.agents/skills/worktree-protocol`: local helper placement under `scripts/`, on-demand references under `references/`, and fail-closed cleanup policies; recommend for PStack's own repository policy rather than claiming a standard MUST.
+- Canonical Cursor PStack behavior-first `create-verification-skill`. Source of the user-path and proof-bar semantics.
+- QStack `.agents/skills/formal-verify-llmwiki-layout`. Honest distinction between static negative fixtures and real source-bound formal proof. Recompose as a general evidence-grading rule, not a copied formal model.
+- QStack `.agents/skills/verify-governance-hygiene`. Authority-boundary crosswalks, graph frontier checks, and negative control witnesses. Reuse the method while retaining PStack upstream semantics.
+- QStack `.agents/skills/worktree-protocol`. Local helper placement under `scripts/`, on-demand references under `references/`, and fail-closed cleanup policies. Recommend for PStack repository policy rather than claiming a standard MUST.
 - Swarm partitions inventory, reference links and runtime validation by independent bounded slices; Arena compares competing checker approaches; Interrogate tries to falsify evidence labels and assumption boundaries. These are planned methods, **not executed independent agent sessions**.
 
 ## Dependency graph
