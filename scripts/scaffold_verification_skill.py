@@ -30,8 +30,8 @@ from skill_frontmatter import (
     SKILL_NAME_RE,
     read_scalar,
     split_frontmatter,
-    validate_skill_name,
     validate_skill_description,
+    validate_skill_name,
 )
 
 from scripts.host_identity import require_builtin_host_keys
