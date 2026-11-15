@@ -1,6 +1,6 @@
 # Agnix Static Guard for PStack Agent Configurations
 
-Agnix v0.61.0 provides cross-tool static lint of Agent Skills, AGENTS.md, agents and recognized host rules/configuration. This page is a **curated source-backed design note**, not a completed immutable raw-source ingest, live host run, or unbounded formal proof.
+Agnix v0.61.0 provides cross-tool static lint of Agent Skills, AGENTS.md, agents and recognized host rules/configuration. This is a **curated source-backed article** with an observed pinned static lint CI receipt (run #43743339184). Immutable raw-source ingestion, live host runtime and unbounded formal proof remain unverified.
 
 ## Source and scope
 
@@ -9,7 +9,7 @@ Agnix v0.61.0 provides cross-tool static lint of Agent Skills, AGENTS.md, agents
 - Proven precedent: [QStack Agnix guard](https://github.com/tommy-ca/qstack/blob/main/validate/agnix-config/run.py)
 - Native skills baseline: [PStack skills](https://github.com/tommy-ca/pstack/tree/main/skills)
 - Implementation and acceptance: [Epic #1393](https://github.com/tommy-ca/pstack/issues/1393) and [design](https://github.com/tommy-ca/pstack/blob/feat/agnix-agent-guards-20261115/docs/research/agnix-agent-config-guard-2026-11-15.md)
-- Evidence: source review; live CLI baseline, immutable raw ingestion, verified independent agents **NOT_RUN** unless separate receipts show otherwise.
+- Evidence: static CLI [run #43743339184](https://github.com/tommy-ca/pstack/actions/runs/43743339184) checked 327 files, 0 errors, 37 warnings, 102 infos. Immutable raw ingestion, independent agents and native runtime remain **NOT_RUN**.
 
 ## Minimal semantic atoms
 
@@ -32,6 +32,6 @@ Agnix does not verify real skill invocation, agent dispatch, concurrent isolatio
 
 ## Findings and gates
 
-PStack's current static audit counted 84 skill manifests; no extension-recognized skill-local helper outside `scripts/` was found. This does not prove the absence of extensionless executables or broken references. The guard disallows blanket or active-skill exclusions and rejects a vacuous scan.
+PStack's current static audit counted 84 skill manifests; no extension-recognized skill-local helper outside `scripts/` was found. This does not prove the absence of extensionless executables or broken references. The guard disallows blanket or active-skill exclusions and rejects a vacuous scan. The 37-warning observed baseline is a default ceiling, not a clean-warnings claim.
 
 Use `mise run verify:agnix:policy`, `mise run verify:agnix` and `mise run verify:agnix:formal` for distinct evidence tiers. Raw upstream snapshots must be ingested with `scripts/llm_wiki.py ingest` and checked before claiming immutable source capture (tracked #1398).
