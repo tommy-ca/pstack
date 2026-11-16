@@ -160,3 +160,37 @@ def test_openspec_tasks_direct_cli_and_qstack_parity() -> None:
 def test_no_openspec_python_wrapper_file() -> None:
     wrapper_path = ROOT / "scripts" / "openspec_change.py"
     assert not wrapper_path.exists(), "scripts/openspec_change.py must not exist"
+
+
+def test_package_lifecycle_commands_use_uv_run_python() -> None:
+    import json
+    pkg_path = ROOT / "pstack.package.json"
+    assert pkg_path.is_file(), "pstack.package.json must exist"
+    with open(pkg_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    lifecycle = data.get("lifecycle", {})
+    assert "install" in lifecycle
+    assert "update" in lifecycle
+    assert "verify" in lifecycle
+    assert "uninstall" in lifecycle
+
+    for op, cmd in lifecycle.items():
+        assert cmd.startswith("uv run python scripts/package_lifecycle.py "), (
+            f"lifecycle {op} must invoke via uv run python, got: {cmd}"
+        )
+        assert "python3 " not in cmd, f"lifecycle {op} must not use bare python3"
+
+
+def test_codex_agnix_drivers_prioritize_uv_run_python() -> None:
+    driver_paths = [
+        ROOT / ".codex" / "skills" / "verify-agnix-pstack" / "scripts" / "driver.sh",
+        ROOT / ".codex" / "skills" / "verify-agnix-pstack-formal" / "scripts" / "driver.sh",
+    ]
+    for path in driver_paths:
+        assert path.is_file(), f"{path} must exist"
+        content = path.read_text(encoding="utf-8")
+        assert "uv run python scripts/agnix_guard.py" in content, (
+            f"{path} must prioritize uv run python for agnix_guard.py"
+        )
+

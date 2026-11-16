@@ -264,10 +264,10 @@
   },
   "namespace_policy": "prefixed",
   "lifecycle": {
-    "install": "python3 scripts/package_lifecycle.py install",
-    "update": "python3 scripts/package_lifecycle.py update",
-    "verify": "python3 scripts/package_lifecycle.py verify",
-    "uninstall": "python3 scripts/package_lifecycle.py uninstall"
+    "install": "uv run python scripts/package_lifecycle.py install",
+    "update": "uv run python scripts/package_lifecycle.py update",
+    "verify": "uv run python scripts/package_lifecycle.py verify",
+    "uninstall": "uv run python scripts/package_lifecycle.py uninstall"
   },
   "exclusions": [
     ".cursor-plugin/plugin.json",

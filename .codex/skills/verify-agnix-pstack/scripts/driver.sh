@@ -3,6 +3,10 @@ set -euo pipefail
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../../../.." && pwd)"
 cd "$ROOT"
 run() {
+  if command -v uv >/dev/null 2>&1; then
+    uv run python scripts/agnix_guard.py "$@"
+    return $?
+  fi
   if ! command -v mise >/dev/null 2>&1; then
     echo "BLOCKED: mise required; install pinned PStack toolchain" >&2
     return 2
