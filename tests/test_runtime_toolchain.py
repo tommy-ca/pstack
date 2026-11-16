@@ -60,6 +60,16 @@ def test_mise_toml_configuration() -> None:
     assert "openspec:validate" not in tasks, "mise.toml must not have redundant openspec:validate task"
     assert "worktree:check" in tasks, "mise.toml must declare worktree:check task"
     assert "worktree:audit" in tasks, "mise.toml must declare worktree:audit task"
+    assert "verify:agnix:policy" in tasks, "mise.toml must declare verify:agnix:policy task"
+    assert tasks["verify:agnix:policy"]["run"] == "uv run python scripts/agnix_guard.py --check-policy"
+    assert "verify:agnix" in tasks, "mise.toml must declare verify:agnix task"
+    assert tasks["verify:agnix"]["run"] == "uv run python scripts/agnix_guard.py"
+    assert "verify:agnix:formal" in tasks, "mise.toml must declare verify:agnix:formal task"
+    assert tasks["verify:agnix:formal"]["run"] == "uv run python scripts/agnix_guard.py --formal"
+
+    for task_name, task_def in tasks.items():
+        run_cmd = task_def.get("run", "")
+        assert "python3 " not in run_cmd, f"{task_name} must not invoke bare python3; use uv run python"
 
 
 def test_release_workflow_uses_uv() -> None:
