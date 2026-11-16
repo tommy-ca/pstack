@@ -8,7 +8,7 @@ S3. Ratchet Agnix warning baseline budget ceiling from 37 down to 31 and verify 
 
 ## Tasks
 - [x] T1 (S1) Implement Unit 1 (Issue #1412) eliminate XP-SK-002 and XML-001 warnings (inline direct) (commit 544243fa, PR #1415)
-- [ ] T2 (S2) Implement Unit 2 (Issue #1413) resolve AS-013 reference nesting (inline direct)
+- [x] T2 (S2) Implement Unit 2 (Issue #1413) resolve AS-013 reference nesting (inline direct) (commit 014a339c, PR #1416)
 - [ ] T3 (S3) Implement Unit 3 (Issue #1414) ratchet warning budget to 31 and verify 288-state model (inline direct)
 
 ## Log
