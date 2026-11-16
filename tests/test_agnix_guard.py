@@ -109,7 +109,7 @@ def test_warnings_are_visible_but_not_yet_zero_budgeted() -> None:
         "summary": {"errors": 0, "warnings": 20, "info": 0},
         "diagnostics": [{"level": "warning", "rule": "AS-002"}] * 20,
     }
-    assert guard.receipt_errors(warning_receipt, 0, warning_budget=37) == []
+    assert guard.receipt_errors(warning_receipt, 0, warning_budget=31) == []
     assert guard.receipt_errors(warning_receipt, 0, warning_budget=10) != []
 
 
