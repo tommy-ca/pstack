@@ -30,18 +30,27 @@ run_bounded() {
   fi
 }
 
+run_guard() {
+  local label="$1"
+  shift
+  if command -v uv >/dev/null 2>&1; then
+    run_bounded "$label" uv run python scripts/agnix_guard.py "$@"
+  else
+    local py
+    py="$(get_python)"
+    run_bounded "$label" "$py" scripts/agnix_guard.py "$@"
+  fi
+}
+
 case "${1:-all}" in
   doctor)
-    py="$(get_python)"
-    run_bounded "doctor" "$py" scripts/agnix_guard.py --check-policy
+    run_guard "doctor" --check-policy
     ;;
   launch)
-    py="$(get_python)"
-    run_bounded "launch" "$py" scripts/agnix_guard.py --check-policy
+    run_guard "launch" --check-policy
     ;;
   drive)
-    py="$(get_python)"
-    run_bounded "formal" "$py" scripts/agnix_guard.py --formal
+    run_guard "formal" --formal
     ;;
   cleanup)
     echo "CLEAN: read-only verification, no temporary resources"
