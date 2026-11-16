@@ -7,7 +7,7 @@ S2. Migrate GitHub Actions agnix-guard workflow, release script, and playbooks t
 S3. Harmonize Codex Agnix verification drivers and package lifecycle with uv run python (Issue #1421).
 
 ## Tasks
-- [ ] T1 (S1) Implement Unit 1 (Issue #1419) migrate mise.toml tasks and toolchain assertions (inline direct)
+- [x] T1 (S1) Implement Unit 1 (Issue #1419) migrate mise.toml tasks and toolchain assertions (inline direct) (commit 6a5f9185, PR #1422)
 - [ ] T2 (S2) Implement Unit 2 (Issue #1420) migrate agnix-guard workflow, playbooks, and release script (inline direct)
 - [ ] T3 (S3) Implement Unit 3 (Issue #1421) harmonize Codex verification drivers and package lifecycle (inline direct)
 
