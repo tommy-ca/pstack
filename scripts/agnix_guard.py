@@ -20,7 +20,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 VERSION = "0.61.0"
 MIN_FILES = 325
-BASELINE_WARNINGS = 37
+BASELINE_WARNINGS = 31
 MAX_SECONDS = 120
 EXPECTED_EXCLUDES = frozenset({
     ".git/**", ".worktrees/**", ".audit/**", ".llm-wiki/**", "docs/**",
