@@ -44,7 +44,7 @@ async function initRepo(path: string): Promise<void> {
 describe("worktree-drop", () => {
   it("keeps host paths and branch deletes out of the script", () => {
     const source = readFileSync(SCRIPT, "utf8");
-    expect(source.includes("/home/tommyk")).toBe(false);
+    expect(source.includes(["/home", "tommyk"].join("/"))).toBe(false);
     expect(source.includes("branch -D")).toBe(false);
   });
 
