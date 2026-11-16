@@ -25,11 +25,11 @@ jobs:
       - name: Guard negative witnesses and bounded real-code verdict invariants
         run: uv run pytest -q tests/test_agnix_guard.py
       - name: Check reviewed scope and tool pin
-        run: python3 scripts/agnix_guard.py --check-policy
+        run: uv run python scripts/agnix_guard.py --check-policy
       - name: Run bounded verdict model and failing mutant
-        run: python3 scripts/agnix_guard.py --formal
+        run: uv run python scripts/agnix_guard.py --formal
       - name: Lint active agent configs with pinned Agnix
-        run: python3 scripts/agnix_guard.py
+        run: uv run python scripts/agnix_guard.py
       - name: Verify pinned mise task entrypoints
         run: |
           mise run verify:agnix:policy
@@ -41,6 +41,6 @@ jobs:
           bash .codex/skills/verify-agnix-pstack-formal/scripts/driver.sh all
       - name: Verify Codex Agnix skill structure and Wiki links
         run: |
-          python3 scripts/scaffold_verification_skill.py --check --target-dir .codex/skills/verify-agnix-pstack
-          python3 scripts/scaffold_verification_skill.py --check --target-dir .codex/skills/verify-agnix-pstack-formal
-          python3 scripts/llm_wiki.py check
+          uv run python scripts/scaffold_verification_skill.py --check --target-dir .codex/skills/verify-agnix-pstack
+          uv run python scripts/scaffold_verification_skill.py --check --target-dir .codex/skills/verify-agnix-pstack-formal
+          uv run python scripts/llm_wiki.py check
