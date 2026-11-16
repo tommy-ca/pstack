@@ -125,7 +125,7 @@ If no operations channel is configured, keep detailed status in the automation r
 
 ## 5. Load and check the control adapter
 
-Read `references/control-adapter.md` and the completed map at `control.feature_map_path`, then invoke the skill named by `control.skill_name`.
+Read [`references/control-adapter.md`](references/control-adapter.md) (and its companion example [`references/feature-map.example.md`](references/feature-map.example.md)) and the completed map at `control.feature_map_path`, then invoke the skill named by `control.skill_name`.
 
 Find the feature-map section that matches the reported user path. Read it before driving the app. If no section covers the feature, mark the run blocked instead of inventing a path or selector.
 

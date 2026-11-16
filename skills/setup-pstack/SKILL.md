@@ -30,7 +30,7 @@ If no profile matches, or the profile declares no `setup` block, report a GAP na
 
 ## 3. Dispatch on `source`
 
-- `host-cli` → read the native host reference at `references/<profile-stem>.md` (e.g. `references/grok.md`). That reference owns the native probes, question shape, validation, and writes. Report what it wrote.
+- `host-cli` → read the native host reference at `references/<profile-stem>.md` (e.g. [`references/grok.md`](references/grok.md), with nested references [`references/grok/effort-ladder.md`](references/grok/effort-ladder.md), [`references/grok/resolve-model.md`](references/grok/resolve-model.md), [`references/grok/resolve-effort.md`](references/grok/resolve-effort.md), and [`references/grok/defaults.toml`](references/grok/defaults.toml)). That reference owns the native probes, question shape, validation, and writes. Report what it wrote.
 - `host-catalog` → there is no runtime write. Report the catalog path, that the bindings are projected by `scripts/project_package.py`, and that re-running that projection is what changes them.
 - `inherit` → no setup runs. Report that every role keeps the parent session model and the shipped per-role effort from its agent frontmatter.
 - `none` → report BLOCKED for this host: no model or effort setup surface is declared. Name the profile key that would have to exist before this host could be configured.
