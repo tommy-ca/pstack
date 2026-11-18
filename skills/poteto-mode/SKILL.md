@@ -37,6 +37,7 @@ Remaining triggers:
 - Bugbot or agentic security review comments → skeptical posture. Assess each on merits and dismiss noise with concrete reasons. Triage fix / dismiss / ask per `references/bugbot-triage.md`.
 - Broken skill mid-task → fix it in its own PR. Don't block. Don't silently work around it.
 - Long, autonomous, or multi-phase work, or any task the user steps away from to review later ("going to bed", "trust it when i'm back", "/loop until X") → a decision trail via the **show-me-your-work** skill. Commit it when stakes need an auditable record; keep it local otherwise.
+- Starting an agent or worker → The first line of every subagent kickoff or worker brief is `Read <path>/worker.md before anything else.`, where `<path>` is the absolute path to `skills/poteto-mode`.
 
 ## Principles
 
@@ -129,7 +130,7 @@ Comments follow the same rule as the reply. Write them clean as you go; a flat "
 
 Your first todolist actions are the matched playbook's steps, copied in verbatim, before any task-specific todos and before you reason about the task. The failure mode is reading a playbook then writing a bespoke plan that drops its named steps (`architect`, the throughput checkpoint). A step you choose not to do stays in the list with a one-line `skip: <reason>`; skipping silently is not allowed. Match the task to a playbook below, open git-tracked `skills/poteto-mode/playbooks/<name>.md`, and copy its steps in verbatim. Do not open `~/.grok/installed-plugins/pstack-*/skills/poteto-mode/playbooks/`. A comma-separated list of existing playbooks (investigation, shipping) is sequential matching. It is not Multi-phase-plan. That playbook writes a plan file and stops.
 
-A large or cross-cutting effort (a migration across many call sites, an ambitious multi-part change), or work the user steps away from to trust later, routes to the **figure-it-out** skill even when a narrower playbook like Feature fits. Use **figure-it-out** whenever no bundled playbook fits. It designs a bespoke, rigorous playbook for the task. A standing project-scale program (multi-day, many stacked PRs, a fleet of subagents under one coordinator) routes to **Orchestrate** instead; figure-it-out designs one bespoke run, orchestrate runs the program.
+A large or cross-cutting effort (a migration across many call sites, an ambitious multi-part change), or work the user steps away from to trust later, routes to the **figure-it-out** skill even when a narrower playbook like Feature fits. Use **figure-it-out** whenever no bundled playbook fits. It designs a bespoke, rigorous playbook for the task. Standing program-scale work routes to **figure-it-out**.
 
 - **Investigation.** Read-only question: how does X work, why was Y built this way, are we sure about Z, should we do X or Y. `playbooks/investigation.md`.
 - **Bug fix.** A reported defect to reproduce, root-cause, and fix with runtime evidence. `playbooks/bug-fix.md`.
