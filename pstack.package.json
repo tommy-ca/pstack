@@ -4,7 +4,7 @@
   "name": "pstack",
   "version": "0.15.36-preview.0",
   "description": "Portable atomic playbooks and principles across agent harnesses.",
-  "upstream_pin": "bf0c7cd80abdbf7fe47b634978a7d1b4071f71a7",
+  "upstream_pin": "2f87c854fe3e2fcda44ca86b46ede35aad3c46b7",
   "host_targets": [
     "grok",
     "codex",

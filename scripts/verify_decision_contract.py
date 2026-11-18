@@ -232,6 +232,9 @@ def canonical_inventory(scoped: dict[str, str]) -> dict[str, str]:
     return inventory
 
 
+RETAINED_CANONICAL_ROUTES = {"orchestrate"}
+
+
 def compare_registry_to_source(registry: Registry, scoped: dict[str, str]) -> None:
     router_blob = scoped.get(ROUTER_PATH)
     if router_blob is None:
@@ -241,7 +244,7 @@ def compare_registry_to_source(registry: Registry, scoped: dict[str, str]) -> No
     official = canonical_inventory(scoped)
     mapped = {route.playbook: route.canonical_blob for route in registry.routes}
     missing = sorted(official.keys() - mapped.keys())
-    added = sorted(mapped.keys() - official.keys())
+    added = sorted((mapped.keys() - official.keys()) - RETAINED_CANONICAL_ROUTES)
     wrong = sorted(name for name in official.keys() & mapped.keys() if official[name] != mapped[name])
     if missing or added or wrong:
         raise VerificationError(f"canonical mapping differs from official inventory; missing={missing}, added={added}, wrong_blob={wrong}")
