@@ -553,6 +553,12 @@ class HarnessProfile:
         import json
 
         p = Path(path)
+        try:
+            p.stat()
+        except PermissionError as err:
+            raise ValidationError(f"Permission denied: {p}") from err
+        except OSError:
+            pass
         if not p.is_file():
             raise ValidationError(f"Profile file not found: {p}")
         try:
@@ -733,6 +739,12 @@ class VerificationReceipt:
         import json
 
         p = Path(path)
+        try:
+            p.stat()
+        except PermissionError as err:
+            raise ValidationError(f"Permission denied reading receipt at {p}") from err
+        except OSError:
+            pass
         if not p.is_file():
             raise ValidationError(f"Receipt file not found: {p}")
         try:

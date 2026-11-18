@@ -190,6 +190,8 @@ def write_verification_evidence(
                     f"{', '.join(decision.dropped)}"
                 )
                 assert decision.previous is not None
+                decision.previous.surface_revisions = receipt.surface_revisions
+                _write_json(durable_file, receipt_payload(decision.previous))
                 _update_evidence_index(index_file, index_data, host, decision.previous)
                 return durable_file
             elif decision.action == "write" and decision.preserved:

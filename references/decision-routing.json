@@ -3,9 +3,9 @@
   "source": {
     "repository": "cursor/plugins",
     "path_prefix": "pstack/",
-    "revision": "bf0c7cd80abdbf7fe47b634978a7d1b4071f71a7",
-    "tree": "82c5c5ba85db652adb25ada0ff9c9ed2635096df",
-    "router_blob": "98b16f9e79b37283050f1051ff6b0fec490108ff"
+    "revision": "2f87c854fe3e2fcda44ca86b46ede35aad3c46b7",
+    "tree": "c14b9148f424c40ba8e578ef79830e5f47ca720b",
+    "router_blob": "057af2d980ae336d8a64910b7ca95946e2c1bbdf"
   },
   "fallback": "baseline",
   "routes": [
@@ -16,43 +16,43 @@
     },
     {
       "playbook": "autonomous-run",
-      "canonical_blob": "af3bf11609a24020f678f859f13a65710ab67fbd",
+      "canonical_blob": "853f9ecad2531610c4df1d8caf3621cb29240d6d",
       "selection": "direct"
     },
     {
       "playbook": "autopilot-full",
-      "canonical_blob": "bbc5b3751ad789cfbd92f8937a2e84de365509ad",
+      "canonical_blob": "be91d5ac4108da00f1a9626d7af9892b2a2361eb",
       "selection": "direct"
     },
     {
       "playbook": "autopilot-stack",
-      "canonical_blob": "819862c8fe7b756c8571eed410a30a09625673d9",
+      "canonical_blob": "2cca41205ce59089b2a61f9691e0f46c572a0e04",
       "selection": "direct"
     },
     {
       "playbook": "babysit",
-      "canonical_blob": "14d5783d447ba3530d038c9dffa514f2492a54e0",
+      "canonical_blob": "0685ac21d6a88edbc77d53dd2e5576ea2e3e6f8a",
       "selection": "direct"
     },
     {
       "playbook": "bug-fix",
-      "canonical_blob": "8f76e32fa47a6573dbb4e245bc66be64792fa1c1",
+      "canonical_blob": "0e9e734ed6e940a7ac512befb73f03bb7e6a150c",
       "selection": "semantic_candidate",
       "class": "defect"
     },
     {
       "playbook": "eval",
-      "canonical_blob": "768a894e275b1e9b198e83ceb6b46964e3f9d6db",
+      "canonical_blob": "5e5762500dec34b63219c9002161215fb45ec438",
       "selection": "system_two"
     },
     {
       "playbook": "feature",
-      "canonical_blob": "17e7f004099844971c130a579a8bce615a6eecfa",
+      "canonical_blob": "27d76a56eb074ed1d8910b289b318d1aa0b80c0a",
       "selection": "system_two"
     },
     {
       "playbook": "hillclimb",
-      "canonical_blob": "d135cf36764eeca9b8f7c1777c43c291316b0b2b",
+      "canonical_blob": "dbcff8f923eab39976bb2e34b89b328d4385e825",
       "selection": "system_two"
     },
     {
@@ -63,12 +63,12 @@
     },
     {
       "playbook": "multi-phase-plan",
-      "canonical_blob": "277091a630232000fbe1d22de7bc65914df61f5d",
+      "canonical_blob": "8ddcfc7aec9ab5fc5962b1037d58880e09ca7307",
       "selection": "system_two"
     },
     {
       "playbook": "opening-a-pr",
-      "canonical_blob": "4a92c501f184ea24392d59a9889ce2f08e8e9201",
+      "canonical_blob": "e7367ed4cc37c48caafcc1b20d1a66146e22976c",
       "selection": "system_two"
     },
     {
@@ -83,7 +83,7 @@
     },
     {
       "playbook": "perf-issue",
-      "canonical_blob": "adf5c26611496729dd392a6ddebecd9ba322ae67",
+      "canonical_blob": "f5264c29516b7c6b63369369f58e07c8db5c0773",
       "selection": "semantic_candidate",
       "class": "performance"
     },
@@ -95,29 +95,29 @@
     },
     {
       "playbook": "refactoring",
-      "canonical_blob": "8a76dc2ea3a808018792bedd34533753d6c21b78",
+      "canonical_blob": "d4db06bb057f7b8a7df68d90896d9078a0656938",
       "selection": "semantic_candidate",
       "class": "refactor"
     },
     {
       "playbook": "runtime-forensics",
-      "canonical_blob": "6bf64240d1a890df290b98c632ad374d20ca9fd4",
+      "canonical_blob": "8364ce4f1e7b0fd006f06c4bd0f70f68a902cdaf",
       "selection": "semantic_candidate",
       "class": "runtime_diagnosis"
     },
     {
       "playbook": "session-pickup",
-      "canonical_blob": "876b1433828ccc7c874123cdf300240abb285dd9",
+      "canonical_blob": "fcde2b226265e3597b9ca8681864aa7e0868e464",
       "selection": "direct"
     },
     {
       "playbook": "shipping",
-      "canonical_blob": "0a0c3cfde8948e3aa8ee80c6f3f9ce7e3e64fcba",
+      "canonical_blob": "8f7e7b9ffbfce6eb81bd0a5eb363a086188d4223",
       "selection": "system_two"
     },
     {
       "playbook": "trace-forensics",
-      "canonical_blob": "bf1b003786503623d91ca173fc97a6e54eee3acf",
+      "canonical_blob": "2aec6f16451cc939348ac65fb90aaa77d431cefa",
       "selection": "semantic_candidate",
       "class": "trace_diagnosis"
     },
@@ -128,7 +128,7 @@
     },
     {
       "playbook": "worktree-cleanup",
-      "canonical_blob": "45e1af693cc40d0271249a0e98f15bfc815af615",
+      "canonical_blob": "5ea9079b61ffc258aa713eb571eda7c2932bd81c",
       "selection": "system_two"
     }
   ]
