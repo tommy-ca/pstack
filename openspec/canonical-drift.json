@@ -1,8 +1,506 @@
 {
   "scope": "upstream-pin-to-upstream-HEAD (not local-checkout-vs-upstream)",
   "pin": "bf0c7cd80abdbf7fe47b634978a7d1b4071f71a7",
-  "upstream_head": "bf0c7cd80abdbf7fe47b634978a7d1b4071f71a7",
-  "total_changed_files": 0,
-  "buckets": {},
-  "entries": []
+  "upstream_head": "35a90942a7f02e1ebbc2443643179815f2147954",
+  "total_changed_files": 70,
+  "buckets": {
+    "host_cursor": 2,
+    "packaging_docs": 9,
+    "agents": 1,
+    "verification_skills": 23,
+    "playbooks_router": 21,
+    "principles": 14
+  },
+  "entries": [
+    {
+      "path": ".cursor-plugin/plugin.json",
+      "status": "M",
+      "bucket": "host_cursor",
+      "mode": "exclude",
+      "note": "Cursor-only host manifest"
+    },
+    {
+      "path": "README.md",
+      "status": "M",
+      "bucket": "packaging_docs",
+      "mode": "adapt",
+      "note": "Documentation guide refresh"
+    },
+    {
+      "path": "agents/poteto-agent.md",
+      "status": "M",
+      "bucket": "agents",
+      "mode": "adapt",
+      "note": "Role agent definition"
+    },
+    {
+      "path": "docs/guide/01-setup.md",
+      "status": "M",
+      "bucket": "packaging_docs",
+      "mode": "adapt",
+      "note": "Documentation guide refresh"
+    },
+    {
+      "path": "docs/guide/02-poteto-mode.md",
+      "status": "M",
+      "bucket": "packaging_docs",
+      "mode": "adapt",
+      "note": "Documentation guide refresh"
+    },
+    {
+      "path": "docs/guide/04-design.md",
+      "status": "M",
+      "bucket": "packaging_docs",
+      "mode": "adapt",
+      "note": "Documentation guide refresh"
+    },
+    {
+      "path": "docs/guide/05-build-and-clean.md",
+      "status": "M",
+      "bucket": "packaging_docs",
+      "mode": "adapt",
+      "note": "Documentation guide refresh"
+    },
+    {
+      "path": "docs/guide/06-verify-and-ship.md",
+      "status": "M",
+      "bucket": "packaging_docs",
+      "mode": "adapt",
+      "note": "Documentation guide refresh"
+    },
+    {
+      "path": "docs/guide/07-overnight.md",
+      "status": "M",
+      "bucket": "packaging_docs",
+      "mode": "adapt",
+      "note": "Documentation guide refresh"
+    },
+    {
+      "path": "docs/guide/09-make-it-yours.md",
+      "status": "M",
+      "bucket": "packaging_docs",
+      "mode": "adapt",
+      "note": "Documentation guide refresh"
+    },
+    {
+      "path": "docs/harness/claude-code.md",
+      "status": "M",
+      "bucket": "packaging_docs",
+      "mode": "adapt",
+      "note": "Documentation guide refresh"
+    },
+    {
+      "path": "plugin.json",
+      "status": "M",
+      "bucket": "verification_skills",
+      "mode": "adapt",
+      "note": "Verification and engineering skill updates"
+    },
+    {
+      "path": "skills/architect/SKILL.md",
+      "status": "M",
+      "bucket": "verification_skills",
+      "mode": "adapt",
+      "note": "Verification and engineering skill updates"
+    },
+    {
+      "path": "skills/architect/references/design-red-flags.md",
+      "status": "D",
+      "bucket": "verification_skills",
+      "mode": "adapt",
+      "note": "Verification and engineering skill updates"
+    },
+    {
+      "path": "skills/architect/references/rationale-template.md",
+      "status": "D",
+      "bucket": "verification_skills",
+      "mode": "adapt",
+      "note": "Verification and engineering skill updates"
+    },
+    {
+      "path": "skills/architect/references/runner-prompt.md",
+      "status": "D",
+      "bucket": "verification_skills",
+      "mode": "adapt",
+      "note": "Verification and engineering skill updates"
+    },
+    {
+      "path": "skills/arena/SKILL.md",
+      "status": "M",
+      "bucket": "verification_skills",
+      "mode": "adapt",
+      "note": "Verification and engineering skill updates"
+    },
+    {
+      "path": "skills/automate-me/SKILL.md",
+      "status": "M",
+      "bucket": "verification_skills",
+      "mode": "adapt",
+      "note": "Verification and engineering skill updates"
+    },
+    {
+      "path": "skills/benchmark-checklist/SKILL.md",
+      "status": "M",
+      "bucket": "verification_skills",
+      "mode": "adapt",
+      "note": "Verification and engineering skill updates"
+    },
+    {
+      "path": "skills/figure-it-out/SKILL.md",
+      "status": "M",
+      "bucket": "verification_skills",
+      "mode": "adapt",
+      "note": "Verification and engineering skill updates"
+    },
+    {
+      "path": "skills/no-comments/SKILL.md",
+      "status": "M",
+      "bucket": "verification_skills",
+      "mode": "adapt",
+      "note": "Verification and engineering skill updates"
+    },
+    {
+      "path": "skills/poteto-help/SKILL.md",
+      "status": "M",
+      "bucket": "verification_skills",
+      "mode": "adapt",
+      "note": "Verification and engineering skill updates"
+    },
+    {
+      "path": "skills/poteto-mode/SKILL.md",
+      "status": "M",
+      "bucket": "playbooks_router",
+      "mode": "adapt",
+      "note": "Playbook and router updates; preserved with host-neutral mapping"
+    },
+    {
+      "path": "skills/poteto-mode/playbooks/autonomous-run.md",
+      "status": "M",
+      "bucket": "playbooks_router",
+      "mode": "adapt",
+      "note": "Playbook and router updates; preserved with host-neutral mapping"
+    },
+    {
+      "path": "skills/poteto-mode/playbooks/autopilot-full.md",
+      "status": "M",
+      "bucket": "playbooks_router",
+      "mode": "adapt",
+      "note": "Playbook and router updates; preserved with host-neutral mapping"
+    },
+    {
+      "path": "skills/poteto-mode/playbooks/autopilot-stack.md",
+      "status": "M",
+      "bucket": "playbooks_router",
+      "mode": "adapt",
+      "note": "Playbook and router updates; preserved with host-neutral mapping"
+    },
+    {
+      "path": "skills/poteto-mode/playbooks/babysit.md",
+      "status": "M",
+      "bucket": "playbooks_router",
+      "mode": "adapt",
+      "note": "Playbook and router updates; preserved with host-neutral mapping"
+    },
+    {
+      "path": "skills/poteto-mode/playbooks/bug-fix.md",
+      "status": "M",
+      "bucket": "playbooks_router",
+      "mode": "adapt",
+      "note": "Playbook and router updates; preserved with host-neutral mapping"
+    },
+    {
+      "path": "skills/poteto-mode/playbooks/eval.md",
+      "status": "M",
+      "bucket": "playbooks_router",
+      "mode": "adapt",
+      "note": "Playbook and router updates; preserved with host-neutral mapping"
+    },
+    {
+      "path": "skills/poteto-mode/playbooks/feature.md",
+      "status": "M",
+      "bucket": "playbooks_router",
+      "mode": "adapt",
+      "note": "Playbook and router updates; preserved with host-neutral mapping"
+    },
+    {
+      "path": "skills/poteto-mode/playbooks/hillclimb.md",
+      "status": "M",
+      "bucket": "playbooks_router",
+      "mode": "adapt",
+      "note": "Playbook and router updates; preserved with host-neutral mapping"
+    },
+    {
+      "path": "skills/poteto-mode/playbooks/multi-phase-plan.md",
+      "status": "M",
+      "bucket": "playbooks_router",
+      "mode": "adapt",
+      "note": "Playbook and router updates; preserved with host-neutral mapping"
+    },
+    {
+      "path": "skills/poteto-mode/playbooks/opening-a-pr.md",
+      "status": "M",
+      "bucket": "playbooks_router",
+      "mode": "adapt",
+      "note": "Playbook and router updates; preserved with host-neutral mapping"
+    },
+    {
+      "path": "skills/poteto-mode/playbooks/orchestrate.md",
+      "status": "D",
+      "bucket": "playbooks_router",
+      "mode": "adapt",
+      "note": "Playbook and router updates; preserved with host-neutral mapping"
+    },
+    {
+      "path": "skills/poteto-mode/playbooks/perf-issue.md",
+      "status": "M",
+      "bucket": "playbooks_router",
+      "mode": "adapt",
+      "note": "Playbook and router updates; preserved with host-neutral mapping"
+    },
+    {
+      "path": "skills/poteto-mode/playbooks/refactoring.md",
+      "status": "M",
+      "bucket": "playbooks_router",
+      "mode": "adapt",
+      "note": "Playbook and router updates; preserved with host-neutral mapping"
+    },
+    {
+      "path": "skills/poteto-mode/playbooks/runtime-forensics.md",
+      "status": "M",
+      "bucket": "playbooks_router",
+      "mode": "adapt",
+      "note": "Playbook and router updates; preserved with host-neutral mapping"
+    },
+    {
+      "path": "skills/poteto-mode/playbooks/session-pickup.md",
+      "status": "M",
+      "bucket": "playbooks_router",
+      "mode": "adapt",
+      "note": "Playbook and router updates; preserved with host-neutral mapping"
+    },
+    {
+      "path": "skills/poteto-mode/playbooks/shipping.md",
+      "status": "M",
+      "bucket": "playbooks_router",
+      "mode": "adapt",
+      "note": "Playbook and router updates; preserved with host-neutral mapping"
+    },
+    {
+      "path": "skills/poteto-mode/playbooks/trace-forensics.md",
+      "status": "M",
+      "bucket": "playbooks_router",
+      "mode": "adapt",
+      "note": "Playbook and router updates; preserved with host-neutral mapping"
+    },
+    {
+      "path": "skills/poteto-mode/playbooks/worktree-cleanup.md",
+      "status": "M",
+      "bucket": "playbooks_router",
+      "mode": "adapt",
+      "note": "Playbook and router updates; preserved with host-neutral mapping"
+    },
+    {
+      "path": "skills/poteto-mode/scripts/check-plan.mjs",
+      "status": "D",
+      "bucket": "playbooks_router",
+      "mode": "adapt",
+      "note": "Playbook and router updates; preserved with host-neutral mapping"
+    },
+    {
+      "path": "skills/poteto-mode/scripts/check-plan.test.ts",
+      "status": "D",
+      "bucket": "host_cursor",
+      "mode": "exclude",
+      "note": "Cursor-side bun:test twin of the retained check-plan.mjs; the port carries the same fence cases adapted in check-plan.test.mjs"
+    },
+    {
+      "path": "skills/poteto-mode/scripts/package.json",
+      "status": "M",
+      "bucket": "playbooks_router",
+      "mode": "adapt",
+      "note": "Playbook and router updates; preserved with host-neutral mapping"
+    },
+    {
+      "path": "skills/poteto-mode/worker.md",
+      "status": "A",
+      "bucket": "verification_skills",
+      "mode": "adapt",
+      "note": "Verification and engineering skill updates"
+    },
+    {
+      "path": "skills/principle-attack-the-premise/SKILL.md",
+      "status": "M",
+      "bucket": "principles",
+      "mode": "preserve",
+      "note": "Canonical principle leaf"
+    },
+    {
+      "path": "skills/principle-boundary-discipline/SKILL.md",
+      "status": "M",
+      "bucket": "principles",
+      "mode": "preserve",
+      "note": "Canonical principle leaf"
+    },
+    {
+      "path": "skills/principle-build-the-lever/SKILL.md",
+      "status": "M",
+      "bucket": "principles",
+      "mode": "preserve",
+      "note": "Canonical principle leaf"
+    },
+    {
+      "path": "skills/principle-explain-the-number/SKILL.md",
+      "status": "M",
+      "bucket": "principles",
+      "mode": "preserve",
+      "note": "Canonical principle leaf"
+    },
+    {
+      "path": "skills/principle-fix-root-causes/SKILL.md",
+      "status": "M",
+      "bucket": "principles",
+      "mode": "preserve",
+      "note": "Canonical principle leaf"
+    },
+    {
+      "path": "skills/principle-foundational-thinking/SKILL.md",
+      "status": "M",
+      "bucket": "principles",
+      "mode": "preserve",
+      "note": "Canonical principle leaf"
+    },
+    {
+      "path": "skills/principle-make-operations-idempotent/SKILL.md",
+      "status": "M",
+      "bucket": "principles",
+      "mode": "preserve",
+      "note": "Canonical principle leaf"
+    },
+    {
+      "path": "skills/principle-minimize-reader-load/SKILL.md",
+      "status": "M",
+      "bucket": "principles",
+      "mode": "preserve",
+      "note": "Canonical principle leaf"
+    },
+    {
+      "path": "skills/principle-model-the-domain/SKILL.md",
+      "status": "M",
+      "bucket": "principles",
+      "mode": "preserve",
+      "note": "Canonical principle leaf"
+    },
+    {
+      "path": "skills/principle-prove-it-works/SKILL.md",
+      "status": "M",
+      "bucket": "principles",
+      "mode": "preserve",
+      "note": "Canonical principle leaf"
+    },
+    {
+      "path": "skills/principle-separate-before-serializing-shared-state/SKILL.md",
+      "status": "M",
+      "bucket": "principles",
+      "mode": "preserve",
+      "note": "Canonical principle leaf"
+    },
+    {
+      "path": "skills/principle-sequence-verifiable-units/SKILL.md",
+      "status": "M",
+      "bucket": "principles",
+      "mode": "preserve",
+      "note": "Canonical principle leaf"
+    },
+    {
+      "path": "skills/principle-test-behavior-not-implementation/SKILL.md",
+      "status": "M",
+      "bucket": "principles",
+      "mode": "preserve",
+      "note": "Canonical principle leaf"
+    },
+    {
+      "path": "skills/principle-type-system-discipline/SKILL.md",
+      "status": "M",
+      "bucket": "principles",
+      "mode": "preserve",
+      "note": "Canonical principle leaf"
+    },
+    {
+      "path": "skills/recall/SKILL.md",
+      "status": "M",
+      "bucket": "verification_skills",
+      "mode": "adapt",
+      "note": "Verification and engineering skill updates"
+    },
+    {
+      "path": "skills/reflect/SKILL.md",
+      "status": "M",
+      "bucket": "verification_skills",
+      "mode": "adapt",
+      "note": "Verification and engineering skill updates"
+    },
+    {
+      "path": "skills/reflect/references/divergent-reviewer.md",
+      "status": "D",
+      "bucket": "verification_skills",
+      "mode": "adapt",
+      "note": "Verification and engineering skill updates"
+    },
+    {
+      "path": "skills/reflect/references/judgment-reviewer.md",
+      "status": "D",
+      "bucket": "verification_skills",
+      "mode": "adapt",
+      "note": "Verification and engineering skill updates"
+    },
+    {
+      "path": "skills/reflect/references/synthesizer.md",
+      "status": "D",
+      "bucket": "verification_skills",
+      "mode": "adapt",
+      "note": "Verification and engineering skill updates"
+    },
+    {
+      "path": "skills/reflect/references/tooling-reviewer.md",
+      "status": "D",
+      "bucket": "verification_skills",
+      "mode": "adapt",
+      "note": "Verification and engineering skill updates"
+    },
+    {
+      "path": "skills/setup-pstack/SKILL.md",
+      "status": "M",
+      "bucket": "verification_skills",
+      "mode": "adapt",
+      "note": "Verification and engineering skill updates"
+    },
+    {
+      "path": "skills/show-me-your-work/SKILL.md",
+      "status": "M",
+      "bucket": "verification_skills",
+      "mode": "adapt",
+      "note": "Verification and engineering skill updates"
+    },
+    {
+      "path": "skills/swarm/SKILL.md",
+      "status": "M",
+      "bucket": "verification_skills",
+      "mode": "adapt",
+      "note": "Verification and engineering skill updates"
+    },
+    {
+      "path": "skills/technical-writing/SKILL.md",
+      "status": "M",
+      "bucket": "verification_skills",
+      "mode": "adapt",
+      "note": "Verification and engineering skill updates"
+    },
+    {
+      "path": "skills/unslop/SKILL.md",
+      "status": "M",
+      "bucket": "verification_skills",
+      "mode": "adapt",
+      "note": "Verification and engineering skill updates"
+    }
+  ]
 }
