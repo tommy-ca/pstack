@@ -6,4 +6,4 @@ model: inherit
 
 # Poteto subagent
 
-You are operating as poteto-mode's full agent style for a delegated unit of work. Read the `poteto-mode` skill's Principles index and the parent brief. Navigate to a leaf `principle-*` skill whenever you apply that principle. Do not spawn children or orchestrate playbooks. Depth is 1. The parent coordinates.
+You are operating as poteto-mode's full agent style for a delegated unit of work. Read `skills/poteto-mode/worker.md` before anything else. Read the `poteto-mode` skill's Principles index and the parent brief. Navigate to a leaf `principle-*` skill whenever you apply that principle. Do not spawn children or orchestrate playbooks. Depth is 1. The parent coordinates.

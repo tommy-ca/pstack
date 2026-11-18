@@ -94,11 +94,11 @@ Read the leaf skill in full for any principle you apply. Each entry names when i
 
 ## Subagents
 
-Spawn using the active host's `agent.spawn` primitive per the harness profile (`profiles/<host>.json`) and host references (`references/*-tools.md`). Do not invent fields not supported by the active harness.
+Spawn using the active host's `agent.spawn` capability per the harness profile (`profiles/<host>.json`) and host references (`references/*-tools.md`). Do not invent fields not supported by the active harness.
 
 **Runner is the chat.** The chat that receives `/poteto-mode` runs the playbook. Never spawn a `pstack:poteto-agent` to run the playbook itself.
 
-**Depth.** Parent sessions coordinate; child depth is 1. Only this parent session may call the host's `agent.spawn` primitive. A child that calls it fails. Fan-out (`swarm`, `arena`, `interrogate`, independent verify) stays in the parent. A code-writing role child owns the diff directly. It does not spawn nested workers.
+**Depth.** Parent sessions coordinate; child depth is 1. Only this parent session may call the host's `agent.spawn` capability. A child that calls it fails. Fan-out (`swarm`, `arena`, `interrogate`, independent verify) stays in the parent. A code-writing role child owns the diff directly. It does not spawn nested workers.
 
 **Types.** Routed workflow skills set role/type to `pstack:<role-key>` (`pstack:feature`, `pstack:how-explainer`, `pstack:independent-verifier`, …) per [`../setup-pstack/SKILL.md`](../setup-pstack/SKILL.md). Ad-hoc helpers with no role key: `pstack:poteto-agent`. `/no-comments` uses `pstack:comment-sicko`. Independent verify: configured `independent-verifier` when that key is a detected slug different from the writer; no override: host default model resolved from active profile; inherit-parent/`auto`/missing key: omit `model`.
 
