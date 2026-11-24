@@ -415,4 +415,36 @@ def test_sync_rejects_mutual_symlink_cycles(plugin):
     assert (live_skill / "SKILL.md").exists()
 
 
+def test_sync_purges_all_stray_plugin_dirs_and_stale_hooks(plugin):
+    for stray in plugin.STRAY_PLUGIN_DIRS:
+        write(plugin.LIVE_PLUGIN_DIR, f"{stray}/sub/stray.json", b"stray legacy content\n")
+    write(plugin.LIVE_PLUGIN_DIR, "hooks/hooks.json", b"stale hooks\n")
+
+    plugin.sync_live_plugin()
+
+    for stray in plugin.STRAY_PLUGIN_DIRS:
+        assert not (plugin.LIVE_PLUGIN_DIR / stray).exists()
+    assert not (plugin.LIVE_PLUGIN_DIR / "hooks/hooks.json").exists()
+    assert plugin.check_live_sync() is True
+
+
+def test_audit_live_plugin_reports_all_foreign_directories(plugin):
+    for stray in plugin.STRAY_PLUGIN_DIRS:
+        write(plugin.LIVE_PLUGIN_DIR, f"{stray}/manifest.json", b"legacy manifest\n")
+
+    report = plugin.audit_live_plugin()
+    for stray in plugin.STRAY_PLUGIN_DIRS:
+        assert stray in report["foreign_directories"]
+
+
+def test_check_live_sync_detects_rules_drift(plugin):
+    plugin.sync_live_plugin()
+    assert plugin.check_live_sync() is True
+
+    rules_path = plugin.LIVE_PLUGIN_DIR / "rules" / "AGENTS.md"
+    rules_path.write_text("drifted rules content\n", encoding="utf-8")
+    assert plugin.check_live_sync() is False
+
+
+
 

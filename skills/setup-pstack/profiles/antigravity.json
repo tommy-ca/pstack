@@ -123,7 +123,7 @@
       "host": "antigravity",
       "capability": "monitor",
       "implementation_status": "native",
-      "primitive": "schedule / reactive messaging / swarm_monitor (@monitor) / hooks.json",
+      "primitive": "schedule / reactive messaging / swarm_monitor (@monitor)",
       "enforcement": "hard",
       "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/antigravity-receipt.json"
