@@ -163,14 +163,14 @@ def test_name_validator_rejects_overlong_name() -> None:
         validate_skill_name("a" * 65)
 
 
-def test_discover_all_86_skills() -> None:
+def test_discover_all_87_skills() -> None:
     from scripts.skill_frontmatter import discover_skills_inventory
 
     records = discover_skills_inventory(ROOT)
-    assert len(records) == 86
+    assert len(records) == 87
 
     canonical = [r for r in records if r.root_rel == "skills"]
-    assert len(canonical) == 67
+    assert len(canonical) == 68
 
     automations = [r for r in records if r.root_rel.startswith("automations/")]
     assert len(automations) == 5
@@ -179,11 +179,11 @@ def test_discover_all_86_skills() -> None:
     assert len(host_specific) == 14
 
 
-def test_all_86_skills_conform_to_frontmatter_contract() -> None:
+def test_all_87_skills_conform_to_frontmatter_contract() -> None:
     from scripts.skill_frontmatter import discover_skills_inventory
 
     records = discover_skills_inventory(ROOT)
-    assert len(records) == 86
+    assert len(records) == 87
 
     for record in records:
         assert record.frontmatter["name"] == record.directory.name

@@ -7,7 +7,7 @@ and `agy plugin install` when `agy` is present on PATH.
 
 Follows Model the Domain + Build the Lever + Make Operations Idempotent:
 - Proves strict zero-warning validation via native Antigravity CLI
-- Verifies full component discovery (64 skills, 22 agents, 0 warnings)
+- Verifies full component discovery (65 skills, 22 agents, 0 warnings)
 - Proves clean residue and user state preservation on uninstall
 
 Usage:
@@ -35,6 +35,7 @@ if str(ROOT) not in sys.path:
 from scripts.package_projection import (
     generate_antigravity_manifest,
     generate_antigravity_models,
+    generate_antigravity_rules,
     load_package_descriptor,
 )
 from scripts.portability_schema import (
@@ -68,13 +69,7 @@ def stage_antigravity_package(dest_dir: Path, source_root: Optional[Path] = None
     # 4. Rules
     rules_dir = dest_dir / "rules"
     rules_dir.mkdir(parents=True, exist_ok=True)
-    (rules_dir / "AGENTS.md").write_text(
-        "# pstack instructions for Antigravity\n\n"
-        "When working with pstack:\n"
-        "- Follow poteto-mode: plan before coding, verify with levereable proofs.\n"
-        "- Use native subagents (`invoke_subagent`) for parallel operations (Arena, Swarm, Interrogate).\n",
-        encoding="utf-8",
-    )
+    (rules_dir / "AGENTS.md").write_text(generate_antigravity_rules(), encoding="utf-8")
 
     # 5. Skills
     skills_src = src_root / "skills"

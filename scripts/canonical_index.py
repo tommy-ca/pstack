@@ -259,6 +259,7 @@ def classify_drift_entry(rel_path: str, status: str) -> Dict[str, Any]:
         "skills/create-formal-verification-skill/SKILL.md",
         "skills/maintain-formal-verification-skill/SKILL.md",
         "skills/in-your-own-words/SKILL.md",
+        "skills/reframe/SKILL.md",
         "skills/sharpen/SKILL.md",
     ):
         return {

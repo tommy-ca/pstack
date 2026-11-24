@@ -355,6 +355,17 @@ def generate_antigravity_models(desc: PackageDescriptor) -> Dict[str, Any]:
     }
 
 
+def generate_antigravity_rules() -> str:
+    return (
+        "# pstack instructions for Antigravity\n\n"
+        "When working with pstack:\n"
+        "- Prefer fewer, higher-quality changes.\n"
+        "- Follow poteto-mode: go deep first, plan before coding, verify with verifiable proofs.\n"
+        "- Use native subagents (`invoke_subagent`) or active native `/swarm` when applicable for parallel operations (Arena, Swarm, Interrogate).\n"
+        "- Respect isolated workspaces (`Workspace: branch` or `Workspace: share`) when modifying code in parallel.\n"
+    )
+
+
 def generate_codex_models(desc: PackageDescriptor) -> Dict[str, Any]:
     return {
         "singleRoleDefault": "gpt-6.1-sol",
