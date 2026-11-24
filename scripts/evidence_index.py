@@ -261,9 +261,15 @@ def index_row_mismatch(host: str, index_file: Path, receipt_root: Path) -> Optio
     return None
 
 
-def check_evidence_action(hosts: List[str], root: Path, allow_stale: bool = False) -> int:
+def check_evidence_action(
+    hosts: List[str],
+    root: Path,
+    allow_stale: bool = False,
+    evidence_dir: Optional[Path] = None,
+) -> int:
     all_ok = True
-    index_file = root / ".audit" / "evidence" / "index.json"
+    ev_dir = evidence_dir if evidence_dir is not None else (root / ".audit" / "evidence")
+    index_file = ev_dir / "index.json"
     profiles_dir = resolve_profiles_dir(root)
     for h in hosts:
         profile_file = profiles_dir / f"{h}.json"
