@@ -65,6 +65,77 @@ def copy_agents(dest_agents: Path, source_root: Optional[Path] = None) -> List[s
     return copied_rel
 
 
+def stage_antigravity_package(dest_dir: Path, source_root: Optional[Path] = None) -> Path:
+    """Stage a clean, standalone Antigravity plugin package for validation and installation."""
+    from scripts.package_projection import (
+        generate_antigravity_manifest,
+        generate_antigravity_models,
+        generate_antigravity_rules,
+        load_package_descriptor,
+    )
+    from scripts.portability_schema import (
+        SKILLS_HASH_IGNORED_DIRS,
+        SKILLS_HASH_IGNORED_SUFFIXES,
+    )
+
+    src_root = source_root if source_root is not None else ROOT
+    desc, _ = load_package_descriptor()
+    dest_dir.mkdir(parents=True, exist_ok=True)
+
+    # 1. Manifest (plugin.json)
+    manifest = generate_antigravity_manifest(desc)
+    (dest_dir / "plugin.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+
+    # 2. Models catalog
+    models = generate_antigravity_models(desc)
+    (dest_dir / "models.json").write_text(json.dumps(models, indent=2) + "\n", encoding="utf-8")
+
+    # 3. Logo asset
+    assets_dir = dest_dir / "assets"
+    assets_dir.mkdir(parents=True, exist_ok=True)
+    logo_src = src_root / "assets" / "logo.svg"
+    if logo_src.is_file():
+        shutil.copy2(logo_src, assets_dir / "logo.svg")
+
+    # 4. Rules
+    rules_dir = dest_dir / "rules"
+    rules_dir.mkdir(parents=True, exist_ok=True)
+    (rules_dir / "AGENTS.md").write_text(generate_antigravity_rules(), encoding="utf-8")
+
+    # 5. Skills
+    skills_src = src_root / "skills"
+    skills_dest = dest_dir / "skills"
+    skills_dest.mkdir(parents=True, exist_ok=True)
+    for skill_dir in skills_src.iterdir():
+        if not skill_dir.is_dir() or skill_dir.name in SKILLS_HASH_IGNORED_DIRS:
+            continue
+        dest_skill = skills_dest / skill_dir.name
+        shutil.copytree(
+            skill_dir,
+            dest_skill,
+            dirs_exist_ok=True,
+            ignore=shutil.ignore_patterns(*SKILLS_HASH_IGNORED_DIRS, *[f"*{s}" for s in SKILLS_HASH_IGNORED_SUFFIXES]),
+        )
+
+    # 6. Agents
+    agents_src = src_root / "agents"
+    agents_dest = dest_dir / "agents"
+    agents_dest.mkdir(parents=True, exist_ok=True)
+    for agent_file in agents_src.glob("*.md"):
+        if agent_file.is_file():
+            shutil.copy2(agent_file, agents_dest / agent_file.name)
+
+    # 7. Profiles
+    profiles_src = resolve_profiles_dir(src_root)
+    profiles_dest = dest_dir / "profiles"
+    profiles_dest.mkdir(parents=True, exist_ok=True)
+    for p_file in sorted(profiles_src.glob("*.json")):
+        if p_file.is_file():
+            shutil.copy2(p_file, profiles_dest / p_file.name)
+
+    return dest_dir
+
+
 def compute_managed_files(host: str, desc: Any) -> Set[str]:
     """Compute the set of relative paths owned by pstack inside the plugin directory."""
     managed: Set[str] = set()

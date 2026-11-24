@@ -160,7 +160,7 @@ def audit_live_plugin() -> dict[str, str]:
 
     if shutil.which("agy"):
         proc = subprocess.run(
-            ["agy", "plugin", "validate", str(LIVE_PLUGIN_DIR)],
+            ["agy", "plugin", "validate", str(LIVE_PLUGIN_DIR), "--strict", "--json"],
             capture_output=True,
             text=True,
             check=False,
@@ -234,6 +234,23 @@ def check_live_sync() -> bool:
     dest_agents = {f.name: f.read_bytes() for f in (LIVE_PLUGIN_DIR / "agents").glob("*.md") if f.is_file()}
     if not check_files(src_agents, dest_agents, "agents"):
         all_ok = False
+
+    # Check rules
+    from scripts.package_projection import generate_antigravity_rules
+    rules_dest = LIVE_PLUGIN_DIR / "rules" / "AGENTS.md"
+    if not rules_dest.is_file():
+        print("FAIL: rules/AGENTS.md missing from live plugin")
+        all_ok = False
+    else:
+        expected_rules = generate_antigravity_rules().strip()
+        try:
+            actual_rules = rules_dest.read_text(encoding="utf-8").strip()
+            if actual_rules != expected_rules:
+                print("FAIL: rules/AGENTS.md has drifted from canonical rules generator")
+                all_ok = False
+        except Exception as e:
+            print(f"FAIL: rules/AGENTS.md corrupt: {e}")
+            all_ok = False
 
     # Check commands (native agy packages ship commands as skills; check only when commands dir exists)
     commands_dir = LIVE_PLUGIN_DIR / "commands"

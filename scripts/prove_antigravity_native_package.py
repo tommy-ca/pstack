@@ -32,6 +32,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from scripts.package_install_staging import stage_antigravity_package
 from scripts.package_projection import (
     generate_antigravity_manifest,
     generate_antigravity_models,
@@ -45,73 +46,31 @@ from scripts.portability_schema import (
 from scripts.setup_pstack import resolve_profiles_dir
 
 
-def stage_antigravity_package(dest_dir: Path, source_root: Optional[Path] = None) -> Path:
-    """Stage a clean, standalone Antigravity plugin package for validation and installation."""
-    src_root = source_root if source_root is not None else ROOT
-    desc, _ = load_package_descriptor()
-    dest_dir.mkdir(parents=True, exist_ok=True)
-
-    # 1. Manifest (plugin.json)
-    manifest = generate_antigravity_manifest(desc)
-    (dest_dir / "plugin.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
-
-    # 2. Models catalog
-    models = generate_antigravity_models(desc)
-    (dest_dir / "models.json").write_text(json.dumps(models, indent=2) + "\n", encoding="utf-8")
-
-    # 3. Logo asset
-    assets_dir = dest_dir / "assets"
-    assets_dir.mkdir(parents=True, exist_ok=True)
-    logo_src = src_root / "assets" / "logo.svg"
-    if logo_src.is_file():
-        shutil.copy2(logo_src, assets_dir / "logo.svg")
-
-    # 4. Rules
-    rules_dir = dest_dir / "rules"
-    rules_dir.mkdir(parents=True, exist_ok=True)
-    (rules_dir / "AGENTS.md").write_text(generate_antigravity_rules(), encoding="utf-8")
-
-    # 5. Skills
-    skills_src = src_root / "skills"
-    skills_dest = dest_dir / "skills"
-    skills_dest.mkdir(parents=True, exist_ok=True)
-    for skill_dir in skills_src.iterdir():
-        if not skill_dir.is_dir() or skill_dir.name in SKILLS_HASH_IGNORED_DIRS:
-            continue
-        dest_skill = skills_dest / skill_dir.name
-        shutil.copytree(
-            skill_dir,
-            dest_skill,
-            ignore=shutil.ignore_patterns(*SKILLS_HASH_IGNORED_DIRS, *[f"*{s}" for s in SKILLS_HASH_IGNORED_SUFFIXES]),
-        )
-
-    # 6. Agents
-    agents_src = src_root / "agents"
-    agents_dest = dest_dir / "agents"
-    agents_dest.mkdir(parents=True, exist_ok=True)
-    for agent_file in agents_src.glob("*.md"):
-        if agent_file.is_file():
-            shutil.copy2(agent_file, agents_dest / agent_file.name)
-
-    # 7. Profiles
-    profiles_src = resolve_profiles_dir(src_root)
-    profiles_dest = dest_dir / "profiles"
-    profiles_dest.mkdir(parents=True, exist_ok=True)
-    for p_file in sorted(profiles_src.glob("*.json")):
-        if p_file.is_file():
-            shutil.copy2(p_file, profiles_dest / p_file.name)
-
-    return dest_dir
-
-
-def run_antigravity_validation(plugin_dir: Path) -> Tuple[bool, Dict[str, Any]]:
+def run_antigravity_validation(
+    plugin_dir: Path, agy_bin: Optional[Path] = None
+) -> Tuple[bool, Dict[str, Any]]:
     """Run `agy plugin validate <dir> --strict --json` and return verdict and findings."""
-    agy_bin = shutil.which("agy")
-    if not agy_bin:
-        return True, {"skipped": True, "reason": "agy binary not found on PATH"}
+    resolved_bin: Optional[Path] = None
+    if agy_bin is not None:
+        resolved_bin = Path(agy_bin) if Path(agy_bin).is_file() else None
+    if resolved_bin is None:
+        agy_which = shutil.which("agy")
+        if agy_which:
+            resolved_bin = Path(agy_which)
+        else:
+            local_bin = Path.home() / ".local" / "bin" / "agy"
+            if local_bin.is_file():
+                resolved_bin = local_bin
+
+    if not resolved_bin or not resolved_bin.is_file():
+        return False, {
+            "verdict": "BLOCKED",
+            "skipped": True,
+            "reason": "agy binary not found on PATH or ~/.local/bin",
+        }
 
     proc = subprocess.run(
-        [agy_bin, "plugin", "validate", str(plugin_dir), "--strict", "--json"],
+        [str(resolved_bin), "plugin", "validate", str(plugin_dir), "--strict", "--json"],
         capture_output=True,
         text=True,
         check=False,
@@ -153,6 +112,13 @@ def prove_antigravity_package(package_dir: Optional[Path] = None) -> Tuple[int, 
         # 2. Strict CLI validation
         val_pass, val_report = run_antigravity_validation(pkg_dir)
         if not val_pass:
+            if val_report.get("verdict") == "BLOCKED":
+                return 2, {
+                    "verdict": "BLOCKED",
+                    "reason": val_report.get("reason", "agy binary not found"),
+                    "report": val_report,
+                    "duration_s": time.perf_counter() - t0,
+                }
             return 1, {
                 "verdict": "FAIL",
                 "reason": "agy plugin validate --strict failed",

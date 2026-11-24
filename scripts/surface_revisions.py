@@ -443,6 +443,7 @@ def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path
         "host_identity.py",
         "portability_schema.py",
         "route_resolver.py",
+        "harness_scenarios.py",
     ):
         driver_file = root / "scripts" / fname
         if driver_file.is_file():
@@ -462,6 +463,7 @@ def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path
         "package_lifecycle.py",
         "package_install_staging.py",
         "sync_antigravity_plugin.py",
+        "prove_antigravity_native_package.py",
         "model_role_policy.py",
         "model_role_resolver.py",
         "portability_types.py",

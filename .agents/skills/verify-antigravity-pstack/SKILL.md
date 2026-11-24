@@ -19,7 +19,7 @@ bash .agents/skills/verify-antigravity-pstack/scripts/driver.sh launch
 
 ## Doctor
 
-The doctor command runs non-destructive static and packaging health checks across `.antigravity-plugin/`, command projections, native package staging, and the 4-plane doctor.
+The doctor command runs non-destructive static and packaging health checks across `.antigravity-plugin/`, command projections, unit test suites, native package staging, and the 4-plane doctor.
 
 ```bash
 bash .agents/skills/verify-antigravity-pstack/scripts/driver.sh doctor
@@ -27,7 +27,7 @@ bash .agents/skills/verify-antigravity-pstack/scripts/driver.sh doctor
 
 ## Drive
 
-The drive command executes projection checks, the native `agy plugin validate --strict --json` package proof, Antigravity verification unit suites, receipt staleness checks, and 4-plane evidence checks.
+The drive command executes projection checks, the native `agy plugin validate --strict --json` package proof, receipt staleness checks, and 4-plane evidence checks.
 
 ```bash
 bash .agents/skills/verify-antigravity-pstack/scripts/driver.sh drive

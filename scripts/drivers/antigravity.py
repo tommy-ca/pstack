@@ -6,10 +6,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Optional, Tuple
 
-from scripts.prove_antigravity_native_package import (
-    run_antigravity_validation,
-    stage_antigravity_package,
-)
+from scripts.package_install_staging import stage_antigravity_package
+from scripts.prove_antigravity_native_package import run_antigravity_validation
 
 from .base import DriverScenarioResult, HarnessDriver, find_executable
 
@@ -61,7 +59,7 @@ class AntigravityDriver(HarnessDriver):
 
         staged_dir = run_dir / "staged-antigravity-plugin"
         stage_antigravity_package(staged_dir, source_root=self.root)
-        val_pass, report = run_antigravity_validation(staged_dir)
+        val_pass, report = run_antigravity_validation(staged_dir, agy_bin=bin_path)
         components = report.get("components", {}) if isinstance(report, dict) else {}
         findings = report.get("findings", []) if isinstance(report, dict) else []
         skills_count = components.get("skills", 0)

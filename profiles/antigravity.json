@@ -223,8 +223,8 @@
       "fallback_builtin": null
     },
     {
-      "need": "Remove AI code slop",
-      "primary_pstack": "deslop",
+      "need": "Unslop / comments",
+      "primary_pstack": "/unslop",
       "secondary_user": null,
       "fallback_builtin": null
     },
@@ -286,17 +286,17 @@
       "need": "Execute a written plan",
       "primary_pstack": "playbooks/feature.md",
       "secondary_user": null,
-      "fallback_builtin": "/run-workflow"
+      "fallback_builtin": null
     },
     {
       "need": "Parallel fan-out swarm",
       "primary_pstack": "/swarm",
       "secondary_user": null,
-      "fallback_builtin": "/swarm"
+      "fallback_builtin": null
     },
     {
       "need": "Multi-agent teamwork",
-      "primary_pstack": "/swarm",
+      "primary_pstack": null,
       "secondary_user": null,
       "fallback_builtin": "/teamwork"
     },
@@ -325,8 +325,8 @@
       "fallback_builtin": "/compact"
     },
     {
-      "need": "Adversarial Q&A interrogation",
-      "primary_pstack": "/interrogate",
+      "need": "Interactive design interview",
+      "primary_pstack": null,
       "secondary_user": null,
       "fallback_builtin": "/grill-me"
     },

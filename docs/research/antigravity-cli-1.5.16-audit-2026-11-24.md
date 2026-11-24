@@ -1,10 +1,10 @@
-# Antigravity CLI 1.5.16 Official Feature and Tool Audit
+# Antigravity CLI 1.5.16 official feature and tool audit
 
 **Date.** 2026-11-24
 **Subject.** Google Antigravity CLI (`agy` 1.5.16) capabilities, tool surface, models, and PStack gaps.
 **Linked Issue.** Epic #1436, Unit 1 (#1437).
 
-## Observed Local Environment
+## Observed local environment
 
 The local `agy` binary at `/home/tommyk/.local/bin/agy` reports version `1.5.16`.
 Installed built-in skills live under `/home/tommyk/.gemini/antigravity-cli/builtin/skills/`.
@@ -19,7 +19,7 @@ That directory ships 16 built-in skills, including `native_swarm`, `swarm_monito
 
 `agy agents` discovers 25 subagents, consisting of the 22 PStack canonical roles plus 3 built-in `jd-*` Judgment Day agents (`jd-fix-agent`, `jd-judge-a`, `jd-judge-b`).
 
-## Official Documentation Corpus
+## Official documentation corpus
 
 Official Markdown mirrors were retrieved from `https://antigravity.google/` via the index at `https://antigravity.google/llms.txt` and cross-checked against `agy --help`, `agy plugin --help`, and `agy changelog`.
 
@@ -34,7 +34,7 @@ Official Markdown mirrors were retrieved from `https://antigravity.google/` via 
 - Headless Mode and ACP (`https://antigravity.google/docs/cli/headless.md`, `https://antigravity.google/docs/cli/acp.md`). Documents `-p` (`text`, `json`, `stream-json`), `--input-format stream-json`, `--json-schema`, `--print-timeout`, exit codes, `agy models`, `agy agents`, and `agy acp` JSON-RPC editor integration.
 - Plugins, Hooks, and Discovery (`https://antigravity.google/docs/plugins.md`, `https://antigravity.google/docs/hooks.md`, `https://antigravity.google/docs/customization-discovery.md`). Documents `agy plugin validate [--strict] [--json]`, `~/.agents/skills` global discovery (`1.5.16+`), `hooks.json` placement directly at plugin root for native plugins, and `settings.json` / `plugins.json` configuration.
 
-## Tool Surface Findings
+## Tool surface findings
 
 A live `agy -p ... --output-format stream-json --model gemini-3.8-flash-low` probe confirmed the headless and hook tool IDs emitted in `init.tools`.
 
@@ -42,7 +42,7 @@ A live `agy -p ... --output-format stream-json --model gemini-3.8-flash-low` pro
 - Interactive CLI sessions on Gemini 4 Hydrogen expose model-facing aliases `read_file`, `edit_file`, `write_file`, `run_command`, `manage_task`, `schedule`, `invoke_subagent`, `define_subagent`, `manage_subagents`, `send_message`, `run_workflow`, `ask_question`, `search_web`, `call_mcp_tool`, `list_resources`, and `read_resource`, plus `swarm`, `post_message`, `read_board`, and `swarm_wait` when `/swarm` is active.
 - `agy 1.5.13+` guards native `swarm` creation behind an explicit `/swarm` invocation or an active swarm board so agents do not spawn quota-heavy swarms unprompted.
 
-## Current PStack Gaps Identified
+## Current PStack gaps identified
 
 1. `skills/setup-pstack/profiles/antigravity.json` and `skills/poteto-mode/references/antigravity-tools.md` omit native `swarm` (`swarm`, `post_message`, `read_board`, `swarm_wait`, `swarm_pane`, `swarm_monitor`) and `run_workflow` (`parallel`, `pipeline`, `phase`, `trajectory`).
 2. `tool_mappings` in `profiles/antigravity.json` documents only legacy/internal file tool names without noting the interactive CLI aliases (`read_file`, `edit_file`, `write_file`) or the `1.5.13+` `/swarm` gate.
