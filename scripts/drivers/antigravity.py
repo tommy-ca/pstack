@@ -146,17 +146,15 @@ class AntigravityDriver(HarnessDriver):
         code, out, err, dur = self.run_command([str(bin_path), "--help"], cwd=self.root)
 
         rc = self.profile_data.get("runtime_conventions", {})
-        iso_modes = rc.get("supported_isolation_modes", [])
-        has_branch = "branch" in iso_modes or "worktree" in iso_modes
-        has_share = "share" in iso_modes or "shared" in iso_modes
-        has_inherit = "inherit" in iso_modes
-        verdict = "PASS" if code == 0 and has_branch and has_share and has_inherit else "FAIL"
+        iso_modes = set(rc.get("supported_isolation_modes", []))
+        has_required = {"inherit", "branch", "share"}.issubset(iso_modes)
+        verdict = "PASS" if code == 0 and has_required else "FAIL"
         return DriverScenarioResult(
             scenario_id="runtime-isolation-antigravity",
             description="Verify Antigravity workspace isolation modes (branch, share, inherit)",
             command=f"{bin_path} --help (check isolation modes: branch, share, inherit)",
             exit_code=0 if verdict == "PASS" else 1,
-            stdout=f"Supported isolation modes: {iso_modes}; CLI code={code}",
+            stdout=f"Supported isolation modes: {sorted(iso_modes)}; CLI code={code}",
             stderr=err,
             verdict=verdict,
             duration_s=dur,

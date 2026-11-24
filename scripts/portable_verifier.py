@@ -600,7 +600,14 @@ def main(
     hosts = list(get_declared_hosts()) if args.host == "all" else [args.host]
 
     if args.action == "check-evidence":
-        sys.exit(check_evidence_action(hosts, active_root, allow_stale=args.allow_stale))
+        sys.exit(
+            check_evidence_action(
+                hosts,
+                active_root,
+                allow_stale=args.allow_stale,
+                evidence_dir=args.evidence_dir,
+            )
+        )
 
     if args.action == "check-staleness":
         sys.exit(check_staleness_action(hosts, args.evidence_dir, active_root, json_output=args.json))

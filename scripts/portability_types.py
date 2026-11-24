@@ -40,6 +40,7 @@ SETUP_SHAPES: Dict[str, Tuple[bool, bool, str]] = {
 
 SKILLS_HASH_IGNORED_DIRS = frozenset({"__pycache__", "node_modules"})
 SKILLS_HASH_IGNORED_SUFFIXES = (".pyc", ".pyo")
+STRAY_PLUGIN_DIRS = (".codex-plugin", ".claude-plugin", ".antigravity-plugin")
 
 MANDATORY_SUPPORT_FLOOR = (
     "agent.spawn",

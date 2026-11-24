@@ -217,7 +217,7 @@ def test_stage_antigravity_native_install_restore_guard_and_stray_exclusion(tmp_
     fake_agy.write_text("#!/bin/sh\nexit 1\n", encoding="utf-8")
     fake_agy.chmod(0o755)
 
-    def _simulated_install(cmd, env=None, capture_output=True, text=True, check=False):
+    def _simulated_install(cmd, env=None, capture_output=True, text=True, check=False, **kwargs):
         # Simulate installer wiping the directory before failing
         shutil.rmtree(plugin_dir)
         plugin_dir.mkdir(parents=True, exist_ok=True)

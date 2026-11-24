@@ -32,7 +32,7 @@ from scripts.package_projection import (
     load_package_descriptor,
     project_all,
 )
-from scripts.package_install_staging import STRAY_PLUGIN_DIRS
+from scripts.portability_types import STRAY_PLUGIN_DIRS
 from scripts.portability_schema import (
     SKILLS_HASH_IGNORED_DIRS,
     SKILLS_HASH_IGNORED_SUFFIXES,

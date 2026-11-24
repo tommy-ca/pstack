@@ -30,9 +30,12 @@ from scripts.package_projection import (
     generate_omp_manifest,
     generate_opencode_manifest,
 )
+from scripts.portability_types import (
+    SKILLS_HASH_IGNORED_DIRS,
+    SKILLS_HASH_IGNORED_SUFFIXES,
+    STRAY_PLUGIN_DIRS,
+)
 from scripts.setup_pstack import resolve_profiles_dir
-
-STRAY_PLUGIN_DIRS = (".codex-plugin", ".claude-plugin", ".antigravity-plugin")
 
 
 def copy_skills(dest_skills: Path, source_root: Optional[Path] = None) -> List[str]:
@@ -147,9 +150,10 @@ def stage_antigravity_package(dest_dir: Path, source_root: Optional[Path] = None
     return dest_dir
 
 
-def compute_managed_files(host: str, desc: Any) -> Set[str]:
+def compute_managed_files(host: str, desc: Any, source_root: Optional[Path] = None) -> Set[str]:
     """Compute the set of relative paths owned by pstack inside the plugin directory."""
     managed: Set[str] = set()
+    src_root = source_root if source_root is not None else ROOT
 
     # Manifests
     if host in ("opencode", "omp"):
@@ -169,20 +173,20 @@ def compute_managed_files(host: str, desc: Any) -> Set[str]:
         managed.add("assets/logo.svg")
         for fname in generate_antigravity_commands(desc).keys():
             managed.add(f"commands/{fname}")
-        profiles_dir = resolve_profiles_dir(ROOT)
+        profiles_dir = resolve_profiles_dir(src_root)
         for p in profiles_dir.glob("*.json"):
             managed.add(f"profiles/{p.name}")
 
     if host in ("grok", "antigravity", "omp"):
-        for a in (ROOT / "agents").glob("*.md"):
+        for a in (src_root / "agents").glob("*.md"):
             managed.add(f"agents/{a.name}")
 
     # Canonical skills
-    src_skills = ROOT / "skills"
+    src_skills = src_root / "skills"
     for s_file in src_skills.rglob("*"):
         if s_file.is_file():
             rel = s_file.relative_to(src_skills)
-            if not any(part.startswith(".") for part in rel.parts):
+            if not any(part.startswith(".") or part in SKILLS_HASH_IGNORED_DIRS for part in rel.parts) and not any(rel.name.endswith(sfx) for sfx in SKILLS_HASH_IGNORED_SUFFIXES):
                 managed.add(f"skills/{rel.as_posix()}")
 
     managed.add(".pstack-managed-files.json")
@@ -305,7 +309,7 @@ def stage_antigravity_native_install(
                 env = dict(os.environ)
                 if target_base is not None:
                     env["HOME"] = str(target_base)
-                proc = subprocess.run(cmd, env=env, capture_output=True, text=True, check=False)
+                proc = subprocess.run(cmd, env=env, capture_output=True, text=True, check=False, timeout=120)
                 if proc.returncode != 0:
                     raise RuntimeError(f"agy plugin install failed ({proc.returncode}): {proc.stderr or proc.stdout}")
             finally:
@@ -314,12 +318,16 @@ def stage_antigravity_native_install(
                     if src_u.is_file() or src_u.is_symlink():
                         dest_u = plugin_dir / u_rel
                         dest_u.parent.mkdir(parents=True, exist_ok=True)
+                        if dest_u.is_symlink() or dest_u.is_file():
+                            dest_u.unlink(missing_ok=True)
                         shutil.copy2(src_u, dest_u, follow_symlinks=False)
                 for stray in STRAY_PLUGIN_DIRS:
                     stray_path = plugin_dir / stray
-                    if stray_path.is_dir():
+                    if stray_path.is_symlink():
+                        stray_path.unlink(missing_ok=True)
+                    elif stray_path.is_dir():
                         shutil.rmtree(stray_path, ignore_errors=True)
-                    elif stray_path.is_file() or stray_path.is_symlink():
+                    elif stray_path.is_file():
                         stray_path.unlink(missing_ok=True)
 
     return True
@@ -382,10 +390,14 @@ def write_host_plugin_assets(plugin_dir: Path, host: str, desc: Any, src_root: P
         if hooks_file.is_file():
             hooks_file.unlink()
 
-        for stray in [".codex-plugin", ".claude-plugin"]:
+        for stray in STRAY_PLUGIN_DIRS:
             stray_path = plugin_dir / stray
-            if stray_path.exists():
-                shutil.rmtree(stray_path)
+            if stray_path.is_symlink():
+                stray_path.unlink(missing_ok=True)
+            elif stray_path.is_dir():
+                shutil.rmtree(stray_path, ignore_errors=True)
+            elif stray_path.is_file():
+                stray_path.unlink(missing_ok=True)
 
         assets_dir = plugin_dir / "assets"
         assets_dir.mkdir(parents=True, exist_ok=True)
@@ -398,6 +410,10 @@ def write_host_plugin_assets(plugin_dir: Path, host: str, desc: Any, src_root: P
 
         profiles_dest = plugin_dir / "profiles"
         profiles_dest.mkdir(parents=True, exist_ok=True)
+        src_profiles = {p.name for p in resolve_profiles_dir(src_root).glob("*.json")}
+        for existing_p in profiles_dest.glob("*.json"):
+            if existing_p.name not in src_profiles:
+                existing_p.unlink(missing_ok=True)
         for p in resolve_profiles_dir(src_root).glob("*.json"):
             shutil.copy2(p, profiles_dest / p.name)
 
