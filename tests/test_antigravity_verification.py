@@ -1,4 +1,4 @@
-"""Unit and negative-control checks for Antigravity verification upgrades (Unit 3)."""
+"""Unit and negative-control checks for Antigravity verification upgrades."""
 
 from __future__ import annotations
 

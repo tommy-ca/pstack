@@ -1,17 +1,17 @@
-# Repository Audit (Graphicle, SOLID/KISS/DRY/YAGNI) and Upstream 0.15.48 Delta
+# Repository audit (Graphicle, SOLID/KISS/DRY/YAGNI) and upstream 0.15.48 delta
 
 **Date.** 2026-11-24
 **Scope.** Worktree and live plugin hygiene, Graphicle structural analysis, and Cursor PStack `0.15.43` to `0.15.48` reconciliation.
 **Linked Issue.** Epic #1436, Unit 1 (#1437).
 
-## Worktree and Live Plugin Audit
+## Worktree and live plugin audit
 
 - `uv run python scripts/worktree_protocol.py check` passed with a single primary checkout `/home/tommyk/projects/pstack` on `main`.
 - `skills/swarm/scripts/refresh_hygiene.py` retained `.worktrees/upstream-cursor-plugins` as the `primary overlay cache` and flagged one external stale skill at `/home/tommyk/.grok/skills/reflect/SKILL.md` (`claude-shaped`).
 - `uv run python scripts/verify_portable.py prune-ephemeral --keep-last 5` pruned 31 stale ephemeral run directories and kept 30 recent runs (`0.2 MB` freed).
 - `uv run python scripts/sync_antigravity_plugin.py --check` and `uv run python scripts/package_lifecycle.py verify --host all` detected drift on `skills/technical-writing/SKILL.md` in installed live plugin directories after PR #1432, and `~/.gemini/config/plugins/pstack` carried an obsolete `.antigravity-plugin/plugin.json` (`0.15.29-preview.0`) shadowing root `plugin.json`.
 
-## Graphicle Analysis and SOLID, KISS, DRY, YAGNI Findings
+## Graphicle analysis and SOLID, KISS, DRY, YAGNI findings
 
 Code graph extraction via `mise x -- graphicle graph extract . --code-only` indexed 396 code files into 5,162 nodes, 13,916 edges, and 243 communities with zero unverified code nodes and zero missing-endpoint edges.
 
@@ -20,7 +20,7 @@ Code graph extraction via `mise x -- graphicle graph extract . --code-only` inde
 - **DRY Violation in Antigravity Rules Projection.** Both `scripts/package_install_staging.py` and `scripts/prove_antigravity_native_package.py` independently hardcode slightly different `rules/AGENTS.md` text containing the typo `levereable`. Unifying this behind `generate_antigravity_rules()` in `scripts/package_projection.py` eliminates duplication and drift.
 - **Boundary Separation (DIP / OCP).** `AntigravityDriver` (`scripts/drivers/antigravity.py`) and `scripts/harness_scenarios.py` depend on `profiles/antigravity.json`, so updating `antigravity.json` and `antigravity-tools.md` automatically propagates capability checks without rewriting host-neutral verifier logic.
 
-## Upstream Cursor PStack 0.15.43 to 0.15.48 Delta
+## Upstream Cursor PStack 0.15.43 to 0.15.48 delta
 
 Comparing `UPSTREAM` pin `2f87c854fe3e2fcda44ca86b46ede35aad3c46b7` (`0.15.43`) against upstream `origin/main` at `ca782ed8b3c2c521cead8e1720d55c3a5dbf2347` (`9e278fe`, `0.15.48`) yields 5 upstream commits touching `pstack/`.
 
