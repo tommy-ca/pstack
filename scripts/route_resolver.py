@@ -365,6 +365,7 @@ def _load_semantic_candidates(root: Path) -> Tuple[Dict[str, Dict[str, Any]], Se
         "2dd5e76fde228141d3fe78b0b09ca68456b49531",
         "98b16f9e79b37283050f1051ff6b0fec490108ff",
         "057af2d980ae336d8a64910b7ca95946e2c1bbdf",
+        "82a1941713eb18905b93f7c5b2004664f6722898",
     }:
         return {}, set()
 

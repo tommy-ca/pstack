@@ -21,8 +21,8 @@ The portable architecture still owns **12 JSON schemas**, **9 descriptive harnes
 
 ## Authority and architecture
 
-- **Canonical behavior:** [cursor/plugins/pstack](https://github.com/cursor/plugins/tree/main/pstack), as pinned in `UPSTREAM` and `pstack.package.json#upstream_pin` (`2f87c854fe3e2fcda44ca86b46ede35aad3c46b7`, upstream plugin 0.15.43).
-- **Port release:** `pstack.package.json#version = 0.15.36-preview.0`; that suffix denotes a portability release, not a newer upstream canonical contract.
+- **Canonical behavior:** [cursor/plugins/pstack](https://github.com/cursor/plugins/tree/main/pstack), as pinned in `UPSTREAM` and `pstack.package.json#upstream_pin` (`ca782ed8b3c2c521cead8e1720d55c3a5dbf2347`, upstream plugin 0.15.48).
+- **Port release:** `pstack.package.json#version = 0.15.48-preview.0`; that suffix denotes a portability release, not a newer upstream canonical contract.
 - **Portability implementation:** this repository. `skills/` owns shared semantic intent; `profiles/`, `scripts/drivers/`, host tool references, projected native manifests and receipts own host-specific mechanics.
 - **Role identity:** `pstack.package.json#/roles` is the unique shipped role ID/tier registry. `examples/portability/model-role-policy.example.json` demonstrates typed host choices, **not** an independent role registry or a live availability claim.
 - **Execution/control:** host runtime owns spawn/join/cancel, workspaces, session persistence and durable orchestration. Do not introduce a pstack scheduler, generic agent gateway, workflow DSL, role database or second model registry.

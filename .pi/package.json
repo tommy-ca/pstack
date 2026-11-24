@@ -1,6 +1,6 @@
 {
   "name": "pstack",
-  "version": "0.15.36-preview.0",
+  "version": "0.15.48-preview.0",
   "description": "pstack for Pi: portable principles, playbooks, skills, and role agents.",
   "private": true,
   "keywords": [
