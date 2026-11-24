@@ -33,6 +33,7 @@ from scripts.package_projection import (
     project_all,
 )
 from scripts.portability_types import STRAY_PLUGIN_DIRS
+from scripts.setup_pstack import resolve_profiles_dir
 from scripts.portability_schema import (
     SKILLS_HASH_IGNORED_DIRS,
     SKILLS_HASH_IGNORED_SUFFIXES,
@@ -238,7 +239,6 @@ def check_live_sync() -> bool:
         all_ok = False
 
     # Check rules
-    from scripts.package_projection import generate_antigravity_rules
     rules_dest = LIVE_PLUGIN_DIR / "rules" / "AGENTS.md"
     if not rules_dest.is_file():
         print("FAIL: rules/AGENTS.md missing from live plugin")
@@ -273,7 +273,6 @@ def check_live_sync() -> bool:
             all_ok = False
 
     # Check profiles
-    from scripts.setup_pstack import resolve_profiles_dir
     src_profiles_dir = resolve_profiles_dir(ROOT)
     dest_profiles_dir = LIVE_PLUGIN_DIR / "profiles"
     if dest_profiles_dir.is_dir():
