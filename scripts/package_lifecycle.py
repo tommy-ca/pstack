@@ -32,6 +32,7 @@ from scripts.host_identity import BUILTIN_HOSTS, require_builtin_host_keys  # no
 from scripts.package_install_staging import (
     clean_stale_managed_files,
     compute_managed_files,
+    find_agy_binary,
     get_unmanaged_paths,
     record_managed_manifest,
     remove_managed_files_and_empty_dirs,
@@ -369,7 +370,7 @@ def uninstall_plugin(host: str, target_base: Optional[Path] = None, force: bool 
 
     unmanaged_before = get_unmanaged_paths(plugin_dir, managed_set)
 
-    agy_bin = shutil.which("agy")
+    agy_bin = find_agy_binary()
     if host == "antigravity" and agy_bin and (force or not unmanaged_before):
         import os
         import subprocess

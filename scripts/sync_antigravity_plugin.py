@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 LIVE_PLUGIN_DIR = Path.home() / ".gemini" / "config" / "plugins" / "pstack"
 
 # Source paths whose content sync_live_plugin publishes into the live plugin.
-SYNCED_PATHS = ("skills", "agents", "pstack.package.json")
+SYNCED_PATHS = ("skills", "agents", "pstack.package.json", "profiles", "assets")
 
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
