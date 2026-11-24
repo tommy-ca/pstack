@@ -399,7 +399,7 @@ def test_staging_copy_primitives_and_source_root_threading(tmp_path: Path) -> No
     assert (dest_skills / "custom-skill").is_dir()
     empty_root = tmp_path / "empty_root"
     (empty_root / "skills").mkdir(parents=True)
-    package_install_staging.copy_skills(dest_skills, source_root=empty_root)
+    package_install_staging.copy_skills(dest_skills, source_root=empty_root, clean_stale=True)
     assert not (dest_skills / "custom-skill").exists()
 
 

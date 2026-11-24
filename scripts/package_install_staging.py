@@ -38,29 +38,53 @@ from scripts.portability_types import (
 from scripts.setup_pstack import resolve_profiles_dir
 
 
-def copy_skills(dest_skills: Path, source_root: Optional[Path] = None) -> List[str]:
+def find_agy_binary() -> Optional[str]:
+    bin_path = shutil.which("agy")
+    if bin_path:
+        return bin_path
+    local_bin = Path.home() / ".local" / "bin" / "agy"
+    if local_bin.is_file() and os.access(local_bin, os.X_OK):
+        return str(local_bin)
+    return None
+
+
+def copy_skills(
+    dest_skills: Path, source_root: Optional[Path] = None, clean_stale: bool = False
+) -> List[str]:
     from scripts.sync_antigravity_plugin import skill_files, skill_names
     src_skills = (source_root or ROOT) / "skills"
     dest_skills.mkdir(parents=True, exist_ok=True)
     copied_rel = []
     src_names = skill_names(src_skills)
-    if dest_skills.is_dir():
+    if clean_stale and dest_skills.is_dir():
         for existing_d in dest_skills.iterdir():
-            if existing_d.is_dir() and existing_d.name not in src_names:
-                shutil.rmtree(existing_d)
+            if existing_d.name not in src_names:
+                if existing_d.is_symlink():
+                    existing_d.unlink()
+                elif existing_d.is_dir():
+                    shutil.rmtree(existing_d)
     for sname in sorted(src_names):
         item = src_skills / sname
         target = dest_skills / sname
         target.mkdir(parents=True, exist_ok=True)
-        for rel_path, content in skill_files(item).items():
+        expected_files = skill_files(item)
+        for rel_path, content in expected_files.items():
             dest_file = target / rel_path
             dest_file.parent.mkdir(parents=True, exist_ok=True)
             dest_file.write_bytes(content)
             copied_rel.append(f"skills/{sname}/{rel_path}")
+        if clean_stale:
+            actual_files = skill_files(target)
+            for extra_rel in sorted(actual_files.keys() - expected_files.keys()):
+                extra_p = target / extra_rel
+                if extra_p.is_file() or extra_p.is_symlink():
+                    extra_p.unlink()
     return copied_rel
 
 
-def copy_agents(dest_agents: Path, source_root: Optional[Path] = None) -> List[str]:
+def copy_agents(
+    dest_agents: Path, source_root: Optional[Path] = None, clean_stale: bool = False
+) -> List[str]:
     src_agents = (source_root or ROOT) / "agents"
     dest_agents.mkdir(parents=True, exist_ok=True)
     copied_rel = []
@@ -68,9 +92,10 @@ def copy_agents(dest_agents: Path, source_root: Optional[Path] = None) -> List[s
     for fname in sorted(src_agent_files):
         shutil.copy2(src_agents / fname, dest_agents / fname)
         copied_rel.append(f"agents/{fname}")
-    for existing_f in dest_agents.glob("*.md"):
-        if existing_f.is_file() and existing_f.name not in src_agent_files:
-            existing_f.unlink()
+    if clean_stale:
+        for existing_f in dest_agents.glob("*.md"):
+            if existing_f.is_file() and existing_f.name not in src_agent_files:
+                existing_f.unlink()
     return copied_rel
 
 
@@ -112,10 +137,10 @@ def stage_antigravity_package(dest_dir: Path, source_root: Optional[Path] = None
     (rules_dir / "AGENTS.md").write_text(generate_antigravity_rules(), encoding="utf-8")
 
     # 5. Skills
-    copy_skills(dest_dir / "skills", source_root=src_root)
+    copy_skills(dest_dir / "skills", source_root=src_root, clean_stale=True)
 
     # 6. Agents
-    copy_agents(dest_dir / "agents", source_root=src_root)
+    copy_agents(dest_dir / "agents", source_root=src_root, clean_stale=True)
 
     # 7. Profiles
     profiles_src = resolve_profiles_dir(src_root)
@@ -251,7 +276,8 @@ def stage_antigravity_native_install(
 
     Returns True if native installation was performed, False otherwise.
     """
-    agy_bin = shutil.which("agy")
+    clean_stale_managed_files(plugin_dir, host, desc, source_root=src_root)
+    agy_bin = find_agy_binary()
     is_standard_dir = (plugin_dir == standard_dir)
     if not (host == "antigravity" and agy_bin and is_standard_dir):
         return False
@@ -259,7 +285,7 @@ def stage_antigravity_native_install(
     with tempfile.TemporaryDirectory(prefix="pstack-agy-stage-") as tmp_stage:
         stage_dir = Path(tmp_stage)
         stage_antigravity_package(stage_dir, source_root=src_root)
-        managed_set = compute_managed_files(host, desc)
+        managed_set = compute_managed_files(host, desc, source_root=src_root)
         manifest_record = {
             "host": host,
             "version": desc.version,
