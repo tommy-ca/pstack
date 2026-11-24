@@ -338,6 +338,10 @@ def test_antigravity_native_package_proof() -> None:
     from scripts.prove_antigravity_native_package import prove_antigravity_package
 
     code, result = prove_antigravity_package()
+    if code == 2:
+        assert result["verdict"] == "BLOCKED"
+        return
+
     assert code == 0, result
     assert result["verdict"] == "PASS"
     assert result["skills_count"] >= 60

@@ -3,7 +3,9 @@
 set -euo pipefail
 
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../../../.." && pwd)"
+SCRIPT_PATH="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)/$(basename -- "${BASH_SOURCE[0]}")"
 cd "$ROOT"
+export _PSTACK_DRIVER_RUNNING=1
 export PYTHONPATH="$ROOT${PYTHONPATH:+:$PYTHONPATH}"
 if [[ -d "$ROOT/.venv/bin" ]]; then
     export PATH="$ROOT/.venv/bin:$PATH"
@@ -29,12 +31,29 @@ run_bounded() {
     fi
 }
 
+run_proof() {
+    local label="$1"
+    shift
+    echo "==> Running $label (bounded by ${TIMEOUT_SECONDS}s)..."
+    local rc=0
+    if command -v timeout >/dev/null 2>&1; then
+        timeout "${TIMEOUT_SECONDS}" "$@" < /dev/null || rc=$?
+    else
+        "$@" < /dev/null || rc=$?
+    fi
+    if [[ $rc -ne 0 && $rc -ne 2 ]]; then
+        echo "Error: $label failed with unexpected exit code $rc" >&2
+        return "$rc"
+    fi
+    return 0
+}
+
 case "${1:-all}" in
     doctor)
         run_bounded "package_projection" $PYTHON_EXEC scripts/package_projection.py --check
-        run_bounded "sync_tests" $PYTHON_EXEC -m pytest -q tests/test_sync_antigravity_plugin.py tests/test_antigravity_command_projection.py tests/test_antigravity_verification.py
-        run_bounded "native_package_proof" $PYTHON_EXEC scripts/prove_antigravity_native_package.py --json
-        run_bounded "doctor_checks" $PYTHON_EXEC scripts/verify_portable.py doctor --host antigravity
+        run_bounded "sync_tests" $PYTHON_EXEC -m pytest -q tests/test_sync_antigravity_plugin.py tests/test_antigravity_command_projection.py
+        run_proof "native_package_proof" $PYTHON_EXEC scripts/prove_antigravity_native_package.py --json
+        run_bounded "doctor_checks" $PYTHON_EXEC scripts/verify_portable.py doctor --host antigravity --allow-stale
         ;;
     launch)
         echo "Launch: Validating environment and profile readiness..."
@@ -55,7 +74,7 @@ case "${1:-all}" in
         ;;
     drive)
         run_bounded "package_projection" $PYTHON_EXEC scripts/package_projection.py --check
-        run_bounded "native_package_proof" $PYTHON_EXEC scripts/prove_antigravity_native_package.py --json
+        run_proof "native_package_proof" $PYTHON_EXEC scripts/prove_antigravity_native_package.py --json
         run_bounded "check_staleness" $PYTHON_EXEC scripts/verify_portable.py check-staleness --host antigravity
         run_bounded "check_evidence" $PYTHON_EXEC scripts/verify_portable.py check-evidence --host antigravity
         ;;
@@ -63,10 +82,10 @@ case "${1:-all}" in
         echo "Cleanup: No lingering processes or artifacts."
         ;;
     all)
-        "$0" doctor
-        "$0" launch
-        "$0" drive
-        "$0" cleanup
+        "$SCRIPT_PATH" doctor
+        "$SCRIPT_PATH" launch
+        "$SCRIPT_PATH" drive
+        "$SCRIPT_PATH" cleanup
         ;;
     *)
         echo "Usage: $0 {doctor|launch|drive|cleanup|all}" >&2

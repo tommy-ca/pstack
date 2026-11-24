@@ -32,6 +32,8 @@ from scripts.package_projection import (
 )
 from scripts.setup_pstack import resolve_profiles_dir
 
+STRAY_PLUGIN_DIRS = (".codex-plugin", ".claude-plugin", ".antigravity-plugin")
+
 
 def copy_skills(dest_skills: Path, source_root: Optional[Path] = None) -> List[str]:
     from scripts.sync_antigravity_plugin import skill_files, skill_names
@@ -106,10 +108,16 @@ def stage_antigravity_package(dest_dir: Path, source_root: Optional[Path] = None
     skills_src = src_root / "skills"
     skills_dest = dest_dir / "skills"
     skills_dest.mkdir(parents=True, exist_ok=True)
-    for skill_dir in skills_src.iterdir():
-        if not skill_dir.is_dir() or skill_dir.name in SKILLS_HASH_IGNORED_DIRS:
-            continue
-        dest_skill = skills_dest / skill_dir.name
+    src_skills = {
+        d.name for d in skills_src.iterdir()
+        if d.is_dir() and d.name not in SKILLS_HASH_IGNORED_DIRS
+    }
+    for existing_d in skills_dest.iterdir():
+        if existing_d.is_dir() and existing_d.name not in src_skills:
+            shutil.rmtree(existing_d)
+    for skill_name in sorted(src_skills):
+        skill_dir = skills_src / skill_name
+        dest_skill = skills_dest / skill_name
         shutil.copytree(
             skill_dir,
             dest_skill,
@@ -121,9 +129,12 @@ def stage_antigravity_package(dest_dir: Path, source_root: Optional[Path] = None
     agents_src = src_root / "agents"
     agents_dest = dest_dir / "agents"
     agents_dest.mkdir(parents=True, exist_ok=True)
-    for agent_file in agents_src.glob("*.md"):
-        if agent_file.is_file():
-            shutil.copy2(agent_file, agents_dest / agent_file.name)
+    src_agents = {f.name for f in agents_src.glob("*.md") if f.is_file()}
+    for existing_f in agents_dest.glob("*.md"):
+        if existing_f.is_file() and existing_f.name not in src_agents:
+            existing_f.unlink()
+    for fname in sorted(src_agents):
+        shutil.copy2(agents_src / fname, agents_dest / fname)
 
     # 7. Profiles
     profiles_src = resolve_profiles_dir(src_root)
@@ -259,7 +270,6 @@ def stage_antigravity_native_install(
     if not (host == "antigravity" and agy_bin and is_standard_dir):
         return False
 
-    from scripts.prove_antigravity_native_package import stage_antigravity_package
     with tempfile.TemporaryDirectory(prefix="pstack-agy-stage-") as tmp_stage:
         stage_dir = Path(tmp_stage)
         stage_antigravity_package(stage_dir, source_root=src_root)
@@ -275,7 +285,11 @@ def stage_antigravity_native_install(
 
         unmanaged_paths = []
         if plugin_dir.exists():
-            unmanaged_paths = get_unmanaged_paths(plugin_dir, managed_set)
+            raw_unmanaged = get_unmanaged_paths(plugin_dir, managed_set)
+            unmanaged_paths = [
+                p for p in raw_unmanaged
+                if not any(p == d or p.startswith(f"{d}/") for d in STRAY_PLUGIN_DIRS)
+            ]
 
         with tempfile.TemporaryDirectory(prefix="pstack-unmanaged-backup-") as backup_tmp:
             backup_dir = Path(backup_tmp)
@@ -286,20 +300,27 @@ def stage_antigravity_native_install(
                     dest_u.parent.mkdir(parents=True, exist_ok=True)
                     shutil.copy2(src_u, dest_u, follow_symlinks=False)
 
-            cmd = [agy_bin, "plugin", "install", str(stage_dir)]
-            env = dict(os.environ)
-            if target_base is not None:
-                env["HOME"] = str(target_base)
-            proc = subprocess.run(cmd, env=env, capture_output=True, text=True, check=False)
-            if proc.returncode != 0:
-                raise RuntimeError(f"agy plugin install failed ({proc.returncode}): {proc.stderr or proc.stdout}")
-
-            for u_rel in unmanaged_paths:
-                src_u = backup_dir / u_rel
-                if src_u.is_file() or src_u.is_symlink():
-                    dest_u = plugin_dir / u_rel
-                    dest_u.parent.mkdir(parents=True, exist_ok=True)
-                    shutil.copy2(src_u, dest_u, follow_symlinks=False)
+            try:
+                cmd = [agy_bin, "plugin", "install", str(stage_dir)]
+                env = dict(os.environ)
+                if target_base is not None:
+                    env["HOME"] = str(target_base)
+                proc = subprocess.run(cmd, env=env, capture_output=True, text=True, check=False)
+                if proc.returncode != 0:
+                    raise RuntimeError(f"agy plugin install failed ({proc.returncode}): {proc.stderr or proc.stdout}")
+            finally:
+                for u_rel in unmanaged_paths:
+                    src_u = backup_dir / u_rel
+                    if src_u.is_file() or src_u.is_symlink():
+                        dest_u = plugin_dir / u_rel
+                        dest_u.parent.mkdir(parents=True, exist_ok=True)
+                        shutil.copy2(src_u, dest_u, follow_symlinks=False)
+                for stray in STRAY_PLUGIN_DIRS:
+                    stray_path = plugin_dir / stray
+                    if stray_path.is_dir():
+                        shutil.rmtree(stray_path, ignore_errors=True)
+                    elif stray_path.is_file() or stray_path.is_symlink():
+                        stray_path.unlink(missing_ok=True)
 
     return True
 

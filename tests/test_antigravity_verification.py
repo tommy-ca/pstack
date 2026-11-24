@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 from unittest.mock import patch
@@ -115,3 +117,92 @@ def test_harness_local_scenarios_cover_1_5_16_antigravity_contracts(tmp_path: Pa
     agy_results = [r for r in results if r.id in ("drive-antigravity-models", "drive-antigravity-tools-ref")]
     assert len(agy_results) == 2
     assert all(r.verdict == "PASS" for r in agy_results)
+
+
+def test_stage_antigravity_package_is_strict_valid_with_zero_warnings(tmp_path: Path) -> None:
+    from scripts.package_install_staging import stage_antigravity_package
+    from scripts.prove_antigravity_native_package import run_antigravity_validation
+
+    staged = stage_antigravity_package(tmp_path / "stage", source_root=ROOT)
+    assert (staged / "plugin.json").is_file()
+    assert (staged / "models.json").is_file()
+    # Native plugins expose commands as skills; commands/ directory is never loaded
+    # and causes agy plugin validate --strict to emit warnings.
+    assert not (staged / "commands").exists()
+
+    val_pass, report = run_antigravity_validation(staged)
+    if report.get("verdict") != "BLOCKED":
+        assert val_pass is True, f"Validation failed: {report}"
+        assert report.get("findings") == [], f"Unexpected findings: {report.get('findings')}"
+
+
+
+def test_antigravity_driver_sh_all_works_from_subdirectories() -> None:
+    driver_sh = ROOT / ".agents" / "skills" / "verify-antigravity-pstack" / "scripts" / "driver.sh"
+    if os.environ.get("_PSTACK_DRIVER_RUNNING") == "1":
+        # Within driver.sh doctor run, verify driver execution from subfolder without recursion
+        proc = subprocess.run(
+            [str(driver_sh), "launch"],
+            cwd=ROOT / "tests",
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert proc.returncode == 0, f"driver.sh launch failed from subfolder:\nSTDOUT:\n{proc.stdout}\nSTDERR:\n{proc.stderr}"
+        assert "Launch: Antigravity environment ready." in proc.stdout
+        return
+
+    env = dict(os.environ, _PSTACK_DRIVER_RUNNING="1")
+    proc = subprocess.run(
+        [str(driver_sh), "all"],
+        cwd=ROOT / "tests",
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert proc.returncode == 0, f"driver.sh all failed from subfolder:\nSTDOUT:\n{proc.stdout}\nSTDERR:\n{proc.stderr}"
+    assert "Launch: Antigravity environment ready." in proc.stdout
+
+
+def test_stage_antigravity_native_install_restore_guard_and_stray_exclusion(tmp_path: Path) -> None:
+    from scripts.package_install_staging import stage_antigravity_native_install
+    from scripts.package_projection import load_package_descriptor
+
+    plugin_dir = tmp_path / "live"
+    plugin_dir.mkdir(parents=True, exist_ok=True)
+    unmanaged_file = plugin_dir / "custom_user_file.txt"
+    unmanaged_file.write_text("keep me", encoding="utf-8")
+    stray_file = plugin_dir / ".codex-plugin" / "legacy.json"
+    stray_file.parent.mkdir(parents=True, exist_ok=True)
+    stray_file.write_text("purge me", encoding="utf-8")
+
+    desc, _ = load_package_descriptor()
+    fake_agy = tmp_path / "agy"
+    fake_agy.write_text("#!/bin/sh\nexit 1\n", encoding="utf-8")
+    fake_agy.chmod(0o755)
+
+    def _simulated_install(cmd, env=None, capture_output=True, text=True, check=False):
+        # Simulate installer wiping the directory before failing
+        shutil.rmtree(plugin_dir)
+        plugin_dir.mkdir(parents=True, exist_ok=True)
+        return subprocess.CompletedProcess(cmd, returncode=1, stdout="", stderr="simulated install error")
+
+    with patch("shutil.which", return_value=str(fake_agy)):
+        with patch("subprocess.run", side_effect=_simulated_install):
+            import pytest
+            with pytest.raises(RuntimeError, match="agy plugin install failed"):
+                stage_antigravity_native_install(
+                    plugin_dir=plugin_dir,
+                    standard_dir=plugin_dir,
+                    host="antigravity",
+                    desc=desc,
+                    src_root=ROOT,
+                    target_base=tmp_path,
+                )
+
+    assert unmanaged_file.is_file()
+    assert unmanaged_file.read_text(encoding="utf-8") == "keep me"
+    assert not (plugin_dir / ".codex-plugin").exists()
+
+

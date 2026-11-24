@@ -13,6 +13,7 @@ __pycache__/
 node_modules/
 .atl/
 .venv/
+.graphicle/
 .mise/*
 !.mise/locks/
 .mise/locks/*
