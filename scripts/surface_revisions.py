@@ -366,16 +366,22 @@ def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path
 
     inv_file = root / "openspec" / "canonical-inventory.json"
     upstream_head = "unknown"
+    upstream_freshness = "UNKNOWN"
+    commits_ahead = -1
     if inv_file.is_file():
         try:
             inv = json.loads(inv_file.read_text(encoding="utf-8"))
             upstream_head = inv.get("upstream_head", "unknown")
+            upstream_freshness = inv.get("upstream_freshness", "UNKNOWN")
+            commits_ahead = int(inv.get("commits_ahead", -1))
         except Exception:
             pass
 
     observed = observe_upstream_freshness(root, canonical_pin)
     if observed.upstream_head != "unknown":
         upstream_head = observed.upstream_head
+        upstream_freshness = observed.freshness
+        commits_ahead = observed.commits_ahead
 
     spec_file = root / "openspec" / "specs" / "pstack-portability" / "spec.md"
     spec_hash = hashlib.sha256(spec_file.read_bytes()).hexdigest() if spec_file.is_file() else "missing"
@@ -506,6 +512,6 @@ def compute_surface_revisions(root: Path, host: str, profile_path: Optional[Path
         driver_revision=driver_revision,
         package_driver_revision=package_driver_revision,
         boundary_driver_revision=boundary_driver_revision,
-        upstream_freshness=observed.freshness,
-        commits_ahead=observed.commits_ahead,
+        upstream_freshness=upstream_freshness,
+        commits_ahead=commits_ahead,
     )
