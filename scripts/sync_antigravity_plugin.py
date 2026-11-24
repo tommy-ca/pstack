@@ -28,9 +28,11 @@ from scripts.package_projection import (
     generate_antigravity_commands,
     generate_antigravity_manifest,
     generate_antigravity_models,
+    generate_antigravity_rules,
     load_package_descriptor,
     project_all,
 )
+from scripts.package_install_staging import STRAY_PLUGIN_DIRS
 from scripts.portability_schema import (
     SKILLS_HASH_IGNORED_DIRS,
     SKILLS_HASH_IGNORED_SUFFIXES,
@@ -155,7 +157,7 @@ def audit_live_plugin() -> dict[str, str]:
     else:
         report["commands_count"] = "0"
 
-    foreign = [d for d in [".codex-plugin", ".claude-plugin"] if (LIVE_PLUGIN_DIR / d).exists()]
+    foreign = [d for d in STRAY_PLUGIN_DIRS if (LIVE_PLUGIN_DIR / d).exists()]
     report["foreign_directories"] = ", ".join(foreign) if foreign else "none"
 
     if shutil.which("agy"):
@@ -265,7 +267,7 @@ def check_live_sync() -> bool:
             all_ok = False
 
     # Check foreign directories
-    for stray in [".codex-plugin", ".claude-plugin"]:
+    for stray in STRAY_PLUGIN_DIRS:
         if (LIVE_PLUGIN_DIR / stray).exists():
             print(f"FAIL: Foreign legacy directory present in live plugin: {stray}")
             all_ok = False
@@ -352,7 +354,7 @@ def _log_sync_plan(desc: Any, dest_dir: Path) -> None:
     if hooks_file.is_file():
         print(f"Removing stale {hooks_file}")
 
-    for stray in [".codex-plugin", ".claude-plugin"]:
+    for stray in STRAY_PLUGIN_DIRS:
         stray_path = dest_dir / stray
         if stray_path.exists():
             print(f"Removing foreign legacy directory {stray_path}")
@@ -419,6 +421,23 @@ def sync_live_plugin(dry_run: bool = False, force: bool = False) -> bool:
                     extra_p = target / extra_rel
                     if extra_p.is_file() or extra_p.is_symlink():
                         extra_p.unlink()
+
+    # Purge foreign legacy directories and hooks
+    for stray in STRAY_PLUGIN_DIRS:
+        stray_path = LIVE_PLUGIN_DIR / stray
+        if stray_path.is_dir():
+            shutil.rmtree(stray_path, ignore_errors=True)
+        elif stray_path.is_file() or stray_path.is_symlink():
+            stray_path.unlink(missing_ok=True)
+    hooks_file = LIVE_PLUGIN_DIR / "hooks" / "hooks.json"
+    if hooks_file.is_file():
+        hooks_file.unlink(missing_ok=True)
+    hooks_dir = LIVE_PLUGIN_DIR / "hooks"
+    if hooks_dir.is_dir() and not any(hooks_dir.iterdir()):
+        try:
+            hooks_dir.rmdir()
+        except OSError:
+            pass
 
     if shutil.which("agy"):
         print("\nValidating with Antigravity CLI:")
