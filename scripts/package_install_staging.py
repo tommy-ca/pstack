@@ -44,6 +44,10 @@ def copy_skills(dest_skills: Path, source_root: Optional[Path] = None) -> List[s
     dest_skills.mkdir(parents=True, exist_ok=True)
     copied_rel = []
     src_names = skill_names(src_skills)
+    if dest_skills.is_dir():
+        for existing_d in dest_skills.iterdir():
+            if existing_d.is_dir() and existing_d.name not in src_names:
+                shutil.rmtree(existing_d)
     for sname in sorted(src_names):
         item = src_skills / sname
         target = dest_skills / sname
@@ -108,36 +112,10 @@ def stage_antigravity_package(dest_dir: Path, source_root: Optional[Path] = None
     (rules_dir / "AGENTS.md").write_text(generate_antigravity_rules(), encoding="utf-8")
 
     # 5. Skills
-    skills_src = src_root / "skills"
-    skills_dest = dest_dir / "skills"
-    skills_dest.mkdir(parents=True, exist_ok=True)
-    src_skills = {
-        d.name for d in skills_src.iterdir()
-        if d.is_dir() and d.name not in SKILLS_HASH_IGNORED_DIRS
-    }
-    for existing_d in skills_dest.iterdir():
-        if existing_d.is_dir() and existing_d.name not in src_skills:
-            shutil.rmtree(existing_d)
-    for skill_name in sorted(src_skills):
-        skill_dir = skills_src / skill_name
-        dest_skill = skills_dest / skill_name
-        shutil.copytree(
-            skill_dir,
-            dest_skill,
-            dirs_exist_ok=True,
-            ignore=shutil.ignore_patterns(*SKILLS_HASH_IGNORED_DIRS, *[f"*{s}" for s in SKILLS_HASH_IGNORED_SUFFIXES]),
-        )
+    copy_skills(dest_dir / "skills", source_root=src_root)
 
     # 6. Agents
-    agents_src = src_root / "agents"
-    agents_dest = dest_dir / "agents"
-    agents_dest.mkdir(parents=True, exist_ok=True)
-    src_agents = {f.name for f in agents_src.glob("*.md") if f.is_file()}
-    for existing_f in agents_dest.glob("*.md"):
-        if existing_f.is_file() and existing_f.name not in src_agents:
-            existing_f.unlink()
-    for fname in sorted(src_agents):
-        shutil.copy2(agents_src / fname, agents_dest / fname)
+    copy_agents(dest_dir / "agents", source_root=src_root)
 
     # 7. Profiles
     profiles_src = resolve_profiles_dir(src_root)
@@ -219,7 +197,9 @@ def get_unmanaged_paths(plugin_dir: Path, managed_files: Set[str]) -> List[str]:
     return [p for p in all_found if p not in managed_files]
 
 
-def clean_stale_managed_files(plugin_dir: Path, host: str, desc: Any) -> None:
+def clean_stale_managed_files(
+    plugin_dir: Path, host: str, desc: Any, source_root: Optional[Path] = None
+) -> None:
     """Clean up previously managed files that are no longer part of the package."""
     managed_record_file = plugin_dir / ".pstack-managed-files.json"
     if not managed_record_file.is_file():
@@ -227,7 +207,7 @@ def clean_stale_managed_files(plugin_dir: Path, host: str, desc: Any) -> None:
     try:
         prev_record = json.loads(managed_record_file.read_text(encoding="utf-8"))
         old_managed = set(prev_record.get("managed_files", []))
-        new_managed = compute_managed_files(host, desc)
+        new_managed = compute_managed_files(host, desc, source_root=source_root)
         for stale_rel in old_managed - new_managed:
             stale_p = plugin_dir / stale_rel
             if stale_p.is_file() or stale_p.is_symlink():
@@ -243,9 +223,11 @@ def clean_stale_managed_files(plugin_dir: Path, host: str, desc: Any) -> None:
         pass
 
 
-def record_managed_manifest(plugin_dir: Path, host: str, desc: Any) -> Set[str]:
+def record_managed_manifest(
+    plugin_dir: Path, host: str, desc: Any, source_root: Optional[Path] = None
+) -> Set[str]:
     """Record the managed files manifest in the plugin directory."""
-    managed_set = compute_managed_files(host, desc)
+    managed_set = compute_managed_files(host, desc, source_root=source_root)
     manifest_record = {
         "host": host,
         "version": desc.version,
@@ -410,11 +392,12 @@ def write_host_plugin_assets(plugin_dir: Path, host: str, desc: Any, src_root: P
 
         profiles_dest = plugin_dir / "profiles"
         profiles_dest.mkdir(parents=True, exist_ok=True)
-        src_profiles = {p.name for p in resolve_profiles_dir(src_root).glob("*.json")}
+        src_profiles_dir = resolve_profiles_dir(src_root)
+        src_profiles = {p.name for p in src_profiles_dir.glob("*.json")}
         for existing_p in profiles_dest.glob("*.json"):
             if existing_p.name not in src_profiles:
                 existing_p.unlink(missing_ok=True)
-        for p in resolve_profiles_dir(src_root).glob("*.json"):
+        for p in src_profiles_dir.glob("*.json"):
             shutil.copy2(p, profiles_dest / p.name)
 
     elif host == "droid":
