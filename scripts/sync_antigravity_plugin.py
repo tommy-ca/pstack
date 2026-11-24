@@ -422,6 +422,15 @@ def sync_live_plugin(dry_run: bool = False, force: bool = False) -> bool:
                     if extra_p.is_file() or extra_p.is_symlink():
                         extra_p.unlink()
 
+    # Reconcile removed agents
+    src_agents = ROOT / "agents"
+    dest_agents = LIVE_PLUGIN_DIR / "agents"
+    if dest_agents.is_dir():
+        src_agent_files = {f.name for f in src_agents.glob("*.md") if f.is_file()}
+        for existing_f in dest_agents.glob("*.md"):
+            if existing_f.is_file() and existing_f.name not in src_agent_files:
+                existing_f.unlink()
+
     # Purge foreign legacy directories and hooks
     for stray in STRAY_PLUGIN_DIRS:
         stray_path = LIVE_PLUGIN_DIR / stray
