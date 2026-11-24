@@ -1,17 +1,17 @@
 {
-  "pin": "2f87c854fe3e2fcda44ca86b46ede35aad3c46b7",
-  "pstack_tree": "71d8e1d1d718e2149dc43b2535618064f29cba6b",
+  "pin": "ca782ed8b3c2c521cead8e1720d55c3a5dbf2347",
+  "pstack_tree": "971573532de6714a4ddff8ec39b52d021ebf161a",
   "pin_conformance": "PASS",
   "upstream_freshness": "CURRENT",
-  "upstream_head": "2f87c854fe3e2fcda44ca86b46ede35aad3c46b7",
-  "observation_time": "2026-11-18T23:37:56.600092+00:00",
+  "upstream_head": "ca782ed8b3c2c521cead8e1720d55c3a5dbf2347",
+  "observation_time": "2026-11-24T19:38:01.442227+00:00",
   "observation_source": "/home/tommyk/projects/pstack/.worktrees/upstream-cursor-plugins",
   "commits_ahead": 0,
   "counts": {
     "principles": 24,
     "playbooks": 22,
-    "total_artifacts": 551,
-    "preserved": 120,
+    "total_artifacts": 554,
+    "preserved": 123,
     "adapted": 46,
     "excluded": 385,
     "gaps": 0
@@ -33,7 +33,7 @@
   "artifacts": [
     {
       "path": ".cursor-plugin/plugin.json",
-      "canonical_hash": "37a0bef357f388b879bb487e0ad3ad3ef1567170",
+      "canonical_hash": "7f76fb34aeedc3a921951865d4218973514579c2",
       "category": "excluded",
       "mode": "exclude",
       "reason": "Cursor-only host manifest"
@@ -54,7 +54,7 @@
     },
     {
       "path": "README.md",
-      "canonical_hash": "e5d3e49e7f1b6b78cd7b9a485bed2bb10822ac9a",
+      "canonical_hash": "e392d0dd9cf7a71359d83b305f6c9b364112222c",
       "category": "skill",
       "mode": "adapt",
       "local_path": "README.md"
@@ -173,7 +173,7 @@
     },
     {
       "path": "docs/guide/02-poteto-mode.md",
-      "canonical_hash": "5b78906907a6cf73c876b0eb2ecd9f0b3a7ffe33",
+      "canonical_hash": "665f935ca675f29dcec6afef5d88dd7c59599caa",
       "category": "skill",
       "mode": "preserve",
       "local_path": "docs/guide/02-poteto-mode.md"
@@ -285,14 +285,14 @@
     },
     {
       "path": "docs/harness/claude-code.md",
-      "canonical_hash": "0f12039b22700373ae349d96a574b474d95c2429",
+      "canonical_hash": "2a59bc80edf61649b22e05cfd07a25bc7f997994",
       "category": "skill",
       "mode": "preserve",
       "local_path": "docs/harness/claude-code.md"
     },
     {
       "path": "plugin.json",
-      "canonical_hash": "c4d248860b705e47a7edbe141be68220134875fc",
+      "canonical_hash": "8e545265dc982a326e3e0ea9285220205a1ed03b",
       "category": "skill",
       "mode": "preserve",
       "local_path": "plugin.json"
@@ -306,7 +306,7 @@
     },
     {
       "path": "skills/arena/SKILL.md",
-      "canonical_hash": "fafaf37544107ff75d914b03096500afb6a23292",
+      "canonical_hash": "e908a7c6221cdb06d381b4621e265745955d4b2d",
       "category": "skill",
       "mode": "adapt",
       "local_path": "skills/arena/SKILL.md"
@@ -453,7 +453,7 @@
     },
     {
       "path": "skills/poteto-help/SKILL.md",
-      "canonical_hash": "77f1bd585bb44b1e14cb1dfc333bdf48c0815809",
+      "canonical_hash": "11bc4e47429373201c4edd371c4fbcfe428c33ab",
       "category": "skill",
       "mode": "preserve",
       "local_path": "skills/poteto-help/SKILL.md"
@@ -474,7 +474,7 @@
     },
     {
       "path": "skills/poteto-mode/SKILL.md",
-      "canonical_hash": "057af2d980ae336d8a64910b7ca95946e2c1bbdf",
+      "canonical_hash": "82a1941713eb18905b93f7c5b2004664f6722898",
       "category": "skill",
       "mode": "adapt",
       "local_path": "skills/poteto-mode/SKILL.md"
@@ -964,8 +964,15 @@
       "local_path": "skills/reflect/SKILL.md"
     },
     {
+      "path": "skills/reframe/SKILL.md",
+      "canonical_hash": "57a219851a939cfb1ee46ed74b20a5196a983539",
+      "category": "skill",
+      "mode": "preserve",
+      "local_path": "skills/reframe/SKILL.md"
+    },
+    {
       "path": "skills/setup-pstack/SKILL.md",
-      "canonical_hash": "e9d16b1cd3cc5fd4d8ae5c2b80f0f242e3924026",
+      "canonical_hash": "7358536071ed21b257da26adc1aec452c3d46466",
       "category": "skill",
       "mode": "preserve",
       "local_path": "skills/setup-pstack/SKILL.md"
@@ -1000,7 +1007,7 @@
     },
     {
       "path": "skills/statechart/SKILL.md",
-      "canonical_hash": "f5a64a8db4b8a5957ac5e76e051b1823cecd4d5e",
+      "canonical_hash": "18d653a810dfbb3ea35a6ed88bcfe8cb84f0a893",
       "category": "skill",
       "mode": "preserve",
       "local_path": "skills/statechart/SKILL.md"
@@ -1049,7 +1056,7 @@
     },
     {
       "path": "skills/statechart/scripts/frontends/dot.ts",
-      "canonical_hash": "003dfc89d4925c6aed3e59073b6a9414da78117b",
+      "canonical_hash": "09d5481e70d9cf911dc16ddf655c91c197ff1fac",
       "category": "skill",
       "mode": "preserve",
       "local_path": "skills/statechart/scripts/frontends/dot.ts"
@@ -1109,6 +1116,20 @@
       "category": "skill",
       "mode": "preserve",
       "local_path": "skills/statechart/scripts/ir.ts"
+    },
+    {
+      "path": "skills/statechart/scripts/janitor.ts",
+      "canonical_hash": "5e69fb316c9e6bd4bc1de68781b43c345381188b",
+      "category": "skill",
+      "mode": "preserve",
+      "local_path": "skills/statechart/scripts/janitor.ts"
+    },
+    {
+      "path": "skills/statechart/scripts/kill.ts",
+      "canonical_hash": "014d7c35049a8786359264cb4489c0c5e0a7ff1d",
+      "category": "skill",
+      "mode": "preserve",
+      "local_path": "skills/statechart/scripts/kill.ts"
     },
     {
       "path": "skills/statechart/scripts/package.json",
@@ -1182,7 +1203,7 @@
     },
     {
       "path": "skills/statechart/scripts/run.ts",
-      "canonical_hash": "017684f82ddffe860b4b9312771174622603c4a7",
+      "canonical_hash": "45e13dcb4d4ee41d4437ed64e3177fe1a412ae56",
       "category": "skill",
       "mode": "preserve",
       "local_path": "skills/statechart/scripts/run.ts"
@@ -1196,7 +1217,7 @@
     },
     {
       "path": "skills/statechart/scripts/statechart.ts",
-      "canonical_hash": "4e2967e680895875d7d5352bfe997a4c08c2d1fc",
+      "canonical_hash": "43ee983edfa7b1fa76ddab07e0e99cba897373b9",
       "category": "skill",
       "mode": "preserve",
       "local_path": "skills/statechart/scripts/statechart.ts"
@@ -1238,7 +1259,7 @@
     },
     {
       "path": "skills/statechart/scripts/test/cli.test.ts",
-      "canonical_hash": "11f06a6fd7ee078a66b9cfbc15452e4a8eb20471",
+      "canonical_hash": "ee80722d6fdbb1e3c091c0c9f6f981636f61a264",
       "category": "excluded",
       "mode": "exclude",
       "reason": "Static statechart test fixtures, oracles, and integration tests; excluded per Laziness Protocol and YAGNI"
@@ -3800,7 +3821,7 @@
     },
     {
       "path": "skills/statechart/scripts/test/messages.test.ts",
-      "canonical_hash": "61af006968a6e9c2dc359c8b5859a1238b9e56cb",
+      "canonical_hash": "4e0d3c358809a2c3b17a171b3e4601f3f2790992",
       "category": "skill",
       "mode": "preserve",
       "local_path": "skills/statechart/scripts/test/messages.test.ts"

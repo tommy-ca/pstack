@@ -66,11 +66,11 @@ def test_antigravity_rules_single_source_of_truth(tmp_path: Path) -> None:
     staging_src = inspect.getsource(package_install_staging)
     prover_src = inspect.getsource(prove_antigravity_native_package)
     assert "generate_antigravity_rules()" in staging_src
-    assert "generate_antigravity_rules()" in prover_src
+    assert "stage_antigravity_package" in prover_src
     assert "levereable" not in staging_src
     assert "levereable" not in prover_src
 
-    staged = prove_antigravity_native_package.stage_antigravity_package(tmp_path)
+    staged = package_install_staging.stage_antigravity_package(tmp_path)
     assert (staged / "rules" / "AGENTS.md").read_text(encoding="utf-8") == expected
 
 

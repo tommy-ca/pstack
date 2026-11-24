@@ -2,9 +2,9 @@
   "$schema": "./schemas/package-descriptor.schema.json",
   "id": "pstack",
   "name": "pstack",
-  "version": "0.15.36-preview.0",
+  "version": "0.15.48-preview.0",
   "description": "Portable atomic playbooks and principles across agent harnesses.",
-  "upstream_pin": "2f87c854fe3e2fcda44ca86b46ede35aad3c46b7",
+  "upstream_pin": "ca782ed8b3c2c521cead8e1720d55c3a5dbf2347",
   "host_targets": [
     "grok",
     "codex",
@@ -15,27 +15,27 @@
   ],
   "host_adapters": {
     "grok": {
-      "version": "0.15.36-preview.0",
+      "version": "0.15.48-preview.0",
       "adapter_version": "1.0.0"
     },
     "codex": {
-      "version": "0.15.36-preview.0",
+      "version": "0.15.48-preview.0",
       "adapter_version": "1.0.0"
     },
     "omp": {
-      "version": "0.15.36-preview.0",
+      "version": "0.15.48-preview.0",
       "adapter_version": "1.0.0"
     },
     "opencode": {
-      "version": "0.15.36-preview.0",
+      "version": "0.15.48-preview.0",
       "adapter_version": "1.0.0"
     },
     "antigravity": {
-      "version": "0.15.36-preview.0",
+      "version": "0.15.48-preview.0",
       "adapter_version": "1.0.0"
     },
     "droid": {
-      "version": "0.15.36-preview.0",
+      "version": "0.15.48-preview.0",
       "adapter_version": "1.0.0"
     }
   },

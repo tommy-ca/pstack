@@ -2,6 +2,20 @@
 
 This ledger distinguishes **observed canonical upstream changes** from **applied, verified changes in the multi-harness port**. An upstream release number is not evidence of local parity. Historical releases remain recorded in git history and [UPSTREAM](UPSTREAM); new syncs append a dated entry, never rewrite historical claims.
 
+## [0.15.48-preview.0] - 2026-11-24
+
+**Port release:** `0.15.48-preview.0` on `main`.
+**Applied canonical source:** `cursor/plugins@ca782ed8b3c2c521cead8e1720d55c3a5dbf2347` (`pstack/` tree `971573532de6714a4ddff8ec39b52d021ebf161a`).
+**Applied changes:**
+- Ported host-neutral `/reframe` skill with ambiguous-problem disambiguation (#1437).
+- Ported upstream Windows portability and CRLF TLC output parsing to `/statechart` (#1437).
+- Unified `generate_antigravity_rules()` in `scripts/package_projection.py` resolving DRY duplication (#1437).
+- Updated Antigravity profile with gated `/swarm`, `run_workflow` dynamic workflows, and dual interactive/headless wire aliases (#1438).
+- Updated `.antigravity-plugin/models.json` with live Antigravity CLI 1.5.16 model catalog (Gemini 4 Hydrogen, Neon, Claude Sonnet/Opus 4.6) and Nov 30 deprecations (#1438).
+- Upgraded `.agents/skills/verify-antigravity-pstack/` and `AntigravityDriver` with strict JSON validation and live subagent discovery (#1439).
+- Remediated multi-model review findings across Antigravity routing, package install staging, and surface revisions (#1440).
+- Promoted UPSTREAM pin to 0.15.48, regenerated canonical index, and projected 0.15.48 across all six host manifests (#1441).
+
 ## [0.15.36-preview.0] — 2026-11-07
 
 **Port release:** `0.15.36-preview.0` on `main`.

@@ -3,9 +3,9 @@
   "source": {
     "repository": "cursor/plugins",
     "path_prefix": "pstack/",
-    "revision": "2f87c854fe3e2fcda44ca86b46ede35aad3c46b7",
-    "tree": "c14b9148f424c40ba8e578ef79830e5f47ca720b",
-    "router_blob": "057af2d980ae336d8a64910b7ca95946e2c1bbdf"
+    "revision": "ca782ed8b3c2c521cead8e1720d55c3a5dbf2347",
+    "tree": "dc58ad145b3cd37c6b5648afd4edeab1dd8ebaf3",
+    "router_blob": "82a1941713eb18905b93f7c5b2004664f6722898"
   },
   "fallback": "baseline",
   "routes": [

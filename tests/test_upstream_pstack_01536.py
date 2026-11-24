@@ -98,8 +98,9 @@ def test_applied_and_candidate_release_are_distinct() -> None:
     changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
     descriptor = (ROOT / "pstack.package.json").read_text(encoding="utf-8")
     assert "0.15.36-preview.0" in changelog
-    assert '"upstream_pin": "2f87c854fe3e2fcda44ca86b46ede35aad3c46b7"' in descriptor
-    assert "0.15.36-preview.0" in descriptor
+    assert "0.15.48" in changelog
+    assert '"upstream_pin": "ca782ed8b3c2c521cead8e1720d55c3a5dbf2347"' in descriptor
+    assert "0.15.48" in descriptor
 
 
 def test_agentic_orchestrate_has_one_owner_and_independent_pr_verification() -> None:

@@ -65,7 +65,7 @@ class TestCanonicalMappingFreshness:
 
     def test_applied_canonical_pin_matches_package_and_upstream(self) -> None:
         pin = _get_applied_canonical_pin(str(ROOT))
-        assert pin == "2f87c854fe3e2fcda44ca86b46ede35aad3c46b7"
+        assert pin == "ca782ed8b3c2c521cead8e1720d55c3a5dbf2347"
 
     def test_stale_mapping_revision_fails_closed_to_baseline(
         self, grok_profile: dict[str, Any], valid_candidate_observation: ProviderObservation, monkeypatch: pytest.MonkeyPatch
