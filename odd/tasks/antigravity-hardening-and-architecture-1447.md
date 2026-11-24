@@ -14,7 +14,7 @@ S4. Execute Arena, Swarm, Interrogate, and Thermos review gates across all chang
 
 - [x] T1 (linked: S1, route: inline, commit: 686f010) Stage Antigravity commands, add try-finally restore guard, and fix driver.sh pathing
 - [x] T2 (linked: S2, route: inline, commit: 904c94a) Unify STRAY_PLUGIN_DIRS, purge foreign directories on sync, and expand sync test coverage
-- [ ] T3 (linked: S3, route: inline, commit: pending) Harden AntigravityDriver.isolation() and expand driver/role catalog test suites
+- [x] T3 (linked: S3, route: inline, commit: 96fcb8d) Harden AntigravityDriver.isolation() and expand driver/role catalog test suites
 - [ ] T4 (linked: S4, route: inline, commit: pending) Execute multi-model gates, refresh static receipts, and ship stacked PRs to main
 
 ## Log

@@ -93,6 +93,41 @@ def test_antigravity_driver_child_spawn_checks_conventions_and_fails_closed(tmp_
         assert bad.verdict == "FAIL"
 
 
+def test_antigravity_driver_isolation_contract(tmp_path: Path) -> None:
+    driver = AntigravityDriver(ROOT)
+    bin_fake = tmp_path / "agy"
+    bin_fake.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    bin_fake.chmod(0o755)
+
+    # 1. Blocks when binary is unavailable
+    with patch.object(driver, "is_available", return_value=(False, "agy not found")):
+        blocked = driver.isolation(tmp_path)
+        assert blocked.verdict == "BLOCKED"
+        assert "agy not found" in blocked.stdout
+
+    # 2. Passes when available and conventions satisfied
+    with (
+        patch.object(driver, "get_binary_path", return_value=bin_fake),
+        patch.object(driver, "is_available", return_value=(True, "")),
+        patch.object(driver, "run_command", return_value=(0, "Usage: agy [options]", "", 0.01)),
+    ):
+        ok = driver.isolation(tmp_path)
+        assert ok.verdict == "PASS"
+
+    # 3. Fails when isolation modes are incomplete
+    mutated = json.loads(json.dumps(driver.profile_data))
+    mutated["runtime_conventions"]["supported_isolation_modes"] = ["inherit"]
+    driver._profile_data = mutated
+    with (
+        patch.object(driver, "get_binary_path", return_value=bin_fake),
+        patch.object(driver, "is_available", return_value=(True, "")),
+        patch.object(driver, "run_command", return_value=(0, "Usage: agy [options]", "", 0.01)),
+    ):
+        bad = driver.isolation(tmp_path)
+        assert bad.verdict == "FAIL"
+
+
+
 def test_harness_local_scenarios_cover_1_5_16_antigravity_contracts(tmp_path: Path) -> None:
     import subprocess
 
