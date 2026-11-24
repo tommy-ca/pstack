@@ -21,6 +21,7 @@ from scripts.package_projection import (
     generate_antigravity_commands,
     generate_antigravity_manifest,
     generate_antigravity_models,
+    generate_antigravity_rules,
     generate_codex_manifest,
     generate_droid_manifest,
     generate_droid_marketplace,
@@ -283,15 +284,7 @@ def write_host_plugin_assets(plugin_dir: Path, host: str, desc: Any, src_root: P
         rules_dir = plugin_dir / "rules"
         rules_dir.mkdir(parents=True, exist_ok=True)
         rules_dest = rules_dir / "AGENTS.md"
-        rules_dest.write_text(
-            "# pstack instructions for Antigravity\n\n"
-            "When working with pstack:\n"
-            "- Prefer fewer, higher-quality changes.\n"
-            "- Follow poteto-mode: go deep first, plan before coding, verify with levereable proofs.\n"
-            "- Use native subagents (`invoke_subagent`) for parallel operations (Arena, Swarm, Interrogate).\n"
-            "- Respect isolated workspaces (`Workspace: branch`) when modifying code in parallel.\n",
-            encoding="utf-8",
-        )
+        rules_dest.write_text(generate_antigravity_rules(), encoding="utf-8")
 
         hooks_file = plugin_dir / "hooks" / "hooks.json"
         if hooks_file.is_file():

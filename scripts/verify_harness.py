@@ -242,8 +242,8 @@ def verify_all_skills_inventory(root: pathlib.Path | None = None) -> list[SkillR
     active_root = root if root is not None else ROOT
     try:
         records = discover_skills_inventory(active_root)
-        if len(records) != 86:
-            fail(f"expected 86 skills across repository roots, discovered {len(records)}")
+        if len(records) != 87:
+            fail(f"expected 87 skills across repository roots, discovered {len(records)}")
         return records
     except ValueError as exc:
         fail(f"skill inventory verification failure: {exc}")

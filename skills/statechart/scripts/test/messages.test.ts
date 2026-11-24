@@ -2,11 +2,27 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { plainText, runtime } from "../backends/plain-text.ts";
 import { readMessages } from "../frontends/messages.ts";
+import { readVerdict } from "../frontends/verdict.ts";
 
 const tool = (code: number, level: number, ...lines: string[]) =>
   [`@!@!@STARTMSG ${code}:${level} @!@!@`, ...lines, `@!@!@ENDMSG ${code} @!@!@`].join("\n");
 
 const plain = (text: string) => [...plainText(readMessages(text))].join("");
+
+test("TLC output with Windows line ends names the rule that breaks and prints as with Unix ones", () => {
+  const unix = [
+    tool(2262, 0, "TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)"),
+    tool(2110, 1, "Invariant NotOne is violated."),
+    tool(2121, 1, "The behavior up to this point is:"),
+    tool(2217, 4, "1: <Initial predicate>", "x = 0", ""),
+    tool(2217, 4, "2: <Next line 6, col 9 to line 6, col 27 of module FirstRule>", "x = 1", ""),
+    tool(2186, 0, "Finished in 351ms at (2026-10-26 21:46:02)"),
+  ].join("\n");
+  const windows = unix.replaceAll("\n", "\r\n");
+  assert.deepEqual(readVerdict(readMessages(windows)).broke, { kind: "invariant", name: "NotOne" });
+  assert.deepEqual(readVerdict(readMessages(windows)), readVerdict(readMessages(unix)));
+  assert.equal(plain(windows), plain(unix));
+});
 
 test("TLC's -tool output prints as plain TLC prints it", () => {
   const text = [
