@@ -92,6 +92,20 @@ def test_antigravity_driver_child_spawn_checks_conventions_and_fails_closed(tmp_
         bad = driver.child_spawn(tmp_path)
         assert bad.verdict == "FAIL"
 
+    # Test fallback to get_plugin_dir("antigravity") when root/agents does not exist
+    empty_root = tmp_path / "empty_root"
+    empty_root.mkdir()
+    driver_empty = AntigravityDriver(empty_root)
+    driver_empty._profile_data = AntigravityDriver(ROOT).profile_data
+    with (
+        patch.object(driver_empty, "get_binary_path", return_value=bin_fake),
+        patch.object(driver_empty, "run_command", return_value=(0, "Available agents:\nfeature\n", "", 0.01)),
+        patch("scripts.drivers.antigravity.get_plugin_dir", return_value=ROOT),
+    ):
+        fallback_res = driver_empty.child_spawn(tmp_path)
+        assert fallback_res.scenario_id == "runtime-child-spawn-antigravity"
+        assert fallback_res.verdict == "PASS"
+
 
 def test_antigravity_driver_isolation_contract(tmp_path: Path) -> None:
     driver = AntigravityDriver(ROOT)

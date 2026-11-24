@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Optional, Tuple
 
 from scripts.package_install_staging import stage_antigravity_package
+from scripts.package_lifecycle import get_plugin_dir
 from scripts.prove_antigravity_native_package import run_antigravity_validation
 
 from .base import DriverScenarioResult, HarnessDriver, find_executable
@@ -101,7 +102,7 @@ class AntigravityDriver(HarnessDriver):
 
         agents_dir = self.root / "agents"
         if not agents_dir.is_dir():
-            agents_dir = Path.home() / ".gemini" / "config" / "plugins" / "pstack" / "agents"
+            agents_dir = get_plugin_dir("antigravity") / "agents"
         agent_count = len(list(agents_dir.glob("*.md"))) if agents_dir.is_dir() else 0
 
         rc = self.profile_data.get("runtime_conventions", {})
