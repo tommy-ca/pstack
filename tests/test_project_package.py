@@ -217,34 +217,48 @@ def test_projected_role_catalogs_speak_canonical_role_ids() -> None:
             assert " " not in role_id and "," not in role_id, (host, role_id)
 
 
-def test_role_catalog_rejects_renamed_merged_or_missing_roles() -> None:
+@pytest.mark.parametrize(
+    "host,role_models",
+    [
+        ("codex", project_package.CODEX_ROLE_MODELS),
+        ("antigravity", project_package.ANTIGRAVITY_ROLE_MODELS),
+    ],
+)
+def test_role_catalog_rejects_renamed_merged_or_missing_roles(host: str, role_models: dict) -> None:
     """Tooth: a renamed label, a merged pair and a dropped row all fail closed."""
     desc, _ = project_package.load_package_descriptor()
 
-    renamed = dict(project_package.CODEX_ROLE_MODELS)
+    renamed = dict(role_models)
     renamed["judgment and prose"] = renamed.pop("judgment-and-prose")
     with pytest.raises(project_package.ValidationError):
-        project_package.generate_role_catalog(desc, "codex", renamed)
+        project_package.generate_role_catalog(desc, host, renamed)
 
-    merged = dict(project_package.CODEX_ROLE_MODELS)
+    merged = dict(role_models)
     merged["feature, refactoring"] = merged.pop("refactoring")
     with pytest.raises(project_package.ValidationError):
-        project_package.generate_role_catalog(desc, "codex", merged)
+        project_package.generate_role_catalog(desc, host, merged)
 
-    dropped = dict(project_package.CODEX_ROLE_MODELS)
+    dropped = dict(role_models)
     dropped.pop("comment-sicko")
     with pytest.raises(project_package.ValidationError):
-        project_package.generate_role_catalog(desc, "codex", dropped)
+        project_package.generate_role_catalog(desc, host, dropped)
 
 
-def test_role_catalog_rejects_duplicate_ids(monkeypatch) -> None:
+@pytest.mark.parametrize(
+    "host,role_models",
+    [
+        ("codex", project_package.CODEX_ROLE_MODELS),
+        ("antigravity", project_package.ANTIGRAVITY_ROLE_MODELS),
+    ],
+)
+def test_role_catalog_rejects_duplicate_ids(host: str, role_models: dict) -> None:
     """Tooth: a duplicated canonical ID fails closed instead of projecting twice."""
     desc, _ = project_package.load_package_descriptor()
     duplicated = dataclasses.replace(
         desc, roles=desc.roles + [{"id": "comment-sicko", "description": "dup", "default_model_role": "fast-worker"}]
     )
     with pytest.raises(project_package.ValidationError) as excinfo:
-        project_package.generate_role_catalog(duplicated, "codex", project_package.CODEX_ROLE_MODELS)
+        project_package.generate_role_catalog(duplicated, host, role_models)
     assert "duplicate=['comment-sicko']" in str(excinfo.value)
 
 

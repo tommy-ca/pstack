@@ -133,18 +133,31 @@ class AntigravityDriver(HarnessDriver):
         )
 
     def isolation(self, run_dir: Path) -> DriverScenarioResult:
+        avail, reason = self.is_available()
+        if not avail:
+            return self.blocked_result(
+                "runtime-isolation-antigravity",
+                "Antigravity workspace isolation check",
+                reason,
+            )
+
+        bin_path = self.get_binary_path()
+        assert bin_path is not None
+        code, out, err, dur = self.run_command([str(bin_path), "--help"], cwd=self.root)
+
         rc = self.profile_data.get("runtime_conventions", {})
         iso_modes = rc.get("supported_isolation_modes", [])
         has_branch = "branch" in iso_modes or "worktree" in iso_modes
         has_share = "share" in iso_modes or "shared" in iso_modes
-        verdict = "PASS" if has_branch and has_share else "FAIL"
+        has_inherit = "inherit" in iso_modes
+        verdict = "PASS" if code == 0 and has_branch and has_share and has_inherit else "FAIL"
         return DriverScenarioResult(
             scenario_id="runtime-isolation-antigravity",
             description="Verify Antigravity workspace isolation modes (branch, share, inherit)",
-            command="agy isolation-check",
+            command=f"{bin_path} --help (check isolation modes: branch, share, inherit)",
             exit_code=0 if verdict == "PASS" else 1,
-            stdout=f"Supported isolation modes: {iso_modes}",
-            stderr="",
+            stdout=f"Supported isolation modes: {iso_modes}; CLI code={code}",
+            stderr=err,
             verdict=verdict,
-            duration_s=0.01,
+            duration_s=dur,
         )
