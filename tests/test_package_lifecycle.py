@@ -368,3 +368,38 @@ def test_package_install_staging_decomposition(tmp_path: Path) -> None:
     assert lifecycle_lines < 850
 
 
+def test_staging_copy_primitives_and_source_root_threading(tmp_path: Path) -> None:
+    from scripts import package_install_staging
+    from scripts.package_projection import load_package_descriptor
+
+    custom_root = tmp_path / "custom_root"
+    (custom_root / "skills" / "custom-skill").mkdir(parents=True)
+    (custom_root / "skills" / "custom-skill" / "SKILL.md").write_text("---\nname: custom\n---\n", encoding="utf-8")
+    (custom_root / "agents").mkdir(parents=True)
+    (custom_root / "agents" / "custom-agent.md").write_text("# Custom Agent\n", encoding="utf-8")
+    (custom_root / "profiles").mkdir(parents=True)
+    (custom_root / "profiles" / "antigravity.json").write_text("{}", encoding="utf-8")
+
+    desc, _ = load_package_descriptor()
+    stage_dir = tmp_path / "stage"
+    package_install_staging.stage_antigravity_package(stage_dir, source_root=custom_root)
+
+    assert (stage_dir / "skills" / "custom-skill" / "SKILL.md").is_file()
+    assert (stage_dir / "agents" / "custom-agent.md").is_file()
+    assert not (stage_dir / "skills" / "poteto-mode").exists()
+
+    # Verify source_root threading into record_managed_manifest and clean_stale_managed_files
+    managed = package_install_staging.record_managed_manifest(stage_dir, "antigravity", desc, source_root=custom_root)
+    assert "skills/custom-skill/SKILL.md" in managed
+    assert "agents/custom-agent.md" in managed
+    assert "skills/poteto-mode/SKILL.md" not in managed
+
+    # Verify stale skill cleanup in copy_skills
+    dest_skills = stage_dir / "skills"
+    assert (dest_skills / "custom-skill").is_dir()
+    empty_root = tmp_path / "empty_root"
+    (empty_root / "skills").mkdir(parents=True)
+    package_install_staging.copy_skills(dest_skills, source_root=empty_root, clean_stale=True)
+    assert not (dest_skills / "custom-skill").exists()
+
+

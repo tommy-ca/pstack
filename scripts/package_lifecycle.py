@@ -184,9 +184,9 @@ def install_plugin(
         return plugin_dir
 
     plugin_dir.mkdir(parents=True, exist_ok=True)
-    clean_stale_managed_files(plugin_dir, host, desc)
+    clean_stale_managed_files(plugin_dir, host, desc, source_root=src_root)
     write_host_plugin_assets(plugin_dir, host, desc, src_root)
-    record_managed_manifest(plugin_dir, host, desc)
+    record_managed_manifest(plugin_dir, host, desc, source_root=src_root)
     return plugin_dir
 
 
