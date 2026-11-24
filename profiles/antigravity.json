@@ -15,7 +15,7 @@
       "host": "antigravity",
       "capability": "agent.spawn",
       "implementation_status": "native",
-      "primitive": "invoke_subagent / define_subagent",
+      "primitive": "invoke_subagent / define_subagent (policy depth 1, runtime 10); swarm (gated behind /swarm); run_workflow (agent, parallel, pipeline)",
       "enforcement": "hard",
       "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/antigravity-receipt.json"
@@ -24,7 +24,7 @@
       "host": "antigravity",
       "capability": "agent.join",
       "implementation_status": "native",
-      "primitive": "manage_subagents / reactive messaging",
+      "primitive": "manage_subagents / reactive messaging; swarm_wait / read_board (when /swarm active); run_workflow trajectory()",
       "enforcement": "hard",
       "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/antigravity-receipt.json"
@@ -33,7 +33,7 @@
       "host": "antigravity",
       "capability": "agent.message",
       "implementation_status": "native",
-      "primitive": "send_message",
+      "primitive": "send_message; post_message (@name/@group/@all/@#channel when /swarm active)",
       "enforcement": "hard",
       "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/antigravity-receipt.json"
@@ -42,7 +42,7 @@
       "host": "antigravity",
       "capability": "agent.cancel",
       "implementation_status": "native",
-      "primitive": "manage_subagents (kill)",
+      "primitive": "manage_subagents (kill) / manage_task (kill)",
       "enforcement": "hard",
       "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/antigravity-receipt.json"
@@ -51,7 +51,7 @@
       "host": "antigravity",
       "capability": "agent.resume",
       "implementation_status": "native",
-      "primitive": "send_message / reactive resume",
+      "primitive": "send_message / reactive resume; agy -c / -r / --resume",
       "enforcement": "hard",
       "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/antigravity-receipt.json"
@@ -87,7 +87,7 @@
       "host": "antigravity",
       "capability": "human.ask",
       "implementation_status": "native",
-      "primitive": "ask_question",
+      "primitive": "ask_question / /grill-me",
       "enforcement": "hard",
       "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/antigravity-receipt.json"
@@ -96,7 +96,7 @@
       "host": "antigravity",
       "capability": "human.gate",
       "implementation_status": "native",
-      "primitive": "ask_question (blocking gate)",
+      "primitive": "ask_question (blocking gate) / /goal stop-hook",
       "enforcement": "hard",
       "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/antigravity-receipt.json"
@@ -105,7 +105,7 @@
       "host": "antigravity",
       "capability": "plan.update",
       "implementation_status": "native",
-      "primitive": "artifacts / todo.md",
+      "primitive": "artifacts / todo.md / /plan / swarm_pane (plan.json when /swarm active)",
       "enforcement": "advisory",
       "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/antigravity-receipt.json"
@@ -114,7 +114,7 @@
       "host": "antigravity",
       "capability": "schedule",
       "implementation_status": "native",
-      "primitive": "schedule (timer and cron)",
+      "primitive": "schedule (timer and cron) / /schedule / manage_task",
       "enforcement": "hard",
       "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/antigravity-receipt.json"
@@ -123,7 +123,7 @@
       "host": "antigravity",
       "capability": "monitor",
       "implementation_status": "native",
-      "primitive": "schedule / reactive messaging",
+      "primitive": "schedule / reactive messaging / swarm_monitor (@monitor) / hooks.json",
       "enforcement": "hard",
       "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/antigravity-receipt.json"
@@ -132,7 +132,7 @@
       "host": "antigravity",
       "capability": "session.persist",
       "implementation_status": "native",
-      "primitive": "transcripts and brain artifacts",
+      "primitive": "transcripts, brain artifacts, and /compact",
       "enforcement": "hard",
       "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/antigravity-receipt.json"
@@ -141,7 +141,7 @@
       "host": "antigravity",
       "capability": "session.resume",
       "implementation_status": "native",
-      "primitive": "conversation continuation",
+      "primitive": "conversation continuation (-c, -r, --resume, /fork, /rewind)",
       "enforcement": "hard",
       "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/antigravity-receipt.json"
@@ -150,7 +150,7 @@
       "host": "antigravity",
       "capability": "evidence.capture",
       "implementation_status": "native",
-      "primitive": "write_to_file (.audit/evidence/)",
+      "primitive": "write_file (interactive) / write_to_file (headless, hooks) (.audit/evidence/) and agy -p --output-format stream-json",
       "enforcement": "hard",
       "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/antigravity-receipt.json"
@@ -159,7 +159,7 @@
       "host": "antigravity",
       "capability": "verify",
       "implementation_status": "native",
-      "primitive": "scripts/verify_portable.py",
+      "primitive": "scripts/verify_portable.py and agy plugin validate --strict --json",
       "enforcement": "hard",
       "verification_status": "static-only",
       "evidence_ref": ".audit/evidence/antigravity-receipt.json"
@@ -182,20 +182,20 @@
     }
   ],
   "tool_mappings": {
-    "file_read": "view_file",
-    "file_edit": "replace_file_content",
-    "file_write": "write_to_file",
+    "file_read": "read_file (interactive) / view_file, list_dir, find_by_name, grep_search (headless, hooks)",
+    "file_edit": "edit_file (interactive) / replace_file_content, multi_replace_file_content (headless, hooks)",
+    "file_write": "write_file (interactive) / write_to_file (headless, hooks)",
     "shell_run": "run_command",
-    "web_fetch": "read_url_content",
+    "web_fetch": "read_url_content (headless, hooks)",
     "web_search": "search_web",
-    "agent_spawn": "invoke_subagent",
-    "agent_fanout": "N Subagents in invoke_subagent",
-    "agent_join": "manage_subagents / reactive messaging",
-    "agent_message": "send_message",
-    "task_background": "run_command (async) / manage_task / schedule",
+    "agent_spawn": "invoke_subagent / define_subagent (policy depth 1); swarm (gated behind /swarm); run_workflow (agent, parallel, pipeline)",
+    "agent_fanout": "N Subagents in invoke_subagent; swarm (@name/@group/@all, swarm_pane, swarm_monitor) when /swarm active; run_workflow parallel()/pipeline()",
+    "agent_join": "manage_subagents / reactive messaging; swarm_wait / read_board (when /swarm active); run_workflow trajectory()",
+    "agent_message": "send_message; post_message (@name/@group/@all/@#channel when /swarm active)",
+    "task_background": "run_command (async) / manage_task / schedule (DurationSeconds, CronExpression, TimerCondition)",
     "tool_mcp": "call_mcp_tool / list_resources / read_resource",
-    "plan_update": "todo.md / artifacts",
-    "human_ask": "ask_question"
+    "plan_update": "artifacts / todo.md / /plan / swarm_pane (plan.json when /swarm active)",
+    "human_ask": "ask_question / /grill-me"
   },
   "skill_order": [
     {
@@ -208,7 +208,7 @@
       "need": "Review a diff or PR",
       "primary_pstack": "/interrogate",
       "secondary_user": null,
-      "fallback_builtin": null
+      "fallback_builtin": "/diff"
     },
     {
       "need": "Babysit",
@@ -286,7 +286,55 @@
       "need": "Execute a written plan",
       "primary_pstack": "playbooks/feature.md",
       "secondary_user": null,
-      "fallback_builtin": null
+      "fallback_builtin": "/run-workflow"
+    },
+    {
+      "need": "Parallel fan-out swarm",
+      "primary_pstack": "/swarm",
+      "secondary_user": null,
+      "fallback_builtin": "/swarm"
+    },
+    {
+      "need": "Multi-agent teamwork",
+      "primary_pstack": "/swarm",
+      "secondary_user": null,
+      "fallback_builtin": "/teamwork"
+    },
+    {
+      "need": "Loop until completion predicate",
+      "primary_pstack": "playbooks/autonomous-run.md",
+      "secondary_user": null,
+      "fallback_builtin": "/goal"
+    },
+    {
+      "need": "Schedule recurring or delayed check",
+      "primary_pstack": null,
+      "secondary_user": null,
+      "fallback_builtin": "/schedule"
+    },
+    {
+      "need": "Temporary reasoning boost",
+      "primary_pstack": null,
+      "secondary_user": null,
+      "fallback_builtin": "/boost"
+    },
+    {
+      "need": "Compact session context",
+      "primary_pstack": null,
+      "secondary_user": null,
+      "fallback_builtin": "/compact"
+    },
+    {
+      "need": "Adversarial Q&A interrogation",
+      "primary_pstack": "/interrogate",
+      "secondary_user": null,
+      "fallback_builtin": "/grill-me"
+    },
+    {
+      "need": "Scripted multi-phase workflow",
+      "primary_pstack": null,
+      "secondary_user": null,
+      "fallback_builtin": "/run-workflow"
     }
   ],
   "runtime_conventions": {
@@ -302,9 +350,14 @@
     ],
     "forbidden_spawn_fields": [
       "readonly",
-      "environment"
+      "environment",
+      "reasoning_effort"
     ],
     "wire_aliases": {
+      "view_file": "read_file",
+      "replace_file_content": "edit_file",
+      "multi_replace_file_content": "edit_file",
+      "write_to_file": "write_file",
       "invoke_subagent": "spawn_subagent",
       "manage_subagents": "join_subagent"
     }

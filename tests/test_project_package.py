@@ -70,23 +70,31 @@ def test_generate_manifests() -> None:
     assert antigravity_models["singleRoleDefault"] == "pro"
     assert antigravity_models["panel"] == ["pro", "flash"]
     assert "gpt-oss" not in json.dumps(antigravity_models)
+    assert antigravity_models["deprecations"]["cutoffDate"] == "2026-11-30"
+    assert antigravity_models["deprecations"]["retiringFamilies"] == [
+        "gemini-4-argon",
+        "gemini-3.8-flash",
+        "claude-4-6",
+    ]
     assert antigravity_models["drivers"] == {
         "mainReasoning": "gemini-4-hydrogen-high",
         "deepReasoning": "gemini-4-hydrogen-xhigh",
         "fastWorker": "gemini-3.8-flash-high",
         "fastVerifier": "gemini-3.8-flash-medium",
         "paidProOrchestrator": "gemini-pro-orchestrator-g1-pro",
-        "paidProReasoning": "gemini-4-argon-high",
-        "minimalSpecialist": "claude-opus-5-5-high",
+        "paidProReasoning": "gemini-4-neon-high",
+        "minimalSpecialist": "claude-opus-4-6-thinking",
+        "specialistFast": "claude-sonnet-4-6",
+        "minimalSpecialistNext": "claude-opus-5-5-high",
     }
-    assert len(antigravity_models["available"]) == 12
+    assert len(antigravity_models["available"]) == 20
     avail = {m["slug"]: m for m in antigravity_models["available"]}
     assert avail["pro"] == {
         "label": "Gemini 4 Hydrogen (Pro Tier)",
         "slug": "pro",
         "family": "gemini-4-hydrogen",
         "driver": "gemini-4-hydrogen-high",
-        "paidProDriver": "gemini-4-argon-high",
+        "paidProDriver": "gemini-4-neon-high",
     }
     assert avail["flash"] == {
         "label": "Gemini 3.8 Flash (Flash Tier)",
@@ -107,13 +115,21 @@ def test_generate_manifests() -> None:
         "driver": "inherit",
     }
     concrete_invariants = {
-        "gemini-4-hydrogen-high": ("gemini-4-hydrogen", "pro"),
         "gemini-4-hydrogen-xhigh": ("gemini-4-hydrogen", "pro"),
+        "gemini-4-hydrogen-high": ("gemini-4-hydrogen", "pro"),
+        "gemini-4-hydrogen-medium": ("gemini-4-hydrogen", "pro"),
+        "gemini-4-hydrogen-low": ("gemini-4-hydrogen", "pro"),
         "gemini-3.8-flash-high": ("gemini-3.8-flash", "flash"),
         "gemini-3.8-flash-medium": ("gemini-3.8-flash", "flash"),
         "gemini-3.8-flash-low": ("gemini-3.8-flash", "flash_lite"),
+        "claude-opus-4-6-thinking": ("claude-4-6", "minimal-specialist"),
+        "claude-sonnet-4-6": ("claude-4-6", "minimal-specialist"),
+        "gemini-4-neon-xhigh": ("gemini-4-neon", "paid-pro"),
+        "gemini-4-neon-high": ("gemini-4-neon", "paid-pro"),
+        "gemini-4-neon-medium": ("gemini-4-neon", "paid-pro"),
+        "gemini-4-neon-low": ("gemini-4-neon", "paid-pro"),
         "gemini-4-argon-high": ("gemini-4-argon", "paid-pro"),
-        "gemini-pro-orchestrator-g1-pro": ("gemini-4-argon", "paid-pro"),
+        "gemini-pro-orchestrator-g1-pro": ("gemini-pro-orchestrator", "paid-pro"),
         "claude-opus-5-5-high": ("claude-opus-5-5", "minimal-specialist"),
     }
     for slug, (family, tier) in concrete_invariants.items():
@@ -121,7 +137,9 @@ def test_generate_manifests() -> None:
         assert avail[slug]["tier"] == tier, slug
     assert set(avail) == {"pro", "flash", "flash_lite", "inherit"} | set(concrete_invariants)
     assert [m["slug"] for m in antigravity_models["available"] if m["slug"].startswith("claude-")] == [
-        "claude-opus-5-5-high"
+        "claude-opus-4-6-thinking",
+        "claude-sonnet-4-6",
+        "claude-opus-5-5-high",
     ]
     agy_roles = {r["role"]: r["models"] for r in antigravity_models["roles"]}
     assert set(agy_roles) == {r["id"] for r in desc.roles}

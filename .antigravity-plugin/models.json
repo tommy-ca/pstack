@@ -10,8 +10,23 @@
     "fastWorker": "gemini-3.8-flash-high",
     "fastVerifier": "gemini-3.8-flash-medium",
     "paidProOrchestrator": "gemini-pro-orchestrator-g1-pro",
-    "paidProReasoning": "gemini-4-argon-high",
-    "minimalSpecialist": "claude-opus-5-5-high"
+    "paidProReasoning": "gemini-4-neon-high",
+    "minimalSpecialist": "claude-opus-4-6-thinking",
+    "specialistFast": "claude-sonnet-4-6",
+    "minimalSpecialistNext": "claude-opus-5-5-high"
+  },
+  "orchestratorCliModels": [
+    "Orchestrator (Neon)",
+    "Orchestrator (Carbon)",
+    "Orchestrator (Argon)"
+  ],
+  "deprecations": {
+    "cutoffDate": "2026-11-30",
+    "retiringFamilies": [
+      "gemini-4-argon",
+      "gemini-3.8-flash",
+      "claude-4-6"
+    ]
   },
   "available": [
     {
@@ -19,7 +34,7 @@
       "slug": "pro",
       "family": "gemini-4-hydrogen",
       "driver": "gemini-4-hydrogen-high",
-      "paidProDriver": "gemini-4-argon-high"
+      "paidProDriver": "gemini-4-neon-high"
     },
     {
       "label": "Gemini 3.8 Flash (Flash Tier)",
@@ -40,52 +55,125 @@
       "driver": "inherit"
     },
     {
-      "label": "Gemini 4 Hydrogen (High)",
-      "slug": "gemini-4-hydrogen-high",
-      "family": "gemini-4-hydrogen",
-      "tier": "pro"
-    },
-    {
       "label": "Gemini 4 Hydrogen (XHigh)",
       "slug": "gemini-4-hydrogen-xhigh",
       "family": "gemini-4-hydrogen",
-      "tier": "pro"
+      "tier": "pro",
+      "availability": "live"
+    },
+    {
+      "label": "Gemini 4 Hydrogen (High)",
+      "slug": "gemini-4-hydrogen-high",
+      "family": "gemini-4-hydrogen",
+      "tier": "pro",
+      "availability": "live"
+    },
+    {
+      "label": "Gemini 4 Hydrogen (Medium)",
+      "slug": "gemini-4-hydrogen-medium",
+      "family": "gemini-4-hydrogen",
+      "tier": "pro",
+      "availability": "live"
+    },
+    {
+      "label": "Gemini 4 Hydrogen (Low)",
+      "slug": "gemini-4-hydrogen-low",
+      "family": "gemini-4-hydrogen",
+      "tier": "pro",
+      "availability": "live"
     },
     {
       "label": "Gemini 3.8 Flash (High)",
       "slug": "gemini-3.8-flash-high",
       "family": "gemini-3.8-flash",
-      "tier": "flash"
+      "tier": "flash",
+      "availability": "live",
+      "deprecatedAfter": "2026-11-30"
     },
     {
       "label": "Gemini 3.8 Flash (Medium)",
       "slug": "gemini-3.8-flash-medium",
       "family": "gemini-3.8-flash",
-      "tier": "flash"
+      "tier": "flash",
+      "availability": "live",
+      "deprecatedAfter": "2026-11-30"
     },
     {
       "label": "Gemini 3.8 Flash (Low)",
       "slug": "gemini-3.8-flash-low",
       "family": "gemini-3.8-flash",
-      "tier": "flash_lite"
+      "tier": "flash_lite",
+      "availability": "live",
+      "deprecatedAfter": "2026-11-30"
+    },
+    {
+      "label": "Claude Opus 4.6 Thinking",
+      "slug": "claude-opus-4-6-thinking",
+      "family": "claude-4-6",
+      "tier": "minimal-specialist",
+      "availability": "live",
+      "deprecatedAfter": "2026-11-30",
+      "successor": "claude-opus-5-5-high"
+    },
+    {
+      "label": "Claude Sonnet 4.6",
+      "slug": "claude-sonnet-4-6",
+      "family": "claude-4-6",
+      "tier": "minimal-specialist",
+      "availability": "live",
+      "deprecatedAfter": "2026-11-30",
+      "successor": "claude-sonnet-5-5-thinking"
+    },
+    {
+      "label": "Gemini 4 Neon (XHigh)",
+      "slug": "gemini-4-neon-xhigh",
+      "family": "gemini-4-neon",
+      "tier": "paid-pro",
+      "availability": "documented"
+    },
+    {
+      "label": "Gemini 4 Neon (High)",
+      "slug": "gemini-4-neon-high",
+      "family": "gemini-4-neon",
+      "tier": "paid-pro",
+      "availability": "documented"
+    },
+    {
+      "label": "Gemini 4 Neon (Medium)",
+      "slug": "gemini-4-neon-medium",
+      "family": "gemini-4-neon",
+      "tier": "paid-pro",
+      "availability": "documented"
+    },
+    {
+      "label": "Gemini 4 Neon (Low)",
+      "slug": "gemini-4-neon-low",
+      "family": "gemini-4-neon",
+      "tier": "paid-pro",
+      "availability": "documented"
     },
     {
       "label": "Gemini 4 Argon (High)",
       "slug": "gemini-4-argon-high",
       "family": "gemini-4-argon",
-      "tier": "paid-pro"
+      "tier": "paid-pro",
+      "availability": "documented",
+      "deprecatedAfter": "2026-11-30",
+      "successor": "gemini-4-neon-high"
     },
     {
-      "label": "Orchestrator (Argon)",
+      "label": "Orchestrator (Neon / Carbon / Argon)",
       "slug": "gemini-pro-orchestrator-g1-pro",
-      "family": "gemini-4-argon",
-      "tier": "paid-pro"
+      "family": "gemini-pro-orchestrator",
+      "tier": "paid-pro",
+      "availability": "documented"
     },
     {
       "label": "Claude Opus 5.5 (High)",
       "slug": "claude-opus-5-5-high",
       "family": "claude-opus-5-5",
-      "tier": "minimal-specialist"
+      "tier": "minimal-specialist",
+      "availability": "documented"
     }
   ],
   "roles": [

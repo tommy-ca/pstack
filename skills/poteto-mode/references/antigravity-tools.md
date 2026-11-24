@@ -1,74 +1,80 @@
 # Antigravity tool mapping for pstack
 
-This document maps portable pstack capabilities (defined in [`pstack-portability`](../../../openspec/specs/pstack-portability/spec.md)) directly to Google Antigravity (`antigravity-cli` / `agy`) native primitives and execution conventions.
+This document maps portable pstack capabilities in `openspec/specs/pstack-portability/spec.md` to Google Antigravity CLI (`agy` 1.5.16) primitives and dispatch rules.
 
-## Tool actions
+## Tool surface split
 
-| Portable Capability | Antigravity Primitive | Claude Code Equivalent | Grok Reference |
+Antigravity 1.5.16 exposes interactive CLI tool aliases in live sessions and internal tool IDs in headless probes (`agy -p --output-format stream-json`) and hooks (`hooks.json`).
+
+| Portable Capability | Interactive CLI Primitive | Headless and Hook Primitive | Notes |
 | --- | --- | --- | --- |
-| Read / edit / shell / search | `view_file`, `replace_file_content`, `write_to_file`, `run_command` | Read / Edit / Bash | `run_command`, `write_to_file` |
-| Fetch a URL / web search | `read_url_content`, `search_web` | WebFetch / WebSearch | `read_url_content`, `search_web` |
-| Invoke a skill | Progressive discovery (`skills/<name>/SKILL.md`) | Skills load natively | Skills load natively |
-| `agent.spawn` | `invoke_subagent`, `define_subagent` | `Agent` | `spawn_subagent` |
-| `agent.fan_out` | N items in `Subagents` array of `invoke_subagent` | N `Agent` in one turn | N `spawn_subagent` in one turn |
-| `agent.join` | `manage_subagents` / reactive messaging | wait on Agent handles | `get_command_or_subagent_output` |
-| `agent.message` | `send_message` | `send_message` | inter-agent message |
-| `task.background` | `run_command` (async), `manage_task`, `schedule` | background jobs | background tasks |
-| `tool.mcp` | `call_mcp_tool`, `list_resources`, `read_resource` | MCP tools | MCP tools |
-| `plan.update` | Artifacts (`.md` in artifact dir) / `todo.md` | todolist | `todo_write` |
-| `human.ask` | `ask_question` | `AskUserQuestion` | `ask_user_question` |
+| File read and search | `read_file` | `view_file`, `list_dir`, `find_by_name`, `grep_search` | Hook matchers must target internal IDs |
+| File edit | `edit_file` | `replace_file_content`, `multi_replace_file_content` | Multi-hunk edits use `multi_replace_file_content` |
+| File write | `write_file` | `write_to_file` | Used for evidence and artifacts |
+| Shell execution | `run_command` | `run_command` | Supports async background execution |
+| Web fetch and search | `search_web` | `read_url_content`, `search_web` | `read_url_content` appears in headless `init.tools` |
+| Skill discovery | Progressive `SKILL.md` | Progressive `SKILL.md` | Discovers `.agents/skills/` and `~/.agents/skills/` (`1.5.16+`) |
+| `agent.spawn` | `invoke_subagent`, `define_subagent` | `invoke_subagent`, `define_subagent` | `/swarm` and `run_workflow` add gated modes |
+| `agent.fan_out` | N `Subagents` in `invoke_subagent` | `invoke_subagent`, `run_workflow` | Native `swarm` only when `/swarm` active |
+| `agent.join` | `manage_subagents`, reactive messaging | `manage_subagents`, `swarm_wait`, `trajectory()` | Reactive wakeup avoids polling loops |
+| `agent.message` | `send_message` | `send_message`, `post_message` | `post_message` routes `@name`, `@group`, `@all`, `@#channel` |
+| `task.background` | `run_command` (async), `manage_task`, `schedule` | `manage_task`, `schedule` | `schedule` supports `DurationSeconds`, `CronExpression`, `TimerCondition` |
+| `tool.mcp` | `call_mcp_tool`, `list_resources`, `read_resource` | `call_mcp_tool`, `list_resources`, `read_resource` | Native MCP boundary |
+| `plan.update` | Artifacts, `todo.md`, `/plan` | `swarm_pane` (`plan.json`) | `swarm_pane` replaces `swarm_narrator` |
+| `human.ask` | `ask_question`, `/grill-me` | `ask_question` | Blocking interactive gate |
 
-## Subagent policy
+## Subagent and fan-out gating
 
-- Subagent dispatch uses native `invoke_subagent` with explicit `TypeName`, `Role`, `Prompt`, `Workspace`, and `Model`.
-- Isolated workspaces use `Workspace: "branch"` or git worktrees (`workspace.isolated`).
-- Read-only inspection uses `Workspace: "share"` with read-only tools.
-- Reactive wakeup handles subagent responses without wasteful polling loops.
-- File pointers and artifact URIs are passed instead of inlined dumps.
+1. Parent-owned `invoke_subagent` (default). Standard PStack fan-out uses `invoke_subagent` with `TypeName`, `Role`, `Prompt`, `Workspace`, and `Model`. Isolated writers use `Workspace` set to `"branch"`. Read-only inspection uses `Workspace` set to `"share"`. Forbidden fields are `readonly`, `environment`, and `reasoning_effort`. When spawning custom writers with `define_subagent`, set `EnableWriteTools=True` explicitly because read-only roles only expose read, search, MCP, task, and messaging tools.
+2. Native `/swarm` gating (`1.5.13+`). Antigravity guards native `swarm` creation behind an explicit `/swarm` invocation or an active swarm board so agents do not spawn quota-heavy swarms unprompted. Use `swarm`, `post_message`, `read_board`, `swarm_wait`, `/swarm board` (`Alt+S`), `swarm_pane`, and `@monitor` (`swarm_monitor`) only when `/swarm` is active. Otherwise route `pstack` `/swarm` through `invoke_subagent` or `run_workflow`.
+3. Deterministic `run_workflow` pipelines. Use `/run-workflow` or `run_workflow` for scripted Python phase graphs using `phase()`, `log()`, `agent()`, `parallel()`, `pipeline()`, `trajectory()`, `call_tool()`, `CONVERSATION_ID`, `STEP_INDEX`, `WORKSPACES`, and JSON-Schema `finish` outputs. `run_workflow` accepts per-agent `workspace` (`inherit`, `branch`, `share`) and `model` (`inherit`, `flash_lite`, `flash`, `pro`).
 
-## Models
+## Depth policy 1 vs runtime 10
 
-Antigravity model routing spans two dispatch surfaces, configured at `~/.gemini/config/pstack-models.md` and projected into `.antigravity-plugin/models.json`:
+Antigravity 1.5.16 permits up to 10 nested subagent levels at runtime. PStack enforces `max_subagent_depth` equal to `1` in `profiles/antigravity.json`, `poteto-mode`, and `provider-dispatch.md`. Only the root coordinator session may call `invoke_subagent`, `swarm`, or `run_workflow`. Depth-1 workers own their diff or read-only verdict directly and never spawn nested children.
 
-- **Subagent dispatch (`invoke_subagent`)**: accepts the schema tier enum values `pro`, `flash`, `flash_lite`, and `inherit`.
-- **CLI and Swarm dispatch (`agy --model` / `swarm(action="add", model=...)`)**: accepts concrete catalog slugs detected by `agy models` and `swarm(action="models", all=True)`.
+## Discrete seats for Arena and Interrogate
 
-### Model tiers
+Panel skills must assign distinct slugs across seats and never run duplicate copies of one model slug.
 
-1. **Main reasoning driver (`gemini-4-hydrogen-high` / `gemini-4-hydrogen-xhigh`, `pro` tier)**: Primary frontier workhorse for orchestration, architecture, synthesis, feature implementation, debugging, refactoring, and independent verification.
-2. **Main fast worker and verifier driver (`gemini-3.8-flash-high` / `gemini-3.8-flash-medium` / `gemini-3.8-flash-low`, `flash` and `flash_lite` tiers)**: High-throughput, low-latency driver for codebase exploration (`how-explorer`), evidence collection (`why-investigators`), parallel workers (`swarm-workers`), comment cleanup (`comment-sicko`), and panel contrast (`pro, flash`).
-3. **Paid Pro subscription tier when available (`gemini-4-argon-high` / `gemini-pro-orchestrator-g1-pro`)**: Drop-in paid Pro subscription upgrade for `pro` orchestration (`poteto-agent`), architecture (`architect-runners`), synthesis (`why-synthesizer`, `judgment-and-prose`), and independent verification (`independent-verifier`).
-4. **Minimal specialist tier (`claude-opus-5-5-high`)**: Used strictly at minimal for `hardest-tasks` or an explicit cross-family adversarial seat when requested, never as a default or bulk driver.
+| Workflow | Role Key | Tier Panel (`invoke_subagent`) | Discrete CLI or Swarm Seats |
+| --- | --- | --- | --- |
+| `pstack` `/arena` | `arena-runners`, `arena-cross-judge-pool` | `pro, flash` | `gemini-4-hydrogen-high`, `gemini-3.8-flash-high`, optional `claude-opus-4-6-thinking` or `claude-sonnet-4-6` |
+| `pstack` `/interrogate` | `interrogate-reviewers` | `pro, flash` | `gemini-4-hydrogen-high` (or `gemini-4-neon-high`), `gemini-3.8-flash-high`, optional `claude-opus-4-6-thinking` |
+| `/architect` | `architect-runners` | `pro, flash` | `gemini-4-hydrogen-high`, `gemini-3.8-flash-high` |
 
-### Role mappings
+`agy agents` discovers 25 agents locally, consisting of 22 PStack canonical roles plus 3 built-in `jd-*` agents (`jd-fix-agent`, `jd-judge-a`, `jd-judge-b`). Built-in Antigravity role names invoke directly via their bare `TypeName` (such as `arena-runners` or `independent-verifier`). PStack `/interrogate` dispatches `interrogate-reviewers` rather than `jd-*`.
 
-Rows are the canonical role IDs from `pstack.package.json#/roles`, projected into `.antigravity-plugin/models.json`.
+## Models, effort flags, and deprecations
 
-| Role | Skill | Subagent Tier (`invoke_subagent`) | Main CLI / Swarm Driver | Paid Pro Sub Driver (When Available) | Notes |
-| --- | --- | --- | --- | --- | --- |
-| `architect-runners` | `architect` | `pro, flash` (panel) | `gemini-4-hydrogen-high`, `gemini-3.8-flash-high` | `gemini-4-argon-high`, `gemini-3.8-flash-high` | Architecture sketch panel |
-| `arena-cross-judge-pool` | `arena` | `pro, flash` (panel) | `gemini-4-hydrogen-high`, `gemini-3.8-flash-high` | `gemini-4-argon-high`, `gemini-3.8-flash-high` | Evaluation and cross-judging |
-| `arena-runners` | `arena` | `pro, flash` (panel) | `gemini-4-hydrogen-high`, `gemini-3.8-flash-high` | `gemini-4-argon-high`, `gemini-3.8-flash-high` | Multi-candidate authoring |
-| `bug-fix` | `poteto-mode` | `pro` | `gemini-4-hydrogen-high` | `gemini-4-argon-high` | Root-cause defect fixes |
-| `comment-sicko` | `poteto-mode` | `flash` | `gemini-3.8-flash-high` | `gemini-3.8-flash-high` | High-volume comment deletion |
-| `feature` | `poteto-mode` | `pro` | `gemini-4-hydrogen-high` | `gemini-4-argon-high` | Feature implementation |
-| `hardest-tasks` | `poteto-mode` | `pro` | `gemini-4-hydrogen-xhigh` (`claude-opus-5-5-high` minimal) | `gemini-4-argon-high` (`claude-opus-5-5-high` minimal) | Deepest reasoning escalation |
-| `hillclimb` | `poteto-mode` | `pro` | `gemini-4-hydrogen-high` | `gemini-4-argon-high` | Iterative metric optimization |
-| `how-critics` | `how` | `pro` | `gemini-4-hydrogen-high` | `gemini-4-argon-high` | Read-only design critique |
-| `how-explainer` | `how` | `pro` | `gemini-4-hydrogen-high` | `gemini-4-argon-high` | Subsystem explanation prose |
-| `how-explorer` | `how` | `flash` | `gemini-3.8-flash-high` | `gemini-3.8-flash-high` | Read-only codebase traversal |
-| `independent-verifier` | `poteto-mode` | `pro` | `gemini-4-hydrogen-high` | `gemini-4-argon-high` | Read-only verification gate |
-| `interrogate-reviewers` | `interrogate` | `pro, flash` (panel) | `gemini-4-hydrogen-high`, `gemini-3.8-flash-high` | `gemini-4-argon-high`, `gemini-3.8-flash-high` | Optional `claude-opus-5-5-high` cross-family seat when requested |
-| `judgment-and-prose` | `poteto-mode` | `pro` | `gemini-4-hydrogen-high` | `gemini-4-argon-high` | Judgment and synthesis prose |
-| `perf-issue` | `poteto-mode` | `pro` | `gemini-4-hydrogen-high` | `gemini-4-argon-high` | Profiling and latency fixes |
-| `poteto-agent` | `poteto-mode` | `pro` | `gemini-4-hydrogen-high` | `gemini-pro-orchestrator-g1-pro` / `gemini-4-argon-high` | Delegated orchestrator worker |
-| `refactoring` | `poteto-mode` | `pro` | `gemini-4-hydrogen-high` | `gemini-4-argon-high` | Fast tier eligible only when `< 100` LOC and tested |
-| `reflect-judgment` | `reflect` | `pro` | `gemini-4-hydrogen-high` | `gemini-4-argon-high` | Transcript judgment review |
-| `reflect-tooling` | `reflect` | `pro` | `gemini-4-hydrogen-high` | `gemini-4-argon-high` | Tooling and skill audit |
-| `swarm-workers` | `swarm` | `flash` | `gemini-3.8-flash-high` | `gemini-3.8-flash-high` | Parallel bounded workers (`gemini-3.8-flash-medium` for light sweeps) |
-| `why-investigators` | `why` | `flash` | `gemini-3.8-flash-high` | `gemini-3.8-flash-high` | Parallel evidence gathering |
-| `why-synthesizer` | `why` | `pro` | `gemini-4-hydrogen-high` | `gemini-4-argon-high` | Decision rationale synthesis |
+Antigravity separates subagent catalog configuration from CLI session flags.
 
-### Eliminated models
+- Subagent and `.antigravity-plugin/models.json` surface. `setup.source` stays `"host-catalog"` and `setup.effort` stays `"none"`. `invoke_subagent` accepts only `pro`, `flash`, `flash_lite`, and `inherit`.
+- CLI and TUI effort surface. Interactive `/effort` and startup `agy --effort` accept `low`, `medium`, `high`, `xhigh`, and `max` on adjustable models. Fixed-budget `Orchestrator` pairings (`gemini-pro-orchestrator-g1-pro` and `--model "Orchestrator (Neon|Carbon|Argon)"`) exclude effort adjustment.
+- Live local `agy models` slugs. `gemini-4-hydrogen-low`, `gemini-4-hydrogen-medium`, `gemini-4-hydrogen-high`, `gemini-4-hydrogen-xhigh`, `gemini-3.8-flash-low`, `gemini-3.8-flash-medium`, `gemini-3.8-flash-high`, `claude-opus-4-6-thinking`, and `claude-sonnet-4-6`.
+- Documented account-gated slugs. `gemini-4-neon-low`, `gemini-4-neon-medium`, `gemini-4-neon-high`, `gemini-4-neon-xhigh`, `gemini-4-argon-high`, `gemini-pro-orchestrator-g1-pro`, and `claude-opus-5-5-high`.
+- Policy exclusion. `gpt-oss-*` (such as `gpt-oss-120b-medium`) is strictly eliminated from all PStack catalogs, panels, role assignments, and override templates.
+- November 30, 2026 deprecations. `Gemini 4 Argon`, `Gemini 3.8 Flash`, `GPT-OSS-120b`, and `Claude 4.6` (`claude-opus-4-6-thinking`, `claude-sonnet-4-6`) retire after `2026-11-30`. Migrate Neon/Argon seats to `gemini-4-neon-*`, fast seats to `gemini-4-hydrogen-low` or `gemini-4-neon-low`, and minimal specialist seats to `claude-opus-5-5-high` or `Claude Sonnet 5.5 (thinking)` once active on the account.
 
-`gpt-oss-*` (such as `gpt-oss-120b-medium`) is strictly eliminated from all `pstack` Antigravity model catalogs, panels, role assignments, and override templates. Keep `claude-*` (`claude-opus-5-5-high`) restricted strictly to minimal `hardest-tasks` or explicit cross-family review seats rather than routine execution.
+## Hooks, headless mode, ACP, and validation
+
+- Hooks. Native Antigravity plugins place `hooks.json` directly at the plugin root. Hook matchers must match headless internal tool names (`view_file`, `replace_file_content`, `multi_replace_file_content`, `write_to_file`, `list_dir`, `find_by_name`, `grep_search`, `read_url_content`).
+- Goals and scheduling. `/goal` intercepts session stops via `<!-- GOAL_COMPLETE -->` and `<!-- GOAL_CANCELLED -->` markers. Background timers and crons use `schedule` and `manage_task`.
+- Headless and ACP. Scripted runs use `agy -p` with `--output-format` (`text`, `json`, `stream-json`), `--input-format stream-json`, `--json-schema`, and `--print-timeout`. Editor JSON-RPC integration runs via `agy acp`.
+- Plugin validation. Validate packaged Antigravity plugins with `agy plugin validate --strict --json`, and verify live parity with `agy models` and `agy agents`. Keep root `plugin.json` canonical inside `~/.gemini/config/plugins/pstack` without stale `.antigravity-plugin/plugin.json` shadow copies.
+
+## Skill precedence (`skill_order`)
+
+PStack primaries take precedence over Antigravity builtins when both exist. Builtins fill gaps with no PStack command or serve as explicit fallback when PStack is absent.
+
+| Need | Primary PStack | Antigravity Builtin |
+| --- | --- | --- |
+| Parallel fan-out swarm | `/swarm` | `/swarm` (gated) |
+| Multi-agent teamwork | `/swarm` | `/teamwork` |
+| Adversarial interrogation | `/interrogate` | `/grill-me` |
+| Loop until completion predicate | `playbooks/autonomous-run.md` | `/goal` |
+| Spec then plan | `null` | `/plan` |
+| Schedule recurring or delayed check | `null` | `/schedule` |
+| Temporary reasoning boost | `null` | `/boost` |
+| Compact session context | `null` | `/compact` |
+| Scripted multi-phase workflow | `null` | `/run-workflow` |
