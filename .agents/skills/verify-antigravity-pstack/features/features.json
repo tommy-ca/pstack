@@ -9,8 +9,31 @@
       "sub_features": [
         "manifest-projection",
         "command-sync",
+        "wire-aliases",
         "doctor-checks",
         "evidence-freshness"
+      ]
+    },
+    {
+      "id": "swarm-and-workflows",
+      "name": "Subagents, Gated Swarm, and Workflows",
+      "document": "swarm-and-workflows.md",
+      "sub_features": [
+        "invoke-subagent-depth-1",
+        "native-swarm-guard",
+        "run-workflow-pipelines",
+        "enable-write-tools-custom-agent"
+      ]
+    },
+    {
+      "id": "cli-models-and-plugin",
+      "name": "CLI 1.5.16 Models, Effort, ACP, and Plugin Validation",
+      "document": "cli-models-and-plugin.md",
+      "sub_features": [
+        "agy-models-catalog",
+        "november-2026-deprecations",
+        "effort-and-orchestrator",
+        "strict-plugin-validation"
       ]
     }
   ]

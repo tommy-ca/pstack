@@ -6,6 +6,11 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Optional, Tuple
 
+from scripts.prove_antigravity_native_package import (
+    run_antigravity_validation,
+    stage_antigravity_package,
+)
+
 from .base import DriverScenarioResult, HarnessDriver, find_executable
 
 
@@ -45,49 +50,88 @@ class AntigravityDriver(HarnessDriver):
     def discover(self, run_dir: Path) -> DriverScenarioResult:
         avail, reason = self.is_available()
         if not avail:
-            return self.blocked_result("runtime-discover-antigravity", "Antigravity plugin discovery", reason)
+            return self.blocked_result(
+                "runtime-discover-antigravity",
+                "Antigravity strict native plugin validation",
+                reason,
+            )
 
         bin_path = self.get_binary_path()
         assert bin_path is not None
-        plugin_dir = Path.home() / ".gemini" / "config" / "plugins" / "pstack"
-        if not plugin_dir.is_dir():
-            plugin_dir = self.root / ".antigravity-plugin"
 
-        code, out, err, dur = self.run_command([str(bin_path), "plugin", "validate", str(plugin_dir)], cwd=self.root)
-        verdict = "PASS" if code == 0 and "skills" in out and "agents" in out else "FAIL"
+        staged_dir = run_dir / "staged-antigravity-plugin"
+        stage_antigravity_package(staged_dir, source_root=self.root)
+        val_pass, report = run_antigravity_validation(staged_dir)
+        components = report.get("components", {}) if isinstance(report, dict) else {}
+        findings = report.get("findings", []) if isinstance(report, dict) else []
+        skills_count = components.get("skills", 0)
+        agents_count = components.get("agents", 0)
+        rules_count = components.get("rules", 0)
+
+        verdict = (
+            "PASS"
+            if val_pass
+            and isinstance(findings, list)
+            and len(findings) == 0
+            and skills_count >= 65
+            and agents_count >= 22
+            and rules_count >= 1
+            else "FAIL"
+        )
         return DriverScenarioResult(
             scenario_id="runtime-discover-antigravity",
-            description="Verify Antigravity validates installed pstack plugin, skills, and agents",
-            command=f"{bin_path} plugin validate {plugin_dir}",
-            exit_code=code,
-            stdout=out,
-            stderr=err,
+            description="Verify Antigravity validates staged pstack plugin strictly with JSON inventory",
+            command=f"{bin_path} plugin validate {staged_dir} --strict --json",
+            exit_code=0 if verdict == "PASS" else 1,
+            stdout=f"skills={skills_count} agents={agents_count} rules={rules_count} findings={len(findings)}",
+            stderr=str(report.get("stderr", "")) if isinstance(report, dict) else "",
             verdict=verdict,
-            duration_s=dur,
+            duration_s=0.05,
         )
 
     def child_spawn(self, run_dir: Path) -> DriverScenarioResult:
         avail, reason = self.is_available()
         if not avail:
-            return self.blocked_result("runtime-child-spawn-antigravity", "Antigravity child subagent spawn contract", reason)
+            return self.blocked_result(
+                "runtime-child-spawn-antigravity",
+                "Antigravity child subagent spawn contract",
+                reason,
+            )
 
-        # Antigravity subagents live in agents/ (.md files)
+        bin_path = self.get_binary_path()
+        assert bin_path is not None
+
         agents_dir = self.root / "agents"
         if not agents_dir.is_dir():
             agents_dir = Path.home() / ".gemini" / "config" / "plugins" / "pstack" / "agents"
         agent_count = len(list(agents_dir.glob("*.md"))) if agents_dir.is_dir() else 0
+
         rc = self.profile_data.get("runtime_conventions", {})
         depth_ok = rc.get("max_subagent_depth", 0) == 1
-        verdict = "PASS" if agent_count >= 10 and depth_ok else "FAIL"
+        forbidden = rc.get("forbidden_spawn_fields", [])
+        wire_aliases = rc.get("wire_aliases", {})
+        conventions_ok = (
+            depth_ok
+            and "reasoning_effort" in forbidden
+            and wire_aliases.get("view_file") == "read_file"
+        )
+
+        code, out, err, dur = self.run_command([str(bin_path), "agents"], cwd=self.root)
+        cli_ok = code == 0 and bool(out.strip())
+
+        verdict = "PASS" if agent_count >= 22 and conventions_ok and cli_ok else "FAIL"
         return DriverScenarioResult(
             scenario_id="runtime-child-spawn-antigravity",
-            description="Verify Antigravity subagents projection and invoke_subagent capability contract",
-            command=f"agy agents-check (count={agent_count})",
+            description="Verify Antigravity subagent projection, spawn constraints, and live agent discovery",
+            command=f"{bin_path} agents (repo_agents={agent_count})",
             exit_code=0 if verdict == "PASS" else 1,
-            stdout=f"Antigravity subagents verified ({agent_count} agent specs, depth={rc.get('max_subagent_depth')})",
-            stderr="",
+            stdout=(
+                f"repo_agents={agent_count} depth={rc.get('max_subagent_depth')} "
+                f"conventions_ok={conventions_ok} cli_ok={cli_ok}"
+            ),
+            stderr=err,
             verdict=verdict,
-            duration_s=0.01,
+            duration_s=dur,
         )
 
     def isolation(self, run_dir: Path) -> DriverScenarioResult:
@@ -106,4 +150,3 @@ class AntigravityDriver(HarnessDriver):
             verdict=verdict,
             duration_s=0.01,
         )
-

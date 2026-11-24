@@ -130,18 +130,26 @@ def execute_local_scenarios(verifier: Any, root: Path) -> List[ScenarioResult]:
         results.append(
             verifier.run_command(
                 "drive-antigravity-models",
-                "Verify Antigravity model roles and panel definitions",
+                "Verify Antigravity model roles, Neon/deprecation metadata, and gpt-oss exclusion",
                 "package",
-                [sys.executable, "-c", "import json; from pathlib import Path; d = json.loads(Path('.antigravity-plugin/models.json').read_text()); assert d['singleRoleDefault'] == 'pro'; assert len(d['roles']) >= 10"],
+                [
+                    sys.executable,
+                    "-c",
+                    "import json; from pathlib import Path; raw = Path('.antigravity-plugin/models.json').read_text(); d = json.loads(raw); assert d['singleRoleDefault'] == 'pro'; assert len(d['roles']) >= 22; assert d['drivers']['paidProReasoning'] == 'gemini-4-neon-high'; assert d['deprecations']['cutoffDate'] == '2026-11-30'; assert 'gpt-oss' not in raw",
+                ],
                 record=False,
             )
         )
         results.append(
             verifier.run_command(
                 "drive-antigravity-tools-ref",
-                "Verify Antigravity tool-mapping reference integrity",
+                "Verify Antigravity 1.5.16 tool-mapping and swarm/workflow reference integrity",
                 "adapter",
-                [sys.executable, "-c", "from pathlib import Path; p = Path('skills/poteto-mode/references/antigravity-tools.md'); assert p.is_file(); t = p.read_text(); assert 'invoke_subagent' in t; assert 'ask_question' in t"],
+                [
+                    sys.executable,
+                    "-c",
+                    "from pathlib import Path; p = Path('skills/poteto-mode/references/antigravity-tools.md'); assert p.is_file(); t = p.read_text(); assert 'invoke_subagent' in t; assert 'ask_question' in t; assert 'run_workflow' in t; assert 'read_file' in t; assert 'view_file' in t; assert '/swarm' in t",
+                ],
                 record=False,
             )
         )
