@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import time
 from pathlib import Path
 from typing import Optional, Tuple
 
@@ -58,9 +59,11 @@ class AntigravityDriver(HarnessDriver):
         bin_path = self.get_binary_path()
         assert bin_path is not None
 
+        start_time = time.perf_counter()
         staged_dir = run_dir / "staged-antigravity-plugin"
         stage_antigravity_package(staged_dir, source_root=self.root)
         val_pass, report = run_antigravity_validation(staged_dir, agy_bin=bin_path)
+        dur = round(time.perf_counter() - start_time, 4)
         components = report.get("components", {}) if isinstance(report, dict) else {}
         findings = report.get("findings", []) if isinstance(report, dict) else []
         skills_count = components.get("skills", 0)
@@ -85,7 +88,7 @@ class AntigravityDriver(HarnessDriver):
             stdout=f"skills={skills_count} agents={agents_count} rules={rules_count} findings={len(findings)}",
             stderr=str(report.get("stderr", "")) if isinstance(report, dict) else "",
             verdict=verdict,
-            duration_s=0.05,
+            duration_s=dur,
         )
 
     def child_spawn(self, run_dir: Path) -> DriverScenarioResult:
