@@ -32,7 +32,8 @@ run_bounded() {
 case "${1:-all}" in
     doctor)
         run_bounded "package_projection" $PYTHON_EXEC scripts/package_projection.py --check
-        run_bounded "sync_tests" $PYTHON_EXEC -m pytest -q tests/test_sync_antigravity_plugin.py
+        run_bounded "sync_tests" $PYTHON_EXEC -m pytest -q tests/test_sync_antigravity_plugin.py tests/test_antigravity_command_projection.py tests/test_antigravity_verification.py
+        run_bounded "native_package_proof" $PYTHON_EXEC scripts/prove_antigravity_native_package.py --json
         run_bounded "doctor_checks" $PYTHON_EXEC scripts/verify_portable.py doctor --host antigravity
         ;;
     launch)
@@ -41,10 +42,20 @@ case "${1:-all}" in
             echo "Error: profiles/antigravity.json not found" >&2
             exit 1
         fi
+        if [[ ! -f ".antigravity-plugin/models.json" ]]; then
+            echo "Error: .antigravity-plugin/models.json not found" >&2
+            exit 1
+        fi
+        if command -v agy >/dev/null 2>&1; then
+            echo "Launch: Detected $(agy --version 2>/dev/null || echo 'agy')."
+        else
+            echo "Launch: agy binary not on PATH (static verification mode)."
+        fi
         echo "Launch: Antigravity environment ready."
         ;;
     drive)
         run_bounded "package_projection" $PYTHON_EXEC scripts/package_projection.py --check
+        run_bounded "native_package_proof" $PYTHON_EXEC scripts/prove_antigravity_native_package.py --json
         run_bounded "check_staleness" $PYTHON_EXEC scripts/verify_portable.py check-staleness --host antigravity
         run_bounded "check_evidence" $PYTHON_EXEC scripts/verify_portable.py check-evidence --host antigravity
         ;;

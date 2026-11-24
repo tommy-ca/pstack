@@ -11,7 +11,7 @@ S5. Promote UPSTREAM Pin to 0.15.48, Regenerate Canonical Inventory & 6-Harness 
 ## Tasks
 - [x] T1 (S1) Implement Unit 1 (Issue #1437) worktree/plugin cleanup, Graphicle SOLID/KISS/DRY/YAGNI audit, agy CLI docs collection, upstream 0.15.48 sync, and rules/AGENTS.md DRY unification (inline direct, branch `feat/upstream-sync-0-15-48-and-agy-audit`, Risk: none)
 - [x] T2 (S2) Implement Unit 2 (Issue #1438) Antigravity CLI 1.5.16 profile, native swarm/run_workflow/effort mappings, models.json, and antigravity-tools.md refresh (arena + inline direct, branch `feat/antigravity-cli-tools-and-swarm-mapping`, Risk: item 3 `.antigravity-plugin/models.json` catalog schema extension)
-- [ ] T3 (S3) Implement Unit 3 (Issue #1439) verify-antigravity-pstack skill/feature map, AntigravityDriver, and package proof upgrade (inline direct)
+- [x] T3 (S3) Implement Unit 3 (Issue #1439) verify-antigravity-pstack skill/feature map, AntigravityDriver, and package proof upgrade (inline direct, branch `feat/antigravity-verification-upgrade`, Risk: item 5 verification driver and harness_scenarios)
 - [ ] T4 (S4) Implement Unit 4 (Issue #1440) Swarm, Interrogate, and Thermos dual review gates and remediation (delegated direct)
 - [ ] T5 (S5) Implement Unit 5 (Issue #1441) UPSTREAM pin 0.15.48 promotion, canonical inventory, 6-harness receipts, stacked PR shipping, and live plugin sync (inline direct)
 

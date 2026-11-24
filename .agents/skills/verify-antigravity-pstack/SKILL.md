@@ -1,21 +1,17 @@
 ---
 name: verify-antigravity-pstack
-description: "Verify Antigravity host projection, slash commands, model definitions, and 4-plane doctor verification."
+description: "Verify Antigravity CLI 1.5.16 projection, native plugin validation, gated swarm and workflow routing, model definitions, and 4-plane doctor checks."
 disable-model-invocation: true
 ---
 
 # Verify Antigravity PStack
 
-This skill verifies PStack integration with the Antigravity agent harness.
-It validates projection manifests, model mappings, and 4-plane doctor health.
-Read the core feature map before executing verification routines.
+This skill verifies PStack integration with Google Antigravity CLI (`agy` 1.5.16).
+It validates manifest projection, native `agy plugin validate --strict --json` packaging, gated `/swarm` and `run_workflow` bindings, model catalogs, and 4-plane doctor health.
 
 ## Launch
 
-Verify the runtime environment and required profiles.
-Ensure `profiles/antigravity.json` is present and valid.
-Verify Python virtual environment availability.
-Run the launch routine using the verification driver.
+Verify the runtime environment, active host profile, projected model catalog, and optional `agy` CLI availability.
 
 ```bash
 bash .agents/skills/verify-antigravity-pstack/scripts/driver.sh launch
@@ -23,10 +19,7 @@ bash .agents/skills/verify-antigravity-pstack/scripts/driver.sh launch
 
 ## Doctor
 
-The doctor command performs non-destructive health checks.
-It validates projection manifests for Antigravity plugin and commands.
-It verifies Antigravity test suites pass cleanly.
-It executes the portable 4-plane doctor for the Antigravity host.
+The doctor command runs non-destructive static and packaging health checks across `.antigravity-plugin/`, command projections, native package staging, and the 4-plane doctor.
 
 ```bash
 bash .agents/skills/verify-antigravity-pstack/scripts/driver.sh doctor
@@ -34,10 +27,7 @@ bash .agents/skills/verify-antigravity-pstack/scripts/driver.sh doctor
 
 ## Drive
 
-The drive command exercises verification checks.
-It confirms projection synchronization across manifests and models.
-It checks static evidence receipt freshness.
-It verifies receipts against the four verification planes.
+The drive command executes projection checks, the native `agy plugin validate --strict --json` package proof, Antigravity verification unit suites, receipt staleness checks, and 4-plane evidence checks.
 
 ```bash
 bash .agents/skills/verify-antigravity-pstack/scripts/driver.sh drive
@@ -45,25 +35,22 @@ bash .agents/skills/verify-antigravity-pstack/scripts/driver.sh drive
 
 ## Proof bar
 
-All checks must pass with exit code zero.
-The plugin manifest at `.antigravity-plugin/plugin.json` must match.
-The model catalog at `.antigravity-plugin/models.json` must match.
-All 21 commands at `.antigravity-plugin/commands` must match.
-The 4-plane evidence receipt must be fresh and valid.
-Unmet assertions yield exit code non-zero and prevent qualification.
+All checks must exit zero.
+The plugin manifest at `.antigravity-plugin/plugin.json` and commands at `.antigravity-plugin/commands` must stay synced.
+The model catalog at `.antigravity-plugin/models.json` must keep `singleRoleDefault` at `pro`, expose 22 canonical roles, exclude `gpt-oss-*`, and record `2026-11-30` deprecations.
+`prove_antigravity_native_package.py --json` must report `verdict` as `PASS`, `findings` empty, at least 65 skills, 22 agents, and 1 rule file.
 
 ## Evidence
 
-Verification outputs are written to the audit evidence directory.
-Static receipts are recorded in `.audit/evidence/antigravity-*/receipt.json`.
-Evidence freshness is confirmed via `verify_portable.py check-staleness`.
-Commands are bounded by a 60-second execution timeout.
+Verification outputs write to `.audit/evidence/` via temporary staged directories.
+Static receipts live in `.audit/evidence/antigravity-receipt.json` with `planes.runtime` kept `UNTESTED` unless an isolated live runtime proof runs explicitly.
+Freshness is verified through `verify_portable.py check-staleness --host antigravity`.
+Every command runs bounded by a 60-second execution timeout.
 
 ## Cleanup
 
-The driver runs clean with no persistent background processes.
-Temporary test files are removed automatically upon completion.
-Run the cleanup routine to verify workspace cleanliness.
+Staged native plugin proof directories clean up automatically on exit.
+No persistent background processes or stray worktrees remain after running the driver.
 
 ```bash
 bash .agents/skills/verify-antigravity-pstack/scripts/driver.sh cleanup
@@ -71,11 +58,11 @@ bash .agents/skills/verify-antigravity-pstack/scripts/driver.sh cleanup
 
 ## Helpers
 
-Run driver branches directly for focused verification.
+Run individual phases directly for targeted diagnostics.
 
 ```bash
-bash .agents/skills/verify-antigravity-pstack/scripts/driver.sh doctor
 bash .agents/skills/verify-antigravity-pstack/scripts/driver.sh launch
+bash .agents/skills/verify-antigravity-pstack/scripts/driver.sh doctor
 bash .agents/skills/verify-antigravity-pstack/scripts/driver.sh drive
 bash .agents/skills/verify-antigravity-pstack/scripts/driver.sh cleanup
 ```
