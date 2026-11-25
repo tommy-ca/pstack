@@ -13,7 +13,7 @@ import shutil
 import subprocess
 import tempfile
 from pathlib import Path
-from typing import Any, List, Optional, Set
+from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -38,7 +38,7 @@ from scripts.portability_types import (
 from scripts.setup_pstack import resolve_profiles_dir
 
 
-def find_agy_binary() -> Optional[str]:
+def find_agy_binary() -> str | None:
     bin_path = shutil.which("agy")
     if bin_path:
         return bin_path
@@ -54,7 +54,7 @@ def skill_names(directory: Path) -> set[str]:
         return set()
     return {
         item.name for item in directory.iterdir()
-        if item.is_dir() and item.name not in SKILLS_HASH_IGNORED_DIRS
+        if item.is_dir() and not item.name.startswith(".") and item.name not in SKILLS_HASH_IGNORED_DIRS
     }
 
 
@@ -75,37 +75,22 @@ def skill_files(directory: Path) -> dict[str, bytes]:
             continue
         subdirs = []
         for entry in entries:
-            if entry.name in SKILLS_HASH_IGNORED_DIRS:
+            if entry.name.startswith(".") or entry.name in SKILLS_HASH_IGNORED_DIRS:
                 continue
-            if entry.is_symlink():
-                try:
-                    resolved = entry.resolve()
-                except OSError:
-                    continue
-                if not resolved.is_relative_to(base_resolved):
-                    continue
-                if resolved.is_dir():
-                    if resolved in ancestors:
-                        continue
-                    subdirs.append((entry, ancestors + (resolved,)))
-                elif resolved.is_file():
-                    if entry.suffix not in SKILLS_HASH_IGNORED_SUFFIXES:
-                        try:
-                            files[str(entry.relative_to(directory))] = resolved.read_bytes()
-                        except OSError:
-                            continue
-            elif entry.is_dir():
-                try:
-                    resolved = entry.resolve()
-                except OSError:
-                    continue
-                if not resolved.is_relative_to(base_resolved) or resolved in ancestors:
+            try:
+                resolved = entry.resolve()
+            except OSError:
+                continue
+            if not resolved.is_relative_to(base_resolved):
+                continue
+            if resolved.is_dir():
+                if resolved in ancestors:
                     continue
                 subdirs.append((entry, ancestors + (resolved,)))
-            elif entry.is_file():
+            elif resolved.is_file():
                 if entry.suffix not in SKILLS_HASH_IGNORED_SUFFIXES:
                     try:
-                        files[str(entry.relative_to(directory))] = entry.read_bytes()
+                        files[str(entry.relative_to(directory))] = resolved.read_bytes()
                     except OSError:
                         continue
         for subdir, next_ancestors in reversed(subdirs):
@@ -135,15 +120,15 @@ def purge_stray_plugin_dirs(plugin_dir: Path) -> None:
 
 
 def copy_skills(
-    dest_skills: Path, source_root: Optional[Path] = None, clean_stale: bool = False
-) -> List[str]:
+    dest_skills: Path, source_root: Path | None = None, clean_stale: bool = False
+) -> list[str]:
     src_skills = (source_root or ROOT) / "skills"
     dest_skills.mkdir(parents=True, exist_ok=True)
     copied_rel = []
     src_names = skill_names(src_skills)
     if clean_stale and dest_skills.is_dir():
         for existing_d in dest_skills.iterdir():
-            if existing_d.name not in src_names:
+            if existing_d.name not in src_names and not existing_d.name.startswith("."):
                 if existing_d.is_symlink():
                     existing_d.unlink()
                 elif existing_d.is_dir():
@@ -156,6 +141,8 @@ def copy_skills(
         for rel_path, content in expected_files.items():
             dest_file = target / rel_path
             dest_file.parent.mkdir(parents=True, exist_ok=True)
+            if dest_file.is_symlink():
+                dest_file.unlink()
             dest_file.write_bytes(content)
             copied_rel.append(f"skills/{sname}/{rel_path}")
         if clean_stale:
@@ -168,14 +155,18 @@ def copy_skills(
 
 
 def copy_agents(
-    dest_agents: Path, source_root: Optional[Path] = None, clean_stale: bool = False
-) -> List[str]:
+    dest_agents: Path, source_root: Path | None = None, clean_stale: bool = False
+) -> list[str]:
     src_agents = (source_root or ROOT) / "agents"
     dest_agents.mkdir(parents=True, exist_ok=True)
     copied_rel = []
-    src_agent_files = {f.name for f in src_agents.glob("*.md") if f.is_file()}
+    src_agent_files = {f.name for f in src_agents.glob("*.md") if f.is_file() and not f.name.startswith(".")}
     for fname in sorted(src_agent_files):
-        shutil.copy2(src_agents / fname, dest_agents / fname)
+        src_file = src_agents / fname
+        dest_file = dest_agents / fname
+        if dest_file.is_symlink():
+            dest_file.unlink()
+        shutil.copy2(src_file, dest_file)
         copied_rel.append(f"agents/{fname}")
     if clean_stale:
         for existing_f in dest_agents.glob("*.md"):
@@ -184,7 +175,7 @@ def copy_agents(
     return copied_rel
 
 
-def stage_antigravity_package(dest_dir: Path, source_root: Optional[Path] = None) -> Path:
+def stage_antigravity_package(dest_dir: Path, source_root: Path | None = None) -> Path:
     """Stage a clean, standalone Antigravity plugin package for validation and installation."""
     from scripts.package_projection import (
         generate_antigravity_manifest,
@@ -238,9 +229,9 @@ def stage_antigravity_package(dest_dir: Path, source_root: Optional[Path] = None
     return dest_dir
 
 
-def compute_managed_files(host: str, desc: Any, source_root: Optional[Path] = None) -> Set[str]:
+def compute_managed_files(host: str, desc: Any, source_root: Path | None = None) -> set[str]:
     """Compute the set of relative paths owned by pstack inside the plugin directory."""
-    managed: Set[str] = set()
+    managed: set[str] = set()
     src_root = source_root if source_root is not None else ROOT
 
     # Manifests
@@ -281,9 +272,9 @@ def compute_managed_files(host: str, desc: Any, source_root: Optional[Path] = No
     return managed
 
 
-def safe_scan_plugin_tree(plugin_dir: Path) -> List[str]:
+def safe_scan_plugin_tree(plugin_dir: Path) -> list[str]:
     """Scan all files and symlinks inside plugin_dir without following symlinks into loops."""
-    rel_paths: List[str] = []
+    rel_paths: list[str] = []
     if not plugin_dir.exists():
         return rel_paths
 
@@ -301,14 +292,14 @@ def safe_scan_plugin_tree(plugin_dir: Path) -> List[str]:
     return rel_paths
 
 
-def get_unmanaged_paths(plugin_dir: Path, managed_files: Set[str]) -> List[str]:
+def get_unmanaged_paths(plugin_dir: Path, managed_files: set[str]) -> list[str]:
     """Identify all unexpected or user-authored paths inside plugin_dir."""
     all_found = safe_scan_plugin_tree(plugin_dir)
     return [p for p in all_found if p not in managed_files]
 
 
 def clean_stale_managed_files(
-    plugin_dir: Path, host: str, desc: Any, source_root: Optional[Path] = None
+    plugin_dir: Path, host: str, desc: Any, source_root: Path | None = None
 ) -> None:
     """Clean up previously managed files that are no longer part of the package."""
     managed_record_file = plugin_dir / ".pstack-managed-files.json"
@@ -334,8 +325,8 @@ def clean_stale_managed_files(
 
 
 def record_managed_manifest(
-    plugin_dir: Path, host: str, desc: Any, source_root: Optional[Path] = None
-) -> Set[str]:
+    plugin_dir: Path, host: str, desc: Any, source_root: Path | None = None
+) -> set[str]:
     """Record the managed files manifest in the plugin directory."""
     managed_set = compute_managed_files(host, desc, source_root=source_root)
     manifest_record = {
@@ -355,7 +346,7 @@ def stage_antigravity_native_install(
     host: str,
     desc: Any,
     src_root: Path,
-    target_base: Optional[Path],
+    target_base: Path | None,
 ) -> bool:
     """Attempt native agy plugin install if agy binary is available and targeting standard dir.
 
@@ -507,9 +498,9 @@ def write_host_plugin_assets(plugin_dir: Path, host: str, desc: Any, src_root: P
             (droids_dir / fname).write_text(content, encoding="utf-8")
 
 
-def remove_managed_files_and_empty_dirs(plugin_dir: Path, managed_set: Set[str]) -> List[str]:
+def remove_managed_files_and_empty_dirs(plugin_dir: Path, managed_set: set[str]) -> list[str]:
     """Remove all managed files and clean up resulting empty parent directories."""
-    errors: List[str] = []
+    errors: list[str] = []
     for rel_str in sorted(managed_set, reverse=True):
         p = plugin_dir / rel_str
         if p.is_file() or p.is_symlink():
