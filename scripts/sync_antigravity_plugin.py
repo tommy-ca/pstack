@@ -111,6 +111,7 @@ def audit_live_plugin() -> dict[str, str]:
             capture_output=True,
             text=True,
             check=False,
+            timeout=30,
         )
         report["agy_validate"] = "PASS" if proc.returncode == 0 else "FAIL"
 
@@ -237,6 +238,7 @@ def _git(source: Path, *args: str) -> subprocess.CompletedProcess[str]:
         capture_output=True,
         text=True,
         check=False,
+        timeout=30,
     )
 
 
@@ -359,7 +361,7 @@ def sync_live_plugin(dry_run: bool = False, force: bool = False) -> bool:
 
     if shutil.which("agy"):
         print("\nValidating with Antigravity CLI:")
-        subprocess.run(["agy", "plugin", "validate", str(LIVE_PLUGIN_DIR)], check=False)
+        subprocess.run(["agy", "plugin", "validate", str(LIVE_PLUGIN_DIR)], check=False, timeout=60)
 
     print("Live Antigravity plugin synchronization complete.")
     return True

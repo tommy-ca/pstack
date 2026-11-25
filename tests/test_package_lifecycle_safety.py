@@ -141,3 +141,22 @@ def test_clean_uninstall_removes_plugin_dir_completely(tmp_path: Path) -> None:
     ok_un, errs = package_lifecycle.uninstall_plugin("grok", target)
     assert ok_un is True, f"Errors: {errs}"
     assert not plugin_dir.exists()
+
+
+def test_stage_antigravity_package_projects_commands(tmp_path: Path) -> None:
+    from scripts.package_install_staging import stage_antigravity_package
+    from scripts.package_projection import generate_antigravity_commands, load_package_descriptor
+    stage_dir = tmp_path / "staged-agy"
+    stage_antigravity_package(stage_dir)
+    assert (stage_dir / "plugin.json").is_file()
+    assert (stage_dir / "models.json").is_file()
+    assert (stage_dir / "rules" / "AGENTS.md").is_file()
+    cmds_dir = stage_dir / "commands"
+    assert cmds_dir.is_dir()
+    desc, _ = load_package_descriptor()
+    expected_cmds = generate_antigravity_commands(desc)
+    assert len(expected_cmds) > 0
+    for fname in expected_cmds:
+        assert (cmds_dir / fname).is_file()
+        assert (cmds_dir / fname).read_text(encoding="utf-8") == expected_cmds[fname]
+
