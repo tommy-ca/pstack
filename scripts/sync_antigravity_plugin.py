@@ -33,6 +33,9 @@ from scripts.package_projection import (
     project_all,
 )
 from scripts.package_install_staging import (
+    copy_agents,
+    copy_skills,
+    purge_stray_plugin_dirs,
     skill_files,
     skill_names,
 )
@@ -346,47 +349,13 @@ def sync_live_plugin(dry_run: bool = False, force: bool = False) -> bool:
     install_plugin("antigravity", target_dir=LIVE_PLUGIN_DIR, source_root=ROOT, force=force)
 
     # Reconcile removed skills and removed files inside managed skills
-    src_skills = ROOT / "skills"
-    dest_skills = LIVE_PLUGIN_DIR / "skills"
-    if dest_skills.is_dir():
-        src_skill_names = skill_names(src_skills)
-        for name in sorted(skill_names(dest_skills) - src_skill_names):
-            shutil.rmtree(dest_skills / name)
-        for sname in sorted(src_skill_names):
-            target = dest_skills / sname
-            if target.is_dir():
-                expected_files = set(skill_files(src_skills / sname).keys())
-                actual_files = set(skill_files(target).keys())
-                for extra_rel in sorted(actual_files - expected_files):
-                    extra_p = target / extra_rel
-                    if extra_p.is_file() or extra_p.is_symlink():
-                        extra_p.unlink()
+    copy_skills(LIVE_PLUGIN_DIR / "skills", source_root=ROOT, clean_stale=True)
 
     # Reconcile removed agents
-    src_agents = ROOT / "agents"
-    dest_agents = LIVE_PLUGIN_DIR / "agents"
-    if dest_agents.is_dir():
-        src_agent_files = {f.name for f in src_agents.glob("*.md") if f.is_file()}
-        for existing_f in dest_agents.glob("*.md"):
-            if existing_f.is_file() and existing_f.name not in src_agent_files:
-                existing_f.unlink()
+    copy_agents(LIVE_PLUGIN_DIR / "agents", source_root=ROOT, clean_stale=True)
 
     # Purge foreign legacy directories and hooks
-    for stray in STRAY_PLUGIN_DIRS:
-        stray_path = LIVE_PLUGIN_DIR / stray
-        if stray_path.is_dir():
-            shutil.rmtree(stray_path, ignore_errors=True)
-        elif stray_path.is_file() or stray_path.is_symlink():
-            stray_path.unlink(missing_ok=True)
-    hooks_file = LIVE_PLUGIN_DIR / "hooks" / "hooks.json"
-    if hooks_file.is_file():
-        hooks_file.unlink(missing_ok=True)
-    hooks_dir = LIVE_PLUGIN_DIR / "hooks"
-    if hooks_dir.is_dir() and not any(hooks_dir.iterdir()):
-        try:
-            hooks_dir.rmdir()
-        except OSError:
-            pass
+    purge_stray_plugin_dirs(LIVE_PLUGIN_DIR)
 
     if shutil.which("agy"):
         print("\nValidating with Antigravity CLI:")
