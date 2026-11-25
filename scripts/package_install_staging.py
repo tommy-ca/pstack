@@ -175,57 +175,67 @@ def copy_agents(
     return copied_rel
 
 
-def stage_antigravity_package(dest_dir: Path, source_root: Path | None = None) -> Path:
-    """Stage a clean, standalone Antigravity plugin package for validation and installation."""
-    from scripts.package_projection import (
-        generate_antigravity_manifest,
-        generate_antigravity_models,
-        generate_antigravity_rules,
-        load_package_descriptor,
-    )
-    from scripts.portability_schema import (
-        SKILLS_HASH_IGNORED_DIRS,
-        SKILLS_HASH_IGNORED_SUFFIXES,
-    )
-
-    src_root = source_root if source_root is not None else ROOT
-    desc, _ = load_package_descriptor()
-    dest_dir.mkdir(parents=True, exist_ok=True)
-
-    # 1. Manifest (plugin.json)
+def write_antigravity_assets(
+    plugin_dir: Path,
+    desc: Any,
+    src_root: Path,
+    include_skills: bool = False,
+    clean_stale: bool = True,
+) -> None:
+    """Project all Antigravity plugin files (manifest, models, commands, rules, assets, agents, profiles)."""
     manifest = generate_antigravity_manifest(desc)
-    (dest_dir / "plugin.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
-
-    # 2. Models catalog
+    (plugin_dir / "plugin.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     models = generate_antigravity_models(desc)
-    (dest_dir / "models.json").write_text(json.dumps(models, indent=2) + "\n", encoding="utf-8")
+    (plugin_dir / "models.json").write_text(json.dumps(models, indent=2) + "\n", encoding="utf-8")
 
-    # 3. Logo asset
-    assets_dir = dest_dir / "assets"
+    cmds_dir = plugin_dir / "commands"
+    cmds_dir.mkdir(parents=True, exist_ok=True)
+    expected_cmds = generate_antigravity_commands(desc)
+    for fname, toml_str in expected_cmds.items():
+        (cmds_dir / fname).write_text(toml_str, encoding="utf-8")
+    if clean_stale:
+        for existing_cmd in cmds_dir.glob("*.toml"):
+            if existing_cmd.is_file() and existing_cmd.name not in expected_cmds:
+                existing_cmd.unlink()
+
+    rules_dir = plugin_dir / "rules"
+    rules_dir.mkdir(parents=True, exist_ok=True)
+    rules_dest = rules_dir / "AGENTS.md"
+    rules_dest.write_text(generate_antigravity_rules(), encoding="utf-8")
+
+    purge_stray_plugin_dirs(plugin_dir)
+
+    assets_dir = plugin_dir / "assets"
     assets_dir.mkdir(parents=True, exist_ok=True)
     logo_src = src_root / "assets" / "logo.svg"
     if logo_src.is_file():
         shutil.copy2(logo_src, assets_dir / "logo.svg")
 
-    # 4. Rules
-    rules_dir = dest_dir / "rules"
-    rules_dir.mkdir(parents=True, exist_ok=True)
-    (rules_dir / "AGENTS.md").write_text(generate_antigravity_rules(), encoding="utf-8")
+    agents_dir = plugin_dir / "agents"
+    copy_agents(agents_dir, source_root=src_root, clean_stale=clean_stale)
 
-    # 5. Skills
-    copy_skills(dest_dir / "skills", source_root=src_root, clean_stale=True)
-
-    # 6. Agents
-    copy_agents(dest_dir / "agents", source_root=src_root, clean_stale=True)
-
-    # 7. Profiles
-    profiles_src = resolve_profiles_dir(src_root)
-    profiles_dest = dest_dir / "profiles"
+    profiles_dest = plugin_dir / "profiles"
     profiles_dest.mkdir(parents=True, exist_ok=True)
-    for p_file in sorted(profiles_src.glob("*.json")):
-        if p_file.is_file():
-            shutil.copy2(p_file, profiles_dest / p_file.name)
+    src_profiles_dir = resolve_profiles_dir(src_root)
+    src_profiles = {p.name for p in src_profiles_dir.glob("*.json")}
+    if clean_stale:
+        for existing_p in profiles_dest.glob("*.json"):
+            if existing_p.name not in src_profiles:
+                existing_p.unlink(missing_ok=True)
+    for p in src_profiles_dir.glob("*.json"):
+        shutil.copy2(p, profiles_dest / p.name)
 
+    if include_skills:
+        copy_skills(plugin_dir / "skills", source_root=src_root, clean_stale=clean_stale)
+
+
+def stage_antigravity_package(dest_dir: Path, source_root: Path | None = None) -> Path:
+    """Stage a clean, standalone Antigravity plugin package for validation and installation."""
+    from scripts.package_projection import load_package_descriptor
+    src_root = source_root if source_root is not None else ROOT
+    desc, _ = load_package_descriptor()
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    write_antigravity_assets(dest_dir, desc, src_root, include_skills=True, clean_stale=True)
     return dest_dir
 
 
@@ -444,45 +454,7 @@ def write_host_plugin_assets(plugin_dir: Path, host: str, desc: Any, src_root: P
         (plugin_dir / "package.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
 
     elif host == "antigravity":
-        manifest = generate_antigravity_manifest(desc)
-        (plugin_dir / "plugin.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
-        models = generate_antigravity_models(desc)
-        (plugin_dir / "models.json").write_text(json.dumps(models, indent=2) + "\n", encoding="utf-8")
-
-        cmds_dir = plugin_dir / "commands"
-        cmds_dir.mkdir(parents=True, exist_ok=True)
-        expected_cmds = generate_antigravity_commands(desc)
-        for fname, toml_str in expected_cmds.items():
-            (cmds_dir / fname).write_text(toml_str, encoding="utf-8")
-        for existing_cmd in cmds_dir.glob("*.toml"):
-            if existing_cmd.is_file() and existing_cmd.name not in expected_cmds:
-                existing_cmd.unlink()
-
-        rules_dir = plugin_dir / "rules"
-        rules_dir.mkdir(parents=True, exist_ok=True)
-        rules_dest = rules_dir / "AGENTS.md"
-        rules_dest.write_text(generate_antigravity_rules(), encoding="utf-8")
-
-        purge_stray_plugin_dirs(plugin_dir)
-
-        assets_dir = plugin_dir / "assets"
-        assets_dir.mkdir(parents=True, exist_ok=True)
-        logo_src = src_root / "assets" / "logo.svg"
-        if logo_src.is_file():
-            shutil.copy2(logo_src, assets_dir / "logo.svg")
-
-        agents_dir = plugin_dir / "agents"
-        copy_agents(agents_dir, source_root=src_root)
-
-        profiles_dest = plugin_dir / "profiles"
-        profiles_dest.mkdir(parents=True, exist_ok=True)
-        src_profiles_dir = resolve_profiles_dir(src_root)
-        src_profiles = {p.name for p in src_profiles_dir.glob("*.json")}
-        for existing_p in profiles_dest.glob("*.json"):
-            if existing_p.name not in src_profiles:
-                existing_p.unlink(missing_ok=True)
-        for p in src_profiles_dir.glob("*.json"):
-            shutil.copy2(p, profiles_dest / p.name)
+        write_antigravity_assets(plugin_dir, desc, src_root, include_skills=False, clean_stale=True)
 
     elif host == "droid":
         plugin_meta = plugin_dir / ".factory-plugin"
