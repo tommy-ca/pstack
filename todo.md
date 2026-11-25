@@ -655,3 +655,37 @@
 - [x] Unit 2 (Issue #1313): [Spec & Refactor][P0] Compact requirement texts in archive-chain-integrity, pstack-playbooks-not-rhai, and pstack-principles (PR #1316)
 - [x] Unit 3 (Issue #1314): [Gate, Evidence & Archive][P0] Refresh 6-harness static evidence, archive change, and close Epic 1311 (PR #1317)
 *(Epic #1311 CLOSED)*
+
+## Epic #1425: [Epic][Upstream Sync & Thermo Hardening] Upstream Cursor PStack 0.15.43 Sync, Shorter Skill Texts, Worker Rules, and Thermo-Nuclear Verification
+- [x] Unit 1 (Issue #1426): [Research & TSV][P0] Upstream 0.15.43 delta audit, classification TSV, and worker rules (PR #1431)
+- [x] Unit 2 (Issue #1427): [Principles & Prose][P0] Port 14 streamlined principle leaves, unslop, and technical-writing (PR #1432)
+- [x] Unit 3 (Issue #1428): [Playbooks & Router][P0] Port shorter playbooks and poteto-mode router (PR #1433)
+- [x] Unit 4 (Issue #1429): [Thermos & Gates][P0] Execute Thermos dual review, swarm matrix, arena, and interrogate gates (PR #1434)
+- [x] Unit 5 (Issue #1430): [Pin & Inventory][P0] Advance UPSTREAM pin to 0.15.43, promote canonical inventory, and sync manifests (PR #1435)
+*(Epic #1425 CLOSED)*
+
+## Epic #1436: [Epic][Antigravity & Upstream 0.15.48] Upstream 0.15.48 Sync, Antigravity CLI 1.5.16 Mapping, and Verification Upgrade
+- [x] Unit 1 (Issue #1437): [Sync & Rules][P0] Worktree cleanup, Graphicle SOLID/KISS/DRY/YAGNI audit, agy CLI docs collection, and upstream 0.15.48 sync (PR #1442)
+- [x] Unit 2 (Issue #1438): [Agy CLI & Swarm][P0] Antigravity CLI 1.5.16 profile, native swarm/run_workflow/effort mappings, and models.json (PR #1443)
+- [x] Unit 3 (Issue #1439): [Driver & Verification][P0] Upgrade verify-antigravity-pstack skill/feature map, AntigravityDriver, and package proofs (PR #1444)
+- [x] Unit 4 (Issue #1440): [Review & Remediation][P0] Swarm, Interrogate, and Thermos dual review gates and remediation (PR #1445)
+- [x] Unit 5 (Issue #1441): [Pin & Receipts][P0] UPSTREAM pin 0.15.48 promotion, canonical inventory, 6-harness receipts, and live plugin sync (PR #1446)
+*(Epic #1436 CLOSED)*
+
+## Epic #1447: [Epic][Packaging & Verification] Antigravity Packaging Idempotency, Foreign Directory Purging, and Driver Verification Integrity
+- [x] Unit 1 (Issue #1448): [Staging & Restore][P0] Stage Antigravity commands, add try-finally restore guard, and fix driver.sh pathing (PR #1452)
+- [x] Unit 2 (Issue #1449): [Sync & Stray Purge][P0] Unify STRAY_PLUGIN_DIRS, purge foreign directories on sync, and expand sync test coverage (PR #1453)
+- [x] Unit 3 (Issue #1450): [Driver & Isolation][P0] Harden AntigravityDriver.isolation() and expand driver/role catalog test suites (PR #1454)
+- [x] Unit 4 (Issue #1451): [Gates & Receipts][P0] Execute multi-model gates, refresh static receipts, and ship stacked PRs to main (PR #1455)
+*(Epic #1447 CLOSED)*
+
+## Epic #1456: [Epic][Thermos & Architecture] Staging Unification, Driver Encapsulation, and Receipt Durability
+- [x] Unit 1 (Issue #1457): [Packaging & Staging][P0] Unify Staging Copy Primitives and Thread Source Root Hermetically (PR #1460)
+- [x] Unit 2 (Issue #1458): [Driver & Plugin Sync][P0] Encapsulate Antigravity Plugin Directories and Hoist Static Imports (PR #1461)
+- [x] Unit 3 (Issue #1459): [Verification & Receipts][P0] Multi-Model Review, Receipt Refresh, and Live Plugin Sync (PR #1462)
+*(Epic #1456 CLOSED)*
+
+## Epic #1463: [Epic][Architecture & SOLID] Foundational Staging Primitives, Inverted Dependency Resolution, and Backlog Reconciliation
+- [x] Unit 1 (Issue #1464): [Architecture & SOLID][P0] Move skill_names and skill_files to package_install_staging and eliminate circular import (PR #1467)
+- [x] Unit 2 (Issue #1465): [DRY & Sync][P0] Streamline sync_antigravity_plugin reconciliation and harmonize staging helpers (PR #1468)
+- [x] Unit 3 (Issue #1466): [Docs & Verification][P0] Reconcile todo.md execution program backlog and qualify 6-harness static matrix (PR #1469)
