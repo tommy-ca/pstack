@@ -403,3 +403,13 @@ def test_staging_copy_primitives_and_source_root_threading(tmp_path: Path) -> No
     assert not (dest_skills / "custom-skill").exists()
 
 
+def test_package_install_staging_dependency_inversion() -> None:
+    """Ensure package_install_staging does not import consumer scripts like sync_antigravity_plugin."""
+    from scripts import package_install_staging
+    source = Path(package_install_staging.__file__).read_text(encoding="utf-8")
+    assert "from scripts.sync_antigravity_plugin" not in source
+    assert "import scripts.sync_antigravity_plugin" not in source
+    assert hasattr(package_install_staging, "skill_names")
+    assert hasattr(package_install_staging, "skill_files")
+
+

@@ -48,10 +48,74 @@ def find_agy_binary() -> Optional[str]:
     return None
 
 
+def skill_names(directory: Path) -> set[str]:
+    """Return all skill directory names in directory ignoring dot and excluded directories."""
+    if not directory.is_dir():
+        return set()
+    return {
+        item.name for item in directory.iterdir()
+        if item.is_dir() and item.name not in SKILLS_HASH_IGNORED_DIRS
+    }
+
+
+def skill_files(directory: Path) -> dict[str, bytes]:
+    """Return relative path to content mapping for all valid skill files in directory."""
+    files: dict[str, bytes] = {}
+    if not directory.is_dir():
+        return files
+
+    base_resolved = directory.resolve()
+    # (current_dir, tuple_of_resolved_ancestors)
+    stack = [(directory, (base_resolved,))]
+    while stack:
+        current_dir, ancestors = stack.pop()
+        try:
+            entries = sorted(current_dir.iterdir(), key=lambda p: p.name)
+        except OSError:
+            continue
+        subdirs = []
+        for entry in entries:
+            if entry.name in SKILLS_HASH_IGNORED_DIRS:
+                continue
+            if entry.is_symlink():
+                try:
+                    resolved = entry.resolve()
+                except OSError:
+                    continue
+                if not resolved.is_relative_to(base_resolved):
+                    continue
+                if resolved.is_dir():
+                    if resolved in ancestors:
+                        continue
+                    subdirs.append((entry, ancestors + (resolved,)))
+                elif resolved.is_file():
+                    if entry.suffix not in SKILLS_HASH_IGNORED_SUFFIXES:
+                        try:
+                            files[str(entry.relative_to(directory))] = resolved.read_bytes()
+                        except OSError:
+                            continue
+            elif entry.is_dir():
+                try:
+                    resolved = entry.resolve()
+                except OSError:
+                    continue
+                if not resolved.is_relative_to(base_resolved) or resolved in ancestors:
+                    continue
+                subdirs.append((entry, ancestors + (resolved,)))
+            elif entry.is_file():
+                if entry.suffix not in SKILLS_HASH_IGNORED_SUFFIXES:
+                    try:
+                        files[str(entry.relative_to(directory))] = entry.read_bytes()
+                    except OSError:
+                        continue
+        for subdir, next_ancestors in reversed(subdirs):
+            stack.append((subdir, next_ancestors))
+    return files
+
+
 def copy_skills(
     dest_skills: Path, source_root: Optional[Path] = None, clean_stale: bool = False
 ) -> List[str]:
-    from scripts.sync_antigravity_plugin import skill_files, skill_names
     src_skills = (source_root or ROOT) / "skills"
     dest_skills.mkdir(parents=True, exist_ok=True)
     copied_rel = []
