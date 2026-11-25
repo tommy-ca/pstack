@@ -695,3 +695,10 @@
 - [x] Unit 1 (Issue #1471): [Security & Invariants][P0] Harden skill discovery, dot-file filtering invariants, and symlink target safety (PR #1474)
 - [x] Unit 2 (Issue #1472): [Architecture & DRY][P0] Project commands in native staging, extract shared asset staging, and enforce ADR 0017 non-destructive sync (PR #1475)
 - [x] Unit 3 (Issue #1473): [Cleanup & Verification][P0] Eliminate dead imports, refine exception handling, and refresh multi-harness receipts (PR #1476)
+*(Epic #1470 CLOSED)*
+
+## Epic #1477: [Epic][Staging, Validation & Compliance] Antigravity Plugin Staging Spec Compliance and Proof Remediation
+- [x] Unit 1 (Issue #1478): [Staging & Invariants][P0] Remove commands projection from write_antigravity_assets and align managed files (PR #1477)
+- [x] Unit 2 (Issue #1479): [Verification & Proof][P0] Qualify Antigravity native package proof, verify zero warnings, and refresh receipts (PR #1478)
+- [x] Unit 3 (Issue #1480): [Backlog & Shipping][P0] Reconcile execution backlog, verify live sync parity, and ship stacked PRs to main (PR #1479)
+*(Epic #1477 CLOSED)*
