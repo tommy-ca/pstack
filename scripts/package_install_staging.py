@@ -113,6 +113,27 @@ def skill_files(directory: Path) -> dict[str, bytes]:
     return files
 
 
+def purge_stray_plugin_dirs(plugin_dir: Path) -> None:
+    """Purge foreign legacy directories and retired hooks from the plugin directory."""
+    for stray in STRAY_PLUGIN_DIRS:
+        stray_path = plugin_dir / stray
+        if stray_path.is_symlink():
+            stray_path.unlink(missing_ok=True)
+        elif stray_path.is_dir():
+            shutil.rmtree(stray_path, ignore_errors=True)
+        elif stray_path.is_file():
+            stray_path.unlink(missing_ok=True)
+    hooks_file = plugin_dir / "hooks" / "hooks.json"
+    if hooks_file.is_file():
+        hooks_file.unlink(missing_ok=True)
+    hooks_dir = plugin_dir / "hooks"
+    if hooks_dir.is_dir() and not any(hooks_dir.iterdir()):
+        try:
+            hooks_dir.rmdir()
+        except OSError:
+            pass
+
+
 def copy_skills(
     dest_skills: Path, source_root: Optional[Path] = None, clean_stale: bool = False
 ) -> List[str]:
@@ -393,14 +414,7 @@ def stage_antigravity_native_install(
                         if dest_u.is_symlink() or dest_u.is_file():
                             dest_u.unlink(missing_ok=True)
                         shutil.copy2(src_u, dest_u, follow_symlinks=False)
-                for stray in STRAY_PLUGIN_DIRS:
-                    stray_path = plugin_dir / stray
-                    if stray_path.is_symlink():
-                        stray_path.unlink(missing_ok=True)
-                    elif stray_path.is_dir():
-                        shutil.rmtree(stray_path, ignore_errors=True)
-                    elif stray_path.is_file():
-                        stray_path.unlink(missing_ok=True)
+                purge_stray_plugin_dirs(plugin_dir)
 
     return True
 
@@ -458,18 +472,7 @@ def write_host_plugin_assets(plugin_dir: Path, host: str, desc: Any, src_root: P
         rules_dest = rules_dir / "AGENTS.md"
         rules_dest.write_text(generate_antigravity_rules(), encoding="utf-8")
 
-        hooks_file = plugin_dir / "hooks" / "hooks.json"
-        if hooks_file.is_file():
-            hooks_file.unlink()
-
-        for stray in STRAY_PLUGIN_DIRS:
-            stray_path = plugin_dir / stray
-            if stray_path.is_symlink():
-                stray_path.unlink(missing_ok=True)
-            elif stray_path.is_dir():
-                shutil.rmtree(stray_path, ignore_errors=True)
-            elif stray_path.is_file():
-                stray_path.unlink(missing_ok=True)
+        purge_stray_plugin_dirs(plugin_dir)
 
         assets_dir = plugin_dir / "assets"
         assets_dir.mkdir(parents=True, exist_ok=True)
