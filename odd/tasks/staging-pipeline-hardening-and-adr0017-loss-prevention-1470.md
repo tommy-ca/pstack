@@ -9,7 +9,7 @@ S3. Eliminate dead imports across sync and projection modules, refine exception 
 ## Tasks
 - [x] T1: Harden skill discovery, dot-file filtering, and symlink target safety in package_install_staging.py (linked: S1, route: direct inline, commit: 1df0de8)
 - [x] T2: Project commands in stage_antigravity_package, extract shared asset staging helper, and enforce non-destructive sync (linked: S2, route: direct inline, commit: 7a1ad89)
-- [ ] T3: Remove dead imports, refine exception handling, reconcile todo.md backlog, and refresh 6-harness static receipts (linked: S3, route: direct inline, commit: pending)
+- [x] T3: Remove dead imports, refine exception handling, reconcile todo.md backlog, and refresh 6-harness static receipts (linked: S3, route: direct inline, commit: da59140)
 
 ## Log
 L1. User requested /swarm /pstack:poteto-mode deep review, thermos audit, Graphicle analysis, SOLID/KISS/DRY/YAGNI check, recursive plan, and shipping stacked PRs. Dual thermos pass identified 8 findings across staging and sync.
