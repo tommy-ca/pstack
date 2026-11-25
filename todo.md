@@ -702,3 +702,9 @@
 - [x] Unit 2 (Issue #1479): [Verification & Proof][P0] Qualify Antigravity native package proof, verify zero warnings, and refresh receipts (PR #1478)
 - [x] Unit 3 (Issue #1480): [Backlog & Shipping][P0] Reconcile execution backlog, verify live sync parity, and ship stacked PRs to main (PR #1479)
 *(Epic #1477 CLOSED)*
+
+## Epic #1484: [Epic][Architecture & Decoupling] Antigravity Command Staging Decoupling and Sync Harmonization
+- [x] Unit 1 (Issue #1485): [Architecture & Commands][P0] Parameterize write_antigravity_assets with include_commands and restore managed tracking (PR #1480)
+- [x] Unit 2 (Issue #1486): [Verification & Receipts][P0] Qualify driver.sh all, verify sync suite, and refresh static receipts (PR #1481)
+- [x] Unit 3 (Issue #1487): [Backlog & Shipping][P0] Reconcile execution backlog, update feature tracking, and ship stacked PRs to main (PR #1482)
+*(Epic #1484 CLOSED)*
