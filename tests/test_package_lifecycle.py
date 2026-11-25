@@ -413,3 +413,60 @@ def test_package_install_staging_dependency_inversion() -> None:
     assert hasattr(package_install_staging, "skill_files")
 
 
+def test_skill_names_and_files_ignore_dot_files(tmp_path: Path) -> None:
+    from scripts.package_install_staging import skill_files, skill_names
+    skills_dir = tmp_path / "skills"
+    skills_dir.mkdir()
+    valid_skill = skills_dir / "valid-skill"
+    valid_skill.mkdir()
+    (valid_skill / "SKILL.md").write_text("# Valid Skill", encoding="utf-8")
+    (valid_skill / ".DS_Store").write_bytes(b"junk")
+    (valid_skill / ".hidden_file").write_text("hidden", encoding="utf-8")
+    dot_dir = valid_skill / ".git"
+    dot_dir.mkdir()
+    (dot_dir / "config").write_text("git config", encoding="utf-8")
+    hidden_skill = skills_dir / ".hidden-skill"
+    hidden_skill.mkdir()
+    (hidden_skill / "SKILL.md").write_text("# Hidden Skill", encoding="utf-8")
+
+    names = skill_names(skills_dir)
+    assert "valid-skill" in names
+    assert ".hidden-skill" not in names
+
+    files = skill_files(valid_skill)
+    assert "SKILL.md" in files
+    assert ".DS_Store" not in files
+    assert ".hidden_file" not in files
+    assert ".git/config" not in files
+
+
+def test_copy_skills_prevents_symlink_write_through(tmp_path: Path) -> None:
+    from scripts.package_install_staging import copy_skills
+    src = tmp_path / "src"
+    src_skills = src / "skills"
+    skill = src_skills / "alpha"
+    skill.mkdir(parents=True)
+    (skill / "SKILL.md").write_text("new content", encoding="utf-8")
+
+    dest = tmp_path / "dest"
+    dest_skills = dest / "skills"
+    dest_skill = dest_skills / "alpha"
+    dest_skill.mkdir(parents=True)
+
+    # Outside target file that should NOT be overwritten
+    outside_file = tmp_path / "outside.txt"
+    outside_file.write_text("original outside", encoding="utf-8")
+
+    # Destination SKILL.md is a symlink pointing to outside_file
+    dest_skill_file = dest_skill / "SKILL.md"
+    dest_skill_file.symlink_to(outside_file)
+
+    copy_skills(dest_skills, source_root=src)
+
+    # Outside file must remain untouched
+    assert outside_file.read_text(encoding="utf-8") == "original outside"
+    # Destination file must now be a regular file with new content
+    assert not dest_skill_file.is_symlink()
+    assert dest_skill_file.read_text(encoding="utf-8") == "new content"
+
+
