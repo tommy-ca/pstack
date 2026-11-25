@@ -7,8 +7,8 @@ S2. Project commands/*.toml in stage_antigravity_package(), extract shared Antig
 S3. Eliminate dead imports across sync and projection modules, refine exception handling in clean_stale_managed_files(), reconcile backlog in todo.md, and refresh 6-harness static receipts (Issue #1473).
 
 ## Tasks
-- [ ] T1: Harden skill discovery, dot-file filtering, and symlink target safety in package_install_staging.py (linked: S1, route: direct inline, commit: pending)
-- [ ] T2: Project commands in stage_antigravity_package, extract shared asset staging helper, and enforce non-destructive sync (linked: S2, route: direct inline, commit: pending)
+- [x] T1: Harden skill discovery, dot-file filtering, and symlink target safety in package_install_staging.py (linked: S1, route: direct inline, commit: 1df0de8)
+- [x] T2: Project commands in stage_antigravity_package, extract shared asset staging helper, and enforce non-destructive sync (linked: S2, route: direct inline, commit: 7a1ad89)
 - [ ] T3: Remove dead imports, refine exception handling, reconcile todo.md backlog, and refresh 6-harness static receipts (linked: S3, route: direct inline, commit: pending)
 
 ## Log

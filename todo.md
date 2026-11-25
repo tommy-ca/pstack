@@ -689,3 +689,9 @@
 - [x] Unit 1 (Issue #1464): [Architecture & SOLID][P0] Move skill_names and skill_files to package_install_staging and eliminate circular import (PR #1467)
 - [x] Unit 2 (Issue #1465): [DRY & Sync][P0] Streamline sync_antigravity_plugin reconciliation and harmonize staging helpers (PR #1468)
 - [x] Unit 3 (Issue #1466): [Docs & Verification][P0] Reconcile todo.md execution program backlog and qualify 6-harness static matrix (PR #1469)
+*(Epic #1463 CLOSED)*
+
+## Epic #1470: [Epic][Architecture, Security & SOLID] Staging Pipeline Hardening, Dot-File Invariants, and ADR 0017 Loss Prevention
+- [x] Unit 1 (Issue #1471): [Security & Invariants][P0] Harden skill discovery, dot-file filtering invariants, and symlink target safety (PR #1474)
+- [x] Unit 2 (Issue #1472): [Architecture & DRY][P0] Project commands in native staging, extract shared asset staging, and enforce ADR 0017 non-destructive sync (PR #1475)
+- [x] Unit 3 (Issue #1473): [Cleanup & Verification][P0] Eliminate dead imports, refine exception handling, and refresh multi-harness receipts (PR #1476)
