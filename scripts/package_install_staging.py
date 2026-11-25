@@ -18,6 +18,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 
 from scripts.package_projection import (
+    generate_antigravity_commands,
     generate_antigravity_manifest,
     generate_antigravity_models,
     generate_antigravity_rules,
@@ -179,6 +180,7 @@ def write_antigravity_assets(
     desc: Any,
     src_root: Path,
     include_skills: bool = False,
+    include_commands: bool = False,
     clean_stale: bool = True,
 ) -> None:
     """Project all Antigravity plugin files (manifest, models, rules, assets, agents, profiles)."""
@@ -186,6 +188,17 @@ def write_antigravity_assets(
     (plugin_dir / "plugin.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     models = generate_antigravity_models(desc)
     (plugin_dir / "models.json").write_text(json.dumps(models, indent=2) + "\n", encoding="utf-8")
+
+    if include_commands:
+        cmds_dir = plugin_dir / "commands"
+        cmds_dir.mkdir(parents=True, exist_ok=True)
+        expected_cmds = generate_antigravity_commands(desc)
+        for fname, toml_str in expected_cmds.items():
+            (cmds_dir / fname).write_text(toml_str, encoding="utf-8")
+        if clean_stale:
+            for existing_cmd in cmds_dir.glob("*.toml"):
+                if existing_cmd.is_file() and existing_cmd.name not in expected_cmds:
+                    existing_cmd.unlink()
 
     rules_dir = plugin_dir / "rules"
     rules_dir.mkdir(parents=True, exist_ok=True)
@@ -224,7 +237,9 @@ def stage_antigravity_package(dest_dir: Path, source_root: Path | None = None) -
     src_root = source_root if source_root is not None else ROOT
     desc, _ = load_package_descriptor()
     dest_dir.mkdir(parents=True, exist_ok=True)
-    write_antigravity_assets(dest_dir, desc, src_root, include_skills=True, clean_stale=True)
+    write_antigravity_assets(
+        dest_dir, desc, src_root, include_skills=True, include_commands=False, clean_stale=True
+    )
     return dest_dir
 
 
@@ -249,6 +264,8 @@ def compute_managed_files(host: str, desc: Any, source_root: Path | None = None)
         managed.add("models.json")
         managed.add("rules/AGENTS.md")
         managed.add("assets/logo.svg")
+        for fname in generate_antigravity_commands(desc).keys():
+            managed.add(f"commands/{fname}")
         profiles_dir = resolve_profiles_dir(src_root)
         for p in profiles_dir.glob("*.json"):
             managed.add(f"profiles/{p.name}")
@@ -441,7 +458,9 @@ def write_host_plugin_assets(plugin_dir: Path, host: str, desc: Any, src_root: P
         (plugin_dir / "package.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
 
     elif host == "antigravity":
-        write_antigravity_assets(plugin_dir, desc, src_root, include_skills=False, clean_stale=True)
+        write_antigravity_assets(
+            plugin_dir, desc, src_root, include_skills=False, include_commands=True, clean_stale=True
+        )
 
     elif host == "droid":
         plugin_meta = plugin_dir / ".factory-plugin"
