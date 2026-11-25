@@ -12,17 +12,17 @@
   },
   "surface_revisions": {
     "canonical_pin": "ca782ed8b3c2c521cead8e1720d55c3a5dbf2347",
-    "upstream_head": "ca782ed8b3c2c521cead8e1720d55c3a5dbf2347",
+    "upstream_head": "41e400932eca14f289e7db717a70455256b6d388",
     "spec_hash": "6a40100eb2d2a576dd4e3a1619fa7b6767c3ee85a839c1ab0c756d1061ba8f6c",
     "skills_tree_hash": "63b0e2c73292a962fbe51cc66703a801d05a74f4e2d3ed299d970042f994a8a9",
     "profile_hash": "42587dd6c3939ad4a7140e32952d8a37d39224fe5e0c68c8a55bdf2e58588207",
     "package_descriptor_hash": "a8631aea0ee7197c417e805ccf61aac14ef93e230a294bc2d9a38dde55c0cc78",
     "manifest_hash": "826ae8a48eb27ccf9b62f485e70e457933dc5f5e3ee5f423d33341e5f3b895b4",
     "driver_revision": "a13e36f21740c30d211107a8fbe8d37711e2e763afaf2c0d38841af46715cb77",
-    "package_driver_revision": "a9451791e7a2ee76311384d972d6a5b820ee97121f629bfa1519c93ac95203d5",
+    "package_driver_revision": "73371e758008a08af1b787190b72958a3be3f3e0d7676da4eafae8e687750d42",
     "boundary_driver_revision": "ded4475d707124d6db00167347a2a7217255f3b55e689b647f716617e79a82eb",
-    "upstream_freshness": "CURRENT",
-    "commits_ahead": 0
+    "upstream_freshness": "DRIFT",
+    "commits_ahead": 2
   },
   "scenarios": [
     {
