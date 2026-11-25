@@ -32,75 +32,16 @@ from scripts.package_projection import (
     load_package_descriptor,
     project_all,
 )
+from scripts.package_install_staging import (
+    skill_files,
+    skill_names,
+)
 from scripts.portability_types import STRAY_PLUGIN_DIRS
 from scripts.setup_pstack import resolve_profiles_dir
 from scripts.portability_schema import (
     SKILLS_HASH_IGNORED_DIRS,
     SKILLS_HASH_IGNORED_SUFFIXES,
 )
-
-
-def skill_names(directory: Path) -> set[str]:
-    if not directory.is_dir():
-        return set()
-    return {
-        item.name for item in directory.iterdir()
-        if item.is_dir() and item.name not in SKILLS_HASH_IGNORED_DIRS
-    }
-
-
-def skill_files(directory: Path) -> dict[str, bytes]:
-    files: dict[str, bytes] = {}
-    if not directory.is_dir():
-        return files
-
-    base_resolved = directory.resolve()
-    # (current_dir, tuple_of_resolved_ancestors)
-    stack = [(directory, (base_resolved,))]
-    while stack:
-        current_dir, ancestors = stack.pop()
-        try:
-            entries = sorted(current_dir.iterdir(), key=lambda p: p.name)
-        except OSError:
-            continue
-        subdirs = []
-        for entry in entries:
-            if entry.name in SKILLS_HASH_IGNORED_DIRS:
-                continue
-            if entry.is_symlink():
-                try:
-                    resolved = entry.resolve()
-                except OSError:
-                    continue
-                if not resolved.is_relative_to(base_resolved):
-                    continue
-                if resolved.is_dir():
-                    if resolved in ancestors:
-                        continue
-                    subdirs.append((entry, ancestors + (resolved,)))
-                elif resolved.is_file():
-                    if entry.suffix not in SKILLS_HASH_IGNORED_SUFFIXES:
-                        try:
-                            files[str(entry.relative_to(directory))] = resolved.read_bytes()
-                        except OSError:
-                            continue
-            elif entry.is_dir():
-                try:
-                    resolved = entry.resolve()
-                except OSError:
-                    continue
-                if not resolved.is_relative_to(base_resolved) or resolved in ancestors:
-                    continue
-                subdirs.append((entry, ancestors + (resolved,)))
-            elif entry.is_file():
-                if entry.suffix not in SKILLS_HASH_IGNORED_SUFFIXES:
-                    try:
-                        files[str(entry.relative_to(directory))] = entry.read_bytes()
-                    except OSError:
-                        continue
-        for subdir, next_ancestors in reversed(subdirs):
-            stack.append((subdir, next_ancestors))
-    return files
 
 
 def check_files(expected: dict[str, bytes], actual: dict[str, bytes], label: str) -> bool:
