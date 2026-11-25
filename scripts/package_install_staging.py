@@ -330,7 +330,7 @@ def clean_stale_managed_files(
                     parent = parent.parent
                 except OSError:
                     break
-    except Exception:
+    except (json.JSONDecodeError, OSError):
         pass
 
 

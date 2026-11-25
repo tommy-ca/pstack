@@ -41,10 +41,6 @@ from scripts.package_install_staging import (
 )
 from scripts.portability_types import STRAY_PLUGIN_DIRS
 from scripts.setup_pstack import resolve_profiles_dir
-from scripts.portability_schema import (
-    SKILLS_HASH_IGNORED_DIRS,
-    SKILLS_HASH_IGNORED_SUFFIXES,
-)
 
 
 def check_files(expected: dict[str, bytes], actual: dict[str, bytes], label: str) -> bool:
