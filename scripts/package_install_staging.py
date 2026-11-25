@@ -18,7 +18,6 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 
 from scripts.package_projection import (
-    generate_antigravity_commands,
     generate_antigravity_manifest,
     generate_antigravity_models,
     generate_antigravity_rules,
@@ -182,21 +181,11 @@ def write_antigravity_assets(
     include_skills: bool = False,
     clean_stale: bool = True,
 ) -> None:
-    """Project all Antigravity plugin files (manifest, models, commands, rules, assets, agents, profiles)."""
+    """Project all Antigravity plugin files (manifest, models, rules, assets, agents, profiles)."""
     manifest = generate_antigravity_manifest(desc)
     (plugin_dir / "plugin.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     models = generate_antigravity_models(desc)
     (plugin_dir / "models.json").write_text(json.dumps(models, indent=2) + "\n", encoding="utf-8")
-
-    cmds_dir = plugin_dir / "commands"
-    cmds_dir.mkdir(parents=True, exist_ok=True)
-    expected_cmds = generate_antigravity_commands(desc)
-    for fname, toml_str in expected_cmds.items():
-        (cmds_dir / fname).write_text(toml_str, encoding="utf-8")
-    if clean_stale:
-        for existing_cmd in cmds_dir.glob("*.toml"):
-            if existing_cmd.is_file() and existing_cmd.name not in expected_cmds:
-                existing_cmd.unlink()
 
     rules_dir = plugin_dir / "rules"
     rules_dir.mkdir(parents=True, exist_ok=True)
@@ -260,8 +249,6 @@ def compute_managed_files(host: str, desc: Any, source_root: Path | None = None)
         managed.add("models.json")
         managed.add("rules/AGENTS.md")
         managed.add("assets/logo.svg")
-        for fname in generate_antigravity_commands(desc).keys():
-            managed.add(f"commands/{fname}")
         profiles_dir = resolve_profiles_dir(src_root)
         for p in profiles_dir.glob("*.json"):
             managed.add(f"profiles/{p.name}")
